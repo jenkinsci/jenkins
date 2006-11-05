@@ -7,7 +7,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   
-  <artifactId>hudson</artifactId>
+  <artifactId>hudson-war</artifactId>
   <packaging>war</packaging>
   <name>Hudson war</name>
   
@@ -28,6 +28,25 @@
               </excludes>
             </resource>
           </webResources>
+        </configuration>
+      </plugin>
+      <plugin> 
+        <groupId>org.mortbay.jetty</groupId> 
+        <artifactId>maven-jetty-plugin</artifactId>
+        <configuration>
+          <contextPath>/</contextPath>
+          <webAppSourceDirectory>${basedir}/resources</webAppSourceDirectory> 
+          <systemProperties>
+            <systemProperty>
+              <name>HUDSON_HOME</name>
+              <value>work</value>
+            </systemProperty>
+            <systemProperty>
+              <!-- always reload views during debugging -->
+              <name>stapler.jelly.noCache</name>
+              <value>work</value>
+            </systemProperty>
+          </systemProperties>
         </configuration>
       </plugin>
     </plugins>
