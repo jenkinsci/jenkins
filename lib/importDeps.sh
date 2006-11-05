@@ -5,10 +5,9 @@ function checkout() {
     artifactId=$2
     version=$3
     
-    for i in jars poms java-sources
-    do
-      cp ~/.maven/repository/$groupId/$i/$artifactId-$version*.* $groupId/$i
-    done
+    cp ~/.maven/repository/$groupId/jars/$artifactId-$version*.*         $groupId/jars
+    cp ~/.maven/repository/$groupId/poms/$artifactId-$version*.*         $groupId/poms
+    cp ~/.maven/repository/$groupId/java-sources/$artifactId-$version*.* $groupId/jars
 }
 
 case $1 in
