@@ -1,0 +1,35 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout>
+    <l:header title="Hudson" />
+    <l:side-panel />
+    <l:main-panel>
+      <h1><img src="${rootURL}/images/48x48/error.gif" alt="[!]"/><st:nbsp/>Error</h1>
+      <p>
+        We detected that your JVM is not supported by Hudson. This is
+        due to the limitation is one of the libraries that Hudson uses, namely XStream.
+        See <a href="http://xstream.codehaus.org/faq.html">this FAQ</a> for more details.
+      </p>
+
+      <h2>Detected JVM</h2>
+      <table>
+        <j:set var="prop" value="${it.systemProperties}"/>
+        <tr>
+          <td>Vendor</td>
+          <td>: ${prop['java.vm.vendor']}</td>
+        </tr>
+        <tr>
+          <td>Version</td>
+          <td>: ${prop['java.vm.version']}</td>
+        </tr>
+        <tr>
+          <td>VM Name</td>
+          <td>: ${prop['java.vm.name']}</td>
+        </tr>
+        <tr>
+          <td>OS Name</td>
+          <td>: ${prop['os.name']}</td>
+        </tr>
+      </table>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

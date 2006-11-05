@@ -1,0 +1,9 @@
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div align="right" style="margin:1em">
+    <a href="${rootURL}/legend">Legend</a>
+    <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
+    <a href="rssAll"><img src="${rootURL}/images/atom.gif" border="0"/> for all</a>
+    <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
+    <a href="rssFailed"><img src="${rootURL}/images/atom.gif" border="0"/> for failures</a>
+  </div>
+</j:jelly>

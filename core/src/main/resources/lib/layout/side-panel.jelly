@@ -1,0 +1,5 @@
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define">
+  <j:if test="${mode=='side-panel'}">
+    <d:invokeBody />
+  </j:if>
+</j:jelly>

@@ -1,0 +1,38 @@
+<!--
+  Use AJAX to load text data progressively.
+  This is used to achieve the effect of "tail -f"
+  without relying on full page reload.
+
+	<%@attribute name="href" required="true" description="URL that returns text data" %>
+	<%@attribute name="idref" required="true" description="ID of the HTML element in which the result is displayed" %>
+	<%@attribute name="spinner" required="false" description="ID of the HTML element in which the spinner is displayed" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<!--
+	  script code
+	-->
+	<script>
+	  <j:if test="${requestScope.progressiveTextScript==null}">
+	    <j:set target="${requestScope}" property="progressiveTextScript" value="initialized" />
+	    <!-- fetches the latest update from the server -->
+	    function fetchNext(e,href) {
+	      new Ajax.Request(href,{
+	          method: "get",
+	          parameters: "start="+e.fetchedBytes,
+	          onComplete: function(rsp,_) {
+	            e.appendChild(document.createTextNode(rsp.responseText));
+	            e.fetchedBytes = rsp.getResponseHeader("X-Text-Size");
+	            if(rsp.getResponseHeader("X-More-Data")=="true")
+	              setTimeout(function(){fetchNext(e,href);},1000);
+	          <j:if test="${spinner!=null}">
+	            else
+	              $$("${spinner}").style.display = "none";
+	          </j:if>
+	          }
+	      });
+	    }
+	  </j:if>
+	  $$("${idref}").fetchedBytes = 0;
+	  fetchNext($$("${idref}"),"${href}");
+	</script>
+</j:jelly>

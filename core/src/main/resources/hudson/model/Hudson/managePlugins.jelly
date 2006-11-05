@@ -1,0 +1,91 @@
+<!--
+  Config page
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<l:layout>
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel>
+    <s:form method="post" action="configSubmit">
+      <s:block>
+        <h1>Installed Plugins</h1>
+        <div style="margin: 1em; height: 1em">
+          <div class="error" id="needRestart" style="display:none">
+            Changes will take effect when you restart Hudson
+          </div>
+        </div>
+        <table id="pluginList">
+          <j:forEach var="p" items="${it.pluginManager.plugins}">
+            <tr class="hoverback">
+              <td class="plugin-description">
+                <h4>${p.longName}</h4>
+                <div stlyle="padding-left: 1em">
+                  <j:set var="indexPage" value="${p.indexPage.toString()}" />
+                  <j:if test="${!empty(indexPage)}">
+                    <j:include uri="${indexPage}" />
+                  </j:if>
+                </div>
+              </td>
+              <td>
+                <j:set var="state" value="${h.ifThenElse(p.enabled,'Disable','Enable')}"/>
+                <input type="button" value="${state}" onclick="flip(event)"
+                       url="pluginManager/plugin/${p.shortName}"
+                       original="${h.ifThenElse(p.active,'Disable','Enable')}"/>
+              </td>
+            </tr>
+          </j:forEach>
+        </table>
+      </s:block>
+    </s:form>
+    <script>
+      <!-- function to toggle the enable/disable state -->
+      function flip(o) {
+        btn = Event.element(o);
+
+        <!-- trigger -->
+        new Ajax.Request(btn.getAttribute('url')+"/make"+btn.value+"d", {
+          onFailure : function(req,o) {
+            $('needRestart').innerHTML = req.responseText;
+          }
+        });
+
+        <!-- flip -->
+        if(btn.value=="Enable")
+          btn.value = "Disable";
+        else
+          btn.value = "Enable";
+
+        updateMsg();
+      }
+
+      function updateMsg() {
+        <!-- is anything changed since its original state? -->
+        var e = $A($('pluginList').getElementsByTagName('input')).find(function(e) {
+          return e.value!=e.getAttribute('original');
+        });
+
+        $('needRestart').style.display = (e!=null?"block":"none");
+      }
+
+      updateMsg(); // set the initial state
+    </script>
+
+    <s:form method="post" action="uploadPlugin" enctype="multipart/form-data">
+      <s:block>
+        <h1>Upload Plugin</h1>
+        <div style="margin-bottom: 1em;">
+          Upload a plugin from your computer by using the form below, or
+          place your plugin at <tt>$HUDSON_HOME/plugins</tt> on the server.
+        </div>
+      </s:block>
+      <s:block>
+        <!-- @size is for other browsers, @style is for IE -->
+        File: <input type="file" name="name" class="setting-input" style="width:80%" size='40' />
+      </s:block>
+      <s:block><div align="right">
+        <input type="submit" name="Submit" value="Upload" />
+      </div></s:block>
+    </s:form>
+
+  </l:main-panel>
+</l:layout>
+</j:jelly>

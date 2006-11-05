@@ -1,0 +1,8 @@
+<!--
+  Side panel for the build view.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<j:forEach var="action" items="${it.actions}" varStatus="i">
+	  <l:task icon="images/24x24/${action.iconFileName}" href="action?${i.index}" title="${action.title}" />
+	</j:forEach>
+</j:jelly>

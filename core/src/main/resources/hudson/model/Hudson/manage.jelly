@@ -1,0 +1,50 @@
+<!--
+  Entrance to the configuration page
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<l:layout title="Configuration" xmlns:local="local">
+  <d:taglib uri="local">
+    <!-- table to show a map -->
+    <d:tag name="feature">
+      <t:summary icon="${icon}"
+                 href="${href}" iconOnly="true">
+        <div><a href="${href}">${title}</a></div>
+        <div style="color:gray; text-decoration:none;">
+          <d:invokeBody />
+        </div>
+      </t:summary>
+    </d:tag>
+  </d:taglib>
+
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel>
+    <h1>Manage Hudson</h1>
+    <table style="padding-left: 2em;">
+      <local:feature icon="setting.gif"          href="configure"    title="System Configuration"/>
+      <local:feature icon="refresh.gif"          href="reload"       title="Reload Configuration from Disk"/>
+      <j:if test="${!empty(it.pluginManager.plugins)}">
+        <local:feature icon="gear2.gif"          href="managePlugins" title="Manage Plugins"/>
+      </j:if>
+      <local:feature icon="computer.gif"     href="systemInfo"  title="System Information">
+        Displays various environmental information to assist trouble-shooting.
+      </local:feature>
+      <local:feature icon="clipboard.gif"    href="log"         title="System Log">
+        System log captures output from <tt>java.util.logging</tt> output related to Hudson.
+      </local:feature>
+      <local:feature icon="notepad.gif"      href="script"      title="Script Console">
+        Executes arbitrary script for administration/trouble-shooting/diagnostics
+      </local:feature>
+      <j:choose>
+        <j:when test="${it.quietingDown}">
+          <local:feature icon="system-log-out.gif"   href="cancelQuietDown" title="Cancel Shutdown"/>
+        </j:when>
+        <j:otherwise>
+          <local:feature icon="system-log-out.gif"   href="quietDown" title="Prepare for Shutdown">
+            Stops executing new builds, so that the system can be eventually shut down safely.
+          </local:feature>
+        </j:otherwise>
+      </j:choose>
+    </table>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

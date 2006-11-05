@@ -1,0 +1,15 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.parent.name} #${it.number} Artifacts">
+		<st:include page="sidepanel.jelly" />
+		<l:main-panel>
+		<t:buildCaption>
+		  Build Artifacts
+		</t:buildCaption>
+		<ul>
+		  <j:forEach var="f" items="${it.artifacts}">
+		    <li><a href="artifact/${f}">${f}</a></li>
+		  </j:forEach>
+		</ul>
+		</l:main-panel>
+	</l:layout>
+</j:jelly>

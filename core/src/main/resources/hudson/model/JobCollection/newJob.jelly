@@ -1,0 +1,42 @@
+<!--
+  New Project page
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+	<l:layout>
+		<st:include page="sidepanel.jelly" />
+		<l:main-panel>
+		  <s:form method="post" action="createJob">
+		    <s:entry title="Job name">
+		      <input type="text" name="name" class="setting-input" />
+		    </s:entry>
+		    <s:radioBlock name="mode" value="newJob" title="Create new job" checked="${true}">
+		      <s:entry title="Job type">
+		        <select name="type">
+              <j:getStatic var="jobs" className="hudson.model.Jobs" field="JOBS" />
+              <j:forEach var="d" items="${jobs}">
+                <option value="${d.displayName}">${d.displayName}</option>
+              </j:forEach>
+		        </select>
+		      </s:entry>
+		    </s:radioBlock>
+		    <s:radioBlock name="mode" value="copyJob" title="Copy existing job" checked="false">
+		      <s:entry title="Copy from">
+		        <select name="from">
+		          <j:forEach var="v" items="${app.views}">
+		            <optgroup label="${v.viewName}">
+		              <j:forEach var="j" items="${v.jobs}">
+		                <option>${j.name}</option>
+		              </j:forEach>
+		            </optgroup>
+		          </j:forEach>
+		        </select>
+		      </s:entry>
+		    </s:radioBlock>
+
+		    <s:block>
+		      <input type="submit" name="Submit" value="OK" />
+		    </s:block>
+		  </s:form>
+		</l:main-panel>
+	</l:layout>
+</j:jelly>

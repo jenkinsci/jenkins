@@ -1,0 +1,57 @@
+<!--
+    displays the status of executors.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<l:pane title="Build Executor Status" width="3">
+	  <j:forEach var="c" items="${app.computers}" varStatus="cloop">
+	    <j:choose>
+	      <j:when test="${c.node==app}">
+	        <tr>
+	          <th class="pane">No.</th>
+	          <th class="pane">Status</th>
+	          <th class="pane"><st:nbsp/></th>
+	        </tr>
+	      </j:when>
+	      <j:otherwise>
+	        <tr>
+	          <th class="pane" colspan="3">
+	            <a href="${rootURL}/computer/${c.displayName}">${c.displayName}</a>
+	            <j:if test="${c.temporarilyOffline}">(offline)</j:if>
+	          </th>
+	        </tr>
+	      </j:otherwise>
+	    </j:choose>
+
+	    <j:forEach var="e" items="${c.executors}" varStatus="eloop">
+	      <tr>
+	        <td class="pane">
+	          ${eloop.index+1}
+	        </td>
+	        <j:choose>
+            <j:when test="${!e.alive}">
+              <td class="pane" width="70%">
+                <span class="error">Dead (!)</span>
+              </td>
+              <td class="pane"></td>
+            </j:when>
+            <j:when test="${e.currentBuild==null}">
+	            <td class="pane" width="70%">
+	              Idle
+	            </td>
+	            <td class="pane"></td>
+	          </j:when>
+	          <j:otherwise>
+	            <td class="pane" width="70%">
+	              <div nowrap="true">Building <a href="${rootURL}/${e.currentBuild.url}">${e.currentBuild}</a></div>
+	              <t:progressBar pos="${e.progress}" href="${rootURL}/${e.currentBuild.url}console"/>
+	            </td>
+	            <td class="pane" width="16" align="center" valign="middle">
+	              <a href="${rootURL}/computers/${cloop.index}/executors/${eloop.index}/stop"><img src="${rootURL}/images/16x16/stop.gif" alt="terminate this build" /></a>
+	            </td>
+	          </j:otherwise>
+	        </j:choose>
+	      </tr>
+	    </j:forEach>
+	  </j:forEach>
+	</l:pane>
+</j:jelly>

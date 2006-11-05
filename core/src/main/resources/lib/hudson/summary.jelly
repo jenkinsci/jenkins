@@ -1,0 +1,20 @@
+<!--
+    displays a link with a large icon. Used in the project top page
+
+	<%@ attribute name="icon" required="true" %>
+	<%@ attribute name="href" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<tr>
+	  <td>
+      <a href="${attrs.href}">
+        <img src="${rootURL}/images/48x48/${icon}" width="48" height="48" style="margin-right:1em" />
+      </a>
+    </td>
+	  <td style="vertical-align:middle">
+      <a href="${h.ifThenElse(attrs.iconOnly==null,attrs.href,null)}">
+        <d:invokeBody />
+      </a>
+    </td>
+	</tr>
+</j:jelly>

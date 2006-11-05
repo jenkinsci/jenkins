@@ -1,0 +1,112 @@
+<!--
+  Outermost page layout. This is used with nested <side-panel> and <main-panel>
+  to form Hudson's basic HTML layout.
+
+  <%@attribute name="title" required="true" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<st:contentType value="text/html;charset=UTF-8" />
+<j:set var="rootURL" value="${request.contextPath}" />
+<j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+<html>
+  <head>
+    <title>${h.appendIfNotNull(title, ' [Hudson]', 'Hudson')}</title>
+    <link rel="stylesheet" href="${rootURL}/css/style.css" type="text/css" />
+    <link rel="stylesheet" href="${rootURL}/css/color.css" type="text/css" />
+    <link rel="stylesheet" href="${rootURL}/css/color.css" type="text/css" />
+    <script src="${rootURL}/scripts/prototype.js" type="text/javascript"></script>
+    <script src="${rootURL}/scripts/behavior.js" type="text/javascript"></script>
+    <script src="${rootURL}/scripts/sortable.js" type="text/javascript"></script>
+    <script src="${rootURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
+    <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
+    <j:if test="${request.getParameter('auto_refresh')}">
+      <meta http-equiv="Refresh" content="10" />
+    </j:if>
+    <j:set var="mode" value="header" />
+    <d:invokeBody />
+  </head>
+  <body>
+    <table id="header" cellpadding="0" cellspacing="0" width="100%" border="0">
+      <tr>
+        <td id="top-panel" colspan="2">
+          <table cellpadding="0" cellspacing="0" width="100%" border="0">
+            <tr><td style="font-weight:bold; font-size: 2em;">
+              <a href="${rootURL}/"><img src="${rootURL}/images/title.png" alt="title" /></a>
+            </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
+              <!--form action="search">
+                <div id="searchform">
+                  <img width="24" height="24" src="${rootURL}/images/24x24/find.gif"/>
+                  <b>Search:</b>
+                  <input name="search" size="12" value=""/>
+                  <input type="submit" value="Go"/> <st:nbsp/>
+                </div>
+              </form-->
+              <j:if test="${app.useSecurity}">
+                <j:choose>
+                  <j:when test="${request.isUserInRole('admin')}">
+                    <a style="color:white" href="${rootURL}/logout"><b>logout</b></a>
+                  </j:when>
+                  <j:otherwise>
+                    <a style="color:white" href="${rootURL}/loginEntry"><b>login</b></a>
+                  </j:otherwise>
+                </j:choose>
+              </j:if>
+            </td></tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr id="top-nav">
+        <td id="left-top-nav">
+          <j:forEach var="anc" items="${request.ancestors}">
+            <j:if test="${h.isModel(anc.object)}">
+              <j:if test="${anc.prev!=null}">
+                <j:whitespace> &#187; </j:whitespace>
+              </j:if>
+              <a href="${anc.url}/">
+                ${anc.object.displayName}
+              </a>
+            </j:if>
+          </j:forEach>
+        </td>
+        <td id="right-top-nav">
+          <span class="smallfont">
+            <j:choose>
+              <j:when test="${request.getParameter('auto_refresh')}">
+                <a href="?auto_refresh=false">DISABLE AUTO REFRESH</a>
+              </j:when>
+              <j:otherwise>
+                <a href="?auto_refresh=true">ENABLE AUTO REFRESH</a>
+              </j:otherwise>
+            </j:choose>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <table id="main-table" width="100%" height="70%" border="0"
+        style="background-image: url(${rootURL}/images/hudson.png);
+               background-repeat: no-repeat; background-position: bottom left;">
+      <tr>
+        <td id="side-panel" width="20%">
+          <div style="margin-left: 20px; margin-right: 20px; border-top: 1px solid #bbb"></div>
+          <div id="navigation">
+            <j:set var="mode" value="side-panel" />
+            <d:invokeBody />
+          </div>
+        </td>
+        <td id="main-panel" width="80%" height="100%">
+          <j:set var="mode" value="main-panel" />
+          <d:invokeBody/>
+        </td>
+      </tr>
+    </table>
+    <table width="100%">
+      <tr><td id="footer">
+        <a href="http://hudson.dev.java.net/">
+          Hudson ver. ${servletContext.getAttribute('version')}
+        </a>
+      </td></tr>
+    </table>
+  </body>
+</html>
+</j:jelly>

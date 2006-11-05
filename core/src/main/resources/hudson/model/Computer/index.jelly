@@ -1,0 +1,37 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.displayName}">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <!-- temporarily offline switch -->
+      <div style="float:right">
+        <form method="get" action="toggleOffline">
+          <j:if test="${it.temporarilyOffline}">
+            <input type="submit" value="This node is back online"  />
+          </j:if>
+          <j:if test="${!it.temporarilyOffline}">
+            <input type="submit" value="Mark this node temporarily offline"  />
+          </j:if>
+        </form>
+      </div>
+
+      <h1>
+        <img src="${rootURL}/images/48x48/${it.icon}" width="48" height="48" />
+        Slave ${it.displayName}
+      </h1>
+      
+      <h2>Projects tied on ${it.displayName}</h2>
+      <j:set var="jobs" value="${it.tiedJobs}" />
+      <j:choose>
+        <j:when test="${empty(jobs)}">
+          <p>
+            None
+          </p>
+        </j:when>
+        <j:otherwise>
+          <t:projectView jobs="${it.tiedJobs}" showViewTabs="false" />
+        </j:otherwise>
+      </j:choose>
+
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

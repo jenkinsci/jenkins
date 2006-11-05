@@ -1,0 +1,37 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:section title="E-mail Notification">
+    <f:entry title="SMTP server"
+             help="/help/tasks/mailer/smtp-server.html">
+      <input class="setting-input" name="mailer_smtp_server"
+        type="text" value="${descriptor.smtpServer}"/>
+    </f:entry>
+    <f:entry title="Default user e-mail suffix"
+             help="/help/tasks/mailer/default-suffix.html">
+      <input class="setting-input" name="mailer_default_suffix"
+        type="text" value="${descriptor.defaultSuffix}"/>
+    </f:entry>
+    <f:entry title="System Admin E-mail Address"
+             help="/help/tasks/mailer/admin-address.html">
+      <input class="setting-input" name="mailer_admin_address"
+        type="text" value="${descriptor.adminAddress}"/>
+    </f:entry>
+    <f:entry title="Hudson URL"
+             help="/help/tasks/mailer/url.html">
+      <input class="setting-input" name="mailer_hudson_url"
+        type="text" value="${descriptor.url}"/>
+    </f:entry>
+    <!--f:advanced-->
+      <f:optionalBlock name="mailer.useSMTPAuth" title="Use SMTP Authentication" checked="${descriptor.smtpAuthUserName!=null}"
+          help="/help/tasks/mailer/smtpAuth.html">
+        <f:entry title="User Name">
+          <input class="setting-input" name="mailer.SMTPAuth.userName"
+                 type="text" value="${descriptor.smtpAuthUserName}"/>
+        </f:entry>
+        <f:entry title="Password">
+          <input class="setting-input" name="mailer.SMTPAuth.password"
+                 type="password" value="${descriptor.smtpAuthPassword}"/>
+        </f:entry>
+      </f:optionalBlock>
+    <!--/f:advanced-->
+  </f:section>
+</j:jelly>

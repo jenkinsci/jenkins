@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="200"
+   height="150"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.43"
+   sodipodi:docbase="C:\Documents and Settings\kohsuke\Desktop"
+   sodipodi:docname="headless.svg"
+   version="1.0"
+   inkscape:export-filename="C:\Documents and Settings\kohsuke\Desktop\headless.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="182.15381"
+     inkscape:cy="4.0567139"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="751"
+     inkscape:window-height="541"
+     inkscape:window-x="184"
+     inkscape:window-y="197" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Arial"
+       x="45.973633"
+       y="45.060986"
+       id="text1307"
+       sodipodi:linespacing="100%"><tspan
+         sodipodi:role="line"
+         id="tspan1309"
+         x="45.973633"
+         y="45.060986">Graphics N/A</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1319"
+       transform="translate(-77.3125,-161.4136)"><flowRegion
+         id="flowRegion1321"><rect
+           id="rect1323"
+           width="210.11174"
+           height="59.599003"
+           x="79.802048"
+           y="219.99649" /></flowRegion><flowPara
+         id="flowPara1325">Unable to access X. You need to run the web container in the headless mode. Add </flowPara><flowPara
+         id="flowPara1327">-Djava.awt.headless=true to VM option</flowPara></flowRoot>  </g>
+</svg>

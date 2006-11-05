@@ -1,0 +1,29 @@
+<!--
+  see tasks.tag
+
+  <%@attribute name="href" required="true" %>
+  <%@attribute name="icon" required="true" %>
+  <%@attribute name="title" required="true" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <div class="task">
+    <a href="${href}">
+      <img width="24" height="24" style="margin: 2px;" src="${rootURL}/${icon}"/>
+    </a>
+    <st:nbsp />
+    <a href="${href}">
+      <j:choose>
+        <j:invokeStatic var="requestURL" className="java.net.URLDecoder" method="decode">
+          <j:arg value="${request.requestURL.toString()}"/>
+          <j:arg value="UTF-8"/>
+        </j:invokeStatic>
+        <j:when test="${size(href) gt 1 and requestURL.endsWith(href)}">
+          <b>${title}</b>
+        </j:when>
+        <j:otherwise>
+          ${title}
+        </j:otherwise>
+      </j:choose>
+    </a>
+  </div>
+</j:jelly>

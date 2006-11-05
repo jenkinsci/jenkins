@@ -1,0 +1,96 @@
+<!--
+  <%@ attribute name="jobs" required="true" type="java.util.Collection" %>
+  <%@ attribute name="showViewTabs" required="true" type="java.lang.Boolean" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div class="dashboard">
+    <j:if test="${!empty(jobs)}">
+      <!-- view tab bar -->
+      <j:if test="${showViewTabs}">
+        <l:tabBar>
+          <j:forEach var="v" items="${app.views}">
+            <l:tab name="${v.viewName}" active="${v==it}" href="${rootURL}/${v.url}" />
+          </j:forEach>
+          <l:tab name="+" href="${rootURL}/newView" active="false" />
+        </l:tabBar>
+      </j:if>
+      <!-- project list -->
+      <x:element name="table">
+        <x:attribute name="id">projectstatus</x:attribute>
+        <x:attribute name="class">sortable pane</x:attribute>
+        <j:if test="${showViewTabs}">
+          <x:attribute name="style">margin-top:0px; border-top: none;</x:attribute>
+        </j:if>
+        <tr style="border-top: 0px;">
+          <th><st:nbsp/></th>
+          <th initialSortDir="down">Job</th>
+          <th>Last Success</th>
+          <th>Last Failure</th>
+          <th>Last Duration</th>
+          <th><st:nbsp/></th>
+          <l:isAdmin><!-- build icon -->
+            <th width="1"><st:nbsp/></th>
+          </l:isAdmin>
+        </tr>
+
+        <j:forEach var="job" items="${jobs}">
+          <j:set var="lsBuild" value="${job.lastSuccessfulBuild}" />
+          <j:set var="lfBuild" value="${job.lastFailedBuild}" />
+          <tr>
+            <td data="${job.iconColor}">
+              <img width="32" height="32" src="${rootURL}/images/32x32/${job.buildStatusUrl}" />
+            </td>
+            <td>
+              <a href="${rootURL}/${job.url}">
+                  ${job.name}
+              </a>
+            </td>
+            <td data="${h.ifThenElse(lsBuild==null,'-',lsBuild.timestampString2)}">
+              <j:choose>
+                <j:when test="${lsBuild!=null}">
+                  ${lsBuild.timestampString}
+                  (<a href="${rootURL}/${job.url}lastSuccessfulBuild/">#${lsBuild.number}</a>)
+                </j:when>
+                <j:otherwise>
+                  N/A
+                </j:otherwise>
+              </j:choose>
+            </td>
+            <td data="${h.ifThenElse(lfBuild==null,'-',lfBuild.timestampString2)}">
+              <j:choose>
+                <j:when test="${lfBuild!=null}">
+                  ${lfBuild.timestampString}
+                  (<a href="${rootURL}/${job.url}lastFailedBuild/">#${lfBuild.number}</a>)
+                </j:when>
+                <j:otherwise>
+                  N/A
+                </j:otherwise>
+              </j:choose>
+            </td>
+            <td data="${h.ifThenElse(lsBuild==null,'0',lsBuild.duration)}">
+              <j:choose>
+                <j:when test="${lsBuild!=null}">
+                  ${lsBuild.durationString}
+                </j:when>
+                <j:otherwise>
+                  N/A
+                </j:otherwise>
+              </j:choose>
+            </td>
+            <td>
+              <st:nbsp/>
+            </td>
+            <l:isAdmin>
+              <td>
+                <j:if test="${job.buildable}">
+                  <a href="${rootURL}/${job.url}build"><img src="${rootURL}/images/24x24/clock.gif" title="Schedule a build" border="0" /></a>
+                </j:if>
+              </td>
+            </l:isAdmin>
+          </tr>
+        </j:forEach>
+      </x:element>
+      <t:rssBar />
+    </j:if>
+  </div>
+</j:jelly>

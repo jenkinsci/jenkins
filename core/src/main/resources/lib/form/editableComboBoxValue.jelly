@@ -1,0 +1,6 @@
+<!--
+  <%@attribute name="value" required="true" %>
+-->
+<j:jelly xmlns:j="jelly:core">
+	${editableComboBox}_values.push("${value}");
+</j:jelly>

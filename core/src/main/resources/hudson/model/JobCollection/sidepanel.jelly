@@ -1,0 +1,23 @@
+<!--
+  Side panel for the build view.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <l:header title="Hudson">
+    <link rel="alternate" title="Hudson:${it.viewName} (all builds)" href="rssAll" type="application/rss+xml" />
+    <link rel="alternate" title="Hudson:${it.viewName} (all builds) (RSS 2.0)" href="rssAll?flavor=rss20" type="application/rss+xml" />
+    <link rel="alternate" title="Hudson:${it.viewName} (failed builds)" href="rssFailed" type="application/rss+xml" />
+    <link rel="alternate" title="Hudson:${it.viewName} (failed builds) (RSS 2.0)" href="rssFailed?flavor=rss20" type="application/rss+xml" />
+  </l:header>
+  <l:side-panel>
+    <l:tasks>
+      <l:isAdmin>
+        <l:task icon="images/24x24/new-package.gif" href="newJob" title="New Job" />
+        <l:task icon="images/24x24/setting.gif" href="${rootURL}/manage" title="Manage Hudson" />
+        <l:task icon="images/24x24/user.gif" href="people" title="People" />
+        <st:include page="sidepanel2.jelly" />
+      </l:isAdmin>
+    </l:tasks>
+    <t:queue />
+    <t:executors />
+  </l:side-panel>
+</j:jelly>

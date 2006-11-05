@@ -1,0 +1,17 @@
+<!--
+  Expandable section that shows "advanced..." button by default.
+  Upon clicking it, a section unfolds.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<tr><td></td><td></td>
+	  <td>
+	    <div class="advancedLink">
+	      <input type="button" value="Advanced..." class="advancedButton" />
+	    </div>
+	    <table class="advancedBody"><tbody>
+	    <!-- this is the hidden portion that hosts the "advanced" part. Contents will be moved to the master table when "advanced..." is clicked -->
+	      <d:invokeBody/>
+	    </tbody></table>
+	  </td>
+	</tr>
+</j:jelly>

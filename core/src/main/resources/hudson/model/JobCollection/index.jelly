@@ -1,0 +1,21 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+	<st:header name="X-Hudson" value="${servletContext.attribute['version']}" />
+  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+	<l:layout title="${h.ifThenElse(app==it,'Dashboard',it.viewName)}">
+		<st:include page="sidepanel.jelly" />
+		<l:main-panel>
+		  <div id="view-message">
+        <t:editableDescription adminOnly="true"/>
+		  </div>
+      <j:set var="jobs" value="${it.jobs}"/>
+      <j:choose>
+        <j:when test="${empty(jobs)}">
+          <st:include page="noJob.jelly" />
+        </j:when>
+        <j:otherwise>
+          <t:projectView jobs="${it.jobs}" showViewTabs="true" />
+        </j:otherwise>
+      </j:choose>
+		</l:main-panel>
+	</l:layout>
+</j:jelly>

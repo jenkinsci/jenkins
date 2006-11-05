@@ -1,0 +1,24 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<f:entry title="CVSROOT" help="/help/_cvs/cvsroot.html">
+	  <f:editableComboBox id="cvs_root" clazz="setting-input validated"
+        name="cvs_root" value="${scm.cvsRoot}"
+	      items="${app.allCvsRoots}"
+        checkUrl="'${rootURL}/scm/CVSSCM/cvsrootCheck?value='+this.value" />
+	</f:entry>
+	<f:entry title="Module(s)" help="/help/_cvs/modules.html">
+	  <f:textbox name="cvs_module" value="${scm.allModules}"/>
+	</f:entry>
+	<f:entry title="Branch" help="/help/_cvs/branch.html">
+	  <f:textbox name="cvs_branch" value="${scm.branch}"/>
+	</f:entry>
+	<f:entry title="CVS_RSH" help="/help/_cvs/cvs-rsh.html">
+	  <f:textbox name="cvs_rsh" value="${scm.cvsRsh}"/>
+	</f:entry>
+	<f:entry title="Use update" help="/help/_cvs/update.html">
+	  <f:checkbox name="cvs_use_update" checked="${scm.canUseUpdate}"/>
+	</f:entry>
+	<f:entry title="Legacy mode" help="/help/_cvs/legacy.html">
+	  <f:checkbox name="cvs_legacy" checked="${scm!=null and !scm.flatten}"/>
+	  (run CVS in a way compatible with older versions of Hudson &lt;1.21)
+	</f:entry>
+</j:jelly>

@@ -1,0 +1,8 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:section title="Shell">
+    <f:entry title="Shell executable">
+      <input class="setting-input" name="shell"
+        type="text" value="${descriptor.shell}"/>
+    </f:entry>
+  </f:section>
+</j:jelly>

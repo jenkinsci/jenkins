@@ -1,0 +1,32 @@
+<!--
+  Displays the console output
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.parent.name} #${it.number} Console">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <t:buildCaption>
+        Console Output
+      </t:buildCaption>
+      <l:rightspace>
+        <a href="consoleText">
+          <img src="${rootURL}/images/24x24/document.gif" alt="" />View as plain text
+        </a>
+      </l:rightspace>
+      <j:choose>
+        <!-- Do progressive console output -->
+        <j:when test="${it.building}">
+          <pre id="out"></pre>
+          <div id="spinner">
+            <img src="${rootURL}/images/spinner.gif" /> 
+          </div>
+          <t:progressiveText href="progressiveLog" idref="out" spinner="spinner" />
+        </j:when>
+        <!-- output is completed now. -->
+        <j:otherwise>
+          <pre><st:out value="${it.log}"/></pre>
+        </j:otherwise>
+      </j:choose>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

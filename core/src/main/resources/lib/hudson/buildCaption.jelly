@@ -1,0 +1,23 @@
+<!--
+    displays a caption for build/externalRun.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<h1>
+	  <j:if test="${it.building}">
+	    <div style="float:right">
+	      <table class="middle-align"><tr>
+	        <td>
+	          Progress:
+	        </td><td>
+	          <t:progressBar pos="${it.executor.progress}"/>
+	        </td><td>
+	          <a href="stop"><img src="${rootURL}/images/16x16/stop.gif" alt="[cancel]" /></a>
+	        </td>
+	      </tr></table>
+	    </div>
+	  </j:if>
+	  
+	  <img src="buildStatus" width="48" height="48" />
+	  <d:invokeBody />
+	</h1>
+</j:jelly>

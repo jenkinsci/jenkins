@@ -1,0 +1,8 @@
+<!--
+	<option> tag that takes true/false for selected
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
+  <option value="${attrs.value}" selected="${h.ifThenElse(attrs.selected,'true',null)}">
+    <d:invokeBody/>
+  </option>
+</j:jelly>

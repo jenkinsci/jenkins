@@ -1,0 +1,35 @@
+<!-- tell user that there's no workspace yet -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout>
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1><img src="${rootURL}/images/48x48/error.gif"/>Error: no workspace</h1>
+      <j:choose>
+        <j:when test="${it.lastBuild==null}">
+          <p>
+            A project won't have any workspace until at least one build is performed.
+          </p>
+        </j:when>
+        <j:otherwise>
+          <p>
+            There's no workspace for this project. Possible reasons are:
+          </p>
+          <ol>
+            <li>
+              The project was renamed recently and no build was done under the new name
+            </li>
+            <li>
+              The slave this project has run on for the las time was removed
+            </li>
+            <li>
+              The workspace directory (${it.workspace.local}) is removed outside Hudson.
+            </li>
+          </ol>
+        </j:otherwise>
+      </j:choose>
+      <p>
+        <a href="build">Run a build</a> to have Hudson create a workspace.
+      </p>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

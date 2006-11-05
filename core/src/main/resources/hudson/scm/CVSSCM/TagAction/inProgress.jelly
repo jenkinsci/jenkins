@@ -1,0 +1,17 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout>
+    <st:include it="${it.build}" page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>Build #${it.build.number}</h1>
+      <p>
+        Tagging "<tt>${it.workerThread.tagName}</tt>" is in progress.
+      </p>
+      <pre><st:out value="${it.workerThread.log}"/></pre>
+      <j:if test="${!it.workerThread.alive}">
+        <form method="get" action="clearError">
+          <input type="submit" value="Clear error to retry" />
+        </form>
+      </j:if>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

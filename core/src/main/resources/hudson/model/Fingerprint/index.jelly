@@ -1,0 +1,57 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout>
+    <l:header title="${it.fileName}">
+      <!-- RSS? -->
+    </l:header>
+    <l:side-panel>
+      <l:tasks>
+        <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="Back to Dashboard" />
+      </l:tasks>
+    </l:side-panel>
+    <l:main-panel>
+      <h1>
+        <img src="${rootURL}/images/48x48/fingerprint.gif" />
+        ${it.fileName}
+      </h1>
+      <div class="md5sum">
+        MD5: ${it.hashString}
+      </div>
+      <div>
+        Introduced ${it.timestampString} ago
+        <j:choose>
+          <j:when test="${it.original==null}">
+            outside Hudson
+          </j:when>
+          <j:otherwise>
+            <t:buildLink job="${it.original.job}" number="${it.original.number}" jobName="${it.original.name}" />
+          </j:otherwise>
+        </j:choose>
+      </div>
+      <h2>Usage</h2>
+      <p>
+        This file has been used in the following places:
+      </p>
+      <table class="fingerprint-summary">
+        <j:forEach var="j" items="${it.jobs}">
+          <j:set var="job" value="${app.getJob(j)}" />
+          <j:set var="range" value="${it.usages[j]}" />
+          <tr>
+            <td class="fingerprint-summary-header">
+              <j:choose>
+                <j:when test="${job!=null}">
+                  <a href="${rootURL}/${job.url}">${j}</a>
+                </j:when>
+                <j:otherwise>
+                  ${j}
+                </j:otherwise>
+              </j:choose>
+            </td>
+            <td>
+              <t:buildRangeLink job="${job}" range="${range}" />
+            </td>
+          </tr>
+        </j:forEach>
+      </table>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

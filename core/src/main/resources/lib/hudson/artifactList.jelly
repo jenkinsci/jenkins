@@ -1,0 +1,31 @@
+<!--
+	<%@ attribute name="build" type="hudson.model.Build" required="true" %>
+	<%@ attribute name="caption" required="true" %>
+	<%@ attribute name="baseURL" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<j:set var="artifacts" value="${build.artifacts}" />
+	<j:if test="${!build.building and !empty(artifacts)}">
+	  <t:summary icon="package.gif">
+	    <j:choose>
+	      <j:when test="${size(artifacts) lt 17}">
+	        <!-- if not too many, just list them -->
+	        ${caption}<br />
+	        <ul>
+	          <j:forEach var="f" items="${artifacts}">
+	            <li>
+	              <a href="${baseURL}artifact/${f}">${f.fileName}</a>
+                <st:nbsp/>
+                <a href="${baseURL}artifact/${f}/*fingerprint*/"><img src="${rootURL}/images/16x16/fingerprint.gif" alt="[fingerprint]" /></a>
+	            </li>
+	          </j:forEach>
+	        </ul>
+	      </j:when>
+	      <j:otherwise>
+	          <!-- otherwise use a tree view -->
+	        <a href="${baseURL}artifact/">${caption}</a>
+	      </j:otherwise>
+	    </j:choose>
+	  </t:summary>
+	</j:if>
+</j:jelly>

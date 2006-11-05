@@ -1,0 +1,115 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.project.name} #${it.number}">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <div style="float:right; background-color:white; z-index: 1; position:relative; margin-left: 1em">
+        <st:include page="logKeep.jelly" />
+        <div style="margin-top:1em">
+          Started ${it.timestampString} ago
+        </div><div>
+          Took <a href="${rootURL}/${it.parent.url}buildTimeTrend">${it.durationString}</a>
+        </div>
+      </div>
+
+      <t:buildCaption>
+        Build #${it.number}
+        (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)
+      </t:buildCaption>
+
+      <div>
+        <t:editableDescription adminOnly="true" />
+      </div>
+
+      <table style="margin-top: 1em; margin-left:1em;">
+        <t:artifactList build="${it}" caption="Build Artifacts" />
+
+        <j:set var="tr" value="${it.testResultAction}" />
+        <j:if test="${tr!=null}">
+          <t:summary icon="clipboard.gif">
+            <a href="testReport/">Latest Test Result</a>
+            <j:choose>
+              <j:when test="${tr.failCount==0}">
+                (no failures)
+              </j:when>
+              <j:when test="${tr.failCount==1}">
+                (1 failure)
+              </j:when>
+              <j:otherwise>
+                (${tr.failCount} failures)
+              </j:otherwise>
+            </j:choose>
+          </t:summary>
+        </j:if>
+
+
+        <j:set var="set" value="${it.changeSet}" />
+        <t:summary icon="notepad.gif">
+          <st:include it="${set}" page="digest.jelly" />
+
+          <!-- dependency changes -->
+          <j:set var="depChanges" value="${it.getDependencyChanges(it.previousBuild)}"/>
+          <j:if test="${!empty(depChanges)}">
+            Changes in dependency
+            <ol>
+              <j:forEach var="dep" items="${depChanges.values()}">
+                <li>
+                  <a href="${rootURL}/${dep.project.url}">${dep.project.displayName}</a>
+                  <st:nbsp/>
+                  <a href="${rootURL}/${dep.from.url}">
+                    <img src="${rootURL}/images/16x16/${dep.from.buildStatusUrl}" />${dep.from.displayName}</a>
+
+                  &#x2192; <!-- right arrow -->
+
+                  <a href="${rootURL}/${dep.to.url}">
+                    <img src="${rootURL}/images/16x16/${dep.to.buildStatusUrl}" />${dep.to.displayName}</a>
+
+                  (<a href="${rootURL}/${dep.project.url}changes?from=${dep.fromId}&amp;to=${dep.toId}">detail</a>)
+                </li>
+              </j:forEach>
+            </ol>
+          </j:if>
+        </t:summary>
+      </table>
+
+
+      <!-- upstream/downstream builds -->
+      <j:set var="upstream" value="${it.upstreamBuilds}" />
+      <j:if test="${!empty(upstream)}">
+        <h2>Upstream Builds</h2>
+        <ul style="list-style-type: none;">
+          <j:forEach var="item" items="${upstream}">
+            <li>
+              <a href="${rootURL}/${item.key.url}">${item.key.name}</a>
+              <t:buildLink job="${item.key}" number="${item.value}" />
+            </li>
+          </j:forEach>
+        </ul>
+      </j:if>
+      <j:set var="downstream" value="${it.downstreamBuilds}" />
+      <j:if test="${!empty(downstream)}">
+        <h2>Downstream Builds</h2>
+        <ul style="list-style-type: none;">
+          <j:forEach var="item" items="${downstream}">
+            <li>
+              <a href="${rootURL}/${item.key.url}">${item.key.name}</a>
+              <j:choose>
+                <j:when test="${item.value.isEmpty()}">
+                  (none)
+                </j:when>
+                <j:otherwise>
+                  <t:buildRangeLink job="${item.key}" range="${item.value}"/>
+                </j:otherwise>
+              </j:choose>
+            </li>
+          </j:forEach>
+        </ul>
+      </j:if>
+
+
+      <h2>Permalinks</h2>
+      <ul>
+        <li><a href="buildNumber">Build number</a></li>
+      </ul>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

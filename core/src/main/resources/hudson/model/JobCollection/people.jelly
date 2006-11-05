@@ -1,0 +1,24 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+	<l:layout title="People - ${it.viewName}">
+		<st:include page="sidepanel.jelly" />
+		<l:main-panel>
+      <j:set var="people" value="${it.people}"/>
+      <table class="sortable pane" id="projectstatus">
+        <tr>
+          <th></th>
+          <th>Name</th>
+          <th initialSortDir="up">Last Active</th>
+          <th>On</th>
+        </tr>
+        <j:forEach var="p" items="${people}">
+          <tr>
+            <td><a href="${rootURL}/${p.user.url}"><img src="${rootURL}/images/32x32/user.gif"/></a></td>
+            <td><a href="${rootURL}/${p.user.url}">${p.user}</a></td>
+            <td data="${p.timeSortKey}">${p.lastChangeTimeString}</td>
+            <td><a href="${rootURL}/${p.project.url}">${p.project.name}</a></td>
+          </tr>
+        </j:forEach>
+      </table>
+    </l:main-panel>
+	</l:layout>
+</j:jelly>

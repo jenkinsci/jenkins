@@ -1,0 +1,20 @@
+<!--
+  Displays the form to choose the tag name.
+
+  This belongs to a build view.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout>
+    <st:include it="${it.build}" page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>Build #${it.build.number}</h1>
+      <form action="submit" method="get">
+        <p>
+          Choose the CVS tag name for this build:
+          <input type="text" name="name" value="hudson-${it.build.number}" />
+          <input type="submit" />
+        </p>
+      </form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

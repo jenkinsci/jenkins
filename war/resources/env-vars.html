@@ -1,0 +1,38 @@
+<html>
+    <head>
+        <title>Available Environmental Variables</title>
+    </head>
+    <style type="text/css">
+        dt { font-weight: bold; }
+    </style>
+<body>
+    The following variables are available to shell scripts
+
+<dl>
+    <dt>BUILD_NUMBER</dt>
+    <dd>The current build number, such as "153"</dd>
+
+    <dt>BUILD_ID</dt>
+    <dd>The current build id, such as "2005-08-22_23-59-59" (YYYY-MM-DD_hh-mm-ss)</dd>
+
+    <dt>JOB_NAME</dt>
+    <dd>Name of the project of this build, such as "foo"</dd>
+
+    <dt>BUILD_TAG</dt>
+    <dd>String of "hudson-<i>${JOBNAME}</i>-<i>${BUILD_NUMBER}</i>". Convenient to put into
+        a resource file, a jar file, etc for easier identification.</dd>
+</dl>
+
+
+<p>
+To understand how environmental variables provided by Hudson can be utilized by
+Ant, study the following target:
+
+<pre><xmp
+><target name="printinfo">
+  <property environment="env" />
+  <echo message="${env.BUILD_TAG}"/>
+</target></xmp></pre>
+
+</body>
+</html>

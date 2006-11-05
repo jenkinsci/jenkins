@@ -1,0 +1,13 @@
+<!-- report a login error -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout>
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <div style="margin: 2em; text-align:center; color:red; font-weight:bold">
+        Invalid login information. Please try again.
+        <br/>
+        <a href="loginEntry">Try again</a>
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

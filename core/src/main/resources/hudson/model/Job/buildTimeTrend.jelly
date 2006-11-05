@@ -1,0 +1,39 @@
+<!-- Displays the chart that show how long builds are taking -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="Build time trend">
+		<st:include page="sidepanel.jelly" />
+		<l:main-panel>
+      <div align="center">
+        <img src="buildTimeGraph" width="500" height="200"/>
+      </div>
+
+      <j:set var="isMasterSlaveEnabled" value="${!empty(app.slaves)}"/>
+      <div align="center">
+        <table class="sortable" style="margin-top:1em;">
+          <tr>
+            <th initialSortDir="up">Build</th>
+            <th>Duration</th>
+            <j:if test="${isMasterSlaveEnabled}">
+              <th>Slave</th>
+            </j:if>
+          </tr>
+          <j:forEach var="r" items="${it.builds}">
+            <tr>
+              <td>
+                ${r.displayName}
+              </td>
+              <td data="${r.duration}">
+                ${r.durationString}
+              </td>
+              <j:if test="${isMasterSlaveEnabled}">
+                <td>
+                  <t:node value="${t.builtOn}"/>
+                </td>
+              </j:if>
+            </tr>
+          </j:forEach>
+        </table>
+      </div>
+    </l:main-panel>
+	</l:layout>
+</j:jelly>

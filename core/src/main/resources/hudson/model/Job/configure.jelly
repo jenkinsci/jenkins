@@ -1,0 +1,33 @@
+<!--
+  Config page. derived class specific entries should go to configure-entries.jsp
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout>
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <f:form method="post" action="configSubmit">
+        <f:entry title="Project name">
+          <f:textbox name="name" value="${it.name}" />
+        </f:entry>
+        <f:entry title="Description" help="/help/project-config/description.html">
+          <textarea class="setting-input" name="description"
+            rows="5" style="width:100%">${it.description}</textarea>
+        </f:entry>
+
+        <!-- log rotator -->
+        <f:optionalBlock name="logrotate"
+          help="/help/project-config/log-rotation.html"
+          title="Log Rotation" checked="${it.logRotator!=null}">
+          <st:include page="../../tasks/LogRotator/config.jelly"/>
+        </f:optionalBlock>
+
+        <!-- additional entries from derived classes -->
+        <st:include page="configure-entries.jelly" />
+
+        <f:block>
+          <input type="submit" name="Submit" value="Save" />
+        </f:block>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

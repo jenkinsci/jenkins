@@ -1,0 +1,15 @@
+<!--
+  shows a task list
+
+  e.g.,
+
+    <l:tasks>
+      <l:task href="..." icon="..." title="..." />
+      ...
+    </l:tasks>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
+	<div id="tasks">
+	  <d:invokeBody />
+	</div>
+</j:jelly>

@@ -1,0 +1,14 @@
+<!--
+  region of HTML with a title
+
+  <%@attribute name="title" required="true" %>
+  <%@attribute name="width" required="true" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
+  <table class="pane">
+    <tr><td class="pane-header" colspan="${width}">
+      ${title}
+    </td></tr>
+    <d:invokeBody />
+  </table>
+</j:jelly>

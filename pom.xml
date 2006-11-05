@@ -1,0 +1,22 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jvnet.hudson</groupId>
+    <artifactId>hudson</artifactId>
+    <version>1.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  
+  <groupId>org.jvnet.hudson.main</groupId>
+  <artifactId>pom</artifactId>
+  <version>1.60</version>
+  <packaging>pom</packaging>
+  
+  <name>Hudson main module</name>
+  <description>The module that constitutes the main hudson.war</description>
+  
+  <modules>
+    <module>core</module>
+    <module>war</module>
+  </modules>
+</project>

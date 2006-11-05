@@ -1,0 +1,14 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:test="/lib/test">
+  <l:layout>
+    <st:include it="${it.owner}" page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>${it.title}</h1>
+
+      <j:set var="prev" value="${it.previousResult}" />
+
+      <test:bar />
+
+      <st:include page="body.jelly" />
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

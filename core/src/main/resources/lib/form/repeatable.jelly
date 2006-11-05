@@ -1,0 +1,54 @@
+<!--
+  Repetable blocks where duplicates can be added/removed at client.
+
+	<%@attribute name="var" required="true" rtexprvalue="false" %>
+	<%@attribute name="varStatus" required="false" rtexprvalue="false" %>
+	<%@attribute name="items" required="true" rtexprvalue="true" type="java.lang.Object" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<j:set target="${requestScope}" property="repeatBlockId" value="${repeatBlockId+1}" />
+	<script>
+	  function expand${repeatBlockId}() {
+	    ip = document.getElementById("block${repeatBlockId}-insertion-point");
+	    <!--
+	      importNode isn't supported in IE.
+	      nc = document.importNode(node,true);
+	    -->
+	    nc = document.createElement("div");
+	    nc.className = "repeated-chunk";
+	    nc.innerHTML = block${repeatBlockId}HTML;
+	    ip.parentNode.insertBefore(nc,ip);
+	  }
+
+	  function delete${repeatBlockId}(ev) {
+	    t = ev.target;	// DOM Lv2
+	    if(t==null)
+	      t = ev.srcElement;	// for IE
+
+	    while(t.className!="repeated-chunk")
+	      t = t.parentNode;
+	    t.parentNode.removeChild(t);
+	  }
+	</script>
+	<!-- this is the master copy -->
+	<div id="block${repeatBlockId}-master" class="repeated-chunk" style="display:none">
+	  <d:invokeBody />
+	</div>
+	<!-- then populate them for each item -->
+	<j:forEach var="loop" varStatus="loopStatus" items="${items}">
+	  <div class="repeated-chunk">
+	    <!-- how do I do this without using Java code? -->
+	    <j:set var="${var}" value="${loop}" />
+	    <d:invokeBody />
+	  </div>
+	</j:forEach>
+	<j:remove var="${var}" />
+	<script>
+	  <!-- master needs to be deleted from the form, or its entry will be sent. -->
+	  var master${repeatBlockId} = document.getElementById("block${repeatBlockId}-master");
+	  var block${repeatBlockId}HTML = master${repeatBlockId}.innerHTML;
+	  master${repeatBlockId}.parentNode.removeChild(master${repeatBlockId});
+	</script>
+	<div id="block${repeatBlockId}-insertion-point" />
+	<input type="button" value="Add" onclick="expand${repeatBlockId}()" />
+</j:jelly>

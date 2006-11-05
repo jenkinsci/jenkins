@@ -1,0 +1,28 @@
+<!--
+  Called from doScript() to display the execution result and the form.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout>
+    <st:include page="sidepanel.jelly" />
+
+    <l:main-panel>
+      <h1>Script Console</h1>
+      <p>
+        Type in arbitrary <a href="http://groovy.codehaus.org/Home">Groovy script</a> and
+        execute it on the server. Useful for trouble-shooting and diagnostics.
+        Use the 'println' command to see the output (if you use <tt>System.out</tt>,
+        it will go to the server's stdout, which is harder to see.)
+      </p>
+      <form action="script" method="post">
+        <textarea name="script" style="width:100%; height:10em">${request.getParameter('script')}</textarea>
+        <div align="right">
+          <input type='submit' value="Run"/>
+        </div>
+      </form>
+      <j:if test="${output!=null}">
+        <h2>Result</h2>
+        <pre>${output}</pre>
+      </j:if>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

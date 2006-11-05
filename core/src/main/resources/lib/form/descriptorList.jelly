@@ -1,0 +1,22 @@
+<!--
+  Generate config pages from a list of Descriptors into a section.
+
+	<%@ attribute name="title" required="true" description="caption for the section" %>
+	<%@ attribute name="descriptors" required="true" type="hudson.model.Descriptor[]" description="descriptors" %>
+	<%@ attribute name="instances" required="true" type="java.util.Map" description="instances keyed by their descriptors" %>
+	<%@ attribute name="varName" required="true" type="java.lang.String" description="used as a variable name as well as block name" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<f:section title="${title}">
+    <d:invokeBody />
+	  <j:forEach var="d" items="${descriptors}" varStatus="loop">
+      <f:optionalBlock name="${varName}${loop.index}" help="${d.helpFile}"
+	      title="${d.displayName}" checked="${instances[d]!=null}">
+
+	      <j:set var="descriptor" value="${d}" />
+	      <j:set var="instance" value="${instances[d]}" />
+	      <st:include from="${d}" page="${d.configPage}"/>
+	    </f:optionalBlock>
+	  </j:forEach>
+	</f:section>
+</j:jelly>

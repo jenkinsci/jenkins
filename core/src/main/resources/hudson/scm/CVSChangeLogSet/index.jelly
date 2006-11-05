@@ -1,0 +1,32 @@
+<!--
+  Displays the CVS change log.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <h2>Summary</h2>
+  <ol>
+    <j:forEach var="cs" items="${it.logs}">
+      <li><st:out value="${cs.msg}" /></li>
+    </j:forEach>
+  </ol>
+  <table class="pane" style="border:none">
+    <j:forEach var="cs" items="${it.logs}" varStatus="loop">
+      <tr class="pane">
+        <td colspan="3" class="changeset">
+          <a name="detail${loop.index}"></a>
+          <div class="changeset-message">
+            <b><a href="${rootURL}/${cs.author.url}/">${cs.author}</a>:</b><br/>
+            ${cs.msgEscaped}
+          </div>
+        </td>
+      </tr>
+
+      <j:forEach var="f" items="${cs.files}">
+        <tr>
+          <td><t:editTypeIcon type="${f.editType}" /></td>
+          <td>${f.revision}</td>
+          <td>${f.name}</td>
+        </tr>
+      </j:forEach>
+    </j:forEach>
+  </table>
+</j:jelly>

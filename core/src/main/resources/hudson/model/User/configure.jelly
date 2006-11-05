@@ -1,0 +1,34 @@
+<!--
+  Config page
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout>
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <f:form method="post" action="configSubmit">
+        <f:entry title="Your name" help="/help/user/fullName.html">
+          <f:textbox name="fullName" value="${it.fullName}" />
+        </f:entry>
+        <f:entry title="Description" help="/help/user/description.html">
+          <textarea class="setting-input" name="description"
+            rows="5" style="width:100%">${it.description}</textarea>
+        </f:entry>
+
+        <!-- user property configurations -->
+        <j:getStatic var="descriptors" className="hudson.model.UserProperties" field="LIST" />
+        <j:set       var="instances" value="${it.properties}" />
+        <j:forEach var="d" items="${descriptors}" varStatus="loop">
+          <f:section title="${d.displayName}">
+            <j:set var="descriptor" value="${d}" />
+            <j:set var="instance" value="${instances[d]}" />
+            <st:include from="${d}" page="${d.configPage}"/>
+          </f:section>
+        </j:forEach>
+
+        <f:block>
+          <input type="submit" name="Submit" value="Save" />
+        </f:block>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

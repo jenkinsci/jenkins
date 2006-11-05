@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+         version="2.4">
+  <display-name>Hudson</display-name>
+  <description>Build management system</description>
+
+  <servlet>
+    <servlet-name>Stapler</servlet-name>
+    <servlet-class>org.kohsuke.stapler.Stapler</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>Stapler</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>JellyServlet</servlet-name>
+    <servlet-class>org.apache.commons.jelly.servlet.JellyServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>JellyServlet</servlet-name>
+    <url-pattern>*.jelly</url-pattern>
+  </servlet-mapping>
+
+
+  <listener>
+    <listener-class>hudson.WebAppMain</listener-class>
+  </listener>
+
+  <security-role>
+    <!-- admins can add/remove/configure projects -->
+    <role-name>admin</role-name>
+  </security-role>
+
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Hudson</web-resource-name>
+      <url-pattern>/loginEntry</url-pattern>
+      <!--http-method>GET</http-method-->
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>admin</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+  <login-config>
+    <auth-method>FORM</auth-method>
+    <form-login-config>
+      <form-login-page>/login</form-login-page>
+      <form-error-page>/loginError</form-error-page>
+    </form-login-config>
+  </login-config>
+
+
+  <!-- if specified, this value is used as the Hudson home directory -->
+  <env-entry>
+    <env-entry-name>HUDSON_HOME</env-entry-name>
+    <env-entry-type>java.lang.String</env-entry-type>
+    <env-entry-value></env-entry-value>
+  </env-entry>
+</web-app>

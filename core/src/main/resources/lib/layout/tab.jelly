@@ -1,0 +1,38 @@
+<!--
+<%@ attribute name="name" required="true" type="java.lang.String" %>
+<%@ attribute name="href" required="true" type="java.lang.String" %>
+<%@ attribute name="active" required="true" type="java.lang.Boolean" %>
+-->
+<j:jelly xmlns:j="jelly:core">
+  <j:choose>
+    <j:when test="${tabPass=='pass1'}">
+      <!-- in the 1st pass we draw the dummy top row to get the 'dent' right -->
+      <j:choose>
+        <j:when test="${active}">
+          <td class="active" rowspan="2">${name}</td>
+          <j:set scope="parent" var="activeIndex" value="${tabIndex}" />
+        </j:when>
+        <j:otherwise>
+          <td style="height:3px; padding:0px"></td>
+        </j:otherwise>
+      </j:choose>
+    </j:when>
+    <j:otherwise>
+      <!-- in the 2nd pass we draw the real tabs -->
+      <j:if test="${tabIndex!=activeIndex}">
+        <j:choose>
+          <j:when test="${tabIndex lt activeIndex}">
+            <j:set var="cssClass" value="noRight" />
+          </j:when>
+          <j:when test="${tabIndex gt activeIndex}">
+            <j:set var="cssClass" value="noLeft" />
+          </j:when>
+        </j:choose>
+        <td class="inactive ${cssClass}">
+          <a href="${href}">${name}</a>
+        </td>
+      </j:if>
+    </j:otherwise>
+  </j:choose>
+  <j:set scope="parent" var="tabIndex" value="${tabIndex+1}" />
+</j:jelly>

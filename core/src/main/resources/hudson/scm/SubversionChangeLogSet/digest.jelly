@@ -1,0 +1,40 @@
+<!--
+  Displays the Subversion change log digest.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="rev" value="${it.revisionMap}" />
+  <j:choose>
+    <j:when test="${empty(rev)}">
+      <!-- nothing -->
+    </j:when>
+    <j:when test="${size(rev)==1}">
+      Revision:
+      <j:forEach var="r" items="${rev}">${r.value}</j:forEach><!-- just print that one value-->
+      <br/>
+    </j:when>
+    <j:otherwise>
+      Revisions
+      <ul>
+        <j:forEach var="r" items="${rev}">
+          ${r.key} : ${r.value}
+        </j:forEach>
+      </ul>
+    </j:otherwise>
+  </j:choose>
+  <j:choose>
+    <j:when test="${it.emptySet}">
+      No changes.
+    </j:when>
+    <j:otherwise>
+      Changes
+      <ol>
+        <j:forEach var="cs" items="${it.logs}" varStatus="loop">
+          <li>
+            ${cs.msgEscaped}
+            (<a href="changes#detail${loop.index}">detail</a>)
+          </li>
+        </j:forEach>
+      </ol>
+    </j:otherwise>
+  </j:choose>
+</j:jelly>

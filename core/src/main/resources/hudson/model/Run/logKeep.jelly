@@ -1,0 +1,15 @@
+<!--
+  Displays the toggle button to keep/unkeep the log file.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:if test="${it.parent.logRotator!=null}">
+    <form method="get" action="toggleLogKeep">
+      <j:if test="${it.keepLog}">
+        <input type="submit" value="Don't keep this log forever"  />
+      </j:if>
+      <j:if test="${!it.keepLog}">
+        <input type="submit" value="Keep this log forever"  />
+      </j:if>
+    </form>
+  </j:if>
+</j:jelly>

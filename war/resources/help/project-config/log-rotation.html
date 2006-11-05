@@ -1,0 +1,18 @@
+<div>
+  This controls the disk consumption of Hudson by managing how long you'd like to keep
+  records of the builds (such as console output, build artifacts, and so on.)
+  Hudson offers two criteria:
+
+  <ol>
+    <li>
+      Driven by age. You can have Hudson delete records if it reaches certain age
+      (for example, 7 days old.)
+    <li>
+      Driven by number. You can have Hudson make sure that it only maintains up to
+      N records of the builds. If a new build is started, the oldest record will
+      be simply removed.
+  </ol>
+
+  Hudson also allows you to mark individual build as 'Keep this log forever', to
+  exclude certain important builds from being discarded automatically.
+</div>

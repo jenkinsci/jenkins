@@ -1,0 +1,12 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry title="Days to keep records"
+    description="if not empty, log/artifacts etc are only kept up to this number of days">
+    <input class="setting-input number" name="logrotate_days"
+      type="text" value="${it.logRotator.daysToKeepStr}"/>
+  </f:entry>
+  <f:entry title="Max # of records to keep"
+    description="if not empty, only up to this number of log/artifacts etc are kept">
+    <input class="setting-input number" name="logrotate_nums"
+      type="text" value="${it.logRotator.numToKeepStr}"/>
+  </f:entry>
+</j:jelly>

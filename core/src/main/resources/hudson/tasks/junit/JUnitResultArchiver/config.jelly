@@ -1,0 +1,12 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry title="Test report XMLs"
+    description="
+      &lt;a href='http://ant.apache.org/manual/CoreTypes/fileset.html'>Fileset 'includes'&lt;/a>
+      setting that specifies the generated raw XML report files,
+      such as 'myproject/target/test-reports/*.xml'.
+      Basedir of the fileset is &lt;a href='ws/'>the workspace root&lt;/a>.
+    ">
+    <input class="setting-input" name="junitreport_includes"
+      type="text" value="${instance.testResults}"/>
+  </f:entry>
+</j:jelly>

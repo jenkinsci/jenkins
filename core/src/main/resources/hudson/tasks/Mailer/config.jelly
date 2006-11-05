@@ -1,0 +1,16 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry title="Recipients"
+    description="Whitespace-separated list of recipient addresses. E-mail will be sent when a build fails.">
+    <input class="setting-input" name="mailer_recipients"
+      type="text" value="${instance.recipients}"/>
+  </f:entry>
+  <f:entry title="">
+    <f:checkbox name="mailer_dontNotifyEveryUnstableBuild" checked="${instance.dontNotifyEveryUnstableBuild}" />
+    Don't send e-mail for every unstable build
+  </f:entry>
+  <f:entry title="" help="/help/tasks/mailer/sendToindividuals.html">
+    <f:checkbox name="mailer_sendToIndividuals" checked="${instance.sendToIndividuals}"
+        />
+    Send separate e-mails to individuals who broke the build 
+  </f:entry>
+</j:jelly>

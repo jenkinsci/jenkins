@@ -1,0 +1,39 @@
+<!--
+    displays the build queue.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:pane title="Build Queue" width="2">
+    <j:choose>
+      <j:when test="${empty(app.queue.items)}">
+        <tr>
+          <td class="pane" colspan="2">
+            No builds in the queue.
+          </td>
+        </tr>
+      </j:when>
+      <j:otherwise>
+        <j:if test="${app.quietingDown}">
+          <tr>
+            <td class="pane" colspan="2" style="white-space: normal;">
+              Hudson is going to shut down.
+              No further builds will be performed.
+              <l:isAdmin>
+                <a href="${rootURL}/cancelQuietDown">(cancel)</a>
+              </l:isAdmin>
+            </td>
+          </tr>
+        </j:if>
+        <j:forEach var="item" items="${app.queue.items}">
+          <tr>
+            <td class="pane" width="100%"><a href="${rootURL}/${item.project.url}">
+              ${item.project.name}
+            </a></td>
+            <td class="pane" width="16" align="center" valign="middle">
+              <a href="${rootURL}/${item.project.url}cancelQueue"><img src="${rootURL}/images/16x16/stop.gif" alt="cancel this build" /></a>
+            </td>
+          </tr>
+        </j:forEach>
+      </j:otherwise>
+    </j:choose>
+  </l:pane>
+</j:jelly>

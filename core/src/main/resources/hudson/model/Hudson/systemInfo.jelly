@@ -1,0 +1,35 @@
+<!--
+  Various system information for diagnostics
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout xmlns:local="local">
+    <st:include page="sidepanel.jelly" />
+
+    <d:taglib uri="local">
+      <!-- table to show a map -->
+      <d:tag name="table">
+        <table class="pane sortable">
+          <tr>
+            <th class="pane-header" initialSortDir="down">Name</th>
+            <th class="pane-header">Value</th>
+          </tr>
+          <j:forEach var="e" items="${items}">
+            <tr>
+              <td class="pane"><st:out value="${e.key}"/></td>
+              <td class="pane"><st:out value="${e.value}"/></td>
+            </tr>
+          </j:forEach>
+        </table>
+      </d:tag>
+    </d:taglib>
+
+    <l:main-panel>
+      <l:isAdmin>
+        <h1>System Properties</h1>
+        <local:table items="${h.systemProperties}" />
+        <h1>Environment Variables</h1>
+        <local:table items="${h.envVars}" /> 
+      </l:isAdmin>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

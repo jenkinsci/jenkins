@@ -1,0 +1,19 @@
+<!--
+  Displays the CVS change log digest.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:choose>
+    <j:when test="${it.emptySet}">
+      No changes.
+    </j:when>
+    <j:otherwise>
+      Changes
+      <ol>
+        <j:forEach var="cs" items="${it.logs}" varStatus="loop">
+          <li>${cs.msgEscaped} (<a href="changes#detail${loop.index}">detail</a>)
+          </li>
+        </j:forEach>
+      </ol>
+    </j:otherwise>
+  </j:choose>
+</j:jelly>

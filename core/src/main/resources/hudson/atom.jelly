@@ -1,0 +1,33 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <st:contentType value="text/xml;charset=UTF-8" />
+  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+  <j:set var="rootURL"
+         value="${request.scheme}://${request.serverName}:${request.serverPort}${request.contextPath}" />
+
+  <feed version="0.3" xmlns="http://purl.org/atom/ns#">
+    <title>${title}</title>
+    <link rel="alternate" type="text/html" href="${rootURL}/${url}"/>
+
+    <j:choose>
+      <j:when test="${empty(entries)}">
+        <modified>2001-01-01T00:00:00Z</modified>
+      </j:when>
+      <j:otherwise>
+        <modified>${h.xsDate(adapter.getEntryTimestamp(entries[0]))}</modified>
+      </j:otherwise>
+    </j:choose>
+    <author>
+      <name>Hudson</name>
+    </author>
+
+    <j:forEach var="e" items="${entries}" >
+      <entry>
+        <title>${adapter.getEntryTitle(e)}</title>
+        <link rel="alternate" type="text/html" href="${rootURL}/${adapter.getEntryUrl(e)}"/>
+        <id>${adapter.getEntryID(e)}</id>
+        <issued  >${h.xsDate(adapter.getEntryTimestamp(e))}</issued>
+        <modified>${h.xsDate(adapter.getEntryTimestamp(e))}</modified>
+      </entry>
+    </j:forEach>
+  </feed>
+</j:jelly>

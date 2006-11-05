@@ -1,0 +1,148 @@
+<!--
+  Config page
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<l:layout>
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel>
+    <s:form method="post" action="configSubmit">
+      <s:entry title="Home directory" help="/help/system-config/homeDirectory.html">
+        ${it.rootDir}
+      </s:entry>
+      <s:entry title="System Message" help="/help/system-config/systemMessage.html">
+        <textarea class="setting-input" name="system_message"
+          rows="5" style="width:100%">${it.systemMessage}</textarea>
+      </s:entry>
+      <s:entry title="# of executors" help="/help/system-config/numExecutors.html">
+        <input type="text" name="numExecutors" class="setting-input number"
+          value="${it.numExecutors}"/>
+      </s:entry>
+      <s:entry title="Quiet period" help="/help/project-config/quietPeriod.html">
+        <input class="setting-input number" name="quiet_period"
+          type="text" value="${it.quietPeriod}"/>
+      </s:entry>
+      <s:entry title="Enable security" help="/help/system-config/enableSecurity.html">
+        <s:checkbox name="use_security" checked="${it.useSecurity}" />
+      </s:entry>
+
+
+      <s:section title="Master/Slave Support">
+        <s:entry title="Slaves"
+          description="
+            List of slave nodes register to this master Hudson. Jobs can be configured to
+            execute on slave nodes to handle a large number of jobs.
+          ">
+          <s:repeatable var="s" items="${it.slaves}">
+            <table width="100%">
+              <s:entry title="name" help="/help/system-config/master-slave/name.html">
+                <input class="setting-input" name="slave_name"
+                  type="text" value="${s.nodeName}" />
+              </s:entry>
+
+              <s:entry title="description" help="/help/system-config/master-slave/description.html">
+                <input class="setting-input" name="slave_description"
+                  type="text" value="${s.nodeDescription}" />
+              </s:entry>
+
+              <s:entry title="# of executors" help="/help/system-config/master-slave/numExecutors.html">
+                <input class="setting-input number" name="slave_executors"
+                  type="text" value="${s.numExecutors}" />
+              </s:entry>
+
+              <s:entry title="connect command" help="/help/system-config/master-slave/command.html">
+                <input class="setting-input" name="slave_command"
+                  type="text" value="${s.command}" />
+              </s:entry>
+
+              <s:entry title="local FS root" help="/help/system-config/master-slave/localFS.html">
+                <input class="setting-input validated" name="slave_localFS"
+                  checkUrl="'checkLocalFSRoot?value='+this.value"
+                  type="text" value="${s.localFS}" />
+              </s:entry>
+
+              <s:entry title="remote FS root" help="/help/system-config/master-slave/remoteFS.html">
+                <input class="setting-input" name="slave_remoteFS"
+                  type="text" value="${s.remoteFS}" />
+              </s:entry>
+
+              <s:entry title="usage" help="/help/system-config/master-slave/usage.html">
+                <select class="setting-input" name="slave_mode">
+                  <j:forEach var="m" items="${h.getNodeModes()}">
+                    <s:option value="${m.name}" selected="${m==s.mode}">${m.description}</s:option>
+                  </j:forEach>
+                </select>
+              </s:entry>
+
+              <j:if test="${s!=null}">
+                <s:entry title="clock" help="/help/system-config/master-slave/clock.html">
+                  ${s.clockDifferenceString}
+                </s:entry>
+              </j:if>
+
+              <s:entry title="">
+                <div align="right">
+                  <s:repeatableDeleteButton />
+                </div>
+              </s:entry>
+            </table>
+          </s:repeatable>
+        </s:entry>
+      </s:section>
+
+      <s:section title="JDKs">
+        <s:entry title="JDK installations"
+                 description="List of JDK installations on this system">
+          <s:repeatable var="inst" items="${it.JDKs}">
+            <table width="100%">
+              <s:entry title="name">
+                <input class="setting-input" name="jdk_name"
+                  type="text" value="${inst.name}" />
+              </s:entry>
+
+              <j:set var="status" value="${null}" />
+              <j:if test="${inst!=null and !inst.exists and inst.name!=''}">
+                <j:set var="status" value="&lt;span class=error>No such JDK exists&lt;/span>" />
+              </j:if>
+              <s:entry title="JAVA_HOME" description="${status}">
+                <input class="setting-input validated" name="jdk_home"
+                  type="text" value="${inst.javaHome}"
+                  checkUrl="'javaHomeCheck?value='+this.value"/>
+              </s:entry>
+              <s:entry title="">
+                <div align="right">
+                  <s:repeatableDeleteButton />
+                </div>
+              </s:entry>
+            </table>
+          </s:repeatable>
+        </s:entry>
+      </s:section>
+
+      <!-- build config pane -->
+      <j:getStatic var="builds" className="hudson.tasks.BuildStep" field="BUILDERS" />
+      <j:forEach var="idx" begin="0" end="${size(builds)-1}">
+        <j:set var="descriptor" value="${builds[idx]}" />
+        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+      </j:forEach>
+
+      <!-- SCM config pane -->
+      <j:getStatic var="scms" className="hudson.scm.SCMS" field="SCMS" />
+      <j:forEach var="idx" begin="0" end="${size(scms)-1}">
+        <j:set var="descriptor" value="${scms[idx]}" />
+        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+      </j:forEach>
+
+      <!-- build config pane -->
+      <j:getStatic var="pubs" className="hudson.tasks.BuildStep" field="PUBLISHERS" />
+      <j:forEach var="idx" begin="0" end="${size(pubs)-1}">
+        <j:set var="descriptor" value="${pubs[idx]}" />
+        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+      </j:forEach>
+
+      <s:block>
+        <input type="submit" name="Submit" value="OK" />
+      </s:block>
+    </s:form>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

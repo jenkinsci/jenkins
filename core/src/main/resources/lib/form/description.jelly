@@ -1,0 +1,11 @@
+<!--
+  space that are aligned with the input field, that can be filled with arbitrary HTML
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<tr>
+    <td colspan="2"/>
+    <td class="setting-description">
+	    <d:invokeBody />
+	  </td>
+	</tr>
+</j:jelly>

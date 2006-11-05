@@ -1,0 +1,47 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.displayName}">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>
+        <img src="${rootURL}/images/48x48/user.gif" />
+        Builds for ${it}
+      </h1>
+
+      <table class="pane sortable" id="projectStatus">
+        <tr>
+          <th><st:nbsp/></th>
+          <th>Build</th>
+          <th initialSortDir="up">Date</th>
+          <th>Status</th>
+          <th><st:nbsp/></th>
+        </tr>
+        <j:forEach var="b" items="${it.builds}">
+          <tr>
+            <td data="${b.iconColor}">
+              <a href="${rootURL}/${b.url}">
+                <img width="32" height="32" src="${rootURL}/images/32x32/${b.buildStatusUrl}" />
+              </a>
+            </td>
+            <td>
+              <a href="${rootURL}/${b.project.url}">${b.project.name}</a>
+              <st:nbsp/>
+              <a href="${rootURL}/${b.url}">#${b.number}</a>
+            </td>
+            <td data="${b.timestampString2}">
+              ${b.timestampString}
+            </td>
+            <td>
+              <t:buildStatusSummary build="${b}" />
+            </td>
+            <td>
+              <a href="${rootURL}/${b.url}console">
+                <img src="${rootURL}/images/24x24/terminal.gif" title="Console output" border="0" />
+              </a>
+            </td>
+          </tr>
+        </j:forEach>
+      </table>
+      <t:rssBar />
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

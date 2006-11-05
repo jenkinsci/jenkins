@@ -1,0 +1,16 @@
+<!--
+  Side panel for the user view
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:header />
+  <l:side-panel>
+    <l:tasks>
+      <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="Back to Dashboard" />
+      <l:task icon="images/24x24/search.gif" href="${rootURL}/${it.url}/" title="Status" />
+      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/builds" title="Builds" />
+      <l:isAdmin>
+        <l:task icon="images/24x24/setting.gif" href="${rootURL}/${it.url}/configure" title="Configure" />
+      </l:isAdmin>
+    </l:tasks>
+  </l:side-panel>
+</j:jelly>

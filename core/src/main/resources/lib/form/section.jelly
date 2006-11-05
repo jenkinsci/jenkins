@@ -1,0 +1,13 @@
+<!--
+  Section header
+
+	<%@attribute name="title" required="true" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<f:block>
+	  <div style="font-weight:bold; border-bottom: 1px solid black; margin-bottom:0.2em; margin-top:0.4em">
+	    ${title}
+	  </div>
+	</f:block>
+	<d:invokeBody />
+</j:jelly>

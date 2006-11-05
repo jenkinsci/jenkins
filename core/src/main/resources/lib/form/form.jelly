@@ -1,0 +1,16 @@
+<!--
+  Outer-most tag that forms a form tag.
+
+	<%@attribute name="action" required="true" %>
+	<%@attribute name="method" required="true" %>
+	<%@attribute name="enctype" required="false" %>
+	<%@attribute name="name" required="false" %>
+	<%@attribute name="target" required="false" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<form action="${action}" method="${method}" enctype="${enctype}" name="${name}" target="${target}">
+	  <table width="100%">
+	    <d:invokeBody/>
+	  </table>
+	</form>
+</j:jelly>

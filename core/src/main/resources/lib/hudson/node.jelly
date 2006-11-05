@@ -1,0 +1,13 @@
+<!--
+    displays a link to a slave
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:choose>
+    <j:when test="${value!=null}">
+      <a href="${rootURL}/computer/${value.nodeName}">${value.nodeName}</a>
+    </j:when>
+    <j:otherwise>
+      (master)
+    </j:otherwise>
+  </j:choose>
+</j:jelly>
