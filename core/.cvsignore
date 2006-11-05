@@ -1,0 +1,12 @@
+build
+ref
+*.iws
+work
+target
+war
+target
+.project
+.classpath
+hudson.iml
+hudson-core.iml
+hudson.ipr
