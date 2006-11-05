@@ -34,5 +34,6 @@ public class XStream2 extends XStream {
 
     private void init() {
         registerConverter(new RobustCollectionConverter(getClassMapper()),10);
+        registerConverter(new RetroweaverEnumConverter(),10);
     }
 }
