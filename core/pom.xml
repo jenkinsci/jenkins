@@ -29,6 +29,25 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>retrotranslator-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>translate</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>
+                  <directory>target/classes</directory>
+                </include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
@@ -38,6 +57,7 @@
                 <property name="build.version" value="${version}"/><!-- default to release version -->
                 <!-- put the version file -->
                 <echo message="The build id is: ${build.version}" />
+                <mkdir dir="target/classes/hudson"/>
                 <echo file="target/classes/hudson/hudson-version.properties"
                   >version=${build.version}
                 </echo>
@@ -53,6 +73,11 @@
   </build>
   
   <dependencies>
+    <dependency>
+      <groupId>net.sf.retrotranslator</groupId>
+      <artifactId>retrotranslator-runtime</artifactId>
+      <version>1.0.8</version>
+    </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
