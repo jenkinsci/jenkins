@@ -133,24 +133,8 @@ public final class PluginWrapper {
 
         List<URL> paths = new ArrayList<URL>();
         if(isLinked) {
-            String classPath = manifest.getMainAttributes().getValue("Class-Path");
-            for (String s : classPath.split(" +")) {
-                File file = resolve(archive, s);
-                if(file.getName().contains("*")) {
-                    // handle wildcard
-                    FileSet fs = new FileSet();
-                    File dir = file.getParentFile();
-                    fs.setDir(dir);
-                    fs.setIncludes(file.getName());
-                    for( String included : fs.getDirectoryScanner(new Project()).getIncludedFiles() ) {
-                        paths.add(new File(dir,included).toURL());
-                    }
-                } else {
-                    if(!file.exists())
-                        throw new IOException("No such file: "+file);
-                    paths.add(file.toURL());
-                }
-            }
+            parseClassPath(archive, paths, "Libraries", ",");
+            parseClassPath(archive, paths, "Class-Path", " +"); // backward compatibility
 
             this.baseResourceURL = resolve(archive,
                 manifest.getMainAttributes().getValue("Resource-Path")).toURL();
@@ -212,6 +196,27 @@ public final class PluginWrapper {
             IOException ioe = new IOException("Failed to initialize");
             ioe.initCause(t);
             throw ioe;
+        }
+    }
+
+    private void parseClassPath(File archive, List<URL> paths, String attributeName, String separator) throws IOException {
+        String classPath = manifest.getMainAttributes().getValue(attributeName);
+        for (String s : classPath.split(separator)) {
+            File file = resolve(archive, s);
+            if(file.getName().contains("*")) {
+                // handle wildcard
+                FileSet fs = new FileSet();
+                File dir = file.getParentFile();
+                fs.setDir(dir);
+                fs.setIncludes(file.getName());
+                for( String included : fs.getDirectoryScanner(new Project()).getIncludedFiles() ) {
+                    paths.add(new File(dir,included).toURL());
+                }
+            } else {
+                if(!file.exists())
+                    throw new IOException("No such file: "+file);
+                paths.add(file.toURL());
+            }
         }
     }
 
