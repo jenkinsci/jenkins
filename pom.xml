@@ -9,7 +9,7 @@
   
   <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.60</version>
+  <version>1.61-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Hudson main module</name>
@@ -19,8 +19,4 @@
     <module>core</module>
     <module>war</module>
   </modules>
-
-  <scm>
-    <tag>pom-1_60</tag>
-  </scm>
 </project>
