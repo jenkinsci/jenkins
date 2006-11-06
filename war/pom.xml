@@ -35,7 +35,12 @@
         <artifactId>maven-jetty-plugin</artifactId>
         <configuration>
           <contextPath>/</contextPath>
-          <webAppSourceDirectory>${basedir}/resources</webAppSourceDirectory> 
+          <!--
+            read directly from core module's output directory,
+            so that changes are picked up right away without running mvn.
+          -->
+          <classesDirectory>../core/target/classes</classesDirectory>
+          <webAppSourceDirectory>${basedir}/resources</webAppSourceDirectory>
           <systemProperties>
             <systemProperty>
               <name>HUDSON_HOME</name>
