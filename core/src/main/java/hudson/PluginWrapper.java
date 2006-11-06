@@ -102,7 +102,13 @@ public final class PluginWrapper {
 
         if(isLinked) {
             // resolve the .hpl file to the location of the manifest file
-            archive = resolve(archive,new BufferedReader(new FileReader(archive)).readLine());
+            String firstLine = new BufferedReader(new FileReader(archive)).readLine();
+            if(firstLine.startsWith("Manifest-Version:")) {
+                // this is the manifest already
+            } else {
+                // in direction
+                archive = resolve(archive, firstLine);
+            }
             // then parse manifest
             FileInputStream in = new FileInputStream(archive);
             try {
@@ -201,6 +207,7 @@ public final class PluginWrapper {
 
     private void parseClassPath(File archive, List<URL> paths, String attributeName, String separator) throws IOException {
         String classPath = manifest.getMainAttributes().getValue(attributeName);
+        if(classPath==null) return; // attribute not found
         for (String s : classPath.split(separator)) {
             File file = resolve(archive, s);
             if(file.getName().contains("*")) {
