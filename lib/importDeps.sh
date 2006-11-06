@@ -10,6 +10,7 @@ function checkout() {
     cp ~/.maven/repository/$groupId/java-sources/$artifactId-$version*.* $groupId/jars
 
     m2dest=~/.m2/repository/$(echo $groupId | tr '.' '/')/$artifactId/$version
+    mkdir $m2dest || true
     cp ~/.maven/repository/$groupId/jars/$artifactId-$version*.*         $m2dest
     cp ~/.maven/repository/$groupId/poms/$artifactId-$version*.*         $m2dest
     cp ~/.maven/repository/$groupId/java-sources/$artifactId-$version*.* $m2dest
