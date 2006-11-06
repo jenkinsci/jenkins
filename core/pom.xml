@@ -1,10 +1,9 @@
-<!-- still a work in progress -->
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.60-SNAPSHOT</version>
+    <version>1.60</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -35,12 +34,11 @@
             <phase>generate-resources</phase>
             <configuration>
               <tasks>
-                <property name="build.version" value="${version}"/><!-- default to release version -->
+                <property name="build.version" value="${version}" /><!-- default to release version -->
                 <!-- put the version file -->
                 <echo message="The build id is: ${build.version}" />
-                <mkdir dir="target/classes/hudson"/>
-                <echo file="target/classes/hudson/hudson-version.properties"
-                  >version=${build.version}
+                <mkdir dir="target/classes/hudson" />
+                <echo file="target/classes/hudson/hudson-version.properties">version=${build.version}
                 </echo>
               </tasks>
             </configuration>
