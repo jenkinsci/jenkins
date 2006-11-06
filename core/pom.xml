@@ -189,7 +189,7 @@
     </dependency>
     <dependency>
       <groupId>groovy</groupId>
-      <artifactId>groovy-all-1.0-jsr</artifactId>
+      <artifactId>groovy-1.0-jsr</artifactId>
       <version>06</version>
     </dependency>
     <dependency>
