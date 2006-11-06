@@ -98,7 +98,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <version>1.9-SNAPSHOT</version>
+      <version>1.9</version>
     </dependency>
     <dependency>
       <groupId>antlr</groupId>
@@ -180,22 +180,22 @@
     <dependency>
       <groupId>commons-jelly</groupId>
       <artifactId>commons-jelly-tags-define</artifactId>
-      <version>1.0.1-hudson-SNAPSHOT</version>
+      <version>1.0.1-hudson-20061106</version>
     </dependency>
     <dependency>
       <groupId>commons-jexl</groupId>
       <artifactId>commons-jexl</artifactId>
-      <version>1.1-hudson-SNAPSHOT</version>
+      <version>1.1-hudson-20061106</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-jelly</groupId>
+      <artifactId>commons-jelly</artifactId>
+      <version>1.1-hudson-20061106</version>
     </dependency>
     <dependency>
       <groupId>groovy</groupId>
       <artifactId>groovy-1.0-jsr</artifactId>
       <version>06</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-jelly</groupId>
-      <artifactId>commons-jelly</artifactId>
-      <version>1.1-hudson-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>xpp3</groupId>
