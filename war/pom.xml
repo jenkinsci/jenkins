@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.60</version>
+    <version>1.60-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -23,9 +23,6 @@
           <webResources>
             <resource>
               <directory>${basedir}/resources</directory>
-              <excludes>
-                <exclude>WEB-INF/lib/*</exclude>
-              </excludes>
             </resource>
           </webResources>
         </configuration>
@@ -44,12 +41,17 @@
           <systemProperties>
             <systemProperty>
               <name>HUDSON_HOME</name>
-              <value>work</value>
+              <value>../../work</value>
             </systemProperty>
             <systemProperty>
               <!-- always reload views during debugging -->
               <name>stapler.jelly.noCache</name>
-              <value>work</value>
+              <value>true</value>
+            </systemProperty>
+            <systemProperty>
+              <!-- load view resources from the source directly, again for real time change -->
+              <name>stapler.resourcePath</name>
+              <value>../core/src/main/resources</value>
             </systemProperty>
           </systemProperties>
         </configuration>
