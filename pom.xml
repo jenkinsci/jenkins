@@ -19,4 +19,16 @@
     <module>core</module>
     <module>war</module>
   </modules>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <!-- enable release profile during the release -->
+          <prepareVerifyArgs>-P release</prepareVerifyArgs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
