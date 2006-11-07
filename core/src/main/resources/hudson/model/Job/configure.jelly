@@ -18,7 +18,7 @@
         <f:optionalBlock name="logrotate"
           help="/help/project-config/log-rotation.html"
           title="Log Rotation" checked="${it.logRotator!=null}">
-          <st:include page="../../tasks/LogRotator/config.jelly"/>
+          <st:include page="/hudson/tasks/LogRotator/config.jelly"/>
         </f:optionalBlock>
 
         <!-- additional entries from derived classes -->
