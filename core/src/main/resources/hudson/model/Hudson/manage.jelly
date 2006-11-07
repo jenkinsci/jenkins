@@ -21,7 +21,10 @@
     <h1>Manage Hudson</h1>
     <table style="padding-left: 2em;">
       <local:feature icon="setting.gif"          href="configure"    title="System Configuration"/>
-      <local:feature icon="refresh.gif"          href="reload"       title="Reload Configuration from Disk"/>
+      <local:feature icon="refresh.gif"          href="reload"       title="Reload Configuration from Disk">
+        Discard all the loaded data in memory and reload everything from file system.
+        Useful when you modified config files directly on disk. 
+      </local:feature>
       <j:if test="${!empty(it.pluginManager.plugins)}">
         <local:feature icon="gear2.gif"          href="managePlugins" title="Manage Plugins"/>
       </j:if>
