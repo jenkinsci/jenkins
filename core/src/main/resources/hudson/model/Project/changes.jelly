@@ -8,11 +8,11 @@
       <j:set var="from" value="${request.getParameter('from')}"/>
       <j:set var="to" value="${request.getParameter('to')}"/>
 
-      <t:buildCaption>
+      <h1>
         Changes
         <j:if test="${from!=null}"> from #${from}</j:if>
         <j:if test="${to!=null}"> to #${to}</j:if>
-      </t:buildCaption>
+      </h1>
       <j:forEach var="b" items="${h.filter(it.buildsAsMap,from,to).values()}">
         <j:if test="${b.changeSet.iterator().hasNext()}">
           <h2><a href="${b.number}/changes">
