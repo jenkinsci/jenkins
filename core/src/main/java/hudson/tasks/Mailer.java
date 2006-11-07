@@ -183,7 +183,8 @@ public class Mailer extends Publisher {
                 // Careful with path separator between $1 and $2:
                 // workspaceDir will not normally end with one;
                 // workspaceDir.toURI() will end with '/' if and only if workspaceDir.exists() at time of call
-                wsPattern = Pattern.compile("(\\Q" + workspaceDir + "\\E|\\Q" + workspaceDir.toURI() + "\\E)[/\\\\]?([^:#\\s]*)");
+                wsPattern = Pattern.compile("(" +
+                    Pattern.quote(workspaceDir.getPath()) + "|" + Pattern.quote(workspaceDir.toURI().toString()) + ")[/\\\\]?([^:#\\s]*)");
             }
             for (int i = start; i < lines.length; i++) {
                 String line = lines[i];
