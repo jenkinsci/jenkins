@@ -184,7 +184,7 @@ public class Mailer extends Publisher {
                 // workspaceDir will not normally end with one;
                 // workspaceDir.toURI() will end with '/' if and only if workspaceDir.exists() at time of call
                 wsPattern = Pattern.compile("(" +
-                    Pattern.quote(workspaceDir.getPath()) + "|" + Pattern.quote(workspaceDir.toURI().toString()) + ")[/\\\\]?([^:#\\s]*)");
+                    quoteRegexp(workspaceDir.getPath()) + "|" + quoteRegexp(workspaceDir.toURI().toString()) + ")[/\\\\]?([^:#\\s]*)");
             }
             for (int i = start; i < lines.length; i++) {
                 String line = lines[i];
@@ -413,5 +413,27 @@ public class Mailer extends Publisher {
                 return new UserProperty(req.getParameter("email.address"));
             }
         }
+    }
+
+    /**
+     * Copied from JDK5, to avoid 5.0 dependency.
+     */
+    private static String quoteRegexp(String s) {
+        int slashEIndex = s.indexOf("\\E");
+        if (slashEIndex == -1)
+            return "\\Q" + s + "\\E";
+
+        StringBuilder sb = new StringBuilder(s.length() * 2);
+        sb.append("\\Q");
+        slashEIndex = 0;
+        int current = 0;
+        while ((slashEIndex = s.indexOf("\\E", current)) != -1) {
+            sb.append(s.substring(current, slashEIndex));
+            current = slashEIndex + 2;
+            sb.append("\\E\\\\E\\Q");
+        }
+        sb.append(s.substring(current, s.length()));
+        sb.append("\\E");
+        return sb.toString();
     }
 }
