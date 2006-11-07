@@ -41,7 +41,7 @@
           <systemProperties>
             <systemProperty>
               <name>HUDSON_HOME</name>
-              <value>../../work</value>
+              <value>work</value>
             </systemProperty>
             <systemProperty>
               <!-- always reload views during debugging -->
