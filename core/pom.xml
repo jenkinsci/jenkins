@@ -34,7 +34,10 @@
             <phase>generate-resources</phase>
             <configuration>
               <tasks>
-                <property name="build.version" value="${version}" /><!-- default to release version -->
+                <tstamp>
+                  <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour"/>
+                </tstamp>
+                <property name="build.version" value="${version} (private-${now}-${user.name})" /><!-- default to release version -->
                 <!-- put the version file -->
                 <echo message="The build id is: ${build.version}" />
                 <mkdir dir="target/classes/hudson" />
