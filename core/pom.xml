@@ -209,5 +209,10 @@
       <artifactId>junit</artifactId>
       <version>3.8</version>
     </dependency>
+    <dependency><!-- needed by Jelly -->
+      <groupId>jstl</groupId>
+      <artifactId>jstl</artifactId>
+      <version>1.1.0</version>
+    </dependency>
   </dependencies>
 </project>
