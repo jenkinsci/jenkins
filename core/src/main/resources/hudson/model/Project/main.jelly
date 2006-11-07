@@ -59,6 +59,10 @@
     <t:artifactList caption="Latest Artifacts"
         build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/" />
 
+    <t:summary icon="notepad.gif" href="changes">
+      Recent Changes
+    </t:summary>
+
     <j:if test="${tr!=null}">
       <t:summary icon="clipboard.gif">
         <a href="lastSuccessfulBuild/testReport/">Latest Test Result</a>
