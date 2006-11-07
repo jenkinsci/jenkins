@@ -55,15 +55,15 @@
   </build>
 
   <profiles>
-    <!-- allow retrotranslator to be disabled with -->
     <profile>
       <id>debug</id>
-    </profile>
-    <profile>
-      <id>retrotranslator</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
+    </profile>
+    <!-- run retrotranslator only during the release -->
+    <profile>
+      <id>release</id>
       <build>
         <plugins>
           <plugin>
@@ -87,6 +87,10 @@
           </plugin>
         </plugins>
       </build>
+      <properties>
+        <!-- for releases, just use the POM version. See above ant-run plugin for how this gets used. -->
+        <build.version>${version}</build.version>
+      </properties>
     </profile>
   </profiles>
 
