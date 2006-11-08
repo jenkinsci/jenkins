@@ -67,10 +67,13 @@
                 </j:otherwise>
               </j:choose>
             </td>
-            <td data="${h.ifThenElse(lsBuild==null,'0',lsBuild.duration)}">
+            <td data="${h.ifThenElse(lsBuild==null,h.ifThenElse(lfBuild==null,'0',lfBuild.duration),lsBuild.duration)}">
               <j:choose>
                 <j:when test="${lsBuild!=null}">
                   ${lsBuild.durationString}
+                </j:when>
+                <j:when test="${lfBuild!=null}">
+                  ${lfBuild.durationString}
                 </j:when>
                 <j:otherwise>
                   N/A
