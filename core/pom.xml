@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.60-SNAPSHOT</version>
+    <version>1.60</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -35,7 +35,7 @@
             <configuration>
               <tasks>
                 <tstamp>
-                  <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour"/>
+                  <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour" />
                 </tstamp>
                 <property name="build.version" value="${version} (private-${now}-${user.name})" /><!-- default to release version -->
                 <!-- put the version file -->
