@@ -1,6 +1,7 @@
 package hudson.triggers;
 
 import antlr.ANTLRException;
+import hudson.ExtensionPoint;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.Describable;
@@ -9,8 +10,6 @@ import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.model.WorkspaceCleanupThread;
 import hudson.scheduler.CronTabList;
-import hudson.ExtensionPoint;
-import hudson.tasks.BuildStep;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
@@ -46,9 +45,10 @@ public abstract class Trigger implements Describable<Trigger>, ExtensionPoint {
     /**
      * Executes the triggered task.
      *
-     * This method is invoked when the crontab matches the current time.
+     * This method is invoked when {@link #Trigger(String)} is used
+     * to create an instance, and the crontab matches the current time.
      */
-    protected abstract void run();
+    protected void run() {}
 
     /**
      * Called before a {@link Trigger} is removed.
@@ -71,17 +71,30 @@ public abstract class Trigger implements Describable<Trigger>, ExtensionPoint {
     protected transient CronTabList tabs;
     protected transient Project project;
 
+    /**
+     * Creates a new {@link Trigger} that gets {@link #run() run}
+     * periodically. This is useful when your trigger does
+     * some polling work.
+     */
     protected Trigger(String cronTabSpec) throws ANTLRException {
         this.spec = cronTabSpec;
         this.tabs = CronTabList.create(cronTabSpec);
     }
 
+    /**
+     * Creates a new {@link Trigger} without using cron.
+     */
     protected Trigger() {
         this.spec = "";
         this.tabs = new CronTabList(Collections.EMPTY_LIST);
     }
 
-    public String getSpec() {
+    /**
+     * Gets the crontab specification.
+     *
+     * If you are not using cron service, just ignore it.
+     */
+    public final String getSpec() {
         return spec;
     }
 
