@@ -744,6 +744,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // marked to be preserved, or if the build should not be deleted
         // due to dependencies!
         if (isKeepLog()) {
+            sendError(toString()+" is explicitly marked to be preserved",req,rsp);
             return;
         }
 
