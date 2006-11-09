@@ -732,6 +732,24 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         save();
         rsp.forwardToPreviousPage(req);
     }
+    
+    /**
+     * Deletes the build when the button is pressed.
+     */
+    public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
+        
+        // We should not simply delete the build if it has been explicitly
+        // marked to be preserved, or if the build should not be deleted
+        // due to dependencies!
+        if (isKeepLog()) {
+            return;
+        }
+
+        delete();
+        rsp.sendRedirect2(req.getContextPath()+'/' + getParent().getUrl());
+    }
 
     /**
      * Accepts the new description.

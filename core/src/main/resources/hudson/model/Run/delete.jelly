@@ -1,0 +1,10 @@
+<!--
+  Displays the button to delete the build.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:if test="${!it.keepLog}">
+    <form method="get" action="confirmDelete">
+      <input type="submit" value="Delete this build"  />
+    </form>
+  </j:if>
+</j:jelly>

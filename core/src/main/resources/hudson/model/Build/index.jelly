@@ -4,6 +4,7 @@
     <l:main-panel>
       <div style="float:right; background-color:white; z-index: 1; position:relative; margin-left: 1em">
         <st:include page="logKeep.jelly" />
+        <st:include page="delete.jelly" />
         <div style="margin-top:1em">
           Started ${it.timestampString} ago
         </div><div>
