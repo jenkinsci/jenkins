@@ -54,6 +54,10 @@ public abstract class Trigger implements Describable<Trigger>, ExtensionPoint {
      * Called before a {@link Trigger} is removed.
      * Under some circumstances, this may be invoked more than once for
      * a given {@link Trigger}, so be prepared for that.
+     *
+     * <p>
+     * When the configuration is changed for a project, all triggers
+     * are removed once and then added back.
      */
     public void stop() {}
 
