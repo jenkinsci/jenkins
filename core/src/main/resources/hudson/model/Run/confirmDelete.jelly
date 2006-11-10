@@ -3,11 +3,11 @@
   <l:layout>
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
-		  <j:if test="${it.keepLog}">
-		    <b>Warning</b>: Cannot delete this build, because it either was explicitly marked
-		    to be preserved or it is required as a dependency for other builds.
+      <j:set var="msg" value="${it.whyKeepLog}"/>
+      <j:if test="${msg!=null}">
+		    <b>Warning</b>: Cannot delete this build, because it is ${msg}
 		  </j:if>		  
-		  <j:if test="${!it.keepLog}">
+		  <j:if test="${msg==null}">
 		    <form method="get" action="doDelete">
 		      Are you sure about deleting the build?
 		      <input type="submit" value="Yes" />

@@ -208,8 +208,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      * This is used as a signal to the {@link LogRotator}.
      */
-    public boolean isKeepLog() {
-        return keepLog;
+    public final boolean isKeepLog() {
+        return getWhyKeepLog()!=null;
+    }
+
+    /**
+     * If {@link #isKeepLog()} returns true, returns a human readable
+     * one-line string that explains why it's being kept.
+     */
+    public String getWhyKeepLog() {
+        if(keepLog)
+            return "explicitly marked to keep the record";
+        return null;    // not marked at all
     }
 
     /**
@@ -743,8 +753,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // We should not simply delete the build if it has been explicitly
         // marked to be preserved, or if the build should not be deleted
         // due to dependencies!
-        if (isKeepLog()) {
-            sendError(toString()+" is explicitly marked to be preserved",req,rsp);
+        String why = getWhyKeepLog();
+        if (why!=null) {
+            sendError("Unabled to delete "+toString()+": "+why,req,rsp);
             return;
         }
 
