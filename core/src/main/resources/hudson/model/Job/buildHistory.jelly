@@ -28,6 +28,12 @@
           <a class="tip" href="${link}">
             <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
           </a>
+          <j:if test="${build.keepLog}">
+            <st:nbsp/>
+            <img width="16" height="16"
+              title="${build.whyKeepLog}"
+              src="${rootURL}/images/16x16/lock.gif"/>
+          </j:if>
         </td>
       </tr>
       <j:if test="${build.building}">

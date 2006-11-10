@@ -199,6 +199,10 @@ pre.console {
   padding: 3px 4px 3px 4px;
 }
 
+.build-keep {
+  font-weight: bold;
+}
+
 .task-header {
   display: block;
   border-bottom: 1px #090 solid;
