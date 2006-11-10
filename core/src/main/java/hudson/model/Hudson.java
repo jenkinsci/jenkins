@@ -245,8 +245,11 @@ public final class Hudson extends JobCollection implements Node {
     private void updateComputerList() {
         synchronized(computers) {
             Map<String,Computer> byName = new HashMap<String,Computer>();
-            for (Computer c : computers.values())
+            for (Computer c : computers.values()) {
+                if(c.getNode()==null)
+                    continue;   // this computer is gone
                 byName.put(c.getNode().getNodeName(),c);
+            }
 
             Set<Computer> old = new HashSet<Computer>(computers.values());
             Set<Computer> used = new HashSet<Computer>();
