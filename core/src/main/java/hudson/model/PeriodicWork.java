@@ -9,7 +9,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-abstract class PeriodicWork extends TimerTask {
+public abstract class PeriodicWork extends TimerTask {
 
     /**
      * Name of the work.
