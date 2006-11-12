@@ -75,6 +75,10 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         this.otherOptions = nullify(otherOptions);
     }
 
+    /**
+     * Whitespace-separated list of SVN URLs that represent
+     * modules to be checked out.
+     */
     public String getModules() {
         return modules;
     }
