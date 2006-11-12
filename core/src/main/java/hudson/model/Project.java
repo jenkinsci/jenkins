@@ -213,36 +213,56 @@ public class Project extends Job<Project,Build> {
         return Descriptor.toMap(publishers);
     }
 
-    /**
-     * Adds a new {@link BuildStep} to this {@link Project} and saves the configuration.
-     */
-    private synchronized void addPublisher(Publisher buildStep) throws IOException {
-        for( int i=0; i<publishers.size(); i++ ) {
-            if(publishers.get(i).getDescriptor()==buildStep.getDescriptor()) {
+    private synchronized <T extends Describable<T>>
+    void addToList( T item, List<T> collection ) throws IOException {
+        for( int i=0; i<collection.size(); i++ ) {
+            if(collection.get(i).getDescriptor()==item.getDescriptor()) {
                 // replace
-                publishers.set(i,buildStep);
+                collection.set(i,item);
                 save();
                 return;
             }
         }
-
         // add
-        publishers.add(buildStep);
+        collection.add(item);
         save();
+    }
+
+    private synchronized <T extends Describable<T>>
+    void removeFromList(Descriptor<T> item, List<T> collection) throws IOException {
+        for( int i=0; i< collection.size(); i++ ) {
+            if(collection.get(i).getDescriptor()==item) {
+                // found it
+                collection.remove(i);
+                save();
+                return;
+            }
+        }
+    }
+
+    /**
+     * Adds a new {@link Trigger} to this {@link Project} if not active yet.
+     */
+    public void addTrigger(Trigger trigger) throws IOException {
+        addToList(trigger,triggers);
+    }
+
+    public void removeTrigger(Descriptor<Trigger> trigger) throws IOException {
+        removeFromList(trigger,triggers);
+    }
+
+    /**
+     * Adds a new {@link BuildStep} to this {@link Project} and saves the configuration.
+     */
+    private void addPublisher(Publisher buildStep) throws IOException {
+        addToList(buildStep,publishers);
     }
 
     /**
      * Removes a publisher from this project, if it's active.
      */
     private void removePublisher(Descriptor<Publisher> descriptor) throws IOException {
-        for( int i=0; i<publishers.size(); i++ ) {
-            if(publishers.get(i).getDescriptor()==descriptor) {
-                // found it
-                publishers.remove(i);
-                save();
-                return;
-            }
-        }
+        removeFromList(descriptor, publishers);
     }
 
     public SortedMap<Integer, ? extends Build> _getRuns() {
