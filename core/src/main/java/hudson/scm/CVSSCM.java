@@ -71,9 +71,6 @@ public class CVSSCM extends AbstractCVSFamilySCM {
      */
     private String module;
 
-    /**
-     * Branch to build. Null to indicate the trunk.
-     */
     private String branch;
 
     private String cvsRsh;
@@ -121,6 +118,9 @@ public class CVSSCM extends AbstractCVSFamilySCM {
         return module;
     }
 
+    /**
+     * Branch to build. Null to indicate the trunk.
+     */
     public String getBranch() {
         return branch;
     }
