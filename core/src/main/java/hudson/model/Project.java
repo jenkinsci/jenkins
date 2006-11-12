@@ -171,7 +171,7 @@ public class Project extends Job<Project,Build> {
         });
 
         for (Trigger t : triggers)
-            t.start(this);
+            t.start(this,false);
 
         updateTransientActions();
     }
@@ -539,7 +539,7 @@ public class Project extends Job<Project,Build> {
                     t.stop();
                 buildDescribable(req, Triggers.TRIGGERS, triggers, "trigger");
                 for (Trigger t : triggers)
-                    t.start(this);
+                    t.start(this,true);
 
                 updateTransientActions();
 

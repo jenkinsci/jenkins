@@ -37,6 +37,17 @@ public abstract class Trigger implements Describable<Trigger>, ExtensionPoint {
      *
      * @param project
      *      given so that the persisted form of this object won't have to have a back pointer.
+     * @param newInstance
+     *      True if this is a newly created trigger first attached to the {@link Project}.
+     *      False if this is invoked for a {@link Project} loaded from disk.
+     */
+    public void start(Project project, boolean newInstance) {
+        start(project); // compatibility
+    }
+
+    /**
+     * @deprecated as of 1.61.
+     *      Use {@link #start(Project, boolean)}.
      */
     public void start(Project project) {
         this.project = project;
