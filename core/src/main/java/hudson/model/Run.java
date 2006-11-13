@@ -787,6 +787,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         env.put("BUILD_ID",getId());
         env.put("BUILD_TAG","hudson-"+getParent().getName()+"-"+number);
         env.put("JOB_NAME",getParent().getName());
+
+        Thread t = Thread.currentThread();
+        if (t instanceof Executor) {
+            Executor e = (Executor) t;
+            env.put("EXECUTOR_NUMBER",String.valueOf(e.getNumber()));
+        }
+
         return env;
     }
 

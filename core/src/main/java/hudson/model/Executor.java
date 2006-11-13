@@ -20,10 +20,16 @@ public class Executor extends Thread {
 
     private long startTime;
 
+    /**
+     * Executor number that identifies it among other executors for the same {@link Computer}.
+     */
+    private int number;
+
     public Executor(Computer owner) {
         super("Executor #"+owner.getExecutors().size()+" for "+owner.getDisplayName());
         this.owner = owner;
         this.queue = Hudson.getInstance().getQueue();
+        this.number = owner.getExecutors().size();
         start();
     }
 
@@ -70,6 +76,17 @@ public class Executor extends Thread {
      */
     public Build getCurrentBuild() {
         return build;
+    }
+
+    /**
+     * Gets the executor number that uniquely identifies it among
+     * other {@link Executor}s for the same computer.
+     *
+     * @return
+     *      a sequential number starting from 0.
+     */
+    public int getNumber() {
+        return number;
     }
 
     /**

@@ -21,6 +21,12 @@
     <dt>BUILD_TAG</dt>
     <dd>String of "hudson-<i>${JOBNAME}</i>-<i>${BUILD_NUMBER}</i>". Convenient to put into
         a resource file, a jar file, etc for easier identification.</dd>
+
+    <dt>EXECUTOR_NUMBER</dt>
+    <dd>The unique number that identifies the current executor
+        (among executors of the same machine) that's
+        carrying out this build. This is the number you see in
+        the "build executor status", except that the number starts from 0, not 1.</dd>
 </dl>
 
 
