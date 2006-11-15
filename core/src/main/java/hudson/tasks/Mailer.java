@@ -75,11 +75,17 @@ public class Mailer extends Publisher {
         try {
             MimeMessage mail = getMail(build);
             if(mail!=null) {
-                StringBuffer buf = new StringBuffer("Sending e-mails to ");
-                for (Address a : mail.getAllRecipients())
-                    buf.append(' ').append(a);
-                listener.getLogger().println(buf);
-                Transport.send(mail);
+                Address[] allRecipients = mail.getAllRecipients();
+                if(allRecipients!=null) {
+                    StringBuffer buf = new StringBuffer("Sending e-mails to ");
+                    for (Address a : allRecipients)
+                        buf.append(' ').append(a);
+                    listener.getLogger().println(buf);
+                    Transport.send(mail);
+                } else {
+                    listener.getLogger().println("An attempt to send an e-mail"
+                            + " to empty list of recipients, ignored.");
+                }
             }
         } catch (MessagingException e) {
             e.printStackTrace( listener.error(e.getMessage()) );
