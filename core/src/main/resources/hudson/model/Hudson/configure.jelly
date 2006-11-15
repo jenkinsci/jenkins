@@ -118,7 +118,14 @@
         </s:entry>
       </s:section>
 
-      <!-- build config pane -->
+      <!-- trigger config pane -->
+      <j:getStatic var="triggers" className="hudson.triggers.Triggers" field="TRIGGERS" />
+      <j:forEach var="idx" begin="0" end="${size(triggers)-1}">
+        <j:set var="descriptor" value="${triggers[idx]}" />
+        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+      </j:forEach>
+
+      <!-- builder config pane -->
       <j:getStatic var="builds" className="hudson.tasks.BuildStep" field="BUILDERS" />
       <j:forEach var="idx" begin="0" end="${size(builds)-1}">
         <j:set var="descriptor" value="${builds[idx]}" />
@@ -132,7 +139,7 @@
         <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
       </j:forEach>
 
-      <!-- build config pane -->
+      <!-- publisher config pane -->
       <j:getStatic var="pubs" className="hudson.tasks.BuildStep" field="PUBLISHERS" />
       <j:forEach var="idx" begin="0" end="${size(pubs)-1}">
         <j:set var="descriptor" value="${pubs[idx]}" />

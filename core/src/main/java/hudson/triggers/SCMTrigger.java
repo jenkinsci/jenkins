@@ -8,17 +8,22 @@ import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
+import org.kohsuke.stapler.StaplerRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Date;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link Trigger} that checks for SCM updates periodically.
@@ -27,21 +32,28 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class SCMTrigger extends Trigger {
     /**
-     * Non-null if the polling is in progress.
+     * If we'd like to run another polling run, this is set to true.
+     *
+     * <p>
+     * To avoid submitting more than one polling jobs (which could flood the queue),
+     * we first use the boolean flag.
+     *
      * @guardedBy this
      */
     private transient boolean pollingScheduled;
 
     /**
-     * Non-null if the polling is in progress.
-     * @guardedBy this
-     */
-    private transient Thread pollingThread;
-
-    /**
      * Signal to the polling thread to abort now.
      */
     private transient boolean abortNow;
+
+    /**
+     * Pending polling activity in progress.
+     * There's at most one polling activity per project at any given point.
+     *
+     * @guardedBy this
+     */
+    private transient Future<?> polling;
 
     public SCMTrigger(String cronTabSpec) throws ANTLRException {
         super(cronTabSpec);
@@ -64,11 +76,18 @@ public class SCMTrigger extends Trigger {
      * Makes sure that the polling is aborted.
      */
     public synchronized void abort() throws InterruptedException {
-        if(pollingThread!=null && pollingThread.isAlive()) {
+        if(polling!=null && !polling.isDone()) {
             System.out.println("killing polling");
+
             abortNow = true;
-            pollingThread.interrupt();
-            pollingThread.join();
+            polling.cancel(true);
+            try {
+                polling.get();
+            } catch (ExecutionException e) {
+                LOGGER.log(Level.WARNING, "Failed to poll",e);
+            } catch (CancellationException e) {
+                // this is fine
+            }
             abortNow = false;
         }
     }
@@ -82,61 +101,14 @@ public class SCMTrigger extends Trigger {
         if(b!=null && b.isBuilding())
             return; // build in progress
 
-        if(pollingThread!=null && pollingThread.isAlive())
+        if(polling!=null && !polling.isDone())
             return; // polling already in progress
 
         if(!pollingScheduled)
             return; // not scheduled
 
         pollingScheduled = false;
-        pollingThread = new Thread() {
-            private boolean runPolling() {
-                try {
-                    // to make sure that the log file contains up-to-date text,
-                    // don't do buffering.
-                    OutputStream fos = new FileOutputStream(getLogFile());
-                    TaskListener listener = new StreamTaskListener(fos);
-
-                    try {
-                        LOGGER.info("Polling SCM changes of "+project.getName());
-
-                        PrintStream logger = listener.getLogger();
-                        long start = System.currentTimeMillis();
-                        logger.println("Started on "+new Date().toLocaleString());
-                        boolean result = project.pollSCMChanges(listener);
-                        logger.println("Done. Took "+Util.getTimeSpanString(System.currentTimeMillis()-start));
-                        if(result)
-                            logger.println("Changes found");
-                        else
-                            logger.println("No changes");
-                        return result;
-                    } finally {
-                        fos.close();
-                    }
-                } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
-                    return false;
-                }
-            }
-
-            public void run() {
-                boolean repeat;
-                do {
-                    if(runPolling()) {
-                        LOGGER.info("SCM changes detected in "+project.getName());
-                        project.scheduleBuild();
-                    }
-                    if(abortNow)
-                        return; // terminate now
-
-                    synchronized(SCMTrigger.this) {
-                        repeat = pollingScheduled;
-                        pollingScheduled = false;
-                    }
-                } while(repeat);
-            }
-        };
-        pollingThread.start();
+        polling = DESCRIPTOR.getExecutor().submit(new Runner());
     }
 
     /**
@@ -150,7 +122,24 @@ public class SCMTrigger extends Trigger {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<Trigger> DESCRIPTOR = new Descriptor<Trigger>(SCMTrigger.class) {
+    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+
+    public static final class DescriptorImpl extends Descriptor<Trigger> {
+        /**
+         * Used to control the execution of the polling tasks.
+         */
+        transient volatile ExecutorService executor;
+
+        DescriptorImpl() {
+            super(SCMTrigger.class);
+            // create an executor
+            update(getPollingThreadCount());
+        }
+
+        public ExecutorService getExecutor() {
+            return executor;
+        }
+
         public String getDisplayName() {
             return "Poll SCM";
         }
@@ -166,7 +155,51 @@ public class SCMTrigger extends Trigger {
                 throw new FormException(e.toString(),e,"scmpoll_spec");
             }
         }
-    };
+
+        /**
+         * Gets the number of concurrent threads used for polling.
+         *
+         * @return
+         *      0 if unlimited.
+         */
+        public int getPollingThreadCount() {
+            String value = (String)getProperties().get("poll_scm_threads");
+            if(value==null)
+                return 0;
+            return Integer.parseInt(value);
+        }
+
+        public void setPollingThreadCount(int n) {
+            getProperties().put("poll_scm_threads",String.valueOf(n));
+            save();
+            update(n);
+        }
+
+        /**
+         * Update the {@link ExecutorService} instance.
+         */
+        /*package*/ synchronized void update(int n) {
+            // fool proof
+            if(n<0) n=0;
+            if(n>100)   n=0;
+
+            // swap to a new one, and shut down the old one gradually
+            ExecutorService newExec = n==0 ? Executors.newCachedThreadPool() : Executors.newFixedThreadPool(n);
+            ExecutorService old = executor;
+            executor = newExec;
+            if(old!=null)
+                old.shutdown();
+        }
+
+        public boolean configure(HttpServletRequest req) throws FormException {
+            String t = req.getParameter("poll_scm_threads");
+            if(t==null || t.length()==0)
+                setPollingThreadCount(0);
+            else
+                setPollingThreadCount(Integer.parseInt(t));
+            return super.configure(req);
+        }
+    }
 
     /**
      * Action object for {@link Project}. Used to display the polling log.
@@ -194,4 +227,56 @@ public class SCMTrigger extends Trigger {
     }
 
     private static final Logger LOGGER = Logger.getLogger(SCMTrigger.class.getName());
+
+    /**
+     * {@link Runnable} that actually performs polling.
+     */
+    private class Runner implements Runnable {
+        private boolean runPolling() {
+            try {
+                // to make sure that the log file contains up-to-date text,
+                // don't do buffering.
+                OutputStream fos = new FileOutputStream(getLogFile());
+                TaskListener listener = new StreamTaskListener(fos);
+
+                try {
+                    LOGGER.info("Polling SCM changes of "+project.getName());
+
+                    PrintStream logger = listener.getLogger();
+                    long start = System.currentTimeMillis();
+                    logger.println("Started on "+new Date().toLocaleString());
+                    boolean result = project.pollSCMChanges(listener);
+                    logger.println("Done. Took "+ Util.getTimeSpanString(System.currentTimeMillis()-start));
+                    if(result)
+                        logger.println("Changes found");
+                    else
+                        logger.println("No changes");
+                    return result;
+                } finally {
+                    fos.close();
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
+                return false;
+            }
+        }
+
+        public void run() {
+            if(runPolling()) {
+                LOGGER.info("SCM changes detected in "+project.getName());
+                project.scheduleBuild();
+            }
+
+            synchronized(SCMTrigger.this) {
+                if(abortNow)
+                    return; // terminate now without queueing the next one.
+                
+                if(pollingScheduled) {
+                    // schedule a next run
+                    polling = DESCRIPTOR.getExecutor().submit(new Runner());
+                }
+                pollingScheduled = false;
+            }
+        }
+    }
 }

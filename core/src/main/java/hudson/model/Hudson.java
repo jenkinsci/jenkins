@@ -16,6 +16,7 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
+import hudson.triggers.Triggers;
 import hudson.util.FormFieldValidator;
 import hudson.util.XStream2;
 import org.apache.commons.fileupload.FileItem;
@@ -720,6 +721,9 @@ public final class Hudson extends JobCollection implements Node {
 
             for( Descriptor<SCM> scmd : SCMS.SCMS )
                 result &= scmd.configure(req);
+
+            for( Descriptor<Trigger> d : Triggers.TRIGGERS )
+                result &= d.configure(req);
 
             save();
             if(result)

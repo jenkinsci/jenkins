@@ -1,0 +1,15 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:if test="${app.jobs.size()>10}">
+    <!--
+      unless you have a fair number of projects, this option is likely pointless.
+      so let's hide this option for new users to avoid confusing them.
+    -->
+    <f:section title="SCM Polling">
+      <f:entry title="Max # of concurrent polling"
+               help="/help/triggers/SCMTrigger/concurrency.html">
+        <input class="setting-input" name="poll_scm_threads"
+          type="text" value="${h.ifThenElse(descriptor.pollingThreadCount==0,'',descriptor.pollingThreadCount)}"/>
+      </f:entry>
+    </f:section>
+  </j:if>
+</j:jelly>
