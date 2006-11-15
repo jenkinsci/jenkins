@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -224,6 +225,7 @@ public class Mailer extends Publisher {
         // but how do I obtain that?
         msg.setContent("","text/plain");
         msg.setFrom(new InternetAddress(DESCRIPTOR.getAdminAddress()));
+        msg.setSentDate(new Date());
 
         List<InternetAddress> rcp = new ArrayList<InternetAddress>();
         StringTokenizer tokens = new StringTokenizer(recipients);
