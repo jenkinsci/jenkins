@@ -96,7 +96,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
             reload();
         } finally {
             reloadingInProgress = false;
-            nextUpdate = System.currentTimeMillis()+1000;
+            nextUpdate = System.currentTimeMillis()+1000*60;
         }
     }
 
