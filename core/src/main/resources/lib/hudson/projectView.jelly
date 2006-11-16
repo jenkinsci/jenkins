@@ -3,6 +3,14 @@
   <%@ attribute name="showViewTabs" required="true" type="java.lang.Boolean" %>
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="iconSize" value="${h.getCookie(request,'iconSize','32x32')}" />
+  <!--
+    balls look smaller than their actual size,
+    so we try not to make the secondary icons look bigger than the icon.
+    we want the user's eyes to go to balls, not the clock.
+  -->
+  <j:set var="subIconSize" value="${h.ifThenElse(iconSize=='32x32','24x24',iconSize)}"/>
+
   <div class="dashboard">
     <j:if test="${!empty(jobs)}">
       <!-- view tab bar -->
@@ -38,7 +46,7 @@
           <j:set var="lfBuild" value="${job.lastFailedBuild}" />
           <tr>
             <td data="${job.iconColor}">
-              <img width="32" height="32" src="${rootURL}/images/32x32/${job.buildStatusUrl}" />
+              <img src="${rootURL}/images/${iconSize}/${job.buildStatusUrl}" />
             </td>
             <td>
               <a href="${rootURL}/${job.url}">
@@ -86,14 +94,39 @@
             <l:isAdmin>
               <td>
                 <j:if test="${job.buildable}">
-                  <a href="${rootURL}/${job.url}build"><img src="${rootURL}/images/24x24/clock.gif" title="Schedule a build" border="0" /></a>
+                  <a href="${rootURL}/${job.url}build">
+                    <img src="${rootURL}/images/${subIconSize}/clock.gif" title="Schedule a build" border="0" /></a>
                 </j:if>
               </td>
             </l:isAdmin>
           </tr>
         </j:forEach>
       </x:element>
-      <t:rssBar />
+      <table style="width:100%">
+        <tr>
+          <d:taglib uri="local">
+            <d:tag name="iconSizeLink">
+              <st:nbsp/>
+              <j:choose>
+                <j:when test="${sz==iconSize}">
+                  ${title}
+                </j:when>
+                <j:otherwise>
+                  <a href="${rootURL}/iconSize?${sz}">${title}</a>
+                </j:otherwise>
+              </j:choose>
+            </d:tag>
+          </d:taglib>
+
+          <td xmlns:local="local">Icon:
+            <local:iconSizeLink title="S" sz="16x16" />
+            <local:iconSizeLink title="M" sz="24x24" />
+            <local:iconSizeLink title="L" sz="32x32" />
+          </td><td>
+            <t:rssBar />
+          </td>
+        </tr>
+      </table>
     </j:if>
   </div>
 </j:jelly>

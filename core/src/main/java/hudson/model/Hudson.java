@@ -30,6 +30,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Cookie;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -1043,6 +1044,14 @@ public final class Hudson extends JobCollection implements Node {
         }
 
         req.getView(this,"_script.jelly").forward(req,rsp);
+    }
+
+    /**
+     * Changes the icon size by changing the cookie
+     */
+    public void doIconSize( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        rsp.addCookie(new Cookie("iconSize",req.getQueryString()));
+        rsp.sendRedirect2(".");
     }
 
     public void doFingerprintCleanup( StaplerRequest req, StaplerResponse rsp ) throws IOException {

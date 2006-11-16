@@ -170,6 +170,12 @@ public class Functions {
         return null;
     }
 
+    public static String getCookie(HttpServletRequest req,String name, String defaultValue) {
+        Cookie c = getCookie(req, name);
+        if(c==null || c.getValue()==null) return defaultValue;
+        return c.getValue();
+    }
+
     /**
      * Creates a sub map by using the given range (both ends inclusive).
      */
