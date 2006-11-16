@@ -171,37 +171,45 @@ public final class PluginWrapper {
             throw new IOException("Plugin installation failed. No 'Plugin-Class' entry in the manifest of "+archive);
         }
 
+        // override the context classloader so that XStream activity in plugin.start()
+        // will be able to resolve classes in this plugin
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(classLoader);
         try {
-            Class clazz = classLoader.loadClass(className);
-            Object plugin = clazz.newInstance();
-            if(!(plugin instanceof Plugin)) {
-                throw new IOException(className+" doesn't extend from hudson.Plugin");
+            try {
+                Class clazz = classLoader.loadClass(className);
+                Object plugin = clazz.newInstance();
+                if(!(plugin instanceof Plugin)) {
+                    throw new IOException(className+" doesn't extend from hudson.Plugin");
+                }
+                this.plugin = (Plugin)plugin;
+                this.plugin.wrapper = this;
+            } catch (ClassNotFoundException e) {
+                IOException ioe = new IOException("Unable to load " + className + " from " + archive);
+                ioe.initCause(e);
+                throw ioe;
+            } catch (IllegalAccessException e) {
+                IOException ioe = new IOException("Unable to create instance of " + className + " from " + archive);
+                ioe.initCause(e);
+                throw ioe;
+            } catch (InstantiationException e) {
+                IOException ioe = new IOException("Unable to create instance of " + className + " from " + archive);
+                ioe.initCause(e);
+                throw ioe;
             }
-            this.plugin = (Plugin)plugin;
-            this.plugin.wrapper = this;
-        } catch (ClassNotFoundException e) {
-            IOException ioe = new IOException("Unable to load " + className + " from " + archive);
-            ioe.initCause(e);
-            throw ioe;
-        } catch (IllegalAccessException e) {
-            IOException ioe = new IOException("Unable to create instance of " + className + " from " + archive);
-            ioe.initCause(e);
-            throw ioe;
-        } catch (InstantiationException e) {
-            IOException ioe = new IOException("Unable to create instance of " + className + " from " + archive);
-            ioe.initCause(e);
-            throw ioe;
-        }
 
-        // initialize plugin
-        try {
-            plugin.setServletContext(owner.context);
-            plugin.start();
-        } catch(Throwable t) {
-            // gracefully handle any error in plugin.
-            IOException ioe = new IOException("Failed to initialize");
-            ioe.initCause(t);
-            throw ioe;
+            // initialize plugin
+            try {
+                plugin.setServletContext(owner.context);
+                plugin.start();
+            } catch(Throwable t) {
+                // gracefully handle any error in plugin.
+                IOException ioe = new IOException("Failed to initialize");
+                ioe.initCause(t);
+                throw ioe;
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
         }
     }
 
