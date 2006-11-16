@@ -1,5 +1,5 @@
 <!--
-  Outer-most tag that forms a form tag.
+  Foldable block expanded when the menu item is checked.
 
   This needs a fix. Big time.
 
@@ -13,37 +13,10 @@
   <j:if test="${empty(help)}">
     <j:set var="help" value="${null}" />
   </j:if>
-  <tr id="oe_s${oe_id}"><!-- this ID marks the beginning -->
+  <tr id="oe_s${oe_id}" hasHelp="${help!=null}"><!-- this ID marks the beginning -->
     <td colspan="3">
-      <script>
-          function toggle${oe_id}() {
-            var tbl = document.getElementById('oe_s${oe_id}').parentNode;
-            var i = false;
-            var o = false;
-
-            for( j=0; tbl.rows[j]; j++ ) {
-              n = tbl.rows[j];
-
-              if(n.id=="oe_e${oe_id}")
-                o = true;
-
-              if( i &amp;&amp; !o ) {
-                if( n.style.display!="none" )
-                  n.style.display = "none";
-                else
-                  n.style.display = "";
-              }
-
-              if(n.id=="oe_s${oe_id}") {
-                <j:if test="${help!=null}">
-                  j++;
-                </j:if>
-                i = true;
-              }
-            }
-          }
-      </script>
-      <f:checkbox name="${name}" onclick="javascript:toggle${oe_id}()" checked="${checked}" />
+      <f:checkbox name="${name}" onclick="javascript:updateOptionalBlock('oe_s${oe_id}','oe_e${oe_id}','oe_c${oe_id}')"
+                  id="oe_c${oe_id}" checked="${checked}" />
       ${title}
     </td>
     <j:if test="${help!=null}">
@@ -58,10 +31,8 @@
   <d:invokeBody />
   <!-- end marker -->
   <tr id="oe_e${oe_id}" style="display:none">
-    <j:if test="${checked=='false'}">
-      <script>
-        toggle${oe_id}();
-      </script>
-    </j:if>
+    <script>
+      updateOptionalBlock('oe_s${oe_id}','oe_e${oe_id}','oe_c${oe_id}');
+    </script>
   </tr>
 </j:jelly>

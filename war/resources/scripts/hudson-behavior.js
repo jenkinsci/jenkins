@@ -151,3 +151,36 @@ function replaceDescription() {
     );
     return false;
 }
+
+
+// used by optionalBlock.jelly to update the form status
+//   @param sid     ID of the start marker
+//   @param sid     ID of the end marker
+//   @param cid     ID of the check box
+function updateOptionalBlock(sid, eid, cid) {
+    var tbl = document.getElementById(sid).parentNode;
+    var i = false;
+    var o = false;
+
+    var checked = document.getElementById(cid).checked;
+
+    for (var j = 0; tbl.rows[j]; j++) {
+        var n = tbl.rows[j];
+
+        if (n.id == eid)
+            o = true;
+
+        if (i && !o) {
+            if (checked)
+                n.style.display = "";
+            else
+                n.style.display = "none";
+        }
+
+        if (n.id == sid) {
+            if (n.getAttribute('hasHelp') == 'true')
+                j++;
+            i = true;
+        }
+    }
+}
