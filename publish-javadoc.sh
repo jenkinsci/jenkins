@@ -1,13 +1,17 @@
-#!/bin/bash -x
+#!/bin/bash -xe
 #
-# Kohsuke's automation script to publish javadoc to java.net CVS repository.
-# Checked in only because Maven doesn't let me release it unless I have it in CVS.
+# publish Hudson javadoc and deploy that into the java.net CVS repository
 # 
 
-cd ../www/javadoc
+# generate javadoc
+cd core
+mvn -o javadoc:javadoc
+cd ..
+
+cd ../../www/javadoc
 cvs update -Pd
 
-cp -R ../../hudson/build/javadoc/* .
+cp -R ../../hudson/main/core/target/site/apidocs/* .
 
 # ignore everything under CVS, then
 # ignore all files that are already in CVS, then
