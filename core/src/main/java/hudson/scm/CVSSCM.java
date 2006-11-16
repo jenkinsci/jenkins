@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -490,8 +491,27 @@ public class CVSSCM extends AbstractCVSFamilySCM {
     static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends Descriptor<SCM> implements ModelObject {
+        /**
+         * Path to <tt>.cvspass</tt>. Null to default.
+         */
+        private String cvsPassFile;
+
+        /**
+         * Copy-on-write.
+         */
+        private volatile Map<String,RepositoryBrowser> browsers = new HashMap<String,RepositoryBrowser>();
+
+        class RepositoryBrowser {
+            String diffURL;
+            String browseURL;
+        }
+
         DescriptorImpl() {
             super(CVSSCM.class);
+        }
+
+        protected void convert(Map<String, Object> oldPropertyBag) {
+            cvsPassFile = (String)oldPropertyBag.get("cvspass");
         }
 
         public String getDisplayName() {
@@ -510,14 +530,14 @@ public class CVSSCM extends AbstractCVSFamilySCM {
         }
 
         public String getCvspassFile() {
-            String value = (String)getProperties().get("cvspass");
+            String value = cvsPassFile;
             if(value==null)
                 value = "";
             return value;
         }
 
         public void setCvspassFile(String value) {
-            getProperties().put("cvspass",value);
+            cvsPassFile = value;
             save();
         }
 
@@ -525,43 +545,33 @@ public class CVSSCM extends AbstractCVSFamilySCM {
          * Gets the URL that shows the diff.
          */
         public String getDiffURL(String cvsRoot, String pathName, String oldRev, String newRev) {
-            String url = getProperties().get("repository-browser.diff." + cvsRoot).toString();
-            if(url==null)   return null;
-            return url.replaceAll("%%P",pathName).replace("%%r",oldRev).replace("%%R",newRev);
+            RepositoryBrowser b = browsers.get(cvsRoot);
+            if(b==null)   return null;
+            return b.diffURL.replaceAll("%%P",pathName).replace("%%r",oldRev).replace("%%R",newRev);
 
         }
 
         public boolean configure( HttpServletRequest req ) {
             setCvspassFile(req.getParameter("cvs_cvspass"));
 
-            Map<String,Object> properties = getProperties();
-
+            Map<String,RepositoryBrowser> browsers = new HashMap<String, RepositoryBrowser>();
             int i=0;
             while(true) {
                 String root = req.getParameter("cvs_repobrowser_cvsroot" + i);
                 if(root==null)  break;
 
-                setBrowser(req.getParameter("cvs_repobrowser"+i), properties, root, "repository-browser.");
-                setBrowser(req.getParameter("cvs_repobrowser_diff"+i), properties, root, "repository-browser.diff.");
+                RepositoryBrowser rb = new RepositoryBrowser();
+                rb.browseURL = req.getParameter("cvs_repobrowser"+i);
+                rb.diffURL = req.getParameter("cvs_repobrowser_diff"+i);
+                browsers.put(root,rb);
+
                 i++;
             }
+            this.browsers = browsers;
 
             save();
 
             return true;
-        }
-
-        private void setBrowser(String key, Map<String, Object> properties, String root, String prefi) {
-            String value = Util.nullify(key);
-            if(value==null) {
-                properties.remove(prefi +root);
-            } else {
-                properties.put(prefi +root,value);
-            }
-        }
-
-        public Map<String,Object> getProperties() {
-            return super.getProperties();
         }
 
     //

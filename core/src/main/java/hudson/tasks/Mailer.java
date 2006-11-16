@@ -12,13 +12,13 @@ import hudson.scm.ChangeLogSet.Entry;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.mail.Address;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.Address;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
@@ -27,13 +27,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -77,11 +77,11 @@ public class Mailer extends Publisher {
             if(mail!=null) {
                 Address[] allRecipients = mail.getAllRecipients();
                 if(allRecipients!=null) {
-                    StringBuffer buf = new StringBuffer("Sending e-mails to ");
+                StringBuffer buf = new StringBuffer("Sending e-mails to ");
                     for (Address a : allRecipients)
-                        buf.append(' ').append(a);
-                    listener.getLogger().println(buf);
-                    Transport.send(mail);
+                    buf.append(' ').append(a);
+                listener.getLogger().println(buf);
+                Transport.send(mail);
                 } else {
                     listener.getLogger().println("An attempt to send an e-mail"
                             + " to empty list of recipients, ignored.");
@@ -261,9 +261,48 @@ public class Mailer extends Publisher {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends Descriptor<Publisher> {
+        /**
+         * The default e-mail address suffix appended to the user name found from changelog,
+         * to send e-mails. Null if not configured.
+         */
+        private String defaultSuffix;
+
+        /**
+         * Hudson's own URL, to put into the e-mail.
+         */
+        private String hudsonUrl;
+
+        /**
+         * If non-null, use SMTP-AUTH with these information.
+         */
+        private String smtpAuthPassword,smtpAuthUsername;
+
+        /**
+         * The e-mail address that Hudson puts to "From:" field in outgoing e-mails.
+         * Null if unconfigured.
+         */
+        private String adminAddress;
+
+        /**
+         * The SMTP server to use for sending e-mail. Null for default to the environment,
+         * which is usually <tt>localhost</tt>.
+         */
+        private String smtpHost;
 
         public DescriptorImpl() {
             super(Mailer.class);
+        }
+
+        /**
+         * For backward compatibility.
+         */
+        protected void convert(Map<String, Object> oldPropertyBag) {
+            defaultSuffix = (String)oldPropertyBag.get("mail.default.suffix");
+            hudsonUrl = (String)oldPropertyBag.get("mail.hudson.url");
+            smtpAuthUsername = (String)oldPropertyBag.get("mail.hudson.smtpauth.username");
+            smtpAuthPassword = (String)oldPropertyBag.get("mail.hudson.smtpauth.password");
+            adminAddress = (String)oldPropertyBag.get("mail.admin.address");
+            smtpHost = (String)oldPropertyBag.get("mail.smtp.host");
         }
 
         public String getDisplayName() {
@@ -275,17 +314,14 @@ public class Mailer extends Publisher {
         }
 
         public String getDefaultSuffix() {
-            return (String)getProperties().get("mail.default.suffix");
+            return defaultSuffix;
         }
 
         /** JavaMail session. */
         public Session createSession() {
             Properties props = new Properties(System.getProperties());
-            // can't use putAll
-            for (Map.Entry o : ((Map<?,?>)getProperties()).entrySet()) {
-                if(o.getValue()!=null)
-                    props.put(o.getKey(),o.getValue());
-            }
+            if(smtpHost!=null)
+                props.put("mail.smtp.host",smtpHost);
 
             return Session.getInstance(props,getAuthenticator());
         }
@@ -302,16 +338,20 @@ public class Mailer extends Publisher {
 
         public boolean configure(HttpServletRequest req) throws FormException {
             // this code is brain dead
-            getProperties().put("mail.smtp.host",nullify(req.getParameter("mailer_smtp_server")));
-            getProperties().put("mail.admin.address",req.getParameter("mailer_admin_address"));
-            getProperties().put("mail.default.suffix",nullify(req.getParameter("mailer_default_suffix")));
+            smtpHost = nullify(req.getParameter("mailer_smtp_server"));
+            adminAddress = req.getParameter("mailer_admin_address");
+            defaultSuffix = nullify(req.getParameter("mailer_default_suffix"));
             String url = nullify(req.getParameter("mailer_hudson_url"));
             if(url!=null && !url.endsWith("/"))
                 url += '/';
-            getProperties().put("mail.hudson.url",url);
+            hudsonUrl = url;
 
-            getProperties().put("mail.hudson.smtpauth.username",nullify(req.getParameter("mailer.SMTPAuth.userName")));
-            getProperties().put("mail.hudson.smtpauth.password",nullify(req.getParameter("mailer.SMTPAuth.password")));
+            if(req.getParameter("mailer.useSMTPAuth")!=null) {
+                smtpAuthUsername = nullify(req.getParameter("mailer.SMTPAuth.userName"));
+                smtpAuthPassword = nullify(req.getParameter("mailer.SMTPAuth.password"));
+            } else {
+                smtpAuthUsername = smtpAuthPassword = null;
+            }
 
             save();
             return super.configure(req);
@@ -323,25 +363,25 @@ public class Mailer extends Publisher {
         }
 
         public String getSmtpServer() {
-            return (String)getProperties().get("mail.smtp.host");
+            return smtpHost;
         }
 
         public String getAdminAddress() {
-            String v = (String)getProperties().get("mail.admin.address");
+            String v = adminAddress;
             if(v==null)     v = "address not configured yet <nobody>";
             return v;
         }
 
         public String getUrl() {
-            return (String)getProperties().get("mail.hudson.url");
+            return hudsonUrl;
         }
 
         public String getSmtpAuthUserName() {
-            return (String)getProperties().get("mail.hudson.smtpauth.username");
+            return smtpAuthUsername;
         }
 
         public String getSmtpAuthPassword() {
-            return (String)getProperties().get("mail.hudson.smtpauth.password");
+            return smtpAuthPassword;
         }
 
         /** Check whether a path (/-separated) will be archived. */
@@ -433,7 +473,6 @@ public class Mailer extends Publisher {
 
         StringBuilder sb = new StringBuilder(s.length() * 2);
         sb.append("\\Q");
-        slashEIndex = 0;
         int current = 0;
         while ((slashEIndex = s.indexOf("\\E", current)) != -1) {
             sb.append(s.substring(current, slashEIndex));

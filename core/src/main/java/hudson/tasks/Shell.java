@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Map;
 
 /**
  * Executes a series of commands by using a shell.
@@ -93,19 +94,28 @@ public class Shell extends Builder {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends Descriptor<Builder> {
+        /**
+         * Shell executable, or null to default.
+         */
+        private String shell;
+
         private DescriptorImpl() {
             super(Shell.class);
         }
 
+
+        protected void convert(Map<String, Object> oldPropertyBag) {
+            shell = (String)oldPropertyBag.get("shell");
+        }
+
         public String getShell() {
-            String shell = (String)getProperties().get("shell");
             if(shell==null)
-                shell = isWindows()?"sh":"/bin/sh";
+                return isWindows()?"sh":"/bin/sh";
             return shell;
         }
 
         public void setShell(String shell) {
-            getProperties().put("shell",shell);
+            this.shell = shell;
             save();
         }
 

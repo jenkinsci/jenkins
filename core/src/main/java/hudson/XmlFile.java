@@ -51,11 +51,15 @@ public final class XmlFile {
 
     /**
      * Loads the contents of this file into an existing object.
+     *
+     * @return
+     *      The unmarshalled object. Usually the same as <tt>o</tt>, but would be different
+     *      if the XML representation if completely new.
      */
-    public void unmarshal( Object o ) throws IOException {
+    public Object unmarshal( Object o ) throws IOException {
         Reader r = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
         try {
-            xs.unmarshal(new XppReader(r),o);
+            return xs.unmarshal(new XppReader(r),o);
         } catch (StreamException e) {
             throw new IOException2(e);
         } catch(ConversionException e) {

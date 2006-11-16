@@ -1,22 +1,21 @@
 package hudson.tasks;
 
+import hudson.CopyOnWrite;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.util.FormFieldValidator;
-import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
+import hudson.util.FormFieldValidator;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -103,8 +102,16 @@ public class Ant extends Builder {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends Descriptor<Builder> {
+        @CopyOnWrite
+        private volatile AntInstallation[] installations = new AntInstallation[0];
+
         private DescriptorImpl() {
             super(Ant.class);
+        }
+
+        protected void convert(Map<String,Object> oldPropertyBag) {
+            if(oldPropertyBag.containsKey("installations"))
+                installations = (AntInstallation[]) oldPropertyBag.get("installations");
         }
 
         public String getHelpFile() {
@@ -116,12 +123,7 @@ public class Ant extends Builder {
         }
 
         public AntInstallation[] getInstallations() {
-            AntInstallation[] r = (AntInstallation[]) getProperties().get("installations");
-
-            if(r==null)
-                return new AntInstallation[0];
-
-            return r.clone();
+            return installations;
         }
 
         public boolean configure(HttpServletRequest req) {
@@ -142,7 +144,7 @@ public class Ant extends Builder {
                 insts[i] = new AntInstallation(names[i],homes[i]);
             }
 
-            getProperties().put("installations",insts);
+            this.installations = insts;
 
             save();
 

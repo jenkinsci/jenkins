@@ -2,17 +2,17 @@ package hudson.model;
 
 import hudson.XmlFile;
 import hudson.scm.CVSSCM;
+import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-
-import org.kohsuke.stapler.StaplerRequest;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Metadata about a configurable instance.
@@ -47,15 +47,23 @@ import org.kohsuke.stapler.StaplerRequest;
  * @see Describable
  */
 public abstract class Descriptor<T extends Describable<T>> {
-    private Map<String,Object> properties;
+    /**
+     * Up to Hudson 1.61 this was used as the primary persistence mechanism.
+     * Going forward Hudson simply persists all the non-transient fields
+     * of {@link Descriptor}, just like others, so this is pointless.
+     *
+     * @deprecated
+     */
+    private transient Map<String,Object> properties;
 
     /**
      * The class being described by this descriptor.
      */
-    public final Class<? extends T> clazz;
+    public transient final Class<? extends T> clazz;
 
     protected Descriptor(Class<? extends T> clazz) {
         this.clazz = clazz;
+        load();
     }
 
     /**
@@ -93,21 +101,6 @@ public abstract class Descriptor<T extends Describable<T>> {
     }
 
     /**
-     * Returns the data store that can be used to store configuration info.
-     *
-     * <p>
-     * The data store is local to each {@link Descriptor}.
-     *
-     * @return
-     *      never return null.
-     */
-    protected synchronized Map<String,Object> getProperties() {
-        if(properties==null)
-            properties = load();
-        return properties;
-    }
-
-    /**
      * Invoked when the global configuration page is submitted.
      *
      * Can be overrided to store descriptor-specific information.
@@ -132,25 +125,37 @@ public abstract class Descriptor<T extends Describable<T>> {
      * Saves the configuration info to the disk.
      */
     protected synchronized void save() {
-        if(properties!=null)
-            try {
-                getConfigFile().write(properties);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            getConfigFile().write(this);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
+        }
     }
 
-    private Map<String,Object> load() {
+    private void load() {
         // load
         XmlFile file = getConfigFile();
         if(!file.exists())
-            return new HashMap<String,Object>();
+            return;
 
         try {
-            return (Map<String,Object>)file.read();
+            Object o = file.unmarshal(this);
+            if(o instanceof Map) {
+                // legacy format
+                convert((Map<String,Object>)o);
+                save();     // convert to the new format
+            }
         } catch (IOException e) {
-            return new HashMap<String,Object>();
+            LOGGER.log(Level.WARNING, "Failed to load "+file, e);
         }
+    }
+
+    /**
+     * {@link Descriptor}s that has existed &lt;= 1.61 needs to
+     * be able to read in the old configuration in a property bag
+     * and reflect that into the new layout.
+     */
+    protected void convert(Map<String, Object> oldPropertyBag) {
     }
 
     private XmlFile getConfigFile() {
@@ -203,4 +208,6 @@ public abstract class Descriptor<T extends Describable<T>> {
             return formField;
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(Descriptor.class.getName());
 }

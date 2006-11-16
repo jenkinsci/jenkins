@@ -409,8 +409,17 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
     static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends Descriptor<SCM> {
+        /**
+         * Path to <tt>svn.exe</tt>. Null to default.
+         */
+        private String svnExe;
+
         DescriptorImpl() {
             super(SubversionSCM.class);
+        }
+
+        protected void convert(Map<String, Object> oldPropertyBag) {
+            svnExe = (String)oldPropertyBag.get("svn_exe");
         }
 
         public String getDisplayName() {
@@ -427,19 +436,19 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         }
 
         public String getSvnExe() {
-            String value = (String)getProperties().get("svn_exe");
+            String value = svnExe;
             if(value==null)
                 value = "svn";
             return value;
         }
 
         public void setSvnExe(String value) {
-            getProperties().put("svn_exe",value);
+            svnExe = value;
             save();
         }
 
         public boolean configure( HttpServletRequest req ) {
-            setSvnExe(req.getParameter("svn_exe"));
+            svnExe = req.getParameter("svn_exe");
             return true;
         }
 

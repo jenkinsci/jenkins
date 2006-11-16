@@ -130,10 +130,16 @@ public class SCMTrigger extends Trigger {
          */
         transient volatile ExecutorService executor;
 
+        /**
+         * Max number of threads for SCM polling.
+         * 0 for unbounded.
+         */
+        private int maximumThreads;
+
         DescriptorImpl() {
             super(SCMTrigger.class);
             // create an executor
-            update(getPollingThreadCount());
+            update();
         }
 
         public ExecutorService getExecutor() {
@@ -163,28 +169,24 @@ public class SCMTrigger extends Trigger {
          *      0 if unlimited.
          */
         public int getPollingThreadCount() {
-            String value = (String)getProperties().get("poll_scm_threads");
-            if(value==null)
-                return 0;
-            return Integer.parseInt(value);
+            return maximumThreads;
         }
 
         public void setPollingThreadCount(int n) {
-            getProperties().put("poll_scm_threads",String.valueOf(n));
+            // fool proof
+            if(n<0)     n=0;
+            if(n>100)   n=100;
+
+            maximumThreads = n;
             save();
-            update(n);
         }
 
         /**
          * Update the {@link ExecutorService} instance.
          */
-        /*package*/ synchronized void update(int n) {
-            // fool proof
-            if(n<0) n=0;
-            if(n>100)   n=0;
-
+        /*package*/ synchronized void update() {
             // swap to a new one, and shut down the old one gradually
-            ExecutorService newExec = n==0 ? Executors.newCachedThreadPool() : Executors.newFixedThreadPool(n);
+            ExecutorService newExec = maximumThreads==0 ? Executors.newCachedThreadPool() : Executors.newFixedThreadPool(maximumThreads);
             ExecutorService old = executor;
             executor = newExec;
             if(old!=null)
