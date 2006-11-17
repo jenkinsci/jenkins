@@ -3,15 +3,13 @@
 # publish Hudson javadoc and deploy that into the java.net CVS repository
 # 
 
-# generate javadoc
-cd core
-mvn -o javadoc:javadoc
-cd ..
-
-cd ../../www/javadoc
+pushd ../../../www/javadoc
 cvs update -Pd
+popd
 
-cp -R ../../hudson/main/core/target/site/apidocs/* .
+cp -R target/checkout/core/target/site/apidocs/* ../../../www/javadoc
+
+cd ../../../www/javadoc
 
 # ignore everything under CVS, then
 # ignore all files that are already in CVS, then
