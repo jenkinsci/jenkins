@@ -59,6 +59,12 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         return false;
     }
 
+
+    protected void onLoad(Hudson root, String name) throws IOException {
+        super.onLoad(root, name);
+        notLoaded = true;
+    }
+
     protected SortedMap<Integer,RunT> _getRuns() {
         if(notLoaded || runs==null) {
             // if none is loaded yet, do so immediately.
