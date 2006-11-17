@@ -9,7 +9,7 @@
   
   <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.62-SNAPSHOT</version>
+  <version>1.62</version>
   <packaging>pom</packaging>
   
   <name>Hudson main module</name>
@@ -31,4 +31,8 @@
       </plugin>
     </plugins>
   </build>
+
+  <scm>
+    <tag>hudson-1_62</tag>
+  </scm>
 </project>
