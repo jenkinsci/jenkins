@@ -1,17 +1,21 @@
 package hudson.tasks;
 
 import hudson.Launcher;
-import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.Project;
 import hudson.model.Result;
-
-import java.util.List;
-
+import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Triggers builds of other projects.
@@ -91,7 +95,13 @@ public class BuildTrigger extends Publisher {
     }
 
 
-    public static final Descriptor<Publisher> DESCRIPTOR = new Descriptor<Publisher>(BuildTrigger.class) {
+    public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
+
+    public static class DescriptorImpl extends Descriptor<Publisher> {
+        public DescriptorImpl() {
+            super(BuildTrigger.class);
+        }
+
         public String getDisplayName() {
             return "Build other projects";
         }
@@ -99,5 +109,32 @@ public class BuildTrigger extends Publisher {
         public Publisher newInstance(StaplerRequest req) {
             return new BuildTrigger(req.getParameter("childProjects"));
         }
-    };
+
+        /**
+         * Form validation method.
+         */
+        public void doCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+            new FormFieldValidator(req,rsp,true) {
+                protected void check() throws IOException, ServletException {
+                    String list = request.getParameter("value");
+
+                    StringTokenizer tokens = new StringTokenizer(list,",");
+                    while(tokens.hasMoreTokens()) {
+                        String projectName = tokens.nextToken().trim();
+                        Job job = Hudson.getInstance().getJob(projectName);
+                        if(job==null) {
+                            error("No such project: "+projectName);
+                            return;
+                        }
+                        if(!(job instanceof Project)) {
+                            error(projectName+" is not a software build");
+                            return;
+                        }
+                    }
+
+                    ok();
+                }
+            }.process();
+        }
+    }
 }
