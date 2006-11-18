@@ -45,7 +45,7 @@
           <j:set var="lsBuild" value="${job.lastSuccessfulBuild}" />
           <j:set var="lfBuild" value="${job.lastFailedBuild}" />
           <tr>
-            <td data="${job.iconColor}">
+            <td data="${job.iconColor.ordinal()}">
               <img src="${rootURL}/images/${iconSize}/${job.buildStatusUrl}" />
             </td>
             <td>

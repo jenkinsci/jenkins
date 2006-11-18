@@ -193,10 +193,10 @@ public class Project extends Job<Project,Build> {
     }
 
     @Override
-    public String getIconColor() {
+    public BallColor getIconColor() {
         if(isDisabled())
             // use grey to indicate that the build is disabled
-            return "grey";
+            return BallColor.GREY;
         else
             return super.getIconColor();
     }

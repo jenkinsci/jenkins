@@ -275,25 +275,25 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Gets the icon color for display.
      */
-    public String getIconColor() {
+    public BallColor getIconColor() {
         if(!isBuilding()) {
             // already built
             if(result==Result.SUCCESS)
-                return "blue";
+                return BallColor.BLUE;
             if(result== Result.UNSTABLE)
-                return "yellow";
+                return BallColor.YELLOW;
             else
-                return "red";
+                return BallColor.RED;
         }
 
         // a new build is in progress
-        String baseColor;
+        BallColor baseColor;
         if(previousBuild==null)
-            baseColor = "grey";
+            baseColor = BallColor.GREY;
         else
             baseColor = previousBuild.getIconColor();
 
-        return baseColor +"_anime";
+        return baseColor.anime();
     }
 
     /**
