@@ -1,5 +1,7 @@
 package hudson;
 
+import hudson.util.IOException2;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -112,8 +114,12 @@ public final class FilePath {
      * Creates a temporary file.
      */
     public FilePath createTempFile(String prefix, String suffix) throws IOException {
-        File f = File.createTempFile(prefix, suffix, getLocal());
-        return new FilePath(this,f.getName());
+        try {
+            File f = File.createTempFile(prefix, suffix, getLocal());
+            return new FilePath(this,f.getName());
+        } catch (IOException e) {
+            throw new IOException2("Failed to create a temp file on "+getLocal(),e);
+        }
     }
 
     /**
