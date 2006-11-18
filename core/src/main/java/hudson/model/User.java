@@ -3,6 +3,7 @@ package hudson.model;
 import com.thoughtworks.xstream.XStream;
 import hudson.FeedAdapter;
 import hudson.XmlFile;
+import hudson.CopyOnWrite;
 import hudson.model.Descriptor.FormException;
 import hudson.scm.ChangeLogSet;
 import hudson.util.RunList;
@@ -37,20 +38,14 @@ public class User extends AbstractModelObject {
 
     /**
      * List of {@link UserProperty}s configured for this project.
-     * Copy-on-write semantics.
      */
+    @CopyOnWrite
     private volatile List<UserProperty> properties = new ArrayList<UserProperty>();
 
 
     private User(String id) {
         this.id = id;
         this.fullName = id;   // fullName defaults to name
-
-        for (UserPropertyDescriptor d : UserProperties.LIST) {
-            UserProperty up = d.newInstance(this);
-            if(up!=null)
-                properties.add(up);
-        }
 
         // load the other data from disk if it's available
         XmlFile config = getConfigFile();
@@ -59,6 +54,16 @@ public class User extends AbstractModelObject {
                 config.unmarshal(this);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to load "+config,e);
+        }
+
+        // allocate default instances if needed.
+        // doing so after load makes sure that newly added user properties do get reflected
+        for (UserPropertyDescriptor d : UserProperties.LIST) {
+            if(getProperty(d.clazz)==null) {
+                UserProperty up = d.newInstance(this);
+                if(up!=null)
+                    properties.add(up);
+            }
         }
 
         for (UserProperty p : properties)
