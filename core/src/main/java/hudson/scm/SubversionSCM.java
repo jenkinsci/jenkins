@@ -370,10 +370,9 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         // check the corresponding remote revision
         for (SvnInfo localInfo : wsRev.values()) {
             SvnInfo remoteInfo = SvnInfo.parse(localInfo.url,env,workspace,listener);
-            if(remoteInfo.revision > localInfo.revision) {
-                listener.getLogger().println(localInfo.url+" revision changed from "+localInfo.revision+" to "+remoteInfo.revision);
+            listener.getLogger().println("Revision:"+remoteInfo.revision);
+            if(remoteInfo.revision > localInfo.revision)
                 return true;    // change found
-            }
         }
 
         return false; // no change
