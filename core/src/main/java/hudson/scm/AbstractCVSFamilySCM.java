@@ -34,7 +34,7 @@ abstract class AbstractCVSFamilySCM implements SCM {
 
         int r = launcher.launch(cmd.toCommandArray(),env,out,dir).join();
         if(r!=0)
-            listener.fatalError(getDescriptor().getDisplayName()+" failed");
+            listener.fatalError(getDescriptor().getDisplayName()+" failed. exit code="+r);
 
         return r==0;
     }
