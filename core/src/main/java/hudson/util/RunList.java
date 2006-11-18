@@ -64,6 +64,8 @@ public class RunList extends ArrayList<Run> {
 
     /**
      * Reduce the size of the list by only leaving relatively new ones.
+     * This also removed on-going builds, as RSS cannot be used to publish information
+     * if it changes.
      */
     public RunList newBuilds() {
         GregorianCalendar threshold = new GregorianCalendar();
@@ -73,6 +75,11 @@ public class RunList extends ArrayList<Run> {
 
         for (Iterator<Run> itr = iterator(); itr.hasNext();) {
             Run r = itr.next();
+            if(r.isBuilding()) {
+                // can't publish on-going builds
+                itr.remove();
+                continue;
+            }
             // at least put 10 items
             if(count<10) {
                 count++;
