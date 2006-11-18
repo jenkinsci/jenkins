@@ -4,6 +4,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
+import hudson.model.Descriptor.FormException;
 import hudson.util.ArgumentListBuilder;
 
 import java.io.File;
@@ -56,7 +57,7 @@ public final class Slave implements Node {
      */
     private Mode mode;
 
-    public Slave(String name, String description, String command, String remoteFS, File localFS, int numExecutors, Mode mode) {
+    public Slave(String name, String description, String command, String remoteFS, File localFS, int numExecutors, Mode mode) throws FormException {
         this.name = name;
         this.description = description;
         this.command = command;
@@ -64,6 +65,13 @@ public final class Slave implements Node {
         this.localFS = localFS;
         this.numExecutors = numExecutors;
         this.mode = mode;
+
+        if (!name.equals(""))
+            throw new FormException("Invalid slave configuration. Name is empty", null);
+        if (!localFS.exists())
+            throw new FormException("Invalid slave configuration for " + name + ". No such directory exists: " + localFS, null);
+        if (remoteFS.equals(""))
+            throw new FormException("Invalid slave configuration for " + name + ". No remote directory given", null);
     }
 
     public String getNodeName() {
