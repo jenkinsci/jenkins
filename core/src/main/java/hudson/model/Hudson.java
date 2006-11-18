@@ -1051,7 +1051,9 @@ public final class Hudson extends JobCollection implements Node {
      */
     public void doIconSize( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         rsp.addCookie(new Cookie("iconSize",req.getQueryString()));
-        rsp.sendRedirect2(".");
+        String ref = req.getHeader("Referer");
+        if(ref==null)   ref=".";
+        rsp.sendRedirect2(ref);
     }
 
     public void doFingerprintCleanup( StaplerRequest req, StaplerResponse rsp ) throws IOException {
