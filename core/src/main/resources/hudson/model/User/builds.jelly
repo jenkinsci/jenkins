@@ -17,7 +17,7 @@
         </tr>
         <j:forEach var="b" items="${it.builds}">
           <tr>
-            <td data="${b.iconColor}">
+            <td data="${b.iconColor.ordinal()}">
               <a href="${rootURL}/${b.url}">
                 <img width="32" height="32" src="${rootURL}/images/32x32/${b.buildStatusUrl}" />
               </a>
