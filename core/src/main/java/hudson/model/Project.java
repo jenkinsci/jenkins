@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.util.EditDistance;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
@@ -726,6 +727,19 @@ public class Project extends Job<Project,Build> {
             r.add((Project) job);
         }
         return r;
+    }
+
+    /**
+     * Finds a {@link Project} that has the name closest to the given name.
+     */
+    public static Project findNearest(String name) {
+        List<Project> projects = Hudson.getInstance().getProjects();
+        String[] names = new String[projects.size()];
+        for( int i=0; i<projects.size(); i++ )
+            names[i] = projects.get(i).getName();
+
+        String nearest = EditDistance.findNearest(name, names);
+        return (Project)Hudson.getInstance().getJob(nearest);
     }
 
     private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {

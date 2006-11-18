@@ -123,7 +123,8 @@ public class BuildTrigger extends Publisher {
                         String projectName = tokens.nextToken().trim();
                         Job job = Hudson.getInstance().getJob(projectName);
                         if(job==null) {
-                            error("No such project: "+projectName);
+                            error("No such project '"+projectName+"'. Did you mean '"+
+                                Project.findNearest(projectName).getName()+"'?");
                             return;
                         }
                         if(!(job instanceof Project)) {
