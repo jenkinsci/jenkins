@@ -90,6 +90,26 @@ public abstract class JobCollection extends AbstractModelObject {
             return that.lastChange.compareTo(this.lastChange);
         }
     }
+
+    /**
+     * Does this {@link JobCollection} has any associated user information recorded?
+     */
+    public final boolean hasPeople() {
+        for (Job job : getJobs()) {
+            if (job instanceof Project) {
+                Project p = (Project) job;
+                for (Build build : p.getBuilds()) {
+                    for (Entry entry : build.getChangeSet()) {
+                        User user = entry.getAuthor();
+                        if(user!=null)
+                            return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Gets the users that show up in the changelog of this job collection.
      */

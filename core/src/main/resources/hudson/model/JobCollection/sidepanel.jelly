@@ -13,7 +13,9 @@
       <l:isAdmin>
         <l:task icon="images/24x24/new-package.gif" href="newJob" title="New Job" />
         <l:task icon="images/24x24/setting.gif" href="${rootURL}/manage" title="Manage Hudson" />
-        <l:task icon="images/24x24/user.gif" href="people" title="People" />
+        <j:if test="${it.hasPeople()}">
+          <l:task icon="images/24x24/user.gif" href="people" title="People" />
+        </j:if>
         <st:include page="sidepanel2.jelly" />
       </l:isAdmin>
     </l:tasks>
