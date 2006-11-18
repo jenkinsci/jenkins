@@ -3,7 +3,15 @@
     <st:include it="${it.owner}" page="sidepanel.jelly" />
     <l:main-panel>
       <h1>Last ${it.displayName}</h1>
-      <pre>${it.log}</pre>
+      <j:set var="log" value="${it.log}" />
+      <j:choose>
+        <j:when test="${empty(log)}">
+          Polling has not run yet.
+        </j:when>
+        <j:otherwise>
+          <pre>${it.log}</pre>
+        </j:otherwise>
+      </j:choose>
     </l:main-panel>
   </l:layout>
 </j:jelly>
