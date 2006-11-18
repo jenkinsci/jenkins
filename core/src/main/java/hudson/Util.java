@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.SimpleTimeZone;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -31,6 +32,36 @@ import org.apache.tools.ant.BuildException;
  * @author Kohsuke Kawaguchi
  */
 public class Util {
+
+    /**
+     * Replaces the occurence of '$key' by <tt>properties.get('key')</tt>.
+     *
+     * <p>
+     * This is a rather naive implementation that causes somewhat unexpected
+     * behavior when the expansion contains other macros.
+     */
+    public static String replaceMacro(String s, Map<String,String> properties) {
+        int idx=0;
+        while((idx=s.indexOf('$',idx))>=0) {
+            // identify the key
+            int end=idx+1;
+            while(end<s.length()) {
+                char ch = s.charAt(end++);
+                if(!Character.isJavaIdentifierPart(ch))
+                    break;
+            }
+            String key = s.substring(idx+1,end);
+            String value = properties.get(key);
+            if(value==null) {
+                idx++;  // skip this '$' mark
+            } else {
+                s = s.substring(0,idx)+value+s.substring(end);
+            }
+        }
+        
+        return s;
+    }
+
     /**
      * Loads the contents of a file into a string.
      */
