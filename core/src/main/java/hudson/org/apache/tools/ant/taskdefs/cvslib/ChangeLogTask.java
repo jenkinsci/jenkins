@@ -369,12 +369,12 @@ public class ChangeLogTask extends AbstractCvsTask {
 
             if (null != m_start && m_start.after(date)) {
                 //Skip dates that are too early
-                log("Filtering out "+cvsEntry+" because it's too early",Project.MSG_VERBOSE);
+                log("Filtering out "+cvsEntry+" because it's too early compare to "+m_start,Project.MSG_VERBOSE);
                 continue;
             }
             if (null != m_stop && m_stop.before(date)) {
                 //Skip dates that are too late
-                log("Filtering out "+cvsEntry+" because it's too late",Project.MSG_VERBOSE);
+                log("Filtering out "+cvsEntry+" because it's too late compare to "+m_stop,Project.MSG_VERBOSE);
                 continue;
             }
             if (!cvsEntry.containsBranch(branch)) {
