@@ -125,6 +125,13 @@
         <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
       </j:forEach>
 
+      <!-- build wrapper config pane -->
+      <j:getStatic var="wrappers" className="hudson.tasks.BuildWrappers" field="WRAPPERS" />
+      <j:forEach var="idx" begin="0" end="${size(wrappers)-1}">
+        <j:set var="descriptor" value="${wrappers[idx]}" />
+        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+      </j:forEach>
+
       <!-- builder config pane -->
       <j:getStatic var="builds" className="hudson.tasks.BuildStep" field="BUILDERS" />
       <j:forEach var="idx" begin="0" end="${size(builds)-1}">
