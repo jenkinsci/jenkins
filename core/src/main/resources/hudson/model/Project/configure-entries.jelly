@@ -95,6 +95,16 @@
   </f:descriptorList>
 
 
+  <!-- build wrapper config pane -->
+  <j:getStatic var="wrappers" className="hudson.tasks.BuildWrappers" field="WRAPPERS" />
+  <j:if test="${!empty(wrappers)}">
+    <f:descriptorList title="Build Environment"
+                      descriptors="${wrappers}"
+                      instances="${it.buildWrappers}"
+                      varName="wrapper" />
+  </j:if>
+
+
   <!-- build config pane -->
   <j:getStatic var="builders" className="hudson.tasks.BuildStep" field="BUILDERS" />
   <f:descriptorList title="Build"

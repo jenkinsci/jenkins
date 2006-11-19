@@ -50,6 +50,9 @@ public final class Proc {
             proc.getOutputStream().close();
     }
 
+    /**
+     * Waits for the completion of the process.
+     */
     public int join() {
         try {
             t1.join();
@@ -60,6 +63,14 @@ public final class Proc {
             proc.destroy();
             return -1;
         }
+    }
+
+    /**
+     * Terminates the process.
+     */
+    public void kill() {
+        proc.destroy();
+        join();
     }
 
     private static class Copier extends Thread {

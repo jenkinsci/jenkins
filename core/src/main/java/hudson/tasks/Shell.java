@@ -131,7 +131,7 @@ public class Shell extends Builder {
             return new Shell(req.getParameter("shell"));
         }
 
-        public boolean configure( HttpServletRequest req ) {
+        public boolean configure( StaplerRequest req ) {
             setShell(req.getParameter("shell"));
             return true;
         }

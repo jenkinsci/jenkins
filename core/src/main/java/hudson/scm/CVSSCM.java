@@ -555,7 +555,7 @@ public class CVSSCM extends AbstractCVSFamilySCM {
 
         }
 
-        public boolean configure( HttpServletRequest req ) {
+        public boolean configure( StaplerRequest req ) {
             setCvspassFile(req.getParameter("cvs_cvspass"));
 
             Map<String,RepositoryBrowser> browsers = new HashMap<String, RepositoryBrowser>();

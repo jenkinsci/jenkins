@@ -448,7 +448,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
             save();
         }
 
-        public boolean configure( HttpServletRequest req ) {
+        public boolean configure( StaplerRequest req ) {
             svnExe = req.getParameter("svn_exe");
             return true;
         }

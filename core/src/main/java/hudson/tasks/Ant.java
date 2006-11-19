@@ -126,7 +126,7 @@ public class Ant extends Builder {
             return installations;
         }
 
-        public boolean configure(HttpServletRequest req) {
+        public boolean configure(StaplerRequest req) {
             boolean r = true;
 
             int i;

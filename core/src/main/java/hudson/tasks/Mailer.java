@@ -336,7 +336,7 @@ public class Mailer extends Publisher {
             };
         }
 
-        public boolean configure(HttpServletRequest req) throws FormException {
+        public boolean configure(StaplerRequest req) throws FormException {
             // this code is brain dead
             smtpHost = nullify(req.getParameter("mailer_smtp_server"));
             adminAddress = req.getParameter("mailer_admin_address");

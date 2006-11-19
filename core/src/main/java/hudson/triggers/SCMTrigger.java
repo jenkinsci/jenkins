@@ -193,7 +193,7 @@ public class SCMTrigger extends Trigger {
                 old.shutdown();
         }
 
-        public boolean configure(HttpServletRequest req) throws FormException {
+        public boolean configure(StaplerRequest req) throws FormException {
             String t = req.getParameter("poll_scm_threads");
             if(t==null || t.length()==0)
                 setPollingThreadCount(0);

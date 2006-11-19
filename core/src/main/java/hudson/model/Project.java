@@ -14,6 +14,8 @@ import hudson.tasks.BuildTrigger;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrappers;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.Trigger;
 import hudson.triggers.Triggers;
@@ -67,6 +69,14 @@ public class Project extends Job<Project,Build> {
      * List of active {@link Publisher}s configured for this project.
      */
     private List<Publisher> publishers = new Vector<Publisher>();
+
+    /**
+     * List of active {@link BuildWrapper}s configured for this project.
+     *
+     * <p>
+     * Marked as 'transient' for now, so that we can make breaking changes.
+     */
+    private transient List<BuildWrapper> buildWrappers = new Vector<BuildWrapper>();
 
     /**
      * {@link Action}s contributed from {@link #triggers}, {@link #builders},
@@ -212,6 +222,10 @@ public class Project extends Job<Project,Build> {
 
     public synchronized Map<Descriptor<Publisher>,Publisher> getPublishers() {
         return Descriptor.toMap(publishers);
+    }
+
+    public synchronized Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
+        return Descriptor.toMap(buildWrappers);
     }
 
     private synchronized <T extends Describable<T>>
@@ -533,6 +547,7 @@ public class Project extends Job<Project,Build> {
                     assignedNode = null;
                 }
 
+                buildDescribable(req, BuildWrappers.WRAPPERS, buildWrappers, "wrapper");
                 buildDescribable(req, BuildStep.BUILDERS, builders, "builder");
                 buildDescribable(req, BuildStep.PUBLISHERS, publishers, "publisher");
 

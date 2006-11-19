@@ -101,6 +101,14 @@ public abstract class Descriptor<T extends Describable<T>> {
     }
 
     /**
+     * @deprecated
+     *      As of 1.64. Use {@link #configure(StaplerRequest)}.
+     */
+    public boolean configure( HttpServletRequest req ) throws FormException {
+        return true;
+    }
+
+    /**
      * Invoked when the global configuration page is submitted.
      *
      * Can be overrided to store descriptor-specific information.
@@ -108,8 +116,9 @@ public abstract class Descriptor<T extends Describable<T>> {
      * @return false
      *      to keep the client in the same config page.
      */
-    public boolean configure( HttpServletRequest req ) throws FormException {
-        return true;
+    public boolean configure( StaplerRequest req ) throws FormException {
+        // compatibility
+        return configure( (HttpServletRequest) req );
     }
 
     public final String getConfigPage() {
