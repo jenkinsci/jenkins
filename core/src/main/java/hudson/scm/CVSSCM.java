@@ -428,8 +428,7 @@ public class CVSSCM extends AbstractCVSFamilySCM {
                     return;
                 }
                 if(debugLogging) {
-                    errorOutput.write(msg);
-                    errorOutput.write('\n');
+                    listener.getLogger().println(msg);
                 }
             }
         };

@@ -273,7 +273,7 @@ public class ChangeLogTask extends AbstractCvsTask {
                 new ForkOutputStream(new RedirectingOutputStream(parser),
                     new LogOutputStream(this,Project.MSG_VERBOSE)));
 
-            log("["+m_dir+"] $ "+getCommand(), Project.MSG_VERBOSE);
+            log("Running "+getCommand()+" at "+m_dir, Project.MSG_VERBOSE);
 
             setDest(m_dir);
             setExecuteStreamHandler(handler);
