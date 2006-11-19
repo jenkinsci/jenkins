@@ -15,6 +15,8 @@ import hudson.scm.SCMS;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildWrappers;
+import hudson.tasks.BuildWrapper;
 import hudson.triggers.Trigger;
 import hudson.triggers.Triggers;
 import hudson.util.FormFieldValidator;
@@ -718,6 +720,9 @@ public final class Hudson extends JobCollection implements Node {
                 result &= d.configure(req);
 
             for( Descriptor<Publisher> d : BuildStep.PUBLISHERS )
+                result &= d.configure(req);
+
+            for( Descriptor<BuildWrapper> d : BuildWrappers.WRAPPERS )
                 result &= d.configure(req);
 
             for( Descriptor<SCM> scmd : SCMS.SCMS )
