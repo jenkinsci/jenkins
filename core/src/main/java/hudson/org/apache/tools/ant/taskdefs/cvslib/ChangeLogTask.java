@@ -16,9 +16,11 @@
  */
 package hudson.org.apache.tools.ant.taskdefs.cvslib;
 
+import hudson.util.ForkOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.AbstractCvsTask;
+import org.apache.tools.ant.taskdefs.LogOutputStream;
 import org.apache.tools.ant.taskdefs.cvslib.CvsVersion;
 
 import java.io.File;
@@ -35,7 +37,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Logger;
 
 /**
  * Examines the output of cvs log and group related changes together.
@@ -267,11 +268,12 @@ public class ChangeLogTask extends AbstractCvsTask {
             }
 
             final ChangeLogParser parser = new ChangeLogParser(this);
-            final RedirectingStreamHandler handler =
-                new RedirectingStreamHandler(parser);
+            RedirectingStreamHandler handler;
+            handler = new RedirectingStreamHandler(
+                new ForkOutputStream(new RedirectingOutputStream(parser),
+                    new LogOutputStream(this,Project.MSG_VERBOSE)));
 
-            LOGGER.fine("["+m_dir+"] $ "+getCommand());
-            log(getCommand(), Project.MSG_VERBOSE);
+            log("["+m_dir+"] $ "+getCommand(), Project.MSG_VERBOSE);
 
             setDest(m_dir);
             setExecuteStreamHandler(handler);
@@ -351,7 +353,7 @@ public class ChangeLogTask extends AbstractCvsTask {
      * @return the filtered entry set
      */
     private CVSEntry[] filterEntrySet(final CVSEntry[] entrySet) {
-        LOGGER.fine("Filtering entries");
+        log("Filtering entries",Project.MSG_VERBOSE);
 
         final Vector results = new Vector();
 
@@ -361,23 +363,23 @@ public class ChangeLogTask extends AbstractCvsTask {
             
             if(date==null) {
                 // skip dates that didn't parse.
-                LOGGER.fine("Filtering out "+cvsEntry+" because it has no date");
+                log("Filtering out "+cvsEntry+" because it has no date",Project.MSG_VERBOSE);
                 continue;
             }
 
             if (null != m_start && m_start.after(date)) {
                 //Skip dates that are too early
-                LOGGER.fine("Filtering out "+cvsEntry+" because it's too early");
+                log("Filtering out "+cvsEntry+" because it's too early",Project.MSG_VERBOSE);
                 continue;
             }
             if (null != m_stop && m_stop.before(date)) {
                 //Skip dates that are too late
-                LOGGER.fine("Filtering out "+cvsEntry+" because it's too late");
+                log("Filtering out "+cvsEntry+" because it's too late",Project.MSG_VERBOSE);
                 continue;
             }
             if (!cvsEntry.containsBranch(branch)) {
                 // didn't match the branch
-                LOGGER.fine("Filtering out "+cvsEntry+" because it didn't match the branch");
+                log("Filtering out "+cvsEntry+" because it didn't match the branch",Project.MSG_VERBOSE);
                 continue;
             }
             results.addElement(cvsEntry);
@@ -435,6 +437,4 @@ public class ChangeLogTask extends AbstractCvsTask {
             }
         }
     }
-
-    private static final Logger LOGGER = Logger.getLogger(ChangeLogTask.class.getName());
 }

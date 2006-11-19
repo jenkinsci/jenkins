@@ -425,6 +425,11 @@ public class CVSSCM extends AbstractCVSFamilySCM {
                     hadError[0] = true;
                     errorOutput.write(msg);
                     errorOutput.write('\n');
+                    return;
+                }
+                if(debugLogging) {
+                    errorOutput.write(msg);
+                    errorOutput.write('\n');
                 }
             }
         };
@@ -880,4 +885,12 @@ public class CVSSCM extends AbstractCVSFamilySCM {
             }
         }
     }
+
+    /**
+     * Temporary hack for assisting trouble-shooting.
+     *
+     * <p>
+     * Setting this property to true would cause <tt>cvs log</tt> to dump a lot of messages.
+     */
+    public static boolean debugLogging = false;
 }

@@ -21,19 +21,21 @@ import org.apache.tools.ant.taskdefs.PumpStreamHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * A dummy stream handler that just passes stuff to the parser.
  *
  * @version $Revision$ $Date$
  */
-class RedirectingStreamHandler
-     extends PumpStreamHandler {
+class RedirectingStreamHandler extends PumpStreamHandler {
     RedirectingStreamHandler(final ChangeLogParser parser) {
-        super(new RedirectingOutputStream(parser),
-            new ByteArrayOutputStream());
+        this(new RedirectingOutputStream(parser));
     }
 
+    RedirectingStreamHandler(OutputStream out) {
+        super(out, new ByteArrayOutputStream());
+    }
 
     String getErrors() {
         try {

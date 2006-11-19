@@ -24,14 +24,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.TimeZone;
-import java.util.Map;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A class used to parse the output of the CVS log command.
@@ -286,7 +285,7 @@ class ChangeLogParser {
 
         String branch = findBranch(m_revision);
 
-        LOGGER.fine("Recorded a change: "+m_date+','+m_author+','+m_revision+"(branch="+branch+"),"+m_comment);
+        owner.log("Recorded a change: "+m_date+','+m_author+','+m_revision+"(branch="+branch+"),"+m_comment,Project.MSG_VERBOSE);
 
         entry.addFile(m_file, m_revision, m_previousRevision, branch, m_dead);
     }
@@ -338,6 +337,4 @@ class ChangeLogParser {
         m_dead = false;
         branches.clear();
     }
-
-    private static final Logger LOGGER = Logger.getLogger(ChangeLogParser.class.getName());
 }
