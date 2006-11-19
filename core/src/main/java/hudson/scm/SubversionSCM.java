@@ -190,7 +190,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
             StringTokenizer tokens = new StringTokenizer(modules);
             while(tokens.hasMoreTokens()) {
                 ArgumentListBuilder cmd = new ArgumentListBuilder();
-                cmd.add(DESCRIPTOR.getSvnExe(),"co","-q","--non-interactive");
+                cmd.add(DESCRIPTOR.getSvnExe(),"co",/*"-q",*/"--non-interactive");
                 if(username!=null)
                     cmd.add("--username",username);
                 if(otherOptions!=null)
@@ -321,7 +321,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
 
     public boolean update(Launcher launcher, FilePath remoteDir, BuildListener listener) throws IOException {
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.add(DESCRIPTOR.getSvnExe(), "update", "-q", "--non-interactive");
+        cmd.add(DESCRIPTOR.getSvnExe(), "update", /*"-q",*/ "--non-interactive");
 
         if(username!=null)
             cmd.add(" --username ",username);
