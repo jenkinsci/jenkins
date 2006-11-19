@@ -20,6 +20,12 @@
     <module>war</module>
   </modules>
   
+  <scm>
+    <connection>scm:cvs:pserver:guest@cvs.dev.java.net:/cvs:hudson/hudson/main</connection>
+    <developerConnection>scm:cvs:pserver:${user.name}@cvs.dev.java.net:/cvs:hudson/hudson/main</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/main</url>
+  </scm>
+  
   <build>
     <plugins>
       <plugin>
