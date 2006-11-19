@@ -37,6 +37,10 @@
             so that changes are picked up right away without running mvn.
           -->
           <classesDirectory>../core/target/classes</classesDirectory>
+          <!--
+            enable automatic reloading when some files change.
+          -->
+          <scanIntervalSeconds>1</scanIntervalSeconds>
           <webAppSourceDirectory>${basedir}/resources</webAppSourceDirectory>
           <systemProperties>
             <systemProperty>
