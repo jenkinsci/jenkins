@@ -81,7 +81,7 @@ class CVSEntry {
     }
 
     public String toString() {
-        return getAuthor() + "\n" + getDate() + "\n" + getFiles() + "\n"
-            + getComment();
+        return '['+getAuthor() + "," + getDate() + "," + getFiles() + ","
+            + getComment()+']';
     }
 }

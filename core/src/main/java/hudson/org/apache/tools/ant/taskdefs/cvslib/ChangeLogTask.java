@@ -35,6 +35,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 /**
  * Examines the output of cvs log and group related changes together.
@@ -269,6 +270,7 @@ public class ChangeLogTask extends AbstractCvsTask {
             final RedirectingStreamHandler handler =
                 new RedirectingStreamHandler(parser);
 
+            LOGGER.fine("["+m_dir+"] $ "+getCommand());
             log(getCommand(), Project.MSG_VERBOSE);
 
             setDest(m_dir);
@@ -349,27 +351,35 @@ public class ChangeLogTask extends AbstractCvsTask {
      * @return the filtered entry set
      */
     private CVSEntry[] filterEntrySet(final CVSEntry[] entrySet) {
+        LOGGER.fine("Filtering entries");
+
         final Vector results = new Vector();
 
         for (int i = 0; i < entrySet.length; i++) {
             final CVSEntry cvsEntry = entrySet[i];
             final Date date = cvsEntry.getDate();
             
-            if(date==null)
+            if(date==null) {
                 // skip dates that didn't parse.
+                LOGGER.fine("Filtering out "+cvsEntry+" because it has no date");
                 continue;
+            }
 
             if (null != m_start && m_start.after(date)) {
                 //Skip dates that are too early
+                LOGGER.fine("Filtering out "+cvsEntry+" because it's too early");
                 continue;
             }
             if (null != m_stop && m_stop.before(date)) {
                 //Skip dates that are too late
+                LOGGER.fine("Filtering out "+cvsEntry+" because it's too late");
                 continue;
             }
-            if (!cvsEntry.containsBranch(branch))
+            if (!cvsEntry.containsBranch(branch)) {
                 // didn't match the branch
+                LOGGER.fine("Filtering out "+cvsEntry+" because it didn't match the branch");
                 continue;
+            }
             results.addElement(cvsEntry);
         }
 
@@ -425,5 +435,6 @@ public class ChangeLogTask extends AbstractCvsTask {
             }
         }
     }
-}
 
+    private static final Logger LOGGER = Logger.getLogger(ChangeLogTask.class.getName());
+}

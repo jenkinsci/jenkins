@@ -28,6 +28,7 @@ import java.util.Hashtable;
 import java.util.TimeZone;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -283,7 +284,11 @@ class ChangeLogParser {
             entry = m_entries.get(entryKey);
         }
 
-        entry.addFile(m_file, m_revision, m_previousRevision, findBranch(m_revision), m_dead);
+        String branch = findBranch(m_revision);
+
+        LOGGER.fine("Recorded a change: "+m_date+','+m_author+','+m_revision+"(branch="+branch+"),"+m_comment);
+
+        entry.addFile(m_file, m_revision, m_previousRevision, branch, m_dead);
     }
 
     /**
@@ -333,4 +338,6 @@ class ChangeLogParser {
         m_dead = false;
         branches.clear();
     }
+
+    private static final Logger LOGGER = Logger.getLogger(ChangeLogParser.class.getName());
 }
