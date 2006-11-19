@@ -173,6 +173,9 @@ public class Project extends Job<Project,Build> {
         if(triggers==null)
             // it didn't exist in < 1.28
             triggers = new Vector<Trigger>();
+        if(buildWrappers==null)
+            // it didn't exist in < 1.64
+            buildWrappers = new Vector<BuildWrapper>();
 
         this.builds = new RunMap<Build>();
         this.builds.load(this,new Constructor<Build>() {
