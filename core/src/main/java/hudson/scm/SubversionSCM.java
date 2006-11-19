@@ -387,7 +387,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         return DESCRIPTOR;
     }
 
-    public void buildEnvVars(Map env) {
+    public void buildEnvVars(Map<String,String> env) {
         // no environment variable
     }
 

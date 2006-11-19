@@ -71,7 +71,7 @@ public interface SCM extends Describable<SCM>, ExtensionPoint {
     /**
      * Adds environmental variables for the builds to the given map.
      */
-    void buildEnvVars(Map env);
+    void buildEnvVars(Map<String,String> env);
 
     /**
      * Gets the top directory of the checked out module.

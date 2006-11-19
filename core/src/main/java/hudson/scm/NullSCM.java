@@ -33,7 +33,7 @@ public class NullSCM implements SCM {
         return DESCRIPTOR;
     }
 
-    public void buildEnvVars(Map env) {
+    public void buildEnvVars(Map<String,String> env) {
         // noop
     }
 

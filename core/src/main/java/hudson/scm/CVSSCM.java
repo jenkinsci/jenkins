@@ -484,7 +484,7 @@ public class CVSSCM extends AbstractCVSFamilySCM {
         return DESCRIPTOR;
     }
 
-    public void buildEnvVars(Map env) {
+    public void buildEnvVars(Map<String,String> env) {
         if(cvsRsh!=null)
             env.put("CVS_RSH",cvsRsh);
         String cvspass = DESCRIPTOR.getCvspassFile();
