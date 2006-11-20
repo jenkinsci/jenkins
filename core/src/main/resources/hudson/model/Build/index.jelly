@@ -45,30 +45,37 @@
 
         <j:set var="set" value="${it.changeSet}" />
         <t:summary icon="notepad.gif">
-          <st:include it="${set}" page="digest.jelly" />
+          <j:choose>
+            <j:when test="${it.hasChangeSetComputed()}">
+              <st:include it="${set}" page="digest.jelly" />
 
-          <!-- dependency changes -->
-          <j:set var="depChanges" value="${it.getDependencyChanges(it.previousBuild)}"/>
-          <j:if test="${!empty(depChanges)}">
-            Changes in dependency
-            <ol>
-              <j:forEach var="dep" items="${depChanges.values()}">
-                <li>
-                  <a href="${rootURL}/${dep.project.url}">${dep.project.displayName}</a>
-                  <st:nbsp/>
-                  <a href="${rootURL}/${dep.from.url}">
-                    <img src="${rootURL}/images/16x16/${dep.from.buildStatusUrl}" />${dep.from.displayName}</a>
+              <!-- dependency changes -->
+              <j:set var="depChanges" value="${it.getDependencyChanges(it.previousBuild)}"/>
+              <j:if test="${!empty(depChanges)}">
+                Changes in dependency
+                <ol>
+                  <j:forEach var="dep" items="${depChanges.values()}">
+                    <li>
+                      <a href="${rootURL}/${dep.project.url}">${dep.project.displayName}</a>
+                      <st:nbsp/>
+                      <a href="${rootURL}/${dep.from.url}">
+                        <img src="${rootURL}/images/16x16/${dep.from.buildStatusUrl}" />${dep.from.displayName}</a>
 
-                  &#x2192; <!-- right arrow -->
+                      &#x2192; <!-- right arrow -->
 
-                  <a href="${rootURL}/${dep.to.url}">
-                    <img src="${rootURL}/images/16x16/${dep.to.buildStatusUrl}" />${dep.to.displayName}</a>
+                      <a href="${rootURL}/${dep.to.url}">
+                        <img src="${rootURL}/images/16x16/${dep.to.buildStatusUrl}" />${dep.to.displayName}</a>
 
-                  (<a href="${rootURL}/${dep.project.url}changes?from=${dep.fromId}&amp;to=${dep.toId}">detail</a>)
-                </li>
-              </j:forEach>
-            </ol>
-          </j:if>
+                      (<a href="${rootURL}/${dep.project.url}changes?from=${dep.fromId}&amp;to=${dep.toId}">detail</a>)
+                    </li>
+                  </j:forEach>
+                </ol>
+              </j:if>
+            </j:when>
+            <j:otherwise>
+              Not yet determined
+            </j:otherwise>
+          </j:choose>
         </t:summary>
       </table>
 

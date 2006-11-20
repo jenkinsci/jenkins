@@ -106,6 +106,14 @@ public final class Build extends Run<Project,Build> implements Runnable {
         return changeSet;
     }
 
+    /**
+     * Returns true if the changelog is already computed.
+     */
+    public boolean hasChangeSetComputed() {
+        File changelogFile = new File(getRootDir(), "changelog.xml");
+        return changelogFile.exists();
+    }
+
     private ChangeLogSet<? extends Entry> calcChangeSet() {
         File changelogFile = new File(getRootDir(), "changelog.xml");
         if(!changelogFile.exists())
