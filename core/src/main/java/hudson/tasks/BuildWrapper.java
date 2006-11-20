@@ -27,19 +27,19 @@ import java.io.IOException;
  * along with {@link Project}.
  *
  * <p>
- * The {@link #setUp(Build, BuildListener)} method is invoked for each build.
+ * The {@link #setUp(Build,Launcher,BuildListener)} method is invoked for each build.
  *
  * @author Kohsuke Kawaguchi
  */
 public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildWrapper> {
     /**
-     * Represents the environment set up by {@link BuildWrapper#setUp(Build, BuildListener)}.
+     * Represents the environment set up by {@link BuildWrapper#setUp(Build,Launcher,BuildListener)}.
      *
      * <p>
      * It is expected that the subclasses of {@link BuildWrapper} extends this
      * class and implements its own semantics.
      */
-    public class Environment {
+    public abstract class Environment {
         /**
          * Adds environmental variables for the builds to the given map.
          */
@@ -60,9 +60,7 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
          *      true if the build can continue, false if there was an error
          *      and the build needs to be aborted.
          */
-        public boolean tearDown( Build build, BuildListener listener ) throws IOException {
-            return true;
-        }
+        public abstract boolean tearDown( Build build, BuildListener listener ) throws IOException;
     }
 
     /**
@@ -72,7 +70,5 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
      *      non-null if the build can continue, null if there was an error
      *      and the build needs to be aborted.
      */
-    public Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException {
-        return new Environment();
-    }
+    public abstract Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException;
 }
