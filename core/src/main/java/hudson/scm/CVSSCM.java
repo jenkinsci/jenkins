@@ -19,6 +19,7 @@ import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ForkOutputStream;
 import hudson.util.FormFieldValidator;
+import java.util.Collections;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.zip.ZipEntry;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -272,10 +274,17 @@ public class CVSSCM extends AbstractCVSFamilySCM {
 
             parseUpdateOutput("",baos, changedFileNames);
         } else {
-            StringTokenizer tokens = new StringTokenizer(module);
-            while(tokens.hasMoreTokens()) {
-                String moduleName = tokens.nextToken();
-
+            Set<String> moduleNames = new TreeSet(Collections.list(new StringTokenizer(module)));
+            // Add in any existing CVS dirs, in case project checked out its own.
+            File[] subdirs = workspace.getLocal().listFiles();
+            if (subdirs != null) {
+                for (File s : subdirs) {
+                    if (new File(s, "CVS").isDirectory()) {
+                        moduleNames.add(s.getName());
+                    }
+                }
+            }
+            for (String moduleName : moduleNames) {
                 // capture the output during update
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
