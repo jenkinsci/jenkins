@@ -72,11 +72,8 @@ public class Project extends Job<Project,Build> {
 
     /**
      * List of active {@link BuildWrapper}s configured for this project.
-     *
-     * <p>
-     * Marked as 'transient' for now, so that we can make breaking changes.
      */
-    private transient List<BuildWrapper> buildWrappers = new Vector<BuildWrapper>();
+    private List<BuildWrapper> buildWrappers = new Vector<BuildWrapper>();
 
     /**
      * {@link Action}s contributed from {@link #triggers}, {@link #builders},
