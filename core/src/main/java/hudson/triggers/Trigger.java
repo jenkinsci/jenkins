@@ -157,6 +157,10 @@ public abstract class Trigger implements Describable<Trigger>, ExtensionPoint {
 
     private static final Logger LOGGER = Logger.getLogger(Trigger.class.getName());
 
+    /**
+     * This timer is available for all the components inside Hudson to schedule
+     * some work.
+     */
     public static final Timer timer = new Timer(); // "Hudson cron thread"); -- this is a new constructor since 1.5
 
     public static void init() {

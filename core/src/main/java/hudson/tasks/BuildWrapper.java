@@ -42,6 +42,18 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
     public abstract class Environment {
         /**
          * Adds environmental variables for the builds to the given map.
+         *
+         * <p>
+         * If the {@link Environment} object wants to pass in information
+         * to the build that runs, it can do so by exporting additional
+         * environment variables to the map.
+         *
+         * <p>
+         * When this method is invoked, the map already contains the
+         * current "planned export" list.
+         *
+         * @param env
+         *      never null. 
          */
         public void buildEnvVars(Map<String,String> env) {
             // no-op by default
@@ -56,9 +68,16 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
          * (for example, you'll want to stop application server even if a build
          * fails.)
          *
+         * @param build
+         *      The same {@link Build} object given to the set up method.
+         * @param listener
+         *      The same {@link BuildListener} object given to the set up method.
          * @return
          *      true if the build can continue, false if there was an error
          *      and the build needs to be aborted.
+         * @throws IOException
+         *      terminates the build abnormally. Hudson will handle the exception
+         *      and reports a nice error message.
          */
         public abstract boolean tearDown( Build build, BuildListener listener ) throws IOException;
     }
@@ -66,9 +85,21 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
     /**
      * Runs before the {@link Builder} runs, and performs a set up.
      *
+     * @param build
+     *      The build in progress for which an {@link Environment} object is created.
+     *      Never null.
+     * @param launcher
+     *      This launcher can be used to launch processes for this build.
+     *      If the build runs remotely, launcher will also run a job on that remote machine.
+     *      Never null.
+     * @param listener
+     *      Can be used to send any message.
      * @return
      *      non-null if the build can continue, null if there was an error
      *      and the build needs to be aborted.
+     * @throws IOException
+     *      terminates the build abnormally. Hudson will handle the exception
+     *      and reports a nice error message.
      */
     public abstract Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException;
 }
