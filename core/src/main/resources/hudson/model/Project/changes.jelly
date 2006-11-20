@@ -15,17 +15,14 @@
       </h1>
       <j:forEach var="b" items="${h.filter(it.buildsAsMap,from,to).values()}">
         <j:if test="${b.changeSet.iterator().hasNext()}">
-          <h2><a href="${b.number}/changes">
-            ${b.displayName} :
-            <i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
-          </a></h2>
+          <h2><a href="${b.number}/changes">${b.displayName}
+            (<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</a></h2>
   
           <ol>
             <j:forEach var="c" items="${b.changeSet.iterator()}">
               <li>
                 <st:out value="${c.msg}" />
-                by
-                <a href="${rootURL}/${c.author.url}/">${c.author}</a>
+                [<a href="${rootURL}/${c.author.url}/">${c.author}</a>]
               </li>
             </j:forEach>
           </ol>
