@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * External process wrapper.
@@ -39,6 +41,7 @@ public final class Proc {
     }
 
     private Proc( String name, Process proc, InputStream in, OutputStream out ) throws IOException {
+        Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
         this.proc = proc;
         t1 = new Copier(name+": stdout copier", proc.getInputStream(), out);
         t1.start();
