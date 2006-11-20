@@ -14,6 +14,8 @@ import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrapper.Environment;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.SCMTrigger;
@@ -29,6 +31,8 @@ import java.util.Calendar;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -283,6 +287,12 @@ public final class Build extends Run<Project,Build> implements Runnable {
     }
 
     /**
+     * During the build this field remembers {@link Environment}s created by
+     * {@link BuildWrapper}. This design is bit ugly but forced due to compatibility.
+     */
+    private transient List<Environment> buildEnvironments;
+
+    /**
      * Performs a build.
      */
     public void run() {
@@ -317,8 +327,24 @@ public final class Build extends Run<Project,Build> implements Runnable {
                 if(!preBuild(listener,project.getPublishers()))
                     return Result.FAILURE;
 
-                if(!build(listener,project.getBuilders()))
-                    return Result.FAILURE;
+                buildEnvironments = new ArrayList<Environment>();
+                try {
+                    for( BuildWrapper w : project.getBuildWrappers().values() ) {
+                        Environment e = w.setUp(Build.this, launcher, listener);
+                        if(e==null)
+                            return Result.FAILURE;
+                        buildEnvironments.add(e);
+                    }
+
+
+                    if(!build(listener,project.getBuilders()))
+                        return Result.FAILURE;
+                } finally {
+                    // tear down in reverse order
+                    for( int i=buildEnvironments.size()-1; i>=0; i-- )
+                        buildEnvironments.get(i).tearDown(Build.this,listener);
+                    buildEnvironments = null;
+                }
 
                 if(!isWindows()) {
                     try {
@@ -402,6 +428,12 @@ public final class Build extends Run<Project,Build> implements Runnable {
         if(jdk !=null)
             jdk.buildEnvVars(env);
         project.getScm().buildEnvVars(env);
+
+        if(buildEnvironments!=null) {
+            for (Environment e : buildEnvironments)
+                e.buildEnvVars(env);
+        }
+
         return env;
     }
 
