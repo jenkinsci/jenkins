@@ -104,7 +104,7 @@ public class Maven extends Builder {
 
     public static final class DescriptorImpl extends Descriptor<Builder> {
         @CopyOnWrite
-        private MavenInstallation[] installations = new MavenInstallation[0];
+        private volatile MavenInstallation[] installations = new MavenInstallation[0];
 
         private DescriptorImpl() {
             super(Maven.class);
