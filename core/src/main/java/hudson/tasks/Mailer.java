@@ -291,6 +291,7 @@ public class Mailer extends Publisher {
 
         public DescriptorImpl() {
             super(Mailer.class);
+            load();
         }
 
         /**

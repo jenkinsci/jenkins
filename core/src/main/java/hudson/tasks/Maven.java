@@ -108,6 +108,7 @@ public class Maven extends Builder {
 
         private DescriptorImpl() {
             super(Maven.class);
+            load();
         }
 
 

@@ -521,6 +521,7 @@ public class CVSSCM extends AbstractCVSFamilySCM {
 
         DescriptorImpl() {
             super(CVSSCM.class);
+            load();
         }
 
         protected void convert(Map<String, Object> oldPropertyBag) {

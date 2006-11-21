@@ -138,6 +138,7 @@ public class SCMTrigger extends Trigger {
 
         DescriptorImpl() {
             super(SCMTrigger.class);
+            load();
             // create an executor
             update();
         }

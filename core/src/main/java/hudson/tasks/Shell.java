@@ -101,6 +101,7 @@ public class Shell extends Builder {
 
         private DescriptorImpl() {
             super(Shell.class);
+            load();
         }
 
 

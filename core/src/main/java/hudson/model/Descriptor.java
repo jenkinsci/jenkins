@@ -43,6 +43,13 @@ import java.util.logging.Logger;
  * <p>
  * {@link Descriptor} also usually have its associated views.
  *
+ *
+ * <h2>Persistence</h2>
+ * <p>
+ * {@link Descriptor} can persist data just by storing them in fields.
+ * However, it is the responsibility of the derived type to properly
+ * invoke {@link #save()} and {@link #load()}.
+ *
  * @author Kohsuke Kawaguchi
  * @see Describable
  */
@@ -63,7 +70,9 @@ public abstract class Descriptor<T extends Describable<T>> {
 
     protected Descriptor(Class<? extends T> clazz) {
         this.clazz = clazz;
-        load();
+        // doing this turns out to be very error prone,
+        // as field initializers in derived types will override values.
+        // load();
     }
 
     /**
@@ -79,7 +88,7 @@ public abstract class Descriptor<T extends Describable<T>> {
      * So there's no need to check that in the implementation.
      *
      * @param req
-     *      Always non-null. This object includes all the submitted form values. 
+     *      Always non-null. This object includes all the submitted form values.
      *
      * @throws FormException
      *      Signals a problem in the submitted form.
@@ -141,8 +150,10 @@ public abstract class Descriptor<T extends Describable<T>> {
         }
     }
 
-    private void load() {
-        // load
+    /**
+     * Loads the data from the disk into this object.
+     */
+    protected synchronized void load() {
         XmlFile file = getConfigFile();
         if(!file.exists())
             return;

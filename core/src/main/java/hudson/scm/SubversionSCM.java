@@ -417,6 +417,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
 
         DescriptorImpl() {
             super(SubversionSCM.class);
+            load();
         }
 
         protected void convert(Map<String, Object> oldPropertyBag) {

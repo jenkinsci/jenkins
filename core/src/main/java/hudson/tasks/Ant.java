@@ -107,6 +107,7 @@ public class Ant extends Builder {
 
         private DescriptorImpl() {
             super(Ant.class);
+            load();
         }
 
         protected void convert(Map<String,Object> oldPropertyBag) {
