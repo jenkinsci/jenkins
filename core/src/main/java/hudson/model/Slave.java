@@ -66,7 +66,7 @@ public final class Slave implements Node {
         this.numExecutors = numExecutors;
         this.mode = mode;
 
-        if (!name.equals(""))
+        if (name.equals(""))
             throw new FormException("Invalid slave configuration. Name is empty", null);
         if (!localFS.exists())
             throw new FormException("Invalid slave configuration for " + name + ". No such directory exists: " + localFS, null);
