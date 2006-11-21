@@ -8,6 +8,7 @@ import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
+import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.stapler.StaplerRequest;
@@ -77,7 +78,7 @@ public class Mailer extends Publisher {
             if(mail!=null) {
                 Address[] allRecipients = mail.getAllRecipients();
                 if(allRecipients!=null) {
-                StringBuffer buf = new StringBuffer("Sending e-mails to ");
+                StringBuffer buf = new StringBuffer("Sending e-mails to:");
                     for (Address a : allRecipients)
                     buf.append(' ').append(a);
                 listener.getLogger().println(buf);
@@ -159,7 +160,24 @@ public class Mailer extends Publisher {
         StringBuffer buf = new StringBuffer();
         appendBuildUrl(build,buf);
 
-        buf.append("---------\n");
+        boolean firstChange = true;
+        for (ChangeLogSet.Entry entry : build.getChangeSet()) {
+            if (firstChange) {
+                firstChange = false;
+                buf.append("Changes:\n\n");
+            }
+            buf.append('[');
+            buf.append(entry.getAuthor().getFullName());
+            buf.append("] ");
+            String m = entry.getMsg();
+            buf.append(m);
+            if (!m.endsWith("\n")) {
+                buf.append('\n');
+            }
+            buf.append('\n');
+        }
+
+        buf.append("------------------------------------------\n");
 
         try {
             String log = build.getLog();
