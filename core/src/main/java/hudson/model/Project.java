@@ -493,6 +493,9 @@ public class Project extends Job<Project,Build> {
      * Schedules a new build command.
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
+
         scheduleBuild();
         rsp.forwardToPreviousPage(req);
     }
