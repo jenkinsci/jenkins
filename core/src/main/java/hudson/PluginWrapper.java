@@ -257,6 +257,11 @@ public final class PluginWrapper {
         return shortName;
     }
 
+    @Override
+    public String toString() {
+        return "Plugin:" + getShortName();
+    }
+
     /**
      * Returns a one-line descriptive name of this plugin.
      */
