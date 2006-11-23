@@ -20,11 +20,11 @@ public final class Proc {
     private final Process proc;
     private final Thread t1,t2;
 
-    public Proc(String cmd,Map env, OutputStream out, File workDir) throws IOException {
+    public Proc(String cmd, Map<String,String> env, OutputStream out, File workDir) throws IOException {
         this(cmd,Util.mapToEnv(env),out,workDir);
     }
 
-    public Proc(String[] cmd,Map env,InputStream in, OutputStream out) throws IOException {
+    public Proc(String[] cmd, Map<String,String> env,InputStream in, OutputStream out) throws IOException {
         this(cmd,Util.mapToEnv(env),in,out);
     }
 

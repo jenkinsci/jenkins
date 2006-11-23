@@ -62,7 +62,8 @@ public class Functions {
     }
 
     public static RunUrl decompose(StaplerRequest req) {
-        List<Ancestor> ancestors = (List<Ancestor>) req.getAncestors();
+        @SuppressWarnings("unchecked") // pre-JDK 5 API?
+        List<Ancestor> ancestors = req.getAncestors();
         for (Ancestor anc : ancestors) {
             if(anc.getObject() instanceof Run) {
                 // bingo
@@ -139,11 +140,11 @@ public class Functions {
     }
 
     public static Map getSystemProperties() {
-        return new TreeMap(System.getProperties());
+        return new TreeMap<Object,Object>(System.getProperties());
     }
 
     public static Map getEnvVars() {
-        return new TreeMap(EnvVars.masterEnvVars);
+        return new TreeMap<String,String>(EnvVars.masterEnvVars);
     }
 
     public static boolean isWindows() {

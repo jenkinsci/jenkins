@@ -21,7 +21,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     /**
      * Constant instance that represents no changes.
      */
-    public static final ChangeLogSet<? extends Entry> EMPTY = new CVSChangeLogSet(Collections.EMPTY_LIST);
+    public static final ChangeLogSet<? extends Entry> EMPTY = new CVSChangeLogSet(Collections.<CVSChangeLogSet.CVSChangeLog>emptyList());
 
     public static abstract class Entry {
 

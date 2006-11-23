@@ -240,10 +240,10 @@ public final class Build extends Run<Project,Build> implements Runnable {
      * Gets the changes in the dependency between the given build and this build.
      */
     public Map<Project,DependencyChange> getDependencyChanges(Build from) {
-        if(from==null)             return Collections.EMPTY_MAP; // make it easy to call this from views
+        if(from==null)             return Collections.emptyMap(); // make it easy to call this from views
         FingerprintAction n = this.getAction(FingerprintAction.class);
         FingerprintAction o = from.getAction(FingerprintAction.class);
-        if(n==null || o==null)     return Collections.EMPTY_MAP;
+        if(n==null || o==null)     return Collections.emptyMap();
 
         Map<Project,Integer> ndep = n.getDependencies();
         Map<Project,Integer> odep = o.getDependencies();

@@ -11,7 +11,7 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class NullChangeLogParser extends ChangeLogParser {
-    public ChangeLogSet parse(Build build, File changelogFile) throws IOException, SAXException {
+    public ChangeLogSet<? extends ChangeLogSet.Entry> parse(Build build, File changelogFile) throws IOException, SAXException {
         return ChangeLogSet.EMPTY;
     }
 }

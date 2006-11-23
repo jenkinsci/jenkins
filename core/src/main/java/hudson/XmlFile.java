@@ -2,13 +2,11 @@ package hudson;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
-import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.xml.XppReader;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOException2;
 import hudson.util.XStream2;
-import hudson.model.Descriptor;
 
 import java.io.BufferedReader;
 import java.io.File;

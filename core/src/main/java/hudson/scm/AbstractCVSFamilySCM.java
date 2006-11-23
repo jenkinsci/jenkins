@@ -3,7 +3,6 @@ package hudson.scm;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Proc;
 import hudson.model.BuildListener;
 import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
@@ -30,7 +29,7 @@ abstract class AbstractCVSFamilySCM implements SCM {
      *      Receives output from the executed program.
      */
     protected final boolean run(Launcher launcher, ArgumentListBuilder cmd, TaskListener listener, FilePath dir, OutputStream out) throws IOException {
-        Map env = createEnvVarMap(true);
+        Map<String,String> env = createEnvVarMap(true);
 
         int r = launcher.launch(cmd.toCommandArray(),env,out,dir).join();
         if(r!=0)
@@ -52,8 +51,8 @@ abstract class AbstractCVSFamilySCM implements SCM {
      *      false to indicate that the map should contain complete map.
      *      This is to invoke {@link Proc} directly.
      */
-    protected final Map createEnvVarMap(boolean overrideOnly) {
-        Map env = new HashMap();
+    protected final Map<String,String> createEnvVarMap(boolean overrideOnly) {
+        Map<String,String> env = new HashMap<String,String>();
         if(!overrideOnly)
             env.putAll(EnvVars.masterEnvVars);
         buildEnvVars(env);

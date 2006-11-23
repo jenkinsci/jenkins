@@ -36,15 +36,15 @@ public class Launcher {
         this.listener = listener;
     }
 
-    public final Proc launch(String cmd, Map env, OutputStream out, FilePath workDir) throws IOException {
+    public final Proc launch(String cmd, Map<String,String> env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd,Util.mapToEnv(env),out,workDir);
     }
 
-    public final Proc launch(String[] cmd, Map env, OutputStream out, FilePath workDir) throws IOException {
+    public final Proc launch(String[] cmd, Map<String,String> env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd,Util.mapToEnv(env),out,workDir);
     }
 
-    public final Proc launch(String[] cmd,Map env, InputStream in, OutputStream out) throws IOException {
+    public final Proc launch(String[] cmd, Map<String,String> env, InputStream in, OutputStream out) throws IOException {
         return launch(cmd,Util.mapToEnv(env),in,out);
     }
 

@@ -11,6 +11,7 @@ public class SCMS {
     /**
      * List of all installed SCMs.
      */
+    @SuppressWarnings("unchecked") // generic array creation
     public static final List<Descriptor<SCM>> SCMS =
         Descriptor.toList(NullSCM.DESCRIPTOR,CVSSCM.DESCRIPTOR,SubversionSCM.DESCRIPTOR);
 }

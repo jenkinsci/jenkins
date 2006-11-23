@@ -16,6 +16,7 @@ public abstract class JobDescriptor<J extends Job<J,R>,R extends Run<J,R>> exten
      * @deprecated
      *      This is not a valid operation for {@link Job}s.
      */
+    @Deprecated
     public Job<J,R> newInstance(StaplerRequest req) throws FormException {
         throw new UnsupportedOperationException();
     }

@@ -1,7 +1,6 @@
 package hudson.model;
 
 import hudson.XmlFile;
-import hudson.scm.CVSSCM;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.http.HttpServletRequest;
@@ -61,6 +60,7 @@ public abstract class Descriptor<T extends Describable<T>> {
      *
      * @deprecated
      */
+    @Deprecated
     private transient Map<String,Object> properties;
 
     /**
@@ -113,6 +113,7 @@ public abstract class Descriptor<T extends Describable<T>> {
      * @deprecated
      *      As of 1.64. Use {@link #configure(StaplerRequest)}.
      */
+    @Deprecated
     public boolean configure( HttpServletRequest req ) throws FormException {
         return true;
     }
@@ -162,7 +163,9 @@ public abstract class Descriptor<T extends Describable<T>> {
             Object o = file.unmarshal(this);
             if(o instanceof Map) {
                 // legacy format
-                convert((Map<String,Object>)o);
+                @SuppressWarnings("unchecked")
+                Map<String,Object> _o = (Map) o;
+                convert(_o);
                 save();     // convert to the new format
             }
         } catch (IOException e) {

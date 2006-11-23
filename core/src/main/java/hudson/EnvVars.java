@@ -17,6 +17,7 @@ public class EnvVars {
     public static final Map<String,String> masterEnvVars;
 
     static {
+        @SuppressWarnings("unchecked") // Ant does not use JDK 5
         Vector<String> envs = Execute.getProcEnvironment();
         Map<String,String> m = new HashMap<String,String>();
         for (String e : envs) {

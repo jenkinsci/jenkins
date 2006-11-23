@@ -7,7 +7,6 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.FeedAdapter;
-import hudson.tasks.BuildStep;
 import hudson.tasks.LogRotator;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.CharSpool;
@@ -459,6 +458,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         Util.deleteRecursive(tmp);
 
+        removeRunFromParent();
+    }
+    @SuppressWarnings("unchecked") // seems this is too clever for Java's type system?
+    private void removeRunFromParent() {
         getParent().removeRun((RunT)this);
     }
 

@@ -161,10 +161,11 @@ public final class Hudson extends JobCollection implements Node {
     }
 
     /**
-     * If you are calling it o Hudson something is wrong.
+     * If you are calling this on Hudson something is wrong.
      *
      * @deprecated
      */
+    @Deprecated
     public String getNodeName() {
         return "";
     }
@@ -339,6 +340,7 @@ public final class Hudson extends JobCollection implements Node {
      * @deprecated
      *      why are you calling a method that always return true?
      */
+    @Deprecated
     public boolean containsJob(Job job) {
         return true;
     }
@@ -939,6 +941,7 @@ public final class Hudson extends JobCollection implements Node {
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
 
             // Parse the request
+            @SuppressWarnings("unchecked") // pre-generics lib
             List<FileItem> items = upload.parseRequest(req);
 
             rsp.sendRedirect2(req.getContextPath()+"/fingerprint/"+
@@ -1161,7 +1164,7 @@ public final class Hudson extends JobCollection implements Node {
     /**
      * Live view of recent {@link LogRecord}s produced by Hudson.
      */
-    public static List<LogRecord> logRecords = Collections.EMPTY_LIST; // initialized to dummy value to avoid NPE
+    public static List<LogRecord> logRecords = Collections.emptyList(); // initialized to dummy value to avoid NPE
 
     /**
      * Thread-safe reusable {@link XStream}.

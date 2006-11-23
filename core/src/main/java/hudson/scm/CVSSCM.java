@@ -28,7 +28,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -274,6 +273,7 @@ public class CVSSCM extends AbstractCVSFamilySCM {
 
             parseUpdateOutput("",baos, changedFileNames);
         } else {
+            @SuppressWarnings("unchecked") // StringTokenizer oddly has the wrong type
             Set<String> moduleNames = new TreeSet(Collections.list(new StringTokenizer(module)));
             // Add in any existing CVS dirs, in case project checked out its own.
             File[] subdirs = workspace.getLocal().listFiles();

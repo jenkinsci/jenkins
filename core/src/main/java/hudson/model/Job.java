@@ -34,7 +34,6 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.Collections;
@@ -310,6 +309,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      *      This is only used to support backward compatibility with
      *      old URLs.
      */
+    @Deprecated
     public RunT getBuild(String id) {
         for (RunT r : _getRuns().values()) {
             if(r.getId().equals(id))

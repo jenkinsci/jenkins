@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.SimpleTimeZone;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -187,12 +186,12 @@ public class Util {
         return a;
     }
 
-    public static String[] mapToEnv(Map<?,?> m) {
+    public static String[] mapToEnv(Map<String,String> m) {
         String[] r = new String[m.size()];
         int idx=0;
 
-        for (final Map.Entry e : m.entrySet()) {
-            r[idx++] = e.getKey().toString() + '=' + e.getValue().toString();
+        for (final Map.Entry<String,String> e : m.entrySet()) {
+            r[idx++] = e.getKey() + '=' + e.getValue();
         }
         return r;
     }

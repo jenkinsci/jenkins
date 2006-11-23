@@ -17,7 +17,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -115,7 +114,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         Map<String,Integer> previousRevisions = parseRevisionFile(build.getPreviousBuild());
         Map<String,Integer> thisRevisions     = parseRevisionFile(build);
 
-        Map env = createEnvVarMap(true);
+        Map<String,String> env = createEnvVarMap(true);
 
         for( String module : getModuleDirNames() ) {
             Integer prevRev = previousRevisions.get(module);

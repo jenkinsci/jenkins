@@ -516,7 +516,7 @@ public class Project extends Job<Project,Build> {
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
 
-        Set<Project> upstream = Collections.EMPTY_SET;
+        Set<Project> upstream = Collections.emptySet();
 
         synchronized(this) {
             try {
@@ -711,6 +711,7 @@ public class Project extends Job<Project,Build> {
      * @deprecated
      *      left for legacy config file compatibility
      */
+    @Deprecated
     private transient String slave;
 
     private static final String FAILURE_ONLY_COOKIE = "TestResultAction_failureOnly";
