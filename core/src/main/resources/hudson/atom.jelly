@@ -4,29 +4,30 @@
   <j:set var="rootURL"
          value="${request.scheme}://${request.serverName}:${request.serverPort}${request.contextPath}" />
 
-  <feed version="0.3" xmlns="http://purl.org/atom/ns#">
+  <feed xmlns="http://www.w3.org/2005/Atom">
     <title>${title}</title>
     <link rel="alternate" type="text/html" href="${rootURL}/${url}"/>
 
     <j:choose>
       <j:when test="${empty(entries)}">
-        <modified>2001-01-01T00:00:00Z</modified>
+        <updated>2001-01-01T00:00:00Z</updated>
       </j:when>
       <j:otherwise>
-        <modified>${h.xsDate(adapter.getEntryTimestamp(entries[0]))}</modified>
+        <updated>${h.xsDate(adapter.getEntryTimestamp(entries[0]))}</updated>
       </j:otherwise>
     </j:choose>
     <author>
-      <name>Hudson</name>
+      <name>Hudson Server</name>
     </author>
+    <id>urn:uuid:903deee0-7bfa-11db-9fe1-0800200c9a66</id>
 
     <j:forEach var="e" items="${entries}" >
       <entry>
         <title>${adapter.getEntryTitle(e)}</title>
         <link rel="alternate" type="text/html" href="${rootURL}/${adapter.getEntryUrl(e)}"/>
         <id>${adapter.getEntryID(e)}</id>
-        <issued  >${h.xsDate(adapter.getEntryTimestamp(e))}</issued>
-        <modified>${h.xsDate(adapter.getEntryTimestamp(e))}</modified>
+        <published>${h.xsDate(adapter.getEntryTimestamp(e))}</published>
+        <updated>${h.xsDate(adapter.getEntryTimestamp(e))}</updated>
       </entry>
     </j:forEach>
   </feed>

@@ -829,8 +829,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return entry.getUrl();
         }
 
+        // produces a tag URL as per RFC 4151, required by Atom 1.0
         public String getEntryID(Run entry) {
-            return "tag:"+entry.getParent().getName()+':'+entry.getId();
+            return "tag:" + "hudson.dev.java.net,"
+                + entry.getTimestamp().get(Calendar.YEAR) + ":"
+                + entry.getParent().getName()+':'+entry.getId();
         }
 
         public Calendar getEntryTimestamp(Run entry) {
