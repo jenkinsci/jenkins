@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -344,6 +345,10 @@ public class Util {
     }
 
     public static final SimpleDateFormat XS_DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+    // Note: RFC822 dates must not be localized!
+    public static final SimpleDateFormat RFC822_DATETIME_FORMATTER
+            = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 
     static {
         XS_DATETIME_FORMATTER.setTimeZone(new SimpleTimeZone(0,"GMT"));

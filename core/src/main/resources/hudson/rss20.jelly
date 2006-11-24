@@ -15,8 +15,8 @@
           <title>${adapter.getEntryTitle(e)}</title>
           <link>${rootURL}/${adapter.getEntryUrl(e)}</link>
           <guid isPermaLink="false">${adapter.getEntryID(e)}</guid>
-          <pubDate>${h.xsDate(adapter.getEntryTimestamp(e))}</pubDate>
-          <author>Hudson</author>
+          <pubDate>${h.rfc822Date(adapter.getEntryTimestamp(e))}</pubDate>
+          <author>users@hudson.dev.java.net (Hudson Server)</author>
         </item>
       </j:forEach>
     </channel>

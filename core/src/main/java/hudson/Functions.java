@@ -31,6 +31,10 @@ public class Functions {
         return Util.XS_DATETIME_FORMATTER.format(cal.getTime());
     }
 
+    public static String rfc822Date(Calendar cal) {
+        return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
+    }
+
     public static String getDiffString(int i) {
         if(i==0)    return "\u00B10";   // +/-0
         String s = Integer.toString(i);
