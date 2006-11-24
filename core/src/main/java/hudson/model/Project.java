@@ -55,6 +55,10 @@ public class Project extends Job<Project,Build> {
 
     private SCM scm = new NullSCM();
 
+    private boolean enableRemoteTrigger = false;
+
+    private String authToken = null;
+
     /**
      * List of all {@link Trigger}s for this project.
      */
@@ -201,6 +205,16 @@ public class Project extends Job<Project,Build> {
 
     public void setScm(SCM scm) {
         this.scm = scm;
+    }
+    
+    public boolean isEnableRemoteTrigger() {
+        // no need to enable this option if security disabled
+        return (Hudson.getInstance().isUseSecurity())
+                && enableRemoteTrigger;
+    }
+
+    public String getAuthToken() {
+            return authToken;
     }
 
     @Override
@@ -493,11 +507,22 @@ public class Project extends Job<Project,Build> {
      * Schedules a new build command.
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        if (authorizedToStartBuild(req, rsp)) {
+            scheduleBuild();
+            rsp.forwardToPreviousPage(req);
+        }
+    }
 
-        scheduleBuild();
-        rsp.forwardToPreviousPage(req);
+    private boolean authorizedToStartBuild(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        
+        if (isEnableRemoteTrigger()) {
+            String providedToken = req.getParameter("token");
+            if (providedToken != null && providedToken.equals(getAuthToken())) {
+                return true;
+            }
+        }
+
+         return Hudson.adminCheck(req, rsp);
     }
 
     /**
@@ -548,6 +573,13 @@ public class Project extends Job<Project,Build> {
                 } else {
                     canRoam = true;
                     assignedNode = null;
+                }
+                
+                if (req.getParameter("pseudoRemoteTrigger") != null) {
+                    authToken = req.getParameter("authToken");
+                    enableRemoteTrigger = true;
+                } else {
+                    enableRemoteTrigger = false;
                 }
 
                 buildDescribable(req, BuildWrappers.WRAPPERS, buildWrappers, "wrapper");
