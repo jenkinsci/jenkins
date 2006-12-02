@@ -18,6 +18,7 @@ import java.util.SortedMap;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.io.File;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -195,4 +196,35 @@ public class Functions {
     }
 
     private static final SimpleFormatter formatter = new SimpleFormatter();
+
+    public static void configureAutoRefresh(HttpServletRequest request, HttpServletResponse response) {
+        String param = request.getParameter("auto_refresh");
+        boolean refresh = isAutoRefresh(request);
+        if (param != null) {
+            refresh = Boolean.parseBoolean(param);
+            Cookie c = new Cookie("hudson_auto_refresh", Boolean.toString(refresh));
+            // Need to set path or it will not stick from e.g. a project page to the dashboard.
+            // Using request.getContextPath() might work but it seems simpler to just use the hudson_ prefix
+            // to avoid conflicts with any other web apps that might be on the same machine.
+            c.setPath("/");
+            response.addCookie(c);
+        }
+        if (refresh) {
+            response.addHeader("Refresh", "10");
+        }
+    }
+
+    public static boolean isAutoRefresh(HttpServletRequest request) {
+        String param = request.getParameter("auto_refresh");
+        if (param != null) {
+            return Boolean.parseBoolean(param);
+        }
+        for (Cookie c : request.getCookies()) {
+            if (c.getName().equals("hudson_auto_refresh")) {
+                return Boolean.parseBoolean(c.getValue());
+            }
+        }
+        return false;
+    }
+
 }
