@@ -183,6 +183,18 @@ public class Functions {
     }
 
     /**
+     * Gets the suffix to use for YUI JavaScript.
+     */
+    public static String getYuiSuffix() {
+        return DEBUG_YUI ? "debug" : "min";
+    }
+
+    /**
+     * Set to true if you need to use the debug version of YUI.
+     */
+    public static boolean DEBUG_YUI = false;
+
+    /**
      * Creates a sub map by using the given range (both ends inclusive).
      */
     public static <V> SortedMap<Integer,V> filter(SortedMap<Integer,V> map, String from, String to) {
