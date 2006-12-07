@@ -278,9 +278,18 @@ public class CVSSCM extends AbstractCVSFamilySCM {
             // Add in any existing CVS dirs, in case project checked out its own.
             File[] subdirs = workspace.getLocal().listFiles();
             if (subdirs != null) {
-                for (File s : subdirs) {
+                SUBDIR: for (File s : subdirs) {
                     if (new File(s, "CVS").isDirectory()) {
-                        moduleNames.add(s.getName());
+                        String top = s.getName();
+                        for (String mod : moduleNames) {
+                            if (mod.startsWith(top + "/")) {
+                                // #190: user asked to check out foo/bar foo/baz quux
+                                // Our top-level dirs are "foo" and "quux".
+                                // Do not add "foo" to checkout or we will check out foo/*!
+                                continue SUBDIR;
+                            }
+                        }
+                        moduleNames.add(top);
                     }
                 }
             }
