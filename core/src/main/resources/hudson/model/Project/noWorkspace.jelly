@@ -28,7 +28,7 @@
         </j:otherwise>
       </j:choose>
       <p>
-        <a href="build">Run a build</a> to have Hudson create a workspace.
+        <a href="${rootURL}/${it.url}build">Run a build</a> to have Hudson create a workspace.
       </p>
     </l:main-panel>
   </l:layout>
