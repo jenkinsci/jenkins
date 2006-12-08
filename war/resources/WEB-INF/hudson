@@ -29,4 +29,4 @@ BINDIR=`dirname "$PRG"`/..
 cd "$saveddir"
 BINDIR="`cd "$BINDIR" && pwd`"
 
-exec java -jar "$BINDIR/lib/hudson.jar" "$@"
+exec java -jar "$BINDIR/lib/hudson-*.jar" "$@"
