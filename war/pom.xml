@@ -45,7 +45,7 @@
           <systemProperties>
             <systemProperty>
               <name>HUDSON_HOME</name>
-              <value>work</value>
+              <value>${basedir}/work</value>
             </systemProperty>
             <systemProperty>
               <!-- always reload views during debugging -->
