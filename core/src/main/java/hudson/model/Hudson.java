@@ -9,6 +9,7 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
+import hudson.model.listeners.JobListener;
 import hudson.scm.CVSSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
@@ -141,6 +142,11 @@ public final class Hudson extends JobCollection implements Node {
      */
     public transient final PluginManager pluginManager;
 
+    /**
+     * List of reigstered {@link JobListener}s.
+     */
+    private transient List<JobListener> jobListeners = new Vector<JobListener>();
+
     public static Hudson getInstance() {
         return theInstance;
     }
@@ -216,6 +222,25 @@ public final class Hudson extends JobCollection implements Node {
                 return d;
         }
         return null;
+    }
+
+    /**
+     * Adds a new {@link JobListener}.
+     *
+     * @see #removeListener(JobListener) 
+     */
+    public void addListener(JobListener l) {
+        jobListeners.add(l);
+    }
+
+    /**
+     * Deletes an existing {@link JobListener}.
+     *
+     * @return
+     *      true if the listener was indeed registered.
+     */
+    public boolean removeListener(JobListener l ) {
+        return jobListeners.remove(l);
     }
 
     /**
@@ -570,6 +595,11 @@ public final class Hudson extends JobCollection implements Node {
      * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
      */
     /*package*/ void deleteJob(Job job) throws IOException {
+        synchronized(jobListeners) {
+            for (JobListener l : jobListeners)
+                l.onDeleted(job);
+        }
+
         jobs.remove(job.getName());
         if(views!=null) {
             for (View v : views) {
@@ -855,6 +885,11 @@ public final class Hudson extends JobCollection implements Node {
             result = Job.load(this,result.getRootDir());
             result.nextBuildNumber = 1;     // reset the next build number
             jobs.put(name,result);
+        }
+
+        synchronized(jobListeners) {
+            for (JobListener l : jobListeners)
+                l.onCreated(result);
         }
 
         rsp.sendRedirect2(req.getContextPath()+'/'+result.getUrl()+"configure");
