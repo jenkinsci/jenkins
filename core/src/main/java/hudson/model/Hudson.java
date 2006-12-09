@@ -17,6 +17,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.Mailer;
 import hudson.triggers.Trigger;
 import hudson.triggers.Triggers;
 import hudson.util.FormFieldValidator;
@@ -33,6 +34,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -458,8 +460,38 @@ public final class Hudson extends JobCollection implements Node {
         return quietPeriod!=null ? quietPeriod : 5;
     }
 
+    /**
+     * @deprecated
+     *      Why are you calling a method that always returns ""?
+     *      Perhaps you meant {@link #getRootUrl()}.
+     */
     public String getUrl() {
         return "";
+    }
+
+    /**
+     * Gets the absolute URL of Hudson,
+     * such as "http://localhost/hudson/".
+     *
+     * <p>
+     * Also note that when serving user requests from HTTP, you should always use
+     * {@link HttpServletRequest} to determine the full URL, instead of using this
+     * (this is because one host may have multiple names, and {@link HttpServletRequest}
+     * accurately represents what the current user used.)
+     *
+     * <p>
+     * This information is rather only meant to be useful for sending out messages
+     * via non-HTTP channels, like SMTP or IRC, with a link back to Hudson website.
+     *
+     * @return
+     *      This method returns null if this parameter is not configured by the user.
+     *      The caller must gracefully deal with this situation.
+     *      The returned URL will always have the trailing '/'.
+     * @since 1.66
+     */
+    public String getRootUrl() {
+        // for compatibility. the actual data is stored in Mailer
+        return Mailer.DESCRIPTOR.getUrl();
     }
 
     public File getRootDir() {
