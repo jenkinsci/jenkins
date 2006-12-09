@@ -116,6 +116,8 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
 
         Map<String,String> env = createEnvVarMap(true);
 
+        boolean changelogFileCreated = false;
+
         for( String module : getModuleDirNames() ) {
             Integer prevRev = previousRevisions.get(module);
             if(prevRev==null) {
@@ -128,8 +130,10 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
                 continue;
             }
 
+            // TODO: this seems to clobber previously recorded changes when there are multiple modules
             String cmd = DESCRIPTOR.getSvnExe()+" log -v --xml --non-interactive -r "+(prevRev+1)+":BASE "+module;
             OutputStream os = new BufferedOutputStream(new FileOutputStream(changelogFile));
+            changelogFileCreated = true;
             try {
                 int r = launcher.launch(cmd,env,os,build.getProject().getWorkspace()).join();
                 if(r!=0) {
@@ -147,6 +151,9 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
                 os.close();
             }
         }
+
+        if(!changelogFileCreated)
+            createEmptyChangeLog(changelogFile, listener, "log");
 
         return true;
     }

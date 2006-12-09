@@ -19,14 +19,14 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Kohsuke Kawaguchi
  */
-public class NullSCM implements SCM {
+public class NullSCM extends AbstractCVSFamilySCM /*to reuse createEmptyChangeLog*/ {
     public boolean pollChanges(Project project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
         // no change
         return false;
     }
 
     public boolean checkout(Build build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException {
-        return true;
+        return createEmptyChangeLog(changeLogFile, listener, "log");
     }
 
     public Descriptor<SCM> getDescriptor() {
