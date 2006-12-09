@@ -175,7 +175,8 @@ public class User extends AbstractModelObject {
      * The file we save our configuration.
      */
     protected final XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM,new File(Hudson.getInstance().getRootDir(),"users/"+ id +"/config.xml"));
+        String safeId = id.replace('\\', '_').replace('/', '_');
+        return new XmlFile(XSTREAM,new File(Hudson.getInstance().getRootDir(),"users/"+ safeId +"/config.xml"));
     }
 
     /**
