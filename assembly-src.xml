@@ -1,0 +1,22 @@
+<!--
+  assembly descriptor to create the source distribution.
+-->
+<assembly>
+  <id>src</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <excludes>
+        <exclude>**/target</exclude>
+        <exclude>**/target/**/*</exclude>
+        <exclude>**/work</exclude>
+        <exclude>**/work/**/*</exclude>
+      </excludes>
+    </fileSet>
+  </fileSets>
+</assembly>

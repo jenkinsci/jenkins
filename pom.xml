@@ -33,8 +33,23 @@
         <configuration>
           <!-- enable release profile during the release -->
           <prepareVerifyArgs>-P release</prepareVerifyArgs>
+          <!--
+            also run assembly during the release.
+            http://www.nabble.com/Release-Plugin%3A-Include-assemblies-for-deploying-tf2642295s177.html#a7377938
+           -->
+          <goals>install assembly:attached deploy</goals>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <finalName>hudson-${version}</finalName>
+          <descriptors>
+            <descriptor>assembly-src.xml</descriptor>
+          </descriptors>
         </configuration>
       </plugin>
     </plugins>
   </build>
+  
 </project>
