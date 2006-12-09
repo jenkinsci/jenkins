@@ -7,6 +7,7 @@ import hudson.model.User;
 import hudson.triggers.Trigger;
 import hudson.util.IncompatibleVMDetected;
 import hudson.util.RingBufferLogHandler;
+import hudson.util.IncompatibleServletVersionDetected;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -14,6 +15,7 @@ import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletResponse;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import java.io.File;
@@ -47,6 +49,14 @@ public class WebAppMain implements ServletContextListener {
         if(new JVM().bestReflectionProvider().getClass()==PureJavaReflectionProvider.class) {
             // nope
             context.setAttribute("app",new IncompatibleVMDetected());
+            return;
+        }
+
+        // make sure this is servlet 2.4 container or above
+        try {
+            ServletResponse.class.getMethod("setCharacterEncoding",String.class);
+        } catch (NoSuchMethodException e) {
+            context.setAttribute("app,",new IncompatibleServletVersionDetected());
             return;
         }
 
