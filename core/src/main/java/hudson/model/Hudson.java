@@ -1010,7 +1010,8 @@ public final class Hudson extends JobCollection implements Node {
      * Serves static resources without the "Last-Modified" header to work around
      * a bug in Firefox.
      *
-     * @see https://bugzilla.mozilla.org/show_bug.cgi?id=89419
+     * <p>
+     * See https://bugzilla.mozilla.org/show_bug.cgi?id=89419
      */
     public void doNocacheImages( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         String path = req.getRestOfPath();
