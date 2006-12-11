@@ -73,7 +73,7 @@ public class Mailer extends Publisher {
 
     public boolean perform(Build build, Launcher launcher, BuildListener listener) {
         try {
-            MimeMessage mail = getMail(build);
+            MimeMessage mail = getMail(build, listener);
             if(mail!=null) {
                 Address[] allRecipients = mail.getAllRecipients();
                 if(allRecipients!=null) {
@@ -94,18 +94,18 @@ public class Mailer extends Publisher {
         return true;
     }
 
-    private MimeMessage getMail(Build build) throws MessagingException {
+    private MimeMessage getMail(Build build, BuildListener listener) throws MessagingException {
         if(build.getResult()==Result.FAILURE) {
-            return createFailureMail(build);
+            return createFailureMail(build, listener);
         }
 
         if(build.getResult()==Result.UNSTABLE) {
             Build prev = build.getPreviousBuild();
             if(!dontNotifyEveryUnstableBuild)
-                return createUnstableMail(build);
+                return createUnstableMail(build, listener);
             if(prev!=null) {
                 if(prev.getResult()==Result.SUCCESS)
-                    return createUnstableMail(build);
+                    return createUnstableMail(build, listener);
             }
         }
 
@@ -113,17 +113,17 @@ public class Mailer extends Publisher {
             Build prev = build.getPreviousBuild();
             if(prev!=null) {
                 if(prev.getResult()==Result.FAILURE)
-                    return createBackToNormalMail(build, "normal");
+                    return createBackToNormalMail(build, "normal", listener);
                 if(prev.getResult()==Result.UNSTABLE)
-                    return createBackToNormalMail(build, "stable");
+                    return createBackToNormalMail(build, "stable", listener);
             }
         }
 
         return null;
     }
 
-    private MimeMessage createBackToNormalMail(Build build, String subject) throws MessagingException {
-        MimeMessage msg = createEmptyMail(build);
+    private MimeMessage createBackToNormalMail(Build build, String subject, BuildListener listener) throws MessagingException {
+        MimeMessage msg = createEmptyMail(build, listener);
 
         msg.setSubject(getSubject(build,"Hudson build is back to "+subject +": "));
         StringBuffer buf = new StringBuffer();
@@ -133,8 +133,8 @@ public class Mailer extends Publisher {
         return msg;
     }
 
-    private MimeMessage createUnstableMail(Build build) throws MessagingException {
-        MimeMessage msg = createEmptyMail(build);
+    private MimeMessage createUnstableMail(Build build, BuildListener listener) throws MessagingException {
+        MimeMessage msg = createEmptyMail(build, listener);
 
         msg.setSubject(getSubject(build,"Hudson build became unstable: "));
         StringBuffer buf = new StringBuffer();
@@ -151,8 +151,8 @@ public class Mailer extends Publisher {
         }
     }
 
-    private MimeMessage createFailureMail(Build build) throws MessagingException {
-        MimeMessage msg = createEmptyMail(build);
+    private MimeMessage createFailureMail(Build build, BuildListener listener) throws MessagingException {
+        MimeMessage msg = createEmptyMail(build, listener);
 
         msg.setSubject(getSubject(build, "Build failed in Hudson: "));
 
