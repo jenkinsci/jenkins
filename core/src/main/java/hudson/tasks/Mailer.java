@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 public class Mailer extends Publisher {
-    
+
     private static final Logger LOGGER = Logger.getLogger(Mailer.class.getName());
 
     private static final int MAX_LOG_LINES = 250;
@@ -258,8 +258,11 @@ public class Mailer extends Publisher {
             Set<User> users = new HashSet<User>();
             for (Entry change : build.getChangeSet()) {
                 User a = change.getAuthor();
-                if(users.add(a))
-                    rcp.add(new InternetAddress(a.getProperty(UserProperty.class).getAddress()));
+                if(users.add(a)) {
+                    String adrs = a.getProperty(UserProperty.class).getAddress();
+                    if(adrs!=null)
+                        rcp.add(new InternetAddress(adrs));
+                }
             }
         }
         msg.setRecipients(Message.RecipientType.TO, rcp.toArray(new InternetAddress[rcp.size()]));
