@@ -242,7 +242,7 @@ public class Mailer extends Publisher {
         return msg;
     }
 
-    private MimeMessage createEmptyMail(Build build) throws MessagingException {
+    private MimeMessage createEmptyMail(Build build, BuildListener listener) throws MessagingException {
         MimeMessage msg = new MimeMessage(DESCRIPTOR.createSession());
         // TODO: I'd like to put the URL to the page in here,
         // but how do I obtain that?
@@ -262,6 +262,9 @@ public class Mailer extends Publisher {
                     String adrs = a.getProperty(UserProperty.class).getAddress();
                     if(adrs!=null)
                         rcp.add(new InternetAddress(adrs));
+                    else {
+                        listener.getLogger().println("Failed to send e-mail to "+a.getFullName()+" because no e-mail address is known, and no default e-mail domain is configured");
+                    }
                 }
             }
         }
