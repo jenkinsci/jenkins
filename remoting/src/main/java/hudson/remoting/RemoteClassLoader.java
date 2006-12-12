@@ -10,44 +10,37 @@ import java.io.InputStream;
  * @author Kohsuke Kawaguchi
  */
 final class RemoteClassLoader extends ClassLoader {
-    private final Channel channel;
-    private final int id;
+    private final IClassLoader proxy;
 
-    public RemoteClassLoader(ClassLoader parent, Channel channel, int id) {
+    public RemoteClassLoader(ClassLoader parent, IClassLoader proxy) {
         super(parent);
-        this.id = id;
-        this.channel = channel;
+        this.proxy = proxy;
     }
 
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        try {
-            byte[] bytes = new ClassImageFetchRequest(id,name).call(channel);
-            return defineClass(name, bytes, 0, bytes.length);
-        } catch (InterruptedException e) {
-            ClassNotFoundException x = new ClassNotFoundException(e.getMessage());
-            x.initCause(e);
-            throw x;
-        } catch (IOException e) {
-            ClassNotFoundException x = new ClassNotFoundException(e.getMessage());
-            x.initCause(e);
-            throw x;
-        }
+        byte[] bytes = proxy.fetch(name);
+        return defineClass(name, bytes, 0, bytes.length);
     }
 
-    private static final class ClassImageFetchRequest extends Request<byte[],ClassNotFoundException> {
-        private final int id;
-        private final String className;
+    /**
+     * Remoting interface.
+     */
+    /*package*/ static interface IClassLoader {
+        byte[] fetch(String className) throws ClassNotFoundException;
+    }
 
-        public ClassImageFetchRequest(int id, String className) {
-            this.id = id;
-            this.className = className;
+    public static IClassLoader export(ClassLoader cl, Channel local) {
+        return local.export(IClassLoader.class, new ClassLoaderProxy(cl));
+    }
+
+    /*package*/ static final class ClassLoaderProxy implements IClassLoader {
+        private final ClassLoader cl;
+
+        public ClassLoaderProxy(ClassLoader cl) {
+            this.cl = cl;
         }
 
-        protected byte[] perform(Channel channel) throws ClassNotFoundException {
-            ClassLoader cl = channel.exportedClassLoaders.get(id);
-            if(cl==null)
-                throw new ClassNotFoundException();
-
+        public byte[] fetch(String className) throws ClassNotFoundException {
             InputStream in = cl.getResourceAsStream(className.replace('.', '/') + ".class");
             if(in==null)
                 throw new ClassNotFoundException();
@@ -66,9 +59,15 @@ final class RemoteClassLoader extends ClassLoader {
             return baos.toByteArray();
         }
 
+        public boolean equals(Object that) {
+            if (this == that) return true;
+            if (that == null || getClass() != that.getClass()) return false;
 
-        public String toString() {
-            return "fetchClassImage : "+className;
+            return cl.equals(((ClassLoaderProxy) that).cl);
+        }
+
+        public int hashCode() {
+            return cl.hashCode();
         }
     }
 }

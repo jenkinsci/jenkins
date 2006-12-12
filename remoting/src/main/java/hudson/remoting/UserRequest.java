@@ -1,5 +1,7 @@
 package hudson.remoting;
 
+import hudson.remoting.RemoteClassLoader.IClassLoader;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,20 +21,26 @@ import java.io.Serializable;
 final class UserRequest<RSP extends Serializable,EXC extends Throwable> extends Request<UserResponse<RSP>,EXC> {
 
     private final byte[] request;
-    private final int classLoaderId;
+    private final IClassLoader classLoaderProxy;
     private final String toString;
 
     public UserRequest(Channel local, Callable<?,EXC> c) throws IOException {
-        request = serialize(c);
+        request = serialize(c,local);
         this.toString = c.toString();
-        classLoaderId = local.exportedClassLoaders.intern(c.getClass().getClassLoader());
+        classLoaderProxy = RemoteClassLoader.export( c.getClass().getClassLoader(), local );
     }
 
     protected UserResponse<RSP> perform(Channel channel) throws EXC {
         try {
-            ClassLoader cl = channel.importedClassLoaders.get(classLoaderId);
+            ClassLoader cl = channel.importedClassLoaders.get(classLoaderProxy);
 
-            Object o = new ObjectInputStreamEx(new ByteArrayInputStream(request), cl).readObject();
+            Object o;
+            Channel oldc = Channel.setCurrent(channel);
+            try {
+                o = new ObjectInputStreamEx(new ByteArrayInputStream(request), cl).readObject();
+            } finally {
+                Channel.setCurrent(oldc);
+            }
             Callable<RSP,EXC> callable = (Callable<RSP,EXC>)o;
 
             ClassLoader old = Thread.currentThread().getContextClassLoader();
@@ -45,7 +53,7 @@ final class UserRequest<RSP extends Serializable,EXC extends Throwable> extends 
                 Thread.currentThread().setContextClassLoader(old);
             }
 
-            return new UserResponse<RSP>(serialize(r),classLoaderId);
+            return new UserResponse<RSP>(serialize(r,channel));
         } catch (IOException e) {
             // propagate this to the calling process
             throw (EXC)e;
@@ -55,10 +63,15 @@ final class UserRequest<RSP extends Serializable,EXC extends Throwable> extends 
         }
     }
 
-    private byte[] serialize(Object o) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new ObjectOutputStream(baos).writeObject(o);
-        return baos.toByteArray();
+    private byte[] serialize(Object o, Channel localChannel) throws IOException {
+        Channel old = Channel.setCurrent(localChannel);
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            new ObjectOutputStream(baos).writeObject(o);
+            return baos.toByteArray();
+        } finally {
+            Channel.setCurrent(old);
+        }
     }
 
     public String toString() {
@@ -68,18 +81,13 @@ final class UserRequest<RSP extends Serializable,EXC extends Throwable> extends 
 
 final class UserResponse<RSP extends Serializable> implements Serializable {
     private final byte[] response;
-    private final int classLoaderId;
 
-    public UserResponse(byte[] response, int classLoaderId) {
+    public UserResponse(byte[] response) {
         this.response = response;
-        this.classLoaderId = classLoaderId;
     }
 
-    public RSP retrieve(Channel channel) throws IOException, ClassNotFoundException {
-        return (RSP) new ObjectInputStreamEx(
-            new ByteArrayInputStream(response),
-            channel.exportedClassLoaders.get(classLoaderId)
-            ).readObject();
+    public RSP retrieve(Channel channel, ClassLoader cl) throws IOException, ClassNotFoundException {
+        return (RSP) new ObjectInputStreamEx(new ByteArrayInputStream(response),cl).readObject();
     }
 
     private static final long serialVersionUID = 1L;

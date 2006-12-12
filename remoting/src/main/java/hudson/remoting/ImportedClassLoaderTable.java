@@ -1,5 +1,7 @@
 package hudson.remoting;
 
+import hudson.remoting.RemoteClassLoader.IClassLoader;
+
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -8,19 +10,19 @@ import java.util.Map;
  */
 final class ImportedClassLoaderTable {
     final Channel channel;
-    final Map<Integer,ClassLoader> classLoaders = new Hashtable<Integer,ClassLoader>();
+    final Map<IClassLoader,ClassLoader> classLoaders = new Hashtable<IClassLoader,ClassLoader>();
 
     ImportedClassLoaderTable(Channel channel) {
         this.channel = channel;
     }
 
-    public synchronized ClassLoader get(int id) {
-        ClassLoader r = classLoaders.get(id);
+    public synchronized ClassLoader get(IClassLoader classLoaderProxy) {
+        ClassLoader r = classLoaders.get(classLoaderProxy);
         if(r==null) {
             // we need to be able to use the same hudson.remoting classes, hence delegate
             // to this class loader.
-            r = new RemoteClassLoader(getClass().getClassLoader(),channel,id);
-            classLoaders.put(id,r);
+            r = new RemoteClassLoader(getClass().getClassLoader(),classLoaderProxy);
+            classLoaders.put(classLoaderProxy,r);
         }
         return r;
     }

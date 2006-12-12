@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Proxy;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -33,15 +34,14 @@ public class Channel {
     /*package*/ final Map<Integer,Request<?,?>> pendingCalls = new Hashtable<Integer,Request<?,?>>();
 
     /**
-     * When sending a class definition to the other end, a classloader needed for it will be registered
-     * in this table.
-     */
-    /*package*/ final ExportedClassLoaderTable exportedClassLoaders = new ExportedClassLoaderTable();
-
-    /**
      * {@link ClassLoader}s that are proxies of the remote classloaders.
      */
     /*package*/ final ImportedClassLoaderTable importedClassLoaders = new ImportedClassLoaderTable(this);
+
+    /**
+     * Objects exported via {@link #export(Class, Object)}.
+     */
+    /*package*/ final ExportTable<Object> exportedObjects = new ExportTable<Object>();
 
     /**
      *
@@ -69,8 +69,31 @@ public class Channel {
         if(closed)
             throw new IOException("already closed");
         logger.fine("Send "+cmd);
-        oos.writeObject(cmd);
+        Channel old = Channel.setCurrent(this);
+        try {
+            oos.writeObject(cmd);
+        } finally {
+            Channel.setCurrent(old);
+        }
         oos.reset();
+    }
+
+    /**
+     * Exports an object for remoting to the other {@link Channel}.
+     *
+     * @param type
+     *      Interface to be remoted.
+     * @return
+     *      the proxy object that implements <tt>T</tt>. This object can be transfered
+     *      to the other {@link Channel}, and calling methods on it will invoke the
+     *      same method on the given <tt>instance</tt> object.
+     */
+    /*package*/ synchronized <T> T export(Class<T> type, T instance) {
+        // TODO: unexport
+
+        final int id = exportedObjects.intern(instance);
+        return type.cast(Proxy.newProxyInstance( type.getClassLoader(), new Class[]{type},
+            new RemoteInvocationHandler(id)));
     }
 
     /**
@@ -80,7 +103,7 @@ public class Channel {
     V call(Callable<V,T> callable) throws IOException, T, InterruptedException {
         UserResponse<V> r = new UserRequest<V,T>(this, callable).call(this);
         try {
-            return r.retrieve(this);
+            return r.retrieve(this, callable.getClass().getClassLoader());
         } catch (ClassNotFoundException e) {
             // this is unlikely to happen, so this is a lame implementation
             IOException x = new IOException();
@@ -146,7 +169,13 @@ public class Channel {
             try {
                 while(!closed) {
                     try {
-                        Command cmd = (Command)ois.readObject();
+                        Command cmd = null;
+                        Channel old = Channel.setCurrent(Channel.this);
+                        try {
+                            cmd = (Command)ois.readObject();
+                        } finally {
+                            Channel.setCurrent(old);
+                        }
                         logger.fine("Received "+cmd);
                         cmd.execute(Channel.this);
                     } catch (ClassNotFoundException e) {
@@ -161,6 +190,28 @@ public class Channel {
             }
         }
     }
+
+    /*package*/ static Channel setCurrent(Channel channel) {
+        Channel old = CURRENT.get();
+        CURRENT.set(channel);
+        return old;
+    }
+
+    /**
+     * This method can be invoked during the serialization/deserialization of
+     * objects, when they are transferred to the remote {@link Channel}.
+     *
+     * @return null
+     *      if the calling thread is not performing serialization.
+     */
+    public static Channel current() {
+        return CURRENT.get();
+    }
+
+    /**
+     * Remembers the current "channel" associated for this thread.
+     */
+    private static final ThreadLocal<Channel> CURRENT = new ThreadLocal<Channel>();
 
     private static final Logger logger = Logger.getLogger(Channel.class.getName());
 }
