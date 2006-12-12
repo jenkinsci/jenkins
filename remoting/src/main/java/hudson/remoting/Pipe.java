@@ -1,14 +1,14 @@
 package hudson.remoting;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.io.ObjectInputStream;
 import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.Serializable;
 
 /**
  * @author Kohsuke Kawaguchi

@@ -1,11 +1,11 @@
 package hudson.remoting;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-import java.io.Serializable;
-import java.io.ObjectInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Sits behind a proxy object and implements the proxy logic.
@@ -104,6 +104,8 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
 
         protected Serializable perform(Channel channel) throws Throwable {
             Object o = channel.exportedObjects.get(oid);
+            if(o==null)
+                throw new IllegalStateException("Unable to call "+methodName+". Invalid object ID "+oid);
             try {
                 return (Serializable)choose(o).invoke(o,arguments);
             } catch (InvocationTargetException e) {

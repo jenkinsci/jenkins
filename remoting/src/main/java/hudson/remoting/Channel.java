@@ -91,6 +91,8 @@ public class Channel {
      *      same method on the given <tt>instance</tt> object.
      */
     /*package*/ synchronized <T> T export(Class<T> type, T instance) {
+        if(instance==null)
+            return null;
         // TODO: unexport
 
         final int id = exportedObjects.intern(instance);
@@ -154,6 +156,10 @@ public class Channel {
 
     /**
      * Notifies the remote peer that we are closing down.
+     *
+     * Execution of this command also triggers the {@link ReaderThread} to shut down
+     * and quit. The {@link CloseCommand} is always the last command to be sent on
+     * {@link ObjectOutputStream}, and it's the last command to be read.
      */
     private static final class CloseCommand extends Command {
         protected void execute(Channel channel) {
@@ -175,15 +181,19 @@ public class Channel {
     public void close() throws IOException {
         if(closed)  return;
 
-        send(new CloseCommand());
-        
-        // TODO: would be nice if we can wait for the completion of pending requests
-        terminate(null);
+        // make sure no other commands get executed in between.
+        synchronized(this) {
+            send(new CloseCommand());
+            oos.close();
+
+            // TODO: would be nice if we can wait for the completion of pending requests
+            terminate(null);
+        }
     }
 
     private final class ReaderThread extends Thread {
         public ReaderThread(String name) {
-            super("DataChannel reader thread: "+name);
+            super("Channel reader thread: "+name);
         }
 
         public void run() {
@@ -204,9 +214,8 @@ public class Channel {
                     }
                 }
                 ois.close();
-                oos.close();
             } catch (IOException e) {
-                logger.log(Level.SEVERE, "I/O error in DataChannel",e);
+                logger.log(Level.SEVERE, "I/O error in channel",e);
                 terminate(e);
             }
         }
