@@ -132,6 +132,10 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
             }
             return null;
         }
+
+        public String toString() {
+            return "RPCRequest("+oid+","+methodName+")";
+        }
     }
 
     private static final Object[] EMPTY_ARRAY = new Object[0];

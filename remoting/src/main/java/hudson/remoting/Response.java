@@ -41,7 +41,7 @@ final class Response<RSP,EXC extends Throwable> extends Command {
     }
 
     public String toString() {
-        return "Response[retVal="+toString(returnValue)+",exception="+toString(exception);
+        return "Response[retVal="+toString(returnValue)+",exception="+toString(exception)+"]";
     }
 
     private static String toString(Object o) {

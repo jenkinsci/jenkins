@@ -25,8 +25,6 @@ public class Channel {
     private final ObjectOutputStream oos;
     /*package*/ final Executor executor;
 
-    private final ReaderThread reader;
-
     /**
      * If true, this data channel is already closed and
      * no further calls are accepted.
@@ -60,8 +58,7 @@ public class Channel {
         this.executor = exec;
         this.oos = new ObjectOutputStream(os);
         this.ois = new ObjectInputStream(is);
-        this.reader = new ReaderThread(name);
-        reader.start();
+        new ReaderThread(name).start();
     }
 
     /**
@@ -70,7 +67,8 @@ public class Channel {
     /*package*/ synchronized void send(Command cmd) throws IOException {
         if(closed)
             throw new IOException("already closed");
-        logger.fine("Send "+cmd);
+        if(logger.isLoggable(Level.FINE))
+            logger.fine("Send "+cmd);
         Channel old = Channel.setCurrent(this);
         try {
             oos.writeObject(cmd);
@@ -207,7 +205,8 @@ public class Channel {
                         } finally {
                             Channel.setCurrent(old);
                         }
-                        logger.fine("Received "+cmd);
+                        if(logger.isLoggable(Level.FINE))
+                            logger.fine("Received "+cmd);
                         cmd.execute(Channel.this);
                     } catch (ClassNotFoundException e) {
                         logger.log(Level.SEVERE, "Unabled to read a command",e);
