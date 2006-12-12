@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Request/response pattern over {@link Command}.
@@ -34,7 +38,7 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
      */
     private final int id;
 
-    private Response<RSP,EXC> response;
+    private volatile Response<RSP,EXC> response;
 
     protected Request() {
         synchronized(Request.class) {
@@ -46,9 +50,10 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
      * Sends this request to a remote system, and blocks until we receives a response.
      */
     public synchronized final RSP call(Channel channel) throws EXC, InterruptedException, IOException {
+        response=null;
+
         channel.pendingCalls.put(id,this);
         channel.send(this);
-        response=null;
         while(response==null)
             wait(); // wait until the response arrives
 
@@ -57,6 +62,64 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
 
         return response.returnValue;
     }
+
+    /**
+     * Makes an invocation but immediately returns without waiting for the completion
+     * (AKA aysnchronous invocation.)
+     *
+     * @return
+     *      The {@link Future} object that can be used to wait for the completion.
+     */
+    public final Future<RSP> callAsync(Channel channel) throws EXC, InterruptedException, IOException {
+        response=null;
+
+        channel.pendingCalls.put(id,this);
+        channel.send(this);
+
+        return new Future<RSP>() {
+            /**
+             * The task cannot be cancelled.
+             */
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                return false;
+            }
+
+            public boolean isCancelled() {
+                return false;
+            }
+
+            public boolean isDone() {
+                return response!=null;
+            }
+
+            public RSP get() throws InterruptedException, ExecutionException {
+                synchronized(Request.this) {
+                    while(response==null)
+                        Request.this.wait(); // wait until the response arrives
+
+                    if(response.exception!=null)
+                        throw new ExecutionException(response.exception);
+
+                    return response.returnValue;
+                }
+            }
+
+            public RSP get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                synchronized(Request.this) {
+                    if(response==null)
+                        Request.this.wait(unit.toMillis(timeout)); // wait until the response arrives
+                    if(response==null)
+                        throw new TimeoutException();
+
+                    if(response.exception!=null)
+                        throw new ExecutionException(response.exception);
+
+                    return response.returnValue;
+                }
+            }
+        };
+    }
+
 
     /**
      * Called by the {@link Response} when we received it.

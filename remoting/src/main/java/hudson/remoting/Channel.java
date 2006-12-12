@@ -9,7 +9,9 @@ import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -110,6 +112,25 @@ public class Channel {
             x.initCause(e);
             throw x;
         }
+    }
+
+    /**
+     * Makes an asynchronous remote procedure call.
+     */
+    public <V extends Serializable,T extends Throwable>
+    Future<V> callAsync(final Callable<V,T> callable) throws IOException, T, InterruptedException {
+        final Future<UserResponse<V>> f = new UserRequest<V, T>(this, callable).callAsync(this);
+        return new FutureAdapter<V,UserResponse<V>>(f) {
+            protected V adapt(UserResponse<V> r) throws ExecutionException {
+                try {
+                    return r.retrieve(Channel.this,callable.getClass().getClassLoader());
+                } catch (IOException e) {
+                    throw new ExecutionException(e);
+                } catch (ClassNotFoundException e) {
+                    throw new ExecutionException(e);
+                }
+            }
+        };
     }
 
     private synchronized void terminate(IOException e) {
