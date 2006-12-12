@@ -240,6 +240,31 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Returns the length-limited description.
+     * @return The length-limited description.
+     */
+    public String getTruncatedDescription() {
+        final int maxDescrLength = 100;
+        if (description == null || description.length() < maxDescrLength) {
+            return description;
+        }
+
+        final String ending = "...";
+        
+        // limit the description
+        String truncDescr = description.substring(
+                0, maxDescrLength - ending.length());
+
+        // truncate the description on the space
+        int lastSpace = truncDescr.lastIndexOf(" ");
+        if (lastSpace != -1) {
+            truncDescr = truncDescr.substring(0, lastSpace);
+        }
+
+        return truncDescr + ending;
+    }
+
+    /**
      * Gets the string that says how long since this build has scheduled.
      *
      * @return

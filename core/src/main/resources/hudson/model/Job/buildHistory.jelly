@@ -47,6 +47,14 @@
           </table>
         </td></tr>
       </j:if>
+      <j:if test="${!empty build.description}">
+        <tr>
+          <td></td>
+          <td style="padding:0;white-space:normal">
+            ${build.truncatedDescription}
+          </td>
+        </tr>
+      </j:if>
     </j:forEach>
     <tr class="build-row">
       <td colspan="2" align="right">
