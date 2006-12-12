@@ -63,6 +63,10 @@ public class Channel {
 
     /**
      * Sends a command to the remote end and executes it there.
+     *
+     * <p>
+     * This is the lowest layer of abstraction in {@link Channel}.
+     * {@link Command}s are executed on a remote system in the order they are sent.
      */
     /*package*/ synchronized void send(Command cmd) throws IOException {
         if(closed)

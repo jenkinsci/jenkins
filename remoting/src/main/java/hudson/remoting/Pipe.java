@@ -11,6 +11,16 @@ import java.io.PipedOutputStream;
 import java.io.Serializable;
 
 /**
+ * Pipe for the remote {@link Callable} and the local program to talk to each other.
+ *
+ *
+ *
+ * <h2>Implementation Note</h2>
+ * <p>
+ * For better performance, {@link Pipe} uses lower-level {@link Command} abstraction
+ * to send data, instead of typed proxy object. This allows the writer to send data
+ * without blocking until the arrival of the data is confirmed.
+ *
  * @author Kohsuke Kawaguchi
  */
 public final class Pipe implements Serializable {
@@ -38,19 +48,11 @@ public final class Pipe implements Serializable {
     private void writeObject(ObjectOutputStream oos) throws IOException {
         if(in!=null && out==null) {
             // remote will write to local
-            IStream proxy = Channel.current().export(IStream.class, new IStream() {
-                PipedOutputStream pos = new PipedOutputStream((PipedInputStream)in);
-                public void write(byte[] buf) throws IOException {
-                    pos.write(buf);
-                }
-
-                public void close() throws IOException {
-                    pos.close();
-                }
-            });
+            PipedOutputStream pos = new PipedOutputStream((PipedInputStream)in);
+            int oid = Channel.current().exportedObjects.intern(pos);
 
             oos.writeBoolean(true); // marker
-            oos.writeObject(proxy);
+            oos.writeInt(oid);
         } else {
             // TODO: remote will read from local
             throw new UnsupportedOperationException();
@@ -63,7 +65,8 @@ public final class Pipe implements Serializable {
 
         if(ois.readBoolean()) {
             // local will write to remote
-            final IStream proxy = (IStream)ois.readObject();
+            final int oid = ois.readInt();
+
             in = null;
             out = new BufferedOutputStream(new OutputStream() {
                 public void write(int b) throws IOException {
@@ -81,11 +84,11 @@ public final class Pipe implements Serializable {
                 }
 
                 public void write(byte b[]) throws IOException {
-                    proxy.write(b);
+                    channel.send(new Chunk(oid,b));
                 }
 
                 public void close() throws IOException {
-                    proxy.close();
+                    channel.send(new EOF(oid));
                 }
             });
         } else {
@@ -94,9 +97,59 @@ public final class Pipe implements Serializable {
         }
     }
 
-    private static interface IStream {
-        void write(byte[] buf) throws IOException;
-        void close() throws IOException;
+    /**
+     * {@link Command} for sending bytes.
+     */
+    private static final class Chunk extends Command {
+        private final int oid;
+        private final byte[] buf;
+
+        public Chunk(int oid, byte[] buf) {
+            this.oid = oid;
+            this.buf = buf;
+        }
+
+        protected void execute(Channel channel) {
+            OutputStream os = (OutputStream) channel.exportedObjects.get(oid);
+            try {
+                os.write(buf);
+            } catch (IOException e) {
+                // ignore errors
+            }
+        }
+
+        public String toString() {
+            return "Pipe.Chunk("+oid+","+buf.length+")";
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * {@link Command} for sending EOF.
+     */
+    private static final class EOF extends Command {
+        private final int oid;
+
+        public EOF(int oid) {
+            this.oid = oid;
+        }
+
+
+        protected void execute(Channel channel) {
+            OutputStream os = (OutputStream) channel.exportedObjects.get(oid);
+            try {
+                os.close();
+            } catch (IOException e) {
+                // ignore errors
+            }
+        }
+
+        public String toString() {
+            return "Pipe.EOF("+oid+")";
+        }
+
+        private static final long serialVersionUID = 1L;
     }
 
     private static final long serialVersionUID = 1L;

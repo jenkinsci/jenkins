@@ -34,17 +34,18 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
 
         if(args==null)  args = EMPTY_ARRAY;
 
-        if(method.getDeclaringClass()==Object.class) {
+        Class<?> dc = method.getDeclaringClass();
+        if(dc ==Object.class) {
             // handle equals and hashCode by ourselves
             try {
                 return method.invoke(this,args);
             } catch (InvocationTargetException e) {
                 throw e.getTargetException();
             }
-        } else {
-            // delegate the rest of the methods to the remote object
-            return new RPCRequest(oid,method,args).call(channel);
         }
+        
+        // delegate the rest of the methods to the remote object
+        return new RPCRequest(oid,method,args).call(channel);
     }
 
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
