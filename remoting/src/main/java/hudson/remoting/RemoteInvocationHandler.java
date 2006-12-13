@@ -62,10 +62,8 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
 
         RemoteInvocationHandler that = (RemoteInvocationHandler) o;
 
-        if (oid != that.oid) return false;
-        if (channel!=that.channel) return false;
+        return this.oid==that.oid && this.channel==that.channel;
 
-        return true;
     }
 
     public int hashCode() {
@@ -104,7 +102,7 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
         }
 
         protected Serializable perform(Channel channel) throws Throwable {
-            Object o = channel.exportedObjects.get(oid);
+            Object o = channel.getExportedObject(oid);
             if(o==null)
                 throw new IllegalStateException("Unable to call "+methodName+". Invalid object ID "+oid);
             try {

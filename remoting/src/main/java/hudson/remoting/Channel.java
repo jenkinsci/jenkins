@@ -41,7 +41,7 @@ public class Channel {
     /**
      * Objects exported via {@link #export(Class, Object)}.
      */
-    /*package*/ final ExportTable<Object> exportedObjects = new ExportTable<Object>();
+    private final ExportTable<Object> exportedObjects = new ExportTable<Object>();
 
     /**
      *
@@ -97,13 +97,29 @@ public class Channel {
             return null;
         // TODO: unexport
 
-        final int id = exportedObjects.intern(instance);
+        final int id = export(instance);
         return type.cast(Proxy.newProxyInstance( type.getClassLoader(), new Class[]{type},
             new RemoteInvocationHandler(id)));
     }
 
+    /*package*/ int export(Object instance) {
+        return exportedObjects.intern(instance);
+    }
+
+    /*package*/ Object getExportedObject(int oid) {
+        return exportedObjects.get(oid);
+    }
+
     /**
      * Makes a remote procedure call.
+     *
+     * <p>
+     * Sends {@link Callable} to the remote system, executes it, and returns its result.
+     *
+     * @throws InterruptedException
+     *      If the current thread is interrupted while waiting for the completion.
+     * @throws IOException
+     *      If there's any error in the communication between {@link Channel}s.
      */
     public <V extends Serializable,T extends Throwable>
     V call(Callable<V,T> callable) throws IOException, T, InterruptedException {
@@ -120,6 +136,10 @@ public class Channel {
 
     /**
      * Makes an asynchronous remote procedure call.
+     *
+     * <p>
+     * Similar to {@link #call(Callable)} but returns immediately.
+     * The result of the {@link Callable} can be obtained through the {@link Future} object.
      */
     public <V extends Serializable,T extends Throwable>
     Future<V> callAsync(final Callable<V,T> callable) throws IOException, T, InterruptedException {
@@ -149,7 +169,9 @@ public class Channel {
     }
 
     /**
-     * Waits for the close down of this {@link Channel}.
+     * Waits for this {@link Channel} to be closed down.
+     *
+     * The close-down of a {@link Channel} might be initiated locally or remotely.
      */
     public synchronized void join() throws InterruptedException {
         while(!closed)
