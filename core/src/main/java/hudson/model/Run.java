@@ -681,7 +681,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 return new Summary(false,"broken for a long time");
             if(since==prev)
                 return new Summary(true,"broken since this build");
-            return new Summary(false,"broekn since "+since.getDisplayName());
+            return new Summary(false,"broken since "+since.getDisplayName());
         }
 
         if(getResult()==Result.ABORTED)
