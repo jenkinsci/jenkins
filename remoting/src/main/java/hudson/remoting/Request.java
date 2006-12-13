@@ -57,8 +57,9 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
         while(response==null)
             wait(); // wait until the response arrives
 
-        if(response.exception!=null)
-            throw (EXC)response.exception;
+        EXC exc = response.exception;
+        if(exc !=null)
+            throw exc;
 
         return response.returnValue;
     }
