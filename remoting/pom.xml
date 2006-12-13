@@ -61,10 +61,30 @@
           <skip>true</skip>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <finalName>slave-${version}</finalName>
+          <!--appendAssemblyId>false</appendAssemblyId-->
+          <descriptors>
+            <descriptor>assembly-uberjar.xml</descriptor>
+          </descriptors>
+          <archive>
+            <manifest>
+              <mainClass>hudson.remoting.Launcher</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
   <dependencies>
+    <dependency>
+      <groupId>backport-util-concurrent</groupId>
+      <artifactId>backport-util-concurrent</artifactId>
+      <version>2.2</version>
+    </dependency>
     <dependency>
       <groupId>net.sf.retrotranslator</groupId>
       <artifactId>retrotranslator-runtime</artifactId>
