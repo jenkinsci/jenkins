@@ -6,6 +6,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.lang.reflect.Proxy;
 import java.util.Hashtable;
 import java.util.Map;
@@ -43,6 +45,10 @@ public class Channel {
      */
     private final ExportTable<Object> exportedObjects = new ExportTable<Object>();
 
+    public Channel(String name, Executor exec, InputStream is, OutputStream os) throws IOException {
+        this(name,exec,is,os,null);
+    }
+
     /**
      *
      * @param name
@@ -53,10 +59,45 @@ public class Channel {
      *      Stream connected to the remote peer.
      * @param os
      *      Stream connected to the remote peer.
+     * @param header
+     *      If non-null, receive the portion of data in <tt>is</tt> before
+     *      the data goes into the "binary mode". This is useful
+     *      when the established communication channel might include some data that might
+     *      be useful for debugging/trouble-shooting.
      */
-    public Channel(String name, Executor exec, InputStream is, OutputStream os) throws IOException {
+    public Channel(String name, Executor exec, InputStream is, OutputStream os, OutputStream header) throws IOException {
         this.executor = exec;
+
+        // write the magic preamble.
+        // certain communication channel, such as forking JVM via ssh,
+        // may produce some garbage at the beginning (for example a remote machine
+        // might print some warning before the program starts outputting its own data.)
+        //
+        // so use magic preamble and discard all the data up to that to improve robustness.
+        os.write(new byte[]{0,0,0,0}); // preamble
         this.oos = new ObjectOutputStream(os);
+        oos.flush();    // make sure that stream header is sent to the other end. avoids dead-lock
+
+        {// read the input until we hit preamble
+            int ch;
+            int count=0;
+
+            while(true) {
+                ch = is.read();
+                if(ch==-1) {
+                    throw new EOFException("unexpected stream termination");
+                }
+                if(ch==0) {
+                    count++;
+                    if(count==4)    break;
+                } else {
+                    if(header!=null)
+                        header.write(ch);
+                    count=0;
+                }
+            }
+        }
+
         this.ois = new ObjectInputStream(is);
         new ReaderThread(name).start();
     }
@@ -76,6 +117,7 @@ public class Channel {
         Channel old = Channel.setCurrent(this);
         try {
             oos.writeObject(cmd);
+            oos.flush();        // make sure the command reaches the other end.
         } finally {
             Channel.setCurrent(old);
         }

@@ -1,6 +1,10 @@
 package hudson.remoting;
 
+import junit.framework.Test;
+
 /**
+ * Test class image forwarding.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class ClassRemotingTest extends RmiTestBase {
@@ -13,5 +17,9 @@ public class ClassRemotingTest extends RmiTestBase {
         System.out.println(r);
 
         assertTrue(r.toString().startsWith("hudson.remoting.RemoteClassLoader@"));
+    }
+
+    public static Test suite() throws Exception {
+        return buildSuite(ClassRemotingTest.class);
     }
 }

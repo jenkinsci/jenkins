@@ -1,5 +1,7 @@
 package hudson.remoting;
 
+import junit.framework.Test;
+
 import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +9,8 @@ import java.util.Arrays;
 import java.util.concurrent.Future;
 
 /**
+ * Test {@link Pipe}.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class PipeTest extends RmiTestBase {
@@ -93,5 +97,9 @@ public class PipeTest extends RmiTestBase {
             assertEquals(cnt/256,in.read());
         assertEquals(-1,in.read());
         in.close();
+    }
+
+    public static Test suite() throws Exception {
+        return buildSuite(PipeTest.class);
     }
 }

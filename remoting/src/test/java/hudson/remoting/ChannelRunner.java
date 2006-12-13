@@ -19,7 +19,8 @@ interface ChannelRunner {
     String getName();
 
     Class<? extends ChannelRunner>[] LIST = new Class[] {
-        InProcess.class, Fork.class
+        InProcess.class,
+        Fork.class
     };
 
 
@@ -88,6 +89,7 @@ interface ChannelRunner {
 
         public Channel start() throws Exception {
             System.out.println("forking a new process");
+            // proc = Runtime.getRuntime().exec("java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000 hudson.remoting.Launcher");
             proc = Runtime.getRuntime().exec("java hudson.remoting.Launcher");
 
             copier = new Copier("copier",proc.getErrorStream(),System.err);
