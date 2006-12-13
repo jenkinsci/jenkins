@@ -59,13 +59,9 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
 
         EXC exc = response.exception;
         if(exc !=null)
-            _throw(exc);
+            throw exc; // some versions of JDK fails to compile this line. If so, upgrade your JDK. 
 
         return response.returnValue;
-    }
-
-    private static <EX extends Throwable> void _throw(EX e) throws EX {
-        throw e;
     }
 
     /**
