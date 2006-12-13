@@ -158,6 +158,14 @@ public class Project extends Job<Project,Build> {
         return getParent().getJDK(jdk);
     }
 
+    /**
+     * Overwrites the JDK setting.
+     */
+    public synchronized void setJDK(JDK jdk) throws IOException {
+        this.jdk = jdk.getName();
+        save();
+    }
+
     public int getQuietPeriod() {
         return quietPeriod!=null ? quietPeriod : getParent().getQuietPeriod();
     }
