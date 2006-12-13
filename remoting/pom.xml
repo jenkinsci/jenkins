@@ -81,11 +81,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>backport-util-concurrent</groupId>
-      <artifactId>backport-util-concurrent</artifactId>
-      <version>2.2</version>
-    </dependency>
-    <dependency>
       <groupId>net.sf.retrotranslator</groupId>
       <artifactId>retrotranslator-runtime</artifactId>
       <version>1.0.8</version>
