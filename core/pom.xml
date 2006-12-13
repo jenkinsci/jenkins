@@ -96,6 +96,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.jvnet.hudson.main</groupId>
+      <artifactId>remoting</artifactId>
+      <version>${version}</version>
+    </dependency>
+    <dependency>
       <groupId>net.sf.retrotranslator</groupId>
       <artifactId>retrotranslator-runtime</artifactId>
       <version>1.0.8</version>
