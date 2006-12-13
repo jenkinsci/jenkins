@@ -202,17 +202,15 @@ public class Channel {
     /**
      * Performs an orderly shut down of this channel (and the remote peer.)
      */
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
+        // make sure no other commands get executed in between.
         if(closed)  return;
 
-        // make sure no other commands get executed in between.
-        synchronized(this) {
-            send(new CloseCommand());
-            oos.close();
+        send(new CloseCommand());
+        oos.close();
 
-            // TODO: would be nice if we can wait for the completion of pending requests
-            terminate(null);
-        }
+        // TODO: would be nice if we can wait for the completion of pending requests
+        terminate(null);
     }
 
     private final class ReaderThread extends Thread {

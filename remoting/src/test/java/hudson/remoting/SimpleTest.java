@@ -1,5 +1,8 @@
 package hudson.remoting;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 
@@ -50,5 +53,14 @@ public class SimpleTest extends RmiTestBase {
         public Integer call() throws RuntimeException {
             throw new RuntimeException("foo");
         }
+    }
+
+
+    public static Test suite() throws Exception {
+        TestSuite suite = new TestSuite();
+        for( Class<? extends ChannelRunner> r : ChannelRunner.LIST ) {
+            suite.addTest(new ChannelTestSuite(SimpleTest.class,r));
+        }
+        return suite;
     }
 }
