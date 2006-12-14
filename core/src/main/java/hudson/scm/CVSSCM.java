@@ -40,7 +40,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -48,6 +50,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -140,16 +143,20 @@ public class CVSSCM extends AbstractCVSFamilySCM {
     }
 
     public boolean pollChanges(Project project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
-        List<String> changedFiles = update(true, launcher, dir, listener);
+        List<String> changedFiles = update(true, launcher, dir, listener, new Date());
 
         return changedFiles!=null && !changedFiles.isEmpty();
+    }
+
+    private void configureDate(ArgumentListBuilder cmd, Date date) { // #192
+        cmd.add("-D", DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US).format(date));
     }
 
     public boolean checkout(Build build, Launcher launcher, FilePath dir, BuildListener listener, File changelogFile) throws IOException {
         List<String> changedFiles = null; // files that were affected by update. null this is a check out
 
         if(canUseUpdate && isUpdatable(dir.getLocal())) {
-            changedFiles = update(false,launcher,dir,listener);
+            changedFiles = update(false, launcher, dir, listener, build.getTimestamp().getTime());
             if(changedFiles==null)
                 return false;   // failed
         } else {
@@ -161,6 +168,7 @@ public class CVSSCM extends AbstractCVSFamilySCM {
                 cmd.add("-r",branch);
             if(flatten)
                 cmd.add("-d",dir.getName());
+            configureDate(cmd, build.getTimestamp().getTime());
             cmd.addTokenized(module);
 
             if(!run(launcher,cmd,listener, flatten ? dir.getParent() : dir))
@@ -254,7 +262,7 @@ public class CVSSCM extends AbstractCVSFamilySCM {
      *      List of affected file names, relative to the workspace directory.
      *      Null if the operation failed.
      */
-    public List<String> update(boolean dryRun, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException {
+    private List<String> update(boolean dryRun, Launcher launcher, FilePath workspace, TaskListener listener, Date date) throws IOException {
 
         List<String> changedFileNames = new ArrayList<String>();    // file names relative to the workspace
 
@@ -263,6 +271,10 @@ public class CVSSCM extends AbstractCVSFamilySCM {
         if(dryRun)
             cmd.add("-n");
         cmd.add("update","-PdC");
+        if (branch != null) {
+            cmd.add("-r", branch);
+        }
+        configureDate(cmd, date);
 
         if(flatten) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -315,8 +327,8 @@ public class CVSSCM extends AbstractCVSFamilySCM {
     // we don't care '?' because that's not in the repository
     private static final Pattern UPDATE_LINE = Pattern.compile("[UPARMC] (.+)");
 
-    private static final Pattern REMOVAL_LINE = Pattern.compile("cvs (server|update): (.+) is no longer in the repository");
-    private static final Pattern NEWDIRECTORY_LINE = Pattern.compile("cvs server: New directory `(.+)' -- ignored");
+    private static final Pattern REMOVAL_LINE = Pattern.compile("cvs (server|update): `?(.+?)'? is no longer in the repository");
+    //private static final Pattern NEWDIRECTORY_LINE = Pattern.compile("cvs server: New directory `(.+)' -- ignored");
 
     /**
      * Parses the output from CVS update and list up files that might have been changed.
@@ -382,8 +394,23 @@ public class CVSSCM extends AbstractCVSFamilySCM {
             if(!checkContents(new File(cvs,"Tag"),'T'+branch))
                 return false;
         } else {
-            if(new File(cvs,"Tag").exists())
-                return false;
+            File tag = new File(cvs,"Tag");
+            if (tag.exists()) {
+                try {
+                    Reader r = new FileReader(tag);
+                    try {
+                        String s = new BufferedReader(r).readLine();
+                        if (s == null) {
+                            return false;
+                        }
+                        return s.startsWith("D");
+                    } finally {
+                        r.close();
+                    }
+                } catch (IOException e) {
+                    return false;
+                }
+            }
         }
 
         return true;
