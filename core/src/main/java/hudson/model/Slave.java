@@ -68,8 +68,11 @@ public final class Slave implements Node {
 
         if (name.equals(""))
             throw new FormException("Invalid slave configuration. Name is empty", null);
-        if (!localFS.exists())
-            throw new FormException("Invalid slave configuration for " + name + ". No such directory exists: " + localFS, null);
+        // this prevents the config from being saved when slaves are offline.
+        // on a large deployment with a lot of slaves, some slaves are bound to be offline,
+        // so this check is harmful.
+        //if (!localFS.exists())
+        //    throw new FormException("Invalid slave configuration for " + name + ". No such directory exists: " + localFS, null);
         if (remoteFS.equals(""))
             throw new FormException("Invalid slave configuration for " + name + ". No remote directory given", null);
     }
