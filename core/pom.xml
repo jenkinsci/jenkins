@@ -122,13 +122,8 @@
     </dependency>
     <dependency>
       <groupId>jfree</groupId>
-      <artifactId>jcommon</artifactId>
-      <version>1.0.4</version>
-    </dependency>
-    <dependency>
-      <groupId>jfree</groupId>
       <artifactId>jfreechart</artifactId>
-      <version>1.0.1</version>
+      <version>1.0.3</version>
     </dependency>
     <dependency>
       <groupId>ant</groupId>
