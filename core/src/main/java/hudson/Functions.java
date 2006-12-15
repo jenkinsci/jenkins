@@ -209,7 +209,17 @@ public class Functions {
 
     private static final SimpleFormatter formatter = new SimpleFormatter();
 
-    public static void configureAutoRefresh(HttpServletRequest request, HttpServletResponse response) {
+    /**
+     * Used by <tt>layout.jelly</tt> to control the auto refresh behavior.
+     *
+     * @param noAutoRefresh
+     *      On certain pages, like a page with forms, will have annoying interference
+     *      with auto refresh. On those pages, disable auto-refresh.  
+     */
+    public static void configureAutoRefresh(HttpServletRequest request, HttpServletResponse response, boolean noAutoRefresh) {
+        if(noAutoRefresh)
+            return;
+
         String param = request.getParameter("auto_refresh");
         boolean refresh = isAutoRefresh(request);
         if (param != null) {
