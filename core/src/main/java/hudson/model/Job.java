@@ -13,6 +13,7 @@ import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.TextFile;
 import hudson.util.XStream2;
+import hudson.util.ColorPalette;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.jfree.chart.ChartFactory;
@@ -24,6 +25,7 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.AreaRendererEndType;
 import org.jfree.chart.renderer.category.AreaRenderer;
+import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.StaplerRequest;
@@ -31,6 +33,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.awt.Color;
+import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -543,6 +546,14 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
                 return run ==that.run;
             }
 
+            public Color getColor() {
+                Result r = run.getResult();
+                if(r ==Result.FAILURE || r== Result.ABORTED)
+                    return ColorPalette.RED;
+                else
+                    return ColorPalette.BLUE;
+            }
+
             public int hashCode() {
                 return run.hashCode();
             }
@@ -561,10 +572,8 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         DataSetBuilder<String,Label> data = new DataSetBuilder<String, Label>();
         for( Run r : getBuilds() )
             data.add( ((double)r.getDuration())/(1000*60), "mins", new Label(r));
-        ChartUtil.generateGraph(req,rsp,createChart(data.build()),500,200);
-    }
 
-    private JFreeChart createChart(CategoryDataset dataset) {
+        final CategoryDataset dataset = data.build();
 
         final JFreeChart chart = ChartFactory.createStackedAreaChart(
             null,                   // chart title
@@ -600,14 +609,20 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
+        plot.setRenderer(new StackedAreaRenderer() {
+            public Paint getItemPaint(int row, int column) {
+                Label key = (Label) dataset.getColumnKey(column);
+                return key.getColor();
+            }
+        });
         AreaRenderer ar = (AreaRenderer) plot.getRenderer();
         ar.setEndType(AreaRendererEndType.TRUNCATE);
-        ar.setSeriesPaint(0,new Color(0x72,0x9F,0xCF));
+        ar.setSeriesPaint(0,ColorPalette.BLUE);
 
         // crop extra space around the graph
         plot.setInsets(new RectangleInsets(0,0,0,5.0));
 
-        return chart;
+        ChartUtil.generateGraph(req,rsp,chart,500,200);
     }
 
     /**
