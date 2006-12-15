@@ -21,6 +21,9 @@ import java.util.List;
 /**
  * Entry point to Hudson from command line.
  *
+ * <p>
+ * This tool runs another process and sends its result to Hudson.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Main {
