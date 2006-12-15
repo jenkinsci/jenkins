@@ -7,6 +7,7 @@ import hudson.model.Result;
 import hudson.util.ChartUtil;
 import hudson.util.DataSetBuilder;
 import hudson.util.ShiftedCategoryAxis;
+import hudson.util.ColorPalette;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -176,8 +177,8 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
 
         AreaRenderer ar = (AreaRenderer) plot.getRenderer();
         ar.setEndType(AreaRendererEndType.TRUNCATE);
-        ar.setSeriesPaint(0,new Color(0xEF,0x29,0x29));
-        ar.setSeriesPaint(1,new Color(0x72,0x9F,0xCF));
+        ar.setSeriesPaint(0,ColorPalette.RED);
+        ar.setSeriesPaint(1,ColorPalette.BLUE);
 
         // crop extra space around the graph
         plot.setInsets(new RectangleInsets(0,0,0,5.0));
