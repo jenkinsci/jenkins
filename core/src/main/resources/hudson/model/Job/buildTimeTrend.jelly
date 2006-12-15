@@ -27,7 +27,7 @@
               </td>
               <j:if test="${isMasterSlaveEnabled}">
                 <td>
-                  <t:node value="${t.builtOn}"/>
+                  <t:node value="${r.builtOn}"/>
                 </td>
               </j:if>
             </tr>
