@@ -4,7 +4,7 @@
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
       <div align="center">
-        <img src="buildTimeGraph" width="500" height="200"/>
+        <img src="buildTimeGraph" width="500" height="400"/>
       </div>
 
       <j:set var="isMasterSlaveEnabled" value="${!empty(app.slaves)}"/>

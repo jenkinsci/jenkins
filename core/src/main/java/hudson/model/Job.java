@@ -622,7 +622,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         // crop extra space around the graph
         plot.setInsets(new RectangleInsets(0,0,0,5.0));
 
-        ChartUtil.generateGraph(req,rsp,chart,500,200);
+        ChartUtil.generateGraph(req,rsp,chart,500,400);
     }
 
     /**
