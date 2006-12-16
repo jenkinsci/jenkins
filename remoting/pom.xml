@@ -13,14 +13,39 @@
   
   <profiles>
     <profile>
-      <id>debug</id>
+      <id>jdk15</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
+      <build>
+        <plugins>
+          <!--
+            Have Maven recognize test directory only for JDK1.5.
+            They are written against the remoting module in their
+            untranslated form, so they won't run on 1.4.
+          -->
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <configuration>
+              <sources>
+                <source>src/test/java</source>
+              </sources>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>add-test-source</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
-    <!-- run retrotranslator only during the release -->
+    <!-- run retrotranslator only for releases -->
     <profile>
-      <id>release</id>
+      <id>jdk14</id>
       <build>
         <plugins>
           <plugin>
@@ -76,6 +101,60 @@
           </archive>
         </configuration>
       </plugin>
+      <!--
+        Generate retrotranslated 1.4 jar "on the side". I tried various approaches like
+        "profile" (like http://testng.googlecode.com/svn/trunk/pom.xml), but in the
+        end using Ant seems to be the easiest.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>create14jar</id>
+            <phase>package</phase>
+            <configuration>
+              <tasks>
+                <taskdef name="retrotranslator" classpathref="maven.test.classpath"
+                         classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" />
+                <mkdir dir="target/classes14"/>
+                <retrotranslator destdir="target/classes14" verify="true">
+                  <src path="target/classes"/>
+                </retrotranslator>
+                <jar basedir="target/classes14" destfile="target/${artifactId}-${version}-jdk14.jar" />
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!--
+        Attach the generated 1.4 jar to the build so that it gets deployed to the repo.
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>target/${artifactId}-${version}-jdk14.jar</file>
+                  <type>jar</type>
+                  <classifier>jdk14</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -84,6 +163,16 @@
       <groupId>net.sf.retrotranslator</groupId>
       <artifactId>retrotranslator-runtime</artifactId>
       <version>1.0.8</version>
+    </dependency>
+    <dependency>
+      <!--
+        marked as test dependency so that I can still use it in the antrun plugin but
+        it won't show up as a public dependency
+      -->
+      <groupId>net.sf.retrotranslator</groupId>
+      <artifactId>retrotranslator-transformer</artifactId>
+      <version>1.0.8</version>
+      <scope>test</scope>
     </dependency>
     <!-- test dependencies -->
     <dependency>
