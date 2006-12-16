@@ -16,7 +16,7 @@
   <description>The module that constitutes the main hudson.war</description>
   
   <modules>
-    <module>remoting</module>
+    <!--module>remoting</module-->
     <module>core</module>
     <module>war</module>
   </modules>
