@@ -73,6 +73,7 @@ public class CVSSCM extends AbstractCVSFamilySCM {
      * Module names.
      *
      * This could be a whitespace-separate list of multiple modules.
+     * Modules could be either directories or files. 
      */
     private String module;
 
@@ -185,7 +186,15 @@ public class CVSSCM extends AbstractCVSFamilySCM {
             StringTokenizer tokens = new StringTokenizer(module);
             while(tokens.hasMoreTokens()) {
                 String m = tokens.nextToken();
-                archive(new File(build.getProject().getWorkspace().getLocal(),m),m,zos);
+                File mf = new File(build.getProject().getWorkspace().getLocal(), m);
+
+                if(!mf.isDirectory()) {
+                    // this module is just a file, say "foo/bar.txt".
+                    // to record "foo/CVS/*", we need to start by archiving "foo".
+                    m = m.substring(0,m.lastIndexOf('/'));
+                    mf = mf.getParentFile();
+                }
+                archive(mf,m,zos);
             }
         }
         zos.close();
@@ -203,6 +212,12 @@ public class CVSSCM extends AbstractCVSFamilySCM {
         return new File(build.getRootDir(),"workspace.zip");
     }
 
+    /**
+     * Archives all the CVS-controlled files in {@code dir}.
+     *
+     * @param relPath
+     *      The path name in ZIP to store this directory with.
+     */
     private void archive(File dir,String relPath,ZipOutputStream zos) throws IOException {
         Set<String> knownFiles = new HashSet<String>();
         // see http://www.monkey.org/openbsd/archive/misc/9607/msg00056.html for what Entries.Log is for
@@ -308,15 +323,28 @@ public class CVSSCM extends AbstractCVSFamilySCM {
             for (String moduleName : moduleNames) {
                 // capture the output during update
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                FilePath modulePath = new FilePath(workspace, moduleName);
 
-                if(!run(launcher,cmd,listener,
-                    new FilePath(workspace, moduleName),
+                ArgumentListBuilder actualCmd = cmd;
+                String baseName = moduleName;
+
+                if(!modulePath.isDirectory()) {
+                    // updating just one file, like "foo/bar.txt".
+                    // run update command from "foo" directory with "bar.txt" as the command line argument
+                    actualCmd = cmd.clone();
+                    actualCmd.add(modulePath.getName());
+                    modulePath = modulePath.getParent();
+                    baseName = baseName.substring(0,baseName.lastIndexOf('/'));
+                }
+
+                if(!run(launcher,actualCmd,listener,
+                    modulePath,
                     new ForkOutputStream(baos,listener.getLogger())))
                     return null;
 
                 // we'll run one "cvs log" command with workspace as the base,
                 // so use path names that are relative to moduleName.
-                parseUpdateOutput(moduleName+'/',baos, changedFileNames);
+                parseUpdateOutput(baseName+'/',baos, changedFileNames);
             }
         }
 
@@ -383,6 +411,10 @@ public class CVSSCM extends AbstractCVSFamilySCM {
     }
 
     private boolean isUpdatableModule(File module) {
+        if(!module.isDirectory())
+            // module is a file, like "foo/bar.txt". Then CVS information is "foo/CVS".
+            module = module.getParentFile();
+
         File cvs = new File(module,"CVS");
         if(!cvs.exists())
             return false;
