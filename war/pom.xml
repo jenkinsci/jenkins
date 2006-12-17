@@ -66,10 +66,17 @@
   <dependencies>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
+      <artifactId>remoting</artifactId>
+      <version>${version}</version>
+      <classifier>jdk14</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>hudson-core</artifactId>
       <version>${version}</version>
-      <!-- jars that are not needed in war -->
+      <classifier>jdk14</classifier>
       <exclusions>
+        <!-- jars that are not needed in war -->
         <exclusion>
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
@@ -137,6 +144,11 @@
         <exclusion>
           <groupId>pull-parser</groupId>
           <artifactId>pull-parser</artifactId>
+        </exclusion>
+        <!-- we want jdk14 version, but core depends on jdk1.5 version -->
+        <exclusion>
+          <groupId>org.jvnet.hudson.main</groupId>
+          <artifactId>remoting</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

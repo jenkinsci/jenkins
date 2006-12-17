@@ -3,13 +3,13 @@
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.67-SNAPSHOT</version>
+    <version>1.68-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
   <artifactId>remoting</artifactId>
   <packaging>jar</packaging>
-  <name>Remoting layer for Hudson</name>
+  <name>Hudson remoting layer</name>
   
   <profiles>
     <profile>
