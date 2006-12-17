@@ -931,9 +931,21 @@ public class CVSSCM extends AbstractCVSFamilySCM {
                     StringTokenizer tokens = new StringTokenizer(CVSSCM.this.module);
                     while(tokens.hasMoreTokens()) {
                         String m = tokens.nextToken();
+                        FilePath path = new FilePath(destdir).child(m);
+                        boolean isDir = path.isDirectory();
+
                         ArgumentListBuilder cmd = new ArgumentListBuilder();
-                        cmd.add("cvs","tag","-R",tagName);
-                        if(!CVSSCM.this.run(new Launcher(listener),cmd,listener,new FilePath(destdir).child(m))) {
+                        cmd.add("cvs","tag");
+                        if(isDir) {
+                            cmd.add("-R");
+                        }
+                        cmd.add(tagName);
+                        if(!isDir) {
+                            cmd.add(path.getName());
+                            path = path.getParent();
+                        }
+
+                        if(!CVSSCM.this.run(new Launcher(listener),cmd,listener, path)) {
                             listener.getLogger().println("tagging failed");
                             return;
                         }
