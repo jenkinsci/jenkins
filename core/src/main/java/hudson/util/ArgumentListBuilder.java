@@ -49,4 +49,10 @@ public class ArgumentListBuilder {
     public String[] toCommandArray() {
         return args.toArray(new String[args.size()]);
     }
+    
+    public ArgumentListBuilder clone() {
+        ArgumentListBuilder r = new ArgumentListBuilder();
+        r.args.addAll(this.args);
+        return r;
+    }
 }
