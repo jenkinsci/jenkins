@@ -36,6 +36,10 @@ public class Functions {
         return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
     }
 
+    /**
+     * Prints the integer as a string that represents difference,
+     * like "-5", "+/-0", "+3".
+     */
     public static String getDiffString(int i) {
         if(i==0)    return "\u00B10";   // +/-0
         String s = Integer.toString(i);
