@@ -8,6 +8,7 @@ import hudson.util.ChartUtil;
 import hudson.util.DataSetBuilder;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.ColorPalette;
+import hudson.Functions;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -51,6 +52,16 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
      */
     public abstract int getTotalCount();
 
+    /**
+     * Gets the diff string of failures.
+     */
+    public final String getFailureDiffString() {
+        T prev = getPreviousResult();
+        if(prev==null)  return "";  // no record
+
+        return " / "+Functions.getDiffString(this.getFailCount()-prev.getFailCount());
+    }
+
     public String getDisplayName() {
         return "Test Result";
     }
@@ -63,6 +74,9 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         return "clipboard.gif";
     }
 
+    /**
+     * Gets the test result of the previous build, if it's recorded, or null.
+     */
     public T getPreviousResult() {
         return (T)getPreviousResult(getClass());
     }
