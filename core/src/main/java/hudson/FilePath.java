@@ -133,6 +133,10 @@ public final class FilePath {
         return local.exists();
     }
 
+    public boolean isDirectory() {
+        return local.isDirectory();
+    }
+
     /**
      * Always use {@link #getLocal()} or {@link #getRemote()}
      */
