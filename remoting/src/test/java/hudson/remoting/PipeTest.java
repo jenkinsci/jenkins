@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.concurrent.Future;
 
 /**
  * Test {@link Pipe}.
