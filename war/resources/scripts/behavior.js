@@ -51,22 +51,19 @@ var Behaviour = {
 	},
 
 	apply : function(){
-		for (h=0;sheet=Behaviour.list[h];h++){
-			for (selector in sheet){
-				list = document.getElementsBySelector(selector);
+        this.applySubtree(document);
+    },
 
-				if (!list){
-					continue;
-				}
+    applySubtree : function(startNode) {
+        Behaviour.list.each(function(sheet) {
+            for (var selector in sheet){
+                var list = findElementsBySelector(startNode,selector);
+                list.each(sheet[selector]);
+            }
+        });
+    },
 
-				for (i=0;element=list[i];i++){
-					sheet[selector](element);
-				}
-			}
-		}
-	},
-
-	addLoadEvent : function(func){
+    addLoadEvent : function(func){
 		var oldonload = window.onload;
 
 		if (typeof window.onload != 'function') {
@@ -109,16 +106,20 @@ function getAllChildren(e) {
   return e.all ? e.all : e.getElementsByTagName('*');
 }
 
-document.getElementsBySelector = function(selector) {
-  // Attempt to fail gracefully in lesser browsers
-  if (!document.getElementsByTagName) {
-    return new Array();
+function isAncestor(p,c) {
+  while(true) {
+    if(p==c)      return true;
+    if(c==null)   return false;
+    c = c.parentNode;
   }
+}
+
+function findElementsBySelector(startNode,selector) {
   // Split selector in to tokens
   var tokens = selector.split(' ');
-  var currentContext = new Array(document);
+  var currentContext = new Array(startNode);
   for (var i = 0; i < tokens.length; i++) {
-    token = tokens[i].replace(/^\s+/,'').replace(/\s+$/,'');;
+    var token = tokens[i].replace(/^\s+/,'').replace(/\s+$/,'');;
     if (token.indexOf('#') > -1) {
       // Token is an ID selector
       var bits = token.split('#');
@@ -127,23 +128,27 @@ document.getElementsBySelector = function(selector) {
       var element = document.getElementById(id);
       if (tagName && element.nodeName.toLowerCase() != tagName) {
         // tag with that ID not found, return false
-        return new Array();
+        return [];
       }
+
+      // make sure this node is a descendant of the current context
+      if(currentContext.find(function(n) {return isAncestor(n,element)})==null)
+        return []; // not a descendant
+
       // Set currentContext to contain just this element
-      currentContext = new Array(element);
+      currentContext = $A(element);
       continue; // Skip to next token
     }
     if (token.indexOf('.') > -1) {
       // Token contains a class selector
       var bits = token.split('.');
       var tagName = bits[0];
-      var className = bits[1];
+      var className = new RegExp('\\b'+bits[1]+'\\b');
       if (!tagName) {
         tagName = '*';
       }
       // Get elements matching tag, filter them for class selector
-      var found = new Array;
-      var foundCount = 0;
+      var found = [];
       for (var h = 0; h < currentContext.length; h++) {
         var elements;
         if (tagName == '*') {
@@ -152,14 +157,14 @@ document.getElementsBySelector = function(selector) {
             elements = currentContext[h].getElementsByTagName(tagName);
         }
         for (var j = 0; j < elements.length; j++) {
-          found[foundCount++] = elements[j];
+          found.push(elements[j]);
         }
       }
-      currentContext = new Array;
-      var currentContextIndex = 0;
+
+      currentContext = [];
       for (var k = 0; k < found.length; k++) {
-        if (found[k].className && found[k].className.match(new RegExp('\\b'+className+'\\b'))) {
-          currentContext[currentContextIndex++] = found[k];
+        if (found[k].className && found[k].className.match(className)) {
+          currentContext.push(found[k]);
         }
       }
       continue; // Skip to next token
@@ -184,11 +189,10 @@ document.getElementsBySelector = function(selector) {
             elements = currentContext[h].getElementsByTagName(tagName);
         }
         for (var j = 0; j < elements.length; j++) {
-          found[foundCount++] = elements[j];
+          found.push(elements[j]);
         }
       }
-      currentContext = new Array;
-      var currentContextIndex = 0;
+
       var checkFunction; // This function will be used to filter the elements
       switch (attrOperator) {
         case '=': // Equality
@@ -213,34 +217,32 @@ document.getElementsBySelector = function(selector) {
           // Just test for existence of attribute
           checkFunction = function(e) { return e.getAttribute(attrName); };
       }
-      currentContext = new Array;
-      var currentContextIndex = 0;
-      for (var k = 0; k < found.length; k++) {
-        if (checkFunction(found[k])) {
-          currentContext[currentContextIndex++] = found[k];
-        }
-      }
+
+      currentContext = found.findAll(checkFunction);
       // alert('Attribute Selector: '+tagName+' '+attrName+' '+attrOperator+' '+attrValue);
       continue; // Skip to next token
     }
 
     if (!currentContext[0]){
-    	return;
+    	return [];
     }
 
     // If we get here, token is JUST an element (not a class or ID selector)
     tagName = token;
     var found = new Array;
-    var foundCount = 0;
     for (var h = 0; h < currentContext.length; h++) {
       var elements = currentContext[h].getElementsByTagName(tagName);
       for (var j = 0; j < elements.length; j++) {
-        found[foundCount++] = elements[j];
+        found.push(elements[j]);
       }
     }
     currentContext = found;
   }
   return currentContext;
+}
+
+document.getElementsBySelector = function(selector) {
+    return findElementsBySelector(document,selector);
 }
 
 /* That revolting regular expression explained

@@ -472,6 +472,11 @@ Object.extend(Array.prototype, {
 
   inspect: function() {
     return '[' + this.map(Object.inspect).join(', ') + ']';
+  },
+
+  pushAll: function(items) {
+    for(var i=0; i<items.length; i++)
+      this.push(items[i]);
   }
 });
 var Hash = {

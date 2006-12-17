@@ -18,7 +18,9 @@
 	    nc.className = "repeated-chunk";
 	    nc.innerHTML = block${repeatBlockId}HTML;
 	    ip.parentNode.insertBefore(nc,ip);
-	  }
+
+      Behaviour.applySubtree(nc);
+    }
 
 	  function delete${repeatBlockId}(ev) {
 	    t = ev.target;	// DOM Lv2
