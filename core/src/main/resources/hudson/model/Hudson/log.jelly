@@ -9,6 +9,17 @@
     <j:forEach var="log" items="${h.logRecords}">
       <pre>${h.printLogRecord(log)}</pre>
     </j:forEach>
+
+    <!-- TODO: put this in the <head> tag. -->
+    <div align="right" style="margin:1em">
+      <img src="${rootURL}/images/atom.gif" border="0"/>
+      <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
+      <a href="logRss">All</a>
+      <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
+      <a href="logRss?level=SEVERE">&gt; SEVERE</a>
+      <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
+      <a href="logRss?level=WARNING">&gt; WARNING</a>
+    </div>
   </l:main-panel>
 </l:layout>
 </j:jelly>
