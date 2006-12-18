@@ -18,6 +18,29 @@ import java.util.logging.Logger;
 /**
  * Represents a communication channel to the remote peer.
  *
+ * <p>
+ * A {@link Channel} is a mechanism for two JVMs to communicate over
+ * bi-directional {@link InputStream}/{@link OutputStream} pair.
+ * {@link Channel} represents an endpoint of the stream, and thus
+ * two {@link Channel}s are always used in a pair.
+ *
+ * <p>
+ * {@link Channel} exposes its featuers in a layered model. Its higher-layer
+ * features are built on top of its lower-layer features, and they
+ * are called layer-0, layer-1, etc. Applications can use any layer
+ * it sees fit.
+ *
+ * <ul>
+ * <li>
+ *  <b>Layer 0</b>:
+ *  See {@link Command} for more details. This is for higher-level features,
+ *  and not likely useful for applications directly.
+ * <li>
+ *  <b>Layer 1</b>:
+ *  See {@link Request} for more details. This is for higher-level features,
+ *  and not likely useful for applications directly.
+ * </ul>
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Channel {
@@ -48,7 +71,8 @@ public class Channel {
     }
 
     /**
-     *
+     * Creates a new channel.
+     * 
      * @param name
      *      Human readable name of this channel. Used for debug/logging. Can be anything.
      * @param exec

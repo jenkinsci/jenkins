@@ -9,10 +9,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Request/response pattern over {@link Command}.
+ * Request/response pattern over {@link Channel}, the layer-1 service.
  *
- * This is layer 1. This assumes that the receiving side has all the class definitions
- * available to de-serialize {@link Request}.
+ * <p>
+ * This assumes that the receiving side has all the class definitions
+ * available to de-serialize {@link Request}, just like {@link Command}.
  *
  * @author Kohsuke Kawaguchi
  * @see Response
@@ -23,7 +24,9 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
      * Executed on a remote system to perform the task.
      *
      * @param channel
-     *      remote data channel.
+     *      The local channel. From the view point of the JVM that
+     *      {@link #call(Channel) made the call}, this channel is
+     *      the remote channel.
      * @return
      *      the return value will be sent back to the calling process.
      * @throws EXC
@@ -34,6 +37,7 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
 
     /**
      * Uniquely identifies this request.
+     * Used for correlation between request and response.
      */
     private final int id;
 
@@ -47,6 +51,17 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
 
     /**
      * Sends this request to a remote system, and blocks until we receives a response.
+     *
+     * @param channel
+     *      The channel from which the request will be sent.
+     * @throws InterruptedException
+     *      If the thread is interrupted while it's waiting for the call to complete.
+     * @throws IOException
+     *      If there's an error during the communication.
+     * @throws RequestAbortedException
+     *      If the channel is terminated while the call is in progress.
+     * @throws EXC
+     *      If the {@link #perform(Channel)} throws an exception.
      */
     public synchronized final RSP call(Channel channel) throws EXC, InterruptedException, IOException {
         response=null;
@@ -67,10 +82,14 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
      * Makes an invocation but immediately returns without waiting for the completion
      * (AKA aysnchronous invocation.)
      *
+     * @param channel
+     *      The channel from which the request will be sent.
      * @return
      *      The {@link Future} object that can be used to wait for the completion.
+     * @throws IOException
+     *      If there's an error during the communication.
      */
-    public final Future<RSP> callAsync(Channel channel) throws EXC, InterruptedException, IOException {
+    public final Future<RSP> callAsync(Channel channel) throws EXC, IOException {
         response=null;
 
         channel.pendingCalls.put(id,this);
