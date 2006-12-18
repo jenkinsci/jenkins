@@ -143,11 +143,15 @@ public class Channel {
     }
 
     /*package*/ int export(Object instance) {
-        return exportedObjects.intern(instance);
+        return exportedObjects.export(instance);
     }
 
     /*package*/ Object getExportedObject(int oid) {
         return exportedObjects.get(oid);
+    }
+
+    /*package*/ void unexport(int id) {
+        exportedObjects.unexport(id);
     }
 
     /**

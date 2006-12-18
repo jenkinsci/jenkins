@@ -43,8 +43,6 @@ import java.util.logging.Logger;
  * to send data, instead of typed proxy object. This allows the writer to send data
  * without blocking until the arrival of the data is confirmed.
  *
- * TODO: unexport
- * 
  * @author Kohsuke Kawaguchi
  */
 public final class Pipe implements Serializable {
@@ -143,8 +141,7 @@ public final class Pipe implements Serializable {
          */
         private ByteArrayOutputStream tmp;
         /**
-         * Set to true if the stream is closed before it's connected
-         * to a remote object.
+         * Set to true if the stream is closed.
          */
         private boolean closed;
 
@@ -169,7 +166,7 @@ public final class Pipe implements Serializable {
                 write(tmp.toByteArray());
                 tmp = null;
             }
-            if(closed)
+            if(closed)  // already marked closed?
                 close();
         }
 
@@ -178,6 +175,8 @@ public final class Pipe implements Serializable {
         }
 
         public void write(byte b[], int off, int len) throws IOException {
+            if(closed)
+                throw new IOException("stream is already closed");
             if(off==0 && len==b.length)
                 write(b);
             else {
@@ -188,6 +187,8 @@ public final class Pipe implements Serializable {
         }
 
         public synchronized void write(byte b[]) throws IOException {
+            if(closed)
+                throw new IOException("stream is already closed");
             if(channel==null) {
                 if(tmp==null)
                     tmp = new ByteArrayOutputStream();
@@ -245,6 +246,7 @@ public final class Pipe implements Serializable {
 
             protected void execute(Channel channel) {
                 OutputStream os = (OutputStream) channel.getExportedObject(oid);
+                channel.unexport(oid);
                 try {
                     os.close();
                 } catch (IOException e) {
@@ -274,6 +276,7 @@ public final class Pipe implements Serializable {
         protected void execute(Channel channel) {
             try {
                 RemoteOutputStream ros = (RemoteOutputStream) channel.getExportedObject(oidRos);
+                channel.unexport(oidRos);
                 ros.connect(channel, oidPos);
             } catch (IOException e) {
                 logger.severe("Failed to connect to pipe");
