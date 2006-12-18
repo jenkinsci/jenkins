@@ -106,7 +106,7 @@ public class User extends AbstractModelObject {
     public <T extends UserProperty> T getProperty(Class<T> clazz) {
         for (UserProperty p : properties) {
             if(clazz.isInstance(p))
-                return (T)p;    // can't use Class.cast as that's 5.0 feature
+                return clazz.cast(p);
         }
         return null;
     }
