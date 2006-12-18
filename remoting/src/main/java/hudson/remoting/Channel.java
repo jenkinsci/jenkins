@@ -25,10 +25,33 @@ import java.util.logging.Logger;
  * two {@link Channel}s are always used in a pair.
  *
  * <p>
- * {@link Channel} exposes its featuers in a layered model. Its higher-layer
+ * Communication is established as soon as two {@link Channel} instances
+ * are created at the end fo the stream pair
+ * until the stream is terminated via {@link #close()}.
+ *
+ * <p>
+ * The basic unit of remoting is an executable {@link Callable} object.
+ * An application can create a {@link Callable} object, and execute it remotely
+ * by using the {@link #call(Callable)} method or {@link #callAsync(Callable)} method.
+ *
+ * <p>
+ * In this sense, {@link Channel} is a mechanism to delegate/offload computation
+ * to other JVMs and somewhat like an agent system. This is bit different from
+ * remoting technologies like CORBA or web services, where the server exposes a
+ * certain functionality that clients invoke. 
+ *
+ * <p>
+ * {@link Callable} object, as well as the return value / exceptions,
+ * are transported by using Java serialization. All the necessary class files
+ * are also shipped over {@link Channel} on-demand, so there's no need to
+ * pre-deploy such classes on both JVMs. 
+ *
+ *
+ * <h2>Implementor's Note</h2>
+ * <p>
+ * {@link Channel} builds its features in a layered model. Its higher-layer
  * features are built on top of its lower-layer features, and they
- * are called layer-0, layer-1, etc. Applications can use any layer
- * it sees fit.
+ * are called layer-0, layer-1, etc.
  *
  * <ul>
  * <li>
