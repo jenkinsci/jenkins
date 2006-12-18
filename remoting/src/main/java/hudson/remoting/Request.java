@@ -89,7 +89,7 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
      * @throws IOException
      *      If there's an error during the communication.
      */
-    public final Future<RSP> callAsync(Channel channel) throws EXC, IOException {
+    public final Future<RSP> callAsync(Channel channel) throws IOException {
         response=null;
 
         channel.pendingCalls.put(id,this);
