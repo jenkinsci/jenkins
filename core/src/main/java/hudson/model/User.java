@@ -128,6 +128,8 @@ public class User extends AbstractModelObject {
     public static User get(String name) {
         if(name==null)
             return null;
+        name = name.replace('\\', '_').replace('/', '_');
+        
         synchronized(byName) {
             User u = byName.get(name);
             if(u==null) {
@@ -175,7 +177,6 @@ public class User extends AbstractModelObject {
      * The file we save our configuration.
      */
     protected final XmlFile getConfigFile() {
-        String safeId = id.replace('\\', '_').replace('/', '_');
         return new XmlFile(XSTREAM,new File(Hudson.getInstance().getRootDir(),"users/"+ safeId +"/config.xml"));
     }
 
