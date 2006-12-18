@@ -22,9 +22,9 @@ import java.util.logging.Logger;
  * of pipes.
  *
  * <p>
- * Once created, {@link Pipe} can be sent to the remote system as a part of
- * {@link Callable} or any other object transportation mechanism between {@link Channel}s.
- * Once re-instanciated on the remote {@link Channel}, pipe connects
+ * Once created, {@link Pipe} can be sent to the remote system as a part of a serialization of
+ * {@link Callable} between {@link Channel}s.
+ * Once re-instanciated on the remote {@link Channel}, pipe automatically connects
  * back to the local instance and perform necessary set up.
  *
  * <p>
@@ -32,10 +32,24 @@ import java.util.logging.Logger;
  * read/write bytes.
  *
  * <p>
- * Pipe can be only written by one system and read by one system. It is an error to
+ * Pipe can be only written by one system and read by the other system. It is an error to
  * send one {@link Pipe} to two remote {@link Channel}s, or send one {@link Pipe} to
  * the same {@link Channel} twice.
  *
+ * <h2>Usage</h2>
+ * <pre>
+ * final Pipe p = Pipe.createLocalToRemote();
+ *
+ * channel.callAsync(new Callable() {
+ *   public Object call() {
+ *     InputStream in = p.getIn();
+ *     ... read from in ...
+ *   }
+ * });
+ *
+ * OutputStream out = p.getOut();
+ * ... write to out ...
+ * </pre>
  *
  * <h2>Implementation Note</h2>
  * <p>

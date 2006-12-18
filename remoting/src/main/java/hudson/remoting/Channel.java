@@ -268,6 +268,9 @@ public class Channel {
      * Waits for this {@link Channel} to be closed down.
      *
      * The close-down of a {@link Channel} might be initiated locally or remotely.
+     *
+     * @throws InterruptedException
+     *      If the current thread is interrupted while waiting for the completion.
      */
     public synchronized void join() throws InterruptedException {
         while(!closed)
