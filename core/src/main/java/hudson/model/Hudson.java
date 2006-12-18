@@ -8,6 +8,8 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.Functions;
+import hudson.FeedAdapter;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.JobListener;
 import hudson.scm.CVSSCM;
@@ -63,7 +65,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.logging.LogRecord;
+import java.util.logging.Level;
 
 /**
  * Root object of the system.
@@ -946,18 +951,57 @@ public final class Hudson extends JobCollection implements Node {
     /**
      * Called once the user logs in. Just forward to the top page.
      */
-    public synchronized void doLoginEntry( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public void doLoginEntry( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         rsp.sendRedirect2(req.getContextPath()+"/");
     }
 
     /**
      * Called once the user logs in. Just forward to the top page.
      */
-    public synchronized void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         HttpSession session = req.getSession(false);
         if(session!=null)
             session.invalidate();
         rsp.sendRedirect2(req.getContextPath()+"/");
+    }
+
+    /**
+     * RSS feed for log entries.
+     */
+    public void doLogRss( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        List<LogRecord> logs = logRecords;
+
+        // filter log records based on the log level
+        String level = req.getParameter("level");
+        if(level!=null) {
+            Level threshold = Level.parse(level);
+            List<LogRecord> filtered = new ArrayList<LogRecord>();
+            for (LogRecord r : logs) {
+                if(r.getLevel().intValue() >= threshold.intValue())
+                    filtered.add(r);
+            }
+            logs = filtered;
+        }
+
+        RSS.forwardToRss("Hudson log","", logs, new FeedAdapter<LogRecord>() {
+            public String getEntryTitle(LogRecord entry) {
+                return entry.getMessage();
+            }
+
+            public String getEntryUrl(LogRecord entry) {
+                return "log";   // TODO: one URL for one log entry?
+            }
+
+            public String getEntryID(LogRecord entry) {
+                return String.valueOf(entry.getSequenceNumber());
+            }
+
+            public Calendar getEntryTimestamp(LogRecord entry) {
+                GregorianCalendar cal = new GregorianCalendar();
+                cal.setTimeInMillis(entry.getMillis());
+                return cal;
+            }
+        },req,rsp);
     }
 
     /**
