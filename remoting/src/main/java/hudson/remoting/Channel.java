@@ -231,9 +231,14 @@ public class Channel {
      * <p>
      * Similar to {@link #call(Callable)} but returns immediately.
      * The result of the {@link Callable} can be obtained through the {@link Future} object.
+     *
+     * @return
+     *      The {@link Future} object that can be used to wait for the completion.
+     * @throws IOException
+     *      If there's an error during the communication.
      */
     public <V extends Serializable,T extends Throwable>
-    Future<V> callAsync(final Callable<V,T> callable) throws IOException, T, InterruptedException {
+    Future<V> callAsync(final Callable<V,T> callable) throws IOException {
         final Future<UserResponse<V>> f = new UserRequest<V, T>(this, callable).callAsync(this);
         return new FutureAdapter<V,UserResponse<V>>(f) {
             protected V adapt(UserResponse<V> r) throws ExecutionException {
