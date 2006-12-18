@@ -51,7 +51,7 @@ final class RSS {
      * @param title
      *      Title of the feed.
      * @param url
-     *      URL of the model object that owns this feed
+     *      URL of the model object that owns this feed. Relative to the context root.
      * @param entries
      *      Entries to be listed in the RSS feed.
      * @param adapter
