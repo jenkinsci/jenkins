@@ -9,6 +9,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
 
+import hudson.tasks.Publisher;
+import hudson.tasks.Builder;
+import hudson.model.Hudson;
+import hudson.triggers.Trigger;
+import hudson.scm.SCM;
+
 /**
  * Base class of Hudson plugin.
  *
@@ -45,7 +51,9 @@ public abstract class Plugin {
      *
      * <p>
      * This method is called after {@link #setServletContext(ServletContext)} is invoked.
-     * You can also use {@link Hudson#getInstance()} to access the singleton hudson instance.
+     * You can also use {@link Hudson#getInstance()} to access the singleton hudson instance,
+     * although the plugin start up happens relatively early in the initialization
+     * stage and not all the data are loaded in Hudson.
      *
      * <p>
      * Plugins should override this method and register custom
