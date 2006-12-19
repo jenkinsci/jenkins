@@ -27,30 +27,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>generate-resources</phase>
-            <configuration>
-              <tasks>
-                <tstamp>
-                  <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour" />
-                </tstamp>
-                <property name="build.version" value="${version} (private-${now}-${user.name})" /><!-- default to release version -->
-                <!-- put the version file -->
-                <echo message="The build id is: ${build.version}" />
-                <mkdir dir="target/classes/hudson" />
-                <echo file="target/classes/hudson/hudson-version.properties">version=${build.version}
-                </echo>
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <!--
         Generate retrotranslated 1.4 jar "on the side". I tried various approaches like
         "profile" (like http://testng.googlecode.com/svn/trunk/pom.xml), but in the
@@ -72,6 +48,28 @@
                   <src path="target/classes"/>
                 </retrotranslator>
                 <jar basedir="target/classes14" destfile="target/${artifactId}-${version}-jdk14.jar" />
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <phase>generate-resources</phase>
+            <configuration>
+              <tasks>
+                <tstamp>
+                  <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour" />
+                </tstamp>
+                <property name="build.version" value="${version} (private-${now}-${user.name})" /><!-- default to release version -->
+                <!-- put the version file -->
+                <echo message="The build id is: ${build.version}" />
+                <mkdir dir="target/classes/hudson" />
+                <echo file="target/classes/hudson/hudson-version.properties">version=${build.version}
+                </echo>
+                <mkdir dir="target/classes14/hudson" />
+                <echo file="target/classes14/hudson/hudson-version.properties">version=${build.version}
+                </echo>
               </tasks>
             </configuration>
             <goals>
