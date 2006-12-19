@@ -20,6 +20,15 @@ public abstract class JobListener {
     }
 
     /**
+     * Called after all the jobs are loaded from disk into {@link Hudson}
+     * object.
+     *
+     * @since 1.68
+     */
+    public void onLoaded() {
+    }
+
+    /**
      * Called right before a job is going to be deleted.
      *
      * At this point the data files of the job is already gone.

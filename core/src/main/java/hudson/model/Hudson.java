@@ -2,25 +2,24 @@ package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
 import groovy.lang.GroovyShell;
+import hudson.FeedAdapter;
 import hudson.Launcher;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.Functions;
-import hudson.FeedAdapter;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.JobListener;
 import hudson.scm.CVSSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
 import hudson.tasks.BuildStep;
-import hudson.tasks.Builder;
-import hudson.tasks.Publisher;
-import hudson.tasks.BuildWrappers;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrappers;
+import hudson.tasks.Builder;
 import hudson.tasks.Mailer;
+import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.triggers.Triggers;
 import hudson.util.FormFieldValidator;
@@ -34,10 +33,10 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -52,9 +51,11 @@ import java.text.ParseException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,10 +66,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.logging.LogRecord;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 /**
  * Root object of the system.
@@ -150,7 +149,7 @@ public final class Hudson extends JobCollection implements Node {
     /**
      * List of reigstered {@link JobListener}s.
      */
-    private transient List<JobListener> jobListeners = new Vector<JobListener>();
+    private transient final List<JobListener> jobListeners = new Vector<JobListener>();
 
     public static Hudson getInstance() {
         return theInstance;
@@ -171,6 +170,11 @@ public final class Hudson extends JobCollection implements Node {
         updateComputerList();
 
         getQueue().load();
+
+        synchronized(jobListeners) {
+            for (JobListener l : jobListeners)
+                l.onLoaded();
+        }
     }
 
     /**
