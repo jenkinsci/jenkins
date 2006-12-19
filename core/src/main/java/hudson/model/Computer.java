@@ -1,5 +1,7 @@
 package hudson.model;
 
+import hudson.remoting.VirtualChannel;
+import hudson.util.RunList;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -7,8 +9,6 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import hudson.util.RunList;
 
 /**
  * Represents a set of {@link Executor}s on the same computer.
@@ -33,7 +33,7 @@ import hudson.util.RunList;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Computer implements ModelObject {
+public final class Computer implements ModelObject {
     private final List<Executor> executors = new ArrayList<Executor>();
 
     private int numExecutors;
@@ -48,6 +48,12 @@ public class Computer implements ModelObject {
      * from this object.
      */
     private String nodeName;
+
+    /**
+     * Represents the communication endpoint to this computer.
+     * Never null.
+     */
+    private VirtualChannel channel;
 
     public Computer(Node node) {
         assert node.getNumExecutors()!=0 : "Computer created with 0 executors";
