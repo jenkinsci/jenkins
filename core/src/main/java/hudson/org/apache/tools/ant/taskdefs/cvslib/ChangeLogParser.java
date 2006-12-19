@@ -54,6 +54,8 @@ class ChangeLogParser {
      */
     private static final SimpleDateFormat[] c_inputDate
         = new SimpleDateFormat[]{
+            new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z"),
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z"),
             new SimpleDateFormat("yyyy/MM/dd HH:mm:ss"),
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
         };
@@ -238,8 +240,9 @@ class ChangeLogParser {
      */
     private void processDate(final String line) {
         if (line.startsWith("date:")) {
-            m_date = line.substring(6, 25);
-            String lineData = line.substring(line.indexOf(";") + 1);
+            int idx = line.indexOf(";");
+            m_date = line.substring(6, idx);
+            String lineData = line.substring(idx + 1);
             m_author = lineData.substring(10, lineData.indexOf(";"));
 
             m_status = GET_COMMENT;
