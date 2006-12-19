@@ -14,7 +14,7 @@ import hudson.util.RunList;
  * Represents a set of {@link Executor}s on the same computer.
  *
  * <p>
- * {@link Executor}s on one {@link Computer} is transparently interchangeable
+ * {@link Executor}s on one {@link Computer} are transparently interchangeable
  * (that is the definition of {@link Computer}.)
  *
  * <p>
