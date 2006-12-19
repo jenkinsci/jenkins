@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 /**
  * Entry point for running a {@link Channel} that uses stdin/stdout.
  *
+ * <p>
  * This can be used as the main class for launching a channel on
  * a separate JVM.
  *

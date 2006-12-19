@@ -66,7 +66,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Channel {
+public class Channel implements VirtualChannel {
     private final ObjectInputStream ois;
     private final ObjectOutputStream oos;
     /*package*/ final Executor executor;
@@ -202,15 +202,7 @@ public class Channel {
     }
 
     /**
-     * Makes a remote procedure call.
-     *
-     * <p>
-     * Sends {@link Callable} to the remote system, executes it, and returns its result.
-     *
-     * @throws InterruptedException
-     *      If the current thread is interrupted while waiting for the completion.
-     * @throws IOException
-     *      If there's any error in the communication between {@link Channel}s.
+     * {@inheritDoc}
      */
     public <V extends Serializable,T extends Throwable>
     V call(Callable<V,T> callable) throws IOException, T, InterruptedException {
@@ -226,16 +218,7 @@ public class Channel {
     }
 
     /**
-     * Makes an asynchronous remote procedure call.
-     *
-     * <p>
-     * Similar to {@link #call(Callable)} but returns immediately.
-     * The result of the {@link Callable} can be obtained through the {@link Future} object.
-     *
-     * @return
-     *      The {@link Future} object that can be used to wait for the completion.
-     * @throws IOException
-     *      If there's an error during the communication.
+     * {@inheritDoc}
      */
     public <V extends Serializable,T extends Throwable>
     Future<V> callAsync(final Callable<V,T> callable) throws IOException {
@@ -299,7 +282,7 @@ public class Channel {
     }
 
     /**
-     * Performs an orderly shut down of this channel (and the remote peer.)
+     * {@inheritDoc}
      */
     public synchronized void close() throws IOException {
         // make sure no other commands get executed in between.
