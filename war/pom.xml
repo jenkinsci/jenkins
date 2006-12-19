@@ -63,18 +63,36 @@
     </plugins>
   </build>
   
+  <profiles>
+    <profile>
+      <id>debug</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <hudsonClassifier></hudsonClassifier>
+      </properties>
+    </profile>
+    <profile>
+      <id>release</id>
+      <properties>
+        <hudsonClassifier>jdk14</hudsonClassifier>
+      </properties>
+    </profile>
+  </profiles>
+
   <dependencies>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>remoting</artifactId>
       <version>${version}</version>
-      <classifier>jdk14</classifier>
+      <classifier>${hudsonClassifier}</classifier>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>hudson-core</artifactId>
       <version>${version}</version>
-      <classifier>jdk14</classifier>
+      <classifier>${hudsonClassifier}</classifier>
       <exclusions>
         <!-- jars that are not needed in war -->
         <exclusion>
