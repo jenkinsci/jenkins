@@ -117,6 +117,10 @@ public final class Computer implements ModelObject {
         return r;
     }
 
+    /**
+     * Called to notify {@link Computer} that its corresponding {@link Node}
+     * configuration is updated.
+     */
     /*package*/ void setNode(Node node) {
         assert node!=null;
         if(node instanceof Slave)
@@ -127,6 +131,9 @@ public final class Computer implements ModelObject {
         setNumExecutors(node.getNumExecutors());
     }
 
+    /**
+     * Called to notify {@link Computer} that it will be discarded.
+     */
     /*package*/ void kill() {
         setNumExecutors(0);
     }
