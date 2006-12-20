@@ -69,7 +69,7 @@ public interface BuildStep {
         Fingerprinter.DESCRIPTOR,
         JavadocArchiver.DESCRIPTOR,
         JUnitResultArchiver.DESCRIPTOR,
-        Mailer.DESCRIPTOR,
-        BuildTrigger.DESCRIPTOR
+        BuildTrigger.DESCRIPTOR,
+        Mailer.DESCRIPTOR
     );
 }
