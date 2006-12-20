@@ -282,7 +282,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
                 // failed. to allow user to diagnose the problem, send output to log
                 listener.getLogger().write(baos.toByteArray());
                 e.printStackTrace(listener.fatalError("Failed to parse Subversion output"));
-                throw new IOException("Unabled to parse svn info output");
+                throw new IOException("Unable to parse svn info output");
             }
 
             if(!info.isComplete())

@@ -783,7 +783,7 @@ public class CVSSCM extends AbstractCVSFamilySCM {
          * Runs cvs login command.
          *
          * TODO: this apparently doesn't work. Probably related to the fact that
-         * cvs does some tty magic to disable ecoback or whatever.
+         * cvs does some tty magic to disable echo back or whatever.
          */
         public void doPostPassword(StaplerRequest req, StaplerResponse rsp) throws IOException {
             if(!Hudson.adminCheck(req,rsp))

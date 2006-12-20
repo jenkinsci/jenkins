@@ -46,7 +46,7 @@ public abstract class RmiTestBase extends TestCase {
 
     /**
      * Can be used in the suite method of the derived class to build a
-     * {@link TestSuite} to run the test witih all the available
+     * {@link TestSuite} to run the test with all the available
      * {@link ChannelRunner} configuration.
      */
     protected static Test buildSuite(Class<? extends RmiTestBase> testClass) {

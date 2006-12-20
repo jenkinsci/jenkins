@@ -262,7 +262,7 @@ public class Fingerprint implements ModelObject {
                 Range m = lr.combine(rr);
                 rhs++;
 
-                // since ranges[lhs] is explanded, it might overlap with others in this.ranges
+                // since ranges[lhs] is expanded, it might overlap with others in this.ranges
                 while(lhs+1<this.ranges.size() && !m.isIndependent(this.ranges.get(lhs+1))) {
                     m = m.combine(this.ranges.get(lhs+1));
                     this.ranges.remove(lhs+1);

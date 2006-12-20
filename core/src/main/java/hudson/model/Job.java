@@ -71,7 +71,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     protected transient File root;
 
     /**
-     * Next bulid number.
+     * Next build number.
      * Kept in a separate file because this is the only information
      * that gets updated often. This allows the rest of the configuration
      * to be in the VCS.

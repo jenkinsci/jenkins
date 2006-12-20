@@ -22,7 +22,7 @@ public class ArgumentListBuilder {
      * This is necessary only in a rare circumstance,
      * such as when adding argument for ssh and rsh.
      *
-     * Normal process invcations don't need it, because each
+     * Normal process invocations don't need it, because each
      * argument is treated as its own string and never merged into one. 
      */
     public ArgumentListBuilder addQuoted(String a) {

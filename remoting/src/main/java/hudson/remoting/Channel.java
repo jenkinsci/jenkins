@@ -315,7 +315,7 @@ public class Channel implements VirtualChannel {
                             logger.fine("Received "+cmd);
                         cmd.execute(Channel.this);
                     } catch (ClassNotFoundException e) {
-                        logger.log(Level.SEVERE, "Unabled to read a command",e);
+                        logger.log(Level.SEVERE, "Unable to read a command",e);
                     }
                 }
                 ois.close();

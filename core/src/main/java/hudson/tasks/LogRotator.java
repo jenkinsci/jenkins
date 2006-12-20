@@ -53,7 +53,7 @@ public class LogRotator implements Describable<LogRotator> {
         if(daysToKeep!=-1) {
             Calendar cal = new GregorianCalendar();
             cal.add(Calendar.DAY_OF_YEAR,-daysToKeep);
-            // copy it to the array becaues we'll be deleting builds as we go.
+            // copy it to the array because we'll be deleting builds as we go.
             for( Run r : job.getBuilds().toArray(new Run[0]) ) {
                 if(r.getTimestamp().before(cal) && !r.isKeepLog() && r!=lsb)
                     r.delete();

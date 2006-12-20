@@ -147,7 +147,7 @@ public final class Hudson extends JobCollection implements Node {
     public transient final PluginManager pluginManager;
 
     /**
-     * List of reigstered {@link JobListener}s.
+     * List of registered {@link JobListener}s.
      */
     private transient final List<JobListener> jobListeners = new Vector<JobListener>();
 
@@ -643,7 +643,7 @@ public final class Hudson extends JobCollection implements Node {
         return fingerprintMap;
     }
 
-    // if no fingrer print matches, display "not found page".
+    // if no finger print matches, display "not found page".
     public Object getFingerprint( String md5sum ) throws IOException {
         Fingerprint r = fingerprintMap.get(md5sum);
         if(r==null)     return new NoFingerprintMatch(md5sum);
@@ -1133,7 +1133,7 @@ public final class Hudson extends JobCollection implements Node {
     }
 
     /**
-     * For debugging. Expose URL to perfrom GC.
+     * For debugging. Expose URL to perform GC.
      */
     public void doGc( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         System.gc();
@@ -1144,7 +1144,7 @@ public final class Hudson extends JobCollection implements Node {
 
     /**
      * For system diagnostics.
-     * Run arbitraary Groovy script.
+     * Run arbitrary Groovy script.
      */
     public void doScript( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         if(!adminCheck(req,rsp))

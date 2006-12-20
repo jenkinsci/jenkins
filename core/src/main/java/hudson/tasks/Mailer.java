@@ -302,7 +302,7 @@ public class Mailer extends Publisher {
 
         /**
          * The e-mail address that Hudson puts to "From:" field in outgoing e-mails.
-         * Null if unconfigured.
+         * Null if not configured.
          */
         private String adminAddress;
 

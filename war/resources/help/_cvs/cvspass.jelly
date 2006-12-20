@@ -16,7 +16,7 @@
       for how to do this.
       <br/>
     </j:if>
-    <!-- TODO: this doesn't owk
+    <!-- TODO: this doesn't work
     You can also <a href="scm/CVSSCM/enterPassword">interactively enter password into the cvs password list</a>.
     <j:if test="${h.isWindows()}">This works even with CVSNT.</j:if>
     -->

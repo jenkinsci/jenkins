@@ -547,7 +547,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     result = Result.FAILURE;
                 }
 
-                // even if the main buidl fails fatally, try to run post build processing
+                // even if the main build fails fatally, try to run post build processing
                 job.post(listener);
 
             } catch (ThreadDeath t) {
@@ -582,7 +582,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Handles a fatal build problem (exception) that occured during the build.
+     * Handles a fatal build problem (exception) that occurred during the build.
      */
     private void handleFatalBuildProblem(BuildListener listener, Throwable e) {
         if(listener!=null) {
@@ -693,7 +693,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 AbstractTestResultAction trP = prev==null ? null : ((Build) prev).getTestResultAction();
                 if(trP==null) {
                     if(trN!=null && trN.getFailCount()>0)
-                        return new Summary(false,combine(trN.getFailCount(),"test faliure"));
+                        return new Summary(false,combine(trN.getFailCount(),"test failure"));
                     else // ???
                         return new Summary(false,"unstable");
                 }
@@ -783,7 +783,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // due to dependencies!
         String why = getWhyKeepLog();
         if (why!=null) {
-            sendError("Unabled to delete "+toString()+": "+why,req,rsp);
+            sendError("Unable to delete "+toString()+": "+why,req,rsp);
             return;
         }
 

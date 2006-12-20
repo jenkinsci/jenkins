@@ -11,7 +11,7 @@ import java.io.FileOutputStream;
 import java.net.URL;
 
 /**
- * Used to load a dummay class <tt>hudson.remoting.test.TestCallable</tt>
+ * Used to load a dummy class <tt>hudson.remoting.test.TestCallable</tt>
  * out of nowhere, to test {@link RemoteClassLoader}.
  *
  * @author Kohsuke Kawaguchi

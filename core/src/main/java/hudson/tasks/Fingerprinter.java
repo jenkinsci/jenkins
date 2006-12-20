@@ -190,7 +190,7 @@ public class Fingerprinter extends Publisher {
         }
 
         /**
-         * Map from file names of the fingeprinted file to its fingerprint record.
+         * Map from file names of the fingerprinted file to its fingerprint record.
          */
         public synchronized Map<String,Fingerprint> getFingerprints() {
             if(ref!=null) {

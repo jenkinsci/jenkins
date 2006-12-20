@@ -6,7 +6,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 
 /**
- * TODO: junit-ize
+ * TODO: make it a junit test
  * 
  * @author jglick
  */

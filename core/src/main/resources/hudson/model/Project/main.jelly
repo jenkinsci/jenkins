@@ -15,7 +15,7 @@
   <div style="float:right">
   <j:set var="tr" value="${it.lastSuccessfulBuild.testResultAction}" />
   <j:if test="${tr.previousResult!=null}">
-    <!-- at least two data points are requierd for a trend report -->
+    <!-- at least two data points are required for a trend report -->
     <div align="right">
       <j:set var="mode" value="${h.getCookie(request,'TestResultAction_failureOnly').value}" />
       <j:if test="${mode!=null}">

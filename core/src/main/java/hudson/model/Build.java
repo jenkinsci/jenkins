@@ -183,7 +183,7 @@ public final class Build extends Run<Project,Build> implements Runnable {
 
     /**
      * Gets the downstream builds of this build, which are the builds of the
-     * downstream project sthat use artifacts of this build.
+     * downstream projects that use artifacts of this build.
      *
      * @return
      *      For each project with fingerprinting enabled, returns the range
@@ -204,7 +204,7 @@ public final class Build extends Run<Project,Build> implements Runnable {
      *
      * @return
      *      Build number of the upstream build that feed into this build,
-     *      or -1 if no record is avilable.
+     *      or -1 if no record is available.
      */
     public int getUpstreamRelationship(Project that) {
         FingerprintAction f = getAction(FingerprintAction.class);

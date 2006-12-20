@@ -3,7 +3,7 @@ package hudson.util;
 import java.awt.Color;
 
 /**
- * Color constants consistend with the Hudson color palette. 
+ * Color constants consistent with the Hudson color palette. 
  *
  * @author Kohsuke Kawaguchi
  */

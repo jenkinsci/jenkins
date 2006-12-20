@@ -34,7 +34,7 @@ import org.apache.tools.ant.BuildException;
 public class Util {
 
     /**
-     * Replaces the occurence of '$key' by <tt>properties.get('key')</tt>.
+     * Replaces the occurrence of '$key' by <tt>properties.get('key')</tt>.
      *
      * <p>
      * This is a rather naive implementation that causes somewhat unexpected
@@ -245,7 +245,7 @@ public class Util {
     }
 
     /**
-     * Combines numer and unit, with a plural suffix if needed.
+     * Combines number and unit, with a plural suffix if needed.
      */
     public static String combine(long n, String suffix) {
         String s = Long.toString(n)+' '+suffix;

@@ -80,7 +80,7 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
 
     /**
      * Makes an invocation but immediately returns without waiting for the completion
-     * (AKA aysnchronous invocation.)
+     * (AKA asynchronous invocation.)
      *
      * @param channel
      *      The channel from which the request will be sent.

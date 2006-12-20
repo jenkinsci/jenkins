@@ -147,7 +147,7 @@ public final class FilePath {
     }
 
     /**
-     * {@link FilePath} constant that can be used if the directory is not importatn.
+     * {@link FilePath} constant that can be used if the directory is not important.
      */
     public static final FilePath RANDOM = new FilePath(new File("."));
 }

@@ -44,7 +44,7 @@ public final class PluginManager {
      * (and including the classloader that loads Hudson itself.)
      *
      */
-    // implementation is minmal --- just enough to run XStream
+    // implementation is minimal --- just enough to run XStream
     // and load plugin-contributed classes.
     public final ClassLoader uberClassLoader = new UberClassLoader();
 

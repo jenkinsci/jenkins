@@ -45,7 +45,7 @@ public class WebAppMain implements ServletContextListener {
 
         ServletContext context = event.getServletContext();
 
-        // make sure that we are using XStream in the "enhenced" (JVM-specific) mode
+        // make sure that we are using XStream in the "enhanced" (JVM-specific) mode
         if(new JVM().bestReflectionProvider().getClass()==PureJavaReflectionProvider.class) {
             // nope
             context.setAttribute("app",new IncompatibleVMDetected());
@@ -154,7 +154,7 @@ public class WebAppMain implements ServletContextListener {
         if(root!=null) {
             File ws = new File(root.trim());
             if(ws.exists())
-                // Hudson <1.42 used to prefer this betfore ~/.hudson, so
+                // Hudson <1.42 used to prefer this before ~/.hudson, so
                 // check the existence and if it's there, use it.
                 // otherwise if this is a new installation, prefer ~/.hudson
                 return ws.getAbsoluteFile();

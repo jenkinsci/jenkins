@@ -19,7 +19,7 @@ import java.util.Map;
  * <h2>'env' parameter</h2>
  * <p>
  * To allow important environment variables to be copied over to the remote machine,
- * the 'env' parameter shouldn't contain default inherited environment varialbles
+ * the 'env' parameter shouldn't contain default inherited environment variables
  * (which often contains machine-specific information, like PATH, TIMEZONE, etc.)
  *
  * <p>

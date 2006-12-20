@@ -15,7 +15,7 @@ public abstract class UserPropertyDescriptor extends Descriptor<UserProperty> {
      * with {@link User} that doesn't have any back up data store.
      *
      * @return null
-     *      if the implementation choose not to add any proeprty object for such user.
+     *      if the implementation choose not to add any property object for such user.
      */
     public abstract UserProperty newInstance(User user);
 }

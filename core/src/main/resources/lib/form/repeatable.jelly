@@ -1,5 +1,5 @@
 <!--
-  Repetable blocks where duplicates can be added/removed at client.
+  Repeatable blocks where duplicates can be added/removed at client.
 
 	<%@attribute name="var" required="true" rtexprvalue="false" %>
 	<%@attribute name="varStatus" required="false" rtexprvalue="false" %>

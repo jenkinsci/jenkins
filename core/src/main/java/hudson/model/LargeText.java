@@ -80,7 +80,7 @@ public class LargeText {
 
     /**
      * Points to the start of the region that's not committed
-     * to the ouput yet.
+     * to the output yet.
      */
     private static final class HeadMark extends Mark {
         public HeadMark(ByteBuf buf) {

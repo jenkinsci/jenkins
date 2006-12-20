@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  * <p>
  * Once created, {@link Pipe} can be sent to the remote system as a part of a serialization of
  * {@link Callable} between {@link Channel}s.
- * Once re-instanciated on the remote {@link Channel}, pipe automatically connects
+ * Once re-instantiated on the remote {@link Channel}, pipe automatically connects
  * back to the local instance and perform necessary set up.
  *
  * <p>

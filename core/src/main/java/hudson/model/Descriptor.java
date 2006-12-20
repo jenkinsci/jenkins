@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * <p>
  * {@link Descriptor} is an object that has metadata about a {@link Describable}
  * object, and also serves as a factory. A {@link Descriptor}/{@link Describable}
- * combination is used throghout in Hudson to implement a
+ * combination is used throughout in Hudson to implement a
  * configuration/extensibility mechanism.
  *
  * <p>
@@ -121,7 +121,7 @@ public abstract class Descriptor<T extends Describable<T>> {
     /**
      * Invoked when the global configuration page is submitted.
      *
-     * Can be overrided to store descriptor-specific information.
+     * Can be overriden to store descriptor-specific information.
      *
      * @return false
      *      to keep the client in the same config page.

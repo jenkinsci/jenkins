@@ -208,7 +208,7 @@ public class Queue {
     }
 
     /**
-     * Returns true if this queue contaisn the said project.
+     * Returns true if this queue contains the said project.
      */
     public synchronized boolean contains(Project p) {
         // if this project is already scheduled,
@@ -241,7 +241,7 @@ public class Queue {
                     assert !parked.containsKey(exec);
                     parked.put(exec,offer);
 
-                    // reuse executor thread to do a queue maintainance.
+                    // reuse executor thread to do a queue maintenance.
                     // at the end of this we get all the buildable jobs
                     // in the buildables field.
                     maintain();
@@ -316,7 +316,7 @@ public class Queue {
     }
 
     /**
-     * Choses the executor to carry out the build for the given project.
+     * Chooses the executor to carry out the build for the given project.
      *
      * @return
      *      null if no {@link Executor} can run it.
@@ -393,7 +393,7 @@ public class Queue {
 
 
     /**
-     * Queue maintainance.
+     * Queue maintenance.
      *
      * Move projects between {@link #queue}, {@link #blockedProjects}, and {@link #buildables}
      * appropriately.
