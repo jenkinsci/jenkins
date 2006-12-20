@@ -26,7 +26,6 @@ import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
@@ -51,6 +50,7 @@ import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -150,7 +150,9 @@ public class CVSSCM extends AbstractCVSFamilySCM {
     }
 
     private void configureDate(ArgumentListBuilder cmd, Date date) { // #192
-        cmd.add("-D", DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US).format(date));
+        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US);
+        df.setTimeZone(TimeZone.getTimeZone("UTC")); // #209
+        cmd.add("-D", df.format(date));
     }
 
     public boolean checkout(Build build, Launcher launcher, FilePath dir, BuildListener listener, File changelogFile) throws IOException {
