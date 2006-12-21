@@ -5,7 +5,7 @@
   <%@attribute name="width" required="true" %>
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
-  <table class="pane">
+  <table class="pane" id="${attrs.id}">
     <tr><td class="pane-header" colspan="${width}">
       ${title}
     </td></tr>
