@@ -13,12 +13,12 @@ Version 0.11.0
 .tt {
 	visibility:hidden;
 	position:absolute;
-	color:#333;
-	background-color:#FDFFB4;
-	font-family:arial,helvetica,verdana,sans-serif;
-	padding:2px;
-	border:1px solid #FCC90D;
-	font:100% sans-serif;
+
+  border: 1px solid black;
+  background-color: #FFFFFF;
+  padding: 2px;
+  z-index: 999;
+
 	width:auto;
 }
 
