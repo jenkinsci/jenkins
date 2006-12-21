@@ -1,10 +1,14 @@
 <!--
   History of runs.
+
+  variables:
+
+    all="true" : display all builds. Otherwise limit it to most recent N builds.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:pane width="2" title="
     &lt;div style='float:right'>(&lt;a href='buildTimeTrend'>trend&lt;/a>)&lt;/div>Build history
-  ">
+  " id="buildHistory">
     <!-- pending build -->
     <j:if test="${it.inQueue}">
       <tr class="build-row">
@@ -18,8 +22,15 @@
       </tr>
     </j:if>
 
+    <!-- decide if we want to display all or just top 50 -->
+    <j:set var="builds" value="${it.builds}"/>
+    <j:if test="${!all &amp;&amp; builds.size() &gt; 50}">
+      <j:set var="builds" value="${builds.subList(0,50)}"/>
+      <j:set var="trimmed" value="${true}" />
+    </j:if>
+
     <!-- build history -->
-    <j:forEach var="build" items="${it.builds}">
+    <j:forEach var="build" items="${builds}">
       <j:set var="link" value="${rootURL}/${it.url}${build.number}/" />
       <tr class="build-row">
         <td nowrap="nowrap">
@@ -58,6 +69,47 @@
         </tr>
       </j:if>
     </j:forEach>
+    <!--
+      If we are trimming the build history because it's too long,
+      show the link to fetch all the records by using AJAX.
+    -->
+    <j:if test="${trimmed}">
+      <tr class="build-row">
+        <td colspan="2" align="right">
+          <script>
+            function loadAllBuildHistory() {
+              // first display the "loading..." icon
+              var box = $("loadAllBuildHistory");
+              box.innerHTML = '<img src="${rootURL}/images/spinner.gif" />';
+
+              // then actually fetch the HTML
+              new Ajax.Request("allBuildHistory",{
+                method: "get",
+                onComplete: function(rsp,_) {
+                  <!-- neither outerHTML nor responseXML works in Firefox 2.0 -->
+                  var hist = $('buildHistory');
+                  var p = hist.parentNode;
+                  var next = hist.nextSibling;
+                  p.removeChild(hist);
+
+                  var div = document.createElement('div');
+                  div.innerHTML = rsp.responseText;
+
+                  p.insertBefore(div,next);
+                }
+            });
+            }
+          </script>
+          <div id="loadAllBuildHistory">
+            <!-- once clicked, this div will be replaced by the load icon -->
+            <a href="javascript:loadAllBuildHistory()">More ...</a>
+          </div>
+        </td>
+      </tr>
+    </j:if>
+    <!--
+      RSS link
+    -->
     <tr class="build-row">
       <td colspan="2" align="right">
         <a href="${rootURL}/${it.url}rssAll"><img src="${rootURL}/images/atom.gif" border="0"/> for all</a>
