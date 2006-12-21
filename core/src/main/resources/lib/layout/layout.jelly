@@ -22,14 +22,12 @@
     <script src="${rootURL}/scripts/sortable.js" type="text/javascript"></script>
     <script src="${rootURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
 
-    <!-- include YUI scripts
     <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
     <script src="${rootURL}/scripts/yui/yahoo-${yuiSuffix}.js"></script>
     <script src="${rootURL}/scripts/yui/dom-${yuiSuffix}.js"></script>
     <script src="${rootURL}/scripts/yui/event-${yuiSuffix}.js"></script>
     <script src="${rootURL}/scripts/yui/container-${yuiSuffix}.js"></script>
     <link rel="stylesheet" href="${rootURL}/scripts/yui/container.css" type="text/css"/>
-    -->
     
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />

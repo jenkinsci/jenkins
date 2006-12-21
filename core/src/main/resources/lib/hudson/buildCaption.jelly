@@ -9,7 +9,7 @@
 	        <td>
 	          Progress:
 	        </td><td>
-	          <t:progressBar pos="${it.executor.progress}"/>
+	          <t:buildProgressBar build="${it}"/>
 	        </td><td>
 	          <a href="stop"><img src="${rootURL}/images/16x16/stop.gif" alt="[cancel]" /></a>
 	        </td>

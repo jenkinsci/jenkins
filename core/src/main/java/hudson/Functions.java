@@ -21,9 +21,23 @@ import java.io.File;
 import javax.servlet.http.HttpServletResponse;
 
 /**
+ * Utility functions used in views.
+ *
+ * <p>
+ * An instance of this class is created for each request.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Functions {
+    private int iota=0;
+
+    /**
+     * Generates an unique ID.
+     */
+    public String generateId() {
+        return "id"+iota++;
+    }
+
     public static boolean isModel(Object o) {
         return o instanceof ModelObject;
     }

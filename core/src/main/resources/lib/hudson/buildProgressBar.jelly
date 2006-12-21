@@ -1,0 +1,16 @@
+<!--
+  Progress bar for a build in progress.
+
+  Attributes:
+    @build: build in progress
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="id" value="${h.generateId()}"/>
+  <t:progressBar id="${id}" pos="${build.executor.progress}" href="${rootURL}/${build.url}console"/>
+  <script>
+    new YAHOO.widget.Tooltip("tooltip-${id}", {
+	    context:"${id}",
+      text:"Started ${build.timestampString} ago&lt;br> Estimated remaining time: ${build.executor.estimatedRemainingTime}",
+	    showDelay:500 } );
+  </script>
+</j:jelly>

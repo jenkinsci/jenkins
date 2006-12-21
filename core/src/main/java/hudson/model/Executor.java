@@ -6,6 +6,9 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
+import hudson.Functions;
+import hudson.Util;
+
 
 /**
  * Thread that executes builds.
@@ -112,6 +115,23 @@ public class Executor extends Thread {
         int num = (int)((System.currentTimeMillis()-startTime)*100/duration);
         if(num>=100)    num=99;
         return num;
+    }
+
+    /**
+     * Computes a human-readable text that shows the expected remaining time
+     * until the build completes.
+     */
+    public String getEstimatedRemainingTime() {
+        Build b = build.getProject().getLastSuccessfulBuild();
+        if(b==null)     return "N/A";
+
+        long duration = b.getDuration();
+        if(duration==0) return "N/A";
+
+        long eta = duration-(System.currentTimeMillis()-startTime);
+        if(eta<=0)      return "N/A";
+
+        return Util.getTimeSpanString(eta);
     }
 
     /**

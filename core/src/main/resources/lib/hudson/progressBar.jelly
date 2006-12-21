@@ -7,7 +7,10 @@
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<x:element name="table">
 		<x:attribute name="class">progress-bar</x:attribute>
-	  <j:if test="${href!=null}">
+    <j:if test="${attrs.id!=null}">
+      <x:attribute name="id">${id}</x:attribute>
+    </j:if>
+    <j:if test="${href!=null}">
 	  	<x:attribute name="style">cursor:pointer</x:attribute>
 	    <x:attribute name="onclick">window.location='${href}'</x:attribute>
       <!-- note that this won't take effect in browsers that don't let JavaScript change status bar, like Firefox. -->
