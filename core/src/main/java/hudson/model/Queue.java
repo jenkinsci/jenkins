@@ -446,7 +446,7 @@ public class Queue {
 
         /**
          * Unique number of this {@link Item}.
-         * Used to differenciate {@link Item}s with the same due date.
+         * Used to differentiate {@link Item}s with the same due date.
          */
         final int id;
 

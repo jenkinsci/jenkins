@@ -27,7 +27,7 @@ public interface FeedAdapter<E> {
     String getEntryID(E entry);
 
     /**
-     * Timestamp of the last change in ithis entry.
+     * Timestamp of the last change in this entry.
      */
     Calendar getEntryTimestamp(E entry);
 }
