@@ -9,6 +9,8 @@ import hudson.model.Project;
 import hudson.tasks.junit.JUnitResultArchiver;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.io.IOException;
 
 /**
@@ -76,13 +78,53 @@ public interface BuildStep {
      * Publishers are invoked after the build is completed, normally to perform
      * some post-actions on build results, such as sending notifications, collecting
      * results, etc.
+     *
+     * @see PublisherList#addNotifier(Descriptor)
+     * @see PublisherList#addRecorder(Descriptor) 
      */
-    public static final List<Descriptor<Publisher>> PUBLISHERS = Descriptor.toList(
+    public static final PublisherList PUBLISHERS = new PublisherList(Descriptor.toList(
         ArtifactArchiver.DESCRIPTOR,
         Fingerprinter.DESCRIPTOR,
         JavadocArchiver.DESCRIPTOR,
         JUnitResultArchiver.DescriptorImpl.DESCRIPTOR,
         BuildTrigger.DESCRIPTOR,
         Mailer.DESCRIPTOR
-    );
+    ));
+
+    /**
+     * List of publisher descriptor.
+     */
+    public static final class PublisherList extends ArrayList<Descriptor<Publisher>> {
+        public PublisherList(Collection<? extends Descriptor<Publisher>> c) {
+            super(c);
+        }
+
+        /**
+         * Adds a new publisher descriptor, which (generally speaking)
+         * shouldn't alter the build result, but just report the build result
+         * by some means, such as e-mail, IRC, etc.
+         *
+         * <p>
+         * This method adds the descriptor after all the "recorders".
+         *
+         * @see #addRecorder(Descriptor)
+         */
+        public void addNotifier( Descriptor<Publisher> d ) {
+            add(d);
+        }
+        
+        /**
+         * Adds a new publisher descriptor, which (generally speaking)
+         * alter the build result based on some artifacts of the build.
+         *
+         * <p>
+         * This method adds the descriptor before all the "notifiers".
+         *
+         * @see #addNotifier(Descriptor) 
+         */
+        public void addRecorder( Descriptor<Publisher> d ) {
+            int idx = super.indexOf(Mailer.DESCRIPTOR);
+            add(idx,d);
+        }
+    }
 }
