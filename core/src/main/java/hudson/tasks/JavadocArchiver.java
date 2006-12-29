@@ -18,13 +18,13 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Saves javadoc for the project and publish them. 
+ * Saves Javadoc for the project and publish them. 
  *
  * @author Kohsuke Kawaguchi
  */
 public class JavadocArchiver extends AntBasedPublisher {
     /**
-     * Path to the javadoc directory in the workspace.
+     * Path to the Javadoc directory in the workspace.
      */
     private final String javadocDir;
 
@@ -37,7 +37,7 @@ public class JavadocArchiver extends AntBasedPublisher {
     }
 
     /**
-     * Gets the directory where the javadoc is stored for the given project.
+     * Gets the directory where the Javadoc is stored for the given project.
      */
     private static File getJavadocDir(Project project) {
         return new File(project.getRootDir(),"javadoc");
@@ -47,15 +47,15 @@ public class JavadocArchiver extends AntBasedPublisher {
         // TODO: run tar or something for better remote copy
         File javadoc = new File(build.getParent().getWorkspace().getLocal(), javadocDir);
         if(!javadoc.exists()) {
-            listener.error("The specified javadoc directory doesn't exist: "+javadoc);
+            listener.error("The specified Javadoc directory doesn't exist: "+javadoc);
             return false;
         }
         if(!javadoc.isDirectory()) {
-            listener.error("The specified javadoc directory isn't a directory: "+javadoc);
+            listener.error("The specified Javadoc directory isn't a directory: "+javadoc);
             return false;
         }
 
-        listener.getLogger().println("Publishing javadoc");
+        listener.getLogger().println("Publishing Javadoc");
 
         File target = getJavadocDir(build.getParent());
         target.mkdirs();
@@ -83,7 +83,7 @@ public class JavadocArchiver extends AntBasedPublisher {
 
     public static final Descriptor<Publisher> DESCRIPTOR = new Descriptor<Publisher>(JavadocArchiver.class) {
         public String getDisplayName() {
-            return "Publish javadoc";
+            return "Publish Javadoc";
         }
 
         public Publisher newInstance(StaplerRequest req) {
