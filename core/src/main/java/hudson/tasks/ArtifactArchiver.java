@@ -1,15 +1,12 @@
 package hudson.tasks;
 
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
-import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.taskdefs.Delete;
-import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
@@ -20,7 +17,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ArtifactArchiver extends AntBasedPublisher {
+public class ArtifactArchiver extends Publisher {
 
     /**
      * Comma-separated list of files/directories to be archived.
@@ -45,36 +42,19 @@ public class ArtifactArchiver extends AntBasedPublisher {
         return latestOnly;
     }
 
-    public boolean prebuild(Build build, BuildListener listener) {
-        listener.getLogger().println("Removing artifacts from the previous build");
-
-        File dir = build.getArtifactsDir();
-        if(!dir.exists())   return true;
-
-        Delete delTask = new Delete();
-        delTask.setProject(new org.apache.tools.ant.Project());
-        delTask.setDir(dir);
-        delTask.setIncludes(artifacts);
-
-        execTask(delTask,listener);
-
-        return true;
-    }
-
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) {
+    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
         Project p = build.getProject();
 
-        Copy copyTask = new Copy();
-        copyTask.setProject(new org.apache.tools.ant.Project());
         File dir = build.getArtifactsDir();
         dir.mkdirs();
-        copyTask.setTodir(dir);
-        FileSet src = new FileSet();
-        src.setDir(p.getWorkspace().getLocal());
-        src.setIncludes(artifacts);
-        copyTask.addFileset(src);
 
-        execTask(copyTask, listener);
+        try {
+            p.getWorkspace().copyRecursiveTo(artifacts,new FilePath(dir));
+        } catch (IOException e) {
+            Util.displayIOException(e,listener);
+            e.printStackTrace(listener.error("Failed to archive artifacts: "+artifacts));
+            return true;
+        }
 
         if(latestOnly) {
             Build b = p.getLastSuccessfulBuild();

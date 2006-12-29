@@ -2,7 +2,6 @@ package hudson.scm;
 
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Proc;
 import hudson.Util;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -184,10 +183,10 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         return revisions;
     }
 
-    public boolean checkout(Build build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException {
+    public boolean checkout(Build build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
         boolean result;
 
-        if(useUpdate && isUpdatable(workspace,listener)) {
+        if(useUpdate && isUpdatable(workspace,launcher,listener)) {
             result = update(launcher,workspace,listener);
             if(!result)
                 return false;
@@ -212,7 +211,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         // write out the revision file
         PrintWriter w = new PrintWriter(new FileOutputStream(getRevisionFile(build)));
         try {
-            Map<String,SvnInfo> revMap = buildRevisionMap(workspace,listener);
+            Map<String,SvnInfo> revMap = buildRevisionMap(workspace,launcher,listener);
             for (Entry<String,SvnInfo> e : revMap.entrySet()) {
                 w.println( e.getKey() +'/'+ e.getValue().revision );
             }
@@ -255,13 +254,13 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
          * @param subject
          *      The target to run "svn info". Either local path or remote URL.
          */
-        public static SvnInfo parse(String subject, Map env, FilePath workspace, TaskListener listener) throws IOException {
+        public static SvnInfo parse(String subject, Map env, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException {
             String cmd = DESCRIPTOR.getSvnExe()+" info --xml "+subject;
             listener.getLogger().println("$ "+cmd);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            int r = new Proc(cmd,env,baos,workspace.getLocal()).join();
+            int r = launcher.launch(cmd,env,baos,workspace).join();
             if(r!=0) {
                 // failed. to allow user to diagnose the problem, send output to log
                 listener.getLogger().write(baos.toByteArray());
@@ -300,7 +299,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
      * @return
      *      null if the parsing somehow fails. Otherwise a map from module names to revisions.
      */
-    private Map<String,SvnInfo> buildRevisionMap(FilePath workspace, TaskListener listener) throws IOException {
+    private Map<String,SvnInfo> buildRevisionMap(FilePath workspace, Launcher launcher, TaskListener listener) throws IOException {
         PrintStream logger = listener.getLogger();
 
         Map<String/*module name*/,SvnInfo> revisions = new HashMap<String,SvnInfo>();
@@ -310,7 +309,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         // invoke the "svn info"
         for( String module : getModuleDirNames() ) {
             // parse the output
-            SvnInfo info = SvnInfo.parse(module,env,workspace,listener);
+            SvnInfo info = SvnInfo.parse(module,env,workspace,launcher,listener);
             revisions.put(module,info);
             logger.println("Revision:"+info.revision);
         }
@@ -345,15 +344,15 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
     /**
      * Returns true if we can use "svn update" instead of "svn checkout"
      */
-    private boolean isUpdatable(FilePath workspace,BuildListener listener) {
+    private boolean isUpdatable(FilePath workspace,Launcher launcher,BuildListener listener) {
         StringTokenizer tokens = new StringTokenizer(modules);
         while(tokens.hasMoreTokens()) {
             String url = tokens.nextToken();
             String moduleName = getLastPathComponent(url);
-            File module = workspace.child(moduleName).getLocal();
+            FilePath module = workspace.child(moduleName);
 
             try {
-                SvnInfo svnInfo = SvnInfo.parse(moduleName, createEnvVarMap(false), workspace, listener);
+                SvnInfo svnInfo = SvnInfo.parse(moduleName, createEnvVarMap(false), workspace, launcher, listener);
                 if(!svnInfo.url.equals(url)) {
                     listener.getLogger().println("Checking out a fresh workspace because the workspace is not "+url);
                     return false;
@@ -369,13 +368,13 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
 
     public boolean pollChanges(Project project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException {
         // current workspace revision
-        Map<String,SvnInfo> wsRev = buildRevisionMap(workspace,listener);
+        Map<String,SvnInfo> wsRev = buildRevisionMap(workspace,launcher,listener);
 
         Map env = createEnvVarMap(false);
 
         // check the corresponding remote revision
         for (SvnInfo localInfo : wsRev.values()) {
-            SvnInfo remoteInfo = SvnInfo.parse(localInfo.url,env,workspace,listener);
+            SvnInfo remoteInfo = SvnInfo.parse(localInfo.url,env,workspace,launcher,listener);
             listener.getLogger().println("Revision:"+remoteInfo.revision);
             if(remoteInfo.revision > localInfo.revision)
                 return true;    // change found
@@ -471,7 +470,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
                 if(svnExe==null || svnExe.equals(""))    svnExe="svn";
 
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
-                l.launch(new String[]{svnExe,"--version"},new String[0],out,FilePath.RANDOM).join();
+                l.launch(new String[]{svnExe,"--version"},new String[0],out,null).join();
 
                 // parse the first line for version
                 BufferedReader r = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(out.toByteArray())));
@@ -501,7 +500,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
                 protected void check() throws IOException, ServletException {
                     String svnExe = request.getParameter("exe");
 
-                    Version v = version(new Launcher(TaskListener.NULL),svnExe);
+                    Version v = version(new Launcher.LocalLauncher(TaskListener.NULL),svnExe);
                     if(v==null) {
                         error("Failed to check subversion version info. Is this a valid path?");
                         return;

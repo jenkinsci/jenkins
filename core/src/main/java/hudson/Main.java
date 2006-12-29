@@ -124,7 +124,7 @@ public class Main {
         List<String> cmd = new ArrayList<String>();
         for( int i=1; i<args.length; i++ )
             cmd.add(args[i]);
-        Proc proc = new Proc(cmd.toArray(new String[0]),(String[])null,System.in,
+        Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
             new DualOutputStream(System.out,new EncodingStream(os)));
 
         int ret = proc.join();

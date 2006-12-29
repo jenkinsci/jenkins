@@ -1,6 +1,8 @@
 package hudson.model;
 
 import hudson.Launcher;
+import hudson.util.EnumConverter;
+import org.apache.commons.beanutils.ConvertUtils;
 
 /**
  * Commonality between {@link Slave} and master {@link Hudson}.
@@ -41,6 +43,8 @@ public interface Node {
      */
     Mode getMode();
 
+    Computer createComputer();
+
     public enum Mode {
         NORMAL("Utilize this slave as much as possible"),
         EXCLUSIVE("Leave this machine for tied jobs only");
@@ -57,6 +61,10 @@ public interface Node {
 
         Mode(String description) {
             this.description = description;
+        }
+
+        static {
+            ConvertUtils.register(new EnumConverter(),Mode.class);
         }
     }
 }

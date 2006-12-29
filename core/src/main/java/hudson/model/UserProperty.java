@@ -1,7 +1,7 @@
 package hudson.model;
 
-import hudson.Plugin;
 import hudson.ExtensionPoint;
+import hudson.Plugin;
 
 /**
  * Extensible property of {@link User}.

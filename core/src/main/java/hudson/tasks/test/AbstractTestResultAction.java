@@ -1,14 +1,14 @@
 package hudson.tasks.test;
 
+import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.Project;
 import hudson.model.Result;
 import hudson.util.ChartUtil;
+import hudson.util.ColorPalette;
 import hudson.util.DataSetBuilder;
 import hudson.util.ShiftedCategoryAxis;
-import hudson.util.ColorPalette;
-import hudson.Functions;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;

@@ -5,13 +5,12 @@ import hudson.model.Descriptor;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.scm.SCM;
+import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Deletes old log files.

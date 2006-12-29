@@ -10,7 +10,6 @@ import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

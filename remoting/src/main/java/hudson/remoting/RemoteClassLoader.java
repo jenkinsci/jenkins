@@ -33,6 +33,13 @@ final class RemoteClassLoader extends ClassLoader {
         return local.export(IClassLoader.class, new ClassLoaderProxy(cl));
     }
 
+    /**
+     * Exports and just returns the object ID, instead of obtaining the proxy.
+     */
+    static int exportId(ClassLoader cl, Channel local) {
+        return local.export(new ClassLoaderProxy(cl));
+    }
+
     /*package*/ static final class ClassLoaderProxy implements IClassLoader {
         private final ClassLoader cl;
 

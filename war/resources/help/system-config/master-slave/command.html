@@ -1,12 +1,35 @@
 <div>
-  Command to be used to execute a program on this slave, such as
-  'ssh slave1' or 'rsh slave2'. Hudson appends the actual command it wants to run
-  after this and then execute it locally, and then expects the command you supplied
-  to do the remote job submission.
+  Command to be used to launch a slave agent program, which controls the slave
+  computer and communicates with the master. This command is executed on the
+  master, and Hudson assumes that the executed program launches <tt>slave.jar</tt>
+  program on the correct slave machine.
 
   <p>
-  Normally, you'd want to use SSH and RSH for this, but
-  it can be any custom program as well.
+  A copy of <tt>slave.jar</tt> can be found on <tt>WEB-INF/slave.jar</tt> inside
+  <tt>hudson.war</tt>.
+
+  <p>
+  In a simple case, this could be
+  something like "ssh <i>hostname</i> java -jar ~/bin/slave.jar".
+
+  However, it is often a good idea to write a small shell script like the following on a slave,
+  so that you can control the location of Java and/or slave.jar, as well as set up any
+  environment variables specific to this slave node, such as PATH.
+  
+<pre>
+#!/bin/sh
+exec java -jar ~/bin/slave.jar
+</pre>
+
+  <p>
+  You can use any command to run a process on the slave machine, such as RSH,
+  as long as stdin/stdout of this process will be connected to
+  "java -jar ~/bin/slave.jar" eventually.
+
+  <p>
+  In a larger deployment, It is also worth considering to load <tt>slave.jar</tt> from
+  a NFS-mounted common location, so that you don't have to update this file every time
+  you update Hudson.
 
   <p>
   Setting this to "ssh -v <i>hostname</i>" may be useful for debugging connectivity

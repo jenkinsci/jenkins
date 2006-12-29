@@ -35,38 +35,28 @@
           <s:repeatable var="s" items="${it.slaves}">
             <table width="100%">
               <s:entry title="name" help="/help/system-config/master-slave/name.html">
-                <input class="setting-input" name="slave_name"
-                  type="text" value="${s.nodeName}" />
+                <s:textbox name="slave.name" value="${s.nodeName}" />
+              </s:entry>
+
+              <s:entry title="launch command" help="/help/system-config/master-slave/command.html">
+                <s:textbox name="slave.command" value="${s.command}"/>
               </s:entry>
 
               <s:entry title="description" help="/help/system-config/master-slave/description.html">
-                <input class="setting-input" name="slave_description"
-                  type="text" value="${s.nodeDescription}" />
+                <s:textbox name="slave.description" value="${s.nodeDescription}" />
               </s:entry>
 
               <s:entry title="# of executors" help="/help/system-config/master-slave/numExecutors.html">
-                <input class="setting-input number" name="slave_executors"
+                <input class="setting-input number" name="slave.numExecutors"
                   type="text" value="${s.numExecutors}" />
               </s:entry>
 
-              <s:entry title="connect command" help="/help/system-config/master-slave/command.html">
-                <input class="setting-input" name="slave_command"
-                  type="text" value="${s.command}" />
-              </s:entry>
-
-              <s:entry title="local FS root" help="/help/system-config/master-slave/localFS.html">
-                <input class="setting-input validated" name="slave_localFS"
-                  checkUrl="'checkLocalFSRoot?value='+this.value"
-                  type="text" value="${s.localFS}" />
-              </s:entry>
-
               <s:entry title="remote FS root" help="/help/system-config/master-slave/remoteFS.html">
-                <input class="setting-input" name="slave_remoteFS"
-                  type="text" value="${s.remoteFS}" />
+                <s:textbox name="slave.remoteFS" value="${s.remoteFS}" />
               </s:entry>
 
               <s:entry title="usage" help="/help/system-config/master-slave/usage.html">
-                <select class="setting-input" name="slave_mode">
+                <select class="setting-input" name="slave.mode">
                   <j:forEach var="m" items="${h.getNodeModes()}">
                     <s:option value="${m.name}" selected="${m==s.mode}">${m.description}</s:option>
                   </j:forEach>

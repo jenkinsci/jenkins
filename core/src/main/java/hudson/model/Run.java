@@ -1,13 +1,15 @@
 package hudson.model;
 
-import static hudson.Util.combine;
 import com.thoughtworks.xstream.XStream;
 import hudson.CloseProofOutputStream;
 import hudson.ExtensionPoint;
-import hudson.Util;
-import hudson.XmlFile;
 import hudson.FeedAdapter;
+import hudson.Util;
+import static hudson.Util.combine;
+import hudson.XmlFile;
+import hudson.FilePath;
 import hudson.tasks.LogRotator;
+import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.CharSpool;
 import hudson.util.IOException2;
@@ -507,33 +509,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
             long start = System.currentTimeMillis();
             BuildListener listener=null;
+            PrintStream log = null;
 
             try {
                 try {
-                    final PrintStream log = new PrintStream(new FileOutputStream(getLogFile()));
-                    listener = new BuildListener() {
-                        final PrintWriter pw = new PrintWriter(new CloseProofOutputStream(log),true);
-
-                        public void started() {}
-
-                        public PrintStream getLogger() {
-                            return log;
-                        }
-
-                        public PrintWriter error(String msg) {
-                            pw.println("ERROR: "+msg);
-                            return pw;
-                        }
-
-                        public PrintWriter fatalError(String msg) {
-                            return error(msg);
-                        }
-
-                        public void finished(Result result) {
-                            pw.close();
-                            log.close();
-                        }
-                    };
+                    log = new PrintStream(new FileOutputStream(getLogFile()));
+                    listener = new StreamBuildListener(new CloseProofOutputStream(log));
 
                     listener.started();
 
@@ -562,6 +543,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
             if(listener!=null)
                 listener.finished(result);
+            if(log!=null)
+                log.close();
 
             try {
                 save();
@@ -716,8 +699,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Serves the artifacts.
      */
-    public void doArtifact( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        serveFile(req, rsp, getArtifactsDir(), "package.gif", true);
+    public void doArtifact( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
+        serveFile(req, rsp, new FilePath(getArtifactsDir()), "package.gif", true);
     }
 
     /**
@@ -734,32 +717,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Handles incremental log output.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        rsp.setContentType("text/plain");
-        rsp.setCharacterEncoding("UTF-8");
-        rsp.setStatus(HttpServletResponse.SC_OK);
-
-        boolean completed = !isBuilding();
-        File logFile = getLogFile();
-        if(!logFile.exists()) {
-            // file doesn't exist yet
-            rsp.addHeader("X-Text-Size","0");
-            rsp.addHeader("X-More-Data","true");
-            return;
-        }
-        LargeText text = new LargeText(logFile,completed);
-        long start = 0;
-        String s = req.getParameter("start");
-        if(s!=null)
-            start = Long.parseLong(s);
-
-        CharSpool spool = new CharSpool();
-        long r = text.writeLogTo(start,spool);
-
-        rsp.addHeader("X-Text-Size",String.valueOf(r));
-        if(!completed)
-            rsp.addHeader("X-More-Data","true");
-
-        spool.writeTo(rsp.getWriter());
+        new LargeText(getLogFile(),!isBuilding()).doProgressText(req,rsp);
     }
 
     public void doToggleLogKeep( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {

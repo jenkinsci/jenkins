@@ -2,15 +2,23 @@ package hudson.model;
 
 import hudson.util.CountingOutputStream;
 import hudson.util.WriterOutputStream;
+import hudson.util.CharSpool;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Writer;
 
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
 /**
  * Represents a large text data.
+ *
+ * <p>
+ * This class defines methods for handling progressive text update.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -64,6 +72,41 @@ public class LargeText {
         os.flush();
 
         return os.getCount()+start;
+    }
+
+    /**
+     * Implements the progressive text handling.
+     * This method is used as a "web method" with progressiveText.jelly.
+     */
+    public void doProgressText(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        rsp.setContentType("text/plain");
+        rsp.setCharacterEncoding("UTF-8");
+        rsp.setStatus(HttpServletResponse.SC_OK);
+
+        if(!file.exists()) {
+            // file doesn't exist yet
+            rsp.addHeader("X-Text-Size","0");
+            rsp.addHeader("X-More-Data","true");
+            return;
+        }
+
+        long start = 0;
+        String s = req.getParameter("start");
+        if(s!=null)
+            start = Long.parseLong(s);
+
+        if(file.length() < start )
+            start = 0;  // text rolled over
+
+        CharSpool spool = new CharSpool();
+        long r = writeLogTo(start,spool);
+
+        rsp.addHeader("X-Text-Size",String.valueOf(r));
+        if(!completed)
+            rsp.addHeader("X-More-Data","true");
+
+        spool.writeTo(rsp.getWriter());
+
     }
 
     /**

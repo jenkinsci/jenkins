@@ -1,7 +1,12 @@
 package hudson;
 
-import hudson.model.BuildListener;
+import hudson.model.TaskListener;
+import hudson.util.IOException2;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.taskdefs.Chmod;
+import org.apache.tools.ant.taskdefs.Copy;
 
+import javax.servlet.ServletException;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -13,20 +18,19 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 import java.util.SimpleTimeZone;
-import java.util.logging.Logger;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.text.SimpleDateFormat;
-
-import org.apache.tools.ant.taskdefs.Chmod;
-import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.BuildException;
+import java.security.MessageDigest;
+import java.security.DigestInputStream;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -145,19 +149,32 @@ public class Util {
      * On Windows, error messages for IOException aren't very helpful.
      * This method generates additional user-friendly error message to the listener
      */
-    public static void displayIOException( IOException e, BuildListener listener ) {
+    public static void displayIOException( IOException e, TaskListener listener ) {
+        String msg = getWin32ErrorMessage(e);
+        if(msg!=null)
+            listener.getLogger().println(msg);
+    }
+
+    /**
+     * Extracts the Win32 error message from {@link IOException} if possible.
+     *
+     * @return
+     *      null if there seems to be no error code or if the platform is not Win32.
+     */
+    public static String getWin32ErrorMessage(IOException e) {
         if(File.separatorChar!='\\')
-            return; // not Windows
+            return null; // not Windows
 
         Matcher m = errorCodeParser.matcher(e.getMessage());
         if(!m.matches())
-            return; // failed to parse
+            return null; // failed to parse
 
         try {
             ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
-            listener.getLogger().println(rb.getString("error"+m.group(1)));
+            return rb.getString("error"+m.group(1));
         } catch (Exception _) {
             // silently recover from resource related failures
+            return null;
         }
     }
 
@@ -208,6 +225,34 @@ public class Util {
     public static String nullify(String v) {
         if(v!=null && v.length()==0)    v=null;
         return v;
+    }
+
+    /**
+     * Write-only buffer.
+     */
+    private static final byte[] garbage = new byte[8192];
+
+    /**
+     * Computes MD5 digest of the given input stream.
+     *
+     * @param source
+     *      The stream will be closed by this method at the end of this method.
+     */
+    public static String getDigestOf(InputStream source) throws IOException {
+        try {
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+
+            DigestInputStream in =new DigestInputStream(source,md5);
+            try {
+                while(in.read(garbage)>0)
+                    ; // simply discard the input
+            } finally {
+                in.close();
+            }
+            return toHexString(md5.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException2("MD5 not installed",e);    // impossible
+        }
     }
 
     public static String toHexString(byte[] data, int start, int len) {

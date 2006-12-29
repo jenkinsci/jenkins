@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.io.NotSerializableException;
 
 /**
  * {@link Request} that can take {@link Callable} whose actual implementation
@@ -18,7 +19,7 @@ import java.io.Serializable;
  *
  * @author Kohsuke Kawaguchi
  */
-final class UserRequest<RSP extends Serializable,EXC extends Throwable> extends Request<UserResponse<RSP>,EXC> {
+final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<RSP>,EXC> {
 
     private final byte[] request;
     private final IClassLoader classLoaderProxy;
@@ -27,30 +28,33 @@ final class UserRequest<RSP extends Serializable,EXC extends Throwable> extends 
     public UserRequest(Channel local, Callable<?,EXC> c) throws IOException {
         request = serialize(c,local);
         this.toString = c.toString();
-        classLoaderProxy = RemoteClassLoader.export( c.getClass().getClassLoader(), local );
+        ClassLoader cl = c.getClass().getClassLoader();
+        if(c instanceof DelegatingCallable)
+            cl = ((DelegatingCallable)c).getClassLoader();
+        classLoaderProxy = RemoteClassLoader.export(cl,local);
     }
 
     protected UserResponse<RSP> perform(Channel channel) throws EXC {
         try {
             ClassLoader cl = channel.importedClassLoaders.get(classLoaderProxy);
 
-            Object o;
+            RSP r = null;
             Channel oldc = Channel.setCurrent(channel);
             try {
-                o = new ObjectInputStreamEx(new ByteArrayInputStream(request), cl).readObject();
+                Object o = new ObjectInputStreamEx(new ByteArrayInputStream(request), cl).readObject();
+                
+                Callable<RSP,EXC> callable = (Callable<RSP,EXC>)o;
+
+                ClassLoader old = Thread.currentThread().getContextClassLoader();
+                Thread.currentThread().setContextClassLoader(cl);
+                // execute the service
+                try {
+                    r = callable.call();
+                } finally {
+                    Thread.currentThread().setContextClassLoader(old);
+                }
             } finally {
                 Channel.setCurrent(oldc);
-            }
-            Callable<RSP,EXC> callable = (Callable<RSP,EXC>)o;
-
-            ClassLoader old = Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader(cl);
-            // execute the service
-            RSP r = null;
-            try {
-                r = callable.call();
-            } finally {
-                Thread.currentThread().setContextClassLoader(old);
             }
 
             return new UserResponse<RSP>(serialize(r,channel));
@@ -69,6 +73,10 @@ final class UserRequest<RSP extends Serializable,EXC extends Throwable> extends 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             new ObjectOutputStream(baos).writeObject(o);
             return baos.toByteArray();
+        } catch( NotSerializableException e ) {
+            IOException x = new IOException("Unable to serialize " + o);
+            x.initCause(e);
+            throw x;
         } finally {
             Channel.setCurrent(old);
         }
@@ -79,7 +87,7 @@ final class UserRequest<RSP extends Serializable,EXC extends Throwable> extends 
     }
 }
 
-final class UserResponse<RSP extends Serializable> implements Serializable {
+final class UserResponse<RSP> implements Serializable {
     private final byte[] response;
 
     public UserResponse(byte[] response) {

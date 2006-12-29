@@ -3,12 +3,14 @@ package hudson.tasks.junit;
 import hudson.model.Build;
 import hudson.model.ModelObject;
 
+import java.io.Serializable;
+
 /**
  * Base class for all test result objects.
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class TestObject implements ModelObject {
+public abstract class TestObject implements ModelObject, Serializable {
     public abstract Build getOwner();
 
     /**

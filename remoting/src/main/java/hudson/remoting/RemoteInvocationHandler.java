@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 /**
  * Sits behind a proxy object and implements the proxy logic.
@@ -21,11 +22,32 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
 
     /**
      * Represents the connection to the remote {@link Channel}.
+     *
+     * <p>
+     * This field is null when a {@link RemoteInvocationHandler} is just
+     * created and not working as a remote proxy. Once tranferred to the
+     * remote system, this field is set to non-null. 
      */
     private transient Channel channel;
 
     RemoteInvocationHandler(int id) {
         this.oid = id;
+    }
+
+    /**
+     * Creates a proxy that wraps an existing OID on the remote.
+     */
+    RemoteInvocationHandler(Channel channel, int id) {
+        this.channel = channel;
+        this.oid = id;
+    }
+
+    /**
+     * Wraps an OID to the typed wrapper.
+     */
+    public static <T> T wrap(Channel channel, int id, Class<T> type) {
+        return type.cast(Proxy.newProxyInstance( type.getClassLoader(), new Class[]{type},
+            new RemoteInvocationHandler(channel,id)));
     }
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -57,6 +79,9 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
      * Two proxies are the same iff they represent the same remote object. 
      */
     public boolean equals(Object o) {
+        if(Proxy.isProxyClass(o.getClass()))
+            o = Proxy.getInvocationHandler(o);
+
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -68,6 +93,14 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
 
     public int hashCode() {
         return oid;
+    }
+
+
+    protected void finalize() throws Throwable {
+        // unexport the remote object
+        if(channel!=null)
+            channel.send(new UnexportCommand(oid));
+        super.finalize();
     }
 
     private static final long serialVersionUID = 1L;
@@ -106,7 +139,9 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
             if(o==null)
                 throw new IllegalStateException("Unable to call "+methodName+". Invalid object ID "+oid);
             try {
-                return (Serializable)choose(o).invoke(o,arguments);
+                Method m = choose(o);
+                m.setAccessible(true);  // in case the class is not public
+                return (Serializable) m.invoke(o,arguments);
             } catch (InvocationTargetException e) {
                 throw e.getTargetException();
             }

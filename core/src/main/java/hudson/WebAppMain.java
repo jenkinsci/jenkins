@@ -5,9 +5,9 @@ import com.thoughtworks.xstream.core.JVM;
 import hudson.model.Hudson;
 import hudson.model.User;
 import hudson.triggers.Trigger;
+import hudson.util.IncompatibleServletVersionDetected;
 import hudson.util.IncompatibleVMDetected;
 import hudson.util.RingBufferLogHandler;
-import hudson.util.IncompatibleServletVersionDetected;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.TimerTask;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Entry point when Hudson is used as a webapp.

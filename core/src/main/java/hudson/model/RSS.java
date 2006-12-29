@@ -8,12 +8,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
 
 /**
  * RSS related code.

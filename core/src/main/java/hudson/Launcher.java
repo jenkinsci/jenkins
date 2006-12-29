@@ -1,6 +1,9 @@
 package hudson;
 
+import hudson.model.Hudson;
 import hudson.model.TaskListener;
+import hudson.remoting.VirtualChannel;
+import hudson.Proc.LocalProc;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,12 +31,27 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Launcher {
+public abstract class Launcher {
 
     protected final TaskListener listener;
 
-    public Launcher(TaskListener listener) {
+    protected final VirtualChannel channel;
+
+    public Launcher(TaskListener listener, VirtualChannel channel) {
         this.listener = listener;
+        this.channel = channel;
+    }
+
+    /**
+     * Gets the channel that can be used to run a program remotely.
+     *
+     * @return
+     *      null if the target node is not configured to support this.
+     *      this is a transitional measure.
+     *      Note that a launcher for the master is always non-null.
+     */
+    public VirtualChannel getChannel() {
+        return channel;
     }
 
     public final Proc launch(String cmd, Map<String,String> env, OutputStream out, FilePath workDir) throws IOException {
@@ -52,15 +70,24 @@ public class Launcher {
         return launch(Util.tokenize(cmd),env,out,workDir);
     }
 
-    public Proc launch(String[] cmd,String[] env,OutputStream out, FilePath workDir) throws IOException {
-        printCommandLine(cmd, workDir);
-        return new Proc(cmd,Util.mapToEnv(inherit(env)),out,workDir.getLocal());
+    public final Proc launch(String[] cmd,String[] env,OutputStream out, FilePath workDir) throws IOException {
+        return launch(cmd,env,null,out,workDir);
     }
 
-    public Proc launch(String[] cmd,String[] env,InputStream in,OutputStream out) throws IOException {
-        printCommandLine(cmd, null);
-        return new Proc(cmd,inherit(env),in,out);
+    public final Proc launch(String[] cmd,String[] env,InputStream in,OutputStream out) throws IOException {
+        return launch(cmd,env,in,out,null);
     }
+
+    /**
+     * @param in
+     *      null if there's no input.
+     * @param workDir
+     *      null if the working directory could be anything.
+     * @param out
+     *      stdout and stderr of the process will be sent to this stream.
+     *      the stream won't be closed.
+     */
+    public abstract Proc launch(String[] cmd,String[] env,InputStream in,OutputStream out, FilePath workDir) throws IOException;
 
     /**
      * Returns true if this {@link Launcher} is going to launch on Unix.
@@ -70,23 +97,9 @@ public class Launcher {
     }
 
     /**
-     * Expands the list of environment variables by inheriting current env variables.
+     * Prints out the command line to the listener so that users know what we are doing.
      */
-    private Map<String,String> inherit(String[] env) {
-        Map<String,String> m = new HashMap<String,String>(EnvVars.masterEnvVars);
-        for (String e : env) {
-            int index = e.indexOf('=');
-            String key = e.substring(0,index);
-            String value = e.substring(index+1);
-            if(value.length()==0)
-                m.remove(key);
-            else
-                m.put(key,value);
-        }
-        return m;
-    }
-
-    private void printCommandLine(String[] cmd, FilePath workDir) {
+    protected final void printCommandLine(String[] cmd, FilePath workDir) {
         StringBuffer buf = new StringBuffer();
         if (workDir != null) {
             buf.append('[');
@@ -98,5 +111,37 @@ public class Launcher {
             buf.append(' ').append(c);
         }
         listener.getLogger().println(buf.toString());
+    }
+
+    public static class LocalLauncher extends Launcher {
+        public LocalLauncher(TaskListener listener) {
+            this(listener,Hudson.MasterComputer.localChannel);
+        }
+
+        public LocalLauncher(TaskListener listener, VirtualChannel channel) {
+            super(listener, channel);
+        }
+
+        public Proc launch(String[] cmd,String[] env,InputStream in,OutputStream out, FilePath workDir) throws IOException {
+            printCommandLine(cmd, workDir);
+            return new LocalProc(cmd,Util.mapToEnv(inherit(env)),in,out, workDir==null ? null : new File(workDir.getRemote()));
+        }
+
+        /**
+         * Expands the list of environment variables by inheriting current env variables.
+         */
+        private Map<String,String> inherit(String[] env) {
+            Map<String,String> m = new HashMap<String,String>(EnvVars.masterEnvVars);
+            for (String e : env) {
+                int index = e.indexOf('=');
+                String key = e.substring(0,index);
+                String value = e.substring(index+1);
+                if(value.length()==0)
+                    m.remove(key);
+                else
+                    m.put(key,value);
+            }
+            return m;
+        }
     }
 }

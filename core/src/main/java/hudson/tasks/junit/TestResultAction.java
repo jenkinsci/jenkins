@@ -35,22 +35,22 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     private Integer totalCount;
 
 
-    TestResultAction(Build owner, DirectoryScanner results, BuildListener listener) {
+    TestResultAction(Build owner, TestResult result, BuildListener listener) {
         super(owner);
 
-        TestResult r = new TestResult(this,results,listener);
+        result.freeze(this);
 
-        totalCount = r.getTotalCount();
-        failCount = r.getFailCount();
+        totalCount = result.getTotalCount();
+        failCount = result.getFailCount();
 
         // persist the data
         try {
-            getDataFile().write(r);
+            getDataFile().write(result);
         } catch (IOException e) {
             e.printStackTrace(listener.fatalError("Failed to save the JUnit test result"));
         }
 
-        this.result = new WeakReference<TestResult>(r);
+        this.result = new WeakReference<TestResult>(result);
     }
 
     private XmlFile getDataFile() {
@@ -100,8 +100,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
             logger.log(Level.WARNING, "Failed to load "+getDataFile(),e);
             r = new TestResult();   // return a dummy
         }
-        r.parent = this;
-        r.freeze();
+        r.freeze(this);
         return r;
     }
 

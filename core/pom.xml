@@ -14,6 +14,17 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>maven-stapler-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>stapler</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-antlr-plugin</artifactId>
         <configuration>
           <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
@@ -43,7 +54,7 @@
               <tasks>
                 <taskdef name="retrotranslator" classpathref="maven.test.classpath" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" />
                 <mkdir dir="target/classes14" />
-                <retrotranslator destdir="target/classes14" verify="true">
+                <retrotranslator destdir="target/classes14"><!-- verify="true" detects false-positive errors against some references to remoting-->
                   <src path="target/classes" />
                 </retrotranslator>
                 <jar basedir="target/classes14" destfile="target/${artifactId}-${version}-jdk14.jar" />
@@ -197,7 +208,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <version>1.13</version>
+      <version>1.14</version>
     </dependency>
     <dependency>
       <groupId>antlr</groupId>

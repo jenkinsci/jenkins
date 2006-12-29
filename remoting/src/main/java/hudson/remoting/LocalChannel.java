@@ -1,8 +1,10 @@
 package hudson.remoting;
 
-import java.util.concurrent.*;
-import java.io.Serializable;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * {@link VirtualChannel} that performs computation on the local JVM.
@@ -16,11 +18,11 @@ public class LocalChannel implements VirtualChannel {
         this.executor = executor;
     }
 
-    public <V extends Serializable, T extends Throwable> V call(Callable<V, T> callable) throws T {
+    public <V, T extends Throwable> V call(Callable<V,T> callable) throws T {
         return callable.call();
     }
 
-    public <V extends Serializable, T extends Throwable> Future<V> callAsync(final Callable<V,T> callable) throws IOException {
+    public <V, T extends Throwable> Future<V> callAsync(final Callable<V,T> callable) throws IOException {
         final java.util.concurrent.Future<V> f = executor.submit(new java.util.concurrent.Callable<V>() {
             public V call() throws Exception {
                 try {
@@ -60,5 +62,9 @@ public class LocalChannel implements VirtualChannel {
 
     public void close() {
         // noop
+    }
+
+    public <T> T export(Class<T> intf, T instance) {
+        return instance;
     }
 }

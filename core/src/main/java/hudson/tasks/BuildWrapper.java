@@ -7,8 +7,8 @@ import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Project;
 
-import java.util.Map;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Pluggability point for performing pre/post actions for the build process.

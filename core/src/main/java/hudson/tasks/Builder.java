@@ -1,11 +1,11 @@
 package hudson.tasks;
 
-import hudson.model.Describable;
+import hudson.ExtensionPoint;
 import hudson.model.Action;
-import hudson.model.Project;
 import hudson.model.Build;
 import hudson.model.BuildListener;
-import hudson.ExtensionPoint;
+import hudson.model.Describable;
+import hudson.model.Project;
 
 /**
  * {@link BuildStep}s that perform the actual build.

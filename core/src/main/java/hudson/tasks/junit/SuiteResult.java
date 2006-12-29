@@ -6,6 +6,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class SuiteResult {
+public final class SuiteResult implements Serializable {
     private final String name;
     private final String stdout;
     private final String stderr;

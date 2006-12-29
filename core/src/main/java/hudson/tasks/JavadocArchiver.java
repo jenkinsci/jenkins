@@ -1,6 +1,8 @@
 package hudson.tasks;
 
+import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -8,8 +10,7 @@ import hudson.model.Descriptor;
 import hudson.model.DirectoryHolder;
 import hudson.model.Project;
 import hudson.model.ProminentProjectAction;
-import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.types.FileSet;
+import hudson.model.Result;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -22,7 +23,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class JavadocArchiver extends AntBasedPublisher {
+public class JavadocArchiver extends Publisher {
     /**
      * Path to the Javadoc directory in the workspace.
      */
@@ -43,31 +44,19 @@ public class JavadocArchiver extends AntBasedPublisher {
         return new File(project.getRootDir(),"javadoc");
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) {
-        // TODO: run tar or something for better remote copy
-        File javadoc = new File(build.getParent().getWorkspace().getLocal(), javadocDir);
-        if(!javadoc.exists()) {
-            listener.error("The specified Javadoc directory doesn't exist: "+javadoc);
-            return false;
-        }
-        if(!javadoc.isDirectory()) {
-            listener.error("The specified Javadoc directory isn't a directory: "+javadoc);
-            return false;
-        }
-
+    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
         listener.getLogger().println("Publishing Javadoc");
 
-        File target = getJavadocDir(build.getParent());
-        target.mkdirs();
+        FilePath javadoc = build.getParent().getWorkspace().child(javadocDir);
+        FilePath target = new FilePath(getJavadocDir(build.getParent()));
 
-        Copy copyTask = new Copy();
-        copyTask.setProject(new org.apache.tools.ant.Project());
-        copyTask.setTodir(target);
-        FileSet src = new FileSet();
-        src.setDir(javadoc);
-        copyTask.addFileset(src);
-
-        execTask(copyTask, listener);
+        try {
+            javadoc.copyRecursiveTo("**/*",target);
+        } catch (IOException e) {
+            Util.displayIOException(e,listener);
+            e.printStackTrace(listener.fatalError("Unable to copy Javadoc from "+javadoc+" to "+target));
+            build.setResult(Result.FAILURE);
+        }
 
         return true;
     }
@@ -110,8 +99,8 @@ public class JavadocArchiver extends AntBasedPublisher {
             return "help.gif";
         }
 
-        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            serveFile(req, rsp, getJavadocDir(project), "help.gif", false);
+        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+            serveFile(req, rsp, new FilePath(getJavadocDir(project)), "help.gif", false);
         }
     }
 }

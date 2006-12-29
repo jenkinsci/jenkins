@@ -1,7 +1,7 @@
 package hudson.model.listeners;
 
-import hudson.model.Job;
 import hudson.model.Hudson;
+import hudson.model.Job;
 
 /**
  * Receives notifications about jobs.

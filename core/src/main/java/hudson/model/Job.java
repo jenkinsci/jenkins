@@ -7,13 +7,13 @@ import hudson.XmlFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
 import hudson.util.ChartUtil;
+import hudson.util.ColorPalette;
 import hudson.util.DataSetBuilder;
 import hudson.util.IOException2;
 import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.TextFile;
 import hudson.util.XStream2;
-import hudson.util.ColorPalette;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.jfree.chart.ChartFactory;
@@ -37,9 +37,9 @@ import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
-import java.util.Collections;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.

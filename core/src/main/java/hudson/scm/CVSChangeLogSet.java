@@ -1,16 +1,16 @@
 package hudson.scm;
 
+import hudson.model.User;
+import hudson.scm.CVSChangeLogSet.CVSChangeLog;
+import hudson.util.IOException2;
 import org.apache.commons.digester.Digester;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Iterator;
-
-import hudson.model.User;
-import hudson.scm.CVSChangeLogSet.CVSChangeLog;
+import java.util.List;
 
 /**
  * {@link ChangeLogSet} for CVS.
@@ -59,7 +59,13 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         digester.addCallMethod("*/entry/file/dead","setDead");
         digester.addSetNext("*/entry/file","addFile");
 
-        digester.parse(f);
+        try {
+            digester.parse(f);
+        } catch (IOException e) {
+            throw new IOException2("Failed to parse "+f,e);
+        } catch (SAXException e) {
+            throw new IOException2("Failed to parse "+f,e);
+        }
 
         // merge duplicate entries. Ant task somehow seems to report duplicate entries.
         for(int i=r.size()-1; i>=0; i--) {

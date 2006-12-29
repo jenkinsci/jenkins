@@ -16,6 +16,10 @@ final class ImportedClassLoaderTable {
         this.channel = channel;
     }
 
+    public synchronized ClassLoader get(int oid) {
+        return get(RemoteInvocationHandler.wrap(channel,oid,IClassLoader.class));
+    }
+
     public synchronized ClassLoader get(IClassLoader classLoaderProxy) {
         ClassLoader r = classLoaders.get(classLoaderProxy);
         if(r==null) {

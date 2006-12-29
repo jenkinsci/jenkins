@@ -1,0 +1,19 @@
+<!--
+  Dispaly sortable table of properties.
+
+  items="<a map object>"
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <table class="pane sortable">
+    <tr>
+      <th class="pane-header" initialSortDir="down">Name</th>
+      <th class="pane-header">Value</th>
+    </tr>
+    <j:forEach var="e" items="${items}">
+      <tr>
+        <td class="pane"><st:out value="${e.key}"/></td>
+        <td class="pane"><st:out value="${e.value}"/></td>
+      </tr>
+    </j:forEach>
+  </table>
+</j:jelly>

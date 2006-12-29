@@ -117,10 +117,14 @@
               <tasks>
                 <taskdef name="retrotranslator" classpathref="maven.test.classpath" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" />
                 <mkdir dir="target/classes14" />
-                <retrotranslator destdir="target/classes14" verify="true">
+                <retrotranslator destdir="target/classes14"><!-- verify="true" detects false-positive errors against some references to remoting-->
                   <src path="target/classes" />
                 </retrotranslator>
-                <jar basedir="target/classes14" destfile="target/${artifactId}-${version}-jdk14.jar" />
+                <jar basedir="target/classes14" destfile="target/${artifactId}-${version}-jdk14.jar">
+                  <manifest>
+                    <attribute name="Main-Class" value="hudson.remoting.Launcher"/>
+                  </manifest>
+                </jar>
               </tasks>
             </configuration>
             <goals>
@@ -153,6 +157,16 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>hudson.remoting.Launcher</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
       </plugin>
     </plugins>
   </build>

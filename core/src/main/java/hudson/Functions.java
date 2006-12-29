@@ -1,24 +1,24 @@
 package hudson;
 
+import hudson.model.Hudson;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.Project;
 import hudson.model.Run;
-import hudson.model.Hudson;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.Calendar;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
-import java.io.File;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Utility functions used in views.
@@ -259,7 +259,11 @@ public class Functions {
         if (param != null) {
             return Boolean.parseBoolean(param);
         }
-        for (Cookie c : request.getCookies()) {
+        Cookie[] cookies = request.getCookies();
+        if(cookies==null)
+            return false; // when API design messes it up, we all suffer
+
+        for (Cookie c : cookies) {
             if (c.getName().equals("hudson_auto_refresh")) {
                 return Boolean.parseBoolean(c.getValue());
             }

@@ -1,6 +1,6 @@
 package hudson.model;
 
-import hudson.Util;
+import hudson.FilePath;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
@@ -8,7 +8,9 @@ import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -39,11 +41,12 @@ public class WorkspaceCleanupThread extends PeriodicWork {
             try {
                 listener = new StreamTaskListener(os);
 
-                for (Slave s : h.getSlaves()) {
+                for (Slave s : h.getSlaves())
                     process(s);
-                }
 
                 process(h);
+            } catch (InterruptedException e) {
+                e.printStackTrace(listener.fatalError("aborted"));
             } finally {
                 os.close();
             }
@@ -52,19 +55,21 @@ public class WorkspaceCleanupThread extends PeriodicWork {
         }
     }
 
-    private void process(Hudson h) {
+    private void process(Hudson h) throws IOException, InterruptedException {
         File jobs = new File(h.getRootDir(), "jobs");
         File[] dirs = jobs.listFiles(DIR_FILTER);
         if(dirs==null)      return;
         for (File dir : dirs) {
-            File ws = new File(dir, "workspace");
+            FilePath ws = new FilePath(new File(dir, "workspace"));
             if(shouldBeDeleted(dir.getName(),ws,h)) {
                 delete(ws);
             }
         }
     }
 
-    private boolean shouldBeDeleted(String jobName, File dir, Node n) {
+    private boolean shouldBeDeleted(String jobName, FilePath dir, Node n) throws IOException, InterruptedException {
+        // TODO: the use of remoting is not optimal.
+        // One remoting can execute "exists", "lastModified", and "delete" all at once.
         Job job = Hudson.getInstance().getJob(jobName);
         if(job==null)
             // no such project anymore
@@ -86,34 +91,38 @@ public class WorkspaceCleanupThread extends PeriodicWork {
 
     }
 
-    private void process(Slave s) {
-        // TODO: we should be using launcher to execute remote rm -rf
-
+    private void process(Slave s) throws InterruptedException {
         listener.getLogger().println("Scanning "+s.getNodeName());
 
-        File[] dirs = s.getWorkspaceRoot().getLocal().listFiles(DIR_FILTER);
-        if(dirs ==null)     return;
-        for (File dir : dirs) {
-            if(shouldBeDeleted(dir.getName(),dir,s))
-                delete(dir);
+        try {
+            List<FilePath> dirs = s.getWorkspaceRoot().list(DIR_FILTER);
+            if(dirs ==null) return;
+            for (FilePath dir : dirs) {
+                if(shouldBeDeleted(dir.getName(),dir,s))
+                    delete(dir);
+            }
+        } catch (IOException e) {
+            e.printStackTrace(listener.error("Failed on "+s.getNodeName()));
         }
     }
 
-    private void delete(File dir) {
+    private void delete(FilePath dir) throws InterruptedException {
         try {
             listener.getLogger().println("Deleting "+dir);
-            Util.deleteRecursive(dir);
+            dir.deleteRecursive();
         } catch (IOException e) {
             e.printStackTrace(listener.error("Failed to delete "+dir));
         }
     }
 
 
-    private static final FileFilter DIR_FILTER = new FileFilter() {
+    private static class DirectoryFilter implements FileFilter, Serializable {
         public boolean accept(File f) {
             return f.isDirectory();
         }
-    };
+        private static final long serialVersionUID = 1L;
+    }
+    private static final FileFilter DIR_FILTER = new DirectoryFilter();
 
     private static final long DAY = 1000*60*60*24;
 }

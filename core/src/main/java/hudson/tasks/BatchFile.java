@@ -9,58 +9,28 @@ import hudson.model.Descriptor;
 import hudson.model.Project;
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 
 /**
  * Executes commands by using Windows batch file.
  *
  * @author Kohsuke Kawaguchi
  */
-public class BatchFile extends Builder {
-    private final String command;
-
+public class BatchFile extends CommandInterpreter {
     public BatchFile(String command) {
-        this.command = command;
+        super(command);
     }
 
-    public String getCommand() {
-        return command;
+    protected String[] buildCommandLine(FilePath script) {
+        return new String[] {script.getRemote()};
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) {
-        Project proj = build.getProject();
-        FilePath ws = proj.getWorkspace();
-        FilePath script=null;
-        try {
-            try {
-                script = ws.createTempFile("hudson",".bat");
-                Writer w = new FileWriter(script.getLocal());
-                w.write(command);
-                w.write("\r\nexit %ERRORLEVEL%");
-                w.close();
-            } catch (IOException e) {
-                Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError("Unable to produce a batch file") );
-                return false;
-            }
+    protected String getContents() {
+        return command+"\r\nexit %ERRORLEVEL%";
+    }
 
-            String[] cmd = new String[] {script.getRemote()};
-
-            int r;
-            try {
-                r = launcher.launch(cmd,build.getEnvVars(),listener.getLogger(),ws).join();
-            } catch (IOException e) {
-                Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError("command execution failed") );
-                r = -1;
-            }
-            return r==0;
-        } finally {
-            if(script!=null)
-                script.delete();
-        }
+    protected String getFileExtension() {
+        return ".bat";
     }
 
     public Descriptor<Builder> getDescriptor() {

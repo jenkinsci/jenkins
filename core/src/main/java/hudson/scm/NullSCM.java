@@ -7,12 +7,11 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.model.TaskListener;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * No {@link SCM}.

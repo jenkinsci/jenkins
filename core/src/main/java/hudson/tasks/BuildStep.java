@@ -9,6 +9,7 @@ import hudson.model.Project;
 import hudson.tasks.junit.JUnitResultArchiver;
 
 import java.util.List;
+import java.io.IOException;
 
 /**
  * One step of the whole build process.
@@ -32,8 +33,20 @@ public interface BuildStep {
      * @return
      *      true if the build can continue, false if there was an error
      *      and the build needs to be aborted.
+     *
+     * @throws InterruptedException
+     *      If the build is interrupted by the user (in an attempt to abort the build.)
+     *      Normally the {@link BuildStep} implementations may simply forward the exception
+     *      it got from its lower-level functions.
+     * @throws IOException
+     *      If the implementation wants to abort the processing when an {@link IOException}
+     *      happens, it can simply propagate the exception to the caller. This will cause
+     *      the build to fail, with the default error message.
+     *      Implementations are encouraged to catch {@link IOException} on its own to
+     *      provide a better error message, if it can do so, so that users have better
+     *      understanding on why it failed.
      */
-    boolean perform(Build build, Launcher launcher, BuildListener listener);
+    boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException;
 
     /**
      * Returns an action object if this {@link BuildStep} has an action
@@ -68,7 +81,7 @@ public interface BuildStep {
         ArtifactArchiver.DESCRIPTOR,
         Fingerprinter.DESCRIPTOR,
         JavadocArchiver.DESCRIPTOR,
-        JUnitResultArchiver.DESCRIPTOR,
+        JUnitResultArchiver.DescriptorImpl.DESCRIPTOR,
         BuildTrigger.DESCRIPTOR,
         Mailer.DESCRIPTOR
     );

@@ -25,8 +25,8 @@ import org.apache.tools.ant.taskdefs.cvslib.CvsVersion;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -77,8 +77,8 @@ public class ChangeLogTask extends AbstractCvsTask {
     /** Input dir */
     private File m_dir;
 
-    /** Output file */
-    private File m_destfile;
+    /** Output */
+    private OutputStream m_output;
 
     /** The earliest date at which to start processing entries.  */
     private Date m_start;
@@ -111,12 +111,12 @@ public class ChangeLogTask extends AbstractCvsTask {
 
 
     /**
-     * Set the output file for the log.
+     * Set the output stream for the log.
      *
      * @param destfile The new destfile value
      */
-    public void setDestfile(final File destfile) {
-        m_destfile = destfile;
+    public void setDeststream(final OutputStream destfile) {
+        m_output = destfile;
     }
 
 
@@ -309,7 +309,7 @@ public class ChangeLogTask extends AbstractCvsTask {
         if (null == m_dir) {
             m_dir = getProject().getBaseDir();
         }
-        if (null == m_destfile) {
+        if (null == m_output) {
             final String message = "Destfile must be set.";
 
             throw new BuildException(message);
@@ -413,10 +413,10 @@ public class ChangeLogTask extends AbstractCvsTask {
      */
     private void writeChangeLog(final CVSEntry[] entrySet)
          throws BuildException {
-        FileOutputStream output = null;
+        OutputStream output = null;
 
         try {
-            output = new FileOutputStream(m_destfile);
+            output = m_output;
 
             final PrintWriter writer =
                 new PrintWriter(new OutputStreamWriter(output, "UTF-8"));

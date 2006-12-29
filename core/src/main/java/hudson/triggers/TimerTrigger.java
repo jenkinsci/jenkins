@@ -2,7 +2,6 @@ package hudson.triggers;
 
 import antlr.ANTLRException;
 import hudson.model.Descriptor;
-
 import org.kohsuke.stapler.StaplerRequest;
 
 /**

@@ -1,13 +1,14 @@
 package hudson.tasks.junit;
 
 import hudson.model.Build;
-import hudson.model.BuildListener;
+import hudson.util.IOException2;
 import org.apache.tools.ant.DirectoryScanner;
 import org.dom4j.DocumentException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,7 +39,8 @@ public final class TestResult extends MetaTabulatedResult {
      */
     private transient Map<String,PackageResult> byPackages;
 
-    /*package*/ transient TestResultAction parent;
+    // set during the freeze phase
+    private transient TestResultAction parent;
 
     /**
      * Number of all tests.
@@ -53,15 +55,11 @@ public final class TestResult extends MetaTabulatedResult {
      * Creates an empty result.
      */
     TestResult() {
-        freeze();
     }
 
-    TestResult(TestResultAction parent, DirectoryScanner results, BuildListener listener) {
-        this.parent = parent;
+    TestResult(long buildTime, DirectoryScanner results) throws IOException {
         String[] includedFiles = results.getIncludedFiles();
         File baseDir = results.getBasedir();
-
-        long buildTime = parent.owner.getTimestamp().getTimeInMillis();
 
         for (String value : includedFiles) {
             File reportFile = new File(baseDir, value);
@@ -70,11 +68,9 @@ public final class TestResult extends MetaTabulatedResult {
                     // only count files that were actually updated during this build
                     suites.add(new SuiteResult(reportFile));
             } catch (DocumentException e) {
-                e.printStackTrace(listener.error("Failed to read "+reportFile));
+                throw new IOException2("Failed to read "+reportFile,e);
             }
         }
-
-        freeze();
     }
 
     public String getDisplayName() {
@@ -137,7 +133,8 @@ public final class TestResult extends MetaTabulatedResult {
     /**
      * Builds up the transient part of the data structure.
      */
-    void freeze() {
+    void freeze(TestResultAction parent) {
+        this.parent = parent;
         suitesByName = new HashMap<String,SuiteResult>();
         totalTests = 0;
         failedTests = new ArrayList<CaseResult>();

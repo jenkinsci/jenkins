@@ -1,23 +1,22 @@
 package hudson.model;
 
+import hudson.Util;
+import hudson.scm.ChangeLogSet.Entry;
+import hudson.util.RunList;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
-
-import hudson.scm.ChangeLogSet.Entry;
-import hudson.Util;
-import hudson.util.RunList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Collection of {@link Job}s.

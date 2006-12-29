@@ -3,6 +3,7 @@ package hudson.scm;
 import hudson.model.Build;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
 import hudson.scm.SubversionChangeLogSet.Path;
+import hudson.util.IOException2;
 import org.apache.commons.digester.Digester;
 import org.xml.sax.SAXException;
 
@@ -35,7 +36,13 @@ public class SubversionChangeLogParser extends ChangeLogParser {
         digester.addBeanPropertySetter("*/logentry/paths/path","value");
         digester.addSetNext("*/logentry/paths/path","addPath");
 
-        digester.parse(changelogFile);
+        try {
+            digester.parse(changelogFile);
+        } catch (IOException e) {
+            throw new IOException2("Failed to parse "+changelogFile,e);
+        } catch (SAXException e) {
+            throw new IOException2("Failed to parse "+changelogFile,e);
+        }
 
         return new SubversionChangeLogSet(build,r);
     }

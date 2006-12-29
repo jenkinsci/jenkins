@@ -1,5 +1,10 @@
 package hudson;
 
+import hudson.model.Hudson;
+import hudson.scm.SCM;
+import hudson.tasks.Builder;
+import hudson.tasks.Publisher;
+import hudson.triggers.Trigger;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -8,12 +13,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
-
-import hudson.tasks.Publisher;
-import hudson.tasks.Builder;
-import hudson.model.Hudson;
-import hudson.triggers.Trigger;
-import hudson.scm.SCM;
 
 /**
  * Base class of Hudson plugin.

@@ -1,7 +1,7 @@
 package hudson.model;
 
-import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
+import hudson.util.StreamTaskListener;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;

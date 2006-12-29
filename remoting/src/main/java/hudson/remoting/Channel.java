@@ -1,15 +1,15 @@
 package hudson.remoting;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.EOFException;
 import java.lang.reflect.Proxy;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
@@ -89,6 +89,11 @@ public class Channel implements VirtualChannel {
      */
     private final ExportTable<Object> exportedObjects = new ExportTable<Object>();
 
+    /**
+     * Registered listeners. 
+     */
+    private final Vector<Listener> listeners = new Vector<Listener>();
+
     public Channel(String name, Executor exec, InputStream is, OutputStream os) throws IOException {
         this(name,exec,is,os,null);
     }
@@ -148,6 +153,20 @@ public class Channel implements VirtualChannel {
     }
 
     /**
+     * Callback "interface" for changes in the state of {@link Channel}.
+     */
+    public static abstract class Listener {
+        /**
+         * When the channel was closed normally or abnormally due to an error.
+         *
+         * @param cause
+         *      if the channel is closed abnormally, this parameter
+         *      represents an exception that has triggered it.
+         */
+        public void onClosed(Channel channel, IOException cause) {}
+    }
+
+    /**
      * Sends a command to the remote end and executes it there.
      *
      * <p>
@@ -170,20 +189,13 @@ public class Channel implements VirtualChannel {
     }
 
     /**
-     * Exports an object for remoting to the other {@link Channel}.
-     *
-     * @param type
-     *      Interface to be remoted.
-     * @return
-     *      the proxy object that implements <tt>T</tt>. This object can be transfered
-     *      to the other {@link Channel}, and calling methods on it will invoke the
-     *      same method on the given <tt>instance</tt> object.
+     * {@inheritDoc}
      */
-    /*package*/ synchronized <T> T export(Class<T> type, T instance) {
+    public <T> T export(Class<T> type, T instance) {
         if(instance==null)
             return null;
-        // TODO: unexport
 
+        // proxy will unexport this instance when it's GC-ed on the remote machine.
         final int id = export(instance);
         return type.cast(Proxy.newProxyInstance( type.getClassLoader(), new Class[]{type},
             new RemoteInvocationHandler(id)));
@@ -204,14 +216,19 @@ public class Channel implements VirtualChannel {
     /**
      * {@inheritDoc}
      */
-    public <V extends Serializable,T extends Throwable>
+    public <V,T extends Throwable>
     V call(Callable<V,T> callable) throws IOException, T, InterruptedException {
-        UserResponse<V> r = new UserRequest<V,T>(this, callable).call(this);
         try {
+            UserResponse<V> r = new UserRequest<V,T>(this, callable).call(this);
             return r.retrieve(this, callable.getClass().getClassLoader());
+
+        // re-wrap the exception so that we can capture the stack trace of the caller.
         } catch (ClassNotFoundException e) {
-            // this is unlikely to happen, so this is a lame implementation
-            IOException x = new IOException();
+            IOException x = new IOException("Remote call failed");
+            x.initCause(e);
+            throw x;
+        } catch (Error e) {
+            IOException x = new IOException("Remote call failed");
             x.initCause(e);
             throw x;
         }
@@ -220,9 +237,9 @@ public class Channel implements VirtualChannel {
     /**
      * {@inheritDoc}
      */
-    public <V extends Serializable,T extends Throwable>
+    public <V,T extends Throwable>
     Future<V> callAsync(final Callable<V,T> callable) throws IOException {
-        final Future<UserResponse<V>> f = new UserRequest<V, T>(this, callable).callAsync(this);
+        final Future<UserResponse<V>> f = new UserRequest<V,T>(this, callable).callAsync(this);
         return new FutureAdapter<V,UserResponse<V>>(f) {
             protected V adapt(UserResponse<V> r) throws ExecutionException {
                 try {
@@ -236,8 +253,10 @@ public class Channel implements VirtualChannel {
         };
     }
 
+    /**
+     * Aborts the connection in response to an error.
+     */
     private synchronized void terminate(IOException e) {
-        // abort
         closed = true;
         synchronized(pendingCalls) {
             for (Request<?,?> req : pendingCalls.values())
@@ -245,6 +264,28 @@ public class Channel implements VirtualChannel {
             pendingCalls.clear();
         }
         notify();
+
+        for (Listener l : listeners.toArray(new Listener[listeners.size()]))
+            l.onClosed(this,e);
+    }
+
+    /**
+     * Registers a new {@link Listener}.
+     *
+     * @see #removeListener(Listener)
+     */
+    public void addListener(Listener l) {
+        listeners.add(l);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @return
+     *      false if the given listener has not been registered to begin with.
+     */
+    public boolean removeListener(Listener l) {
+        return listeners.remove(l);
     }
 
     /**
@@ -334,7 +375,8 @@ public class Channel implements VirtualChannel {
 
     /**
      * This method can be invoked during the serialization/deserialization of
-     * objects, when they are transferred to the remote {@link Channel}.
+     * objects when they are transferred to the remote {@link Channel},
+     * as well as during {@link Callable#call()} is invoked. 
      *
      * @return null
      *      if the calling thread is not performing serialization.

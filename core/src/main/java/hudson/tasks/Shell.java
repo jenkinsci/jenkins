@@ -10,10 +10,7 @@ import static hudson.model.Hudson.isWindows;
 import hudson.model.Project;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Map;
 
 /**
@@ -21,17 +18,15 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Shell extends Builder {
-    private final String command;
-
+public class Shell extends CommandInterpreter {
     public Shell(String command) {
-        this.command = fixCrLf(command);
+        super(fixCrLf(command));
     }
 
     /**
      * Fix CR/LF in the string according to the platform we are running on.
      */
-    private String fixCrLf(String s) {
+    private static String fixCrLf(String s) {
         // eliminate CR
         int idx;
         while((idx=s.indexOf("\r\n"))!=-1)
@@ -50,41 +45,16 @@ public class Shell extends Builder {
         return s;
     }
 
-    public String getCommand() {
+    protected String[] buildCommandLine(FilePath script) {
+        return new String[] { DESCRIPTOR.getShell(),"-xe",script.getRemote()};
+    }
+
+    protected String getContents() {
         return command;
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) {
-        Project proj = build.getProject();
-        FilePath ws = proj.getWorkspace();
-        FilePath script=null;
-        try {
-            try {
-                script = ws.createTempFile("hudson","sh");
-                Writer w = new FileWriter(script.getLocal());
-                w.write(command);
-                w.close();
-            } catch (IOException e) {
-                Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError("Unable to produce a script file") );
-                return false;
-            }
-
-            String[] cmd = new String[] { DESCRIPTOR.getShell(),"-xe",script.getRemote()};
-
-            int r;
-            try {
-                r = launcher.launch(cmd,build.getEnvVars(),listener.getLogger(),ws).join();
-            } catch (IOException e) {
-                Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError("command execution failed") );
-                r = -1;
-            }
-            return r==0;
-        } finally {
-            if(script!=null)
-                script.delete();
-        }
+    protected String getFileExtension() {
+        return ".sh";
     }
 
     public Descriptor<Builder> getDescriptor() {

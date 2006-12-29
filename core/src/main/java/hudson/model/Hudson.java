@@ -4,6 +4,7 @@ import com.thoughtworks.xstream.XStream;
 import groovy.lang.GroovyShell;
 import hudson.FeedAdapter;
 import hudson.Launcher;
+import hudson.Launcher.LocalLauncher;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -11,6 +12,8 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.JobListener;
+import hudson.remoting.LocalChannel;
+import hudson.remoting.VirtualChannel;
 import hudson.scm.CVSSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
@@ -41,12 +44,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -273,7 +272,7 @@ public final class Hudson extends JobCollection implements Node {
     }
 
     public Launcher createLauncher(TaskListener listener) {
-        return new Launcher(listener);
+        return new LocalLauncher(listener);
     }
 
     /**
@@ -283,7 +282,7 @@ public final class Hudson extends JobCollection implements Node {
      * This method tries to reuse existing {@link Computer} objects
      * so that we won't upset {@link Executor}s running in it.
      */
-    private void updateComputerList() {
+    private void updateComputerList() throws IOException {
         synchronized(computers) {
             Map<String,Computer> byName = new HashMap<String,Computer>();
             for (Computer c : computers.values()) {
@@ -313,11 +312,11 @@ public final class Hudson extends JobCollection implements Node {
     private void updateComputer(Node n, Map<String,Computer> byNameMap, Set<Computer> used) {
         Computer c;
         c = byNameMap.get(n.getNodeName());
-        if(c==null) {
-            if(n.getNumExecutors()>0)
-                computers.put(n,c=new Computer(n));
+        if (c!=null) {
+            c.setNode(n); // reuse
         } else {
-            c.setNode(n);
+            if(n.getNumExecutors()>0)
+                computers.put(n,c=n.createComputer());
         }
         used.add(c);
     }
@@ -673,6 +672,10 @@ public final class Hudson extends JobCollection implements Node {
         return Mode.NORMAL;
     }
 
+    public Computer createComputer() {
+        return new MasterComputer();
+    }
+
     private synchronized void load() throws IOException {
         XmlFile cfg = getConfigFile();
         if(cfg.exists())
@@ -714,8 +717,10 @@ public final class Hudson extends JobCollection implements Node {
     public void cleanUp() {
         terminating = true;
         synchronized(computers) {
-            for( Computer c : computers.values() )
+            for( Computer c : computers.values() ) {
                 c.interrupt();
+                c.kill();
+            }
         }
         ExternalJob.reloadThread.interrupt();
         Trigger.timer.cancel();
@@ -752,23 +757,10 @@ public final class Hudson extends JobCollection implements Node {
 
             {// update slave list
                 List<Slave> newSlaves = new ArrayList<Slave>();
-                String[] names = req.getParameterValues("slave_name");
-                String[] descriptions = req.getParameterValues("slave_description");
-                String[] executors = req.getParameterValues("slave_executors");
-                String[] cmds = req.getParameterValues("slave_command");
-                String[] rfs = req.getParameterValues("slave_remoteFS");
-                String[] lfs = req.getParameterValues("slave_localFS");
-                String[] mode = req.getParameterValues("slave_mode");
-                if(names!=null && descriptions!=null && executors!=null && cmds!=null && rfs!=null && lfs!=null && mode!=null) {
-                    int len = Util.min(names.length,descriptions.length,executors.length,cmds.length,rfs.length, lfs.length, mode.length);
-                    for(int i=0;i<len;i++) {
-                        int n = 2;
-                        try {
-                            n = Integer.parseInt(executors[i].trim());
-                        } catch(NumberFormatException e) {
-                            // ignore
-                        }
-                        newSlaves.add(new Slave(names[i],descriptions[i],cmds[i],rfs[i],new File(lfs[i]),n, Mode.valueOf(mode[i])));
+                String[] names = req.getParameterValues("slave.name");
+                if(names!=null) {
+                    for(int i=0;i< names.length;i++) {
+                        newSlaves.add(req.bindParameters(Slave.class,"slave.",i));
                     }
                 }
                 this.slaves = newSlaves;
@@ -1060,7 +1052,7 @@ public final class Hudson extends JobCollection implements Node {
             List<FileItem> items = upload.parseRequest(req);
 
             rsp.sendRedirect2(req.getContextPath()+"/fingerprint/"+
-                getDigestOf(items.get(0).getInputStream())+'/');
+                Util.getDigestOf(items.get(0).getInputStream())+'/');
 
             // if an error occur and we fail to do this, it will still be cleaned up
             // when GC-ed.
@@ -1068,24 +1060,6 @@ public final class Hudson extends JobCollection implements Node {
                 item.delete();
         } catch (FileUploadException e) {
             throw new ServletException(e);  // I'm not sure what the implication of this
-        }
-    }
-
-    public String getDigestOf(InputStream source) throws IOException, ServletException {
-        try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-
-            DigestInputStream in =new DigestInputStream(source,md5);
-            byte[] buf = new byte[8192];
-            try {
-                while(in.read(buf)>0)
-                    ; // simply discard the input
-            } finally {
-                in.close();
-            }
-            return Util.toHexString(md5.digest());
-        } catch (NoSuchAlgorithmException e) {
-            throw new ServletException(e);    // impossible
         }
     }
 
@@ -1264,6 +1238,28 @@ public final class Hudson extends JobCollection implements Node {
         }
 
         return r;
+    }
+
+    public static final class MasterComputer extends Computer {
+        private MasterComputer() {
+            super(Hudson.getInstance());
+        }
+
+        @Override
+        public VirtualChannel getChannel() {
+            return localChannel;
+        }
+
+        public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            // this computer never returns null from channel, so
+            // this method shall never be invoked.
+            rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+
+        /**
+         * {@link LocalChannel} instance that can be used to execute programs locally.
+         */
+        public static final LocalChannel localChannel = new LocalChannel(threadPoolForRemoting);
     }
 
     public static boolean adminCheck(StaplerRequest req,StaplerResponse rsp) throws IOException {

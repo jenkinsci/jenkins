@@ -1,8 +1,8 @@
 package hudson.scm;
 
+import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.ExtensionPoint;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
@@ -41,8 +41,12 @@ public interface SCM extends Describable<SCM>, ExtensionPoint {
      *
      * @return true
      *      if the change is detected.
+     *
+     * @throws InterruptedException
+     *      interruption is usually caused by the user aborting the computation.
+     *      this exception should be simply propagated all the way up.
      */
-    boolean pollChanges(Project project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException;
+    boolean pollChanges(Project project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException;
 
     /**
      * Obtains a fresh workspace of the module(s) into the specified directory
@@ -65,10 +69,14 @@ public interface SCM extends Describable<SCM>, ExtensionPoint {
      *      When there's no change, this file should contain an empty entry.
      *      See {@link AbstractCVSFamilySCM#createEmptyChangeLog(File, BuildListener, String)}.
      * @return
-     *      null if the operation fails. The error should be reported to the listener.
+     *      false if the operation fails. The error should be reported to the listener.
      *      Otherwise return the changes included in this update (if this was an update.)
+     *
+     * @throws InterruptedException
+     *      interruption is usually caused by the user aborting the build.
+     *      this exception will cause the build to fail.
      */
-    boolean checkout(Build build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException;
+    boolean checkout(Build build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
 
     /**
      * Adds environmental variables for the builds to the given map.

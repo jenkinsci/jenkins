@@ -1,14 +1,13 @@
 package hudson.util;
 
+import hudson.Util;
+import hudson.model.Hudson;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
-import java.io.IOException;
 import java.io.File;
-
-import hudson.model.Hudson;
-import hudson.Util;
+import java.io.IOException;
 
 /**
  * @author Kohsuke Kawaguchi

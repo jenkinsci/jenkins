@@ -18,7 +18,19 @@
         <img src="${rootURL}/images/48x48/${it.icon}" width="48" height="48" />
         Slave ${it.displayName}
       </h1>
-      
+
+      <j:if test="${it.offline &amp;&amp; !it.temporarilyOffline}">
+        <p class="error">
+          This node is offline because Hudson failed to launch the slave agent on it.
+          <a href="log">See log for more details</a>
+        </p>
+        <l:isAdmin>
+          <form method="get" action="launchSlaveAgent">
+            <input type="submit" value="Launch slave agent"  />
+          </form>
+        </l:isAdmin>
+      </j:if>
+
       <h2>Projects tied on ${it.displayName}</h2>
       <j:set var="jobs" value="${it.tiedJobs}" />
       <j:choose>

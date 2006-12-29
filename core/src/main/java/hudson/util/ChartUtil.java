@@ -1,11 +1,11 @@
 package hudson.util;
 
+import org.jfree.chart.JFreeChart;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.jfree.chart.JFreeChart;
 
-import javax.servlet.ServletOutputStream;
 import javax.imageio.ImageIO;
+import javax.servlet.ServletOutputStream;
 import java.awt.Font;
 import java.awt.HeadlessException;
 import java.awt.image.BufferedImage;

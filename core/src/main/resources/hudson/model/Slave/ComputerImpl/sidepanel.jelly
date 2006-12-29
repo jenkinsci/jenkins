@@ -1,0 +1,14 @@
+<!--
+  Side panel for a slave.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:header title="${it.displayName}" />
+  <l:side-panel>
+    <l:tasks>
+      <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="Back to Dashboard" />
+      <l:task icon="images/24x24/search.gif" href="${rootURL}/computer/${it.displayName}/" title="Status" />
+      <l:task icon="images/24x24/clipboard.gif" href="log" title="Log" />
+      <l:task icon="images/24x24/computer.gif" href="systemInfo" title="System Information" />
+    </l:tasks>
+  </l:side-panel>
+</j:jelly>

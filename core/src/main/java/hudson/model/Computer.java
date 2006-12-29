@@ -1,7 +1,10 @@
 package hudson.model;
 
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.Callable;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.RunList;
+import hudson.EnvVars;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -9,6 +12,10 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Represents a set of {@link Executor}s on the same computer.
@@ -33,7 +40,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Computer implements ModelObject {
+public abstract class Computer implements ModelObject {
     private final List<Executor> executors = new ArrayList<Executor>();
 
     private int numExecutors;
@@ -47,18 +54,25 @@ public final class Computer implements ModelObject {
      * {@link Node} object may be created and deleted independently
      * from this object.
      */
-    private String nodeName;
-
-    /**
-     * Represents the communication endpoint to this computer.
-     * Never null.
-     */
-    private VirtualChannel channel;
+    protected String nodeName;
 
     public Computer(Node node) {
         assert node.getNumExecutors()!=0 : "Computer created with 0 executors";
         setNode(node);
     }
+
+    /**
+     * Gets the channel that can be used to run a program on this computer.
+     *
+     * @return
+     *      never null when {@link #isOffline()}==false.
+     */
+    public abstract VirtualChannel getChannel();
+
+    /**
+     * If {@link #getChannel()}==null, attempts to relaunch the slave agent.
+     */
+    public abstract void doLaunchSlaveAgent( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
     /**
      * Number of {@link Executor}s that are configured for this computer.
@@ -81,6 +95,23 @@ public final class Computer implements ModelObject {
         return Hudson.getInstance().getSlave(nodeName);
     }
 
+    public boolean isOffline() {
+        return temporarilyOffline || getChannel()==null;
+    }
+
+    /**
+     * Returns true if this node is marked temporarily offline by the user.
+     *
+     * <p>
+     * In contrast, {@link #isOffline()} represents the actual online/offline
+     * state. For example, this method may return false while {@link #isOffline()}
+     * returns true if the slave agent failed to launch.
+     *
+     * @deprecated
+     *      You should almost always want {@link #isOffline()}.
+     *      This method is marked as deprecated to warn people when they
+     *      accidentally call this method.
+     */
     public boolean isTemporarilyOffline() {
         return temporarilyOffline;
     }
@@ -91,14 +122,14 @@ public final class Computer implements ModelObject {
     }
 
     public String getIcon() {
-        if(temporarilyOffline)
+        if(isOffline())
             return "computer-x.gif";
         else
             return "computer.gif";
     }
 
     public String getDisplayName() {
-        return getNode().getNodeName();
+        return nodeName;
     }
 
     public String getUrl() {
@@ -121,7 +152,7 @@ public final class Computer implements ModelObject {
      * Called to notify {@link Computer} that its corresponding {@link Node}
      * configuration is updated.
      */
-    /*package*/ void setNode(Node node) {
+    protected void setNode(Node node) {
         assert node!=null;
         if(node instanceof Slave)
             this.nodeName = node.getNodeName();
@@ -134,7 +165,7 @@ public final class Computer implements ModelObject {
     /**
      * Called to notify {@link Computer} that it will be discarded.
      */
-    /*package*/ void kill() {
+    protected void kill() {
         setNumExecutors(0);
     }
 
@@ -187,6 +218,39 @@ public final class Computer implements ModelObject {
             e.interrupt();
         }
     }
+
+    /**
+     * Gets the system properties of the JVM on this computer.
+     * If this is the master, it returns the system property of the master computer.
+     */
+    public Map<Object,Object> getSystemProperties() throws IOException, InterruptedException {
+        return getChannel().call(new GetSystemProperties());
+    }
+
+    private static final class GetSystemProperties implements Callable<Map<Object,Object>,RuntimeException> {
+        public Map<Object,Object> call() {
+            return new TreeMap<Object,Object>(System.getProperties());
+        }
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * Gets the environment variables of the JVM on this computer.
+     * If this is the master, it returns the system property of the master computer.
+     */
+    public Map<String,String> getEnvVars() throws IOException, InterruptedException {
+        return getChannel().call(new GetEnvVars());
+    }
+
+    private static final class GetEnvVars implements Callable<Map<String,String>,RuntimeException> {
+        public Map<String,String> call() {
+            return new TreeMap<String,String>(EnvVars.masterEnvVars);
+        }
+        private static final long serialVersionUID = 1L;
+    }
+
+
+    protected static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new DaemonThreadFactory());
 
 //
 //

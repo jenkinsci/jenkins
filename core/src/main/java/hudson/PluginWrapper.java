@@ -1,28 +1,27 @@
 package hudson;
 
+import hudson.util.IOException2;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.taskdefs.Expand;
+import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
-
-import hudson.util.IOException2;
 
 /**
  * Represents a Hudson plug-in and associated control information
@@ -340,6 +339,9 @@ public final class PluginWrapper {
             return; // no need to expand
 
         LOGGER.info("Extracting "+archive);
+
+        // delete the contents so that old files won't interfere with new files
+        Util.deleteContentsRecursive(destDir);
 
         try {
             Expand e = new Expand();

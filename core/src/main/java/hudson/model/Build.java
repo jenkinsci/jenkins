@@ -1,38 +1,38 @@
 package hudson.model;
 
 import hudson.Launcher;
-import hudson.Proc;
 import hudson.Util;
-import static hudson.model.Hudson.isWindows;
-import hudson.model.Fingerprint.RangeSet;
+import hudson.Proc.LocalProc;
 import hudson.model.Fingerprint.BuildPtr;
+import hudson.model.Fingerprint.RangeSet;
+import static hudson.model.Hudson.isWindows;
 import hudson.scm.CVSChangeLogParser;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
-import hudson.scm.SCM;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.scm.SCM;
 import hudson.tasks.BuildStep;
-import hudson.tasks.Builder;
-import hudson.tasks.Publisher;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapper.Environment;
+import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
+import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.SCMTrigger;
-import org.xml.sax.SAXException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Calendar;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -312,7 +312,7 @@ public final class Build extends Run<Project,Build> implements Runnable {
              */
             private Launcher launcher;
 
-            public Result run(BuildListener listener) throws IOException {
+            public Result run(BuildListener listener) throws Exception {
                 Node node = Executor.currentExecutor().getOwner().getNode();
                 assert builtOn==null;
                 builtOn = node.getNodeName();
@@ -357,9 +357,9 @@ public final class Build extends Run<Project,Build> implements Runnable {
                 if(!isWindows()) {
                     try {
                         // ignore a failure.
-                        new Proc(new String[]{"rm","../lastSuccessful"},new String[0],listener.getLogger(),getProject().getBuildDir()).join();
+                        new LocalProc(new String[]{"rm","../lastSuccessful"},new String[0],listener.getLogger(),getProject().getBuildDir()).join();
 
-                        int r = new Proc(new String[]{
+                        int r = new LocalProc(new String[]{
                             "ln","-s","builds/"+getId()/*ugly*/,"../lastSuccessful"},
                             new String[0],listener.getLogger(),getProject().getBuildDir()).join();
                         if(r!=0)
@@ -377,11 +377,17 @@ public final class Build extends Run<Project,Build> implements Runnable {
 
             public void post(BuildListener listener) {
                 // run all of them even if one of them failed
-                for( Publisher bs : project.getPublishers().values() )
-                    bs.perform(Build.this, launcher, listener);
+                try {
+                    for( Publisher bs : project.getPublishers().values() )
+                        bs.perform(Build.this, launcher, listener);
+                } catch (InterruptedException e) {
+                    e.printStackTrace(listener.fatalError("aborted"));
+                } catch (IOException e) {
+                    e.printStackTrace(listener.fatalError("failed"));
+                }
             }
 
-            private boolean build(BuildListener listener, Map<?, Builder> steps) {
+            private boolean build(BuildListener listener, Map<?, Builder> steps) throws IOException, InterruptedException {
                 for( Builder bs : steps.values() )
                     if(!bs.perform(Build.this, launcher, listener))
                         return false;

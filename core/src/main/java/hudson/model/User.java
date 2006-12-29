@@ -1,9 +1,9 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
+import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
 import hudson.XmlFile;
-import hudson.CopyOnWrite;
 import hudson.model.Descriptor.FormException;
 import hudson.scm.ChangeLogSet;
 import hudson.util.RunList;

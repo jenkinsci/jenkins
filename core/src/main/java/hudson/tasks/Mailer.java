@@ -2,6 +2,7 @@ package hudson.tasks;
 
 import hudson.Launcher;
 import hudson.Util;
+import hudson.FilePath;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
@@ -71,7 +72,7 @@ public class Mailer extends Publisher {
     private transient String subject;
     private transient boolean failureOnly;
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) {
+    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
         try {
             MimeMessage mail = getMail(build, listener);
             if(mail!=null) {
@@ -94,7 +95,7 @@ public class Mailer extends Publisher {
         return true;
     }
 
-    private MimeMessage getMail(Build build, BuildListener listener) throws MessagingException {
+    private MimeMessage getMail(Build build, BuildListener listener) throws MessagingException, InterruptedException {
         if(build.getResult()==Result.FAILURE) {
             return createFailureMail(build, listener);
         }
@@ -151,7 +152,7 @@ public class Mailer extends Publisher {
         }
     }
 
-    private MimeMessage createFailureMail(Build build, BuildListener listener) throws MessagingException {
+    private MimeMessage createFailureMail(Build build, BuildListener listener) throws MessagingException, InterruptedException {
         MimeMessage msg = createEmptyMail(build, listener);
 
         msg.setSubject(getSubject(build, "Build failed in Hudson: "));
@@ -197,7 +198,7 @@ public class Mailer extends Publisher {
                 // URL which has already been corrected in a subsequent build. To fix, archive.
                 workspaceUrl = baseUrl + Util.encode(build.getProject().getUrl()) + "ws/";
                 artifactUrl = baseUrl + Util.encode(build.getUrl()) + "artifact/";
-                File workspaceDir = build.getProject().getWorkspace().getLocal();
+                FilePath ws = build.getProject().getWorkspace();
                 // Match either file or URL patterns, i.e. either
                 // c:\hudson\workdir\jobs\foo\workspace\src\Foo.java
                 // file:/c:/hudson/workdir/jobs/foo/workspace/src/Foo.java
@@ -208,7 +209,7 @@ public class Mailer extends Publisher {
                 // workspaceDir will not normally end with one;
                 // workspaceDir.toURI() will end with '/' if and only if workspaceDir.exists() at time of call
                 wsPattern = Pattern.compile("(" +
-                    quoteRegexp(workspaceDir.getPath()) + "|" + quoteRegexp(workspaceDir.toURI().toString()) + ")[/\\\\]?([^:#\\s]*)");
+                    quoteRegexp(ws.getRemote()) + "|" + quoteRegexp(ws.toURI().toString()) + ")[/\\\\]?([^:#\\s]*)");
             }
             for (int i = start; i < lines.length; i++) {
                 String line = lines[i];

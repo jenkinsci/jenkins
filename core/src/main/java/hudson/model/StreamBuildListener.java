@@ -1,29 +1,37 @@
 package hudson.model;
 
-import hudson.util.WriterOutputStream;
+import hudson.CloseProofOutputStream;
+import hudson.remoting.RemoteOutputStream;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.Serializable;
 
 /**
- * {@link BuildListener} that writes to a {@link Writer}.
+ * {@link BuildListener} that writes to an {@link OutputStream}.
+ *
+ * This class is remotable.
+ * 
  * @author Kohsuke Kawaguchi
  */
-public class StreamBuildListener implements BuildListener {
-    private final PrintWriter w;
+public class StreamBuildListener implements BuildListener, Serializable {
+    private PrintWriter w;
 
-    private final PrintStream ps;
+    private PrintStream ps;
 
-    public StreamBuildListener(Writer w) {
-        this(new PrintWriter(w));
+    public StreamBuildListener(OutputStream w) {
+        this(new PrintStream(w));
     }
 
-    public StreamBuildListener(PrintWriter w) {
-        this.w = w;
+    public StreamBuildListener(PrintStream w) {
+        this.ps = w;
         // unless we auto-flash, PrintStream will use BufferedOutputStream internally,
         // and break ordering
-        this.ps = new PrintStream(new WriterOutputStream(w),true);
+        this.w = new PrintWriter(w,true);
     }
 
     public void started() {
@@ -47,4 +55,16 @@ public class StreamBuildListener implements BuildListener {
     public void finished(Result result) {
         w.println("finished: "+result);
     }
+
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeObject(new RemoteOutputStream(new CloseProofOutputStream(ps)));
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        ps = new PrintStream((OutputStream)in.readObject(),true);
+        w = new PrintWriter(ps,true);
+    }
+
+    private static final long serialVersionUID = 1L;
 }
