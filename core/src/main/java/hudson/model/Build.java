@@ -382,8 +382,10 @@ public final class Build extends Run<Project,Build> implements Runnable {
                         bs.perform(Build.this, launcher, listener);
                 } catch (InterruptedException e) {
                     e.printStackTrace(listener.fatalError("aborted"));
+                    setResult(Result.FAILURE);
                 } catch (IOException e) {
                     e.printStackTrace(listener.fatalError("failed"));
+                    setResult(Result.FAILURE);
                 }
             }
 
