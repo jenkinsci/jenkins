@@ -529,10 +529,18 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * Returns the graph that shows how long each build took.
      */
     public void doBuildTimeGraph( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        if(req.checkIfModified(getLastBuild().getTimestamp(),rsp))
+            return;
         ChartUtil.generateGraph(req,rsp, createBuildTimeTrendChart(),500,400);
     }
 
+    /**
+     * Returns the clickable map for the build time graph.
+     * Loaded lazily by AJAX.
+     */
     public void doBuildTimeGraphMap( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        if(req.checkIfModified(getLastBuild().getTimestamp(),rsp))
+            return;
         ChartUtil.generateClickableMap(req,rsp, createBuildTimeTrendChart(),500,400);
     }
 
