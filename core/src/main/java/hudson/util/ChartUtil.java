@@ -1,6 +1,8 @@
 package hudson.util;
 
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.ChartRenderingInfo;
+import org.jfree.chart.ChartUtilities;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -52,6 +54,9 @@ public class ChartUtil {
      */
     public static boolean awtProblem = false;
 
+    /**
+     * Generates the graph in PNG format and sends that to the response.
+     */
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, int defaultW, int defaultH) throws IOException {
         try {
             String w = req.getParameter("width");
@@ -67,6 +72,22 @@ public class ChartUtil {
             // not available. send out error message
             rsp.sendRedirect2(req.getContextPath()+"/images/headless.png");
         }
+    }
+
+    /**
+     * Generates the clickable map info and sends that to the response.
+     */
+    public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, int defaultW, int defaultH) throws IOException {
+        String w = req.getParameter("width");
+        if(w==null)     w=String.valueOf(defaultW);
+        String h = req.getParameter("height");
+        if(h==null)     h=String.valueOf(defaultH);
+
+        ChartRenderingInfo info = new ChartRenderingInfo();
+        chart.createBufferedImage(Integer.parseInt(w),Integer.parseInt(h),info);
+
+        rsp.setContentType("text/html;charset=UTF-8");
+        rsp.getWriter().println(ChartUtilities.getImageMap( "map", info ));
     }
 
     static {
