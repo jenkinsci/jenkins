@@ -6,6 +6,7 @@ import hudson.model.Build;
 import hudson.model.Project;
 import hudson.model.Result;
 import hudson.util.ChartUtil;
+import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.ColorPalette;
 import hudson.util.DataSetBuilder;
 import hudson.util.ShiftedCategoryAxis;
@@ -108,39 +109,14 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         if(req.checkIfModified(owner.getTimestamp(),rsp))
             return;
 
-        class BuildLabel implements Comparable<BuildLabel> {
-            private final Build build;
-
-            public BuildLabel(Build build) {
-                this.build = build;
-            }
-
-            public int compareTo(BuildLabel that) {
-                return this.build.number-that.build.number;
-            }
-
-            public boolean equals(Object o) {
-                BuildLabel that = (BuildLabel) o;
-                return build==that.build;
-            }
-
-            public int hashCode() {
-                return build.hashCode();
-            }
-
-            public String toString() {
-                return build.getDisplayName();
-            }
-        }
-
         boolean failureOnly = Boolean.valueOf(req.getParameter("failureOnly"));
 
-        DataSetBuilder<String,BuildLabel> dsb = new DataSetBuilder<String,BuildLabel>();
+        DataSetBuilder<String,NumberOnlyBuildLabel> dsb = new DataSetBuilder<String,NumberOnlyBuildLabel>();
 
         for( AbstractTestResultAction<?> a=this; a!=null; a=a.getPreviousResult(AbstractTestResultAction.class) ) {
-            dsb.add( a.getFailCount(), "failed", new BuildLabel(a.owner));
+            dsb.add( a.getFailCount(), "failed", new NumberOnlyBuildLabel(a.owner));
             if(!failureOnly)
-                dsb.add( a.getTotalCount()-a.getFailCount(),"total", new BuildLabel(a.owner));
+                dsb.add( a.getTotalCount()-a.getFailCount(),"total", new NumberOnlyBuildLabel(a.owner));
         }
 
         ChartUtil.generateGraph(req,rsp,createChart(dsb.build()),500,200);

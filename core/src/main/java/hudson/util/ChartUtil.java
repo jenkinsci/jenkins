@@ -11,12 +11,41 @@ import java.awt.HeadlessException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+import hudson.model.Build;
+
 /**
  * See issue 93. Detect an error in X11 and handle it gracefully.
  *
  * @author Kohsuke Kawaguchi
  */
 public class ChartUtil {
+    /**
+     * Can be used as a graph label. Only displays numbers.
+     */
+    public static final class NumberOnlyBuildLabel implements Comparable<NumberOnlyBuildLabel> {
+        private final Build build;
+
+        public NumberOnlyBuildLabel(Build build) {
+            this.build = build;
+        }
+
+        public int compareTo(NumberOnlyBuildLabel that) {
+            return this.build.number-that.build.number;
+        }
+
+        public boolean equals(Object o) {
+            NumberOnlyBuildLabel that = (NumberOnlyBuildLabel) o;
+            return build==that.build;
+        }
+
+        public int hashCode() {
+            return build.hashCode();
+        }
+
+        public String toString() {
+            return build.getDisplayName();
+        }
+    }
 
     /**
      * See issue 93. Detect an error in X11 and handle it gracefully.

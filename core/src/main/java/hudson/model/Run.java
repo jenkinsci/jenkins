@@ -4,14 +4,13 @@ import com.thoughtworks.xstream.XStream;
 import hudson.CloseProofOutputStream;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
+import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
-import hudson.FilePath;
-import hudson.tasks.LogRotator;
 import hudson.tasks.BuildStep;
+import hudson.tasks.LogRotator;
 import hudson.tasks.test.AbstractTestResultAction;
-import hudson.util.CharSpool;
 import hudson.util.IOException2;
 import hudson.util.XStream2;
 import org.kohsuke.stapler.StaplerRequest;
@@ -47,7 +46,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
-        extends DirectoryHolder implements ExtensionPoint {
+        extends DirectoryHolder implements ExtensionPoint, Comparable<RunT> {
 
     protected transient final JobT project;
 
@@ -142,6 +141,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         this.state = State.COMPLETED;
         this.result = Result.FAILURE;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
         getDataFile().unmarshal(this); // load the rest of the data
+    }
+
+
+    /**
+     * Ordering based on build numbers.
+     */
+    public int compareTo(RunT that) {
+        return this.number - that.number;
     }
 
     /**
