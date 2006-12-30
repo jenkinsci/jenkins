@@ -1,3 +1,6 @@
+// id generator
+var iota = 0;
+
 // Form check code
 //========================================================
 var Form = {
@@ -130,6 +133,25 @@ var hudsonRules = {
 
       return false;
     }
+  },
+
+  // deferred client-side clickable map.
+  // this is useful where the generation of <map> element is time consuming
+  "IMG[lazymap]" : function(e) {
+      new Ajax.Request(
+          e.getAttribute("lazymap"),
+          {
+            method : 'get',
+            onComplete : function(x) {
+              var div = document.createElement("div");
+              document.body.appendChild(div);
+              div.innerHTML = x.responseText;
+              var id = "map"+(iota++);
+              div.firstChild.setAttribute("name",id);
+              e.setAttribute("usemap","#"+id);
+            }
+          }
+      );
   }
 };
 
