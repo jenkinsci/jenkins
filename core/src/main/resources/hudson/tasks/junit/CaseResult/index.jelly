@@ -13,7 +13,7 @@
         <div style="text-align:right;">
           Failing for the past
           ${h.addSuffix(it.age,'build','builds')}
-          (since #${it.failedSince})
+          (since <t:buildLink job="${it.owner.project}" number="${it.failedSince}"/>)
         </div>
       </j:if>
       <pre><st:out value="${it.errorStackTrace}"/></pre>
