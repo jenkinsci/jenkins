@@ -8,7 +8,6 @@ import hudson.model.BuildListener;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.StringConverter2;
 import hudson.util.XStream2;
-import org.apache.tools.ant.DirectoryScanner;
 import org.kohsuke.stapler.StaplerProxy;
 
 import java.io.File;
