@@ -6,19 +6,20 @@
 	<%@ attribute name="number" type="java.lang.Integer" required="true" %>
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<j:choose>
+  <j:set var="jobName_" value="${h.ifThenElse(jobName!=null,jobName+' ',null)}"/>
+  <j:choose>
 	  <j:when test="${job==null}">
-	    ${jobName} #<!-- -->${number}
+	    ${jobName_}#<!-- -->${number}
 	  </j:when>
 	  <j:otherwise>
 	    <j:set var="r" value="${job.getBuildByNumber(number)}" />
 	    <j:choose>
 	      <j:when test="${r==null}">
-	        ${jobName} #<!-- -->${number}
+	        ${jobName_}#<!-- -->${number}
 	      </j:when>
 	      <j:otherwise>
 	        <a href="${rootURL}/${r.url}">
-	          <img src="${rootURL}/images/16x16/${r.buildStatusUrl}" />${jobName} #<!-- -->${number}</a>
+	          <img src="${rootURL}/images/16x16/${r.buildStatusUrl}" />${jobName_}#<!-- -->${number}</a>
 	      </j:otherwise>
 	    </j:choose>
 	  </j:otherwise>
