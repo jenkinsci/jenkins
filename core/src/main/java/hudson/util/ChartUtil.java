@@ -89,7 +89,7 @@ public class ChartUtil {
         ChartRenderingInfo info = new ChartRenderingInfo();
         chart.createBufferedImage(Integer.parseInt(w),Integer.parseInt(h),info);
 
-        rsp.setContentType("text/html;charset=UTF-8");
+        rsp.setContentType("text/plain;charset=UTF-8");
         rsp.getWriter().println(ChartUtilities.getImageMap( "map", info ));
     }
 
