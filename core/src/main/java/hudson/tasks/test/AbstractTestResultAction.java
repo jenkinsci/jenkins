@@ -1,6 +1,7 @@
 package hudson.tasks.test;
 
 import hudson.Functions;
+import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.Project;
@@ -10,6 +11,7 @@ import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.ColorPalette;
 import hudson.util.DataSetBuilder;
 import hudson.util.ShiftedCategoryAxis;
+import hudson.util.StackedAreaRenderer2;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -17,8 +19,7 @@ import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.AreaRendererEndType;
-import org.jfree.chart.renderer.category.AreaRenderer;
+import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.StaplerRequest;
@@ -109,6 +110,19 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         if(req.checkIfModified(owner.getTimestamp(),rsp))
             return;
 
+        ChartUtil.generateGraph(req,rsp,createChart(buildDataSet(req)),500,200);
+    }
+
+    /**
+     * Generates a clickable map HTML for {@link #doGraph(StaplerRequest, StaplerResponse)}.
+     */
+    public void doGraphMap( StaplerRequest req, StaplerResponse rsp) throws IOException {
+        if(req.checkIfModified(owner.getTimestamp(),rsp))
+            return;
+        ChartUtil.generateClickableMap(req,rsp,createChart(buildDataSet(req)),500,200);
+    }
+
+    private CategoryDataset buildDataSet(StaplerRequest req) {
         boolean failureOnly = Boolean.valueOf(req.getParameter("failureOnly"));
 
         DataSetBuilder<String,NumberOnlyBuildLabel> dsb = new DataSetBuilder<String,NumberOnlyBuildLabel>();
@@ -118,8 +132,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
             if(!failureOnly)
                 dsb.add( a.getTotalCount()-a.getFailCount(),"total", new NumberOnlyBuildLabel(a.owner));
         }
-
-        ChartUtil.generateGraph(req,rsp,createChart(dsb.build()),500,200);
+        return dsb.build();
     }
 
     private JFreeChart createChart(CategoryDataset dataset) {
@@ -165,8 +178,24 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
-        AreaRenderer ar = (AreaRenderer) plot.getRenderer();
-        ar.setEndType(AreaRendererEndType.TRUNCATE);
+        StackedAreaRenderer ar = new StackedAreaRenderer2() {
+            @Override
+            public String generateURL(CategoryDataset dataset, int row, int column) {
+                NumberOnlyBuildLabel label = (NumberOnlyBuildLabel) dataset.getColumnKey(column);
+                return String.valueOf(label.build.getNumber()+"/testReport/");
+            }
+
+            @Override
+            public String generateToolTip(CategoryDataset dataset, int row, int column) {
+                NumberOnlyBuildLabel label = (NumberOnlyBuildLabel) dataset.getColumnKey(column);
+                AbstractTestResultAction a = label.build.getAction(AbstractTestResultAction.class);
+                if(row==0)
+                    return String.valueOf(Util.combine(a.getFailCount(),"failure"));
+                else
+                    return String.valueOf(Util.combine(a.getTotalCount(),"test"));
+            }
+        };
+        plot.setRenderer(ar);
         ar.setSeriesPaint(0,ColorPalette.RED);
         ar.setSeriesPaint(1,ColorPalette.BLUE);
 

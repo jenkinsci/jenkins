@@ -28,7 +28,7 @@ public class ChartUtil {
      * Can be used as a graph label. Only displays numbers.
      */
     public static final class NumberOnlyBuildLabel implements Comparable<NumberOnlyBuildLabel> {
-        private final Build build;
+        public final Build build;
 
         public NumberOnlyBuildLabel(Build build) {
             this.build = build;

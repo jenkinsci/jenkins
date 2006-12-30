@@ -708,21 +708,35 @@ public class Project extends Job<Project,Build> {
         }
     }
 
+    private AbstractTestResultAction getLastTestResultAction() {
+        Build b = getLastSuccessfulBuild();
+        if(b!=null) {
+            AbstractTestResultAction a = b.getTestResultAction();
+            if(a!=null) return a;
+        }
+        return null;
+    }
+
     /**
      * Display the test result trend.
      */
     public void doTestResultTrend( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        Build b = getLastSuccessfulBuild();
-        if(b!=null) {
-            AbstractTestResultAction a = b.getTestResultAction();
-            if(a!=null) {
-                a.doGraph(req,rsp);
-                return;
-            }
-        }
+        AbstractTestResultAction a = getLastTestResultAction();
+        if(a!=null)
+            a.doGraph(req,rsp);
+        else
+            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+    }
 
-        // error
-        rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+    /**
+     * Generates the clickable map HTML fragment for {@link #doTestResultTrend(StaplerRequest, StaplerResponse)}.
+     */
+    public void doTestResultTrendMap( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        AbstractTestResultAction a = getLastTestResultAction();
+        if(a!=null)
+            a.doGraphMap(req,rsp);
+        else
+            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
     }
 
     /**
