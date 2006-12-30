@@ -587,6 +587,10 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
             public String getURL() {
                 return String.valueOf(run.number);
             }
+
+            public String getTooltip() {
+                return run.getDisplayName()+" : "+run.getDurationString();
+            }
         }
 
         DataSetBuilder<String,Label> data = new DataSetBuilder<String, Label>();
@@ -758,7 +762,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         ar.setToolTipGenerator(new CategoryToolTipGenerator() {
             public String generateToolTip(CategoryDataset dataset, int row, int column) {
                 Label label = (Label) dataset.getColumnKey(column);
-                return label.toString();
+                return label.getTooltip();
             }
         });
         plot.setRenderer(ar);
