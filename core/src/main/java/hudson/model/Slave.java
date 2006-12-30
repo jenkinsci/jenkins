@@ -237,7 +237,8 @@ public final class Slave implements Node, Serializable {
                             proc.getInputStream(),proc.getOutputStream(), launchLog);
                         channel.addListener(new Listener() {
                             public void onClosed(Channel c,IOException cause) {
-                                cause.printStackTrace(listener.error("slave agent was terminated"));
+                                if(cause!=null)
+                                    cause.printStackTrace(listener.error("slave agent was terminated"));
                                 channel = null;
                             }
                         });
