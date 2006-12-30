@@ -16,8 +16,11 @@ import java.io.IOException;
 import hudson.model.Build;
 
 /**
- * See issue 93. Detect an error in X11 and handle it gracefully.
+ * Chart generation utility code around JFreeChart.
  *
+ * @see StackedAreaRenderer2
+ * @see DataSetBuilder
+ * @see ShiftedCategoryAxis
  * @author Kohsuke Kawaguchi
  */
 public class ChartUtil {
