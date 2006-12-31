@@ -16,17 +16,13 @@ import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.Publisher;
-import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.Trigger;
 import hudson.triggers.Triggers;
 import hudson.util.EditDistance;
-import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -708,75 +704,12 @@ public class Project extends Job<Project,Build> {
         }
     }
 
-    private AbstractTestResultAction getLastTestResultAction() {
-        Build b = getLastSuccessfulBuild();
-        if(b!=null) {
-            AbstractTestResultAction a = b.getTestResultAction();
-            if(a!=null) return a;
-        }
-        return null;
-    }
-
-    /**
-     * Display the test result trend.
-     */
-    public void doTestResultTrend( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        AbstractTestResultAction a = getLastTestResultAction();
-        if(a!=null)
-            a.doGraph(req,rsp);
-        else
-            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-    }
-
-    /**
-     * Generates the clickable map HTML fragment for {@link #doTestResultTrend(StaplerRequest, StaplerResponse)}.
-     */
-    public void doTestResultTrendMap( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        AbstractTestResultAction a = getLastTestResultAction();
-        if(a!=null)
-            a.doGraphMap(req,rsp);
-        else
-            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-    }
-
-    /**
-     * Changes the test result report display mode.
-     */
-    public void doFlipTestResultTrend( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        boolean failureOnly = false;
-
-        // check the current preference value
-        Cookie[] cookies = req.getCookies();
-        if(cookies!=null) {
-            for (Cookie cookie : cookies) {
-                if(cookie.getName().equals(FAILURE_ONLY_COOKIE))
-                    failureOnly = Boolean.parseBoolean(cookie.getValue());
-            }
-        }
-
-        // flip!
-        failureOnly = !failureOnly;
-
-        // set the updated value
-        Cookie cookie = new Cookie(FAILURE_ONLY_COOKIE,String.valueOf(failureOnly));
-        List anc = req.getAncestors();
-        Ancestor a = (Ancestor) anc.get(anc.size()-1); // last
-        cookie.setPath(a.getUrl()); // just for this chart
-        cookie.setMaxAge(Integer.MAX_VALUE);
-        rsp.addCookie(cookie);
-
-        // back to the project page
-        rsp.sendRedirect(".");
-    }
-
     /**
      * @deprecated
      *      left for legacy config file compatibility
      */
     @Deprecated
     private transient String slave;
-
-    private static final String FAILURE_ONLY_COOKIE = "TestResultAction_failureOnly";
 
     /**
      * Converts a list of projects into a camma-separated names.

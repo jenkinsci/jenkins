@@ -7,7 +7,9 @@ import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
+import hudson.model.Action;
 import hudson.tasks.Publisher;
+import hudson.tasks.test.TestResultProjectAction;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -86,6 +88,9 @@ public class JUnitResultArchiver extends Publisher implements Serializable {
         return testResults;
     }
 
+    public Action getProjectAction(hudson.model.Project project) {
+        return new TestResultProjectAction(project);
+    }
 
     public Descriptor<Publisher> getDescriptor() {
         return DescriptorImpl.DESCRIPTOR;

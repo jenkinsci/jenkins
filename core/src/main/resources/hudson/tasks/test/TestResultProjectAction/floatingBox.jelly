@@ -1,0 +1,32 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:local="local">
+  <j:set var="tr" value="${it.lastSuccessfulBuild.testResultAction}" />
+  <j:if test="${tr.previousResult!=null}">
+    <!-- at least two data points are required for a trend report -->
+    <div align="right">
+      <j:set var="mode" value="${h.getCookie(request,'TestResultAction_failureOnly').value}" />
+      <j:if test="${mode!=null}">
+        <j:set var="trendQueryString1" value="?failureOnly=${mode}" />
+        <j:set var="trendQueryString2" value="&amp;failureOnly=${mode}" />
+      </j:if>
+      <div class="test-trend-caption">
+        Test Result Trend
+      </div>
+      <div>
+        <img src="test/trend${trendQueryString1}" lazymap="test/trendMap${trendQueryString1}"/>
+      </div>
+      <div style="text-align:right">
+        <a href="test/flipTrend">
+          <j:choose>
+            <j:when test="${mode}">
+              (show test # and failure #)
+            </j:when>
+            <j:otherwise>
+              (just show failures)
+            </j:otherwise>
+          </j:choose>
+        </a> <st:nbsp/>
+        <a href="test/trend?width=800&amp;height=600${trendQueryString2}">enlarge</a>
+      </div>
+    </div>
+  </j:if>
+</j:jelly>
