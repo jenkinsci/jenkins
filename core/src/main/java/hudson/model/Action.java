@@ -1,5 +1,7 @@
 package hudson.model;
 
+import hudson.tasks.test.TestResultProjectAction;
+
 import java.io.Serializable;
 
 /**
@@ -10,7 +12,9 @@ import java.io.Serializable;
  * <p>
  * If an action has a view named <tt>floatBox.jelly</tt>,
  * it will be displayed as a floating box on the top page of
- * the target {@link ModelObject}.
+ * the target {@link ModelObject}. (For example, this is how
+ * the JUnit test result trend shows up in the project top page.
+ * See {@link TestResultProjectAction}.
  *
  * @author Kohsuke Kawaguchi
  */
