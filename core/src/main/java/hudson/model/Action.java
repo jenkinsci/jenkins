@@ -3,7 +3,8 @@ package hudson.model;
 import java.io.Serializable;
 
 /**
- * Contributes an item to the task list.
+ * Object that contributes an item to the left hand side menu
+ * (for example to {@link Project}, {@link Build}, and etc.)
  *
  * @author Kohsuke Kawaguchi
  */
