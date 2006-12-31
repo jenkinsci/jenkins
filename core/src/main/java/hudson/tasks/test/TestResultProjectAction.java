@@ -24,7 +24,10 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class TestResultProjectAction implements Action {
-    private final Project project;
+    /**
+     * Project that owns this action.
+     */
+    public final Project project;
 
     public TestResultProjectAction(Project project) {
         this.project = project;

@@ -25,7 +25,7 @@
             </j:otherwise>
           </j:choose>
         </a> <st:nbsp/>
-        <a href="test/trend?width=800&amp;height=600${trendQueryString2}">enlarge</a>
+        <a href="test/?width=800&amp;height=600${trendQueryString2}">enlarge</a>
       </div>
     </div>
   </j:if>

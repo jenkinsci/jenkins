@@ -1,0 +1,10 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:local="local">
+  <l:layout title="Test">
+    <st:include page="sidepanel.jelly" it="${it.project}" />
+    <l:main-panel>
+      <div>
+        <img src="trend?${request.queryString}" lazymap="trendMap?rel=../&amp;${request.queryString}"/>
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

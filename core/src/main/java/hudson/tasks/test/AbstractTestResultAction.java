@@ -110,7 +110,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         if(req.checkIfModified(owner.getTimestamp(),rsp))
             return;
 
-        ChartUtil.generateGraph(req,rsp,createChart(buildDataSet(req)),500,200);
+        ChartUtil.generateGraph(req,rsp,createChart(req,buildDataSet(req)),500,200);
     }
 
     /**
@@ -119,7 +119,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     public void doGraphMap( StaplerRequest req, StaplerResponse rsp) throws IOException {
         if(req.checkIfModified(owner.getTimestamp(),rsp))
             return;
-        ChartUtil.generateClickableMap(req,rsp,createChart(buildDataSet(req)),500,200);
+        ChartUtil.generateClickableMap(req,rsp,createChart(req,buildDataSet(req)),500,200);
     }
 
     private CategoryDataset buildDataSet(StaplerRequest req) {
@@ -135,7 +135,9 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         return dsb.build();
     }
 
-    private JFreeChart createChart(CategoryDataset dataset) {
+    private JFreeChart createChart(StaplerRequest req,CategoryDataset dataset) {
+
+        final String relPath = getRelPath(req);
 
         final JFreeChart chart = ChartFactory.createStackedAreaChart(
             null,                   // chart title
@@ -182,7 +184,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
             @Override
             public String generateURL(CategoryDataset dataset, int row, int column) {
                 NumberOnlyBuildLabel label = (NumberOnlyBuildLabel) dataset.getColumnKey(column);
-                return String.valueOf(label.build.getNumber()+"/testReport/");
+                return relPath+label.build.getNumber()+"/testReport/";
             }
 
             @Override
@@ -203,5 +205,11 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         plot.setInsets(new RectangleInsets(0,0,0,5.0));
 
         return chart;
+    }
+
+    private String getRelPath(StaplerRequest req) {
+        String relPath = req.getParameter("rel");
+        if(relPath==null)   return "";
+        return relPath;
     }
 }
