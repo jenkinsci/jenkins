@@ -7,11 +7,21 @@ import java.io.Serializable;
  * of a {@link ModelObject}
  * (for example to {@link Project}, {@link Build}, and etc.)
  *
+ * <p>
+ * If an action has a view named <tt>floatBox.jelly</tt>,
+ * it will be displayed as a floating box on the top page of
+ * the target {@link ModelObject}.
+ *
  * @author Kohsuke Kawaguchi
  */
 public interface Action extends Serializable, ModelObject {
     /**
-     * Gets the file name of the icon (relative to /images/24x24)
+     * Gets the file name of the icon (relative to /images/24x24).
+     *
+     * @return
+     *      null to hide it from the task list. This is normally not very useful,
+     *      but this can be used for actions that only contribute <tt>floatBox.jelly</tt>
+     *      and no task list item.
      */
     String getIconFileName();
 
