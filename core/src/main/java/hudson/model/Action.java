@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 /**
  * Object that contributes an item to the left hand side menu
+ * of a {@link ModelObject}
  * (for example to {@link Project}, {@link Build}, and etc.)
  *
  * @author Kohsuke Kawaguchi
