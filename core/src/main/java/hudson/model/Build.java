@@ -261,9 +261,7 @@ public final class Build extends AbstractBuild<Project,Build> {
 // actions
 //
 //
-    /**
-     * Performs a build.
-     */
+    @Override
     public void run() {
         run(new RunnerImpl());
     }

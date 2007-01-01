@@ -130,6 +130,15 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return Result.SUCCESS;
         }
 
+        /**
+         * The portion of a build that is specific to a subclass of {@link AbstractBuild}
+         * goes here.
+         *
+         * @return
+         *      null to continue the build normally (that means the doRun method
+         *      itself run successfully)
+         *      Return a non-null value to abort the build right there with the specified result code.
+         */
         protected abstract Result doRun(BuildListener listener) throws Exception;
     }
 
@@ -181,6 +190,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         return env;
     }
+
+    /**
+     * Invoked by {@link Executor} to performs a build.
+     */
+    public abstract void run();
 
     /**
      * Stops this build if it's still going.

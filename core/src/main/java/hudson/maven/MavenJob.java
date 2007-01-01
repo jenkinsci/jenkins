@@ -5,6 +5,9 @@ import hudson.model.Hudson;
 import hudson.model.JobDescriptor;
 import hudson.model.RunMap;
 import hudson.model.RunMap.Constructor;
+import hudson.model.TaskListener;
+import org.apache.maven.embedder.MavenEmbedder;
+import org.apache.maven.embedder.MavenEmbedderException;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +36,23 @@ public final class MavenJob extends AbstractProject<MavenJob,MavenBuild> {
         MavenBuild lastBuild = new MavenBuild(this);
         builds.put(lastBuild);
         return lastBuild;
+    }
+
+    /**
+     * Creates a fresh {@link MavenEmbedder} instance.
+     *
+     * @param listener
+     *      This is where the log messages from Maven will be recorded.
+     */
+    public MavenEmbedder createEmbedder(TaskListener listener) throws MavenEmbedderException {
+        MavenEmbedder maven = new MavenEmbedder();
+
+        maven.setClassLoader(Thread.currentThread().getContextClassLoader());
+        maven.setLogger( new EmbedderLoggerImpl(listener) );
+
+        maven.start();
+
+        return maven;
     }
 
     public JobDescriptor<MavenJob,MavenBuild> getDescriptor() {
