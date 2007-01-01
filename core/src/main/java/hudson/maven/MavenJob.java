@@ -48,4 +48,8 @@ public final class MavenJob extends AbstractProject<MavenJob,MavenBuild> {
             return new MavenJob(Hudson.getInstance(),name);
         }
     };
+
+    static {
+        XSTREAM.alias("maven2", MavenJob.class);
+    }
 }
