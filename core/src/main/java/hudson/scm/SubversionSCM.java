@@ -3,10 +3,10 @@ package hudson.scm;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
-import hudson.model.Project;
 import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormFieldValidator;
@@ -102,7 +102,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         return dirs;
     }
 
-    private boolean calcChangeLog(Build build, File changelogFile, Launcher launcher, BuildListener listener) throws IOException {
+    private boolean calcChangeLog(AbstractBuild<?,?> build, File changelogFile, Launcher launcher, BuildListener listener) throws IOException {
         if(build.getPreviousBuild()==null) {
             // nothing to compare against
             return createEmptyChangeLog(changelogFile, listener, "log");
@@ -157,7 +157,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         return true;
     }
 
-    /*package*/ static Map<String,Integer> parseRevisionFile(Build build) throws IOException {
+    /*package*/ static Map<String,Integer> parseRevisionFile(AbstractBuild build) throws IOException {
         Map<String,Integer> revisions = new HashMap<String,Integer>(); // module -> revision
         {// read the revision file of the last build
             File file = getRevisionFile(build);
@@ -183,7 +183,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         return revisions;
     }
 
-    public boolean checkout(Build build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
+    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
         boolean result;
 
         if(useUpdate && isUpdatable(workspace,launcher,listener)) {
@@ -254,7 +254,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
          * @param subject
          *      The target to run "svn info". Either local path or remote URL.
          */
-        public static SvnInfo parse(String subject, Map env, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException {
+        public static SvnInfo parse(String subject, Map<String,String> env, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException {
             String cmd = DESCRIPTOR.getSvnExe()+" info --xml "+subject;
             listener.getLogger().println("$ "+cmd);
 
@@ -304,7 +304,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
 
         Map<String/*module name*/,SvnInfo> revisions = new HashMap<String,SvnInfo>();
 
-        Map env = createEnvVarMap(false);
+        Map<String,String> env = createEnvVarMap(false);
 
         // invoke the "svn info"
         for( String module : getModuleDirNames() ) {
@@ -320,7 +320,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
     /**
      * Gets the file that stores the revision.
      */
-    private static File getRevisionFile(Build build) {
+    private static File getRevisionFile(AbstractBuild build) {
         return new File(build.getRootDir(),"revision.txt");
     }
 
@@ -366,11 +366,11 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
         return true;
     }
 
-    public boolean pollChanges(Project project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException {
+    public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException {
         // current workspace revision
         Map<String,SvnInfo> wsRev = buildRevisionMap(workspace,launcher,listener);
 
-        Map env = createEnvVarMap(false);
+        Map<String,String> env = createEnvVarMap(false);
 
         // check the corresponding remote revision
         for (SvnInfo localInfo : wsRev.values()) {

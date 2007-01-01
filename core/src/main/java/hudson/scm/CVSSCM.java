@@ -6,16 +6,17 @@ import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.ModelObject;
-import hudson.model.Project;
+import hudson.model.Result;
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
-import hudson.model.Result;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
@@ -155,7 +156,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         return flatten;
     }
 
-    public boolean pollChanges(Project project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException, InterruptedException {
+    public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException, InterruptedException {
         List<String> changedFiles = update(true, launcher, dir, listener, new Date());
 
         return changedFiles!=null && !changedFiles.isEmpty();
@@ -167,7 +168,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         cmd.add("-D", df.format(date));
     }
 
-    public boolean checkout(Build build, Launcher launcher, FilePath dir, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
+    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath dir, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
         List<String> changedFiles = null; // files that were affected by update. null this is a check out
 
         if(canUseUpdate && isUpdatable(dir)) {
@@ -230,7 +231,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
     /**
      * Returns the file name used to archive the build.
      */
-    private static File getArchiveFile(Build build) {
+    private static File getArchiveFile(AbstractBuild build) {
         return new File(build.getRootDir(),"workspace.zip");
     }
 
@@ -500,7 +501,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
 
 
     /**
-     * Used to communicate the result of the detection in {@link CVSSCM#calcChangeLog(Build, List, File, BuildListener)}
+     * Used to communicate the result of the detection in {@link CVSSCM#calcChangeLog(AbstractBuild, List, File, BuildListener)}
      */
     class ChangeLogResult implements Serializable {
         boolean hadError;
@@ -541,7 +542,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
      *      This is provided if the previous operation is update, otherwise null,
      *      which means we have to fall back to the default slow computation.
      */
-    private boolean calcChangeLog(Build build, final List<String> changedFiles, File changelogFile, final BuildListener listener) throws InterruptedException {
+    private boolean calcChangeLog(AbstractBuild build, final List<String> changedFiles, File changelogFile, final BuildListener listener) throws InterruptedException {
         if(build.getPreviousBuild()==null || (changedFiles!=null && changedFiles.isEmpty())) {
             // nothing to compare against, or no changes
             // (note that changedFiles==null means fallback, so we have to run cvs log.
@@ -890,7 +891,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
      * Action for a build that performs the tagging.
      */
     public final class TagAction implements Action {
-        private final Build build;
+        private final AbstractBuild build;
 
         /**
          * If non-null, that means the build is already tagged.
@@ -903,7 +904,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
          */
         private transient TagWorkerThread workerThread;
 
-        public TagAction(Build build) {
+        public TagAction(AbstractBuild build) {
             this.build = build;
         }
 
@@ -927,7 +928,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             return workerThread;
         }
 
-        public Build getBuild() {
+        public AbstractBuild getBuild() {
             return build;
         }
 

@@ -8,6 +8,8 @@ import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Project;
 import hudson.model.TaskListener;
+import hudson.model.AbstractProject;
+import hudson.model.AbstractBuild;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +48,7 @@ public interface SCM extends Describable<SCM>, ExtensionPoint {
      *      interruption is usually caused by the user aborting the computation.
      *      this exception should be simply propagated all the way up.
      */
-    boolean pollChanges(Project project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException;
+    boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException;
 
     /**
      * Obtains a fresh workspace of the module(s) into the specified directory
@@ -76,7 +78,7 @@ public interface SCM extends Describable<SCM>, ExtensionPoint {
      *      interruption is usually caused by the user aborting the build.
      *      this exception will cause the build to fail.
      */
-    boolean checkout(Build build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
+    boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
 
     /**
      * Adds environmental variables for the builds to the given map.
