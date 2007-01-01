@@ -20,22 +20,16 @@ public final class MavenJob extends AbstractProject<MavenJob,MavenBuild> {
         super(parent, name);
     }
 
-    protected void onLoad(Hudson root, String name) throws IOException {
-        super.onLoad(root, name);
-
-        this.builds = new RunMap<MavenBuild>();
-        this.builds.load(this,new Constructor<MavenBuild>() {
-            public MavenBuild create(File dir) throws IOException {
-                return new MavenBuild(MavenJob.this,dir);
-            }
-        });
-    }
-
     @Override
     public MavenBuild newBuild() throws IOException {
         MavenBuild lastBuild = new MavenBuild(this);
         builds.put(lastBuild);
         return lastBuild;
+    }
+
+    @Override
+    protected MavenBuild loadBuild(File dir) throws IOException {
+        return new MavenBuild(this,dir);
     }
 
     /**

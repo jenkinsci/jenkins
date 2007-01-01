@@ -7,6 +7,8 @@ import hudson.model.Build;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.model.TaskListener;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -95,7 +97,7 @@ public class SCMTrigger extends Trigger {
      * Start polling if it's scheduled.
      */
     public synchronized void startPolling() {
-        Build b = project.getLastBuild();
+        AbstractBuild b = project.getLastBuild();
 
         if(b!=null && b.isBuilding())
             return; // build in progress
@@ -207,7 +209,7 @@ public class SCMTrigger extends Trigger {
      * Action object for {@link Project}. Used to display the polling log.
      */
     public final class SCMAction implements Action {
-        public Project getOwner() {
+        public AbstractProject<?,?> getOwner() {
             return project;
         }
 

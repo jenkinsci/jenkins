@@ -2,6 +2,10 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.RunMap.Constructor;
+import hudson.model.Descriptor.FormException;
+import hudson.triggers.Trigger;
+import hudson.triggers.Triggers;
 import hudson.Launcher.LocalLauncher;
 import hudson.maven.MavenJob;
 import hudson.scm.NullSCM;
@@ -13,6 +17,9 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.SortedMap;
+import java.util.List;
+import java.util.Vector;
+import java.util.Map;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -75,6 +82,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     private String authToken = null;
 
+    /**
+     * List of all {@link Trigger}s for this project.
+     */
+    protected List<Trigger> triggers = new Vector<Trigger>();
+
     protected AbstractProject(Hudson parent, String name) {
         super(parent, name);
 
@@ -83,6 +95,24 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             // make it roamable by default
             canRoam = true;
         }
+    }
+
+    @Override
+    protected void onLoad(Hudson root, String name) throws IOException {
+        super.onLoad(root,name);
+
+        this.builds = new RunMap<R>();
+        this.builds.load(this,new Constructor<R>() {
+            public R create(File dir) throws IOException {
+                return loadBuild(dir);
+            }
+        });
+
+        if(triggers==null)
+            // it didn't exist in < 1.28
+            triggers = new Vector<Trigger>();
+        for (Trigger t : triggers)
+            t.start(this,false);
     }
 
     /**
@@ -182,6 +212,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected abstract R newBuild() throws IOException;
 
     /**
+     * Loads an existing build record from disk.
+     */
+    protected abstract R loadBuild(File dir) throws IOException;
+
+
+    /**
      * Gets the {@link Node} where this project was last built on.
      *
      * @return
@@ -253,6 +289,48 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         this.scm = scm;
     }
 
+    /**
+     * Adds a new {@link Trigger} to this {@link Project} if not active yet.
+     */
+    public void addTrigger(Trigger trigger) throws IOException {
+        addToList(trigger,triggers);
+    }
+
+    public void removeTrigger(Descriptor<Trigger> trigger) throws IOException {
+        removeFromList(trigger,triggers);
+    }
+
+    protected final synchronized <T extends Describable<T>>
+    void addToList( T item, List<T> collection ) throws IOException {
+        for( int i=0; i<collection.size(); i++ ) {
+            if(collection.get(i).getDescriptor()==item.getDescriptor()) {
+                // replace
+                collection.set(i,item);
+                save();
+                return;
+            }
+        }
+        // add
+        collection.add(item);
+        save();
+    }
+
+    protected final synchronized <T extends Describable<T>>
+    void removeFromList(Descriptor<T> item, List<T> collection) throws IOException {
+        for( int i=0; i< collection.size(); i++ ) {
+            if(collection.get(i).getDescriptor()==item) {
+                // found it
+                collection.remove(i);
+                save();
+                return;
+            }
+        }
+    }
+
+    public synchronized Map<Descriptor<Trigger>,Trigger> getTriggers() {
+        return Descriptor.toMap(triggers);
+    }
+
 //
 //
 // actions
@@ -321,6 +399,28 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             enableRemoteTrigger = true;
         } else {
             enableRemoteTrigger = false;
+        }
+
+        try {
+            for (Trigger t : triggers)
+                t.stop();
+            buildDescribable(req, Triggers.TRIGGERS, triggers, "trigger");
+            for (Trigger t : triggers)
+                t.start(this,true);
+        } catch (FormException e) {
+            throw new ServletException(e);
+        }
+    }
+
+    protected final <T extends Describable<T>> void buildDescribable(StaplerRequest req, List<Descriptor<T>> descriptors, List<T> result, String prefix)
+        throws FormException {
+
+        result.clear();
+        for( int i=0; i< descriptors.size(); i++ ) {
+            if(req.getParameter(prefix +i)!=null) {
+                T instance = descriptors.get(i).newInstance(req);
+                result.add(instance);
+            }
         }
     }
 

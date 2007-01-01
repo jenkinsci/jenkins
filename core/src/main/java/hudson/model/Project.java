@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.FilePath;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
-import hudson.model.RunMap.Constructor;
 import hudson.scm.SCMS;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
@@ -13,7 +12,6 @@ import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
-import hudson.triggers.Triggers;
 import hudson.util.EditDistance;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -40,11 +38,6 @@ import java.util.Vector;
  * @author Kohsuke Kawaguchi
  */
 public class Project extends AbstractProject<Project,Build> {
-
-    /**
-     * List of all {@link Trigger}s for this project.
-     */
-    private List<Trigger> triggers = new Vector<Trigger>();
 
     /**
      * List of active {@link Builder}s configured for this project.
@@ -80,22 +73,9 @@ public class Project extends AbstractProject<Project,Build> {
     protected void onLoad(Hudson root, String name) throws IOException {
         super.onLoad(root, name);
 
-        if(triggers==null)
-            // it didn't exist in < 1.28
-            triggers = new Vector<Trigger>();
         if(buildWrappers==null)
             // it didn't exist in < 1.64
             buildWrappers = new Vector<BuildWrapper>();
-
-        this.builds = new RunMap<Build>();
-        this.builds.load(this,new Constructor<Build>() {
-            public Build create(File dir) throws IOException {
-                return new Build(Project.this,dir);
-            }
-        });
-
-        for (Trigger t : triggers)
-            t.start(this,false);
 
         updateTransientActions();
     }
@@ -109,10 +89,6 @@ public class Project extends AbstractProject<Project,Build> {
             return super.getIconColor();
     }
 
-    public synchronized Map<Descriptor<Trigger>,Trigger> getTriggers() {
-        return Descriptor.toMap(triggers);
-    }
-
     public synchronized Map<Descriptor<Builder>,Builder> getBuilders() {
         return Descriptor.toMap(builders);
     }
@@ -123,44 +99,6 @@ public class Project extends AbstractProject<Project,Build> {
 
     public synchronized Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
         return Descriptor.toMap(buildWrappers);
-    }
-
-    private synchronized <T extends Describable<T>>
-    void addToList( T item, List<T> collection ) throws IOException {
-        for( int i=0; i<collection.size(); i++ ) {
-            if(collection.get(i).getDescriptor()==item.getDescriptor()) {
-                // replace
-                collection.set(i,item);
-                save();
-                return;
-            }
-        }
-        // add
-        collection.add(item);
-        save();
-    }
-
-    private synchronized <T extends Describable<T>>
-    void removeFromList(Descriptor<T> item, List<T> collection) throws IOException {
-        for( int i=0; i< collection.size(); i++ ) {
-            if(collection.get(i).getDescriptor()==item) {
-                // found it
-                collection.remove(i);
-                save();
-                return;
-            }
-        }
-    }
-
-    /**
-     * Adds a new {@link Trigger} to this {@link Project} if not active yet.
-     */
-    public void addTrigger(Trigger trigger) throws IOException {
-        addToList(trigger,triggers);
-    }
-
-    public void removeTrigger(Descriptor<Trigger> trigger) throws IOException {
-        removeFromList(trigger,triggers);
     }
 
     /**
@@ -182,6 +120,11 @@ public class Project extends AbstractProject<Project,Build> {
         Build lastBuild = new Build(this);
         builds.put(lastBuild);
         return lastBuild;
+    }
+
+    @Override
+    protected Build loadBuild(File dir) throws IOException {
+        return new Build(this,dir);
     }
 
     /**
@@ -297,15 +240,9 @@ public class Project extends AbstractProject<Project,Build> {
                 buildDescribable(req, BuildStep.BUILDERS, builders, "builder");
                 buildDescribable(req, BuildStep.PUBLISHERS, publishers, "publisher");
 
-                for (Trigger t : triggers)
-                    t.stop();
-                buildDescribable(req, Triggers.TRIGGERS, triggers, "trigger");
-                for (Trigger t : triggers)
-                    t.start(this,true);
+                super.doConfigSubmit(req,rsp);
 
                 updateTransientActions();
-
-                super.doConfigSubmit(req,rsp);
             } catch (FormException e) {
                 sendError(e,req,rsp);
             }
@@ -376,18 +313,6 @@ public class Project extends AbstractProject<Project,Build> {
                 pa.add((ProminentProjectAction) action);
         }
         return pa;
-    }
-
-    private <T extends Describable<T>> void buildDescribable(StaplerRequest req, List<Descriptor<T>> descriptors, List<T> result, String prefix)
-        throws FormException {
-
-        result.clear();
-        for( int i=0; i< descriptors.size(); i++ ) {
-            if(req.getParameter(prefix +i)!=null) {
-                T instance = descriptors.get(i).newInstance(req);
-                result.add(instance);
-            }
-        }
     }
 
     /**

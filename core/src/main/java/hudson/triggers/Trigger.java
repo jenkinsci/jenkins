@@ -9,7 +9,9 @@ import hudson.model.FingerprintCleanupThread;
 import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.model.WorkspaceCleanupThread;
+import hudson.model.AbstractProject;
 import hudson.scheduler.CronTabList;
+import hudson.scheduler.CronTab;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
@@ -41,15 +43,7 @@ public abstract class Trigger implements Describable<Trigger>, ExtensionPoint {
      *      True if this is a newly created trigger first attached to the {@link Project}.
      *      False if this is invoked for a {@link Project} loaded from disk.
      */
-    public void start(Project project, boolean newInstance) {
-        start(project); // compatibility
-    }
-
-    /**
-     * @deprecated as of 1.61.
-     *      Use {@link #start(Project, boolean)}.
-     */
-    public void start(Project project) {
+    public void start(AbstractProject<?,?> project, boolean newInstance) {
         this.project = project;
     }
 
@@ -84,7 +78,7 @@ public abstract class Trigger implements Describable<Trigger>, ExtensionPoint {
 
     protected final String spec;
     protected transient CronTabList tabs;
-    protected transient Project project;
+    protected transient AbstractProject<?,?> project;
 
     /**
      * Creates a new {@link Trigger} that gets {@link #run() run}
@@ -101,7 +95,7 @@ public abstract class Trigger implements Describable<Trigger>, ExtensionPoint {
      */
     protected Trigger() {
         this.spec = "";
-        this.tabs = new CronTabList(Collections.EMPTY_LIST);
+        this.tabs = new CronTabList(Collections.<CronTab>emptyList());
     }
 
     /**
