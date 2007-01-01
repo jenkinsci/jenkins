@@ -1,17 +1,17 @@
 package hudson.model;
 
-import hudson.maven.MavenJob;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
-import hudson.scm.SCM;
+import hudson.maven.MavenJob;
 import hudson.scm.NullSCM;
+import hudson.scm.SCM;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.util.SortedMap;
 
 /**
@@ -197,7 +197,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return b.getBuiltOn();
     }
 
-    public boolean checkout(Build build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {
+    public boolean checkout(AbstractBuild build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {
         if(scm==null)
             return true;    // no SCM
 

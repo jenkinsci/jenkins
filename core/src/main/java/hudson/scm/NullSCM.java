@@ -2,13 +2,11 @@ package hudson.scm;
 
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.Build;
-import hudson.model.BuildListener;
-import hudson.model.Descriptor;
-import hudson.model.Project;
-import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Descriptor;
+import hudson.model.TaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;

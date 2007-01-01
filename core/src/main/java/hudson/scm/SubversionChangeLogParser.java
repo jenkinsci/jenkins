@@ -1,6 +1,6 @@
 package hudson.scm;
 
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
 import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.util.IOException2;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
  * @author Kohsuke Kawaguchi
  */
 public class SubversionChangeLogParser extends ChangeLogParser {
-    public SubversionChangeLogSet parse(Build build, File changelogFile) throws IOException, SAXException {
+    public SubversionChangeLogSet parse(AbstractBuild build, File changelogFile) throws IOException, SAXException {
         // http://svn.collab.net/repos/svn/trunk/subversion/svn/schema/
 
         Digester digester = new Digester();

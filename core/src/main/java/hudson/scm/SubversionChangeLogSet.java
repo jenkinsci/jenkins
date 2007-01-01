@@ -1,6 +1,6 @@
 package hudson.scm;
 
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
 
@@ -18,14 +18,14 @@ import java.util.Map;
  */
 public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
     private final List<LogEntry> logs;
-    private final Build build;
+    private final AbstractBuild build;
 
     /**
      * @GuardedBy this
      */
     private Map<String,Integer> revisionMap;
 
-    /*package*/ SubversionChangeLogSet(Build build, List<LogEntry> logs) {
+    /*package*/ SubversionChangeLogSet(AbstractBuild build, List<LogEntry> logs) {
         this.build = build;
         this.logs = Collections.unmodifiableList(logs);
     }

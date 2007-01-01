@@ -5,16 +5,21 @@ import hudson.Proc.LocalProc;
 import hudson.Util;
 import hudson.maven.MavenBuild;
 import static hudson.model.Hudson.isWindows;
+import hudson.scm.CVSChangeLogParser;
+import hudson.scm.ChangeLogParser;
+import hudson.scm.ChangeLogSet;
+import hudson.scm.ChangeLogSet.Entry;
+import hudson.scm.SCM;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.xml.sax.SAXException;
 
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Calendar;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
+import java.util.Map;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -31,6 +36,17 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * Null if built by the master.
      */
     private String builtOn;
+
+    /**
+     * SCM used for this build.
+     * Maybe null, for historical reason, in which case CVS is assumed.
+     */
+    private ChangeLogParser scm;
+
+    /**
+     * Changes in this build.
+     */
+    private volatile transient ChangeLogSet<? extends Entry> changeSet;
 
     protected AbstractBuild(P job) throws IOException {
         super(job);
@@ -81,6 +97,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if(node instanceof Slave)
                 listener.getLogger().println("Building remotely on "+node.getNodeName());
 
+            if(!project.checkout(AbstractBuild.this,launcher,listener,new File(getRootDir(),"changelog.xml")))
+                return Result.FAILURE;
+
+            SCM scm = project.getScm();
+
+            AbstractBuild.this.scm = scm.createChangeLogParser();
+            AbstractBuild.this.changeSet = AbstractBuild.this.calcChangeSet();
+
             Result result = doRun(listener);
             if(result!=null)
                 return result;  // abort here
@@ -109,6 +133,54 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected abstract Result doRun(BuildListener listener) throws Exception;
     }
 
+    /**
+     * Gets the changes incorporated into this build.
+     *
+     * @return never null.
+     */
+    public ChangeLogSet<? extends Entry> getChangeSet() {
+        if(scm==null)
+            scm = new CVSChangeLogParser();
+
+        if(changeSet==null) // cached value
+            changeSet = calcChangeSet();
+        return changeSet;
+    }
+
+    /**
+     * Returns true if the changelog is already computed.
+     */
+    public boolean hasChangeSetComputed() {
+        File changelogFile = new File(getRootDir(), "changelog.xml");
+        return changelogFile.exists();
+    }
+
+    private ChangeLogSet<? extends Entry> calcChangeSet() {
+        File changelogFile = new File(getRootDir(), "changelog.xml");
+        if(!changelogFile.exists())
+            return ChangeLogSet.EMPTY;
+
+        try {
+            return scm.parse(this,changelogFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        }
+        return ChangeLogSet.EMPTY;
+    }
+
+    @Override
+    public Map<String,String> getEnvVars() {
+        Map<String,String> env = super.getEnvVars();
+
+        JDK jdk = project.getJDK();
+        if(jdk !=null)
+            jdk.buildEnvVars(env);
+        project.getScm().buildEnvVars(env);
+
+        return env;
+    }
 
     /**
      * Stops this build if it's still going.

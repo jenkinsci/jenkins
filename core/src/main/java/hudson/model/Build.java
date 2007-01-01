@@ -2,11 +2,6 @@ package hudson.model;
 
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
-import hudson.scm.CVSChangeLogParser;
-import hudson.scm.ChangeLogParser;
-import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
-import hudson.scm.SCM;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapper.Environment;
@@ -15,7 +10,6 @@ import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.SCMTrigger;
-import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,20 +21,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * A build of a {@link Project}.
+ *
  * @author Kohsuke Kawaguchi
  */
 public final class Build extends AbstractBuild<Project,Build> {
-
-    /**
-     * SCM used for this build.
-     * Maybe null, for historical reason, in which case CVS is assumed.
-     */
-    private ChangeLogParser scm;
-
-    /**
-     * Changes in this build.
-     */
-    private volatile transient ChangeLogSet<? extends Entry> changeSet;
 
     /**
      * Creates a new build.
@@ -72,43 +57,6 @@ public final class Build extends AbstractBuild<Project,Build> {
         }
 
         return super.getWhyKeepLog();
-    }
-
-    /**
-     * Gets the changes incorporated into this build.
-     *
-     * @return never null.
-     */
-    public ChangeLogSet<? extends Entry> getChangeSet() {
-        if(scm==null)
-            scm = new CVSChangeLogParser();
-
-        if(changeSet==null) // cached value
-            changeSet = calcChangeSet();
-        return changeSet;
-    }
-
-    /**
-     * Returns true if the changelog is already computed.
-     */
-    public boolean hasChangeSetComputed() {
-        File changelogFile = new File(getRootDir(), "changelog.xml");
-        return changelogFile.exists();
-    }
-
-    private ChangeLogSet<? extends Entry> calcChangeSet() {
-        File changelogFile = new File(getRootDir(), "changelog.xml");
-        if(!changelogFile.exists())
-            return ChangeLogSet.EMPTY;
-
-        try {
-            return scm.parse(this,changelogFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        }
-        return ChangeLogSet.EMPTY;
     }
 
     public Calendar due() {
@@ -300,11 +248,6 @@ public final class Build extends AbstractBuild<Project,Build> {
     public Map<String,String> getEnvVars() {
         Map<String,String> env = super.getEnvVars();
 
-        JDK jdk = project.getJDK();
-        if(jdk !=null)
-            jdk.buildEnvVars(env);
-        project.getScm().buildEnvVars(env);
-
         if(buildEnvironments!=null) {
             for (Environment e : buildEnvironments)
                 e.buildEnvVars(env);
@@ -327,14 +270,6 @@ public final class Build extends AbstractBuild<Project,Build> {
     
     private class RunnerImpl extends AbstractRunner {
         protected Result doRun(BuildListener listener) throws Exception {
-            if(!project.checkout(Build.this,launcher,listener,new File(getRootDir(),"changelog.xml")))
-                return Result.FAILURE;
-
-            SCM scm = project.getScm();
-
-            Build.this.scm = scm.createChangeLogParser();
-            Build.this.changeSet = Build.this.calcChangeSet();
-
             if(!preBuild(listener,project.getBuilders()))
                 return Result.FAILURE;
             if(!preBuild(listener,project.getPublishers()))

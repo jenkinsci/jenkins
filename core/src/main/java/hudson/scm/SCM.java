@@ -3,13 +3,11 @@ package hudson.scm;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
-import hudson.model.Project;
 import hudson.model.TaskListener;
-import hudson.model.AbstractProject;
-import hudson.model.AbstractBuild;
 
 import java.io.File;
 import java.io.IOException;
