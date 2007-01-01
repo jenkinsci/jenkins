@@ -1,38 +1,36 @@
 package hudson.model;
 
+import hudson.CloseProofOutputStream;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Launcher.LocalLauncher;
 import hudson.Proc;
 import hudson.Proc.RemoteProc;
 import hudson.Util;
-import hudson.CloseProofOutputStream;
-import hudson.Launcher.LocalLauncher;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
+import hudson.remoting.Channel.Listener;
 import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
-import hudson.remoting.Channel.Listener;
+import hudson.util.NullStream;
 import hudson.util.StreamCopyThread;
 import hudson.util.StreamTaskListener;
-import hudson.util.NullStream;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Information about a Hudson slave node.

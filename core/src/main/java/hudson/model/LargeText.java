@@ -1,8 +1,10 @@
 package hudson.model;
 
+import hudson.util.CharSpool;
 import hudson.util.CountingOutputStream;
 import hudson.util.WriterOutputStream;
-import hudson.util.CharSpool;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -10,9 +12,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Writer;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Represents a large text data.

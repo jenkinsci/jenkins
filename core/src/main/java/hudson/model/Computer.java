@@ -1,10 +1,10 @@
 package hudson.model;
 
-import hudson.remoting.VirtualChannel;
+import hudson.EnvVars;
 import hudson.remoting.Callable;
+import hudson.remoting.VirtualChannel;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.RunList;
-import hudson.EnvVars;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 

@@ -57,13 +57,13 @@ public class Queue {
      * {@link Project}s that can be built immediately
      * but blocked because another build is in progress.
      */
-    private final Set<Project> blockedProjects = new HashSet<Project>();
+    private final Set<AbstractProject> blockedProjects = new HashSet<AbstractProject>();
 
     /**
      * {@link Project}s that can be built immediately
      * that are waiting for available {@link Executor}.
      */
-    private final List<Project> buildables = new LinkedList<Project>();
+    private final List<AbstractProject> buildables = new LinkedList<AbstractProject>();
 
     /**
      * Data structure created for each idle {@link Executor}.
@@ -84,13 +84,13 @@ public class Queue {
          * The project that this {@link Executor} is going to build.
          * (Or null, in which case event is used to trigger a queue maintenance.)
          */
-        Project project;
+        AbstractProject project;
 
         public JobOffer(Executor executor) {
             this.executor = executor;
         }
 
-        public void set(Project p) {
+        public void set(AbstractProject p) {
             this.project = p;
             event.signal();
         }
@@ -158,7 +158,7 @@ public class Queue {
     /**
      * Schedule a new build for this project.
      */
-    public synchronized void add( Project p ) {
+    public synchronized void add( AbstractProject p ) {
         if(contains(p))
             return; // no double queueing
 
@@ -170,7 +170,7 @@ public class Queue {
         scheduleMaintenance();   // let an executor know that a new item is in the queue.
     }
 
-    public synchronized void cancel( Project p ) {
+    public synchronized void cancel( AbstractProject<?,?> p ) {
         for (Iterator itr = queue.iterator(); itr.hasNext();) {
             Item item = (Item) itr.next();
             if(item.project==p) {
@@ -198,10 +198,10 @@ public class Queue {
         queue.toArray(r);
         int idx=queue.size();
         Calendar now = new GregorianCalendar();
-        for (Project p : blockedProjects) {
+        for (AbstractProject p : blockedProjects) {
             r[idx++] = new Item(now, p);
         }
-        for (Project p : buildables) {
+        for (AbstractProject p : buildables) {
             r[idx++] = new Item(now, p);
         }
         return r;
@@ -210,7 +210,7 @@ public class Queue {
     /**
      * Returns true if this queue contains the said project.
      */
-    public synchronized boolean contains(Project p) {
+    public synchronized boolean contains(AbstractProject p) {
         // if this project is already scheduled,
         // don't do anything
         if(blockedProjects.contains(p) || buildables.contains(p))
@@ -227,7 +227,7 @@ public class Queue {
      *
      * This method blocks until a next project becomes buildable.
      */
-    public Project pop() throws InterruptedException {
+    public AbstractProject pop() throws InterruptedException {
         final Executor exec = Executor.currentExecutor();
         boolean successfulReturn = false;
 
@@ -247,9 +247,9 @@ public class Queue {
                     maintain();
 
                     // allocate buildable jobs to executors
-                    Iterator<Project> itr = buildables.iterator();
+                    Iterator<AbstractProject> itr = buildables.iterator();
                     while(itr.hasNext()) {
-                        Project p = itr.next();
+                        AbstractProject p = itr.next();
                         JobOffer runner = choose(p);
                         if(runner==null)
                             // if we couldn't find the executor that fits,
@@ -321,7 +321,7 @@ public class Queue {
      * @return
      *      null if no {@link Executor} can run it.
      */
-    private JobOffer choose(Project p) {
+    private JobOffer choose(AbstractProject<?,?> p) {
         if(Hudson.getInstance().isQuietingDown()) {
             // if we are quieting down, don't run anything so that
             // all executors will be free.
@@ -352,7 +352,7 @@ public class Queue {
         // duration of a build on a slave tends not to have an impact on
         // the master/slave communication, so that means we should favor
         // running long jobs on slaves.
-        Build succ = p.getLastSuccessfulBuild();
+        AbstractBuild succ = p.getLastSuccessfulBuild();
         if(succ!=null && succ.getDuration()>15*60*1000) {
             // consider a long job to be > 15 mins
             for (JobOffer offer : parked.values()) {
@@ -399,10 +399,10 @@ public class Queue {
      * appropriately.
      */
     private synchronized void maintain() {
-        Iterator<Project> itr = blockedProjects.iterator();
+        Iterator<AbstractProject> itr = blockedProjects.iterator();
         while(itr.hasNext()) {
-            Project p = itr.next();
-            Build lastBuild = p.getLastBuild();
+            AbstractProject<?,?> p = itr.next();
+            AbstractBuild lastBuild = p.getLastBuild();
             if (lastBuild == null || !lastBuild.isBuilding()) {
                 // ready to be executed
                 itr.remove();
@@ -416,7 +416,7 @@ public class Queue {
             if(!top.timestamp.before(new GregorianCalendar()))
                 return; // finished moving all ready items from queue
 
-            Build lastBuild = top.project.getLastBuild();
+            AbstractBuild lastBuild = top.project.getLastBuild();
             if(lastBuild==null || !lastBuild.isBuilding()) {
                 // ready to be executed immediately
                 queue.remove(top);
@@ -442,7 +442,7 @@ public class Queue {
         /**
          * Project to be built.
          */
-        final Project project;
+        final AbstractProject<?,?> project;
 
         /**
          * Unique number of this {@link Item}.
@@ -450,7 +450,7 @@ public class Queue {
          */
         final int id;
 
-        public Item(Calendar timestamp, Project project) {
+        public Item(Calendar timestamp, AbstractProject project) {
             this.timestamp = timestamp;
             this.project = project;
             synchronized(Queue.this) {
@@ -462,7 +462,7 @@ public class Queue {
             return timestamp;
         }
 
-        public Project getProject() {
+        public AbstractProject getProject() {
             return project;
         }
 

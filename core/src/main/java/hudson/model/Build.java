@@ -1,11 +1,7 @@
 package hudson.model;
 
-import hudson.Launcher;
-import hudson.Util;
-import hudson.Proc.LocalProc;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
-import static hudson.model.Hudson.isWindows;
 import hudson.scm.CVSChangeLogParser;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
@@ -26,7 +22,6 @@ import org.xml.sax.SAXException;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -37,13 +32,7 @@ import java.util.Map;
 /**
  * @author Kohsuke Kawaguchi
  */
-public final class Build extends Run<Project,Build> implements Runnable {
-
-    /**
-     * Name of the slave this project was built on.
-     * Null if built by the master.
-     */
-    private String builtOn;
+public final class Build extends AbstractBuild<Project,Build> {
 
     /**
      * SCM used for this build.
@@ -61,10 +50,6 @@ public final class Build extends Run<Project,Build> implements Runnable {
      */
     Build(Project project) throws IOException {
         super(project);
-    }
-
-    public Project getProject() {
-        return getParent();
     }
 
     /**
@@ -131,23 +116,6 @@ public final class Build extends Run<Project,Build> implements Runnable {
 
     public Calendar due() {
         return timestamp;
-    }
-
-    /**
-     * Returns a {@link Slave} on which this build was done.
-     */
-    public Node getBuiltOn() {
-        if(builtOn==null)
-            return Hudson.getInstance();
-        else
-            return Hudson.getInstance().getSlave(builtOn);
-    }
-
-    /**
-     * Returns the name of the slave it was built on, or null if it was the master.
-     */
-    public String getBuiltOnStr() {
-        return builtOn;
     }
 
     /**
@@ -300,111 +268,6 @@ public final class Build extends Run<Project,Build> implements Runnable {
      */
     private transient List<Environment> buildEnvironments;
 
-    /**
-     * Performs a build.
-     */
-    public void run() {
-        run(new Runner() {
-
-            /**
-             * Since configuration can be changed while a build is in progress,
-             * stick to one launcher and use it.
-             */
-            private Launcher launcher;
-
-            public Result run(BuildListener listener) throws Exception {
-                Node node = Executor.currentExecutor().getOwner().getNode();
-                assert builtOn==null;
-                builtOn = node.getNodeName();
-
-                launcher = node.createLauncher(listener);
-                if(node instanceof Slave)
-                    listener.getLogger().println("Building remotely on "+node.getNodeName());
-
-
-                if(!project.checkout(Build.this,launcher,listener,new File(getRootDir(),"changelog.xml")))
-                    return Result.FAILURE;
-
-                SCM scm = project.getScm();
-
-                Build.this.scm = scm.createChangeLogParser();
-                Build.this.changeSet = Build.this.calcChangeSet();
-
-                if(!preBuild(listener,project.getBuilders()))
-                    return Result.FAILURE;
-                if(!preBuild(listener,project.getPublishers()))
-                    return Result.FAILURE;
-
-                buildEnvironments = new ArrayList<Environment>();
-                try {
-                    for( BuildWrapper w : project.getBuildWrappers().values() ) {
-                        Environment e = w.setUp(Build.this, launcher, listener);
-                        if(e==null)
-                            return Result.FAILURE;
-                        buildEnvironments.add(e);
-                    }
-
-
-                    if(!build(listener,project.getBuilders()))
-                        return Result.FAILURE;
-                } finally {
-                    // tear down in reverse order
-                    for( int i=buildEnvironments.size()-1; i>=0; i-- )
-                        buildEnvironments.get(i).tearDown(Build.this,listener);
-                    buildEnvironments = null;
-                }
-
-                if(!isWindows()) {
-                    try {
-                        // ignore a failure.
-                        new LocalProc(new String[]{"rm","../lastSuccessful"},new String[0],listener.getLogger(),getProject().getBuildDir()).join();
-
-                        int r = new LocalProc(new String[]{
-                            "ln","-s","builds/"+getId()/*ugly*/,"../lastSuccessful"},
-                            new String[0],listener.getLogger(),getProject().getBuildDir()).join();
-                        if(r!=0)
-                            listener.getLogger().println("ln failed: "+r);
-                    } catch (IOException e) {
-                        PrintStream log = listener.getLogger();
-                        log.println("ln failed");
-                        Util.displayIOException(e,listener);
-                        e.printStackTrace( log );
-                    }
-                }
-
-                return Result.SUCCESS;
-            }
-
-            public void post(BuildListener listener) {
-                // run all of them even if one of them failed
-                try {
-                    for( Publisher bs : project.getPublishers().values() )
-                        bs.perform(Build.this, launcher, listener);
-                } catch (InterruptedException e) {
-                    e.printStackTrace(listener.fatalError("aborted"));
-                    setResult(Result.FAILURE);
-                } catch (IOException e) {
-                    e.printStackTrace(listener.fatalError("failed"));
-                    setResult(Result.FAILURE);
-                }
-            }
-
-            private boolean build(BuildListener listener, Map<?, Builder> steps) throws IOException, InterruptedException {
-                for( Builder bs : steps.values() )
-                    if(!bs.perform(Build.this, launcher, listener))
-                        return false;
-                return true;
-            }
-
-            private boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) {
-                for( BuildStep bs : steps.values() )
-                    if(!bs.prebuild(Build.this,listener))
-                        return false;
-                return true;
-            }
-        });
-    }
-
     @Override
     protected void onStartBuilding() {
         SCMTrigger t = (SCMTrigger)project.getTriggers().get(SCMTrigger.DESCRIPTOR);
@@ -471,5 +334,78 @@ public final class Build extends Run<Project,Build> implements Runnable {
         else
             // nothing is building
             rsp.forwardToPreviousPage(req);
+    }
+
+    /**
+     * Performs a build.
+     */
+    public void run() {
+        run(new RunnerImpl());
+    }
+    
+    private class RunnerImpl extends AbstractRunner {
+        protected Result doRun(BuildListener listener) throws Exception {
+            if(!project.checkout(Build.this,launcher,listener,new File(getRootDir(),"changelog.xml")))
+                return Result.FAILURE;
+
+            SCM scm = project.getScm();
+
+            Build.this.scm = scm.createChangeLogParser();
+            Build.this.changeSet = Build.this.calcChangeSet();
+
+            if(!preBuild(listener,project.getBuilders()))
+                return Result.FAILURE;
+            if(!preBuild(listener,project.getPublishers()))
+                return Result.FAILURE;
+
+            buildEnvironments = new ArrayList<Environment>();
+            try {
+                for( BuildWrapper w : project.getBuildWrappers().values() ) {
+                    Environment e = w.setUp(Build.this, launcher, listener);
+                    if(e==null)
+                        return Result.FAILURE;
+                    buildEnvironments.add(e);
+                }
+
+
+                if(!build(listener,project.getBuilders()))
+                    return Result.FAILURE;
+            } finally {
+                // tear down in reverse order
+                for( int i=buildEnvironments.size()-1; i>=0; i-- )
+                    buildEnvironments.get(i).tearDown(Build.this,listener);
+                buildEnvironments = null;
+            }
+
+            return null;
+        }
+
+        public void post(BuildListener listener) {
+            // run all of them even if one of them failed
+            try {
+                for( Publisher bs : project.getPublishers().values() )
+                    bs.perform(Build.this, launcher, listener);
+            } catch (InterruptedException e) {
+                e.printStackTrace(listener.fatalError("aborted"));
+                setResult(Result.FAILURE);
+            } catch (IOException e) {
+                e.printStackTrace(listener.fatalError("failed"));
+                setResult(Result.FAILURE);
+            }
+        }
+
+        private boolean build(BuildListener listener, Map<?, Builder> steps) throws IOException, InterruptedException {
+            for( Builder bs : steps.values() )
+                if(!bs.perform(Build.this, launcher, listener))
+                    return false;
+            return true;
+        }
+
+        private boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) {
+            for( BuildStep bs : steps.values() )
+                if(!bs.prebuild(Build.this,listener))
+                    return false;
+            return true;
+        }
     }
 }

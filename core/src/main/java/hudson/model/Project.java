@@ -43,18 +43,9 @@ import java.util.Vector;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Project extends Job<Project,Build> {
-
-    /**
-     * All the builds keyed by their build number.
-     */
-    private transient /*almost final*/ RunMap<Build> builds = new RunMap<Build>();
+public class Project extends AbstractProject<Project,Build> {
 
     private SCM scm = new NullSCM();
-
-    private boolean enableRemoteTrigger = false;
-
-    private String authToken = null;
 
     /**
      * List of all {@link Trigger}s for this project.
@@ -86,92 +77,11 @@ public class Project extends Job<Project,Build> {
     private transient /*final*/ List<Action> transientActions = new Vector<Action>();
 
     /**
-     * Identifies {@link JDK} to be used.
-     * Null if no explicit configuration is required.
-     *
-     * <p>
-     * Can't store {@link JDK} directly because {@link Hudson} and {@link Project}
-     * are saved independently.
-     *
-     * @see Hudson#getJDK(String)
-     */
-    private String jdk;
-
-    /**
-     * The quiet period. Null to delegate to the system default.
-     */
-    private Integer quietPeriod = null;
-
-    /**
-     * If this project is configured to be only built on a certain node,
-     * this value will be set to that node. Null to indicate the affinity
-     * with the master node.
-     *
-     * see #canRoam
-     */
-    private String assignedNode;
-
-    /**
-     * True if this project can be built on any node.
-     *
-     * <p>
-     * This somewhat ugly flag combination is so that we can migrate
-     * existing Hudson installations nicely.
-     */
-    private boolean canRoam;
-
-    /**
-     * True to suspend new builds.
-     */
-    private boolean disabled;
-
-    /**
      * Creates a new project.
      */
     public Project(Hudson parent,String name) {
         super(parent,name);
-
-        if(!parent.getSlaves().isEmpty()) {
-            // if a new job is configured with Hudson that already has slave nodes
-            // make it roamable by default
-            canRoam = true;
-        }
     }
-
-    /**
-     * If this project is configured to be always built on this node,
-     * return that {@link Node}. Otherwise null.
-     */
-    public Node getAssignedNode() {
-        if(canRoam)
-            return null;
-
-        if(assignedNode ==null)
-            return Hudson.getInstance();
-        return getParent().getSlave(assignedNode);
-    }
-
-    public JDK getJDK() {
-        return getParent().getJDK(jdk);
-    }
-
-    /**
-     * Overwrites the JDK setting.
-     */
-    public synchronized void setJDK(JDK jdk) throws IOException {
-        this.jdk = jdk.getName();
-        save();
-    }
-
-    public int getQuietPeriod() {
-        return quietPeriod!=null ? quietPeriod : getParent().getQuietPeriod();
-    }
-
-    // ugly name because of EL
-    public boolean getHasCustomQuietPeriod() {
-        return quietPeriod!=null;
-    }
-
 
     protected void onLoad(Hudson root, String name) throws IOException {
         super.onLoad(root, name);
@@ -196,14 +106,6 @@ public class Project extends Job<Project,Build> {
         updateTransientActions();
     }
 
-    public boolean isBuildable() {
-        return !isDisabled();
-    }
-
-    public boolean isDisabled() {
-        return disabled;
-    }
-
     public SCM getScm() {
         return scm;
     }
@@ -212,16 +114,6 @@ public class Project extends Job<Project,Build> {
         this.scm = scm;
     }
     
-    public boolean isEnableRemoteTrigger() {
-        // no need to enable this option if security disabled
-        return (Hudson.getInstance().isUseSecurity())
-                && enableRemoteTrigger;
-    }
-
-    public String getAuthToken() {
-            return authToken;
-    }
-
     @Override
     public BallColor getIconColor() {
         if(isDisabled())
@@ -299,17 +191,7 @@ public class Project extends Job<Project,Build> {
         removeFromList(descriptor, publishers);
     }
 
-    public SortedMap<Integer, ? extends Build> _getRuns() {
-        return builds.getView();
-    }
-
-    public void removeRun(Build run) {
-        this.builds.remove(run);
-    }
-
-    /**
-     * Creates a new build of this project for immediate execution.
-     */
+    @Override
     public Build newBuild() throws IOException {
         Build lastBuild = new Build(this);
         builds.put(lastBuild);
@@ -362,37 +244,6 @@ public class Project extends Job<Project,Build> {
             e.printStackTrace(listener.fatalError("SCM polling aborted"));
             return false;
         }
-    }
-
-    /**
-     * Gets the {@link Node} where this project was last built on.
-     *
-     * @return
-     *      null if no information is available (for example,
-     *      if no build was done yet.)
-     */
-    public Node getLastBuiltOn() {
-        // where was it built on?
-        Build b = getLastBuild();
-        if(b==null)
-            return null;
-        else
-            return b.getBuiltOn();
-    }
-
-    /**
-     * Gets the directory where the module is checked out.
-     */
-    public FilePath getWorkspace() {
-        Node node = getLastBuiltOn();
-
-        if(node==null)
-            node = getParent();
-
-        if(node instanceof Slave)
-            return ((Slave)node).getWorkspaceRoot().child(getName());
-        else
-            return new FilePath(new File(getRootDir(),"workspace"));
     }
 
     /**
@@ -468,22 +319,6 @@ public class Project extends Job<Project,Build> {
     }
 
     /**
-     * Schedules a build of this project.
-     */
-    public void scheduleBuild() {
-        if(!disabled)
-            getParent().getQueue().add(this);
-    }
-
-    /**
-     * Returns true if the build is in the queue.
-     */
-    @Override
-    public boolean isInQueue() {
-        return getParent().getQueue().contains(this);
-    }
-
-    /**
      * Schedules the SCM polling. If a polling is already in progress
      * or a build is in progress, polling will take place after that.
      * Otherwise the polling will be started immediately on a separate thread.
@@ -516,39 +351,6 @@ public class Project extends Job<Project,Build> {
 //
 //
     /**
-     * Schedules a new build command.
-     */
-    public void doBuild( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if (authorizedToStartBuild(req, rsp)) {
-            scheduleBuild();
-            rsp.forwardToPreviousPage(req);
-        }
-    }
-
-    private boolean authorizedToStartBuild(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        
-        if (isEnableRemoteTrigger()) {
-            String providedToken = req.getParameter("token");
-            if (providedToken != null && providedToken.equals(getAuthToken())) {
-                return true;
-            }
-        }
-
-         return Hudson.adminCheck(req, rsp);
-    }
-
-    /**
-     * Cancels a scheduled build.
-     */
-    public void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
-
-        getParent().getQueue().cancel(this);
-        rsp.forwardToPreviousPage(req);
-    }
-
-    /**
      * Accepts submission from the configuration page.
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -564,35 +366,6 @@ public class Project extends Job<Project,Build> {
 
                 int scmidx = Integer.parseInt(req.getParameter("scm"));
                 scm = SCMS.SCMS.get(scmidx).newInstance(req);
-
-                disabled = req.getParameter("disable")!=null;
-
-                jdk = req.getParameter("jdk");
-                if(req.getParameter("hasCustomQuietPeriod")!=null) {
-                    quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
-                } else {
-                    quietPeriod = null;
-                }
-
-                if(req.getParameter("hasSlaveAffinity")!=null) {
-                    canRoam = false;
-                    assignedNode = req.getParameter("slave");
-                    if(assignedNode !=null) {
-                        if(Hudson.getInstance().getSlave(assignedNode)==null) {
-                            assignedNode = null;   // no such slave
-                        }
-                    }
-                } else {
-                    canRoam = true;
-                    assignedNode = null;
-                }
-                
-                if (req.getParameter("pseudoRemoteTrigger") != null) {
-                    authToken = req.getParameter("authToken");
-                    enableRemoteTrigger = true;
-                } else {
-                    enableRemoteTrigger = false;
-                }
 
                 buildDescribable(req, BuildWrappers.WRAPPERS, buildWrappers, "wrapper");
                 buildDescribable(req, BuildStep.BUILDERS, builders, "builder");
@@ -688,19 +461,6 @@ public class Project extends Job<Project,Build> {
                 T instance = descriptors.get(i).newInstance(req);
                 result.add(instance);
             }
-        }
-    }
-
-    /**
-     * Serves the workspace files.
-     */
-    public void doWs( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
-        FilePath ws = getWorkspace();
-        if(!ws.exists()) {
-            // if there's no workspace, report a nice error message
-            rsp.forward(this,"noWorkspace",req);
-        } else {
-            serveFile(req, rsp, ws, "folder.gif", true);
         }
     }
 

@@ -17,7 +17,7 @@ public class Executor extends Thread {
     private final Computer owner;
     private final Queue queue;
 
-    private Build build;
+    private AbstractBuild<?,?> build;
 
     private long startTime;
 
@@ -48,7 +48,7 @@ public class Executor extends Thread {
             }
 
             try {
-                Project p = queue.pop();
+                AbstractProject p = queue.pop();
                 build = p.newBuild();
             } catch (InterruptedException e) {
                 continue;
@@ -75,7 +75,7 @@ public class Executor extends Thread {
      * @return
      *      null if the executor is idle.
      */
-    public Build getCurrentBuild() {
+    public AbstractBuild getCurrentBuild() {
         return build;
     }
 
@@ -104,7 +104,7 @@ public class Executor extends Thread {
      *      if it's impossible to estimate the progress.
      */
     public int getProgress() {
-        Build b = build.getProject().getLastSuccessfulBuild();
+        AbstractBuild b = build.getProject().getLastSuccessfulBuild();
         if(b==null)     return -1;
 
         long duration = b.getDuration();
@@ -120,7 +120,7 @@ public class Executor extends Thread {
      * until the build completes.
      */
     public String getEstimatedRemainingTime() {
-        Build b = build.getProject().getLastSuccessfulBuild();
+        AbstractBuild b = build.getProject().getLastSuccessfulBuild();
         if(b==null)     return "N/A";
 
         long duration = b.getDuration();
