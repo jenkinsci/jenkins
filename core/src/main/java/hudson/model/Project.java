@@ -1,13 +1,9 @@
 package hudson.model;
 
 import hudson.FilePath;
-import hudson.Launcher;
-import hudson.Launcher.LocalLauncher;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
-import hudson.scm.NullSCM;
-import hudson.scm.SCM;
 import hudson.scm.SCMS;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
@@ -44,8 +40,6 @@ import java.util.Vector;
  * @author Kohsuke Kawaguchi
  */
 public class Project extends AbstractProject<Project,Build> {
-
-    private SCM scm = new NullSCM();
 
     /**
      * List of all {@link Trigger}s for this project.
@@ -106,14 +100,6 @@ public class Project extends AbstractProject<Project,Build> {
         updateTransientActions();
     }
 
-    public SCM getScm() {
-        return scm;
-    }
-
-    public void setScm(SCM scm) {
-        this.scm = scm;
-    }
-    
     @Override
     public BallColor getIconColor() {
         if(isDisabled())
@@ -198,54 +184,6 @@ public class Project extends AbstractProject<Project,Build> {
         return lastBuild;
     }
 
-    public boolean checkout(Build build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {
-        if(scm==null)
-            return true;    // no SCM
-
-        try {
-            FilePath workspace = getWorkspace();
-            workspace.mkdirs();
-
-            return scm.checkout(build, launcher, workspace, listener, changelogFile);
-        } catch (InterruptedException e) {
-            e.printStackTrace(listener.fatalError("SCM check out aborted"));
-            return false;
-        }
-    }
-
-    /**
-     * Checks if there's any update in SCM, and returns true if any is found.
-     *
-     * <p>
-     * The caller is responsible for coordinating the mutual exclusion between
-     * a build and polling, as both touches the workspace.
-     */
-    public boolean pollSCMChanges( TaskListener listener ) {
-        if(scm==null) {
-            listener.getLogger().println("No SCM");
-            return false;   // no SCM
-        }
-
-        try {
-            FilePath workspace = getWorkspace();
-            if(!workspace.exists()) {
-                // no workspace. build now, or nothing will ever be built
-                listener.getLogger().println("No workspace is available, so can't check for updates.");
-                listener.getLogger().println("Scheduling a new build to get a workspace.");
-                return true;
-            }
-
-            // TODO: do this by using the right slave
-            return scm.pollChanges(this, new LocalLauncher(listener), workspace, listener );
-        } catch (IOException e) {
-            e.printStackTrace(listener.fatalError(e.getMessage()));
-            return false;
-        } catch (InterruptedException e) {
-            e.printStackTrace(listener.fatalError("SCM polling aborted"));
-            return false;
-        }
-    }
-
     /**
      * Returns the root directory of the checked-out module.
      *
@@ -319,18 +257,6 @@ public class Project extends AbstractProject<Project,Build> {
     }
 
     /**
-     * Schedules the SCM polling. If a polling is already in progress
-     * or a build is in progress, polling will take place after that.
-     * Otherwise the polling will be started immediately on a separate thread.
-     *
-     * <p>
-     * In any case this method returns immediately.
-     */
-    public void scheduleSCMPolling() {
-        // TODO
-    }
-
-    /**
      * Returns true if the fingerprint record is configured in this project.
      */
     public boolean isFingerprintConfigured() {
@@ -365,7 +291,7 @@ public class Project extends AbstractProject<Project,Build> {
                 req.setCharacterEncoding("UTF-8");
 
                 int scmidx = Integer.parseInt(req.getParameter("scm"));
-                scm = SCMS.SCMS.get(scmidx).newInstance(req);
+                setScm(SCMS.SCMS.get(scmidx).newInstance(req));
 
                 buildDescribable(req, BuildWrappers.WRAPPERS, buildWrappers, "wrapper");
                 buildDescribable(req, BuildStep.BUILDERS, builders, "builder");

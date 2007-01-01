@@ -2,6 +2,10 @@ package hudson.model;
 
 import hudson.maven.MavenJob;
 import hudson.FilePath;
+import hudson.Launcher;
+import hudson.Launcher.LocalLauncher;
+import hudson.scm.SCM;
+import hudson.scm.NullSCM;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -19,6 +23,9 @@ import java.util.SortedMap;
  * @see AbstractBuild
  */
 public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> {
+
+    private SCM scm = new NullSCM();
+
     /**
      * All the builds keyed by their build number.
      */
@@ -188,6 +195,62 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return null;
         else
             return b.getBuiltOn();
+    }
+
+    public boolean checkout(Build build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {
+        if(scm==null)
+            return true;    // no SCM
+
+        try {
+            FilePath workspace = getWorkspace();
+            workspace.mkdirs();
+
+            return scm.checkout(build, launcher, workspace, listener, changelogFile);
+        } catch (InterruptedException e) {
+            e.printStackTrace(listener.fatalError("SCM check out aborted"));
+            return false;
+        }
+    }
+
+    /**
+     * Checks if there's any update in SCM, and returns true if any is found.
+     *
+     * <p>
+     * The caller is responsible for coordinating the mutual exclusion between
+     * a build and polling, as both touches the workspace.
+     */
+    public boolean pollSCMChanges( TaskListener listener ) {
+        if(scm==null) {
+            listener.getLogger().println("No SCM");
+            return false;   // no SCM
+        }
+
+        try {
+            FilePath workspace = getWorkspace();
+            if(!workspace.exists()) {
+                // no workspace. build now, or nothing will ever be built
+                listener.getLogger().println("No workspace is available, so can't check for updates.");
+                listener.getLogger().println("Scheduling a new build to get a workspace.");
+                return true;
+            }
+
+            // TODO: do this by using the right slave
+            return scm.pollChanges(this, new LocalLauncher(listener), workspace, listener );
+        } catch (IOException e) {
+            e.printStackTrace(listener.fatalError(e.getMessage()));
+            return false;
+        } catch (InterruptedException e) {
+            e.printStackTrace(listener.fatalError("SCM polling aborted"));
+            return false;
+        }
+    }
+
+    public SCM getScm() {
+        return scm;
+    }
+
+    public void setScm(SCM scm) {
+        this.scm = scm;
     }
 
 //
