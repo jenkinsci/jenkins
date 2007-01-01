@@ -11,6 +11,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Calendar;
 
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.ServletException;
+
 /**
  * Base implementation of {@link Run}s that build software.
  *
@@ -102,5 +107,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         protected abstract Result doRun(BuildListener listener) throws Exception;
+    }
+
+
+    /**
+     * Stops this build if it's still going.
+     *
+     * If we use this/executor/stop URL, it causes 404 if the build is already killed,
+     * as {@link #getExecutor()} returns null.
+     */
+    public synchronized void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        Executor e = getExecutor();
+        if(e!=null)
+            e.doStop(req,rsp);
+        else
+            // nothing is building
+            rsp.forwardToPreviousPage(req);
     }
 }

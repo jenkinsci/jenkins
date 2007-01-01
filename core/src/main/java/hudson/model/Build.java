@@ -15,11 +15,8 @@ import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.SCMTrigger;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.xml.sax.SAXException;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -321,21 +318,6 @@ public final class Build extends AbstractBuild<Project,Build> {
 // actions
 //
 //
-    /**
-     * Stops this build if it's still going.
-     *
-     * If we use this/executor/stop URL, it causes 404 if the build is already killed,
-     * as {@link #getExecutor()} returns null.
-     */
-    public synchronized void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        Executor e = getExecutor();
-        if(e!=null)
-            e.doStop(req,rsp);
-        else
-            // nothing is building
-            rsp.forwardToPreviousPage(req);
-    }
-
     /**
      * Performs a build.
      */
