@@ -1,5 +1,7 @@
 package hudson.model;
 
+import hudson.maven.MavenJob;
+
 import java.util.List;
 
 /**
@@ -23,5 +25,10 @@ public class Jobs {
                 return job;
         }
         return null;
+    }
+
+    static {
+        if(Boolean.getBoolean("hudson.maven"))
+            JOBS.add(MavenJob.DESCRIPTOR);
     }
 }
