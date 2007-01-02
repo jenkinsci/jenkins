@@ -242,6 +242,8 @@ public final class Slave implements Node, Serializable {
                         });
 
                         logger.info("slave agent launched for "+slave.getNodeName());
+
+                        Hudson.getInstance().getQueue().scheduleMaintenance();
                     } catch (IOException e) {
                         Util.displayIOException(e,listener);
 
