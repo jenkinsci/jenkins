@@ -3,12 +3,14 @@ package hudson.model;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.basic.AbstractBasicConverter;
 
+import java.io.Serializable;
+
 /**
  * The build outcome.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Result {
+public final class Result implements Serializable {
     /**
      * The build didn't have any fatal errors not errors.
      */
@@ -55,6 +57,15 @@ public final class Result {
     public String toString() {
         return name;
     }
+    
+    private Object readResolve() {
+        for (Result r : all)
+            if (ordinal==r.ordinal)
+                return r;
+        return FAILURE;
+    }
+
+    private static final long serialVersionUID = 1L;
 
     private static final Result[] all = new Result[] {SUCCESS,UNSTABLE,FAILURE,ABORTED};
 
