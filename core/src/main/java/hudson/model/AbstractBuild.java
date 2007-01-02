@@ -33,7 +33,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * Name of the slave this project was built on.
-     * Null if built by the master.
+     * Null or "" if built by the master. (null happens when we read old record that didn't have this information.)
      */
     private String builtOn;
 
