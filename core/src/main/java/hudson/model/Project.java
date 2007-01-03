@@ -270,6 +270,9 @@ public class Project extends AbstractProject<Project,Build> {
                 }
             }
         }
+
+        // notify the queue as the project might be now tied to different node
+        Hudson.getInstance().getQueue().scheduleMaintenance();  
     }
 
     private void updateTransientActions() {
