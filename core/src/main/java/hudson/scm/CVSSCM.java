@@ -207,6 +207,11 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                         String m = tokens.nextToken();
                         File mf = new File(ws, m);
 
+                        if(!mf.exists())
+                            // directory doesn't exist. This happens if a directory that was checked out
+                            // didn't include any file.
+                            continue;
+
                         if(!mf.isDirectory()) {
                             // this module is just a file, say "foo/bar.txt".
                             // to record "foo/CVS/*", we need to start by archiving "foo".
