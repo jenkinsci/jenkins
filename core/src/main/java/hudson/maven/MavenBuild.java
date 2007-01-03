@@ -1,14 +1,29 @@
 package hudson.maven;
 
+import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.model.Run;
+import hudson.remoting.VirtualChannel;
+import hudson.util.IOException2;
+import org.apache.maven.BuildFailureException;
+import org.apache.maven.embedder.MavenEmbedder;
+import org.apache.maven.embedder.MavenEmbedderException;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.project.DuplicateProjectException;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
+import org.codehaus.plexus.util.dag.CycleDetectedException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Calendar;
 
 /**
+ * {@link Run} for {@link MavenJob}.
+ * 
  * @author Kohsuke Kawaguchi
  */
 public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
@@ -29,17 +44,52 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
         run(new RunnerImpl());
     }
 
+    /**
+     * Runs Maven and builds the project.
+     */
+    private static final class Builder implements FileCallable<Result> {
+        private final BuildListener listener;
+        public Builder(BuildListener listener) {
+            this.listener = listener;
+        }
+
+        public Result invoke(File ws, VirtualChannel channel) throws IOException {
+            try {
+                MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
+                File pom = new File(ws,"pom.xml").getAbsoluteFile(); // MavenEmbedder only works if it's absolute
+                if(!pom.exists()) {
+                    listener.error("No POM: "+pom);
+                    return Result.FAILURE;
+                }
+
+                MavenProject p = embedder.readProject(pom);
+                embedder.execute(p, Arrays.asList("install"), null, null, null, null);
+
+                return null;
+            } catch (MavenEmbedderException e) {
+                throw new IOException2(e);
+            } catch (ProjectBuildingException e) {
+                throw new IOException2(e);
+            } catch (CycleDetectedException e) {
+                throw new IOException2(e);
+            } catch (LifecycleExecutionException e) {
+                throw new IOException2(e);
+            } catch (BuildFailureException e) {
+                throw new IOException2(e);
+            } catch (DuplicateProjectException e) {
+                throw new IOException2(e);
+            }
+        }
+    }
+
     private class RunnerImpl extends AbstractRunner {
         protected Result doRun(BuildListener listener) throws Exception {
             //if(!preBuild(listener,project.getBuilders()))
             //    return Result.FAILURE;
             //if(!preBuild(listener,project.getPublishers()))
             //    return Result.FAILURE;
-            //
-            //if(!build(listener,project.getBuilders()))
-            //    return Result.FAILURE;
 
-            return null;
+            return getProject().getWorkspace().act(new Builder(listener));
         }
 
         public void post(BuildListener listener) {
