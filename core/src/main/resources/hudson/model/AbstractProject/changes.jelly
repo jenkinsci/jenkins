@@ -1,0 +1,41 @@
+<!--
+  Displays the console output
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.name} Changes">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <j:set var="from" value="${request.getParameter('from')}"/>
+      <j:set var="to" value="${request.getParameter('to')}"/>
+
+      <h1>
+        Changes
+        <j:if test="${from!=null}"> from #${from}</j:if>
+        <j:if test="${to!=null}"> to #${to}</j:if>
+      </h1>
+      <j:set var="builds" value="${h.filter(it.buildsAsMap,from,to).values()}" />
+      <j:choose>
+        <j:when test="${empty(builds)}">
+          No builds.
+        </j:when>
+        <j:otherwise>
+          <j:forEach var="b" items="${builds}">
+            <j:if test="${b.changeSet.iterator().hasNext()}">
+              <h2><a href="${b.number}/changes">${b.displayName}
+                (<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</a></h2>
+
+              <ol>
+                <j:forEach var="c" items="${b.changeSet.iterator()}">
+                  <li>
+                    <st:out value="${c.msg}" />
+                    [<a href="${rootURL}/${c.author.url}/">${c.author}</a>]
+                  </li>
+                </j:forEach>
+              </ol>
+            </j:if>
+          </j:forEach>
+        </j:otherwise>
+      </j:choose>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
