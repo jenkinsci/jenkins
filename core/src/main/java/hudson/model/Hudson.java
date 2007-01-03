@@ -164,6 +164,10 @@ public final class Hudson extends JobCollection implements Node {
         // load plugins.
         pluginManager = new PluginManager(context);
 
+        // work around to have MavenJob register itself until we either move it to a plugin
+        // or make it a part of the core.
+        Jobs.JOBS.hashCode();
+
         load();
         if(slaves==null)    slaves = new ArrayList<Slave>();
         updateComputerList();
