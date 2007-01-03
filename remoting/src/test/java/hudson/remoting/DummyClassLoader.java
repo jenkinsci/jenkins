@@ -59,6 +59,7 @@ class DummyClassLoader extends ClassLoader {
                 OutputStream os = new FileOutputStream(f);
                 os.write(loadTransformedClassImage("hudson.remoting.test.TestCallable"));
                 os.close();
+                f.deleteOnExit();
                 return f.toURL();
             } catch (IOException e) {
                 return null;
