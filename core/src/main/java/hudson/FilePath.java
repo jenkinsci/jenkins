@@ -179,6 +179,8 @@ public final class FilePath implements Serializable {
                     public ClassLoader getClassLoader() {
                         return callable.getClass().getClassLoader();
                     }
+
+                    private static final long serialVersionUID = 1L;
                 });
             } catch (IOException e) {
                 // wrap it into a new IOException so that we get the caller's stack trace as well.
