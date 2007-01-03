@@ -210,7 +210,10 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                         if(!mf.isDirectory()) {
                             // this module is just a file, say "foo/bar.txt".
                             // to record "foo/CVS/*", we need to start by archiving "foo".
-                            m = m.substring(0,m.lastIndexOf('/'));
+                            int idx = m.lastIndexOf('/');
+                            if(idx==-1)
+                                throw new Error("Kohsuke probe: m="+m);
+                            m = m.substring(0, idx);
                             mf = mf.getParentFile();
                         }
                         archive(mf,m,zos);
