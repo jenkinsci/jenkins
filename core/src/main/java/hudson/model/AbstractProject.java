@@ -10,6 +10,7 @@ import hudson.Launcher.LocalLauncher;
 import hudson.maven.MavenJob;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
+import hudson.scm.SCMS;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -402,6 +403,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         try {
+            int scmidx = Integer.parseInt(req.getParameter("scm"));
+            setScm(SCMS.SCMS.get(scmidx).newInstance(req));
+
             for (Trigger t : triggers)
                 t.stop();
             buildDescribable(req, Triggers.TRIGGERS, triggers, "trigger");

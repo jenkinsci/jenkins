@@ -233,9 +233,6 @@ public class Project extends AbstractProject<Project,Build> {
 
                 req.setCharacterEncoding("UTF-8");
 
-                int scmidx = Integer.parseInt(req.getParameter("scm"));
-                setScm(SCMS.SCMS.get(scmidx).newInstance(req));
-
                 buildDescribable(req, BuildWrappers.WRAPPERS, buildWrappers, "wrapper");
                 buildDescribable(req, BuildStep.BUILDERS, builders, "builder");
                 buildDescribable(req, BuildStep.PUBLISHERS, publishers, "publisher");
