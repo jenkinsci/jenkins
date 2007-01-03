@@ -103,7 +103,10 @@ public abstract class Launcher {
         StringBuffer buf = new StringBuffer();
         if (workDir != null) {
             buf.append('[');
-            buf.append(workDir.getRemote().replaceFirst("^.+[/\\\\]", ""));
+            if(showFullPath)
+                buf.append(workDir.getRemote());
+            else
+                buf.append(workDir.getRemote().replaceFirst("^.+[/\\\\]", ""));
             buf.append("] ");
         }
         buf.append('$');
@@ -144,4 +147,9 @@ public abstract class Launcher {
             return m;
         }
     }
+
+    /**
+     * Debug option to display full current path instead of just the last token.
+     */
+    public static boolean showFullPath = false;
 }
