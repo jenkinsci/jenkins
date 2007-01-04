@@ -267,6 +267,11 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
                 throw new IOException("svn info failed");
             }
 
+            if(dumpSvnInfo) {
+                // dump the output for debugging
+                listener.getLogger().write(baos.toByteArray());
+            }
+
             SvnInfo info = new SvnInfo();
 
             Digester digester = new Digester();
@@ -549,4 +554,9 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
     private static final Pattern SVN_VERSION = Pattern.compile("svn, .+ ([0-9.]+) \\(r([0-9]+)\\)");
 
     private static final Logger LOGGER = Logger.getLogger(SubversionSCM.class.getName());
+
+    /**
+     * Debug switch to dump "svn info" output, to troubleshoot issue #167.
+     */
+    public static boolean dumpSvnInfo = false;
 }
