@@ -256,7 +256,6 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
          */
         public static SvnInfo parse(String subject, Map<String,String> env, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException {
             String cmd = DESCRIPTOR.getSvnExe()+" info --xml "+subject;
-            listener.getLogger().println("$ "+cmd);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
