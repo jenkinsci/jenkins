@@ -5,6 +5,7 @@ import hudson.Proc.LocalProc;
 import hudson.Util;
 import hudson.maven.MavenBuild;
 import static hudson.model.Hudson.isWindows;
+import hudson.model.listeners.SCMListener;
 import hudson.scm.CVSChangeLogParser;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
@@ -104,6 +105,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             AbstractBuild.this.scm = scm.createChangeLogParser();
             AbstractBuild.this.changeSet = AbstractBuild.this.calcChangeSet();
+
+            for (SCMListener l : Hudson.getInstance().getSCMListeners())
+                l.onChangeLogParsed(AbstractBuild.this,listener,changeSet);
 
             Result result = doRun(listener);
             if(result!=null)

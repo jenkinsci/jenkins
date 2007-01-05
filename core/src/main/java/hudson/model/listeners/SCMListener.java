@@ -2,6 +2,7 @@ package hudson.model.listeners;
 
 import hudson.model.AbstractBuild;
 import hudson.model.Hudson;
+import hudson.model.BuildListener;
 import hudson.scm.SCM;
 import hudson.scm.ChangeLogSet;
 
@@ -44,12 +45,20 @@ public abstract class SCMListener {
      * @param build
      *      The build in progress, which just finished determining changelog.
      *      At this point this build is still in progress. Never null.
+     * @param listener
+     *      {@link BuildListener} for on-going build. This can be used to report
+     *      any errors or the general logging of what's going on. This will show
+     *      up in the "console output" of the build. Never null.
      * @param changelog
      *      Set of changes detected in this build. This is the same value
      *      returned from {@link AbstractBuild#getChangeSet()} but passed
      *      separately for convenience.
+     *
+     * @throws Exception
+     *      If any exception is thrown from this method, it will be recorded
+     *      and causes the build to fail. 
      */
-    public void onChangeLogParsed(AbstractBuild<?,?> build, ChangeLogSet<?> changelog) {
+    public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
     }
 
     /**
