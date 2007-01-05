@@ -2,6 +2,7 @@ package hudson.model.listeners;
 
 import hudson.model.Hudson;
 import hudson.model.Job;
+import hudson.ExtensionPoint;
 
 /**
  * Receives notifications about jobs.
@@ -12,7 +13,7 @@ import hudson.model.Job;
  * @author Kohsuke Kawaguchi
  * @see Hudson#addListener(JobListener)
  */
-public abstract class JobListener {
+public abstract class JobListener implements ExtensionPoint {
     /**
      * Called after a new job is created and added to {@link Hudson}.
      */

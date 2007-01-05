@@ -6,6 +6,7 @@ import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
+import hudson.ExtensionPoint;
 
 /**
  * Receives notifications about SCM activities in Hudson.
@@ -20,7 +21,7 @@ import hudson.scm.SCM;
  * @see Hudson#getSCMListeners()
  * @since 1.70
  */
-public abstract class SCMListener {
+public abstract class SCMListener implements ExtensionPoint {
     /**
      * Called once the changelog is determined.
      *
