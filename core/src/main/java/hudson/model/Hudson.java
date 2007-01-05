@@ -12,6 +12,7 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.JobListener;
+import hudson.model.listeners.SCMListener;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.CVSSCM;
@@ -25,6 +26,7 @@ import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.triggers.Triggers;
+import hudson.util.CopyOnWriteList;
 import hudson.util.FormFieldValidator;
 import hudson.util.XStream2;
 import org.apache.commons.fileupload.FileItem;
@@ -148,7 +150,12 @@ public final class Hudson extends JobCollection implements Node {
     /**
      * List of registered {@link JobListener}s.
      */
-    private transient final List<JobListener> jobListeners = new Vector<JobListener>();
+    private transient final CopyOnWriteList<JobListener> jobListeners = new CopyOnWriteList<JobListener>();
+
+    /**
+     * List of registered {@link SCMListener}s.
+     */
+    private transient final CopyOnWriteList<SCMListener> scmListeners = new CopyOnWriteList<SCMListener>();
 
     public static Hudson getInstance() {
         return theInstance;
@@ -174,10 +181,8 @@ public final class Hudson extends JobCollection implements Node {
 
         getQueue().load();
 
-        synchronized(jobListeners) {
-            for (JobListener l : jobListeners)
-                l.onLoaded();
-        }
+        for (JobListener l : jobListeners)
+            l.onLoaded();
     }
 
     /**
@@ -239,7 +244,8 @@ public final class Hudson extends JobCollection implements Node {
     /**
      * Adds a new {@link JobListener}.
      *
-     * @see #removeListener(JobListener) 
+     * @deprecated
+     *      Use {@code getJobListners().add(l)} instead.
      */
     public void addListener(JobListener l) {
         jobListeners.add(l);
@@ -248,11 +254,25 @@ public final class Hudson extends JobCollection implements Node {
     /**
      * Deletes an existing {@link JobListener}.
      *
-     * @return
-     *      true if the listener was indeed registered.
+     * @deprecated
+     *      Use {@code getJobListners().remove(l)} instead.
      */
     public boolean removeListener(JobListener l ) {
         return jobListeners.remove(l);
+    }
+
+    /**
+     * Gets all the installed {@link JobListener}s.
+     */
+    public CopyOnWriteList<JobListener> getJobListeners() {
+        return jobListeners;
+    }
+
+    /**
+     * Gets all the installed {@link SCMListener}s.
+     */
+    public CopyOnWriteList<SCMListener> getSCMListeners() {
+        return scmListeners;
     }
 
     /**
@@ -607,10 +627,8 @@ public final class Hudson extends JobCollection implements Node {
      * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
      */
     /*package*/ void deleteJob(Job job) throws IOException {
-        synchronized(jobListeners) {
-            for (JobListener l : jobListeners)
-                l.onDeleted(job);
-        }
+        for (JobListener l : jobListeners)
+            l.onDeleted(job);
 
         jobs.remove(job.getName());
         if(views!=null) {
@@ -892,10 +910,8 @@ public final class Hudson extends JobCollection implements Node {
             jobs.put(name,result);
         }
 
-        synchronized(jobListeners) {
-            for (JobListener l : jobListeners)
-                l.onCreated(result);
-        }
+        for (JobListener l : jobListeners)
+            l.onCreated(result);
 
         rsp.sendRedirect2(req.getContextPath()+'/'+result.getUrl()+"configure");
         return result;
