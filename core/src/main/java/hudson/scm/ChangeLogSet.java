@@ -24,7 +24,15 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     public static final ChangeLogSet<? extends Entry> EMPTY = new CVSChangeLogSet(Collections.<CVSChangeLogSet.CVSChangeLog>emptyList());
 
     public static abstract class Entry {
-
+        /**
+         * Gets the "commit message".
+         *
+         * <p>
+         * The exact definition depends on the individual SCM implementation.
+         *
+         * @return
+         *      Can be empty but never null.
+         */
         public abstract String getMsg();
 
         /**
