@@ -20,6 +20,9 @@ public abstract class Actionable extends AbstractModelObject {
     /**
      * Gets actions contributed to this build.
      *
+     * <p>
+     * A new {@link Action} can be added by {@code getActions().add(...)}.
+     *
      * @return
      *      may be empty but never null.
      */

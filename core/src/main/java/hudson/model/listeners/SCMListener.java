@@ -3,6 +3,8 @@ package hudson.model.listeners;
 import hudson.model.AbstractBuild;
 import hudson.model.Hudson;
 import hudson.model.BuildListener;
+import hudson.model.Action;
+import hudson.model.Actionable;
 import hudson.scm.SCM;
 import hudson.scm.ChangeLogSet;
 
@@ -30,14 +32,16 @@ public abstract class SCMListener {
      * {@link SCMListener}s.
      *
      * <p>
-     * This is an opportunity for SCM-related plugins to act on changelog.
-     * A typical usage includes parsing commit messages and do cross-referencing
-     * between other systems.
-     *
-     * <p>
      * If a build failed before we successfully determine changelog, this method
      * will not be invoked (for example, if "cvs update" failed.) OTOH, this method
      * is invoked before the actual build (like ant invocation) happens. 
+     *
+     * <p>
+     * This is an opportunity for SCM-related plugins to act on changelog.
+     * A typical usage includes parsing commit messages and do cross-referencing
+     * between other systems. Implementations can also contribute {@link Action}
+     * to {@link AbstractBuild} (by {@code build.getActions().add(...)} to
+     * display additional data on build views.
      *
      * <p>
      * TODO: once we have cvsnews plugin, refer to its usage.
