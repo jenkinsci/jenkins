@@ -1,12 +1,11 @@
 package hudson.model.listeners;
 
 import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
-import hudson.model.BuildListener;
 import hudson.model.Action;
-import hudson.model.Actionable;
-import hudson.scm.SCM;
+import hudson.model.BuildListener;
+import hudson.model.Hudson;
 import hudson.scm.ChangeLogSet;
+import hudson.scm.SCM;
 
 /**
  * Receives notifications about SCM activities in Hudson.
