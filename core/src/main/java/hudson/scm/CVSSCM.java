@@ -178,8 +178,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             dir.deleteContents();
 
             ArgumentListBuilder cmd = new ArgumentListBuilder();
-            // TODO: debug option to make it verbose
-            cmd.add("cvs","-Q","-z9","-d",cvsroot,"co");
+            cmd.add("cvs",debugLogging?"-t":"-Q","-z9","-d",cvsroot,"co");
             if(branch!=null)
                 cmd.add("-r",branch);
             if(flatten)
