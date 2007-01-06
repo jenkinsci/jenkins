@@ -87,19 +87,32 @@
         </configuration>
       </plugin>
       <plugin>
+        <!--
+          create uberjar for jdk14.
+        -->
         <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <finalName>slave-${version}</finalName>
-          <!--appendAssemblyId>false</appendAssemblyId-->
-          <descriptors>
-            <descriptor>assembly-uberjar.xml</descriptor>
-          </descriptors>
-          <archive>
-            <manifest>
-              <mainClass>hudson.remoting.Launcher</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
+        <executions>
+          <execution>
+            <id>uberjar</id>
+            <phase>package</phase>
+            <goals>
+              <!--
+                Work around for http://jira.codehaus.org/browse/MASSEMBLY-97 as the goal should be attached.
+              -->
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>assembly-uberjar-14.xml</descriptor>
+              </descriptors>
+              <archive>
+                <manifest>
+                  <mainClass>hudson.remoting.Launcher</mainClass>
+                </manifest>
+              </archive>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <!--
         Generate retrotranslated 1.4 jar "on the side". I tried various approaches like
@@ -107,12 +120,11 @@
         end using Ant seems to be the easiest.
       -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
             <id>create14jar</id>
-            <phase>package</phase>
+            <phase>process-classes</phase><!-- do this earlier than the package phase so that the assembly plugin can create uberjars for 14 classes -->
             <configuration>
               <tasks>
                 <taskdef name="retrotranslator" classpathref="maven.test.classpath" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" />

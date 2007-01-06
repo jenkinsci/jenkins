@@ -1,0 +1,29 @@
+<!--
+  Creates uberjar
+-->
+<assembly>
+  <id>jdk14-jar-with-dependencies</id>
+  <formats>
+    <format>jar</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory></outputDirectory>
+      <!--
+        the following line causes a problem with my maven-assembly-plugin.
+        multiple artifacts ended up expanded into the same temporary directory,
+        and the up-to-date check works incorrectly and ends up ignoring some jar files.
+      -->
+      <!--outputFileNameMapping></outputFileNameMapping-->
+      <unpack>true</unpack>
+      <scope>runtime</scope>
+    </dependencySet>
+  </dependencySets>
+  <fileSets>
+    <fileSet>
+      <directory>target/classes14</directory>
+      <outputDirectory></outputDirectory>
+    </fileSet>
+  </fileSets>
+</assembly>
