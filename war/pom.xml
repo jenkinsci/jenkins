@@ -46,7 +46,7 @@
                   <groupId>org.jvnet.hudson.main</groupId>
                   <artifactId>remoting</artifactId>
                   <version>${version}</version>
-                  <classifier>${hudsonClassifier}</classifier>
+                  <classifier>${hudsonRemotingClassifier}</classifier>
                   <destFileName>slave.jar</destFileName>
                 </artifactItem>
               </artifactItems>
@@ -104,12 +104,14 @@
       </activation>
       <properties>
         <hudsonClassifier />
+        <hudsonRemotingClassifier />
       </properties>
     </profile>
     <profile>
       <id>release</id>
       <properties>
         <hudsonClassifier>jdk14</hudsonClassifier>
+        <hudsonRemotingClassifier>jdk14-jar-with-dependencies</hudsonRemotingClassifier>
       </properties>
     </profile>
   </profiles>
