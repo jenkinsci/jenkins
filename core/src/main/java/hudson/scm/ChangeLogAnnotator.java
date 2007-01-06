@@ -6,6 +6,8 @@ import hudson.util.CopyOnWriteList;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.model.AbstractBuild;
 
+import java.util.logging.Logger;
+
 /**
  * Performs mark up on changelog messages to be displayed.
  *
@@ -29,6 +31,10 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      * This method is invoked each time a page is rendered, so implementations
      * of this method should not take too long to execute. Also note that
      * this method may be invoked concurrently by multiple threads.
+     *
+     * <p>
+     * If there's any error during the processing, it should be recorded in
+     * {@link Logger} and the method should return normally.
      *
      * @param build
      *      Build that owns this changelog. From here you can access broader contextual
