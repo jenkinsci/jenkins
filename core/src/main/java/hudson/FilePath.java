@@ -314,9 +314,19 @@ public final class FilePath implements Serializable {
      * given text (encoded in the platform default encoding)
      */
     public FilePath createTextTempFile(final String prefix, final String suffix, final String contents) throws IOException, InterruptedException {
+        return createTextTempFile(prefix,suffix,contents,true);
+    }
+
+    /**
+     * Creates a temporary file in this directory and set the contents by the
+     * given text (encoded in the platform default encoding)
+     */
+    public FilePath createTextTempFile(final String prefix, final String suffix, final String contents, final boolean inThisDirectory) throws IOException, InterruptedException {
         try {
             return new FilePath(this,act(new FileCallable<String>() {
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
+                    if(!inThisDirectory)
+                        dir = null;
                     File f = File.createTempFile(prefix, suffix, dir);
 
                     Writer w = new FileWriter(f);
