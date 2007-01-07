@@ -10,7 +10,10 @@ import hudson.util.IOException2;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.embedder.MavenEmbedderException;
+import org.apache.maven.embedder.PlexusLoggerAdapter;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.monitor.event.DefaultEventMonitor;
+import org.apache.maven.monitor.event.EventMonitor;
 import org.apache.maven.project.DuplicateProjectException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
@@ -53,17 +56,24 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
             this.listener = listener;
         }
 
-        public Result invoke(File ws, VirtualChannel channel) throws IOException {
+        public Result invoke(File moduleRoot, VirtualChannel channel) throws IOException {
             try {
                 MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
-                File pom = new File(ws,"pom.xml").getAbsoluteFile(); // MavenEmbedder only works if it's absolute
+                File pom = new File(moduleRoot,"pom.xml").getAbsoluteFile(); // MavenEmbedder only works if it's absolute
                 if(!pom.exists()) {
                     listener.error("No POM: "+pom);
                     return Result.FAILURE;
                 }
 
+                // event monitor is mostly useless. It only provides a few strings
+                EventMonitor eventMonitor = new DefaultEventMonitor( new PlexusLoggerAdapter( new EmbedderLoggerImpl(listener) ) );
+
                 MavenProject p = embedder.readProject(pom);
-                embedder.execute(p, Arrays.asList("install"), null, null, null, null);
+                embedder.execute(p, Arrays.asList("install"),
+                    eventMonitor,
+                    new TransferListenerImpl(listener),
+                    null, // TODO: allow additional properties to be specified 
+                    pom.getParentFile());
 
                 return null;
             } catch (MavenEmbedderException e) {
@@ -89,7 +99,7 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
             //if(!preBuild(listener,project.getPublishers()))
             //    return Result.FAILURE;
 
-            return getProject().getWorkspace().act(new Builder(listener));
+            return getProject().getModuleRoot().act(new Builder(listener));
         }
 
         public void post(BuildListener listener) {
