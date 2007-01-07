@@ -112,35 +112,35 @@
       <j:getStatic var="triggers" className="hudson.triggers.Triggers" field="TRIGGERS" />
       <j:forEach var="idx" begin="0" end="${size(triggers)-1}">
         <j:set var="descriptor" value="${triggers[idx]}" />
-        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
       </j:forEach>
 
       <!-- build wrapper config pane -->
       <j:getStatic var="wrappers" className="hudson.tasks.BuildWrappers" field="WRAPPERS" />
       <j:forEach var="idx" begin="0" end="${size(wrappers)-1}">
         <j:set var="descriptor" value="${wrappers[idx]}" />
-        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
       </j:forEach>
 
       <!-- builder config pane -->
       <j:getStatic var="builds" className="hudson.tasks.BuildStep" field="BUILDERS" />
       <j:forEach var="idx" begin="0" end="${size(builds)-1}">
         <j:set var="descriptor" value="${builds[idx]}" />
-        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
       </j:forEach>
 
       <!-- SCM config pane -->
       <j:getStatic var="scms" className="hudson.scm.SCMS" field="SCMS" />
       <j:forEach var="idx" begin="0" end="${size(scms)-1}">
         <j:set var="descriptor" value="${scms[idx]}" />
-        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
       </j:forEach>
 
       <!-- publisher config pane -->
       <j:getStatic var="pubs" className="hudson.tasks.BuildStep" field="PUBLISHERS" />
       <j:forEach var="idx" begin="0" end="${size(pubs)-1}">
         <j:set var="descriptor" value="${pubs[idx]}" />
-        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
       </j:forEach>
 
       <s:block>
