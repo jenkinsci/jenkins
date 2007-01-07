@@ -19,21 +19,26 @@
           No builds.
         </j:when>
         <j:otherwise>
+          <j:set var="hadChanges" value="${false}"/>
           <j:forEach var="b" items="${builds}">
             <j:if test="${b.changeSet.iterator().hasNext()}">
+              <j:set var="hadChanges" value="${true}"/>
               <h2><a href="${b.number}/changes">${b.displayName}
                 (<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</a></h2>
 
               <ol>
                 <j:forEach var="c" items="${b.changeSet.iterator()}">
                   <li>
-                    <st:out value="${c.msg}" />
+                    ${c.msgAnnotated}
                     [<a href="${rootURL}/${c.author.url}/">${c.author}</a>]
                   </li>
                 </j:forEach>
               </ol>
             </j:if>
           </j:forEach>
+          <j:if test="${!hadChanges}">
+            No changes in any of the builds.
+          </j:if>
         </j:otherwise>
       </j:choose>
     </l:main-panel>
