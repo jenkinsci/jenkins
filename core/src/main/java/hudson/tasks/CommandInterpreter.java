@@ -34,7 +34,7 @@ public abstract class CommandInterpreter extends Builder {
         FilePath script=null;
         try {
             try {
-                script = ws.createTextTempFile("hudson", getFileExtension(), getContents());
+                script = ws.createTextTempFile("hudson", getFileExtension(), getContents(), false);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
                 e.printStackTrace( listener.fatalError("Unable to produce a script file") );
