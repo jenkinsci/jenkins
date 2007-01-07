@@ -138,10 +138,7 @@ public class Functions {
             if(n ==null)
                 return null;
             else {
-                String url = contextPath + '/' + n.getUrl();
-                assert url.endsWith("/");
-                url = url.substring(0,url.length()-1);  // cut off the trailing '/'
-                return url+rest;
+                return basePortion+"/../"+n.getNumber()+rest;
             }
         }
     }
