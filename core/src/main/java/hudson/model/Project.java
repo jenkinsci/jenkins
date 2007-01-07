@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.FilePath;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
-import hudson.scm.SCMS;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
@@ -270,6 +269,8 @@ public class Project extends AbstractProject<Project,Build> {
                 }
             }
         }
+
+        save();
 
         // notify the queue as the project might be now tied to different node
         Hudson.getInstance().getQueue().scheduleMaintenance();  

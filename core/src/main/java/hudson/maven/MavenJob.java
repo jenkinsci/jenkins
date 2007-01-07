@@ -2,12 +2,12 @@ package hudson.maven;
 
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
-import hudson.model.JobDescriptor;
-import hudson.model.TaskListener;
 import hudson.model.Job;
-import org.apache.maven.embedder.MavenEmbedder;
-import org.apache.maven.embedder.MavenEmbedderException;
+import hudson.model.JobDescriptor;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 
@@ -31,6 +31,15 @@ public final class MavenJob extends AbstractProject<MavenJob,MavenBuild> {
     @Override
     protected MavenBuild loadBuild(File dir) throws IOException {
         return new MavenBuild(this,dir);
+    }
+
+
+    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        super.doConfigSubmit(req, rsp);
+
+        // TODO
+
+        save();
     }
 
     public JobDescriptor<MavenJob,MavenBuild> getDescriptor() {
