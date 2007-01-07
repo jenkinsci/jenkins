@@ -15,7 +15,7 @@
           <a name="detail${loop.index}"></a>
           <div class="changeset-message">
             <b><a href="${rootURL}/${cs.author.url}/">${cs.author}</a>:</b><br/>
-            ${cs.msgEscaped}
+            ${cs.msgAnnotated}
           </div>
         </td>
       </tr>

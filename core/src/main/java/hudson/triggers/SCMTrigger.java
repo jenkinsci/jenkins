@@ -2,13 +2,12 @@ package hudson.triggers;
 
 import antlr.ANTLRException;
 import hudson.Util;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Build;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.model.TaskListener;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 

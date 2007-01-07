@@ -18,7 +18,6 @@ import java.util.Map;
  */
 public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
     private final List<LogEntry> logs;
-    private final AbstractBuild build;
 
     /**
      * @GuardedBy this
@@ -26,8 +25,10 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
     private Map<String,Integer> revisionMap;
 
     /*package*/ SubversionChangeLogSet(AbstractBuild build, List<LogEntry> logs) {
-        this.build = build;
+        super(build);
         this.logs = Collections.unmodifiableList(logs);
+        for (LogEntry log : logs)
+            log.setParent(this);
     }
 
     public boolean isEmptySet() {

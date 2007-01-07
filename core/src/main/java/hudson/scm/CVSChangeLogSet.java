@@ -1,5 +1,6 @@
 package hudson.scm;
 
+import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.scm.CVSChangeLogSet.CVSChangeLog;
 import hudson.util.IOException2;
@@ -19,8 +20,11 @@ import java.util.List;
 public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
     private List<CVSChangeLog> logs;
 
-    public CVSChangeLogSet(List<CVSChangeLog> logs) {
+    public CVSChangeLogSet(AbstractBuild<?,?> build, List<CVSChangeLog> logs) {
+        super(build);
         this.logs = Collections.unmodifiableList(logs);
+        for (CVSChangeLog log : logs)
+            log.setParent(this);
     }
 
     /**
@@ -40,7 +44,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         return logs.iterator();
     }
 
-    public static CVSChangeLogSet parse( java.io.File f ) throws IOException, SAXException {
+    public static CVSChangeLogSet parse( AbstractBuild build, java.io.File f ) throws IOException, SAXException {
         Digester digester = new Digester();
         ArrayList<CVSChangeLog> r = new ArrayList<CVSChangeLog>();
         digester.push(r);
@@ -83,7 +87,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
                 r.remove(log);
         }
 
-        return new CVSChangeLogSet(r);
+        return new CVSChangeLogSet(build,r);
     }
 
     /**

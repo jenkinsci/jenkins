@@ -1,6 +1,8 @@
 package hudson.scm;
 
 import hudson.model.User;
+import hudson.model.AbstractBuild;
+import hudson.MarkupText;
 
 import java.util.Collections;
 
@@ -13,6 +15,16 @@ import java.util.Collections;
  * @author Kohsuke Kawaguchi
  */
 public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iterable<T> {
+
+    /**
+     * {@link AbstractBuild} whose change log this object represents.
+     */
+    public final AbstractBuild<?,?> build;
+
+    protected ChangeLogSet(AbstractBuild<?, ?> build) {
+        this.build = build;
+    }
+
     /**
      * Returns true if there's no change.
      */
@@ -21,9 +33,24 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     /**
      * Constant instance that represents no changes.
      */
-    public static final ChangeLogSet<? extends Entry> EMPTY = new CVSChangeLogSet(Collections.<CVSChangeLogSet.CVSChangeLog>emptyList());
+    public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(AbstractBuild build) {
+        return new CVSChangeLogSet(build,Collections.<CVSChangeLogSet.CVSChangeLog>emptyList());
+    }
 
     public static abstract class Entry {
+        private ChangeLogSet parent;
+
+        public ChangeLogSet getParent() {
+            return parent;
+        }
+
+        /**
+         * Should be invoked before a {@link ChangeLogSet} is exposed to public.
+         */
+        protected void setParent(ChangeLogSet parent) {
+            this.parent = parent;
+        }
+
         /**
          * Gets the "commit message".
          *
@@ -42,6 +69,17 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          *      never null.
          */
         public abstract User getAuthor();
+
+        /**
+         * Gets the text fully marked up by {@link ChangeLogAnnotator}.
+         */
+        public String getMsgAnnotated() {
+            MarkupText markup = new MarkupText(getMsgEscaped());
+            for (ChangeLogAnnotator a : ChangeLogAnnotator.annotators)
+                a.annotate(parent.build,this,markup);
+
+            return markup.toString();
+        }
 
         /**
          * Message escaped for HTML

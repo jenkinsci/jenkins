@@ -171,7 +171,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     private ChangeLogSet<? extends Entry> calcChangeSet() {
         File changelogFile = new File(getRootDir(), "changelog.xml");
         if(!changelogFile.exists())
-            return ChangeLogSet.EMPTY;
+            return ChangeLogSet.createEmpty(this);
 
         try {
             return scm.parse(this,changelogFile);
@@ -180,7 +180,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         } catch (SAXException e) {
             e.printStackTrace();
         }
-        return ChangeLogSet.EMPTY;
+        return ChangeLogSet.createEmpty(this);
     }
 
     @Override

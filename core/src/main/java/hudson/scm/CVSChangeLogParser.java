@@ -12,6 +12,6 @@ import java.io.IOException;
  */
 public class CVSChangeLogParser extends ChangeLogParser {
     public CVSChangeLogSet parse(AbstractBuild build, File changelogFile) throws IOException, SAXException {
-        return CVSChangeLogSet.parse(changelogFile);
+        return CVSChangeLogSet.parse(build,changelogFile);
     }
 }

@@ -30,7 +30,7 @@
       <ol>
         <j:forEach var="cs" items="${it.logs}" varStatus="loop">
           <li>
-            ${cs.msgEscaped}
+            ${cs.msgAnnotated}
             (<a href="changes#detail${loop.index}">detail</a>)
           </li>
         </j:forEach>
