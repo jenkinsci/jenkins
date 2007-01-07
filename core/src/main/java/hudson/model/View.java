@@ -56,6 +56,10 @@ public class View extends JobCollection {
         return Arrays.asList(jobs);
     }
 
+    public Job getJob(String name) {
+        return owner.getJob(name);
+    }
+
     public boolean containsJob(Job job) {
         return jobNames.contains(job.getName());
     }

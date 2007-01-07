@@ -1,6 +1,9 @@
 <!--
   <%@ attribute name="jobs" required="true" type="java.util.Collection" %>
   <%@ attribute name="showViewTabs" required="true" type="java.lang.Boolean" %>
+
+  <%@ attribute name="jobBaseUrl" type="String" %>
+    The base URL of all job links. Normally ${rootURL}/  
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <t:setIconSize/>
@@ -44,7 +47,7 @@
               <img src="${rootURL}/images/${iconSize}/${job.buildStatusUrl}" />
             </td>
             <td>
-              <a href="${rootURL}/${job.url}">
+              <a href="${jobBaseUrl}${job.url}">
                   ${job.name}
               </a>
             </td>
@@ -52,7 +55,7 @@
               <j:choose>
                 <j:when test="${lsBuild!=null}">
                   ${lsBuild.timestampString}
-                  (<a href="${rootURL}/${job.url}lastSuccessfulBuild/">#${lsBuild.number}</a>)
+                  (<a href="${jobBaseUrl}${job.url}lastSuccessfulBuild/">#${lsBuild.number}</a>)
                 </j:when>
                 <j:otherwise>
                   N/A
@@ -63,7 +66,7 @@
               <j:choose>
                 <j:when test="${lfBuild!=null}">
                   ${lfBuild.timestampString}
-                  (<a href="${rootURL}/${job.url}lastFailedBuild/">#${lfBuild.number}</a>)
+                  (<a href="${jobBaseUrl}${job.url}lastFailedBuild/">#${lfBuild.number}</a>)
                 </j:when>
                 <j:otherwise>
                   N/A
@@ -89,7 +92,7 @@
             <l:isAdmin>
               <td>
                 <j:if test="${job.buildable}">
-                  <a href="${rootURL}/${job.url}build">
+                  <a href="${jobBaseUrl}${job.url}build">
                     <img src="${rootURL}/images/${subIconSize}/clock.gif" title="Schedule a build" border="0" /></a>
                 </j:if>
               </td>

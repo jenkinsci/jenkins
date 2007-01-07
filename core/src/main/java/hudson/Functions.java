@@ -270,4 +270,19 @@ public class Functions {
         }
         return false;
     }
+
+    /**
+     * Finds the given object in the ancestor list and returns its URL.
+     * This is used to determine the "current" URL assigned to the given object,
+     * so that one can compute relative URLs from it.
+     */
+    public static String getNearestAncestorUrl(StaplerRequest req,Object it) {
+        List list = req.getAncestors();
+        for( int i=list.size()-1; i>=0; i-- ) {
+            Ancestor anc = (Ancestor) list.get(i);
+            if(anc.getObject()==it)
+                return anc.getUrl();
+        }
+        return null;
+    }
 }
