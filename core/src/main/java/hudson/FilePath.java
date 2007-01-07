@@ -323,7 +323,7 @@ public final class FilePath implements Serializable {
      */
     public FilePath createTextTempFile(final String prefix, final String suffix, final String contents, final boolean inThisDirectory) throws IOException, InterruptedException {
         try {
-            return new FilePath(this,act(new FileCallable<String>() {
+            return new FilePath(channel,act(new FileCallable<String>() {
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
                     if(!inThisDirectory)
                         dir = null;
@@ -333,7 +333,7 @@ public final class FilePath implements Serializable {
                     w.write(contents);
                     w.close();
 
-                    return f.getName();
+                    return f.getAbsolutePath();
                 }
             }));
         } catch (IOException e) {
