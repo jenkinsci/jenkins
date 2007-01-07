@@ -144,6 +144,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return new FilePath(new File(getRootDir(),"workspace"));
     }
 
+    /**
+     * Returns the root directory of the checked-out module.
+     * <p>
+     * This is usually where <tt>pom.xml</tt>, <tt>build.xml</tt>
+     * and so on exists. 
+     */
+    public FilePath getModuleRoot() {
+        return getScm().getModuleRoot(getWorkspace());
+    }
+
     public int getQuietPeriod() {
         return quietPeriod!=null ? quietPeriod : getParent().getQuietPeriod();
     }

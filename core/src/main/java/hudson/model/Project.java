@@ -127,16 +127,6 @@ public class Project extends AbstractProject<Project,Build> {
     }
 
     /**
-     * Returns the root directory of the checked-out module.
-     *
-     * @return
-     *      When running remotely, this returns a remote fs directory.
-     */
-    public FilePath getModuleRoot() {
-        return getScm().getModuleRoot(getWorkspace());
-    }
-
-    /**
      * Gets the dependency relationship map between this project (as the source)
      * and that project (as the sink.)
      *
