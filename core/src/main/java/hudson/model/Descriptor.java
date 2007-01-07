@@ -199,7 +199,7 @@ public abstract class Descriptor<T extends Describable<T>> {
     }
 
     public static <T extends Describable<T>>
-    Map<Descriptor<T>,T> toMap(List<T> describables) {
+    Map<Descriptor<T>,T> toMap(Iterable<T> describables) {
         Map<Descriptor<T>,T> m = new LinkedHashMap<Descriptor<T>,T>();
         for (T d : describables) {
             m.put(d.getDescriptor(),d);

@@ -116,7 +116,7 @@ public final class Hudson extends JobCollection implements Node {
     private transient boolean isQuietingDown;
     private transient boolean terminating;
 
-    private List<JDK> jdks;
+    private List<JDK> jdks = new ArrayList<JDK>();
 
     /**
      * Set of installed cluster nodes.
@@ -816,6 +816,9 @@ public final class Hudson extends JobCollection implements Node {
                 result &= scmd.configure(req);
 
             for( Descriptor<Trigger> d : Triggers.TRIGGERS )
+                result &= d.configure(req);
+
+            for( JobPropertyDescriptor d : Jobs.PROPERTIES )
                 result &= d.configure(req);
 
             save();

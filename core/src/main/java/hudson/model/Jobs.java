@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.maven.MavenJob;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * List of all installed {@link Job} types.
@@ -26,6 +27,17 @@ public class Jobs {
         }
         return null;
     }
+
+    /**
+     * List of all installed {@link JobPropertyDescriptor} types.
+     *
+     * <p>
+     * Plugins can add their {@link JobPropertyDescriptor}s to this list.
+     *
+     * @see JobDescriptor#getPropertyDescriptors() 
+     */
+    public static final List<JobPropertyDescriptor> PROPERTIES = Descriptor.toList(
+    );
 
     static {
         if(Boolean.getBoolean("hudson.maven"))

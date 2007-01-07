@@ -5,6 +5,7 @@ import com.thoughtworks.xstream.converters.DataHolder;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import hudson.model.Hudson;
+import hudson.util.CopyOnWriteList.ConverterImpl;
 
 /**
  * {@link XStream} enhanced for retroweaver support.
@@ -36,5 +37,6 @@ public class XStream2 extends XStream {
         registerConverter(new RobustCollectionConverter(getClassMapper()),10);
         registerConverter(new RetroweaverEnumConverter(),10);
         registerConverter(new RetrotranslatorEnumConverter(),10);
+        registerConverter(new ConverterImpl(getClassMapper()),10);
     }
 }

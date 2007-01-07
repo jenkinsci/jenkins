@@ -1,9 +1,18 @@
 package hudson.util;
 
-import java.util.List;
+import com.thoughtworks.xstream.alias.CannotResolveClassException;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.mapper.Mapper;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * {@link List}-like implementation that has copy-on-write semantics.
@@ -17,7 +26,11 @@ public class CopyOnWriteList<E> implements Iterable<E> {
     private volatile List<E> core;
 
     public CopyOnWriteList(List<E> core) {
-        this.core = new ArrayList<E>(core);
+        this(core,false);
+    }
+
+    private CopyOnWriteList(List<E> core, boolean noCopy) {
+        this.core = noCopy ? core : new ArrayList<E>(core);
     }
 
     public CopyOnWriteList() {
@@ -64,5 +77,41 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                 throw new UnsupportedOperationException();
             }
         };
+    }
+
+    /**
+     * {@link Converter} implementation for XStream.
+     */
+    public static final class ConverterImpl extends AbstractCollectionConverter {
+        public ConverterImpl(Mapper mapper) {
+            super(mapper);
+        }
+
+        public boolean canConvert(Class type) {
+            return type==CopyOnWriteList.class;
+        }
+
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            for (Object o : (CopyOnWriteList) source)
+                writeItem(o, context, writer);
+        }
+
+        @SuppressWarnings("unchecked")
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            // read the items from xml into a list
+            List items = new ArrayList();
+            while (reader.hasMoreChildren()) {
+                reader.moveDown();
+                try {
+                    Object item = readItem(reader, context, items);
+                    items.add(item);
+                } catch (CannotResolveClassException e) {
+                    System.err.println("failed to locate class: "+e);
+                }
+                reader.moveUp();
+            }
+
+            return new CopyOnWriteList(items,true);
+        }
     }
 }

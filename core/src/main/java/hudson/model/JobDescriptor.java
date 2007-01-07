@@ -2,6 +2,9 @@ package hudson.model;
 
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * {@link Descriptor} for {@link Job}s.
  *
@@ -25,4 +28,15 @@ public abstract class JobDescriptor<J extends Job<J,R>,R extends Run<J,R>> exten
      * Creates a new {@link Job}.
      */
     public abstract Job<J,R> newInstance(String name);
+
+    /**
+     * Gets the {@link JobPropertyDescriptor}s applicable for this job type.
+     */
+    public List<JobPropertyDescriptor> getPropertyDescriptors() {
+        List<JobPropertyDescriptor> r = new ArrayList<JobPropertyDescriptor>();
+        for (JobPropertyDescriptor p : Jobs.PROPERTIES)
+            if(p.isApplicable(clazz))
+                r.add(p);
+        return r;
+    }
 }

@@ -4,7 +4,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 <l:layout norefresh="true">
   <st:include page="sidepanel.jelly" />
-  <l:main-panel>
+  <l:main-panel xmlns:local="local">
     <s:form method="post" action="configSubmit">
       <s:entry title="Home directory" help="/help/system-config/homeDirectory.html">
         ${it.rootDir}
@@ -108,40 +108,23 @@
         </s:entry>
       </s:section>
 
-      <!-- trigger config pane -->
-      <j:getStatic var="triggers" className="hudson.triggers.Triggers" field="TRIGGERS" />
-      <j:forEach var="idx" begin="0" end="${size(triggers)-1}">
-        <j:set var="descriptor" value="${triggers[idx]}" />
-        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
-      </j:forEach>
+      <d:taglib uri="local">
+        <!-- display global config pages for the given descriptors -->
+        <d:tag name="globalConfig">
+          <j:getStatic var="descriptors" className="${className}" field="${field}" />
+          <j:forEach var="idx" begin="0" end="${size(descriptors)-1}">
+            <j:set var="descriptor" value="${descriptors[idx]}" />
+            <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
+          </j:forEach>
+        </d:tag>
+      </d:taglib>
 
-      <!-- build wrapper config pane -->
-      <j:getStatic var="wrappers" className="hudson.tasks.BuildWrappers" field="WRAPPERS" />
-      <j:forEach var="idx" begin="0" end="${size(wrappers)-1}">
-        <j:set var="descriptor" value="${wrappers[idx]}" />
-        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
-      </j:forEach>
-
-      <!-- builder config pane -->
-      <j:getStatic var="builds" className="hudson.tasks.BuildStep" field="BUILDERS" />
-      <j:forEach var="idx" begin="0" end="${size(builds)-1}">
-        <j:set var="descriptor" value="${builds[idx]}" />
-        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
-      </j:forEach>
-
-      <!-- SCM config pane -->
-      <j:getStatic var="scms" className="hudson.scm.SCMS" field="SCMS" />
-      <j:forEach var="idx" begin="0" end="${size(scms)-1}">
-        <j:set var="descriptor" value="${scms[idx]}" />
-        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
-      </j:forEach>
-
-      <!-- publisher config pane -->
-      <j:getStatic var="pubs" className="hudson.tasks.BuildStep" field="PUBLISHERS" />
-      <j:forEach var="idx" begin="0" end="${size(pubs)-1}">
-        <j:set var="descriptor" value="${pubs[idx]}" />
-        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
-      </j:forEach>
+      <local:globalConfig className="hudson.triggers.Triggers" field="TRIGGERS" />
+      <local:globalConfig className="hudson.tasks.BuildWrappers" field="WRAPPERS" />
+      <local:globalConfig className="hudson.tasks.BuildStep" field="BUILDERS" />
+      <local:globalConfig className="hudson.scm.SCMS" field="SCMS" />
+      <local:globalConfig className="hudson.tasks.BuildStep" field="PUBLISHERS" />
+      <local:globalConfig className="hudson.model.Jobs" field="PROPERTIES" />
 
       <s:block>
         <input type="submit" name="Submit" value="OK" />

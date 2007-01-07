@@ -8,6 +8,7 @@ import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
 import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
+import hudson.util.CopyOnWriteList;
 import hudson.util.DataSetBuilder;
 import hudson.util.IOException2;
 import hudson.util.RunList;
@@ -39,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
+import java.util.Map;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -85,6 +87,11 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
     private boolean keepDependencies;
 
+    /**
+     * List of {@link UserProperty}s configured for this project.
+     */
+    private CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<JobProperty<? super JobT>>();
+
     protected Job(Hudson parent,String name) {
         this.parent = parent;
         doSetName(name);
@@ -113,6 +120,9 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
             saveNextBuildNumber();
             save(); // and delete it from the config.xml
         }
+
+        if(properties==null) // didn't exist < 1.72
+            properties = new CopyOnWriteList<JobProperty<? super JobT>>();
     }
 
     /**
@@ -194,6 +204,25 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
     public String getDisplayName() {
         return getName();
+    }
+
+    /**
+     * Gets all the job properties configured for this job.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<JobPropertyDescriptor,JobProperty<? super JobT>> getProperties() {
+        return Descriptor.toMap((Iterable)properties);
+    }
+
+    /**
+     * Gets the specific property, or null if the propert is not configured for this job.
+     */
+    public <T extends JobProperty> T getProperty(Class<T> clazz) {
+        for (JobProperty p : properties) {
+            if(clazz.isInstance(p))
+                return clazz.cast(p);
+        }
+        return null;
     }
 
     /**
