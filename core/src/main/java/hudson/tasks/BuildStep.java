@@ -57,6 +57,9 @@ public interface BuildStep {
      * @param project
      *      {@link Project} that owns this build step,
      *      since {@link BuildStep} object doesn't usually have this "parent" pointer.
+     *
+     * @return
+     *      null if there's no action to be contributed.
      */
     Action getProjectAction(Project project);
 
