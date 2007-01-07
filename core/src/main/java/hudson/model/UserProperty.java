@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Plugin;
+import hudson.tasks.Mailer;
 
 /**
  * Extensible property of {@link User}.
@@ -10,6 +11,13 @@ import hudson.Plugin;
  * {@link Plugin}s can extend this to define custom properties
  * for {@link User}s. {@link UserProperty}s show up in the user
  * configuration screen, and they are persisted with the user object.
+ *
+ * <p>
+ * Configuration screen should be defined in <tt>config.jelly</tt>.
+ * Within this page, the {@link UserProperty} instance is available
+ * as <tt>instance</tt> variable (while <tt>it</tt> refers to {@link User}.
+ * See {@link Mailer.UserProperty}'s <tt>config.jelly</tt> for an example.
+ *
  *
  * @author Kohsuke Kawaguchi
  * @see UserProperties#LIST
