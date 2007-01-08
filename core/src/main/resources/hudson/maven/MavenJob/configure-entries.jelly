@@ -25,4 +25,10 @@
     </f:optionalBlock>
     </j:if>
   </f:descriptorList>
+
+  <j:getStatic var="reporters" className="hudson.maven.MavenReporters" field="LIST" />
+  <f:descriptorList title="Build Settings"
+                    descriptors="${reporters}"
+                    instances="${it.reporters.toMap()}"
+                    varName="reporter" />
 </j:jelly>
