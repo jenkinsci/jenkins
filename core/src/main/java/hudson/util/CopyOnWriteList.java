@@ -23,7 +23,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class CopyOnWriteList<E> implements Iterable<E> {
-    private volatile List<E> core;
+    private volatile List<? extends E> core;
 
     public CopyOnWriteList(List<E> core) {
         this(core,false);
@@ -63,7 +63,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
      * The returned iterator doesn't support the <tt>remove</tt> operation.
      */
     public Iterator<E> iterator() {
-        final Iterator<E> itr = core.iterator();
+        final Iterator<? extends E> itr = core.iterator();
         return new Iterator<E>() {
             public boolean hasNext() {
                 return itr.hasNext();
@@ -77,6 +77,13 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                 throw new UnsupportedOperationException();
             }
         };
+    }
+
+    /**
+     * Completely replaces this list by the contents of the given list.
+     */
+    public void replaceBy(CopyOnWriteList<? extends E> that) {
+        this.core = that.core;
     }
 
     /**
@@ -97,7 +104,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         }
 
         @SuppressWarnings("unchecked")
-        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+        public CopyOnWriteList unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             // read the items from xml into a list
             List items = new ArrayList();
             while (reader.hasMoreChildren()) {
