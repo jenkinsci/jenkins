@@ -389,6 +389,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return ID_FORMATTER.format(timestamp.getTime());
     }
 
+    /**
+     * Root directory of this {@link Run} on the master.
+     *
+     * Files related to this {@link Run} should be stored below this directory.
+     */
     public File getRootDir() {
         File f = new File(project.getBuildDir(),getId());
         f.mkdirs();
