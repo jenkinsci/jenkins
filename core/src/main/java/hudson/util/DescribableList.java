@@ -64,6 +64,13 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     }
 
     /**
+     * Gets all the {@link Describable}s in an array.
+     */
+    public T[] toArray(T[] array) {
+        return data.toArray(array);
+    }
+
+    /**
      * Rebuilds the list by creating a fresh instances from the submitted form.
      *
      * <p>
