@@ -94,6 +94,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         this.core = new ArrayList<E>(that);
     }
 
+    public E[] toArray(E[] array) {
+        return core.toArray(array);
+    }
+
     /**
      * {@link Converter} implementation for XStream.
      */
