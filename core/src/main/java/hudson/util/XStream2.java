@@ -37,6 +37,7 @@ public class XStream2 extends XStream {
         registerConverter(new RobustCollectionConverter(getClassMapper()),10);
         registerConverter(new RetroweaverEnumConverter(),10);
         registerConverter(new RetrotranslatorEnumConverter(),10);
-        registerConverter(new ConverterImpl(getClassMapper()),10);
+        registerConverter(new CopyOnWriteList.ConverterImpl(getClassMapper()),10);
+        registerConverter(new DescribableList.ConverterImpl(getClassMapper()),10);
     }
 }
