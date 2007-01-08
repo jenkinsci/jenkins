@@ -436,6 +436,7 @@ public final class FilePath implements Serializable {
     /**
      * Writes to this file.
      * If this file already exists, it will be overwritten.
+     * If the directory doesn't exist, it will be created.
      */
     public OutputStream write() throws IOException {
         if(channel==null)
@@ -444,7 +445,9 @@ public final class FilePath implements Serializable {
         final Pipe p = Pipe.createLocalToRemote();
         channel.callAsync(new Callable<Void,IOException>() {
             public Void call() throws IOException {
-                FileOutputStream fos = new FileOutputStream(new File(remote));
+                File f = new File(remote);
+                f.getParentFile().mkdirs();
+                FileOutputStream fos = new FileOutputStream(f);
                 Util.copyStream(p.getIn(),fos);
                 fos.close();
                 p.getIn().close();
