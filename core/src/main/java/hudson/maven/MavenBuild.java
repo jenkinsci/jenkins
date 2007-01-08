@@ -49,6 +49,8 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
 
     /**
      * Runs Maven and builds the project.
+     *
+     * This code is executed on the remote machine.
      */
     private static final class Builder implements FileCallable<Result> {
         private final BuildListener listener;
@@ -125,7 +127,7 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
 
         //private boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) {
         //    for( BuildStep bs : steps.values() )
-        //        if(!bs.prebuild(Build.this,listener))
+        //        if(!bs.preBuild(Build.this,listener))
         //            return false;
         //    return true;
         //}

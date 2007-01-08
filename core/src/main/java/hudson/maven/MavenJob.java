@@ -1,9 +1,12 @@
 package hudson.maven;
 
 import hudson.model.AbstractProject;
+import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.JobDescriptor;
+import hudson.model.Descriptor.FormException;
+import hudson.util.DescribableList;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -16,9 +19,20 @@ import java.io.IOException;
  * 
  * @author Kohsuke Kawaguchi
  */
-public final class MavenJob extends AbstractProject<MavenJob,MavenBuild> {
+public final class MavenJob extends AbstractProject<MavenJob,MavenBuild> implements DescribableList.Owner {
+    private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
+        new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
+
     public MavenJob(Hudson parent, String name) {
         super(parent, name);
+    }
+
+    @Override
+    protected void onLoad(Hudson root, String name) throws IOException {
+        super.onLoad(root, name);
+        if(reporters==null)
+            reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
+        reporters.setOwner(this);
     }
 
     @Override
@@ -33,11 +47,21 @@ public final class MavenJob extends AbstractProject<MavenJob,MavenBuild> {
         return new MavenBuild(this,dir);
     }
 
+    /**
+     * List of active {@link MavenReporter}s configured for this project.
+     */
+    public DescribableList<MavenReporter, Descriptor<MavenReporter>> getReporters() {
+        return reporters;
+    }
 
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         super.doConfigSubmit(req, rsp);
 
-        // TODO
+        try {
+            reporters.rebuild(req,MavenReporters.LIST,"reporter");
+        } catch (FormException e) {
+            sendError(e,req,rsp);
+        }
 
         save();
     }

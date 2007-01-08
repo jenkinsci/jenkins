@@ -9,26 +9,36 @@ import hudson.tasks.BuildStep;
 
 import java.io.IOException;
 
+import org.apache.maven.project.MavenProject;
+
 /**
  * Listens to the build execution of {@link MavenBuild},
  * and normally records some information and exposes thoses
  * in {@link MavenBuild} later.
  *
  * <p>
+ * TODO: talk about two nodes involved
+ * Because builds may happen on a remote slave node, {@link MavenReporter}
+ * implementation needs  ...
+ *
+ * <p>
  * This is the {@link MavenBuild} equivalent of {@link BuildStep}.
  *
  * @author Kohsuke Kawaguchi
+ * @see MavenReporters
  */
-public abstract class MavenListener implements Describable<MavenListener>, ExtensionPoint {
+public abstract class MavenReporter implements Describable<MavenReporter>, ExtensionPoint {
     /**
      * Called before the actual maven2 execution begins.
      *
+     * @param pom
+     *      Represents the POM to be executed.
      * @return
      *      true if the build can continue, false if there was an error
      *      and the build needs to be aborted.
      * @throws InterruptedException
      *      If the build is interrupted by the user (in an attempt to abort the build.)
-     *      Normally the {@link MavenListener} implementations may simply forward the exception
+     *      Normally the {@link MavenReporter} implementations may simply forward the exception
      *      it got from its lower-level functions.
      * @throws IOException
      *      If the implementation wants to abort the processing when an {@link IOException}
@@ -38,27 +48,35 @@ public abstract class MavenListener implements Describable<MavenListener>, Exten
      *      provide a better error message, if it can do so, so that users have better
      *      understanding on why it failed.
      */
-    public boolean prebuild(MavenBuild build, BuildListener listener) throws InterruptedException, IOException {
+    public boolean preBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         return true;
+    }
+
+    public void preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
+
+    }
+
+    public void postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
+
     }
 
     /**
      * Called after the actual maven2 execution completed.
      *
      * @return
-     *      See {@link #prebuild(MavenBuild, BuildListener)}
+     *      See {@link #preBuild}
      * @throws InterruptedException
-     *      See {@link #prebuild(MavenBuild, BuildListener)}
+     *      See {@link # preBuild}
      * @throws IOException
-     *      See {@link #prebuild(MavenBuild, BuildListener)}
+     *      See {@link # preBuild}
      */
-    public boolean postbuild(MavenBuild build, BuildListener listener) throws InterruptedException, IOException {
+    public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         return true;
     }
 
     /**
      * Equivalent of {@link BuildStep#getProjectAction(Project)}
-     * for {@link MavenListener}.
+     * for {@link MavenReporter}.
      */
     public Action getProjectAction(MavenJob project) {
         return null;
