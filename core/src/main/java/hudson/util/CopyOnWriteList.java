@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Collection;
 
 /**
  * {@link List}-like implementation that has copy-on-write semantics.
@@ -84,6 +85,13 @@ public class CopyOnWriteList<E> implements Iterable<E> {
      */
     public void replaceBy(CopyOnWriteList<? extends E> that) {
         this.core = that.core;
+    }
+
+    /**
+     * Completely replaces this list by the contents of the given list.
+     */
+    public void replaceBy(Collection<? extends E> that) {
+        this.core = new ArrayList<E>(that);
     }
 
     /**
