@@ -11,6 +11,8 @@ import java.io.Serializable;
  * so that the remote {@link Callable} can write to a local {@link OutputStream}.
  *
  * <h2>Usage</h2>
+ * <p>
+ * To have a remote machine write to a local {@link OutputStream}:
  * <pre>
  * final OutputStream out = new RemoteOutputStream(os);
  *
@@ -18,6 +20,18 @@ import java.io.Serializable;
  *   public Object call() {
  *     // this will write to 'os'.
  *     out.write(...);
+ *   }
+ * });
+ * </pre>
+ *
+ * <p>
+ * To have a local machine write to a remote {@link OutputStream}:
+ *
+ * <pre>
+ * OutputStream os = channel.call(new Callable() {
+ *   public Object call() {
+ *       OutputStream os = new FileOutputStream(...); // or any other OutputStream
+ *       return new RemoteOutputStream(os);
  *   }
  * });
  * </pre>
