@@ -79,8 +79,11 @@
                 </ol>
               </j:if>
             </j:when>
-            <j:otherwise>
+            <j:when test="${it.building}">
               Not yet determined
+            </j:when>
+            <j:otherwise>
+              Failed to determine (<a href="console">log</a>)
             </j:otherwise>
           </j:choose>
         </t:summary>
