@@ -95,7 +95,7 @@ public abstract class DirectoryHolder extends Actionable {
 
 
         if(isFingerprint) {
-            rsp.forward(f.digest(),"/",req);
+            rsp.forward(Hudson.getInstance().getFingerprint(f.digest()),"/",req);
         } else {
             ContentInfo ci = f.act(new ContentInfo());
 
