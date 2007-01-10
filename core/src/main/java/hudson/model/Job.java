@@ -32,6 +32,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
@@ -558,6 +559,10 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * Returns the graph that shows how long each build took.
      */
     public void doBuildTimeGraph( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        if(getLastBuild()==null) {
+            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
         if(req.checkIfModified(getLastBuild().getTimestamp(),rsp))
             return;
         ChartUtil.generateGraph(req,rsp, createBuildTimeTrendChart(),500,400);
@@ -568,6 +573,10 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * Loaded lazily by AJAX.
      */
     public void doBuildTimeGraphMap( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        if(getLastBuild()==null) {
+            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
         if(req.checkIfModified(getLastBuild().getTimestamp(),rsp))
             return;
         ChartUtil.generateClickableMap(req,rsp, createBuildTimeTrendChart(),500,400);
