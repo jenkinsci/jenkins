@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.Util;
 import hudson.model.Node.Mode;
 import hudson.util.OneShotEvent;
 
@@ -144,7 +145,7 @@ public class Queue {
             PrintWriter w = new PrintWriter(new FileOutputStream(
                 getQueueFile()));
             for (Item i : getItems())
-                w.println(i.getProject().getName());
+                w.println(i.project.getName());
             w.close();
         } catch(IOException e) {
             LOGGER.log(Level.WARNING, "Failed to write out the queue file "+getQueueFile(),e);
@@ -199,10 +200,10 @@ public class Queue {
         int idx=queue.size();
         Calendar now = new GregorianCalendar();
         for (AbstractProject p : blockedProjects) {
-            r[idx++] = new Item(now, p);
+            r[idx++] = new Item(now, p, true, false);
         }
         for (AbstractProject p : buildables) {
-            r[idx++] = new Item(now, p);
+            r[idx++] = new Item(now, p, false, true);
         }
         return r;
     }
@@ -437,37 +438,79 @@ public class Queue {
         /**
          * This item can be run after this time.
          */
-        final Calendar timestamp;
+        public final Calendar timestamp;
 
         /**
          * Project to be built.
          */
-        final AbstractProject<?,?> project;
+        public final AbstractProject<?,?> project;
 
         /**
          * Unique number of this {@link Item}.
          * Used to differentiate {@link Item}s with the same due date.
          */
-        final int id;
+        public final int id;
+
+        /**
+         * Build is blocked because another build is in progress.
+         * This flag is only used in {@link Queue#getItems()} for
+         * 'pseudo' items that are actually not really in the queue.
+         */
+        public final boolean isBlocked;
+
+        /**
+         * Build is waiting the executor to become available.
+         * This flag is only used in {@link Queue#getItems()} for
+         * 'pseudo' items that are actually not really in the queue.
+         */
+        public final boolean isBuildable;
 
         public Item(Calendar timestamp, AbstractProject project) {
+            this(timestamp,project,false,false);
+        }
+
+        public Item(Calendar timestamp, AbstractProject project, boolean isBlocked, boolean isBuildable) {
             this.timestamp = timestamp;
             this.project = project;
+            this.isBlocked = isBlocked;
+            this.isBuildable = isBuildable;
             synchronized(Queue.this) {
                 this.id = iota++;
             }
         }
 
-        public Calendar getTimestamp() {
-            return timestamp;
-        }
+        /**
+         * Gets a human-readable status message describing why it's in the queu.
+         */
+        public String getWhy() {
+            if(isBuildable) {
+                Node node = project.getAssignedNode();
+                Hudson hudson = Hudson.getInstance();
+                if(node==hudson && hudson.getSlaves().isEmpty())
+                    node = null;    // no master/slave. pointless to talk about nodes
 
-        public AbstractProject getProject() {
-            return project;
-        }
+                String name = null;
+                if(node!=null) {
+                    if(node==hudson)
+                        name = "master";
+                    else
+                        name = node.getNodeName();
+                }
 
-        public int getId() {
-            return id;
+                return "Waiting for next available executor"+(name==null?"":" on "+name);
+            }
+
+            if(isBlocked) {
+                int lbn = project.getLastBuild().getNumber();
+                return "Build #"+lbn+" is already in progress";
+            }
+
+            long diff = timestamp.getTimeInMillis() - System.currentTimeMillis();
+            if(diff>0) {
+                return "In the quiet period. Expires in "+ Util.getTimeSpanString(diff);
+            }
+
+            return "???";
         }
     }
 
