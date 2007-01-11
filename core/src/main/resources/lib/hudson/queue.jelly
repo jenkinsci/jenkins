@@ -25,9 +25,18 @@
         </j:if>
         <j:forEach var="item" items="${app.queue.items}">
           <tr>
-            <td class="pane" width="100%"><a href="${rootURL}/${item.project.url}">
-              ${item.project.name}
-            </a></td>
+            <j:set var="id" value="${h.generateId()}"/>
+            <td class="pane" width="100%" id="${id}">
+              <a href="${rootURL}/${item.project.url}">
+                ${item.project.name}
+              </a>
+              <script>
+                new YAHOO.widget.Tooltip("tooltip-${id}", {
+                  context:"${id}",
+                  text:"${item.why}",
+                  showDelay:500 } );
+              </script>
+            </td>
             <td class="pane" width="16" align="center" valign="middle">
               <a href="${rootURL}/${item.project.url}cancelQueue"><img src="${rootURL}/images/16x16/stop.gif" alt="cancel this build" /></a>
             </td>
