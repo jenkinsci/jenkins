@@ -135,6 +135,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
             changelogFileCreated = true;
             try {
                 int r = launcher.launch(cmd,env,os,build.getProject().getWorkspace()).join();
+                pause(listener);
                 if(r!=0) {
                     listener.fatalError("revision check failed");
                     // report the output
@@ -203,6 +204,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
                 cmd.add(tokens.nextToken());
 
                 result = run(launcher,cmd,listener,workspace);
+                pause(listener);
                 if(!result)
                     return false;
             }
@@ -260,6 +262,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             int r = launcher.launch(cmd,env,baos,workspace).join();
+            pause(listener);
             if(r!=0) {
                 // failed. to allow user to diagnose the problem, send output to log
                 listener.getLogger().write(baos.toByteArray());
@@ -339,10 +342,22 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
 
         StringTokenizer tokens = new StringTokenizer(modules);
         while(tokens.hasMoreTokens()) {
-            if(!run(launcher,cmd,listener,new FilePath(remoteDir,getLastPathComponent(tokens.nextToken()))))
+            boolean result = run(launcher, cmd, listener, new FilePath(remoteDir, getLastPathComponent(tokens.nextToken())));
+            pause(listener);
+            if(!result)
                 return false;
         }
         return true;
+    }
+
+    private static void pause(TaskListener listener) {
+        try {
+            if(pauseBetweenInvocation<=0)   return; // do nothing
+            listener.getLogger().println("Pausing "+pauseBetweenInvocation+"ms");
+            Thread.sleep(pauseBetweenInvocation);
+        } catch (InterruptedException e) {
+            listener.getLogger().println("aborted");
+        }
     }
 
     /**
@@ -559,4 +574,10 @@ public class SubversionSCM extends AbstractCVSFamilySCM {
      * Debug switch to dump "svn info" output, to troubleshoot issue #167.
      */
     public static boolean dumpSvnInfo = false;
+
+    /**
+     * Debug switch that causes Hudson to wait between svn invocation.
+     * This is a temporary change to trouble-shoot issue #167.
+     */
+    public static int pauseBetweenInvocation = 0;
 }
