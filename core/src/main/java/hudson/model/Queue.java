@@ -501,8 +501,13 @@ public class Queue {
             }
 
             if(isBlocked) {
-                int lbn = project.getLastBuild().getNumber();
-                return "Build #"+lbn+" is already in progress";
+                AbstractBuild<?, ?> build = project.getLastBuild();
+                Executor e = build.getExecutor();
+                String eta="";
+                if(e!=null)
+                    eta = " (ETA:"+e.getEstimatedRemainingTime()+")";
+                int lbn = build.getNumber();
+                return "Build #"+lbn+" is already in progress"+eta;
             }
 
             long diff = timestamp.getTimeInMillis() - System.currentTimeMillis();
