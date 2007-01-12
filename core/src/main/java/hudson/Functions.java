@@ -12,6 +12,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -93,6 +95,18 @@ public class Functions {
                 String ancUrl = anc.getUrl();
 
                 String reqUri = req.getOriginalRequestURI();
+                // despite the spec saying this string is not decoded,
+                // Tomcat apparently decodes this string. You see ' ' instead of '%20', which is what
+                // the browser has sent. So do some quick scan to see if it's ASCII safe, and if not
+                // re-encode it. Otherwise it won't match with ancUrl.
+                if(reqUri.indexOf(' ')>=0) {
+                    try {
+                        // 3 arg version accepts illegal character. 1-arg version doesn't
+                        reqUri = new URI(null,reqUri,null).toASCIIString();
+                    } catch (URISyntaxException e) {
+                        // try to use reqUri as is.
+                    }
+                }
 
                 return new RunUrl(
                     (Run) anc.getObject(), ancUrl,
