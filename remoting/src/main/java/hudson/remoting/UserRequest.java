@@ -19,7 +19,7 @@ import java.io.NotSerializableException;
  *
  * @author Kohsuke Kawaguchi
  */
-final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<RSP>,EXC> {
+final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<RSP,EXC>,EXC> {
 
     private final byte[] request;
     private final IClassLoader classLoaderProxy;
@@ -34,7 +34,7 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
         classLoaderProxy = RemoteClassLoader.export(cl,local);
     }
 
-    protected UserResponse<RSP> perform(Channel channel) throws EXC {
+    protected UserResponse<RSP,EXC> perform(Channel channel) throws EXC {
         try {
             ClassLoader cl = channel.importedClassLoaders.get(classLoaderProxy);
 
@@ -57,13 +57,15 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
                 Channel.setCurrent(oldc);
             }
 
-            return new UserResponse<RSP>(serialize(r,channel));
-        } catch (IOException e) {
+            return new UserResponse<RSP,EXC>(serialize(r,channel),false);
+        } catch (Throwable e) {
             // propagate this to the calling process
-            throw (EXC)e;
-        } catch (ClassNotFoundException e) {
-            // propagate this to the calling process
-            throw (EXC)e;
+            try {
+                return new UserResponse<RSP,EXC>(serialize(e,channel),true);
+            } catch (IOException x) {
+                // throw it as a lower-level exception
+                throw (EXC)x;
+            }
         }
     }
 
@@ -87,15 +89,21 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
     }
 }
 
-final class UserResponse<RSP> implements Serializable {
+final class UserResponse<RSP,EXC extends Throwable> implements Serializable {
     private final byte[] response;
+    private final boolean isException;
 
-    public UserResponse(byte[] response) {
+    public UserResponse(byte[] response, boolean isException) {
         this.response = response;
+        this.isException = isException;
     }
 
-    public RSP retrieve(Channel channel, ClassLoader cl) throws IOException, ClassNotFoundException {
-        return (RSP) new ObjectInputStreamEx(new ByteArrayInputStream(response),cl).readObject();
+    public RSP retrieve(Channel channel, ClassLoader cl) throws IOException, ClassNotFoundException, EXC {
+        Object o = new ObjectInputStreamEx(new ByteArrayInputStream(response), cl).readObject();
+        if(isException)
+            throw (EXC)o;
+        else
+            return (RSP) o;
     }
 
     private static final long serialVersionUID = 1L;
