@@ -4,7 +4,7 @@
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
       <j:choose>
-        <j:when test="${it.builds.size()&gt;1">
+        <j:when test="${it.builds.size()&gt;1}">
           <div align="center">
             <img src="buildTimeGraph" width="500" height="400" lazymap="buildTimeGraphMap"/>
           </div>
