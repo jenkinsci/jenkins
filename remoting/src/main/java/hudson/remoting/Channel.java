@@ -219,8 +219,8 @@ public class Channel implements VirtualChannel {
     public <V,T extends Throwable>
     V call(Callable<V,T> callable) throws IOException, T, InterruptedException {
         try {
-            UserResponse<V> r = new UserRequest<V,T>(this, callable).call(this);
-            return r.retrieve(this, callable.getClass().getClassLoader());
+            UserResponse<V,T> r = new UserRequest<V,T>(this, callable).call(this);
+            return r.retrieve(this, UserRequest.getClassLoader(callable));
 
         // re-wrap the exception so that we can capture the stack trace of the caller.
         } catch (ClassNotFoundException e) {
@@ -239,15 +239,13 @@ public class Channel implements VirtualChannel {
      */
     public <V,T extends Throwable>
     Future<V> callAsync(final Callable<V,T> callable) throws IOException {
-        final Future<UserResponse<V>> f = new UserRequest<V,T>(this, callable).callAsync(this);
-        return new FutureAdapter<V,UserResponse<V>>(f) {
-            protected V adapt(UserResponse<V> r) throws ExecutionException {
+        final Future<UserResponse<V,T>> f = new UserRequest<V,T>(this, callable).callAsync(this);
+        return new FutureAdapter<V,UserResponse<V,T>>(f) {
+            protected V adapt(UserResponse<V,T> r) throws ExecutionException {
                 try {
-                    return r.retrieve(Channel.this,callable.getClass().getClassLoader());
-                } catch (IOException e) {
-                    throw new ExecutionException(e);
-                } catch (ClassNotFoundException e) {
-                    throw new ExecutionException(e);
+                    return r.retrieve(Channel.this, UserRequest.getClassLoader(callable));
+                } catch (Throwable t) {// really means catch(T t)
+                    throw new ExecutionException(t);
                 }
             }
         };

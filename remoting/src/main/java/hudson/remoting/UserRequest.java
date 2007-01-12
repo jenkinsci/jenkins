@@ -28,10 +28,15 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
     public UserRequest(Channel local, Callable<?,EXC> c) throws IOException {
         request = serialize(c,local);
         this.toString = c.toString();
+        ClassLoader cl = getClassLoader(c);
+        classLoaderProxy = RemoteClassLoader.export(cl,local);
+    }
+
+    /*package*/ static ClassLoader getClassLoader(Callable<?,?> c) {
         ClassLoader cl = c.getClass().getClassLoader();
         if(c instanceof DelegatingCallable)
             cl = ((DelegatingCallable)c).getClassLoader();
-        classLoaderProxy = RemoteClassLoader.export(cl,local);
+        return cl;
     }
 
     protected UserResponse<RSP,EXC> perform(Channel channel) throws EXC {
@@ -42,7 +47,7 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
             Channel oldc = Channel.setCurrent(channel);
             try {
                 Object o = new ObjectInputStreamEx(new ByteArrayInputStream(request), cl).readObject();
-                
+
                 Callable<RSP,EXC> callable = (Callable<RSP,EXC>)o;
 
                 ClassLoader old = Thread.currentThread().getContextClassLoader();
