@@ -1,12 +1,14 @@
 <!--
   Foldable block expanded when the menu item is checked.
 
-  This needs a fix. Big time.
-
-  <%@attribute name="name" required="true" %>
-  <%@attribute name="title" required="true" %>
-  <%@attribute name="checked" required="true" %>
-  <%@attribute name="help" %> - if present, URL to the help screen
+  @name (mandatory)
+    name of the checkbox.
+  @title (mandatory)
+    human readable text that follows the checkbox
+  @checked (mandatory)
+    initial checkbox status. true/false.
+  @help (optional)
+    if present, URL of the help HTML page.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set target="${requestScope}" property="oe_id" value="${oe_id+1}" />
