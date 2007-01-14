@@ -19,6 +19,7 @@ import hudson.model.Project;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.AbstractModelObject;
+import hudson.model.LargeText;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
@@ -26,6 +27,7 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.ForkOutputStream;
 import hudson.util.FormFieldValidator;
 import hudson.util.StreamTaskListener;
+import hudson.util.ByteBuffer;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.zip.ZipEntry;
@@ -67,6 +69,7 @@ import java.util.Enumeration;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.lang.ref.WeakReference;
 
 /**
  * CVS.
@@ -916,6 +919,11 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
          */
         private transient volatile TagWorkerThread workerThread;
 
+        /**
+         * Hold the log of "cvs tag" operation.
+         */
+        private transient WeakReference<LargeText> log;
+
         public TagAction(AbstractBuild build) {
             this.build = build;
         }
@@ -1014,6 +1022,21 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         }
 
         /**
+         * Handles incremental log output.
+         */
+        public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
+            if(log==null) {
+                rsp.setStatus(HttpServletResponse.SC_OK);
+            } else {
+                LargeText text = log.get();
+                if(text!=null)
+                    text.doProgressText(req,rsp);
+                else
+                    rsp.setStatus(HttpServletResponse.SC_OK);
+            }
+        }
+
+        /**
          * Performs tagging.
          */
         public void perform(String tagName, TaskListener listener) {
@@ -1084,7 +1107,8 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
 
     public static final class TagWorkerThread extends Thread {
         // StringWriter is synchronized
-        private final ByteArrayOutputStream log = new ByteArrayOutputStream();
+        private final ByteBuffer log = new ByteBuffer();
+        private final LargeText text = new LargeText(log,false);
         private final Map<AbstractBuild,String> tagSet;
 
         public TagWorkerThread(Map<AbstractBuild,String> tagSet) {
@@ -1099,8 +1123,10 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         public synchronized void start() {
             for (Entry<AbstractBuild, String> e : tagSet.entrySet()) {
                 TagAction ta = e.getKey().getAction(TagAction.class);
-                if(ta!=null)
+                if(ta!=null) {
                     ta.workerThread = this;
+                    ta.log = new WeakReference<LargeText>(text);
+                }
             }
 
             super.start();
@@ -1119,6 +1145,8 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                 ta.perform(e.getValue(), listener);
                 listener.getLogger().println();
             }
+
+            listener.getLogger().println("Completed");
         }
     }
 
