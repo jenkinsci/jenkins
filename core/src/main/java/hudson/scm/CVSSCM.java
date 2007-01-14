@@ -13,15 +13,19 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.ModelObject;
-import hudson.model.Result;
-import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
+import hudson.model.Build;
+import hudson.model.Project;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.model.AbstractModelObject;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ForkOutputStream;
 import hudson.util.FormFieldValidator;
+import hudson.util.StreamTaskListener;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.zip.ZipEntry;
@@ -59,6 +63,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.Enumeration;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -896,19 +902,19 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
     /**
      * Action for a build that performs the tagging.
      */
-    public final class TagAction implements Action {
+    public final class TagAction extends AbstractModelObject implements Action {
         private final AbstractBuild build;
 
         /**
          * If non-null, that means the build is already tagged.
          */
-        private String tagName;
+        private volatile String tagName;
 
         /**
          * If non-null, that means the tagging is in progress
          * (asynchronously.)
          */
-        private transient TagWorkerThread workerThread;
+        private transient volatile TagWorkerThread workerThread;
 
         public TagAction(AbstractBuild build) {
             this.build = build;
@@ -955,19 +961,47 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
          * Invoked to actually tag the workspace.
          */
         public synchronized void doSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            Map<AbstractBuild,String> tagSet = new HashMap<AbstractBuild,String>();
+
             String name = req.getParameter("name");
-            if(name==null || name.length()==0) {
-                // invalid tag name
-                doIndex(req,rsp);
+            if(isInvalidTag(name)) {
+                sendError("No valid tag name given",req,rsp);
                 return;
             }
 
-            if(workerThread==null) {
-                workerThread = new TagWorkerThread(name);
-                workerThread.start();
+            tagSet.put(build,name);
+
+            if(req.getParameter("upstream")!=null) {
+                // tag all upstream builds
+                Enumeration e = req.getParameterNames();
+                Map<Project, Integer> upstreams = ((Build) build).getUpstreamBuilds(); // TODO: define them at AbstractBuild level
+
+                while(e.hasMoreElements()) {
+                    String upName = (String) e.nextElement();
+                    if(!upName.startsWith("upstream."))
+                        continue;
+
+                    String tag = req.getParameter(upName);
+                    if(isInvalidTag(tag)) {
+                        sendError("No valid tag name given for "+upName,req,rsp);
+                        return;
+                    }
+
+                    upName = upName.substring(9);   // trim off 'upstream.'
+                    Job p = Hudson.getInstance().getJob(upName);
+
+                    Run build = p.getBuildByNumber(upstreams.get(p));
+                    tagSet.put((AbstractBuild) build,tag);
+                }
             }
 
+            new TagWorkerThread(tagSet).start();
+
             doIndex(req,rsp);
+        }
+
+        private boolean isInvalidTag(String name) {
+            return name==null || name.length()==0;
         }
 
         /**
@@ -979,87 +1013,111 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             doIndex(req,rsp);
         }
 
-        public final class TagWorkerThread extends Thread {
-            private final String tagName;
-            // StringWriter is synchronized
-            private final ByteArrayOutputStream log = new ByteArrayOutputStream();
+        /**
+         * Performs tagging.
+         */
+        public void perform(String tagName, TaskListener listener) {
+            File destdir = null;
+            try {
+                destdir = Util.createTempDir();
 
-            public TagWorkerThread(String tagName) {
-                this.tagName = tagName;
-            }
+                // unzip the archive
+                listener.getLogger().println("expanding the workspace archive into "+destdir);
+                Expand e = new Expand();
+                e.setProject(new org.apache.tools.ant.Project());
+                e.setDest(destdir);
+                e.setSrc(getArchiveFile(build));
+                e.setTaskType("unzip");
+                e.execute();
 
-            public String getLog() {
-                // this method can be invoked from another thread.
-                return log.toString();
-            }
+                // run cvs tag command
+                listener.getLogger().println("tagging the workspace");
+                StringTokenizer tokens = new StringTokenizer(CVSSCM.this.module);
+                while(tokens.hasMoreTokens()) {
+                    String m = tokens.nextToken();
+                    FilePath path = new FilePath(destdir).child(m);
+                    boolean isDir = path.isDirectory();
 
-            public String getTagName() {
-                return tagName;
-            }
-
-            public void run() {
-                BuildListener listener = new StreamBuildListener(log);
-
-                Result result = Result.FAILURE;
-                File destdir = null;
-                listener.started();
-                try {
-                    destdir = Util.createTempDir();
-
-                    // unzip the archive
-                    listener.getLogger().println("expanding the workspace archive into "+destdir);
-                    Expand e = new Expand();
-                    e.setProject(new org.apache.tools.ant.Project());
-                    e.setDest(destdir);
-                    e.setSrc(getArchiveFile(build));
-                    e.setTaskType("unzip");
-                    e.execute();
-
-                    // run cvs tag command
-                    listener.getLogger().println("tagging the workspace");
-                    StringTokenizer tokens = new StringTokenizer(CVSSCM.this.module);
-                    while(tokens.hasMoreTokens()) {
-                        String m = tokens.nextToken();
-                        FilePath path = new FilePath(destdir).child(m);
-                        boolean isDir = path.isDirectory();
-
-                        ArgumentListBuilder cmd = new ArgumentListBuilder();
-                        cmd.add("cvs","tag");
-                        if(isDir) {
-                            cmd.add("-R");
-                        }
-                        cmd.add(tagName);
-                        if(!isDir) {
-                            cmd.add(path.getName());
-                            path = path.getParent();
-                        }
-
-                        if(!CVSSCM.this.run(new Launcher.LocalLauncher(listener),cmd,listener, path)) {
-                            listener.getLogger().println("tagging failed");
-                            return;
-                        }
+                    ArgumentListBuilder cmd = new ArgumentListBuilder();
+                    cmd.add("cvs","tag");
+                    if(isDir) {
+                        cmd.add("-R");
+                    }
+                    cmd.add(tagName);
+                    if(!isDir) {
+                        cmd.add(path.getName());
+                        path = path.getParent();
                     }
 
-                    // completed successfully
-                    synchronized(TagAction.this) {
-                        TagAction.this.tagName = this.tagName;
-                        TagAction.this.workerThread = null;
+                    if(!CVSSCM.this.run(new Launcher.LocalLauncher(listener),cmd,listener, path)) {
+                        listener.getLogger().println("tagging failed");
+                        return;
                     }
-                    build.save();
-
-                } catch (Throwable e) {
-                    e.printStackTrace(listener.fatalError(e.getMessage()));
-                } finally {
-                    try {
-                        if(destdir!=null) {
-                            listener.getLogger().println("cleaning up "+destdir);
-                            Util.deleteRecursive(destdir);
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace(listener.fatalError(e.getMessage()));
-                    }
-                    listener.finished(result);
                 }
+
+                // completed successfully
+                onTagCompleted(tagName);
+                build.save();
+
+            } catch (Throwable e) {
+                e.printStackTrace(listener.fatalError(e.getMessage()));
+            } finally {
+                try {
+                    if(destdir!=null) {
+                        listener.getLogger().println("cleaning up "+destdir);
+                        Util.deleteRecursive(destdir);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace(listener.fatalError(e.getMessage()));
+                }
+            }
+        }
+
+        /**
+         * Atomically set the tag name and then be done with {@link TagWorkerThread}.
+         */
+        private synchronized void onTagCompleted(String tagName) {
+            this.tagName = tagName;
+            this.workerThread = null;
+        }
+    }
+
+    public static final class TagWorkerThread extends Thread {
+        // StringWriter is synchronized
+        private final ByteArrayOutputStream log = new ByteArrayOutputStream();
+        private final Map<AbstractBuild,String> tagSet;
+
+        public TagWorkerThread(Map<AbstractBuild,String> tagSet) {
+            this.tagSet = tagSet;
+        }
+
+        public String getLog() {
+            // this method can be invoked from another thread.
+            return log.toString();
+        }
+
+        public synchronized void start() {
+            for (Entry<AbstractBuild, String> e : tagSet.entrySet()) {
+                TagAction ta = e.getKey().getAction(TagAction.class);
+                if(ta!=null)
+                    ta.workerThread = this;
+            }
+
+            super.start();
+        }
+
+        public void run() {
+            TaskListener listener = new StreamTaskListener(log);
+
+            for (Entry<AbstractBuild, String> e : tagSet.entrySet()) {
+                TagAction ta = e.getKey().getAction(TagAction.class);
+                if(ta==null) {
+                    listener.error(e.getKey()+" doesn't have CVS tag associated with it. Skipping");
+                    continue;
+                }
+                listener.getLogger().println("Tagging "+e.getKey()+" to "+e.getValue());
+                ta.perform(e.getValue(), listener);
+                listener.getLogger().println();
             }
         }
     }

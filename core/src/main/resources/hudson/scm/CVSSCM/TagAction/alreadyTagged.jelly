@@ -6,7 +6,29 @@
       <p>
         This build is already tagged as <tt>${it.tagName}</tt>
       </p>
-      <pre><st:out value="${it.workerThread.log}"/></pre>
+
+      <j:set var="upstream" value="${it.build.upstreamBuilds}" />
+      <j:if test="${!empty(upstream)}">
+        <h2>Upstream tags</h2>
+        <table class="pane sortable" style="width:inherit">
+          <tr>
+            <td class="pane-header">Build</td>
+            <td class="pane-header">Tag</td>
+          </tr>
+          <j:forEach var="up" items="${upstream}">
+            <tr>
+              <td class="pane">
+                <a href="${rootURL}/${up.key.url}">${up.key.name}</a>
+                <t:buildLink job="${up.key}" number="${up.value}"/>
+              </td>
+              <td class="pane">
+                <j:set var="tag" value="${up.key.getBuildByNumber(up.value).getAction(it.getClass()).tagName}" />
+                ${h.ifThenElse(tag==null,'Not tagged',tag)}
+              </td>
+            </tr>
+          </j:forEach>
+        </table>
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

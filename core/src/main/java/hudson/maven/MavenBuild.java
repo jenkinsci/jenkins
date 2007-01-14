@@ -6,7 +6,9 @@ import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.Channel;
 import hudson.util.IOException2;
+import hudson.FilePath;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.embedder.MavenEmbedderException;
@@ -21,6 +23,7 @@ import org.codehaus.plexus.util.dag.CycleDetectedException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Calendar;
 
@@ -54,8 +57,13 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
      */
     private static final class Builder implements FileCallable<Result> {
         private final BuildListener listener;
-        public Builder(BuildListener listener) {
+        private final MavenBuildProxy buildProxy;
+        private final MavenReporter[] reporters;
+
+        public Builder(BuildListener listener,MavenBuildProxy buildProxy,MavenReporter[] reporters) {
             this.listener = listener;
+            this.buildProxy = buildProxy;
+            this.reporters = reporters;
         }
 
         public Result invoke(File moduleRoot, VirtualChannel channel) throws IOException {
@@ -71,11 +79,20 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
                 EventMonitor eventMonitor = new DefaultEventMonitor( new PlexusLoggerAdapter( new EmbedderLoggerImpl(listener) ) );
 
                 MavenProject p = embedder.readProject(pom);
-                embedder.execute(p, Arrays.asList("install"),
-                    eventMonitor,
-                    new TransferListenerImpl(listener),
-                    null, // TODO: allow additional properties to be specified 
-                    pom.getParentFile());
+
+                for (MavenReporter r : reporters)
+                    r.preBuild(buildProxy,p,listener);
+
+                try {
+                    embedder.execute(p, Arrays.asList("install"),
+                        eventMonitor,
+                        new TransferListenerImpl(listener),
+                        null, // TODO: allow additional properties to be specified
+                        pom.getParentFile());
+                } finally {
+                    for (MavenReporter r : reporters)
+                        r.postBuild(buildProxy,p,listener);
+                }
 
                 return null;
             } catch (MavenEmbedderException e) {
@@ -90,7 +107,31 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
                 throw new IOException2(e);
             } catch (DuplicateProjectException e) {
                 throw new IOException2(e);
+            } catch (InterruptedException e) {
+                listener.error("build aborted");
+                return Result.FAILURE;
             }
+        }
+    }
+
+    /**
+     * {@link MavenBuildProxy} implementation.
+     */
+    private class ProxyImpl implements MavenBuildProxy, Serializable {
+        public <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException {
+            return program.call(MavenBuild.this);
+        }
+
+        public FilePath getRootDir() {
+            return new FilePath(MavenBuild.this.getRootDir());
+        }
+
+        public FilePath getArtifactsDir() {
+            return new FilePath(MavenBuild.this.getArtifactsDir());
+        }
+
+        private Object writeReplace() {
+            return Channel.current().export(MavenBuildProxy.class, new ProxyImpl());
         }
     }
 
@@ -101,7 +142,8 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
             //if(!preBuild(listener,project.getPublishers()))
             //    return Result.FAILURE;
 
-            return getProject().getModuleRoot().act(new Builder(listener));
+            return getProject().getModuleRoot().act(new Builder(listener,new ProxyImpl(),
+                getProject().getReporters().toArray(new MavenReporter[0])));
         }
 
         public void post(BuildListener listener) {

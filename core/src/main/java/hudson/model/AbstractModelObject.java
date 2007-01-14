@@ -11,7 +11,7 @@ import java.io.IOException;
  * 
  * @author Kohsuke Kawaguchi
  */
-abstract class AbstractModelObject implements ModelObject {
+public abstract class AbstractModelObject implements ModelObject {
     /**
      * Displays the error in a page.
      */

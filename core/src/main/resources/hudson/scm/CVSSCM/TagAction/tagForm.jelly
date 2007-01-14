@@ -9,11 +9,27 @@
     <l:main-panel>
       <h1>Build #${it.build.number}</h1>
       <form action="submit" method="get">
-        <p>
-          Choose the CVS tag name for this build:
-          <input type="text" name="name" value="hudson-${it.build.number}" />
-          <input type="submit" />
-        </p>
+        <table>
+          <f:block>
+            Choose the CVS tag name for this build:
+            <input type="text" name="name" value="hudson-${it.build.number}" />
+          </f:block>
+
+          <j:set var="upstream" value="${it.build.upstreamBuilds}" />
+          <j:if test="${!empty(upstream)}">
+            <f:optionalBlock name="upstream" title="Tag all upstream builds at once" help="/help/_cvs/tagAll.html">
+              <j:forEach var="up" items="${upstream}">
+                <f:entry title="${up.key.name} #${up.value}">
+                  <input type="text" name="upstream.${up.key.name}" value="hudson-${up.value}" />
+                </f:entry>
+              </j:forEach>
+            </f:optionalBlock>
+          </j:if>
+
+          <f:entry>
+            <input type="submit" />
+          </f:entry>
+        </table>
       </form>
     </l:main-panel>
   </l:layout>

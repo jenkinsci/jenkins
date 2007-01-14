@@ -4,7 +4,7 @@
     <l:main-panel>
       <h1>Build #${it.build.number}</h1>
       <p>
-        Tagging "<tt>${it.workerThread.tagName}</tt>" is in progress.
+        Tagging is in progress.
       </p>
       <pre><st:out value="${it.workerThread.log}"/></pre>
       <j:if test="${!it.workerThread.alive}">
