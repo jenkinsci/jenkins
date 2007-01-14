@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.util.CharSpool;
 import hudson.util.CountingOutputStream;
 import hudson.util.WriterOutputStream;
+import hudson.util.ByteBuffer;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Writer;
+import java.io.InputStream;
 
 /**
  * Represents a large text data.
@@ -22,11 +24,49 @@ import java.io.Writer;
  * @author Kohsuke Kawaguchi
  */
 public class LargeText {
-    private final File file;
+    /**
+     * Represents the data source of this text.
+     */
+    private interface Source {
+        Session open() throws IOException;
+        long length();
+        boolean exists();
+    }
+    private final Source source;
+
     private final boolean completed;
 
-    public LargeText(File file, boolean completed) {
-        this.file = file;
+    public LargeText(final File file, boolean completed) {
+        this.source = new Source() {
+            public Session open() throws IOException {
+                return new FileSession(file);
+            }
+
+            public long length() {
+                return file.length();
+            }
+
+            public boolean exists() {
+                return file.exists();
+            }
+        };
+        this.completed = completed;
+    }
+
+    public LargeText(final ByteBuffer memory, boolean completed) {
+        this.source = new Source() {
+            public Session open() throws IOException {
+                return new BufferSession(memory);
+            }
+
+            public long length() {
+                return memory.length();
+            }
+
+            public boolean exists() {
+                return true;
+            }
+        };
         this.completed = completed;
     }
 
@@ -47,8 +87,8 @@ public class LargeText {
     public long writeLogTo(long start, Writer w) throws IOException {
         CountingOutputStream os = new CountingOutputStream(new WriterOutputStream(w));
 
-        RandomAccessFile f = new RandomAccessFile(file,"r");
-        f.seek(start);
+        Session f = source.open();
+        f.skip(start);
 
         if(completed) {
             // write everything till EOF
@@ -82,7 +122,7 @@ public class LargeText {
         rsp.setCharacterEncoding("UTF-8");
         rsp.setStatus(HttpServletResponse.SC_OK);
 
-        if(!file.exists()) {
+        if(!source.exists()) {
             // file doesn't exist yet
             rsp.addHeader("X-Text-Size","0");
             rsp.addHeader("X-More-Data","true");
@@ -94,7 +134,7 @@ public class LargeText {
         if(s!=null)
             start = Long.parseLong(s);
 
-        if(file.length() < start )
+        if(source.length() < start )
             start = 0;  // text rolled over
 
         CharSpool spool = new CharSpool();
@@ -156,7 +196,7 @@ public class LargeText {
             super(buf);
         }
 
-        boolean moveToNextLine(RandomAccessFile f) throws IOException {
+        boolean moveToNextLine(Session f) throws IOException {
             while(true) {
                 while(pos==buf.size) {
                     if(!buf.isFull()) {
@@ -180,7 +220,7 @@ public class LargeText {
         private int size = 0;
         private ByteBuf next;
 
-        public ByteBuf(ByteBuf previous, RandomAccessFile f) throws IOException {
+        public ByteBuf(ByteBuf previous, Session f) throws IOException {
             if(previous!=null) {
                 assert previous.next==null;
                 previous.next = this;
@@ -196,6 +236,72 @@ public class LargeText {
 
         public boolean isFull() {
             return buf.length==size;
+        }
+    }
+
+    /**
+     * Represents the read session of the {@link Source}.
+     * Methods generally follow the contracts of {@link InputStream}.
+     */
+    private interface Session {
+        void close() throws IOException;
+        void skip(long start) throws IOException;
+        int read(byte[] buf) throws IOException;
+        int read(byte[] buf, int offset, int length) throws IOException;
+    }
+
+    /**
+     * {@link Session} implementation over {@link RandomAccessFile}.
+     */
+    private static final class FileSession implements Session {
+        private final RandomAccessFile file;
+
+        public FileSession(File file) throws IOException {
+            this.file = new RandomAccessFile(file,"r");
+        }
+
+        public void close() throws IOException {
+            file.close();
+        }
+
+        public void skip(long start) throws IOException {
+            file.seek(file.getFilePointer()+start);
+        }
+
+        public int read(byte[] buf) throws IOException {
+            return file.read(buf);
+        }
+
+        public int read(byte[] buf, int offset, int length) throws IOException {
+            return file.read(buf,offset,length);
+        }
+    }
+
+    /**
+     * {@link Session} implementation over {@link ByteBuffer}.
+     */
+    private static final class BufferSession implements Session {
+        private final InputStream in;
+
+        public BufferSession(ByteBuffer buf) {
+            this.in = buf.newInputStream();
+        }
+
+
+        public void close() throws IOException {
+            in.close();
+        }
+
+        public void skip(long start) throws IOException {
+            in.skip(start);
+        }
+
+        public int read(byte[] buf) throws IOException {
+            return in.read(buf);
+        }
+
+        public int read(byte[] buf, int offset, int length) throws IOException {
+            return in.read(buf,offset,length);
         }
     }
 }
