@@ -1147,6 +1147,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             }
 
             listener.getLogger().println("Completed");
+            text.markAsComplete();
         }
     }
 

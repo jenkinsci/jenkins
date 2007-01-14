@@ -34,7 +34,7 @@ public class LargeText {
     }
     private final Source source;
 
-    private final boolean completed;
+    private volatile boolean completed;
 
     public LargeText(final File file, boolean completed) {
         this.source = new Source() {
@@ -68,6 +68,10 @@ public class LargeText {
             }
         };
         this.completed = completed;
+    }
+
+    public void markAsComplete() {
+        completed = true;
     }
 
     /**
