@@ -1,38 +1,35 @@
 package hudson.tasks;
 
-import hudson.Launcher;
-import hudson.remoting.VirtualChannel;
-import hudson.util.IOException2;
+import hudson.FilePath;
 import hudson.FilePath.FileCallable;
+import hudson.Launcher;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Fingerprint;
 import hudson.model.Fingerprint.BuildPtr;
+import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.model.Result;
-import hudson.model.FingerprintMap;
+import hudson.remoting.VirtualChannel;
+import hudson.util.IOException2;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -103,9 +100,9 @@ public class Fingerprinter extends Publisher implements Serializable {
             final boolean produced;
             final String relativePath;
             final String fileName;
-            final byte[] md5sum;
+            final String md5sum;
 
-            public Record(boolean produced, String relativePath, String fileName, byte[] md5sum) {
+            public Record(boolean produced, String relativePath, String fileName, String md5sum) {
                 this.produced = produced;
                 this.relativePath = relativePath;
                 this.fileName = fileName;
@@ -131,9 +128,6 @@ public class Fingerprinter extends Publisher implements Serializable {
                 src.setDir(baseDir);
                 src.setIncludes(targets);
 
-                byte[] buf = new byte[8192];
-                MessageDigest md5 = createMD5();
-
                 DirectoryScanner ds = src.getDirectoryScanner(new org.apache.tools.ant.Project());
                 for( String f : ds.getIncludedFiles() ) {
                     File file = new File(baseDir,f);
@@ -143,18 +137,11 @@ public class Fingerprinter extends Publisher implements Serializable {
                     boolean produced = buildTimestamp <= file.lastModified();
 
                     try {
-                        md5.reset();    // technically not necessary, but hey, just to be safe
-                        DigestInputStream in =new DigestInputStream(new FileInputStream(file),md5);
-                        try {
-                            while(in.read(buf)>0)
-                                ; // simply discard the input
-                        } finally {
-                            in.close();
-                        }
-
-                        results.add(new Record(produced,f,file.getName(),md5.digest()));
+                        results.add(new Record(produced,f,file.getName(),new FilePath(file).digest()));
                     } catch (IOException e) {
                         throw new IOException2("Failed to compute digest for "+file,e);
+                    } catch (InterruptedException e) {
+                        throw new IOException2("Aborted",e);
                     }
                 }
 
@@ -176,16 +163,6 @@ public class Fingerprinter extends Publisher implements Serializable {
     public Descriptor<Publisher> getDescriptor() {
         return DESCRIPTOR;
     }
-
-    private static MessageDigest createMD5() throws IOException2 {
-        try {
-            return MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            // I don't think this is possible, but check anyway
-            throw new IOException2("MD5 not installed",e);
-        }
-    }
-
 
     public static final Descriptor<Publisher> DESCRIPTOR = new Descriptor<Publisher>(Fingerprinter.class) {
         public String getDisplayName() {
