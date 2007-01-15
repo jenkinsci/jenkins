@@ -439,8 +439,11 @@ public final class FilePath implements Serializable {
      * If the directory doesn't exist, it will be created.
      */
     public OutputStream write() throws IOException, InterruptedException {
-        if(channel==null)
-            return new FileOutputStream(new File(remote));
+        if(channel==null) {
+            File f = new File(remote);
+            f.getParentFile().mkdirs();
+            return new FileOutputStream(f);
+        }
 
         return channel.call(new Callable<OutputStream,IOException>() {
             public OutputStream call() throws IOException {
