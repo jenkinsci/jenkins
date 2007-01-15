@@ -256,15 +256,18 @@ public class Channel implements VirtualChannel {
      */
     private synchronized void terminate(IOException e) {
         closed = true;
-        synchronized(pendingCalls) {
-            for (Request<?,?> req : pendingCalls.values())
-                req.abort(e);
-            pendingCalls.clear();
-        }
-        notify();
+        try {
+            synchronized(pendingCalls) {
+                for (Request<?,?> req : pendingCalls.values())
+                    req.abort(e);
+                pendingCalls.clear();
+            }
+        } finally {
+            notifyAll();
 
-        for (Listener l : listeners.toArray(new Listener[listeners.size()]))
-            l.onClosed(this,e);
+            for (Listener l : listeners.toArray(new Listener[listeners.size()]))
+                l.onClosed(this,e);
+        }
     }
 
     /**
