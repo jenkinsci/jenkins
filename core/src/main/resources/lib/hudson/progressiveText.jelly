@@ -12,7 +12,8 @@
 	  script code
 	-->
 	<script>
-	  <j:if test="${requestScope.progressiveTextScript==null}">
+    var scroller = new AutoScroller(document.body);
+    <j:if test="${requestScope.progressiveTextScript==null}">
 	    <j:set target="${requestScope}" property="progressiveTextScript" value="initialized" />
 	    <!-- fetches the latest update from the server -->
 	    function fetchNext(e,href) {
@@ -20,8 +21,15 @@
 	          method: "get",
 	          parameters: "start="+e.fetchedBytes,
 	          onComplete: function(rsp,_) {
-	            e.appendChild(document.createTextNode(rsp.responseText));
-	            e.fetchedBytes = rsp.getResponseHeader("X-Text-Size");
+              <!-- append text and do autoscroll if applicable-->
+              var stickToBottom = scroller.isSticking();
+              var text = rsp.responseText;
+              if(text!="") {
+                e.appendChild(document.createTextNode(text));
+                if(stickToBottom) scroller.scrollToBottom();
+              }
+
+              e.fetchedBytes = rsp.getResponseHeader("X-Text-Size");
 	            if(rsp.getResponseHeader("X-More-Data")=="true")
 	              setTimeout(function(){fetchNext(e,href);},1000);
 	          <j:if test="${spinner!=null}">

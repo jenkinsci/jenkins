@@ -206,3 +206,63 @@ function updateOptionalBlock(sid, eid, cid) {
         }
     }
 }
+
+
+//
+// Auto-scroll support for progressive log output.
+//   See http://radio.javaranch.com/pascarello/2006/08/17/1155837038219.html
+//
+function AutoScroller(scrollContainer) {
+    // get the height of the viewport.
+    // See http://www.howtocreate.co.uk/tutorials/javascript/browserwindow
+    function getViewportHeight() {
+        if (typeof( window.innerWidth ) == 'number') {
+            //Non-IE
+            return window.innerHeight;
+        } else if (document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight )) {
+            //IE 6+ in 'standards compliant mode'
+            return document.documentElement.clientHeight;
+        } else if (document.body && ( document.body.clientWidth || document.body.clientHeight )) {
+            //IE 4 compatible
+            return document.body.clientHeight;
+        }
+        return null;
+    }
+
+    return {
+        bottomThreshold : 25,
+        scrollContainer: scrollContainer,
+
+        getCurrentHeight : function() {
+            var scrollDiv = $(this.scrollContainer);
+
+            if (scrollDiv.scrollHeight > 0)
+                return scrollDiv.scrollHeight;
+            else
+                if (objDiv.offsetHeight > 0)
+                    return scrollDiv.offsetHeight;
+
+            return null; // huh?
+        },
+
+        // return true if we are in the "stick to bottom" mode
+        isSticking : function() {
+            var scrollDiv = $(this.scrollContainer);
+            var currentHeight = this.getCurrentHeight();
+
+            // when used with the BODY tag, the height needs to be the viewport height, instead of
+            // the element height.
+            //var height = ((scrollDiv.style.pixelHeight) ? scrollDiv.style.pixelHeight : scrollDiv.offsetHeight);
+            var height = getViewportHeight();
+            var diff = currentHeight - scrollDiv.scrollTop - height;
+            // window.alert("currentHeight=" + currentHeight + ",scrollTop=" + scrollDiv.scrollTop + ",height=" + height);
+
+            return diff < this.bottomThreshold;
+        },
+
+        scrollToBottom : function() {
+            var scrollDiv = $(this.scrollContainer);
+            scrollDiv.scrollTop = this.getCurrentHeight();
+        }
+    };
+}
