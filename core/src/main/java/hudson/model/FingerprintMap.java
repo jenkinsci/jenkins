@@ -34,11 +34,11 @@ public final class FingerprintMap {
      *      will have this build as the owner. Otherwise null, to indicate
      *      an owner-less build.
      */
-    public synchronized Fingerprint getOrCreate(Build build, String fileName, byte[] md5sum) throws IOException {
+    public synchronized Fingerprint getOrCreate(AbstractBuild build, String fileName, byte[] md5sum) throws IOException {
         return getOrCreate(build,fileName, Util.toHexString(md5sum));
     }
 
-    public synchronized Fingerprint getOrCreate(Build build, String fileName, String md5sum) throws IOException {
+    public synchronized Fingerprint getOrCreate(AbstractBuild build, String fileName, String md5sum) throws IOException {
         assert build!=null;
         assert fileName!=null;
         Fingerprint fp = get(md5sum);
