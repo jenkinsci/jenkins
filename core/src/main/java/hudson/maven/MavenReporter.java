@@ -66,9 +66,9 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
      * @return
      *      See {@link #preBuild}
      * @throws InterruptedException
-     *      See {@link # preBuild}
+     *      See {@link #preBuild}
      * @throws IOException
-     *      See {@link # preBuild}
+     *      See {@link #preBuild}
      */
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         return true;
