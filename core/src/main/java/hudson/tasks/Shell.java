@@ -1,16 +1,10 @@
 package hudson.tasks;
 
 import hudson.FilePath;
-import hudson.Launcher;
-import hudson.Util;
-import hudson.model.Build;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import static hudson.model.Hudson.isWindows;
-import hudson.model.Project;
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -24,7 +18,7 @@ public class Shell extends CommandInterpreter {
     }
 
     /**
-     * Fix CR/LF in the string according to the platform we are running on.
+     * Fix CR/LF and always make it Unix style.
      */
     private static String fixCrLf(String s) {
         // eliminate CR
@@ -32,16 +26,16 @@ public class Shell extends CommandInterpreter {
         while((idx=s.indexOf("\r\n"))!=-1)
             s = s.substring(0,idx)+s.substring(idx+1);
 
-        // add CR back if this is for Windows
-        if(isWindows()) {
-            idx=0;
-            while(true) {
-                idx = s.indexOf('\n',idx);
-                if(idx==-1) break;
-                s = s.substring(0,idx)+'\r'+s.substring(idx);
-                idx+=2;
-            }
-        }
+        //// add CR back if this is for Windows
+        //if(isWindows()) {
+        //    idx=0;
+        //    while(true) {
+        //        idx = s.indexOf('\n',idx);
+        //        if(idx==-1) break;
+        //        s = s.substring(0,idx)+'\r'+s.substring(idx);
+        //        idx+=2;
+        //    }
+        //}
         return s;
     }
 
@@ -50,7 +44,7 @@ public class Shell extends CommandInterpreter {
     }
 
     protected String getContents() {
-        return command;
+        return fixCrLf(command);
     }
 
     protected String getFileExtension() {

@@ -22,7 +22,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
     /**
      * @GuardedBy this
      */
-    private Map<String,Integer> revisionMap;
+    private Map<String,Long> revisionMap;
 
     /*package*/ SubversionChangeLogSet(AbstractBuild build, List<LogEntry> logs) {
         super(build);
@@ -44,7 +44,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
         return logs.iterator();
     }
 
-    public synchronized Map<String,Integer> getRevisionMap() throws IOException {
+    public synchronized Map<String,Long> getRevisionMap() throws IOException {
         if(revisionMap==null)
             revisionMap = SubversionSCM.parseRevisionFile(build);
         return revisionMap;

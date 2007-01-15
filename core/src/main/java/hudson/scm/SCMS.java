@@ -13,5 +13,8 @@ public class SCMS {
      */
     @SuppressWarnings("unchecked") // generic array creation
     public static final List<Descriptor<SCM>> SCMS =
-        Descriptor.toList(NullSCM.DESCRIPTOR,CVSSCM.DescriptorImpl.DESCRIPTOR,SubversionSCM.DESCRIPTOR);
+        Descriptor.toList(
+            NullSCM.DESCRIPTOR,
+            CVSSCM.DescriptorImpl.DESCRIPTOR,
+            SubversionSCM.DescriptorImpl.DESCRIPTOR);
 }

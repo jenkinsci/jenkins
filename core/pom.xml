@@ -196,6 +196,11 @@
       <version>2.0.4</version>
     </dependency>
     <dependency>
+      <groupId>com.svnkit</groupId>
+      <artifactId>svnkit</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+    <dependency>
       <groupId>net.sf.retrotranslator</groupId>
       <artifactId>retrotranslator-runtime</artifactId>
       <version>1.0.8</version>

@@ -3,8 +3,8 @@
     description="
       URL of SVN module. Multiple URLs can be specified.
     ">
-    <input class="setting-input" name="svn_modules"
-      type="text" value="${scm.modules}"/>
+    <f:textbox name="svn_modules" value="${scm.modules}"
+               checkUrl="'${rootURL}/scm/SubversionSCM/authenticationCheck?value='+this.value" />
   </f:entry>
   <f:entry title="Use update"
     description="
@@ -12,22 +12,4 @@
       But this causes the artifacts from the previous build to remain when a new build starts.">
     <f:checkbox name="svn_use_update" checked="${scm.useUpdate}"/>
   </f:entry>
-  <f:advanced>
-    <f:entry title="Username"
-      description="
-        If you need to specify a user name for accessing the repository.
-        To specify a password, &lt;a href='svn-password'>see this&lt;/a>.
-
-      ">
-      <input class="setting-input" name="svn_username"
-        type="text" value="${scm.username}"/>
-    </f:entry>
-    <f:entry title="Other options"
-      description="
-        If you need to specify any other SVN option during checkout/update, specify them here
-      ">
-      <input class="setting-input" name="svn_other_options"
-        type="text" value="${scm.otherOptions}"/>
-    </f:entry>
-  </f:advanced>
 </j:jelly>
