@@ -74,7 +74,7 @@ public class Fingerprinter extends Publisher implements Serializable {
 
 
             if(targets.length()!=0)
-            record(build, listener, record, targets);
+                record(build, listener, record, targets);
 
             if(recordBuildArtifacts) {
                 ArtifactArchiver aa = (ArtifactArchiver) build.getProject().getPublishers().get(ArtifactArchiver.DESCRIPTOR);
