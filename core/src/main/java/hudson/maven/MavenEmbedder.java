@@ -15,74 +15,73 @@
  */
 package hudson.maven;
 
-import org.codehaus.plexus.embed.Embedder;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.codehaus.plexus.util.dag.CycleDetectedException;
-import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.configuration.PlexusConfigurationException;
-import org.codehaus.plexus.configuration.PlexusConfiguration;
-import org.codehaus.plexus.configuration.PlexusConfigurationResourceException;
-import org.codehaus.plexus.component.repository.ComponentDescriptor;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.component.repository.exception.ComponentLifecycleException;
-import org.codehaus.plexus.PlexusContainerException;
-import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.classworlds.ClassWorld;
-import org.codehaus.classworlds.DuplicateRealmException;
-import org.apache.maven.project.MavenProjectBuilder;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.DuplicateProjectException;
-import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
+import org.apache.maven.BuildFailureException;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
-import org.apache.maven.artifact.manager.WagonManager;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.settings.MavenSettingsBuilder;
-import org.apache.maven.settings.Settings;
-import org.apache.maven.settings.RuntimeInfo;
-import org.apache.maven.lifecycle.LifecycleExecutor;
-import org.apache.maven.lifecycle.LifecycleExecutionException;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.apache.maven.model.Model;
-import org.apache.maven.profiles.ProfileManager;
-import org.apache.maven.profiles.DefaultProfileManager;
-import org.apache.maven.plugin.descriptor.PluginDescriptorBuilder;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.embedder.MavenEmbedderLogger;
-import org.apache.maven.embedder.SummaryPluginDescriptor;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.embedder.MavenEmbedderException;
+import org.apache.maven.embedder.MavenEmbedderLogger;
 import org.apache.maven.embedder.MavenEmbedderLoggerManager;
 import org.apache.maven.embedder.PlexusLoggerAdapter;
-import org.apache.maven.wagon.events.TransferListener;
-import org.apache.maven.monitor.event.EventMonitor;
-import org.apache.maven.monitor.event.EventDispatcher;
-import org.apache.maven.monitor.event.DefaultEventDispatcher;
-import org.apache.maven.BuildFailureException;
-import org.apache.maven.execution.ReactorManager;
+import org.apache.maven.embedder.SummaryPluginDescriptor;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.ReactorManager;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.lifecycle.LifecycleExecutor;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.apache.maven.monitor.event.DefaultEventDispatcher;
+import org.apache.maven.monitor.event.EventDispatcher;
+import org.apache.maven.monitor.event.EventMonitor;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.plugin.descriptor.PluginDescriptorBuilder;
+import org.apache.maven.profiles.DefaultProfileManager;
+import org.apache.maven.profiles.ProfileManager;
+import org.apache.maven.project.DuplicateProjectException;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.settings.MavenSettingsBuilder;
+import org.apache.maven.settings.RuntimeInfo;
+import org.apache.maven.settings.Settings;
+import org.apache.maven.wagon.events.TransferListener;
+import org.codehaus.classworlds.ClassWorld;
+import org.codehaus.classworlds.DuplicateRealmException;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.PlexusContainerException;
+import org.codehaus.plexus.component.repository.ComponentDescriptor;
+import org.codehaus.plexus.component.repository.exception.ComponentLifecycleException;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.configuration.PlexusConfiguration;
+import org.codehaus.plexus.configuration.PlexusConfigurationException;
+import org.codehaus.plexus.embed.Embedder;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.dag.CycleDetectedException;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.FileReader;
-import java.io.Writer;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
+import java.io.Writer;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Properties;
 import java.util.Collections;
 import java.util.Date;
-import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Class intended to be used by clients who wish to embed Maven into their applications
@@ -763,6 +762,8 @@ public class MavenEmbedder
 
     /**
      * Gets the {@link PlexusContainer} that hosts Maven.
+     *
+     * See MNG-2778
      */
     public PlexusContainer getContainer() {
         return embedder.getContainer();
