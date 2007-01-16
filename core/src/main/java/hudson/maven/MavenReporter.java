@@ -24,6 +24,21 @@ import org.apache.maven.project.MavenProject;
  * <p>
  * This is the {@link MavenBuild} equivalent of {@link BuildStep}.
  *
+ *
+ * <h2>Callback Firing Sequence</h2>
+ * <p>
+ * The callback methods are invoked in the following order:
+ *
+ * <pre>
+ * SEQUENCE := preBuild MODULE* postBuild
+ * MODULE   := enterModule MOJO+ leaveModule
+ * MOJO     := preExecute postExecute
+ * </pre>
+ *
+ * <p>
+ * When an error happens, the call sequence could be terminated at any point
+ * and no further callback methods might not be invoked.
+ *
  * @author Kohsuke Kawaguchi
  * @see MavenReporters
  */
