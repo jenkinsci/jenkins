@@ -21,6 +21,9 @@ import org.codehaus.plexus.configuration.PlexusConfiguration;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.io.IOException;
+
+import hudson.model.BuildListener;
 
 /**
  * Description in META-INF/plexus/components.xml makes it possible to use this instead of the default
@@ -32,6 +35,10 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
 
     private final Method mergeMojoConfiguration;
 
+    private MavenBuildProxy buildProxy;
+    private MavenReporter[] reporters;
+    private BuildListener listener;
+
     public PluginManagerInterceptor() {
         try {
             this.mergeMojoConfiguration = DefaultPluginManager.class.getDeclaredMethod(
@@ -42,6 +49,20 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
             x.initCause(e);
             throw x;
         }
+    }
+
+    /**
+     * Called by {@link MavenBuild} to connect this object to the rest of Hudson objects,
+     * namely {@link MavenBuild}.
+     *
+     * <p>
+     * We can't do this in the constructor because this object is created by
+     * Plexus along with the rest of Maven objects.
+     */
+    /*package*/ void setBuilder(MavenBuildProxy buildProxy, MavenReporter[] reporters, BuildListener listener) {
+        this.buildProxy = buildProxy;
+        this.reporters = reporters;
+        this.listener = listener;
     }
 
     public void executeMojo(MavenProject project, MojoExecution mojoExecution, MavenSession session) throws ArtifactResolutionException, MojoExecutionException, MojoFailureException, ArtifactNotFoundException, InvalidDependencyVersionException, PluginManagerException, PluginConfigurationException {
@@ -78,11 +99,23 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
                                                                                           project,
                                                                                           session.getExecutionProperties() );
 
-        // the proper step is first check the value, then check the default-value attribute.
 
+        try {
+            MojoInfo info = new MojoInfo(mojoExecution, mergedConfiguration, eval);
+            for (MavenReporter r : reporters)
+                if(!r.preExecute(buildProxy,project,info,listener))
+                    throw new AbortException(r+" failed");
 
-        System.out.println("EXECUTING "+mojoExecution.getExecutionId());
-        super.executeMojo(project, mojoExecution, session);
+            super.executeMojo(project, mojoExecution, session);
+            for (MavenReporter r : reporters)
+                if(!r.postExecute(buildProxy,project, info,listener))
+                    throw new AbortException(r+" failed");
+        } catch (InterruptedException e) {
+            // orderly abort
+            throw new AbortException("Execution aborted",e);
+        } catch (IOException e) {
+            throw new PluginManagerException(e.getMessage(),e);
+        }
     }
 
     private Xpp3Dom getConfigDom(MojoExecution mojoExecution, MavenProject project) {
@@ -100,5 +133,19 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
             dom = Xpp3Dom.mergeXpp3Dom( dom, mojoExecution.getConfiguration() );
         }
         return dom;
+    }
+
+    /**
+     * Thrown when {@link MavenReporter} returned false to orderly
+     * abort the execution. The caller shouldn't dump the stack trace for
+     * this exception.
+     */
+    public final class AbortException extends PluginManagerException {
+        public AbortException(String message) {
+            super(message);
+        }
+        public AbortException(String message, Exception e) {
+            super(message, e);
+        }
     }
 }

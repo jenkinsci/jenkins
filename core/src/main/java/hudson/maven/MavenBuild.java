@@ -10,6 +10,7 @@ import hudson.remoting.Channel;
 import hudson.util.IOException2;
 import hudson.FilePath;
 import org.apache.maven.BuildFailureException;
+import org.apache.maven.plugin.PluginManager;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.embedder.PlexusLoggerAdapter;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
@@ -19,6 +20,7 @@ import org.apache.maven.project.DuplicateProjectException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.dag.CycleDetectedException;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 
 import java.io.File;
 import java.io.IOException;
@@ -78,6 +80,13 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
                 EventMonitor eventMonitor = new DefaultEventMonitor( new PlexusLoggerAdapter( new EmbedderLoggerImpl(listener) ) );
 
                 MavenProject p = embedder.readProject(pom);
+
+                try {
+                    PluginManagerInterceptor interceptor = (PluginManagerInterceptor)embedder.getContainer().lookup(PluginManager.class.getName());
+                    interceptor.setBuilder(buildProxy,reporters,listener);
+                } catch (ComponentLookupException e) {
+                    throw new Error(e); // impossible
+                }
 
                 for (MavenReporter r : reporters)
                     r.preBuild(buildProxy,p,listener);
