@@ -39,6 +39,11 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
     private MavenReporter[] reporters;
     private BuildListener listener;
 
+    /**
+     * Used to detect when to fire {@link MavenReporter#enterModule}
+     */
+    private MavenProject lastModule;
+
     public PluginManagerInterceptor() {
         try {
             this.mergeMojoConfiguration = DefaultPluginManager.class.getDeclaredMethod(
@@ -99,8 +104,13 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
                                                                                           project,
                                                                                           session.getExecutionProperties() );
 
-
         try {
+            if(lastModule!=project) {
+                // module change
+                fireLeaveModule();
+                fireEnterModule(project);
+            }
+
             MojoInfo info = new MojoInfo(mojoExecution, mergedConfiguration, eval);
             for (MavenReporter r : reporters)
                 if(!r.preExecute(buildProxy,project,info,listener))
@@ -115,6 +125,21 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
             throw new AbortException("Execution aborted",e);
         } catch (IOException e) {
             throw new PluginManagerException(e.getMessage(),e);
+        }
+    }
+
+    private void fireEnterModule(MavenProject project) throws InterruptedException, IOException, AbortException {
+        lastModule = project;
+        for (MavenReporter r : reporters)
+            if(!r.enterModule(buildProxy,project,listener))
+                throw new AbortException(r+" failed");
+    }
+
+    /*package*/ void fireLeaveModule() throws InterruptedException, IOException, AbortException {
+        if(lastModule!=null) {
+            for (MavenReporter r : reporters)
+                if(!r.leaveModule(buildProxy,lastModule,listener))
+                    throw new AbortException(r+" failed");
         }
     }
 

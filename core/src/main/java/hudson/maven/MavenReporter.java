@@ -53,6 +53,38 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
     }
 
     /**
+     * Called when the build enters a next {@link MavenProject}.
+     *
+     * <p>
+     * When the current build is a multi-module reactor build, every time the build
+     * moves on to the next module, this method will be invoked.
+     *
+     * <p>
+     * Note that as of Maven 2.0.4, Maven does not perform any smart optimization
+     * on the order of goal executions. Therefore, the same module might be entered more than
+     * once during the build.
+     *
+     * @return
+     *      See {@link #preBuild}
+     * @throws InterruptedException
+     *      See {@link #preBuild}
+     * @throws IOException
+     *      See {@link #preBuild}
+     */
+    public boolean enterModule(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
+        return true;
+    }
+
+    /**
+     * Called when the build leaves the current {@link MavenProject}.
+     *
+     * @see #enterModule
+     */
+    public boolean leaveModule(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
+        return true;
+    }
+
+    /**
      * Called before execution of a single mojo.
      * 
      * @return

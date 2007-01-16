@@ -9,6 +9,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
 import hudson.util.IOException2;
 import hudson.FilePath;
+import hudson.maven.PluginManagerInterceptor.AbortException;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.plugin.PluginManager;
 import org.apache.maven.embedder.MavenEmbedderException;
@@ -80,9 +81,10 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
                 EventMonitor eventMonitor = new DefaultEventMonitor( new PlexusLoggerAdapter( new EmbedderLoggerImpl(listener) ) );
 
                 MavenProject p = embedder.readProject(pom);
+                PluginManagerInterceptor interceptor;
 
                 try {
-                    PluginManagerInterceptor interceptor = (PluginManagerInterceptor)embedder.getContainer().lookup(PluginManager.class.getName());
+                    interceptor = (PluginManagerInterceptor)embedder.getContainer().lookup(PluginManager.class.getName());
                     interceptor.setBuilder(buildProxy,reporters,listener);
                 } catch (ComponentLookupException e) {
                     throw new Error(e); // impossible
@@ -97,6 +99,8 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
                         new TransferListenerImpl(listener),
                         null, // TODO: allow additional properties to be specified
                         pom.getParentFile());
+
+                    interceptor.fireLeaveModule();
                 } finally {
                     for (MavenReporter r : reporters)
                         r.postBuild(buildProxy,p,listener);
@@ -115,6 +119,9 @@ public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
                 throw new IOException2(e);
             } catch (DuplicateProjectException e) {
                 throw new IOException2(e);
+            } catch (AbortException e) {
+                listener.error("build aborted");
+                return Result.FAILURE;
             } catch (InterruptedException e) {
                 listener.error("build aborted");
                 return Result.FAILURE;
