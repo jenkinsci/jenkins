@@ -88,7 +88,7 @@ import java.util.Properties;
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
  */
-public class MavenEmbedder
+class MavenEmbedder
 {
     public static final String userHome = System.getProperty( "user.home" );
 
