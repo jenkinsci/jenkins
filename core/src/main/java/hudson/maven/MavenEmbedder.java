@@ -753,6 +753,8 @@ public class MavenEmbedder
      * Sets the URL of the <tt>components.xml</tt> that overrides those found
      * in the rest of classpath. Hudson uses this to replace certain key components
      * by its own versions.
+     *
+     * This should become unnecessary when MNG-2777 is resolved.
      */
     public void setOverridingComponentsXml(URL overridingComponentsXml) {
         this.overridingComponentsXml = overridingComponentsXml;
