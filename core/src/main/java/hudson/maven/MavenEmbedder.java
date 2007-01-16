@@ -26,6 +26,7 @@ import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.component.repository.exception.ComponentLifecycleException;
 import org.codehaus.plexus.PlexusContainerException;
+import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.classworlds.ClassWorld;
 import org.codehaus.classworlds.DuplicateRealmException;
 import org.apache.maven.project.MavenProjectBuilder;
@@ -758,5 +759,12 @@ public class MavenEmbedder
      */
     public void setOverridingComponentsXml(URL overridingComponentsXml) {
         this.overridingComponentsXml = overridingComponentsXml;
+    }
+
+    /**
+     * Gets the {@link PlexusContainer} that hosts Maven.
+     */
+    public PlexusContainer getContainer() {
+        return embedder.getContainer();
     }
 }
