@@ -28,11 +28,11 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class PluginManagetInterceptor extends DefaultPluginManager {
+public class PluginManagerInterceptor extends DefaultPluginManager {
 
     private final Method mergeMojoConfiguration;
 
-    public PluginManagetInterceptor() {
+    public PluginManagerInterceptor() {
         try {
             this.mergeMojoConfiguration = DefaultPluginManager.class.getDeclaredMethod(
                 "mergeMojoConfiguration", XmlPlexusConfiguration.class,MojoDescriptor.class);

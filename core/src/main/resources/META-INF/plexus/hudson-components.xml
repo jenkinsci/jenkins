@@ -6,7 +6,7 @@
   <components>
     <component>
       <role>org.apache.maven.plugin.PluginManager</role>
-      <implementation>hudson.maven.PluginManagetInterceptor</implementation>
+      <implementation>hudson.maven.PluginManagerInterceptor</implementation>
       <requirements>
         <requirement>
           <role>org.apache.maven.project.path.PathTranslator</role>
