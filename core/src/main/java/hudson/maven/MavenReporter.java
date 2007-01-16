@@ -52,12 +52,27 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
         return true;
     }
 
-    public void preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
-
+    /**
+     * Called before execution of a single mojo.
+     * 
+     * @return
+     *      See {@link #preBuild}
+     * @throws InterruptedException
+     *      See {@link #preBuild}
+     * @throws IOException
+     *      See {@link #preBuild}
+     */
+    public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
+        return true;
     }
 
-    public void postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
-
+    /**
+     * Called after execution of a single mojo.
+     * <p>
+     * See {@link #preExecute} for the contract.
+     */
+    public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
+        return true;
     }
 
     /**

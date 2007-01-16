@@ -18,9 +18,8 @@ import java.util.Set;
 import java.util.HashSet;
 
 /**
- * Archives artifacts of the build,
- * as well as record fingerprints.
- * 
+ * Archives artifacts of the build.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class MavenArtifactArchiver extends MavenReporter {

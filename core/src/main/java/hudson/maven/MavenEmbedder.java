@@ -21,6 +21,7 @@ import org.codehaus.plexus.util.dag.CycleDetectedException;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
+import org.codehaus.plexus.configuration.PlexusConfigurationResourceException;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.component.repository.exception.ComponentLifecycleException;
@@ -80,6 +81,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Collections;
 import java.util.Date;
+import java.net.URL;
 
 /**
  * Class intended to be used by clients who wish to embed Maven into their applications
@@ -583,6 +585,16 @@ public class MavenEmbedder
             embedder.setLoggerManager( new MavenEmbedderLoggerManager( new PlexusLoggerAdapter( logger ) ) );
         }
 
+        // begin changes by KK
+        if(overridingComponentsXml!=null) {
+            try {
+                embedder.setConfiguration(overridingComponentsXml);
+            } catch (IOException e) {
+                throw new MavenEmbedderException(e);
+            }
+        }
+        // end changes by KK
+
         try
         {
             ClassWorld classWorld = new ClassWorld();
@@ -729,5 +741,20 @@ public class MavenEmbedder
         {
             throw new MavenEmbedderException( "Cannot stop the embedder.", e );
         }
+    }
+
+
+    // ----------------------------------------------------------------------
+    // Local Changes in Hudson below
+    // ----------------------------------------------------------------------
+    private URL overridingComponentsXml;
+
+    /**
+     * Sets the URL of the <tt>components.xml</tt> that overrides those found
+     * in the rest of classpath. Hudson uses this to replace certain key components
+     * by its own versions.
+     */
+    public void setOverridingComponentsXml(URL overridingComponentsXml) {
+        this.overridingComponentsXml = overridingComponentsXml;
     }
 }

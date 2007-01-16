@@ -10,7 +10,6 @@ import hudson.remoting.Channel;
 import hudson.util.IOException2;
 import hudson.FilePath;
 import org.apache.maven.BuildFailureException;
-import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.embedder.PlexusLoggerAdapter;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
