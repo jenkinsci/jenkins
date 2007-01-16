@@ -47,7 +47,14 @@ public interface MavenBuildProxy {
         /**
          * Performs computation and returns the result,
          * or throws some exception.
+         *
+         * @throws InterruptedException
+         *      if the processing is interrupted in the middle. Exception will be
+         *      propagated to the caller.
+         * @throws IOException
+         *      if the program simply wishes to propage the exception, it may throw
+         *      {@link IOException}.
          */
-        V call(MavenBuild build) throws T;
+        V call(MavenBuild build) throws T, IOException, InterruptedException;
     }
 }
