@@ -2,6 +2,8 @@
   <f:entry title="Modules"
     description="
       URL of SVN module. Multiple URLs can be specified.
+      If some of the URLs need username/password to access, please enter them
+      from &lt;a href='${rootURL}/scm/SubversionSCM/enterCredential'&gt;here&lt;/a&gt;.
     ">
     <f:textbox name="svn_modules" value="${scm.modules}"
                checkUrl="'${rootURL}/scm/SubversionSCM/authenticationCheck?value='+this.value" />
