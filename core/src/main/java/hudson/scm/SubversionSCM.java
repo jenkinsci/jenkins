@@ -602,8 +602,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM implements Serializable 
                             repository.testConnection();
                         } catch (SVNException e) {
                             message += "Unable to access "+url+" : "+e.getErrorMessage();
-                            if(e.getErrorMessage().getErrorCode().equals(SVNErrorCode.RA_NOT_AUTHORIZED))
-                                message += "(<a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>)";
+                            message += " (Maybe you need to <a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>?)";
                             message += "<br>";
                         }
                     }
