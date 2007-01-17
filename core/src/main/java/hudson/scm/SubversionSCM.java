@@ -4,7 +4,7 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
-import static hudson.Util.fixEmpty;
+import static hudson.Util.fixNull;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -586,7 +586,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM implements Serializable 
         public void doAuthenticationCheck(final StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             new FormFieldValidator(req,rsp,true) {
                 protected void check() throws IOException, ServletException {
-                    StringTokenizer tokens = new StringTokenizer(fixEmpty(request.getParameter("value")));
+                    StringTokenizer tokens = new StringTokenizer(fixNull(request.getParameter("value")));
                     String message="";
 
                     while(tokens.hasMoreTokens()) {
