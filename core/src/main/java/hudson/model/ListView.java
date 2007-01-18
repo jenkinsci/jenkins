@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Represents a collection of {@link Job}s.
+ * Displays {@link Job}s in a flat list view.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -48,7 +48,7 @@ public class ListView extends View {
      * This method returns a separate copy each time to avoid
      * concurrent modification issue.
      */
-    public synchronized List<Job> getJobs() {
+    public synchronized List<Job> getItems() {
         Job[] jobs = new Job[jobNames.size()];
         int i=0;
         for (String name : jobNames)
@@ -60,8 +60,8 @@ public class ListView extends View {
         return owner.getJob(name);
     }
 
-    public boolean containsJob(Job job) {
-        return jobNames.contains(job.getName());
+    public boolean contains(ViewItem item) {
+        return jobNames.contains(item.getName());
     }
 
     public String getViewName() {

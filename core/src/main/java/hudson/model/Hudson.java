@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.ParseException;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -365,6 +364,10 @@ public final class Hudson extends View implements Node {
         return new ArrayList<Job>(jobs.values());
     }
 
+    public synchronized List<ViewItem> getItems() {
+        return new ArrayList<ViewItem>(jobs.values());
+    }
+
     /**
      * Gets the snapshot of all the projects.
      */
@@ -381,16 +384,11 @@ public final class Hudson extends View implements Node {
      * Gets the names of all the {@link Job}s.
      */
     public synchronized Collection<String> getJobNames() {
-        return new AbstractList<String>() {
-            private final List<Job> jobs = getJobs();
-            public String get(int index) {
-                return jobs.get(index).getName();
-            }
-
-            public int size() {
-                return jobs.size();
-            }
-        };
+        List<String> names = new ArrayList<String>();
+        for (Job j : jobs.values()) {
+            names.add(j.getName());
+        }
+        return names;
     }
 
     /**
@@ -400,7 +398,7 @@ public final class Hudson extends View implements Node {
      *      why are you calling a method that always return true?
      */
     @Deprecated
-    public boolean containsJob(Job job) {
+    public boolean contains(ViewItem view) {
         return true;
     }
 

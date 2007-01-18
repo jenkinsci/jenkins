@@ -19,21 +19,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Collection of {@link Job}s.
+ * Collection of {@link ViewItem}s.
  *
  * @author Kohsuke Kawaguchi
  */
 public abstract class View extends AbstractModelObject {
 
     /**
-     * Gets all the jobs in this collection.
+     * Gets all the items in this collection in a read-only view.
      */
-    public abstract Collection<Job> getJobs();
+    public abstract Collection<? extends ViewItem> getItems();
 
     /**
      * Checks if the job is in this collection.
      */
-    public abstract boolean containsJob(Job job);
+    public abstract boolean contains(ViewItem item);
 
     /**
      * Gets the name of all this collection.
@@ -94,14 +94,16 @@ public abstract class View extends AbstractModelObject {
      * Does this {@link View} has any associated user information recorded?
      */
     public final boolean hasPeople() {
-        for (Job job : getJobs()) {
-            if (job instanceof Project) {
-                Project p = (Project) job;
-                for (Build build : p.getBuilds()) {
-                    for (Entry entry : build.getChangeSet()) {
-                        User user = entry.getAuthor();
-                        if(user!=null)
-                            return true;
+        for (ViewItem item : getItems()) {
+            for (Job job : item.getAllJobs()) {
+                if (job instanceof Project) {
+                    Project p = (Project) job;
+                    for (Build build : p.getBuilds()) {
+                        for (Entry entry : build.getChangeSet()) {
+                            User user = entry.getAuthor();
+                            if(user!=null)
+                                return true;
+                        }
                     }
                 }
             }
@@ -114,20 +116,22 @@ public abstract class View extends AbstractModelObject {
      */
     public final List<UserInfo> getPeople() {
         Map<User,UserInfo> users = new HashMap<User,UserInfo>();
-        for (Job job : getJobs()) {
-            if (job instanceof Project) {
-                Project p = (Project) job;
-                for (Build build : p.getBuilds()) {
-                    for (Entry entry : build.getChangeSet()) {
-                        User user = entry.getAuthor();
+        for (ViewItem item : getItems()) {
+            for (Job job : item.getAllJobs()) {
+                if (job instanceof Project) {
+                    Project p = (Project) job;
+                    for (Build build : p.getBuilds()) {
+                        for (Entry entry : build.getChangeSet()) {
+                            User user = entry.getAuthor();
 
-                        UserInfo info = users.get(user);
-                        if(info==null)
-                            users.put(user,new UserInfo(user,p,build.getTimestamp()));
-                        else
-                        if(info.getLastChange().before(build.getTimestamp())) {
-                            info.project = p;
-                            info.lastChange = build.getTimestamp(); 
+                            UserInfo info = users.get(user);
+                            if(info==null)
+                                users.put(user,new UserInfo(user,p,build.getTimestamp()));
+                            else
+                            if(info.getLastChange().before(build.getTimestamp())) {
+                                info.project = p;
+                                info.lastChange = build.getTimestamp();
+                            }
                         }
                     }
                 }
@@ -149,11 +153,11 @@ public abstract class View extends AbstractModelObject {
     public abstract Job doCreateJob( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " all builds", new RunList(getJobs()));
+        rss(req, rsp, " all builds", new RunList(this));
     }
 
     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " failed builds", new RunList(getJobs()).failureOnly());
+        rss(req, rsp, " failed builds", new RunList(this).failureOnly());
     }
 
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {

@@ -3,6 +3,8 @@ package hudson.util;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.View;
+import hudson.model.ViewItem;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,12 +24,19 @@ public class RunList extends ArrayList<Run> {
     public RunList() {
     }
 
-    public RunList(Job j) {
+    public RunList(Job<?,?> j) {
         addAll(j.getBuilds());
     }
 
+    public RunList(View view) {
+        for (ViewItem item : view.getItems())
+            for (Job<?,?> j : item.getAllJobs())
+                addAll(j.getBuilds());
+        Collections.sort(this,Run.ORDER_BY_DATE);
+    }
+
     public RunList(Collection<? extends Job> jobs) {
-        for (Job j : jobs)
+        for (Job<?,?> j : jobs)
             addAll(j.getBuilds());
         Collections.sort(this,Run.ORDER_BY_DATE);
     }

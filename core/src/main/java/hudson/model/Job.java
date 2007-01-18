@@ -40,8 +40,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -56,7 +57,7 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>>
-        extends Actionable implements Describable<Job<JobT,RunT>>, ExtensionPoint {
+        extends Actionable implements Describable<Job<JobT,RunT>>, ViewItem, ExtensionPoint {
     /**
      * Project name.
      */
@@ -205,6 +206,15 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
     public String getDisplayName() {
         return getName();
+    }
+
+    /**
+     * @deprecated
+     *      This method always return a singleton set.
+     *      Calling this method from {@link Job} is pointless.
+     */
+    public Set<Job> getAllJobs() {
+        return Collections.<Job>singleton(this);
     }
 
     /**
