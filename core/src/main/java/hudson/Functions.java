@@ -296,4 +296,9 @@ public class Functions {
         }
         return null;
     }
+
+    public static String appendSpaceIfNotNull(String n) {
+        if(n==null) return null;
+        else        return n+' ';
+    }
 }

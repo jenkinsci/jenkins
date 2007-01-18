@@ -6,7 +6,7 @@
 	<%@ attribute name="number" type="java.lang.Integer" required="true" %>
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:set var="jobName_" value="${h.ifThenElse(jobName!=null,jobName+' ',null)}"/>
+  <j:set var="jobName_" value="${h.appendSpaceIfNotNull(jobName)}"/>
   <j:choose>
 	  <j:when test="${job==null}">
 	    ${jobName_}#<!-- -->${number}
