@@ -1,140 +1,169 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.scm.ChangeLogSet.Entry;
+import hudson.util.RunList;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
 
 /**
- * Represents a collection of {@link Job}s.
+ * Collection of {@link Job}s.
  *
  * @author Kohsuke Kawaguchi
  */
-public class View extends JobCollection {
-
-    private final Hudson owner;
+public abstract class View extends AbstractModelObject {
 
     /**
-     * List of job names. This is what gets serialized.
+     * Gets all the jobs in this collection.
      */
-    /*package*/ final Set<String> jobNames = new TreeSet<String>();
+    public abstract Collection<Job> getJobs();
 
     /**
-     * Name of this view.
+     * Checks if the job is in this collection.
      */
-    private String name;
+    public abstract boolean containsJob(Job job);
 
     /**
-     * Message displayed in the view page.
+     * Gets the name of all this collection.
      */
-    private String description;
+    public abstract String getViewName();
 
+    /**
+     * Message displayed in the top page. Can be null. Includes HTML.
+     */
+    public abstract String getDescription();
 
-    public View(Hudson owner, String name) {
-        this.name = name;
-        this.owner = owner;
+    /**
+     * Returns the path relative to the context root.
+     */
+    public abstract String getUrl();
+
+    public static final class UserInfo implements Comparable<UserInfo> {
+        private final User user;
+        private Calendar lastChange;
+        private Project project;
+
+        UserInfo(User user, Project p, Calendar lastChange) {
+            this.user = user;
+            this.project = p;
+            this.lastChange = lastChange;
+        }
+
+        public User getUser() {
+            return user;
+        }
+
+        public Calendar getLastChange() {
+            return lastChange;
+        }
+
+        public Project getProject() {
+            return project;
+        }
+
+        /**
+         * Returns a human-readable string representation of when this user was last active.
+         */
+        public String getLastChangeTimeString() {
+            long duration = new GregorianCalendar().getTimeInMillis()-lastChange.getTimeInMillis();
+            return Util.getTimeSpanString(duration);
+        }
+
+        public String getTimeSortKey() {
+            return Util.XS_DATETIME_FORMATTER.format(lastChange.getTime());
+        }
+
+        public int compareTo(UserInfo that) {
+            return that.lastChange.compareTo(this.lastChange);
+        }
     }
 
     /**
-     * Returns a read-only view of all {@link Job}s in this view.
+     * Does this {@link View} has any associated user information recorded?
+     */
+    public final boolean hasPeople() {
+        for (Job job : getJobs()) {
+            if (job instanceof Project) {
+                Project p = (Project) job;
+                for (Build build : p.getBuilds()) {
+                    for (Entry entry : build.getChangeSet()) {
+                        User user = entry.getAuthor();
+                        if(user!=null)
+                            return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Gets the users that show up in the changelog of this job collection.
+     */
+    public final List<UserInfo> getPeople() {
+        Map<User,UserInfo> users = new HashMap<User,UserInfo>();
+        for (Job job : getJobs()) {
+            if (job instanceof Project) {
+                Project p = (Project) job;
+                for (Build build : p.getBuilds()) {
+                    for (Entry entry : build.getChangeSet()) {
+                        User user = entry.getAuthor();
+
+                        UserInfo info = users.get(user);
+                        if(info==null)
+                            users.put(user,new UserInfo(user,p,build.getTimestamp()));
+                        else
+                        if(info.getLastChange().before(build.getTimestamp())) {
+                            info.project = p;
+                            info.lastChange = build.getTimestamp(); 
+                        }
+                    }
+                }
+            }
+        }
+
+        List<UserInfo> r = new ArrayList<UserInfo>(users.values());
+        Collections.sort(r);
+
+        return r;
+    }
+
+    /**
+     * Creates a job in this collection.
      *
-     * <p>
-     * This method returns a separate copy each time to avoid
-     * concurrent modification issue.
+     * @return
+     *      null if fails.
      */
-    public synchronized List<Job> getJobs() {
-        Job[] jobs = new Job[jobNames.size()];
-        int i=0;
-        for (String name : jobNames)
-            jobs[i++] = owner.getJob(name);
-        return Arrays.asList(jobs);
+    public abstract Job doCreateJob( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
+
+    public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        rss(req, rsp, " all builds", new RunList(getJobs()));
     }
 
-    public Job getJob(String name) {
-        return owner.getJob(name);
+    public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        rss(req, rsp, " failed builds", new RunList(getJobs()).failureOnly());
     }
 
-    public boolean containsJob(Job job) {
-        return jobNames.contains(job.getName());
+    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
+        RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
+            runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
     }
 
-    public String getViewName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getDisplayName() {
-        return name;
-    }
-
-    public Job doCreateJob(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return null;
-
-        Job job = owner.doCreateJob(req, rsp);
-        if(job!=null) {
-            jobNames.add(job.getName());
-            owner.save();
+    public static final Comparator<View> SORTER = new Comparator<View>() {
+        public int compare(View lhs, View rhs) {
+            return lhs.getViewName().compareTo(rhs.getViewName());
         }
-        return job;
-    }
-
-    public String getUrl() {
-        return "view/"+name+'/';
-    }
-
-    /**
-     * Accepts submission from the configuration page.
-     */
-    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
-
-        req.setCharacterEncoding("UTF-8");
-        
-        jobNames.clear();
-        for (Job job : owner.getJobs()) {
-            if(req.getParameter(job.getName())!=null)
-                jobNames.add(job.getName());
-        }
-
-        description = Util.nullify(req.getParameter("description"));
-
-        owner.save();
-
-        rsp.sendRedirect(".");
-    }
-
-    /**
-     * Accepts the new description.
-     */
-    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
-
-        req.setCharacterEncoding("UTF-8");
-        description = req.getParameter("description");
-        owner.save();
-        rsp.sendRedirect(".");  // go to the top page
-    }
-
-    /**
-     * Deletes this view.
-     */
-    public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
-
-        owner.deleteView(this);
-        rsp.sendRedirect2(req.getContextPath()+"/");
-    }
+    };
 }

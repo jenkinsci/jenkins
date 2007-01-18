@@ -75,7 +75,7 @@ import java.util.logging.LogRecord;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Hudson extends JobCollection implements Node {
+public final class Hudson extends View implements Node {
     private transient final Queue queue = new Queue();
 
     /**
@@ -136,9 +136,9 @@ public final class Hudson extends JobCollection implements Node {
     /*package*/ Integer quietPeriod;
 
     /**
-     * {@link View}s.
+     * {@link ListView}s.
      */
-    private List<View> views;   // can't initialize it eagerly for backward compatibility
+    private List<ListView> views;   // can't initialize it eagerly for backward compatibility
 
     private transient final FingerprintMap fingerprintMap = new FingerprintMap();
 
@@ -404,9 +404,9 @@ public final class Hudson extends JobCollection implements Node {
         return true;
     }
 
-    public synchronized JobCollection getView(String name) {
+    public synchronized View getView(String name) {
         if(views!=null) {
-            for (View v : views) {
+            for (ListView v : views) {
                 if(v.getViewName().equals(name))
                     return v;
             }
@@ -418,21 +418,21 @@ public final class Hudson extends JobCollection implements Node {
     }
 
     /**
-     * Gets the read-only list of all {@link JobCollection}s.
+     * Gets the read-only list of all {@link View}s.
      */
-    public synchronized JobCollection[] getViews() {
+    public synchronized View[] getViews() {
         if(views==null)
-            views = new ArrayList<View>();
-        JobCollection[] r = new JobCollection[views.size()+1];
+            views = new ArrayList<ListView>();
+        View[] r = new View[views.size()+1];
         views.toArray(r);
         // sort Views and put "all" at the very beginning
         r[r.length-1] = r[0];
-        Arrays.sort(r,1,r.length,JobCollection.SORTER);
+        Arrays.sort(r,1,r.length, View.SORTER);
         r[0] = this;
         return r;
     }
 
-    public synchronized void deleteView(View view) throws IOException {
+    public synchronized void deleteView(ListView view) throws IOException {
         if(views!=null) {
             views.remove(view);
             save();
@@ -632,7 +632,7 @@ public final class Hudson extends JobCollection implements Node {
 
         jobs.remove(job.getName());
         if(views!=null) {
-            for (View v : views) {
+            for (ListView v : views) {
                 synchronized(v) {
                     v.jobNames.remove(job.getName());
                 }
@@ -650,7 +650,7 @@ public final class Hudson extends JobCollection implements Node {
         jobs.put(newName,job);
 
         if(views!=null) {
-            for (View v : views) {
+            for (ListView v : views) {
                 synchronized(v) {
                     if(v.jobNames.remove(oldName))
                         v.jobNames.add(newName);
@@ -935,9 +935,9 @@ public final class Hudson extends JobCollection implements Node {
             return;
         }
 
-        View v = new View(this, name);
+        ListView v = new ListView(this, name);
         if(views==null)
-            views = new Vector<View>();
+            views = new Vector<ListView>();
         views.add(v);
         save();
 
@@ -1309,7 +1309,9 @@ public final class Hudson extends JobCollection implements Node {
     static {
         XSTREAM.alias("hudson",Hudson.class);
         XSTREAM.alias("slave",Slave.class);
-        XSTREAM.alias("view",View.class);
         XSTREAM.alias("jdk",JDK.class);
+        // for backward compatibility with <1.75, recognize the tag name "view" as well.
+        XSTREAM.alias("view", ListView.class);
+        XSTREAM.alias("listView", ListView.class);
     }
 }
