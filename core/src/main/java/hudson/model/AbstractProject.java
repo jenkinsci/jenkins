@@ -447,7 +447,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             // if there's no workspace, report a nice error message
             rsp.forward(this,"noWorkspace",req);
         } else {
-            serveFile(req, rsp, ws, "folder.gif", true);
+            new DirectoryBrowserSupport(this).serveFile(req, rsp, ws, "folder.gif", true);
         }
     }
 }

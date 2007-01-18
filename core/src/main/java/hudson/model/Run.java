@@ -46,7 +46,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
-        extends DirectoryHolder implements ExtensionPoint, Comparable<RunT> {
+        extends Actionable implements ExtensionPoint, Comparable<RunT> {
 
     protected transient final JobT project;
 
@@ -712,7 +712,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Serves the artifacts.
      */
     public void doArtifact( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
-        serveFile(req, rsp, new FilePath(getArtifactsDir()), "package.gif", true);
+        new DirectoryBrowserSupport(this).serveFile(req, rsp, new FilePath(getArtifactsDir()), "package.gif", true);
     }
 
     /**

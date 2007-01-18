@@ -7,10 +7,11 @@ import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
-import hudson.model.DirectoryHolder;
+import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Project;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Result;
+import hudson.model.Actionable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -80,7 +81,7 @@ public class JavadocArchiver extends Publisher {
         }
     };
 
-    public static final class JavadocAction extends DirectoryHolder implements ProminentProjectAction {
+    public static final class JavadocAction extends Actionable implements ProminentProjectAction {
         private final Project project;
 
         public JavadocAction(Project project) {
@@ -100,7 +101,7 @@ public class JavadocArchiver extends Publisher {
         }
 
         public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-            serveFile(req, rsp, new FilePath(getJavadocDir(project)), "help.gif", false);
+            new DirectoryBrowserSupport(this).serveFile(req, rsp, new FilePath(getJavadocDir(project)), "help.gif", false);
         }
     }
 }

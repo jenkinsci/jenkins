@@ -24,9 +24,19 @@ import java.util.StringTokenizer;
 /**
  * Has convenience methods to serve file system.
  *
+ * <p>
+ * This object can be used in a mix-in style to provide a directory browsing capability
+ * to a {@link ModelObject}. 
+ *
  * @author Kohsuke Kawaguchi
  */
-public abstract class DirectoryHolder extends Actionable {
+public final class DirectoryBrowserSupport {
+
+    public final ModelObject owner;
+
+    public DirectoryBrowserSupport(ModelObject owner) {
+        this.owner = owner;
+    }
 
     /**
      * Serves a file from the file system (Maps the URL to a directory in a file system.)
@@ -37,7 +47,7 @@ public abstract class DirectoryHolder extends Actionable {
      *      True to generate the directory index.
      *      False to serve "index.html"
      */
-    protected final void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
+    public final void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
         if(req.getQueryString()!=null) {
             req.setCharacterEncoding("UTF-8");
             String path = req.getParameter("path");

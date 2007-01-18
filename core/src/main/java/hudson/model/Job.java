@@ -56,7 +56,7 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>>
-        extends DirectoryHolder implements Describable<Job<JobT,RunT>>, ExtensionPoint {
+        extends Actionable implements Describable<Job<JobT,RunT>>, ExtensionPoint {
     /**
      * Project name.
      */
