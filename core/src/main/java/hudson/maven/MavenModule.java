@@ -4,7 +4,8 @@ import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Job;
-import hudson.model.JobDescriptor;
+import hudson.model.TopLevelItemDescriptor;
+import hudson.model.ItemLoader;
 import hudson.model.Descriptor.FormException;
 import hudson.util.DescribableList;
 import org.kohsuke.stapler.StaplerRequest;
@@ -19,17 +20,17 @@ import java.io.IOException;
  * 
  * @author Kohsuke Kawaguchi
  */
-public final class MavenJob extends AbstractProject<MavenJob,MavenBuild> implements DescribableList.Owner {
+public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> implements DescribableList.Owner {
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
         new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
 
-    public MavenJob(Hudson parent, String name) {
+    public MavenModule(Hudson parent, String name) {
         super(parent, name);
     }
 
     @Override
-    protected void onLoad(Hudson root, String name) throws IOException {
-        super.onLoad(root, name);
+    public void onLoad(String name) throws IOException {
+        super.onLoad(name);
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
         reporters.setOwner(this);
@@ -66,21 +67,7 @@ public final class MavenJob extends AbstractProject<MavenJob,MavenBuild> impleme
         save();
     }
 
-    public JobDescriptor<MavenJob,MavenBuild> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final JobDescriptor<MavenJob,MavenBuild> DESCRIPTOR = new JobDescriptor<MavenJob,MavenBuild>(MavenJob.class) {
-        public String getDisplayName() {
-            return "Building Maven2 project (alpha)";
-        }
-
-        public MavenJob newInstance(String name) {
-            return new MavenJob(Hudson.getInstance(),name);
-        }
-    };
-
     static {
-        XSTREAM.alias("maven2", MavenJob.class);
+        ItemLoader.XSTREAM.alias("maven2", MavenModule.class);
     }
 }

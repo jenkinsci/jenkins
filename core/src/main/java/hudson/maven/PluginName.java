@@ -3,24 +3,23 @@ package hudson.maven;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 
 /**
- * Identifier of an artifact (like jar) in Maven,
+ * Identifier of a specific version of a Maven plugin
  * that consists of groupId, artifactId, and version.
- *
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Name {
+public final class PluginName {
     public final String groupId;
     public final String artifactId;
     public final String version;
 
-    public Name(String groupId, String artifactId, String version) {
+    public PluginName(String groupId, String artifactId, String version) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
     }
 
-    public Name(PluginDescriptor pd) {
+    public PluginName(PluginDescriptor pd) {
         this(pd.getGroupId(), pd.getArtifactId(), pd.getVersion());
     }
 
@@ -35,7 +34,7 @@ public final class Name {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Name that = (Name) o;
+        PluginName that = (PluginName) o;
 
         return artifactId.equals(that.artifactId)
             && groupId.equals(that.groupId)
