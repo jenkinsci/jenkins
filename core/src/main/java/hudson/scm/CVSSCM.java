@@ -10,14 +10,12 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.LargeText;
 import hudson.model.ModelObject;
-import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
@@ -53,7 +51,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.io.OutputStreamWriter;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -1035,7 +1032,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             if(req.getParameter("upstream")!=null) {
                 // tag all upstream builds
                 Enumeration e = req.getParameterNames();
-                Map<Project, Integer> upstreams = ((Build) build).getUpstreamBuilds(); // TODO: define them at AbstractBuild level
+                Map<AbstractProject, Integer> upstreams = build.getUpstreamBuilds(); // TODO: define them at AbstractBuild level
 
                 while(e.hasMoreElements()) {
                     String upName = (String) e.nextElement();

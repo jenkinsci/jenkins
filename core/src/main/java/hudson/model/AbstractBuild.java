@@ -207,22 +207,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 // fingerprint related stuff
 //
 //
-    /**
-     * Gets the downstream builds of this build, which are the builds of the
-     * downstream projects that use artifacts of this build.
-     *
-     * @return
-     *      For each project with fingerprinting enabled, returns the range
-     *      of builds (which can be empty if no build uses the artifact from this build.)
-     */
-    public Map<AbstractProject,RangeSet> getDownstreamBuilds() {
-        Map<AbstractProject,RangeSet> r = new HashMap<AbstractProject,RangeSet>();
-        for (AbstractProject p : getParent().getDownstreamProjects()) {
-            if(p.isFingerprintConfigured())
-                r.put(p,getDownstreamRelationship(p));
-        }
-        return r;
-    }
 
     @Override
     public String getWhyKeepLog() {
@@ -251,6 +235,47 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      The range will be empty if no build of that project matches this.
      */
     public abstract RangeSet getDownstreamRelationship(AbstractProject that);
+
+    /**
+     * Gets the dependency relationship from this build (as the sink)
+     * and that project (as the source.)
+     *
+     * @return
+     *      Build number of the upstream build that feed into this build,
+     *      or -1 if no record is available.
+     */
+    public abstract int getUpstreamRelationship(AbstractProject that);
+
+    /**
+     * Gets the downstream builds of this build, which are the builds of the
+     * downstream projects that use artifacts of this build.
+     *
+     * @return
+     *      For each project with fingerprinting enabled, returns the range
+     *      of builds (which can be empty if no build uses the artifact from this build.)
+     */
+    public Map<AbstractProject,RangeSet> getDownstreamBuilds() {
+        Map<AbstractProject,RangeSet> r = new HashMap<AbstractProject,RangeSet>();
+        for (AbstractProject p : getParent().getDownstreamProjects()) {
+            if(p.isFingerprintConfigured())
+                r.put(p,getDownstreamRelationship(p));
+        }
+        return r;
+    }
+    
+    /**
+     * Gets the upstream builds of this build, which are the builds of the
+     * upstream projects whose artifacts feed into this build.
+     */
+    public Map<AbstractProject,Integer> getUpstreamBuilds() {
+        Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
+        for (AbstractProject p : getParent().getUpstreamProjects()) {
+            int n = getUpstreamRelationship(p);
+            if(n>=0)
+                r.put(p,n);
+        }
+        return r;
+    }
 
 //
 //

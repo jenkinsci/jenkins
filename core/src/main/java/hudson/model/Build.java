@@ -69,15 +69,8 @@ public final class Build extends AbstractBuild<Project,Build> {
         return rs;
     }
 
-    /**
-     * Gets the dependency relationship from this build (as the sink)
-     * and that project (as the source.)
-     *
-     * @return
-     *      Build number of the upstream build that feed into this build,
-     *      or -1 if no record is available.
-     */
-    public int getUpstreamRelationship(Project that) {
+    @Override
+    public int getUpstreamRelationship(AbstractProject that) {
         FingerprintAction f = getAction(FingerprintAction.class);
         if(f==null)     return -1;
 
@@ -91,20 +84,6 @@ public final class Build extends AbstractBuild<Project,Build> {
         }
 
         return n;
-    }
-
-    /**
-     * Gets the upstream builds of this build, which are the builds of the
-     * upstream projects whose artifacts feed into this build.
-     */
-    public Map<Project,Integer> getUpstreamBuilds() {
-        Map<Project,Integer> r = new HashMap<Project,Integer>();
-        for (Project p : getParent().getUpstreamProjects()) {
-            int n = getUpstreamRelationship(p);
-            if(n>=0)
-                r.put(p,n);
-        }
-        return r;
     }
 
     /**

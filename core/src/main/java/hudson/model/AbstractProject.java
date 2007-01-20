@@ -2,26 +2,31 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.util.EditDistance;
-import hudson.model.RunMap.Constructor;
-import hudson.model.Descriptor.FormException;
-import hudson.triggers.Trigger;
-import hudson.triggers.Triggers;
 import hudson.Launcher.LocalLauncher;
 import hudson.maven.MavenModule;
+import hudson.model.Descriptor.FormException;
+import hudson.model.Fingerprint.RangeSet;
+import hudson.model.RunMap.Constructor;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
+import hudson.triggers.Trigger;
+import hudson.triggers.Triggers;
+import hudson.util.EditDistance;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.util.SortedMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Vector;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.Vector;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -358,6 +363,53 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public abstract List<? extends AbstractProject> getDownstreamProjects();
 
+    public List<AbstractProject> getUpstreamProjects() {
+        List<AbstractProject> r = new ArrayList<AbstractProject>();
+        for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) ) {
+            if(p.getDownstreamProjects().contains(this))
+                r.add(p);
+        }
+        return r;
+    }
+
+    /**
+     * Gets the dependency relationship map between this project (as the source)
+     * and that project (as the sink.)
+     *
+     * @return
+     *      can be empty but not null. build number of this project to the build
+     *      numbers of that project.
+     */
+    public SortedMap<Integer, RangeSet> getRelationship(AbstractProject that) {
+        TreeMap<Integer,RangeSet> r = new TreeMap<Integer,RangeSet>(REVERSE_INTEGER_COMPARATOR);
+
+        checkAndRecord(that, r, this.getBuilds());
+        // checkAndRecord(that, r, that.getBuilds());
+
+        return r;
+    }
+
+    /**
+     * Helper method for getDownstreamRelationship.
+     *
+     * For each given build, find the build number range of the given project and put that into the map.
+     */
+    private void checkAndRecord(AbstractProject that, TreeMap<Integer, RangeSet> r, Collection<R> builds) {
+        for (R build : builds) {
+            RangeSet rs = build.getDownstreamRelationship(that);
+            if(rs==null || rs.isEmpty())
+                continue;
+
+            int n = build.getNumber();
+
+            RangeSet value = r.get(n);
+            if(value==null)
+                r.put(n,rs);
+            else
+                value.add(rs);
+        }
+    }
+
 //
 //
 // actions
@@ -479,4 +531,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         String nearest = EditDistance.findNearest(name, names);
         return (AbstractProject)Hudson.getInstance().getItem(nearest);
     }
+
+    private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
+        public int compare(Integer o1, Integer o2) {
+            return o2-o1;
+        }
+    };
 }

@@ -1,7 +1,6 @@
 package hudson.model;
 
 import hudson.model.Descriptor.FormException;
-import hudson.model.Fingerprint.RangeSet;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
@@ -17,15 +16,11 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.Vector;
 
 /**
@@ -123,66 +118,12 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         return new Build(this,dir);
     }
 
-    /**
-     * Gets the dependency relationship map between this project (as the source)
-     * and that project (as the sink.)
-     *
-     * @return
-     *      can be empty but not null. build number of this project to the build
-     *      numbers of that project.
-     */
-    public SortedMap<Integer,RangeSet> getRelationship(Project that) {
-        TreeMap<Integer,RangeSet> r = new TreeMap<Integer,RangeSet>(REVERSE_INTEGER_COMPARATOR);
-
-        checkAndRecord(that, r, this.getBuilds());
-        // checkAndRecord(that, r, that.getBuilds());
-
-        return r;
-    }
-
     public List<AbstractProject> getDownstreamProjects() {
         BuildTrigger buildTrigger = (BuildTrigger) getPublishers().get(BuildTrigger.DESCRIPTOR);
         if(buildTrigger==null)
             return new ArrayList<AbstractProject>();
         else
             return buildTrigger.getChildProjects();
-    }
-
-    public List<Project> getUpstreamProjects() {
-        List<Project> r = new ArrayList<Project>();
-        for( Project p : Hudson.getInstance().getProjects() ) {
-            synchronized(p) {
-                for (BuildStep step : p.publishers) {
-                    if (step instanceof BuildTrigger) {
-                        BuildTrigger trigger = (BuildTrigger) step;
-                        if(trigger.getChildProjects().contains(this))
-                            r.add(p);
-                    }
-                }
-            }
-        }
-        return r;
-    }
-
-    /**
-     * Helper method for getDownstreamRelationship.
-     *
-     * For each given build, find the build number range of the given project and put that into the map.
-     */
-    private void checkAndRecord(Project that, TreeMap<Integer, RangeSet> r, Collection<? extends Build> builds) {
-        for (Build build : builds) {
-            RangeSet rs = build.getDownstreamRelationship(that);
-            if(rs==null || rs.isEmpty())
-                continue;
-
-            int n = build.getNumber();
-
-            RangeSet value = r.get(n);
-            if(value==null)
-                r.put(n,rs);
-            else
-                value.add(rs);
-        }
     }
 
     @Override
@@ -307,12 +248,6 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
      */
     @Deprecated
     private transient String slave;
-
-    private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
-        public int compare(Integer o1, Integer o2) {
-            return o2-o1;
-        }
-    };
 
     public TopLevelItemDescriptor getDescriptor() {
         return DESCRIPTOR;
