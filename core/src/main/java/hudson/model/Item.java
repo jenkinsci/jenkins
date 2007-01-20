@@ -11,8 +11,6 @@ import java.util.Collection;
  * This uniqueness is also used for allocating file system storage
  * for each {@link Item}.
  *
- *
- * TODO: rename to something else. 
  * @author Kohsuke Kawaguchi
  */
 public interface Item extends PersistenceRoot {
