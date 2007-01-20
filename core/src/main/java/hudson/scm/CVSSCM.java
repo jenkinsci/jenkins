@@ -837,6 +837,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                 if(msg!=null)
                     w.println(msg);
                 e.printStackTrace(w);
+                w.close();
             }
         }
 
