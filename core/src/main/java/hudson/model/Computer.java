@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -239,7 +240,10 @@ public abstract class Computer implements ModelObject {
      * If this is the master, it returns the system property of the master computer.
      */
     public Map<String,String> getEnvVars() throws IOException, InterruptedException {
-        return getChannel().call(new GetEnvVars());
+        VirtualChannel channel = getChannel();
+        if(channel==null)
+            return Collections.singletonMap("N/A","N/A");
+        return channel.call(new GetEnvVars());
     }
 
     private static final class GetEnvVars implements Callable<Map<String,String>,RuntimeException> {
