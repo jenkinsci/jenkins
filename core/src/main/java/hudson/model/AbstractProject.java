@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.util.EditDistance;
 import hudson.model.RunMap.Constructor;
 import hudson.model.Descriptor.FormException;
 import hudson.triggers.Trigger;
@@ -227,7 +228,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     protected abstract R loadBuild(File dir) throws IOException;
 
-
     /**
      * Gets the {@link Node} where this project was last built on.
      *
@@ -344,6 +344,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
 //
 //
+// fingerprint related
+//
+//
+    /**
+     * True if the builds of this project produces {@link Fingerprint} records.
+     */
+    public abstract boolean isFingerprintConfigured();
+
+    /**
+     * Gets the other {@link AbstractProject}s that should be built
+     * when a build of this project is completed.
+     */
+    public abstract List<? extends AbstractProject> getDownstreamProjects();
+
+//
+//
 // actions
 //
 //
@@ -449,5 +465,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } else {
             new DirectoryBrowserSupport(this).serveFile(req, rsp, ws, "folder.gif", true);
         }
+    }
+
+    /**
+     * Finds a {@link AbstractProject} that has the name closest to the given name.
+     */
+    public static AbstractProject findNearest(String name) {
+        List<AbstractProject> projects = Hudson.getInstance().getAllItems(AbstractProject.class);
+        String[] names = new String[projects.size()];
+        for( int i=0; i<projects.size(); i++ )
+            names[i] = projects.get(i).getName();
+
+        String nearest = EditDistance.findNearest(name, names);
+        return (AbstractProject)Hudson.getInstance().getItem(nearest);
     }
 }

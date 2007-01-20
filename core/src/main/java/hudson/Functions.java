@@ -5,6 +5,7 @@ import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.Project;
 import hudson.model.Run;
+import hudson.model.Items;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -162,7 +163,7 @@ public class Functions {
     }
 
     public static String getProjectListString(List<Project> projects) {
-        return Project.toNameList(projects);
+        return Items.toNameList(projects);
     }
 
     public static Object ifThenElse(boolean cond, Object thenValue, Object elseValue) {

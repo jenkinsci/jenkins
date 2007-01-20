@@ -61,7 +61,7 @@ public class Fingerprint implements ModelObject {
          * or null if such a job no longer exists.
          */
         public Job getJob() {
-            return Hudson.getInstance().getJob(name);
+            return Hudson.getInstance().getItemByFullName(name,Job.class);
         }
 
         /**
@@ -461,7 +461,7 @@ public class Fingerprint implements ModelObject {
             return true;
 
         for (Entry<String,RangeSet> e : usages.entrySet()) {
-            Job j = Hudson.getInstance().getJob(e.getKey());
+            Job j = Hudson.getInstance().getItemByFullName(e.getKey(),Job.class);
             if(j==null)
                 continue;
 

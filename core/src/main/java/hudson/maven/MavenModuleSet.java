@@ -3,17 +3,16 @@ package hudson.maven;
 import hudson.model.AbstractItem;
 import hudson.model.Hudson;
 import hudson.model.ItemGroup;
-import hudson.model.ItemLoader;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.model.Items;
+import hudson.util.CopyOnWriteMap;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Group of {@link MavenModule}s.
@@ -31,7 +30,7 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
     /**
      * All {@link MavenModule}s.
      */
-    transient final Map<String,MavenModule> modules = new TreeMap<String,MavenModule>();
+    transient final Map<String,MavenModule> modules = new CopyOnWriteMap.Tree<String,MavenModule>();
 
     public MavenModuleSet(String name) {
         this.name = name;
@@ -53,12 +52,12 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         return Hudson.getInstance();
     }
 
-    public synchronized Collection<MavenModule> getItems() {
-        return new ArrayList<MavenModule>(modules.values());
+    public Collection<MavenModule> getItems() {
+        return modules.values();
     }
 
-    public synchronized boolean contains(MavenModule item) {
-        return modules.containsKey(item.getName());
+    public MavenModule getItem(String name) {
+        return modules.get(name);
     }
 
     public Collection<MavenModule> getAllJobs() {
@@ -80,7 +79,7 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         modules.clear();
         for (File subdir : subdirs) {
             try {
-                MavenModule item = (MavenModule)ItemLoader.load(subdir);
+                MavenModule item = (MavenModule) Items.load(subdir);
                 modules.put(item.getName(), item);
             } catch (IOException e) {
                 e.printStackTrace(); // TODO: logging
@@ -103,6 +102,6 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
     };
 
     static {
-        ItemLoader.XSTREAM.alias("maven2-module-set", MavenModule.class);
+        Items.XSTREAM.alias("maven2-module-set", MavenModule.class);
     }
 }

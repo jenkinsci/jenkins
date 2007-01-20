@@ -4,15 +4,32 @@ import java.io.IOException;
 import java.util.Collection;
 
 /**
- * Object that can be displayed in a {@link ListView}.
+ * Basic configuration unit in Hudson.
  *
- * {@link Item}s are allowed to show up in multiple {@link View}s,
- * so they need to have unique names among all {@link Item}s.
- * This uniqueness is also used for allocating file system storage
- * for each {@link Item}.
+ * <p>
+ * Every {@link Item} is hosted in an {@link ItemGroup} called "parent",
+ * and some {@link Item}s are {@link ItemGroup}s. This form a tree
+ * structure, which is rooted at {@link Hudson}.
+ *
+ * <p>
+ * Unlike file systems, where a file can be moved from one directory
+ * to another, {@link Item} inherently belongs to a single {@link ItemGroup}
+ * and that relationship will not change.
+ * Think of
+ * <a href="http://images.google.com/images?q=Windows%20device%20manager">Windows device manager</a>
+ * &mdash; an HDD always show up under 'Disk drives' and it can never be moved to another parent.
+ *
+ * Similarly, {@link ItemGroup} is not a generic container. Each subclass
+ * of {@link ItemGroup} can usually only host a certain limited kinds of
+ * {@link Item}s.
+ *
+ * <p>
+ * {@link Item}s have unique {@link #getName() name}s that distinguish themselves
+ * among their siblings uniquely. The names can be combined by '/' to form an
+ * item full name, which uniquely identifies an {@link Item} inside the whole {@link Hudson}.
  *
  * @author Kohsuke Kawaguchi
- * @see ItemLoader
+ * @see Items
  */
 public interface Item extends PersistenceRoot {
     /**
@@ -29,16 +46,32 @@ public interface Item extends PersistenceRoot {
      * Gets the name of the item.
      *
      * <p>
-     * The name must be unique among all {@link Item}s in this Hudson,
-     * because we allow a single {@link Item} to show up in multiple
-     * {@link View}s.
+     * The name must be unique among other {@link Item}s that belong
+     * to the same parent.
+     *
+     * <p>
+     * This name is also used for directory name, so it cannot contain
+     * any character that's not allowed on the file system. 
      */
     String getName();
 
     /**
+     * Gets the full name of this item, like "abc/def/ghi".
+     *
+     * <p>
+     * Full name consists of {@link #getName() name}s of {@link Item}s
+     * that lead from the root {@link Hudson} to this {@link Item},
+     * separated by '/'. This is the unique name that identifies this
+     * {@link Item} inside the whole {@link Hudson}.
+     *
+     * @see Hudson#getItemByFullName(String,Class)
+     */
+    String getFullName();
+
+    /**
      * Returns the URL of this project relative to the context root of the application.
      *
-     * @see AbstractItem#getUrl() for how to implement this
+     * @see AbstractItem#getUrl() for how to implement this.
      */
     String getUrl();
 

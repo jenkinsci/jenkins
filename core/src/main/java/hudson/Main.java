@@ -3,8 +3,8 @@ package hudson;
 import hudson.model.ExternalJob;
 import hudson.model.ExternalRun;
 import hudson.model.Hudson;
-import hudson.model.Job;
 import hudson.model.Result;
+import hudson.model.TopLevelItem;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
 
@@ -60,12 +60,12 @@ public class Main {
     public static int localPost(String[] args) throws Exception {
         Hudson app = new Hudson(new File(getHudsonHome()),null);
 
-        Job job = app.getJob(args[0]);
-        if(!(job instanceof ExternalJob)) {
+        TopLevelItem item = app.getItem(args[0]);
+        if(!(item instanceof ExternalJob)) {
             System.err.println(args[0]+" is not a valid external job name in Hudson");
             return -1;
         }
-        ExternalJob ejob = (ExternalJob) job;
+        ExternalJob ejob = (ExternalJob) item;
 
         ExternalRun run = ejob.newBuild();
 

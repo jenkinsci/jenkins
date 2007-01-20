@@ -10,7 +10,6 @@ import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
-import hudson.util.EditDistance;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -142,10 +140,10 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         return r;
     }
 
-    public List<Project> getDownstreamProjects() {
+    public List<AbstractProject> getDownstreamProjects() {
         BuildTrigger buildTrigger = (BuildTrigger) getPublishers().get(BuildTrigger.DESCRIPTOR);
         if(buildTrigger==null)
-            return new ArrayList<Project>();
+            return new ArrayList<AbstractProject>();
         else
             return buildTrigger.getChildProjects();
     }
@@ -187,9 +185,7 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         }
     }
 
-    /**
-     * Returns true if the fingerprint record is configured in this project.
-     */
+    @Override
     public boolean isFingerprintConfigured() {
         synchronized(publishers) {
             for (Publisher p : publishers) {
@@ -212,7 +208,7 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
 
-        Set<Project> upstream = Collections.emptySet();
+        Set<AbstractProject> upstream = Collections.emptySet();
 
         synchronized(this) {
             try {
@@ -234,7 +230,7 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         }
 
         if(req.getParameter("pseudoUpstreamTrigger")!=null) {
-            upstream = new HashSet<Project>(Project.fromNameList(req.getParameter("upstreamProjects")));
+            upstream = new HashSet<AbstractProject>(Items.fromNameList(req.getParameter("upstreamProjects"),AbstractProject.class));
         }
 
         // this needs to be done after we release the lock on this,
@@ -242,7 +238,7 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         for (Project p : Hudson.getInstance().getProjects()) {
             boolean isUpstream = upstream.contains(p);
             synchronized(p) {
-                List<Project> newChildProjects = p.getDownstreamProjects();
+                List<AbstractProject> newChildProjects = p.getDownstreamProjects();
 
                 if(isUpstream) {
                     if(!newChildProjects.contains(this))
@@ -311,51 +307,6 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
      */
     @Deprecated
     private transient String slave;
-
-    /**
-     * Converts a list of projects into a camma-separated names.
-     */
-    public static String toNameList(Collection<? extends Project> projects) {
-        StringBuilder buf = new StringBuilder();
-        for (Project project : projects) {
-            if(buf.length()>0)
-                buf.append(", ");
-            buf.append(project.getName());
-        }
-        return buf.toString();
-    }
-
-    /**
-     * Does the opposite of {@link #toNameList(Collection)}.
-     */
-    public static List<Project> fromNameList(String list) {
-        Hudson hudson = Hudson.getInstance();
-
-        List<Project> r = new ArrayList<Project>();
-        StringTokenizer tokens = new StringTokenizer(list,",");
-        while(tokens.hasMoreTokens()) {
-            String projectName = tokens.nextToken().trim();
-            Job job = hudson.getJob(projectName);
-            if(!(job instanceof Project)) {
-                continue; // ignore this token
-            }
-            r.add((Project) job);
-        }
-        return r;
-    }
-
-    /**
-     * Finds a {@link Project} that has the name closest to the given name.
-     */
-    public static Project findNearest(String name) {
-        List<Project> projects = Hudson.getInstance().getProjects();
-        String[] names = new String[projects.size()];
-        for( int i=0; i<projects.size(); i++ )
-            names[i] = projects.get(i).getName();
-
-        String nearest = EditDistance.findNearest(name, names);
-        return (Project)Hudson.getInstance().getJob(nearest);
-    }
 
     private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
         public int compare(Integer o1, Integer o2) {

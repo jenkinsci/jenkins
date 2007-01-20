@@ -2,11 +2,10 @@ package hudson.maven;
 
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
-import hudson.model.Job;
-import hudson.model.TopLevelItemDescriptor;
-import hudson.model.ItemLoader;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Hudson;
+import hudson.model.Items;
+import hudson.model.Job;
 import hudson.util.DescribableList;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -14,6 +13,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -48,6 +48,16 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         return new MavenBuild(this,dir);
     }
 
+    @Override
+    public boolean isFingerprintConfigured() {
+        return true;
+    }
+
+    public List<MavenModule> getDownstreamProjects() {
+        // TODO
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * List of active {@link MavenReporter}s configured for this project.
      */
@@ -68,6 +78,6 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     }
 
     static {
-        ItemLoader.XSTREAM.alias("maven2", MavenModule.class);
+        Items.XSTREAM.alias("maven2", MavenModule.class);
     }
 }

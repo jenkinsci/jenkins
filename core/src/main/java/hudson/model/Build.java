@@ -41,24 +41,6 @@ public final class Build extends AbstractBuild<Project,Build> {
         super(project,buildDir);
     }
 
-    @Override
-    public String getWhyKeepLog() {
-        // if any of the downstream project is configured with 'keep dependency component',
-        // we need to keep this log
-        for (Map.Entry<Project, RangeSet> e : getDownstreamBuilds().entrySet()) {
-            Project p = e.getKey();
-            if(!p.isKeepDependencies())     continue;
-
-            // is there any active build that depends on us?
-            for (Build build : p.getBuilds()) {
-                if(e.getValue().includes(build.getNumber()))
-                    return "kept because of "+build;
-            }
-        }
-
-        return super.getWhyKeepLog();
-    }
-
     public Calendar due() {
         return timestamp;
     }
@@ -70,15 +52,8 @@ public final class Build extends AbstractBuild<Project,Build> {
         return getAction(AbstractTestResultAction.class);
     }
 
-    /**
-     * Gets the dependency relationship from this build (as the source)
-     * and that project (as the sink.)
-     *
-     * @return
-     *      range of build numbers that represent which downstream builds are using this build.
-     *      The range will be empty if no build of that project matches this.
-     */
-    public RangeSet getDownstreamRelationship(Project that) {
+    @Override
+    public RangeSet getDownstreamRelationship(AbstractProject that) {
         RangeSet rs = new RangeSet();
 
         FingerprintAction f = getAction(FingerprintAction.class);
@@ -92,23 +67,6 @@ public final class Build extends AbstractBuild<Project,Build> {
         }
 
         return rs;
-    }
-
-    /**
-     * Gets the downstream builds of this build, which are the builds of the
-     * downstream projects that use artifacts of this build.
-     *
-     * @return
-     *      For each project with fingerprinting enabled, returns the range
-     *      of builds (which can be empty if no build uses the artifact from this build.)
-     */
-    public Map<Project,RangeSet> getDownstreamBuilds() {
-        Map<Project,RangeSet> r = new HashMap<Project,RangeSet>();
-        for (Project p : getParent().getDownstreamProjects()) {
-            if(p.isFingerprintConfigured())
-                r.put(p,getDownstreamRelationship(p));
-        }
-        return r;
     }
 
     /**

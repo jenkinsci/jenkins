@@ -237,7 +237,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
                 // sanity check
                 if(newName==null)
                     throw new IllegalArgumentException("New name is not given");
-                if(parent.getJob(newName)!=null)
+                if(parent.getItem(newName)!=null)
                     throw new IllegalArgumentException("Job "+newName+" already exists");
 
                 // noop?

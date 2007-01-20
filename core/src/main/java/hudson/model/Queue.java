@@ -124,9 +124,9 @@ public class Queue {
             BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(queueFile)));
             String line;
             while((line=in.readLine())!=null) {
-                Job j = Hudson.getInstance().getJob(line);
-                if(j instanceof Project)
-                    ((Project)j).scheduleBuild();
+                AbstractProject j = Hudson.getInstance().getItemByFullName(line,AbstractProject.class);
+                if(j!=null)
+                    j.scheduleBuild();
             }
             in.close();
             // discard the queue file now that we are done

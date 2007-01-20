@@ -7,7 +7,7 @@ import hudson.ExtensionPoint;
  *
  * <p>
  * To register a custom {@link TopLevelItem} class from a plugin, add it to
- * {@link TopLevelItems#LIST}. Also see {@link ItemLoader#XSTREAM}.
+ * {@link TopLevelItems#LIST}. Also see {@link Items#XSTREAM}.
  *
  * @author Kohsuke Kawaguchi
  */

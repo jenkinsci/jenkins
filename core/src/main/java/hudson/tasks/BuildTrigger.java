@@ -1,12 +1,14 @@
 package hudson.tasks;
 
 import hudson.Launcher;
+import hudson.model.AbstractProject;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.Items;
 import hudson.model.Job;
-import hudson.model.Project;
 import hudson.model.Result;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
@@ -33,21 +35,21 @@ public class BuildTrigger extends Publisher {
         this.childProjects = childProjects;
     }
 
-    public BuildTrigger(List<Project> childProjects) {
-        this(Project.toNameList(childProjects));
+    public BuildTrigger(List<AbstractProject> childProjects) {
+        this(Items.toNameList(childProjects));
     }
 
     public String getChildProjectsValue() {
         return childProjects;
     }
 
-    public List<Project> getChildProjects() {
-        return Project.fromNameList(childProjects);
+    public List<AbstractProject> getChildProjects() {
+        return Items.fromNameList(childProjects,AbstractProject.class);
     }
 
     public boolean perform(Build build, Launcher launcher, BuildListener listener) {
         if(build.getResult()== Result.SUCCESS) {
-            for (Project p : getChildProjects()) {
+            for (AbstractProject p : getChildProjects()) {
                 listener.getLogger().println("Triggering a new build of "+p.getName());
                 p.scheduleBuild();
             }
@@ -121,14 +123,14 @@ public class BuildTrigger extends Publisher {
                     StringTokenizer tokens = new StringTokenizer(list,",");
                     while(tokens.hasMoreTokens()) {
                         String projectName = tokens.nextToken().trim();
-                        Job job = Hudson.getInstance().getJob(projectName);
-                        if(job==null) {
+                        Item item = Hudson.getInstance().getItemByFullName(projectName,Item.class);
+                        if(item==null) {
                             error("No such project '"+projectName+"'. Did you mean '"+
-                                Project.findNearest(projectName).getName()+"'?");
+                                AbstractProject.findNearest(projectName).getName()+"'?");
                             return;
                         }
-                        if(!(job instanceof Project)) {
-                            error(projectName+" is not a software build");
+                        if(!(item instanceof AbstractProject)) {
+                            error(projectName+" is not buildable");
                             return;
                         }
                     }

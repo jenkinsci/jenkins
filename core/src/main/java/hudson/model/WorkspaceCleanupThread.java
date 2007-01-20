@@ -70,16 +70,16 @@ public class WorkspaceCleanupThread extends PeriodicWork {
     private boolean shouldBeDeleted(String jobName, FilePath dir, Node n) throws IOException, InterruptedException {
         // TODO: the use of remoting is not optimal.
         // One remoting can execute "exists", "lastModified", and "delete" all at once.
-        Job job = Hudson.getInstance().getJob(jobName);
-        if(job==null)
+        TopLevelItem item = Hudson.getInstance().getItem(jobName);
+        if(item==null)
             // no such project anymore
             return true;
 
         if(!dir.exists())
             return false;
 
-        if (job instanceof Project) {
-            Project p = (Project) job;
+        if (item instanceof Project) {
+            Project p = (Project) item;
             Node lb = p.getLastBuiltOn();
             if(lb!=null && lb.equals(n))
                 // this is the active workspace. keep it.

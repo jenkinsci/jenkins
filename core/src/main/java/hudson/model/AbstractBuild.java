@@ -6,6 +6,7 @@ import hudson.Util;
 import hudson.maven.MavenBuild;
 import static hudson.model.Hudson.isWindows;
 import hudson.model.listeners.SCMListener;
+import hudson.model.Fingerprint.RangeSet;
 import hudson.scm.CVSChangeLogParser;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -200,6 +202,61 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     public abstract void run();
 
+//
+//
+// fingerprint related stuff
+//
+//
+    /**
+     * Gets the downstream builds of this build, which are the builds of the
+     * downstream projects that use artifacts of this build.
+     *
+     * @return
+     *      For each project with fingerprinting enabled, returns the range
+     *      of builds (which can be empty if no build uses the artifact from this build.)
+     */
+    public Map<AbstractProject,RangeSet> getDownstreamBuilds() {
+        Map<AbstractProject,RangeSet> r = new HashMap<AbstractProject,RangeSet>();
+        for (AbstractProject p : getParent().getDownstreamProjects()) {
+            if(p.isFingerprintConfigured())
+                r.put(p,getDownstreamRelationship(p));
+        }
+        return r;
+    }
+
+    @Override
+    public String getWhyKeepLog() {
+        // if any of the downstream project is configured with 'keep dependency component',
+        // we need to keep this log
+        for (Map.Entry<AbstractProject, RangeSet> e : getDownstreamBuilds().entrySet()) {
+            AbstractProject<?,?> p = e.getKey();
+            if(!p.isKeepDependencies())     continue;
+
+            // is there any active build that depends on us?
+            for (AbstractBuild build : p.getBuilds()) {
+                if(e.getValue().includes(build.getNumber()))
+                    return "kept because of "+build;
+            }
+        }
+
+        return super.getWhyKeepLog();
+    }
+
+    /**
+     * Gets the dependency relationship from this build (as the source)
+     * and that project (as the sink.)
+     *
+     * @return
+     *      range of build numbers that represent which downstream builds are using this build.
+     *      The range will be empty if no build of that project matches this.
+     */
+    public abstract RangeSet getDownstreamRelationship(AbstractProject that);
+
+//
+//
+// web methods
+//
+//
     /**
      * Stops this build if it's still going.
      *

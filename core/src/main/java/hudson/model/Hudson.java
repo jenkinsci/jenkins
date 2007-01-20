@@ -68,6 +68,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.StringTokenizer;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -364,8 +366,35 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return Util.createSubList(items.values(),Job.class);
     }
 
+    public String getFullName() {
+        return "";
+    }
+
     public List<TopLevelItem> getItems() {
         return new ArrayList<TopLevelItem>(items.values());
+    }
+
+    /**
+     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
+     * and filter them by the given type.
+     */
+    public <T extends Item> List<T> getAllItems(Class<T> type) {
+        List<T> r = new ArrayList<T>();
+
+        Stack<ItemGroup> q = new Stack<ItemGroup>();
+        q.push(this);
+
+        while(!q.isEmpty()) {
+            ItemGroup<?> parent = q.pop();
+            for (Item i : parent.getItems()) {
+                if(type.isInstance(i))
+                    r.add(type.cast(r));
+                if(i instanceof ItemGroup)
+                    q.push((ItemGroup)i);
+            }
+        }
+
+        return r;
     }
 
     /**
@@ -576,17 +605,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
-     * Gets the job of the given name.
-     *
-     * @return null
-     *      if such a project doesn't exist.
+     * @deprecated
+     *      Left only for the compatibility of URLs.
+     *      Should not be invoked for any other purpose.
      */
-    public Job getJob(String name) {
-        TopLevelItem item = items.get(name);
-        if(item instanceof Job)
-            return (Job)item;
-        else
-            return null;
+    public TopLevelItem getJob(String name) {
+        return getItem(name);
     }
 
     /**
@@ -594,6 +618,35 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public TopLevelItem getItem(String name) {
         return items.get(name);
+    }
+
+    /**
+     * Gets the {@link Item} object by its full name.
+     * Full names are like path names, where each name of {@link Item} is
+     * combined by '/'.
+     *
+     * @return
+     *      null if either such {@link Item} doesn't exist under the given full name,
+     *      or it exists but it's no an instance of the given type.
+     */
+    public <T extends Item> T getItemByFullName(String fullName, Class<T> type) {
+        StringTokenizer tokens = new StringTokenizer(fullName,"/");
+        ItemGroup parent = this;
+
+        while(true) {
+            Item item = parent.getItem(tokens.nextToken());
+            if(!tokens.hasMoreTokens()) {
+                if(type.isInstance(item))
+                    return type.cast(item);
+                else
+                    return null;
+            }
+
+            if(!(item instanceof ItemGroup))
+                return null;    // this item can't have any children
+
+            parent = (ItemGroup) item;
+        }
     }
 
     /**
@@ -722,7 +775,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         items.clear();
         for (File subdir : subdirs) {
             try {
-                TopLevelItem item = (TopLevelItem)ItemLoader.load(subdir);
+                TopLevelItem item = (TopLevelItem)Items.load(subdir);
                 items.put(item.getName(), item);
             } catch (IOException e) {
                 e.printStackTrace(); // TODO: logging
@@ -908,10 +961,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             result = createProject(src.getDescriptor(),name);
 
             // copy config
-            Util.copyFile(ItemLoader.getConfigFile(src).getFile(),ItemLoader.getConfigFile(result).getFile());
+            Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
 
             // reload from the new config
-            result = (TopLevelItem)ItemLoader.load(result.getRootDir());
+            result = (TopLevelItem)Items.load(result.getRootDir());
             result.onCopiedFrom(src);
             items.put(name,result);
         }

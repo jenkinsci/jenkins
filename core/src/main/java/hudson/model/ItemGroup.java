@@ -8,6 +8,12 @@ import java.util.Collection;
  * @author Kohsuke Kawaguchi
  */
 public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject {
+    /**
+     * Gets the full name of this {@link ItemGroup}.
+     *
+     * @see Item#getFullName() 
+     */
+    String getFullName();
 
     /**
      * Gets all the items in this collection in a read-only view.
@@ -25,4 +31,9 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * Like "job", "item", etc.
      */
     String getUrlChildPrefix();
+
+    /**
+     * Gets the {@link Item} inside this group that has a given name.
+     */
+    T getItem(String name);
 }

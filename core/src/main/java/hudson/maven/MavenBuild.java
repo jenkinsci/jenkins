@@ -5,6 +5,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.AbstractProject;
+import hudson.model.Fingerprint.RangeSet;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
 import hudson.util.IOException2;
@@ -50,6 +52,11 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     @Override
     public void run() {
         run(new RunnerImpl());
+    }
+
+    public RangeSet getDownstreamRelationship(AbstractProject that) {
+        // TODO
+        throw new UnsupportedOperationException();
     }
 
     /**

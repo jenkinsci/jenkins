@@ -38,6 +38,13 @@ public abstract class AbstractItem extends Actionable implements Item {
      */
     public abstract String getName();
 
+
+    public final String getFullName() {
+        String n = getParent().getFullName();
+        if(n.length()==0)   return getName();
+        else                return n+'/'+getName();
+    }
+
     /**
      * Called right after when a {@link Item} is loaded from disk.
      * This is an opporunity to do a post load processing.
@@ -66,6 +73,6 @@ public abstract class AbstractItem extends Actionable implements Item {
     }
 
     protected final XmlFile getConfigFile() {
-        return ItemLoader.getConfigFile(this);
+        return Items.getConfigFile(this);
     }
 }

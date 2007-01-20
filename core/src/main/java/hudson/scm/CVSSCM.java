@@ -1049,7 +1049,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                     }
 
                     upName = upName.substring(9);   // trim off 'upstream.'
-                    Job p = Hudson.getInstance().getJob(upName);
+                    Job p = Hudson.getInstance().getItemByFullName(upName,Job.class);
 
                     Run build = p.getBuildByNumber(upstreams.get(p));
                     tagSet.put((AbstractBuild) build,tag);
