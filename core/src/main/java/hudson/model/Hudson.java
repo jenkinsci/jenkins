@@ -31,7 +31,7 @@ import hudson.triggers.Triggers;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormFieldValidator;
 import hudson.util.XStream2;
-import hudson.util.CopyOnWriteHashMap;
+import hudson.util.CopyOnWriteMap;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -83,7 +83,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * {@link Computer}s in this Hudson system. Read-only.
      */
-    private transient final Map<Node,Computer> computers = new CopyOnWriteHashMap<Node,Computer>();
+    private transient final Map<Node,Computer> computers = new CopyOnWriteMap.Hash<Node,Computer>();
 
     /**
      * Number of executors of the master node.
@@ -108,7 +108,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * All {@link Item}s keyed by their {@link Item#getName() name}s.
      */
-    /*package*/ transient final Map<String,TopLevelItem> items = new TreeMap<String,TopLevelItem>();
+    /*package*/ transient final Map<String,TopLevelItem> items = new CopyOnWriteMap.Tree<String,TopLevelItem>();
 
     /**
      * The sole instance.
@@ -361,25 +361,25 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * Gets the snapshot of all the jobs.
      */
-    public synchronized List<Job> getJobs() {
+    public List<Job> getJobs() {
         return Util.createSubList(items.values(),Job.class);
     }
 
-    public synchronized List<TopLevelItem> getItems() {
+    public List<TopLevelItem> getItems() {
         return new ArrayList<TopLevelItem>(items.values());
     }
 
     /**
      * Gets the snapshot of all the projects.
      */
-    public synchronized List<Project> getProjects() {
+    public List<Project> getProjects() {
         return Util.createSubList(items.values(),Project.class);
     }
 
     /**
      * Gets the names of all the {@link Job}s.
      */
-    public synchronized Collection<String> getJobNames() {
+    public Collection<String> getJobNames() {
         List<String> names = new ArrayList<String>();
         for (Item j : items.values()) {
             if (j instanceof Job)
@@ -582,7 +582,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * @return null
      *      if such a project doesn't exist.
      */
-    public synchronized Job getJob(String name) {
+    public Job getJob(String name) {
         TopLevelItem item = items.get(name);
         if(item instanceof Job)
             return (Job)item;
@@ -593,7 +593,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * Gets the {@link TopLevelItem} of the given name.
      */
-    public synchronized TopLevelItem getItem(String name) {
+    public TopLevelItem getItem(String name) {
         return items.get(name);
     }
 
