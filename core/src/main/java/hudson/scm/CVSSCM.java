@@ -34,7 +34,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -823,21 +822,17 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         /**
          * Displays "cvs --version" for trouble shooting.
          */
-        public void doVersion(StaplerRequest req, StaplerResponse rsp) throws IOException {
-            rsp.setContentType("text/plain");
-            ServletOutputStream os = rsp.getOutputStream();
+        public void doVersion(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            ByteBuffer baos = new ByteBuffer();
             try {
                 Proc proc = Hudson.getInstance().createLauncher(TaskListener.NULL).launch(
-                    new String[]{getCvsExe(), "--version"}, new String[0], os, null);
+                    new String[]{getCvsExe(), "--version"}, new String[0], baos, null);
                 proc.join();
+                rsp.setContentType("text/plain");
+                baos.writeTo(rsp.getOutputStream());
             } catch (IOException e) {
-                PrintWriter w = new PrintWriter(os);
-                w.println("Failed to launch "+getCvsExe());
-                String msg = Util.getWin32ErrorMessage(e);
-                if(msg!=null)
-                    w.println(msg);
-                e.printStackTrace(w);
-                w.close();
+                req.setAttribute("error",e);
+                rsp.forward(this,"versionCheckError",req);
             }
         }
 
