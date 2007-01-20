@@ -12,6 +12,7 @@ import java.util.Collection;
  * for each {@link Item}.
  *
  * @author Kohsuke Kawaguchi
+ * @see ItemLoader
  */
 public interface Item extends PersistenceRoot {
     /**
