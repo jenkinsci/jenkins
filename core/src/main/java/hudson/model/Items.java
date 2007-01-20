@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.XmlFile;
+import hudson.maven.MavenModuleSet;
 import hudson.util.XStream2;
 
 import java.util.Collection;
@@ -18,6 +19,27 @@ import com.thoughtworks.xstream.XStream;
  * @author Kohsuke Kawaguchi
  */
 public class Items {
+    /**
+     * List of all installed {@link TopLevelItem} types.
+     */
+    public static final List<TopLevelItemDescriptor> LIST = (List)Descriptor.toList(
+        Project.DESCRIPTOR,
+        ExternalJob.DESCRIPTOR
+    );
+
+    public static TopLevelItemDescriptor getDescriptor(String displayName) {
+        for (TopLevelItemDescriptor job : LIST) {
+            if(job.getDisplayName().equals(displayName))
+                return job;
+        }
+        return null;
+    }
+
+    static {
+        if(Boolean.getBoolean("hudson.maven"))
+            LIST.add(MavenModuleSet.DESCRIPTOR);
+    }
+
     /**
      * Converts a list of items into a camma-separated full names.
      */

@@ -176,7 +176,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
         // work around to have MavenModule register itself until we either move it to a plugin
         // or make it a part of the core.
-        TopLevelItems.LIST.hashCode();
+        Items.LIST.hashCode();
 
         load();
         if(slaves==null)    slaves = new ArrayList<Slave>();
@@ -950,7 +950,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                 return null;
             }
             // redirect to the project config screen
-            result = createProject(TopLevelItems.getDescriptor(jobType), name);
+            result = createProject(Items.getDescriptor(jobType), name);
         } else {
             TopLevelItem src = getItem(req.getParameter("from"));
             if(src==null) {

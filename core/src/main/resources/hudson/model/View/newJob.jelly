@@ -12,7 +12,7 @@
 		    <s:radioBlock name="mode" value="newJob" title="Create new job" checked="${true}">
 		      <s:entry title="Job type">
 		        <select name="type">
-              <j:getStatic var="jobs" className="hudson.model.TopLevelItems" field="LIST" />
+              <j:getStatic var="jobs" className="hudson.model.Items" field="LIST" />
               <j:forEach var="d" items="${jobs}">
                 <option value="${d.displayName}">${d.displayName}</option>
               </j:forEach>
