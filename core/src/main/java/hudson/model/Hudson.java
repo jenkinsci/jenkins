@@ -386,7 +386,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             ItemGroup<?> parent = q.pop();
             for (Item i : parent.getItems()) {
                 if(type.isInstance(i))
-                    r.add(type.cast(r));
+                    r.add(type.cast(i));
                 if(i instanceof ItemGroup)
                     q.push((ItemGroup)i);
             }
