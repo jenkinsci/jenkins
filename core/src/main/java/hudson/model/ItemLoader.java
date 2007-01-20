@@ -10,9 +10,6 @@ import java.io.IOException;
 /**
  * Used to load {@link Item} implementation.
  *
- *
- * TODO: move this to {@link ItemGroup}?
- *
  * @author Kohsuke Kawaguchi
  */
 public final class ItemLoader {
