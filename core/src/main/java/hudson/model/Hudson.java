@@ -31,6 +31,7 @@ import hudson.triggers.Triggers;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormFieldValidator;
 import hudson.util.XStream2;
+import hudson.util.CopyOnWriteHashMap;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -82,7 +83,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * {@link Computer}s in this Hudson system. Read-only.
      */
-    private transient final Map<Node,Computer> computers = new HashMap<Node,Computer>();
+    private transient final Map<Node,Computer> computers = new CopyOnWriteHashMap<Node,Computer>();
 
     /**
      * Number of executors of the master node.
@@ -308,7 +309,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * so that we won't upset {@link Executor}s running in it.
      */
     private void updateComputerList() throws IOException {
-        synchronized(computers) {
+        synchronized(computers) {// this synchronization is still necessary so that no two update happens concurrently
             Map<String,Computer> byName = new HashMap<String,Computer>();
             for (Computer c : computers.values()) {
                 if(c.getNode()==null)
@@ -347,13 +348,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /*package*/ void removeComputer(Computer computer) {
-        synchronized(computers) {
-            Iterator<Entry<Node,Computer>> itr=computers.entrySet().iterator();
-            while(itr.hasNext()) {
-                if(itr.next().getValue()==computer) {
-                    itr.remove();
-                    return;
-                }
+        Iterator<Entry<Node,Computer>> itr=computers.entrySet().iterator();
+        while(itr.hasNext()) {
+            if(itr.next().getValue()==computer) {
+                itr.remove();
+                return;
             }
         }
         throw new IllegalStateException("Trying to remove unknown computer");
@@ -443,25 +442,21 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Gets the read-only list of all {@link Computer}s.
      */
     public Computer[] getComputers() {
-        synchronized(computers) {
-            Computer[] r = computers.values().toArray(new Computer[computers.size()]);
-            Arrays.sort(r,new Comparator<Computer>() {
-                public int compare(Computer lhs, Computer rhs) {
-                    if(lhs.getNode()==Hudson.this)  return -1;
-                    if(rhs.getNode()==Hudson.this)  return 1;
-                    return lhs.getNode().getNodeName().compareTo(rhs.getNode().getNodeName());
-                }
-            });
-            return r;
-        }
+        Computer[] r = computers.values().toArray(new Computer[computers.size()]);
+        Arrays.sort(r,new Comparator<Computer>() {
+            public int compare(Computer lhs, Computer rhs) {
+                if(lhs.getNode()==Hudson.this)  return -1;
+                if(rhs.getNode()==Hudson.this)  return 1;
+                return lhs.getNode().getNodeName().compareTo(rhs.getNode().getNodeName());
+            }
+        });
+        return r;
     }
 
     public Computer getComputer(String name) {
-        synchronized(computers) {
-            for (Computer c : computers.values()) {
-                if(c.getNode().getNodeName().equals(name))
-                    return c;
-            }
+        for (Computer c : computers.values()) {
+            if(c.getNode().getNodeName().equals(name))
+                return c;
         }
         return null;
     }
@@ -749,11 +744,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public void cleanUp() {
         terminating = true;
-        synchronized(computers) {
-            for( Computer c : computers.values() ) {
-                c.interrupt();
-                c.kill();
-            }
+        for( Computer c : computers.values() ) {
+            c.interrupt();
+            c.kill();
         }
         ExternalJob.reloadThread.interrupt();
         Trigger.timer.cancel();
