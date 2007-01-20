@@ -2,12 +2,14 @@ package hudson.util;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
- * {@link Map} that has copy-on-write semantics, backed by {@link HashMap}.
+ * {@link Map} that has copy-on-write semantics.
  *
  * <p>
  * This class is suitable where highly concurrent access is needed, yet
@@ -15,18 +17,18 @@ import java.util.Set;
  *
  * @author Kohsuke Kawaguchi
  */
-public class CopyOnWriteHashMap<K,V> implements Map<K,V> {
-    private volatile Map<K,V> core;
+public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
+    protected volatile Map<K,V> core;
     /**
      * Read-only view of {@link #core}.
      */
     private volatile Map<K,V> view;
 
-    public CopyOnWriteHashMap(Map<K, V> core) {
-        update(new HashMap<K,V>(core));
+    protected CopyOnWriteMap(Map<K, V> core) {
+        update(core);
     }
 
-    public CopyOnWriteHashMap() {
+    protected CopyOnWriteMap() {
         update(Collections.<K,V>emptyMap());
     }
 
@@ -56,7 +58,7 @@ public class CopyOnWriteHashMap<K,V> implements Map<K,V> {
     }
 
     public synchronized V put(K key, V value) {
-        Map<K,V> m = new HashMap<K,V>(core);
+        Map<K,V> m = copy();
         V r = m.put(key,value);
         update(m);
 
@@ -64,7 +66,7 @@ public class CopyOnWriteHashMap<K,V> implements Map<K,V> {
     }
 
     public synchronized V remove(Object key) {
-        Map<K,V> m = new HashMap<K,V>(core);
+        Map<K,V> m = copy();
         V r = m.remove(key);
         update(m);
 
@@ -72,10 +74,12 @@ public class CopyOnWriteHashMap<K,V> implements Map<K,V> {
     }
 
     public synchronized void putAll(Map<? extends K, ? extends V> t) {
-        Map<K,V> m = new HashMap<K,V>(core);
+        Map<K,V> m = copy();
         m.putAll(t);
         update(m);
     }
+
+    protected abstract Map<K,V> copy();
 
     public synchronized void clear() {
         update(Collections.<K,V>emptyMap());
@@ -100,5 +104,47 @@ public class CopyOnWriteHashMap<K,V> implements Map<K,V> {
      */
     public Set<Entry<K,V>> entrySet() {
         return view.entrySet();
+    }
+
+    /**
+     * {@link CopyOnWriteMap} backed by {@link HashMap}.
+     */
+    public static final class Hash<K,V> extends CopyOnWriteMap<K,V> {
+        public Hash(Map<K, V> core) {
+            super(new HashMap<K,V>(core));
+        }
+
+        public Hash() {
+        }
+
+        protected Map<K,V> copy() {
+            return new HashMap<K,V>(core);
+        }
+    }
+
+    /**
+     * {@link CopyOnWriteMap} backed by {@link TreeMap}.
+     */
+    public static final class Tree<K,V> extends CopyOnWriteMap<K,V> {
+        private final Comparator<K> comparator;
+
+        public Tree(Map<K,V> core, Comparator<K> comparator) {
+            this(comparator);
+            putAll(core);
+        }
+
+        public Tree(Comparator<K> comparator) {
+            this.comparator = comparator;
+        }
+
+        public Tree() {
+            this(null);
+        }
+
+        protected Map<K,V> copy() {
+            TreeMap<K, V> m = new TreeMap<K, V>(comparator);
+            m.putAll(core);
+            return m;
+        }
     }
 }
