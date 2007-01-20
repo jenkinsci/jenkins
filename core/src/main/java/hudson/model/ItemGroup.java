@@ -11,17 +11,8 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
 
     /**
      * Gets all the items in this collection in a read-only view.
-     *
-     * TODO: check if this is really needed
      */
     Collection<T> getItems();
-
-    /**
-     * Checks if the job is in this collection.
-     *
-     * TODO: check if this is really needed
-     */
-    boolean contains(T item);
 
     /**
      * Returns the path relative to the context root,
