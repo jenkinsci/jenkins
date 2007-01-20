@@ -19,7 +19,8 @@ import java.util.Collection;
  * {@link List}-like implementation that has copy-on-write semantics.
  *
  * <p>
- * This class is suitable where the write operation is relatively uncommon.
+ * This class is suitable where highly concurrent access is needed, yet
+ * the write operation is relatively uncommon.
  *
  * @author Kohsuke Kawaguchi
  */
