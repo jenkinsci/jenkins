@@ -223,10 +223,15 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
     /**
      * Renames a job.
+     *
+     * <p>
+     * This method is defined on {@link Job} but really only applicable
+     * for {@link Job}s that are top-level items.
      */
     public void renameTo(String newName) throws IOException {
         // always synchronize from bigger objects first
         final Hudson parent = Hudson.getInstance();
+        assert this instanceof TopLevelItem;
         synchronized(parent) {
             synchronized(this) {
                 // sanity check
@@ -295,7 +300,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
                     }
                 }
 
-                parent.onRenamed(this,oldName,newName);
+                parent.onRenamed((TopLevelItem)this,oldName,newName);
 
                 // update BuildTrigger of other projects that point to this object.
                 // can't we generalize this?

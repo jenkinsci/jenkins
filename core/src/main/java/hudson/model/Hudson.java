@@ -105,15 +105,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     public transient final File root;
 
     /**
-     * All {@link Job}s keyed by their names.
-     * Subset of {@link #items}.
-     *
-     * @deprecated
-     *      TODO: get rid of this in favor of {@link #items}.
-     */
-    /*package*/ transient final Map<String,Job> jobs = new TreeMap<String,Job>();
-
-    /**
      * All {@link Item}s keyed by their {@link Item#getName() name}s.
      */
     /*package*/ transient final Map<String,TopLevelItem> items = new TreeMap<String,TopLevelItem>();
@@ -372,7 +363,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Gets the snapshot of all the jobs.
      */
     public synchronized List<Job> getJobs() {
-        return new ArrayList<Job>(jobs.values());
+        return Util.createSubList(items.values(),Job.class);
     }
 
     public synchronized List<TopLevelItem> getItems() {
@@ -383,12 +374,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Gets the snapshot of all the projects.
      */
     public synchronized List<Project> getProjects() {
-        List<Project> r = new ArrayList<Project>();
-        for (Job job : jobs.values()) {
-            if(job instanceof Project)
-                r.add((Project)job);
-        }
-        return r;
+        return Util.createSubList(items.values(),Project.class);
     }
 
     /**
@@ -396,8 +382,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public synchronized Collection<String> getJobNames() {
         List<String> names = new ArrayList<String>();
-        for (Job j : jobs.values()) {
-            names.add(j.getName());
+        for (Item j : items.values()) {
+            if (j instanceof Job)
+                names.add(j.getName());
         }
         return names;
     }
@@ -601,7 +588,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      *      if such a project doesn't exist.
      */
     public synchronized Job getJob(String name) {
-        return jobs.get(name);
+        TopLevelItem item = items.get(name);
+        if(item instanceof Job)
+            return (Job)item;
+        else
+            return null;
     }
 
     /**
@@ -628,7 +619,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      *      if the project of the given name already exists.
      */
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name ) throws IOException {
-        if(jobs.containsKey(name))
+        if(items.containsKey(name))
             throw new IllegalArgumentException();
 
         TopLevelItem job;
@@ -650,7 +641,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         for (ItemListener l : viewItemListeners)
             l.onDeleted(job);
 
-        jobs.remove(job.getName());
+        items.remove(job.getName());
         if(views!=null) {
             for (ListView v : views) {
                 synchronized(v) {
@@ -665,9 +656,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Called by {@link Job#renameTo(String)} to update relevant data structure.
      * assumed to be synchronized on Hudson by the caller.
      */
-    /*package*/ void onRenamed(Job job, String oldName, String newName) throws IOException {
-        jobs.remove(oldName);
-        jobs.put(newName,job);
+    /*package*/ void onRenamed(TopLevelItem job, String oldName, String newName) throws IOException {
+        items.remove(oldName);
+        items.put(newName,job);
 
         if(views!=null) {
             for (ListView v : views) {

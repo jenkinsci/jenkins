@@ -1,6 +1,8 @@
 package hudson;
 
 import hudson.model.TaskListener;
+import hudson.model.Project;
+import hudson.model.TopLevelItem;
 import hudson.util.IOException2;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Chmod;
@@ -24,6 +26,9 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
+import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -297,6 +302,18 @@ public class Util {
         if(n!=1)
             s += 's';
         return s;
+    }
+
+    /**
+     * Create a sub-list by only picking up instances of the specified type.
+     */
+    public static <T> List<T> createSubList( Collection<?> source, Class<T> type ) {
+        List<T> r = new ArrayList<T>();
+        for (Object item : source) {
+            if(type.isInstance(item))
+                r.add(type.cast(item));
+        }
+        return r;
     }
 
     /**
