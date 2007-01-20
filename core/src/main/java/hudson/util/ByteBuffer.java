@@ -50,6 +50,13 @@ public class ByteBuffer extends OutputStream {
     }
 
     /**
+     * Writes the contents of this buffer to another OutputStream.
+     */
+    public synchronized void writeTo(OutputStream os) throws IOException {
+        os.write(buf,0,size);        
+    }
+
+    /**
      * Creates an {@link InputStream} that reads from the underlying buffer.
      */
     public InputStream newInputStream() {
