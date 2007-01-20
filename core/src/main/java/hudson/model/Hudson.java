@@ -406,10 +406,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public Collection<String> getJobNames() {
         List<String> names = new ArrayList<String>();
-        for (Item j : items.values()) {
-            if (j instanceof Job)
-                names.add(j.getName());
-        }
+        for (Job j : getAllItems(Job.class))
+            names.add(j.getName());
         return names;
     }
 
