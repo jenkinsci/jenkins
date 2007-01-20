@@ -13,6 +13,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Calendar;
@@ -301,5 +302,9 @@ public class Functions {
     public static String appendSpaceIfNotNull(String n) {
         if(n==null) return null;
         else        return n+' ';
+    }
+
+    public static String getWin32ErrorMessage(IOException e) {
+        return Util.getWin32ErrorMessage(e);
     }
 }
