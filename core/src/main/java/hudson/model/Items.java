@@ -35,11 +35,6 @@ public class Items {
         return null;
     }
 
-    static {
-        if(Boolean.getBoolean("hudson.maven"))
-            LIST.add(MavenModuleSet.DESCRIPTOR);
-    }
-
     /**
      * Converts a list of items into a camma-separated full names.
      */
@@ -106,5 +101,9 @@ public class Items {
 
     static {
         XSTREAM.alias("project",Project.class);
+
+        // hide maven support until it gets ready
+        if(Boolean.getBoolean("hudson.maven"))
+            LIST.add(MavenModuleSet.DESCRIPTOR);
     }
 }
