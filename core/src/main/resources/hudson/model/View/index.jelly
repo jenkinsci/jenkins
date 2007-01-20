@@ -7,14 +7,14 @@
 		  <div id="view-message">
         <t:editableDescription adminOnly="true"/>
 		  </div>
-      <j:set var="jobs" value="${it.jobs}"/>
+      <j:set var="items" value="${it.items}"/>
       <j:choose>
-        <j:when test="${empty(jobs)}">
+        <j:when test="${empty(items)}">
           <st:include page="noJob.jelly" />
         </j:when>
         <j:otherwise>
           <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
-          <t:projectView jobs="${it.jobs}" showViewTabs="true" jobBaseUrl="" />
+          <t:projectView jobs="${items}" showViewTabs="true" jobBaseUrl="" />
         </j:otherwise>
       </j:choose>
 		</l:main-panel>

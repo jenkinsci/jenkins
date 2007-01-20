@@ -41,7 +41,7 @@
           </p>
           <table class="fingerprint-summary">
             <j:forEach var="j" items="${it.jobs}">
-              <j:set var="job" value="${app.getJob(j)}" />
+              <j:set var="job" value="${app.getItemByFullName(j)}" />
               <j:set var="range" value="${it.usages[j]}" />
               <tr>
                 <td class="fingerprint-summary-header">

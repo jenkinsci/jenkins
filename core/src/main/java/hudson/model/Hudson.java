@@ -359,13 +359,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         throw new IllegalStateException("Trying to remove unknown computer");
     }
 
-    /**
-     * Gets the snapshot of all the jobs.
-     */
-    public List<Job> getJobs() {
-        return Util.createSubList(items.values(),Job.class);
-    }
-
     public String getFullName() {
         return "";
     }
@@ -651,6 +644,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
             parent = (ItemGroup) item;
         }
+    }
+
+    public Item getItemByFullName(String fullName) {
+        return getItemByFullName(fullName,Item.class);
     }
 
     /**

@@ -156,7 +156,7 @@ public class User extends AbstractModelObject {
     public List<AbstractBuild> getBuilds() {
         List<AbstractBuild> r = new ArrayList<AbstractBuild>();
         for (AbstractProject<?,?> p : Hudson.getInstance().getAllItems(AbstractProject.class)) {
-            for (AbstractBuild b : p.getBuilds()) {
+            for (AbstractBuild<?,?> b : p.getBuilds()) {
                 for (ChangeLogSet.Entry e : b.getChangeSet()) {
                     if(e.getAuthor()==this) {
                         r.add(b);

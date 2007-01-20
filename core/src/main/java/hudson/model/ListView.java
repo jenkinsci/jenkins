@@ -102,9 +102,9 @@ public class ListView extends View {
         req.setCharacterEncoding("UTF-8");
         
         jobNames.clear();
-        for (Job job : owner.getJobs()) {
-            if(req.getParameter(job.getName())!=null)
-                jobNames.add(job.getName());
+        for (TopLevelItem item : owner.getItems()) {
+            if(req.getParameter(item.getName())!=null)
+                jobNames.add(item.getName());
         }
 
         description = Util.nullify(req.getParameter("description"));

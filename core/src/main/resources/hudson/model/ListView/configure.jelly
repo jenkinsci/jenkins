@@ -11,8 +11,8 @@
             rows="5" style="width:100%">${it.description}</textarea>
         </f:entry>
         <f:entry title="Jobs">
-          <j:forEach var="job" items="${app.jobs}">
-            <f:checkbox name="${job.name}" checked="${it.containsJob(job)}" />
+          <j:forEach var="job" items="${app.items}">
+            <f:checkbox name="${job.name}" checked="${it.contains(job)}" />
             ${job.name}
             <br/>
           </j:forEach>

@@ -24,7 +24,7 @@
 		        <select name="from">
 		          <j:forEach var="v" items="${app.views}">
 		            <optgroup label="${v.viewName}">
-		              <j:forEach var="j" items="${v.jobs}">
+		              <j:forEach var="j" items="${v.items}">
 		                <option>${j.name}</option>
 		              </j:forEach>
 		            </optgroup>
