@@ -5,9 +5,7 @@
         <a href="${rootURL}/scm/CVSSCM/version">Check CVS version</a>
       </div>
     </f:description>
-    <f:entry title="cvs executable"
-	    description="location of cvs executable"
-      help="/help/_cvs/cvsexe.html">
+    <f:entry title="cvs executable" help="/help/_cvs/cvsexe.html">
 	    <f:textbox name="cvs_exe" value="${descriptor.cvsExe}"
         checkUrl="'${rootURL}/scm/CVSSCM/cvsExeCheck?value='+this.value" />
 	  </f:entry>
