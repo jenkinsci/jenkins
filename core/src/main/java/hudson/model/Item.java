@@ -21,8 +21,6 @@ public interface Item extends PersistenceRoot {
 
     /**
      * Gets all the jobs that this {@link Item} contains as descendants.
-     *
-     * TODO: revisit
      */
     abstract Collection<? extends Job> getAllJobs();
 
