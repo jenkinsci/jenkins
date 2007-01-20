@@ -2,6 +2,7 @@ package hudson.triggers;
 
 import antlr.ANTLRException;
 import hudson.ExtensionPoint;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.Describable;
@@ -9,9 +10,8 @@ import hudson.model.FingerprintCleanupThread;
 import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.model.WorkspaceCleanupThread;
-import hudson.model.AbstractProject;
-import hudson.scheduler.CronTabList;
 import hudson.scheduler.CronTab;
+import hudson.scheduler.CronTabList;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
@@ -130,7 +130,7 @@ public abstract class Trigger implements Describable<Trigger>, ExtensionPoint {
 
             try {
                 Hudson inst = Hudson.getInstance();
-                for (Project p : inst.getProjects()) {
+                for (AbstractProject<?,?> p : inst.getAllItems(AbstractProject.class)) {
                     for (Trigger t : p.getTriggers().values()) {
                         LOGGER.fine("cron checking "+p.getName());
                         if(t.tabs.check(cal)) {
