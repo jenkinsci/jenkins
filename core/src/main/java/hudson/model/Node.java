@@ -11,7 +11,7 @@ import org.apache.commons.beanutils.ConvertUtils;
  */
 public interface Node {
     /**
-     * Name of this node.
+     * PluginName of this node.
      *
      * @return
      *      "" if this is master

@@ -1,6 +1,5 @@
 package hudson.model;
 
-import hudson.FilePath;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.tasks.BuildStep;
@@ -36,7 +35,7 @@ import java.util.Vector;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Project extends AbstractProject<Project,Build> {
+public class Project extends AbstractProject<Project,Build> implements TopLevelItem {
 
     /**
      * List of active {@link Builder}s configured for this project.
@@ -69,8 +68,8 @@ public class Project extends AbstractProject<Project,Build> {
         super(parent,name);
     }
 
-    protected void onLoad(Hudson root, String name) throws IOException {
-        super.onLoad(root, name);
+    public void onLoad(String name) throws IOException {
+        super.onLoad(name);
 
         if(buildWrappers==null)
             // it didn't exist in < 1.64
@@ -364,11 +363,11 @@ public class Project extends AbstractProject<Project,Build> {
         }
     };
 
-    public JobDescriptor<Project,Build> getDescriptor() {
+    public TopLevelItemDescriptor getDescriptor() {
         return DESCRIPTOR;
     }
 
-    public static final JobDescriptor<Project,Build> DESCRIPTOR = new JobDescriptor<Project,Build>(Project.class) {
+    public static final TopLevelItemDescriptor DESCRIPTOR = new TopLevelItemDescriptor(Project.class) {
         public String getDisplayName() {
             return "Building a software project";
         }

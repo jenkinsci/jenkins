@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 public final class Slave implements Node, Serializable {
     /**
-     * Name of this slave node.
+     * PluginName of this slave node.
      */
     protected final String name;
 
@@ -82,7 +82,7 @@ public final class Slave implements Node, Serializable {
         this.remoteFS = remoteFS;
 
         if (name.equals(""))
-            throw new FormException("Invalid slave configuration. Name is empty", null);
+            throw new FormException("Invalid slave configuration. PluginName is empty", null);
 
         // this prevents the config from being saved when slaves are offline.
         // on a large deployment with a lot of slaves, some slaves are bound to be offline,

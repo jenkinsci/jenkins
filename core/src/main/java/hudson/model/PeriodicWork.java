@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 public abstract class PeriodicWork extends TimerTask {
 
     /**
-     * Name of the work.
+     * PluginName of the work.
      */
     private final String name;
     private Thread thread;

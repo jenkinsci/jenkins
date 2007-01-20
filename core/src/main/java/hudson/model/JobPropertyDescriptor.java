@@ -1,5 +1,8 @@
 package hudson.model;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * {@link Descriptor} for {@link JobProperty}.
  * 
@@ -26,4 +29,15 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
      *      displayed in the configuration screen of this job.
      */
     public abstract boolean isApplicable(Class<? extends Job> jobType);
+
+    /**
+     * Gets the {@link JobPropertyDescriptor}s applicable for a given job type.
+     */
+    public List<JobPropertyDescriptor> getPropertyDescriptors(Class<? extends Job> clazz) {
+        List<JobPropertyDescriptor> r = new ArrayList<JobPropertyDescriptor>();
+        for (JobPropertyDescriptor p : Jobs.PROPERTIES)
+            if(p.isApplicable(clazz))
+                r.add(p);
+        return r;
+    }
 }

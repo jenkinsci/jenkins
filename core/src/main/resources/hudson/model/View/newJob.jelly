@@ -1,11 +1,11 @@
 <!--
-  New Project page
+  "New Project" page.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 	<l:layout norefresh="true">
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
-		  <s:form method="post" action="createJob">
+		  <s:form method="post" action="createViewItem">
 		    <s:entry title="Job name">
 		      <input type="text" name="name" class="setting-input" />
 		    </s:entry>

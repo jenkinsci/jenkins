@@ -27,9 +27,9 @@ public final class MojoInfo {
     public final MojoExecution mojoExecution;
 
     /**
-     * Name of the plugin that contains this mojo.
+     * PluginName of the plugin that contains this mojo.
      */
-    public final Name pluginName;
+    public final PluginName pluginName;
 
     /**
      * Configuration of the mojo for the current execution.
@@ -54,7 +54,7 @@ public final class MojoInfo {
         this.mojoExecution = mojoExecution;
         this.configuration = configuration;
         this.expressionEvaluator = expressionEvaluator;
-        this.pluginName = new Name(mojoExecution.getMojoDescriptor().getPluginDescriptor());
+        this.pluginName = new PluginName(mojoExecution.getMojoDescriptor().getPluginDescriptor());
     }
 
     /**

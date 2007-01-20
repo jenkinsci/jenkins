@@ -19,7 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Collection of {@link ViewItem}s.
+ * Encapsulates the rendering of the list of {@link TopLevelItem}s
+ * that {@link Hudson} owns.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -28,12 +29,12 @@ public abstract class View extends AbstractModelObject {
     /**
      * Gets all the items in this collection in a read-only view.
      */
-    public abstract Collection<? extends ViewItem> getItems();
+    public abstract Collection<TopLevelItem> getItems();
 
     /**
      * Checks if the job is in this collection.
      */
-    public abstract boolean contains(ViewItem item);
+    public abstract boolean contains(TopLevelItem item);
 
     /**
      * Gets the name of all this collection.
@@ -94,7 +95,7 @@ public abstract class View extends AbstractModelObject {
      * Does this {@link View} has any associated user information recorded?
      */
     public final boolean hasPeople() {
-        for (ViewItem item : getItems()) {
+        for (Item item : getItems()) {
             for (Job job : item.getAllJobs()) {
                 if (job instanceof Project) {
                     Project p = (Project) job;
@@ -116,7 +117,7 @@ public abstract class View extends AbstractModelObject {
      */
     public final List<UserInfo> getPeople() {
         Map<User,UserInfo> users = new HashMap<User,UserInfo>();
-        for (ViewItem item : getItems()) {
+        for (Item item : getItems()) {
             for (Job job : item.getAllJobs()) {
                 if (job instanceof Project) {
                     Project p = (Project) job;
@@ -145,12 +146,12 @@ public abstract class View extends AbstractModelObject {
     }
 
     /**
-     * Creates a job in this collection.
+     * Creates a new {@link Item} in this collection.
      *
      * @return
      *      null if fails.
      */
-    public abstract Job doCreateJob( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
+    public abstract Item doCreateViewItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         rss(req, rsp, " all builds", new RunList(this));

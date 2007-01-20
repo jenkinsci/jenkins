@@ -7,27 +7,27 @@ import hudson.Proc;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-import hudson.model.ModelObject;
-import hudson.model.TaskListener;
-import hudson.model.Build;
-import hudson.model.Project;
 import hudson.model.Job;
-import hudson.model.Run;
-import hudson.model.AbstractModelObject;
 import hudson.model.LargeText;
+import hudson.model.ModelObject;
+import hudson.model.Project;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.ByteBuffer;
 import hudson.util.ForkOutputStream;
 import hudson.util.FormFieldValidator;
 import hudson.util.StreamTaskListener;
-import hudson.util.ByteBuffer;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.zip.ZipEntry;
@@ -36,6 +36,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -52,24 +53,25 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.io.OutputStreamWriter;
+import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.TreeSet;
-import java.util.Enumeration;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.lang.ref.WeakReference;
 
 /**
  * CVS.
@@ -187,7 +189,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             dir.deleteContents();
 
             ArgumentListBuilder cmd = new ArgumentListBuilder();
-            cmd.add("cvs",debugLogging?"-t":"-Q","-z9","-d",cvsroot,"co");
+            cmd.add(getDescriptor().getCvsExe(),debugLogging?"-t":"-Q","-z9","-d",cvsroot,"co");
             if(branch!=null)
                 cmd.add("-r",branch);
             if(flatten)
@@ -320,7 +322,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         List<String> changedFileNames = new ArrayList<String>();    // file names relative to the workspace
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.add("cvs","-q","-z9");
+        cmd.add(getDescriptor().getCvsExe(),"-q","-z9");
         if(dryRun)
             cmd.add("-n");
         cmd.add("update","-PdC");
@@ -676,6 +678,11 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         private String cvsPassFile;
 
         /**
+         * Path to cvs executable. Null to just use "cvs".
+         */
+        private String cvsExe;
+
+        /**
          * Copy-on-write.
          */
         private volatile Map<String,RepositoryBrowser> browsers = new HashMap<String,RepositoryBrowser>();
@@ -716,6 +723,11 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             return value;
         }
 
+        public String getCvsExe() {
+            if(cvsExe==null)    return "cvs";
+            else                return cvsExe;
+        }
+
         public void setCvspassFile(String value) {
             cvsPassFile = value;
             save();
@@ -732,7 +744,8 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         }
 
         public boolean configure( StaplerRequest req ) {
-            setCvspassFile(req.getParameter("cvs_cvspass"));
+            cvsPassFile = fixEmpty(req.getParameter("cvs_cvspass").trim());
+            cvsExe = fixEmpty(req.getParameter("cvs_exe").trim());
 
             Map<String,RepositoryBrowser> browsers = new HashMap<String, RepositoryBrowser>();
             int i=0;
@@ -781,13 +794,53 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         }
 
         /**
+         * Checks if cvs executable exists.
+         */
+        public void doCvsExeCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            // this method can be used to check if a file exists anywhere in the file system,
+            // so it should be protected.
+            new FormFieldValidator(req,rsp,true) {
+                protected void check() throws IOException, ServletException {
+                    String cvsExe = fixEmpty(request.getParameter("value"));
+                    if(cvsExe==null) {
+                        ok();
+                        return;
+                    }
+
+                    if(cvsExe.indexOf(File.separatorChar)>=0) {
+                        // this is full path
+                        if(new File(cvsExe).exists()) {
+                            ok();
+                        } else {
+                            error("There's no such file: "+cvsExe);
+                        }
+                    } else {
+                        // can't really check
+                        ok();
+                    }
+
+                }
+            }.process();
+        }
+
+        /**
          * Displays "cvs --version" for trouble shooting.
          */
         public void doVersion(StaplerRequest req, StaplerResponse rsp) throws IOException {
             rsp.setContentType("text/plain");
-            Proc proc = Hudson.getInstance().createLauncher(TaskListener.NULL).launch(
-                new String[]{"cvs", "--version"}, new String[0], rsp.getOutputStream(), null);
-            proc.join();
+            ServletOutputStream os = rsp.getOutputStream();
+            try {
+                Proc proc = Hudson.getInstance().createLauncher(TaskListener.NULL).launch(
+                    new String[]{getCvsExe(), "--version"}, new String[0], os, null);
+                proc.join();
+            } catch (IOException e) {
+                PrintWriter w = new PrintWriter(os);
+                w.println("Failed to launch "+getCvsExe());
+                String msg = Util.getWin32ErrorMessage(e);
+                if(msg!=null)
+                    w.println(msg);
+                e.printStackTrace(w);
+            }
         }
 
         /**
@@ -895,7 +948,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
 
             rsp.setContentType("text/plain");
             Proc proc = Hudson.getInstance().createLauncher(TaskListener.NULL).launch(
-                new String[]{"cvs", "-d",cvsroot,"login"}, new String[0],
+                new String[]{getCvsExe(), "-d",cvsroot,"login"}, new String[0],
                 new ByteArrayInputStream((password+"\n").getBytes()),
                 rsp.getOutputStream());
             proc.join();
@@ -1062,7 +1115,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                     boolean isDir = path.isDirectory();
 
                     ArgumentListBuilder cmd = new ArgumentListBuilder();
-                    cmd.add("cvs","tag");
+                    cmd.add(getDescriptor().getCvsExe(),"tag");
                     if(isDir) {
                         cmd.add("-R");
                     }

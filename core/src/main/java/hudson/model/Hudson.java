@@ -13,6 +13,8 @@ import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.JobListener;
 import hudson.model.listeners.SCMListener;
+import hudson.model.listeners.ItemListener;
+import hudson.model.listeners.JobListener.JobListenerAdapter;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.CVSSCM;
@@ -74,7 +76,7 @@ import java.util.logging.LogRecord;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Hudson extends View implements Node {
+public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node {
     private transient final Queue queue = new Queue();
 
     /**
@@ -104,8 +106,17 @@ public final class Hudson extends View implements Node {
 
     /**
      * All {@link Job}s keyed by their names.
+     * Subset of {@link #items}.
+     *
+     * @deprecated
+     *      TODO: get rid of this in favor of {@link #items}.
      */
     /*package*/ transient final Map<String,Job> jobs = new TreeMap<String,Job>();
+
+    /**
+     * All {@link Item}s keyed by their {@link Item#getName() name}s.
+     */
+    /*package*/ transient final Map<String,TopLevelItem> items = new TreeMap<String,TopLevelItem>();
 
     /**
      * The sole instance.
@@ -149,7 +160,7 @@ public final class Hudson extends View implements Node {
     /**
      * List of registered {@link JobListener}s.
      */
-    private transient final CopyOnWriteList<JobListener> jobListeners = new CopyOnWriteList<JobListener>();
+    private transient final CopyOnWriteList<ItemListener> viewItemListeners = new CopyOnWriteList<ItemListener>();
 
     /**
      * List of registered {@link SCMListener}s.
@@ -170,9 +181,9 @@ public final class Hudson extends View implements Node {
         // load plugins.
         pluginManager = new PluginManager(context);
 
-        // work around to have MavenJob register itself until we either move it to a plugin
+        // work around to have MavenModule register itself until we either move it to a plugin
         // or make it a part of the core.
-        Jobs.JOBS.hashCode();
+        TopLevelItems.LIST.hashCode();
 
         load();
         if(slaves==null)    slaves = new ArrayList<Slave>();
@@ -180,7 +191,7 @@ public final class Hudson extends View implements Node {
 
         getQueue().load();
 
-        for (JobListener l : jobListeners)
+        for (ItemListener l : viewItemListeners)
             l.onLoaded();
     }
 
@@ -247,7 +258,7 @@ public final class Hudson extends View implements Node {
      *      Use {@code getJobListners().add(l)} instead.
      */
     public void addListener(JobListener l) {
-        jobListeners.add(l);
+        viewItemListeners.add(new JobListenerAdapter(l));
     }
 
     /**
@@ -257,14 +268,14 @@ public final class Hudson extends View implements Node {
      *      Use {@code getJobListners().remove(l)} instead.
      */
     public boolean removeListener(JobListener l ) {
-        return jobListeners.remove(l);
+        return viewItemListeners.remove(new JobListenerAdapter(l));
     }
 
     /**
-     * Gets all the installed {@link JobListener}s.
+     * Gets all the installed {@link ItemListener}s.
      */
-    public CopyOnWriteList<JobListener> getJobListeners() {
-        return jobListeners;
+    public CopyOnWriteList<ItemListener> getJobListeners() {
+        return viewItemListeners;
     }
 
     /**
@@ -364,8 +375,8 @@ public final class Hudson extends View implements Node {
         return new ArrayList<Job>(jobs.values());
     }
 
-    public synchronized List<ViewItem> getItems() {
-        return new ArrayList<ViewItem>(jobs.values());
+    public synchronized List<TopLevelItem> getItems() {
+        return new ArrayList<TopLevelItem>(items.values());
     }
 
     /**
@@ -398,7 +409,7 @@ public final class Hudson extends View implements Node {
      *      why are you calling a method that always return true?
      */
     @Deprecated
-    public boolean contains(ViewItem view) {
+    public boolean contains(TopLevelItem view) {
         return true;
     }
 
@@ -524,6 +535,10 @@ public final class Hudson extends View implements Node {
         return "";
     }
 
+    public String getUrlChildPrefix() {
+        return "job";
+    }
+
     /**
      * Gets the absolute URL of Hudson,
      * such as "http://localhost/hudson/".
@@ -590,6 +605,13 @@ public final class Hudson extends View implements Node {
     }
 
     /**
+     * Gets the {@link TopLevelItem} of the given name.
+     */
+    public synchronized TopLevelItem getItem(String name) {
+        return items.get(name);
+    }
+
+    /**
      * Gets the user of the given name.
      *
      * @return
@@ -605,11 +627,11 @@ public final class Hudson extends View implements Node {
      * @throws IllegalArgumentException
      *      if the project of the given name already exists.
      */
-    public synchronized Job createProject( JobDescriptor type, String name ) throws IOException {
+    public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name ) throws IOException {
         if(jobs.containsKey(name))
             throw new IllegalArgumentException();
 
-        Job job;
+        TopLevelItem job;
         try {
             job = type.newInstance(name);
         } catch (Exception e) {
@@ -617,7 +639,7 @@ public final class Hudson extends View implements Node {
         }
 
         job.save();
-        jobs.put(name,job);
+        items.put(name,job);
         return job;
     }
 
@@ -625,7 +647,7 @@ public final class Hudson extends View implements Node {
      * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
      */
     /*package*/ void deleteJob(Job job) throws IOException {
-        for (JobListener l : jobListeners)
+        for (ItemListener l : viewItemListeners)
             l.onDeleted(job);
 
         jobs.remove(job.getName());
@@ -712,11 +734,11 @@ public final class Hudson extends View implements Node {
                 return child.isDirectory();
             }
         });
-        jobs.clear();
+        items.clear();
         for (File subdir : subdirs) {
             try {
-                Job p = Job.load(this,subdir);
-                jobs.put(p.getName(), p);
+                TopLevelItem item = (TopLevelItem)ItemLoader.load(subdir);
+                items.put(item.getName(), item);
             } catch (IOException e) {
                 e.printStackTrace(); // TODO: logging
             }
@@ -857,7 +879,7 @@ public final class Hudson extends View implements Node {
         rsp.sendRedirect2(".");
     }
 
-    public synchronized Job doCreateJob( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized Item doCreateViewItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         if(!Hudson.adminCheck(req,rsp))
             return null;
 
@@ -873,7 +895,7 @@ public final class Hudson extends View implements Node {
             return null;
         }
 
-        if(getJob(name)!=null) {
+        if(getItem(name)!=null) {
             sendError("A job already exists with the name '"+name+"'",req,rsp);
             return null;
         }
@@ -883,7 +905,7 @@ public final class Hudson extends View implements Node {
             return null;
         }
 
-        Job result;
+        TopLevelItem result;
 
         if(mode.equals("newJob")) {
             if(jobType ==null) {
@@ -892,26 +914,26 @@ public final class Hudson extends View implements Node {
                 return null;
             }
             // redirect to the project config screen
-            result = createProject(Jobs.getDescriptor(jobType), name);
+            result = createProject(TopLevelItems.getDescriptor(jobType), name);
         } else {
-            Job src = getJob(req.getParameter("from"));
+            TopLevelItem src = getItem(req.getParameter("from"));
             if(src==null) {
                 rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return null;
             }
 
-            result = createProject((JobDescriptor)src.getDescriptor(),name);
+            result = createProject(src.getDescriptor(),name);
 
             // copy config
-            Util.copyFile(src.getConfigFile(),result.getConfigFile());
+            Util.copyFile(ItemLoader.getConfigFile(src).getFile(),ItemLoader.getConfigFile(result).getFile());
 
             // reload from the new config
-            result = Job.load(this,result.getRootDir());
-            result.nextBuildNumber = 1;     // reset the next build number
-            jobs.put(name,result);
+            result = (TopLevelItem)ItemLoader.load(result.getRootDir());
+            result.onCopiedFrom(src);
+            items.put(name,result);
         }
 
-        for (JobListener l : jobListeners)
+        for (ItemListener l : viewItemListeners)
             l.onCreated(result);
 
         rsp.sendRedirect2(req.getContextPath()+'/'+result.getUrl()+"configure");

@@ -26,7 +26,7 @@ public class ListView extends View {
     /*package*/ final Set<String> jobNames = new TreeSet<String>();
 
     /**
-     * Name of this view.
+     * PluginName of this view.
      */
     private String name;
 
@@ -48,19 +48,19 @@ public class ListView extends View {
      * This method returns a separate copy each time to avoid
      * concurrent modification issue.
      */
-    public synchronized List<Job> getItems() {
-        Job[] jobs = new Job[jobNames.size()];
+    public synchronized List<TopLevelItem> getItems() {
+        TopLevelItem[] items = new TopLevelItem[jobNames.size()];
         int i=0;
         for (String name : jobNames)
-            jobs[i++] = owner.getJob(name);
-        return Arrays.asList(jobs);
+            items[i++] = owner.getItem(name);
+        return Arrays.asList(items);
     }
 
-    public Job getJob(String name) {
-        return owner.getJob(name);
+    public TopLevelItem getJob(String name) {
+        return owner.getItem(name);
     }
 
-    public boolean contains(ViewItem item) {
+    public boolean contains(TopLevelItem item) {
         return jobNames.contains(item.getName());
     }
 
@@ -76,16 +76,16 @@ public class ListView extends View {
         return name;
     }
 
-    public Job doCreateJob(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public Item doCreateViewItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if(!Hudson.adminCheck(req,rsp))
             return null;
 
-        Job job = owner.doCreateJob(req, rsp);
-        if(job!=null) {
-            jobNames.add(job.getName());
+        Item item = owner.doCreateViewItem(req, rsp);
+        if(item!=null) {
+            jobNames.add(item.getName());
             owner.save();
         }
-        return job;
+        return item;
     }
 
     public String getUrl() {

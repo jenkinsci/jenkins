@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> {
+public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements TopLevelItem {
     public ExternalJob(Hudson parent,String name) {
         super(parent,name);
     }
@@ -62,11 +62,11 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> {
 
     private static final Logger logger = Logger.getLogger(ExternalJob.class.getName());
 
-    public JobDescriptor<ExternalJob,ExternalRun> getDescriptor() {
+    public TopLevelItemDescriptor getDescriptor() {
         return DESCRIPTOR;
     }
 
-    public static final JobDescriptor<ExternalJob,ExternalRun> DESCRIPTOR = new JobDescriptor<ExternalJob,ExternalRun>(ExternalJob.class) {
+    public static final TopLevelItemDescriptor DESCRIPTOR = new TopLevelItemDescriptor(ExternalJob.class) {
         public String getDisplayName() {
             return "Monitoring an external job";
         }

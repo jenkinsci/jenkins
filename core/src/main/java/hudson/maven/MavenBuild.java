@@ -30,20 +30,20 @@ import java.util.Arrays;
 import java.util.Calendar;
 
 /**
- * {@link Run} for {@link MavenJob}.
+ * {@link Run} for {@link MavenModule}.
  * 
  * @author Kohsuke Kawaguchi
  */
-public class MavenBuild extends AbstractBuild<MavenJob,MavenBuild> {
-    public MavenBuild(MavenJob job) throws IOException {
+public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
+    public MavenBuild(MavenModule job) throws IOException {
         super(job);
     }
 
-    public MavenBuild(MavenJob job, Calendar timestamp) {
+    public MavenBuild(MavenModule job, Calendar timestamp) {
         super(job, timestamp);
     }
 
-    public MavenBuild(MavenJob project, File buildDir) throws IOException {
+    public MavenBuild(MavenModule project, File buildDir) throws IOException {
         super(project, buildDir);
     }
 

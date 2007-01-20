@@ -1,9 +1,7 @@
 package hudson.model;
 
-import com.thoughtworks.xstream.XStream;
 import hudson.ExtensionPoint;
 import hudson.Util;
-import hudson.XmlFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
 import hudson.util.ChartUtil;
@@ -15,7 +13,6 @@ import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
 import hudson.util.TextFile;
-import hudson.util.XStream2;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.jfree.chart.ChartFactory;
@@ -50,14 +47,10 @@ import java.util.SortedMap;
  * <p>
  * Every time it "runs", it will be recorded as a {@link Run} object.
  *
- * <p>
- * To register a custom {@link Job} class from a plugin, add it to
- * {@link Jobs#JOBS}. Also see {@link Job#XSTREAM}.
- *
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>>
-        extends Actionable implements Describable<Job<JobT,RunT>>, ViewItem, ExtensionPoint {
+        extends AbstractItem implements ExtensionPoint {
     /**
      * Project name.
      */
@@ -69,11 +62,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     protected String description;
 
     /**
-     * Root directory for this job.
-     */
-    protected transient File root;
-
-    /**
      * Next build number.
      * Kept in a separate file because this is the only information
      * that gets updated often. This allows the rest of the configuration
@@ -83,7 +71,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * so even though this is marked as transient, don't move it around.
      */
     protected transient int nextBuildNumber = 1;
-    private transient Hudson parent;
 
     private LogRotator logRotator;
 
@@ -94,17 +81,13 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      */
     private CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<JobProperty<? super JobT>>();
 
-    protected Job(Hudson parent,String name) {
-        this.parent = parent;
+    protected Job(String name) {
         doSetName(name);
         getBuildDir().mkdirs();
     }
 
-    /**
-     * Called when a {@link Job} is loaded from disk.
-     */
-    protected void onLoad(Hudson root, String name) throws IOException {
-        this.parent = root;
+    public void onLoad(String name) throws IOException {
+        super.onLoad(name);
         doSetName(name);
 
         TextFile f = getNextBuildNumberFile();
@@ -127,16 +110,18 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
             properties = new CopyOnWriteList<JobProperty<? super JobT>>();
     }
 
+    @Override
+    public void onCopiedFrom(Item src) {
+        super.onCopiedFrom(src);
+        this.nextBuildNumber = 1;     // reset the next build number
+    }
+
     /**
      * Just update {@link #name} and {@link #root}, since they are linked.
      */
     private void doSetName(String name) {
         this.name = name;
-        this.root = new File(new File(parent.root,"jobs"),name);
-    }
-
-    public File getRootDir() {
-        return root;
+        this.root = new File(new File(Hudson.getInstance().getRootDir(),"jobs"),name);
     }
 
     private TextFile getNextBuildNumberFile() {
@@ -148,7 +133,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     public final Hudson getParent() {
-        return parent;
+        return Hudson.getInstance();
     }
 
     public boolean isInQueue() {
@@ -241,6 +226,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      */
     public void renameTo(String newName) throws IOException {
         // always synchronize from bigger objects first
+        final Hudson parent = Hudson.getInstance();
         synchronized(parent) {
             synchronized(this) {
                 // sanity check
@@ -379,17 +365,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     /**
-     * The file we save our configuration.
-     */
-    protected static XmlFile getConfigFile(File dir) {
-        return new XmlFile(XSTREAM,new File(dir,"config.xml"));
-    }
-
-    File getConfigFile() {
-        return new File(root,"config.xml");
-    }
-
-    /**
      * Directory for storing {@link Run} records.
      * <p>
      * Some {@link Job}s may not have backing data store for {@link Run}s,
@@ -400,13 +375,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      */
     protected File getBuildDir() {
         return new File(root,"builds");
-    }
-
-    /**
-     * Returns the URL of this project.
-     */
-    public String getUrl() {
-        return "job/"+name+'/';
     }
 
     /**
@@ -490,21 +458,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
 
-    /**
-     * Save the settings to a file.
-     */
-    public synchronized void save() throws IOException {
-        getConfigFile(root).write(this);
-    }
-
-    /**
-     * Loads a project from a config file.
-     */
-    static Job load(Hudson root, File dir) throws IOException {
-        Job job = (Job)getConfigFile(dir).read();
-        job.onLoad(root,dir.getName());
-        return job;
-    }
 
 
 
@@ -736,17 +689,5 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
         RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
             runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
-    }
-
-    /**
-     * Used to load/save job configuration.
-     *
-     * When you extend {@link Job} in a plugin, try to put the alias so
-     * that it produces a reasonable XML.
-     */
-    protected static final XStream XSTREAM = new XStream2();
-
-    static {
-        XSTREAM.alias("project",Project.class);
     }
 }

@@ -5,6 +5,12 @@
         <a href="${rootURL}/scm/CVSSCM/version">Check CVS version</a>
       </div>
     </f:description>
+    <f:entry title="cvs executable"
+	    description="location of cvs executable"
+      help="/help/_cvs/cvsexe.html">
+	    <f:textbox name="cvs_exe" value="${descriptor.cvsExe}"
+        checkUrl="'${rootURL}/scm/CVSSCM/cvsExeCheck?value='+this.value" />
+	  </f:entry>
     <f:entry title=".cvspass file"
 	    description=".cvspass file to load passwords from. Leave it empty to read from $HOME/.cvspass"
       help="/help/_cvs/cvspass.jelly">

@@ -33,7 +33,7 @@ import java.util.Map;
 public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Runnable {
 
     /**
-     * Name of the slave this project was built on.
+     * PluginName of the slave this project was built on.
      * Null or "" if built by the master. (null happens when we read old record that didn't have this information.)
      */
     private String builtOn;

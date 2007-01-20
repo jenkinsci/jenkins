@@ -79,6 +79,10 @@ public final class XmlFile {
         this.file = file;
     }
 
+    public File getFile() {
+        return file;
+    }
+
     /**
      * Loads the contents of this file into a new object.
      */

@@ -7,7 +7,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.triggers.Trigger;
 import hudson.triggers.Triggers;
 import hudson.Launcher.LocalLauncher;
-import hudson.maven.MavenJob;
+import hudson.maven.MavenModule;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * Base implementation of {@link Job}s that build software.
  *
- * For now this is primarily the common part of {@link Project} and {@link MavenJob}.
+ * For now this is primarily the common part of {@link Project} and {@link MavenModule}.
  *
  * @author Kohsuke Kawaguchi
  * @see AbstractBuild
@@ -89,7 +89,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected List<Trigger> triggers = new Vector<Trigger>();
 
     protected AbstractProject(Hudson parent, String name) {
-        super(parent, name);
+        super(name);
 
         if(!parent.getSlaves().isEmpty()) {
             // if a new job is configured with Hudson that already has slave nodes
@@ -99,8 +99,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Override
-    protected void onLoad(Hudson root, String name) throws IOException {
-        super.onLoad(root,name);
+    public void onLoad(String name) throws IOException {
+        super.onLoad(name);
 
         this.builds = new RunMap<R>();
         this.builds.load(this,new Constructor<R>() {
