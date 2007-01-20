@@ -398,7 +398,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
-     * Gets the snapshot of all the projects.
+     * Gets the list of all the projects.
+     *
+     * <p>
+     * Since {@link Project} can only show up under {@link Hudson},
+     * no need to search recursively.
      */
     public List<Project> getProjects() {
         return Util.createSubList(items.values(),Project.class);
@@ -1308,7 +1312,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public Set<String> getAllCvsRoots() {
         Set<String> r = new TreeSet<String>();
-        for( Project p : getProjects() ) {
+        for( AbstractProject p : getAllItems(AbstractProject.class) ) {
             SCM scm = p.getScm();
             if (scm instanceof CVSSCM) {
                 CVSSCM cvsscm = (CVSSCM) scm;

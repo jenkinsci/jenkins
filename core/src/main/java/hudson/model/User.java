@@ -153,10 +153,10 @@ public class User extends AbstractModelObject {
      * 
      * TODO: do we need some index for this?
      */
-    public List<Build> getBuilds() {
-        List<Build> r = new ArrayList<Build>();
-        for (Project p : Hudson.getInstance().getProjects()) {
-            for (Build b : p.getBuilds()) {
+    public List<AbstractBuild> getBuilds() {
+        List<AbstractBuild> r = new ArrayList<AbstractBuild>();
+        for (AbstractProject<?,?> p : Hudson.getInstance().getAllItems(AbstractProject.class)) {
+            for (AbstractBuild b : p.getBuilds()) {
                 for (ChangeLogSet.Entry e : b.getChangeSet()) {
                     if(e.getAuthor()==this) {
                         r.add(b);
