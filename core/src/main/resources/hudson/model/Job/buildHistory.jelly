@@ -6,8 +6,10 @@
     all="true" : display all builds. Otherwise limit it to most recent N builds.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
+
   <l:pane width="2" title="
-    &lt;div style='float:right'>(&lt;a href='buildTimeTrend'>trend&lt;/a>)&lt;/div>Build History
+    &lt;div style='float:right'>(&lt;a href='${url}/buildTimeTrend'>trend&lt;/a>)&lt;/div>Build History
   " id="buildHistory">
     <!-- pending build -->
     <j:if test="${it.inQueue}">
@@ -30,7 +32,6 @@
     </j:if>
 
     <!-- build history -->
-    <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
     <j:forEach var="build" items="${builds}">
       <j:set var="link" value="${url}/${build.number}/" />
       <tr class="build-row">
