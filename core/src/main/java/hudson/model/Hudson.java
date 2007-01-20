@@ -363,6 +363,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return "";
     }
 
+    /**
+     * Gets just the immediate children of {@link Hudson}.
+     *
+     * @see #getAllItems(Class) 
+     */
     public List<TopLevelItem> getItems() {
         return new ArrayList<TopLevelItem>(items.values());
     }
