@@ -30,8 +30,9 @@
     </j:if>
 
     <!-- build history -->
+    <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
     <j:forEach var="build" items="${builds}">
-      <j:set var="link" value="${rootURL}/${it.url}${build.number}/" />
+      <j:set var="link" value="${url}/${build.number}/" />
       <tr class="build-row">
         <td nowrap="nowrap">
           <img width="16" height="16" src="${rootURL}/images/16x16/${build.buildStatusUrl}" /><st:nbsp/>
