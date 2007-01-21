@@ -216,13 +216,8 @@ public class SubversionSCM extends AbstractCVSFamilySCM implements Serializable 
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, final BuildListener listener, File changelogFile) throws IOException, InterruptedException {
-        if(useUpdate && isUpdatable(workspace, listener)) {
-            if(!update(launcher,workspace,listener))
-                return false;
-        } else {
-            if(!checkout(launcher,workspace, listener))
-                return false;
-        }
+        if(!checkout(launcher,workspace, listener))
+            return false;
 
         // write out the revision file
         PrintWriter w = new PrintWriter(new FileOutputStream(getRevisionFile(build)));
@@ -239,31 +234,33 @@ public class SubversionSCM extends AbstractCVSFamilySCM implements Serializable 
     }
 
     public boolean checkout(Launcher launcher, FilePath workspace, final TaskListener listener) throws IOException, InterruptedException {
-        boolean result;
-        final ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
-        result = workspace.act(new FileCallable<Boolean>() {
-            public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
-                Util.deleteContentsRecursive(ws);
-                SVNUpdateClient svnuc = createSvnClientManager(authProvider).getUpdateClient();
-                svnuc.setEventHandler(new SubversionUpdateEventHandler(listener));
+        if(useUpdate && isUpdatable(workspace, listener)) {
+            return update(launcher,workspace,listener);
+        } else {
+            final ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
+            return workspace.act(new FileCallable<Boolean>() {
+                public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
+                    Util.deleteContentsRecursive(ws);
+                    SVNUpdateClient svnuc = createSvnClientManager(authProvider).getUpdateClient();
+                    svnuc.setEventHandler(new SubversionUpdateEventHandler(listener));
 
-                StringTokenizer tokens = new StringTokenizer(modules);
-                while(tokens.hasMoreTokens()) {
-                    try {
-                        SVNURL url = SVNURL.parseURIEncoded(tokens.nextToken());
-                        listener.getLogger().println("Checking out "+url);
+                    StringTokenizer tokens = new StringTokenizer(modules);
+                    while(tokens.hasMoreTokens()) {
+                        try {
+                            SVNURL url = SVNURL.parseURIEncoded(tokens.nextToken());
+                            listener.getLogger().println("Checking out "+url);
 
-                        svnuc.doCheckout(url, new File(ws, getLastPathComponent(url.getPath())), SVNRevision.HEAD, SVNRevision.HEAD, true );
-                    } catch (SVNException e) {
-                        e.printStackTrace(listener.error("Error in subversion"));
-                        return false;
+                            svnuc.doCheckout(url, new File(ws, getLastPathComponent(url.getPath())), SVNRevision.HEAD, SVNRevision.HEAD, true );
+                        } catch (SVNException e) {
+                            e.printStackTrace(listener.error("Error in subversion"));
+                            return false;
+                        }
                     }
-                }
 
-                return true;
-            }
-        });
-        return result;
+                    return true;
+                }
+            });
+        }
     }
 
     /**
@@ -364,7 +361,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM implements Serializable 
         return new File(build.getRootDir(),"revision.txt");
     }
 
-    public boolean update(Launcher launcher, FilePath workspace, final BuildListener listener) throws IOException, InterruptedException {
+    public boolean update(Launcher launcher, FilePath workspace, final TaskListener listener) throws IOException, InterruptedException {
         final ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
         return workspace.act(new FileCallable<Boolean>() {
             public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
@@ -390,7 +387,7 @@ public class SubversionSCM extends AbstractCVSFamilySCM implements Serializable 
     /**
      * Returns true if we can use "svn update" instead of "svn checkout"
      */
-    private boolean isUpdatable(FilePath workspace, final BuildListener listener) throws IOException, InterruptedException {
+    private boolean isUpdatable(FilePath workspace, final TaskListener listener) throws IOException, InterruptedException {
         final ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
 
         return workspace.act(new FileCallable<Boolean>() {

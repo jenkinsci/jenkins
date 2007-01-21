@@ -79,7 +79,7 @@ public interface SCM extends Describable<SCM>, ExtensionPoint {
     boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
 
     /**
-     * Checks out the code into the workspace, but without computing changelog.
+     * Checks out (or updates) the code into the workspace, but without computing changelog.
      *
      * TODO: This is an ugly abstraction.
      * come back and check if this abstraction is really making much sense.

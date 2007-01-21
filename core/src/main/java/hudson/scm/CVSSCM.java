@@ -231,7 +231,12 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
     }
 
     public boolean checkout(Launcher launcher, FilePath dir, TaskListener listener) throws IOException, InterruptedException {
-        return checkout(launcher,dir,listener,new Date());
+        Date now = new Date();
+        if(canUseUpdate && isUpdatable(dir)) {
+            return update(false, launcher, dir, listener, now)!=null;
+        } else {
+            return checkout(launcher,dir,listener, now);
+        }
     }
 
     private boolean checkout(Launcher launcher, FilePath dir, TaskListener listener, Date dt) throws IOException, InterruptedException {
