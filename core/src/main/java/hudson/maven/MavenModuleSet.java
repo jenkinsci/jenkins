@@ -6,13 +6,22 @@ import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.Items;
+import hudson.model.Descriptor.FormException;
 import hudson.util.CopyOnWriteMap;
+import hudson.scm.SCM;
+import hudson.scm.NullSCM;
+import hudson.scm.SCMS;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.ServletException;
 
 /**
  * Group of {@link MavenModule}s.
@@ -30,6 +39,8 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
      */
     transient /*final*/ Map<String,MavenModule> modules = new CopyOnWriteMap.Tree<String,MavenModule>();
 
+    private SCM scm = new NullSCM();
+
     public MavenModuleSet(String name) {
         super(name);
     }
@@ -40,6 +51,14 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
 
     public Hudson getParent() {
         return Hudson.getInstance();
+    }
+
+    public SCM getScm() {
+        return scm;
+    }
+
+    public void setScm(SCM scm) {
+        this.scm = scm;
     }
 
     public Collection<MavenModule> getItems() {
@@ -75,6 +94,19 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
                 e.printStackTrace(); // TODO: logging
             }
         }
+    }
+
+    public synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
+
+        try {
+            setScm(SCMS.parseSCM(req));
+        } catch (FormException e) {
+            throw new ServletException(e);
+        }
+
+        save();
     }
 
     public TopLevelItemDescriptor getDescriptor() {

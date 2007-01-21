@@ -481,8 +481,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         try {
-            int scmidx = Integer.parseInt(req.getParameter("scm"));
-            setScm(SCMS.SCMS.get(scmidx).newInstance(req));
+            setScm(SCMS.parseSCM(req));
 
             for (Trigger t : triggers)
                 t.stop();
