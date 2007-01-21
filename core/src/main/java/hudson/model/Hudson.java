@@ -625,6 +625,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return items.get(name);
     }
 
+    public File getRootDirFor(TopLevelItem child) {
+        return new File(new File(getRootDir(),"jobs"),child.getName());
+    }
+
     /**
      * Gets the {@link Item} object by its full name.
      * Full names are like path names, where each name of {@link Item} is
@@ -784,7 +788,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         items.clear();
         for (File subdir : subdirs) {
             try {
-                TopLevelItem item = (TopLevelItem)Items.load(subdir);
+                TopLevelItem item = (TopLevelItem)Items.load(this,subdir);
                 items.put(item.getName(), item);
             } catch (IOException e) {
                 e.printStackTrace(); // TODO: logging
@@ -973,7 +977,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
 
             // reload from the new config
-            result = (TopLevelItem)Items.load(result.getRootDir());
+            result = (TopLevelItem)Items.load(this,result.getRootDir());
             result.onCopiedFrom(src);
             items.put(name,result);
         }

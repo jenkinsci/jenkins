@@ -1,6 +1,7 @@
 package hudson.maven;
 
 import hudson.FilePath;
+import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractItem;
@@ -9,24 +10,36 @@ import hudson.model.Hudson;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
 import hudson.model.JDK;
+import hudson.model.Node;
 import hudson.model.Project;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.model.Node;
+import hudson.model.LargeText;
+import hudson.model.Item;
+import hudson.remoting.VirtualChannel;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
+import hudson.util.ByteBuffer;
 import hudson.util.CopyOnWriteMap;
+import hudson.util.IOException2;
+import hudson.util.StreamTaskListener;
+import org.apache.maven.embedder.MavenEmbedderException;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Group of {@link MavenModule}s.
@@ -40,7 +53,7 @@ import java.util.Map;
  */
 public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGroup<MavenModule> {
     /**
-     * All {@link MavenModule}s.
+     * All {@link MavenModule}s, keyed by their {@link MavenModule#getName() name}s.
      */
     transient /*final*/ Map<String,MavenModule> modules = new CopyOnWriteMap.Tree<String,MavenModule>();
 
@@ -87,11 +100,13 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
      * return that {@link Node}. Otherwise null.
      */
     public Node getAssignedNode() {
-        if(assignedNode==null)
-            return null;
-        if(assignedNode.equals(""))
-            return Hudson.getInstance();
-        return Hudson.getInstance().getSlave(assignedNode);
+        return Hudson.getInstance();
+        // TODO
+        //if(assignedNode==null)
+        //    return null;
+        //if(assignedNode.equals(""))
+        //    return Hudson.getInstance();
+        //return Hudson.getInstance().getSlave(assignedNode);
     }
 
     public SCM getScm() {
@@ -118,6 +133,10 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         return modules.get(name);
     }
 
+    public File getRootDirFor(MavenModule child) {
+        return new File(new File(getRootDir(),"modules"),child.getName());
+    }
+
     public Collection<MavenModule> getAllJobs() {
         return getItems();
     }
@@ -130,11 +149,10 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         return Hudson.getInstance().getWorkspaceFor(this);
     }
 
+    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+        super.onLoad(parent, name);
 
-    public void onLoad(String name) throws IOException {
-        super.onLoad(name);
-
-        File modulesDir = new File(root,"modules");
+        File modulesDir = new File(getRootDir(),"modules");
         modulesDir.mkdirs(); // make sure it exists
 
         File[] subdirs = modulesDir.listFiles(new FileFilter() {
@@ -145,7 +163,7 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         modules = new CopyOnWriteMap.Tree<String,MavenModule>();
         for (File subdir : subdirs) {
             try {
-                MavenModule item = (MavenModule) Items.load(subdir);
+                MavenModule item = (MavenModule) Items.load(this,subdir);
                 modules.put(item.getName(), item);
             } catch (IOException e) {
                 e.printStackTrace(); // TODO: logging
@@ -167,6 +185,92 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         }
     }
 
+    private transient LargeText parsePomBuffer;
+
+    public void parsePOMs() {
+        ByteBuffer buf = new ByteBuffer();
+        parsePomBuffer = new LargeText(buf,false);
+        final StreamTaskListener listener = new StreamTaskListener(buf);
+        try {
+            // TODO: shall checkout do updates as well?
+            Launcher launcher = getAssignedNode().createLauncher(listener);
+            if(!checkout(launcher,listener))
+            return;
+
+            // TODO: this needs to be moved to its own class since MavenModuleSet is not serializable
+            List<PomInfo> poms = getWorkspace().act(new FileCallable<List<PomInfo>>() {
+                public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
+                    // TODO: this logic needs to be smarter
+                    File pom = new File(ws,"pom.xml");
+
+                    try {
+                        MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
+                        MavenProject mp = embedder.readProject(pom);
+                        MavenUtil.resolveModules(embedder,mp);
+
+                        List<PomInfo> infos = new ArrayList<PomInfo>();
+                        toPomInfo(mp,infos);
+                        return infos;
+                    } catch (MavenEmbedderException e) {
+                        // TODO: better error handling needed
+                        throw new IOException2(e);
+                    } catch (ProjectBuildingException e) {
+                        throw new IOException2(e);
+                    }
+                }
+
+                private void toPomInfo(MavenProject mp, List<PomInfo> infos) {
+                    infos.add(new PomInfo(mp));
+                    for (MavenProject child : (List<MavenProject>)mp.getCollectedProjects())
+                        toPomInfo(child,infos);
+                }
+            });
+
+            synchronized(modules) {
+                modules.clear();
+                for (PomInfo pom : poms) {
+                    MavenModule mm = new MavenModule(this,pom);
+                    mm.save();
+                    modules.put(mm.getName(),mm);
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace(listener.error("Failed to parse POMs"));
+        } catch (InterruptedException e) {
+            e.printStackTrace(listener.error("Aborted"));
+        } catch (RuntimeException e) {
+            // bug in the code.
+            e.printStackTrace(listener.error("Processing failed due to a bug in the code. Please report thus to users@hudson.dev.java.net"));
+            throw e;
+        }
+        parsePomBuffer.markAsComplete();
+    }
+
+//
+//
+// Web methods
+//
+//
+
+    public void doStartParsePOM(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        new Thread(new Runnable() {
+            public void run() {
+                parsePOMs();
+            }
+        }).start();
+        rsp.sendRedirect("parsePOM");
+    }
+
+    /**
+     * Handles incremental log output.
+     */
+    public void doProgressiveParsePOMLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
+        if(parsePomBuffer==null)
+            rsp.setStatus(HttpServletResponse.SC_OK);
+        else
+            parsePomBuffer.doProgressText(req,rsp);
+    }
 
     public synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if(!Hudson.adminCheck(req,rsp))

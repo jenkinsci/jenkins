@@ -96,7 +96,7 @@ public class SCMTrigger extends Trigger {
      * Start polling if it's scheduled.
      */
     public synchronized void startPolling() {
-        AbstractBuild b = project.getLastBuild();
+        AbstractBuild b = (AbstractBuild)project.getLastBuild();
 
         if(b!=null && b.isBuilding())
             return; // build in progress

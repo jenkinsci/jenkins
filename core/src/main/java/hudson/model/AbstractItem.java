@@ -30,16 +30,11 @@ public abstract class AbstractItem extends Actionable implements Item {
      */
     protected String description;
 
-    /**
-     * Root directory for this view item on the file system.
-     */
-    protected transient File root;
-
     private ItemGroup parent;
 
     protected AbstractItem(ItemGroup parent, String name) {
-        doSetName(name);
         this.parent = parent;
+        doSetName(name);
     }
 
     public String getName() {
@@ -51,7 +46,7 @@ public abstract class AbstractItem extends Actionable implements Item {
     }
 
     public File getRootDir() {
-        return root;
+        return parent.getRootDirFor(this);
     }
 
     public ItemGroup getParent() {
@@ -74,12 +69,12 @@ public abstract class AbstractItem extends Actionable implements Item {
     }
 
     /**
-     * Just update {@link #name} and {@link #root}, since they are linked.
+     * Just update {@link #name} without performing the rename operation,
+     * which would involve copying files and etc.
      */
     protected void doSetName(String name) {
         this.name = name;
-        this.root = new File(new File(Hudson.getInstance().getRootDir(),"jobs"),name);
-        this.root.mkdirs();
+        getRootDir().mkdirs();
     }
 
     /**
@@ -97,7 +92,8 @@ public abstract class AbstractItem extends Actionable implements Item {
      * Called right after when a {@link Item} is loaded from disk.
      * This is an opporunity to do a post load processing.
      */
-    public void onLoad(String name) throws IOException {
+    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+        this.parent = parent;
         doSetName(name);
     }
 
@@ -144,7 +140,7 @@ public abstract class AbstractItem extends Actionable implements Item {
     public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         if(!Hudson.adminCheck(req,rsp))
             return;
-        Util.deleteRecursive(root);
+        Util.deleteRecursive(getRootDir());
 
         if(this instanceof TopLevelItem)
             Hudson.getInstance().deleteJob((TopLevelItem)this);

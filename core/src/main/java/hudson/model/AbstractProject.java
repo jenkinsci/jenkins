@@ -105,8 +105,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Override
-    public void onLoad(String name) throws IOException {
-        super.onLoad(name);
+    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+        super.onLoad(parent, name);
 
         this.builds = new RunMap<R>();
         this.builds.load(this,new Constructor<R>() {

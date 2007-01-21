@@ -60,8 +60,8 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     }
 
 
-    public void onLoad(String name) throws IOException {
-        super.onLoad(name);
+    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+        super.onLoad(parent, name);
         notLoaded = true;
     }
 

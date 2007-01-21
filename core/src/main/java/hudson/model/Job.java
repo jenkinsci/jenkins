@@ -77,8 +77,8 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         getBuildDir().mkdirs();
     }
 
-    public void onLoad(String name) throws IOException {
-        super.onLoad(name);
+    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+        super.onLoad(parent, name);
 
         TextFile f = getNextBuildNumberFile();
         if(f.exists()) {
@@ -107,7 +107,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     private TextFile getNextBuildNumberFile() {
-        return new TextFile(new File(this.root,"nextBuildNumber"));
+        return new TextFile(new File(this.getRootDir(),"nextBuildNumber"));
     }
 
     private void saveNextBuildNumber() throws IOException {
@@ -202,10 +202,10 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
 
                 String oldName = this.name;
-                File oldRoot = this.root;
+                File oldRoot = this.getRootDir();
 
                 doSetName(newName);
-                File newRoot = this.root;
+                File newRoot = this.getRootDir();
 
                 {// rename data files
                     boolean interrupted=false;
@@ -335,7 +335,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * @see RunMap
      */
     protected File getBuildDir() {
-        return new File(root,"builds");
+        return new File(getRootDir(),"builds");
     }
 
     /**

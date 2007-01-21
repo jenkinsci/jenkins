@@ -71,9 +71,9 @@ public class Items {
      * @param dir
      *      The directory that contains the config file, not the config file itself.
      */
-    public static Item load(File dir) throws IOException {
+    public static Item load(ItemGroup parent, File dir) throws IOException {
         Item item = (Item)getConfigFile(dir).read();
-        item.onLoad(dir.getName());
+        item.onLoad(parent,dir.getName());
         return item;
     }
 

@@ -1,6 +1,7 @@
 package hudson.model;
 
 import java.util.Collection;
+import java.io.File;
 
 /**
  * Represents a grouping inherent to a kind of {@link Item}s.
@@ -36,4 +37,9 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * Gets the {@link Item} inside this group that has a given name.
      */
     T getItem(String name);
+
+    /**
+     * Assigns the {@link Item#getRootDir() root directory} for children.
+     */
+    File getRootDirFor(T child);
 }

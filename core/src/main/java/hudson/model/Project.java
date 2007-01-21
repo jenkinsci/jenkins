@@ -62,8 +62,8 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         super(parent,name);
     }
 
-    public void onLoad(String name) throws IOException {
-        super.onLoad(name);
+    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+        super.onLoad(parent, name);
 
         if(buildWrappers==null)
             // it didn't exist in < 1.64

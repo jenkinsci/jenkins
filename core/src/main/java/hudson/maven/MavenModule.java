@@ -1,16 +1,17 @@
 package hudson.maven;
 
+import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Hudson;
 import hudson.model.Items;
 import hudson.model.Job;
+import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.util.DescribableList;
-import hudson.FilePath;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.apache.maven.project.MavenProject;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -26,13 +27,19 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
         new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
 
-    public MavenModule(Hudson parent, String name) {
-        super(parent, name);
+    /**
+     * Name taken from {@link MavenProject#getName()}.
+     */
+    private String displayName;
+
+    /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom) {
+        super(parent, pom.name.toString());
+        displayName = pom.displayName;
     }
 
     @Override
-    public void onLoad(String name) throws IOException {
-        super.onLoad(name);
+    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+        super.onLoad(parent, name);
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
         reporters.setOwner(this);
@@ -44,6 +51,10 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public String getDisplayName() {
+        return displayName;
+    }
 
     public MavenModuleSet getParent() {
         return (MavenModuleSet)super.getParent();

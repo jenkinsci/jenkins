@@ -79,7 +79,7 @@ public interface Item extends PersistenceRoot {
      * Called right after when a {@link Item} is loaded from disk.
      * This is an opporunity to do a post load processing.
      */
-    void onLoad(String name) throws IOException;
+    void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException;
 
     /**
      * When a {@link Item} is copied from existing one,
