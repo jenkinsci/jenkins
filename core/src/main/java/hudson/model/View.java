@@ -151,7 +151,7 @@ public abstract class View extends AbstractModelObject {
      * @return
      *      null if fails.
      */
-    public abstract Item doCreateViewItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
+    public abstract Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         rss(req, rsp, " all builds", new RunList(this));

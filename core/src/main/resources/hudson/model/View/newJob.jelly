@@ -5,7 +5,7 @@
 	<l:layout norefresh="true">
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
-		  <s:form method="post" action="createViewItem">
+		  <s:form method="post" action="createItem">
 		    <s:entry title="Job name">
 		      <input type="text" name="name" class="setting-input" />
 		    </s:entry>

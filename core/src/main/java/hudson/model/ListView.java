@@ -76,11 +76,11 @@ public class ListView extends View {
         return name;
     }
 
-    public Item doCreateViewItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if(!Hudson.adminCheck(req,rsp))
             return null;
 
-        Item item = owner.doCreateViewItem(req, rsp);
+        Item item = owner.doCreateItem(req, rsp);
         if(item!=null) {
             jobNames.add(item.getName());
             owner.save();

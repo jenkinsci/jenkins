@@ -919,7 +919,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         rsp.sendRedirect2(".");
     }
 
-    public synchronized Item doCreateViewItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         if(!Hudson.adminCheck(req,rsp))
             return null;
 
