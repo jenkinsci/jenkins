@@ -136,6 +136,7 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         }
 
         save();
+        rsp.sendRedirect(".");
     }
 
     public TopLevelItemDescriptor getDescriptor() {
