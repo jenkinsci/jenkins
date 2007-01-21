@@ -74,6 +74,10 @@ public class LargeText {
         completed = true;
     }
 
+    public boolean isComplete() {
+        return completed;
+    }
+
     /**
      * Writes the tail portion of the file to the {@link Writer}.
      *
