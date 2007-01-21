@@ -2,6 +2,7 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractItem;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
@@ -12,6 +13,7 @@ import hudson.model.Project;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.model.Node;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
@@ -61,6 +63,13 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
      */
     private boolean disabled;
 
+    /**
+     * If this project is configured to be only built on a certain node,
+     * this value will be set to that node. Empty string to indicate
+     * affinity to the master, and null to indicate free-roam.
+     */
+    private String assignedNode;
+
     public MavenModuleSet(String name) {
         super(Hudson.getInstance(),name);
     }
@@ -71,6 +80,18 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
 
     public Hudson getParent() {
         return Hudson.getInstance();
+    }
+
+    /**
+     * If this project is configured to be always built on this node,
+     * return that {@link Node}. Otherwise null.
+     */
+    public Node getAssignedNode() {
+        if(assignedNode==null)
+            return null;
+        if(assignedNode.equals(""))
+            return Hudson.getInstance();
+        return Hudson.getInstance().getSlave(assignedNode);
     }
 
     public SCM getScm() {
@@ -139,7 +160,6 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         try {
             FilePath workspace = getWorkspace();
             workspace.mkdirs();
-
             return scm.checkout(launcher, workspace, listener);
         } catch (InterruptedException e) {
             e.printStackTrace(listener.fatalError("SCM check out aborted"));
@@ -156,6 +176,17 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
             disabled = req.getParameter("disable")!=null;
             jdk = req.getParameter("jdk");
             setScm(SCMS.parseSCM(req));
+
+            if(req.getParameter("hasSlaveAffinity")!=null) {
+                assignedNode = Util.fixNull(req.getParameter("slave"));
+                if(!assignedNode.equals("")) {
+                    if(Hudson.getInstance().getSlave(assignedNode)==null) {
+                        assignedNode = "";   // no such slave
+                    }
+                }
+            } else {
+                assignedNode = null;
+            }
         } catch (FormException e) {
             throw new ServletException(e);
         }
