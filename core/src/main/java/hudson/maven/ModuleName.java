@@ -21,6 +21,14 @@ public class ModuleName {
         return groupId+':'+artifactId;
     }
 
+    /**
+     * Returns the "groupId$artifactId" form,
+     * which is safe for the use as a file name, unlike {@link #toString()}.
+     */
+    public String toFileSystemName() {
+        return groupId+'$'+artifactId;
+    }
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

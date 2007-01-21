@@ -33,7 +33,7 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     private String displayName;
 
     /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom) {
-        super(parent, pom.name.toString());
+        super(parent, pom.name.toFileSystemName());
         displayName = pom.displayName;
     }
 
