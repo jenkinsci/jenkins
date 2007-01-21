@@ -17,6 +17,7 @@ import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.LargeText;
 import hudson.model.Item;
+import hudson.model.DirectoryBrowserSupport;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
@@ -305,6 +306,19 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
 
         save();
         rsp.sendRedirect(".");
+    }
+
+    /**
+     * Serves the workspace files.
+     */
+    public void doWs( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
+        FilePath ws = getWorkspace();
+        if(!ws.exists()) {
+            // if there's no workspace, report a nice error message
+            rsp.forward(this,"noWorkspace",req);
+        } else {
+            new DirectoryBrowserSupport(this).serveFile(req, rsp, ws, "folder.gif", true);
+        }
     }
 
     public TopLevelItemDescriptor getDescriptor() {
