@@ -673,16 +673,16 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         if(items.containsKey(name))
             throw new IllegalArgumentException();
 
-        TopLevelItem job;
+        TopLevelItem item;
         try {
-            job = type.newInstance(name);
+            item = type.newInstance(name);
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
 
-        job.save();
-        items.put(name,job);
-        return job;
+        item.save();
+        items.put(name,item);
+        return item;
     }
 
     /**
