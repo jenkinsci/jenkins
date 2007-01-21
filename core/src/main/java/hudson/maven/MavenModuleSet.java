@@ -6,6 +6,8 @@ import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.Items;
+import hudson.model.JDK;
+import hudson.model.Project;
 import hudson.model.Descriptor.FormException;
 import hudson.util.CopyOnWriteMap;
 import hudson.scm.SCM;
@@ -41,6 +43,23 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
 
     private SCM scm = new NullSCM();
 
+    /**
+     * Identifies {@link JDK} to be used.
+     * Null if no explicit configuration is required.
+     *
+     * <p>
+     * Can't store {@link JDK} directly because {@link Hudson} and {@link Project}
+     * are saved independently.
+     *
+     * @see Hudson#getJDK(String)
+     */
+    private String jdk;
+
+    /**
+     * True to suspend any new builds in this module set.
+     */
+    private boolean disabled;
+
     public MavenModuleSet(String name) {
         super(name);
     }
@@ -61,6 +80,14 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         this.scm = scm;
     }
 
+    public JDK getJDK() {
+        return getParent().getJDK(jdk);
+    }
+
+    public synchronized void setJDK(JDK jdk) throws IOException {
+        this.jdk = jdk.getName();
+    }
+    
     public Collection<MavenModule> getItems() {
         return modules.values();
     }
@@ -101,6 +128,8 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
             return;
 
         try {
+            disabled = req.getParameter("disable")!=null;
+            jdk = req.getParameter("jdk");
             setScm(SCMS.parseSCM(req));
         } catch (FormException e) {
             throw new ServletException(e);
