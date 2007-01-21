@@ -1,0 +1,25 @@
+<!--
+  Config page.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout norefresh="true">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <f:form method="post" action="configSubmit">
+        <f:entry title="Project name">
+          <f:textbox name="name" value="${it.name}" />
+        </f:entry>
+        <f:entry title="Description" help="/help/project-config/description.html">
+          <textarea class="setting-input" name="description"
+            rows="5" style="width:100%">${it.description}</textarea>
+        </f:entry>
+
+        <st:include page="configure-common.jelly" />
+
+        <f:block>
+          <input type="submit" name="Submit" value="Save" />
+        </f:block>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
