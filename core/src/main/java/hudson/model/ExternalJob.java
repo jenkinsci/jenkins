@@ -18,8 +18,8 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements TopLevelItem {
-    public ExternalJob(Hudson parent,String name) {
-        super(parent,name);
+    public ExternalJob(String name) {
+        super(Hudson.getInstance(),name);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
         }
 
         public ExternalJob newInstance(String name) {
-            return new ExternalJob(Hudson.getInstance(),name);
+            return new ExternalJob(name);
         }
     };
 }
