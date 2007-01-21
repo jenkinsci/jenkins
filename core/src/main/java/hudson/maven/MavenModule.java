@@ -32,9 +32,16 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
      */
     private String displayName;
 
+    private transient ModuleName moduleName;
+
     /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom) {
         super(parent, pom.name.toFileSystemName());
         displayName = pom.displayName;
+    }
+
+    protected void doSetName(String name) {
+        super.doSetName(name);
+        moduleName = ModuleName.fromFileSystemName(name);
     }
 
     @Override
@@ -49,6 +56,10 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     public FilePath getWorkspace() {
         // TODO: implement this method later
         throw new UnsupportedOperationException();
+    }
+
+    public ModuleName getModuleName() {
+        return moduleName;
     }
 
     @Override
@@ -99,9 +110,5 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         }
 
         save();
-    }
-
-    static {
-        Items.XSTREAM.alias("maven2", MavenModule.class);
     }
 }

@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.XmlFile;
 import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModule;
 import hudson.util.XStream2;
 
 import java.util.Collection;
@@ -103,7 +104,9 @@ public class Items {
         XSTREAM.alias("project",Project.class);
 
         // hide maven support until it gets ready
-        if(Boolean.getBoolean("hudson.maven"))
+        if(Boolean.getBoolean("hudson.maven")) {
             LIST.add(MavenModuleSet.DESCRIPTOR);
+            Items.XSTREAM.alias("maven2", MavenModule.class);
+        }
     }
 }

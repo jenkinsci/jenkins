@@ -53,9 +53,9 @@ import java.util.ArrayList;
  */
 public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGroup<MavenModule> {
     /**
-     * All {@link MavenModule}s, keyed by their {@link MavenModule#getName() name}s.
+     * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
-    transient /*final*/ Map<String,MavenModule> modules = new CopyOnWriteMap.Tree<String,MavenModule>();
+    transient /*final*/ Map<ModuleName,MavenModule> modules = new CopyOnWriteMap.Tree<ModuleName,MavenModule>();
 
     private SCM scm = new NullSCM();
 
@@ -129,8 +129,16 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         return modules.values();
     }
 
+    public Collection<MavenModule> getModules() {
+        return getItems();
+    }
+
     public MavenModule getItem(String name) {
-        return modules.get(name);
+        return modules.get(ModuleName.fromString(name));
+    }
+
+    public MavenModule getModule(String name) {
+        return getItem(name);
     }
 
     public File getRootDirFor(MavenModule child) {
@@ -160,11 +168,11 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
                 return child.isDirectory();
             }
         });
-        modules = new CopyOnWriteMap.Tree<String,MavenModule>();
+        modules = new CopyOnWriteMap.Tree<ModuleName,MavenModule>();
         for (File subdir : subdirs) {
             try {
                 MavenModule item = (MavenModule) Items.load(this,subdir);
-                modules.put(item.getName(), item);
+                modules.put(item.getModuleName(), item);
             } catch (IOException e) {
                 e.printStackTrace(); // TODO: logging
             }
@@ -231,7 +239,7 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
                 for (PomInfo pom : poms) {
                     MavenModule mm = new MavenModule(this,pom);
                     mm.save();
-                    modules.put(mm.getName(),mm);
+                    modules.put(mm.getModuleName(),mm);
                 }
             }
 

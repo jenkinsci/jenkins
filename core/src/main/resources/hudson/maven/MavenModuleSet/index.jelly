@@ -7,6 +7,13 @@
 
       <!-- inject main part here -->
 
+      <h2>Modules</h2>
+      <ul>
+        <j:forEach var="m" items="${it.modules}">
+          <li><a href="module/${m.moduleName}/">${m.displayName}</a></li>
+        </j:forEach>
+      </ul>
+
       <h2>Permalinks</h2>
       <ul>
         <j:if test="${it.lastBuild!=null}">

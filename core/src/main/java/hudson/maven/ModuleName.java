@@ -5,7 +5,7 @@ package hudson.maven;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class ModuleName {
+public class ModuleName implements Comparable<ModuleName> {
     public final String groupId;
     public final String artifactId;
 
@@ -29,6 +29,18 @@ public class ModuleName {
         return groupId+'$'+artifactId;
     }
 
+    public static ModuleName fromFileSystemName(String n) {
+        int idx = n.indexOf('$');
+        if(idx<0)   throw new IllegalArgumentException(n);
+        return new ModuleName(n.substring(0,idx),n.substring(idx+1));
+    }
+
+    public static ModuleName fromString(String n) {
+        int idx = n.indexOf(':');
+        if(idx<0)   throw new IllegalArgumentException(n);
+        return new ModuleName(n.substring(0,idx),n.substring(idx+1));
+    }
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -45,5 +57,11 @@ public class ModuleName {
         result = groupId.hashCode();
         result = 31 * result + artifactId.hashCode();
         return result;
+    }
+
+    public int compareTo(ModuleName that) {
+        int r = this.groupId.compareTo(that.groupId);
+        if(r!=0)    return r;
+        return this.artifactId.compareTo(that.artifactId);
     }
 }
