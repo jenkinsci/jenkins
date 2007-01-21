@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.Launcher;
+import hudson.FilePath;
 import hudson.util.EnumConverter;
 import org.apache.commons.beanutils.ConvertUtils;
 
@@ -44,6 +45,15 @@ public interface Node {
     Mode getMode();
 
     Computer createComputer();
+
+    /**
+     * Returns a "workspace" directory for the given {@link TopLevelItem}.
+     *
+     * <p>
+     * Workspace directory is usually used for keeping out the checked out
+     * source code, but it can be used for anything.
+     */
+    FilePath getWorkspaceFor(TopLevelItem item);
 
     public enum Mode {
         NORMAL("Utilize this slave as much as possible"),

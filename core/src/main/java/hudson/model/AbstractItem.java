@@ -35,8 +35,11 @@ public abstract class AbstractItem extends Actionable implements Item {
      */
     protected transient File root;
 
-    protected AbstractItem(String name) {
+    private ItemGroup parent;
+
+    protected AbstractItem(ItemGroup parent, String name) {
         doSetName(name);
+        this.parent = parent;
     }
 
     public String getName() {
@@ -49,6 +52,11 @@ public abstract class AbstractItem extends Actionable implements Item {
 
     public File getRootDir() {
         return root;
+    }
+
+    public ItemGroup getParent() {
+        assert parent!=null;
+        return parent;
     }
 
     /**

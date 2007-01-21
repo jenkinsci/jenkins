@@ -28,6 +28,10 @@ public class NullSCM extends AbstractCVSFamilySCM /*to reuse createEmptyChangeLo
         return createEmptyChangeLog(changeLogFile, listener, "log");
     }
 
+    public boolean checkout(Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        return true;
+    }
+
     public Descriptor<SCM> getDescriptor() {
         return DESCRIPTOR;
     }

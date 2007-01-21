@@ -52,7 +52,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     }
 
     protected ViewJob(Hudson parent, String name) {
-        super(name);
+        super(parent,name);
     }
 
     public boolean isBuildable() {

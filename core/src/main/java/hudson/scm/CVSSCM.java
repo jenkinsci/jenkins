@@ -182,18 +182,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             if(changedFiles==null)
                 return false;   // failed
         } else {
-            dir.deleteContents();
-
-            ArgumentListBuilder cmd = new ArgumentListBuilder();
-            cmd.add(getDescriptor().getCvsExe(),debugLogging?"-t":"-Q","-z9","-d",cvsroot,"co");
-            if(branch!=null)
-                cmd.add("-r",branch);
-            if(flatten)
-                cmd.add("-d",dir.getName());
-            configureDate(cmd, build.getTimestamp().getTime());
-            cmd.addTokenized(module);
-
-            if(!run(launcher,cmd,listener, flatten ? dir.getParent() : dir))
+            if(!checkout(launcher,dir,listener,build.getTimestamp().getTime()))
                 return false;
         }
 
@@ -239,6 +228,25 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         build.getActions().add(new TagAction(build));
 
         return calcChangeLog(build, changedFiles, changelogFile, listener);
+    }
+
+    public boolean checkout(Launcher launcher, FilePath dir, TaskListener listener) throws IOException, InterruptedException {
+        return checkout(launcher,dir,listener,new Date());
+    }
+
+    private boolean checkout(Launcher launcher, FilePath dir, TaskListener listener, Date dt) throws IOException, InterruptedException {
+        dir.deleteContents();
+
+        ArgumentListBuilder cmd = new ArgumentListBuilder();
+        cmd.add(getDescriptor().getCvsExe(),debugLogging?"-t":"-Q","-z9","-d",cvsroot,"co");
+        if(branch!=null)
+            cmd.add("-r",branch);
+        if(flatten)
+            cmd.add("-d",dir.getName());
+        configureDate(cmd,dt);
+        cmd.addTokenized(module);
+
+        return run(launcher,cmd,listener, flatten ? dir.getParent() : dir);
     }
 
     /**

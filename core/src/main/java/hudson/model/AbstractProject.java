@@ -94,10 +94,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     protected List<Trigger> triggers = new Vector<Trigger>();
 
-    protected AbstractProject(Hudson parent, String name) {
-        super(name);
+    protected AbstractProject(ItemGroup parent, String name) {
+        super(parent,name);
 
-        if(!parent.getSlaves().isEmpty()) {
+        if(!Hudson.getInstance().getSlaves().isEmpty()) {
             // if a new job is configured with Hudson that already has slave nodes
             // make it roamable by default
             canRoam = true;
@@ -132,23 +132,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         if(assignedNode ==null)
             return Hudson.getInstance();
-        return getParent().getSlave(assignedNode);
+        return Hudson.getInstance().getSlave(assignedNode);
     }
 
     /**
      * Gets the directory where the module is checked out.
      */
-    public FilePath getWorkspace() {
-        Node node = getLastBuiltOn();
-
-        if(node==null)
-            node = getParent();
-
-        if(node instanceof Slave)
-            return ((Slave)node).getWorkspaceRoot().child(getName());
-        else
-            return new FilePath(new File(getRootDir(),"workspace"));
-    }
+    public abstract FilePath getWorkspace();
 
     /**
      * Returns the root directory of the checked-out module.
@@ -161,7 +151,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public int getQuietPeriod() {
-        return quietPeriod!=null ? quietPeriod : getParent().getQuietPeriod();
+        return quietPeriod!=null ? quietPeriod : Hudson.getInstance().getQuietPeriod();
     }
 
     // ugly name because of EL
@@ -182,7 +172,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public void scheduleBuild() {
         if(!disabled)
-            getParent().getQueue().add(this);
+            Hudson.getInstance().getQueue().add(this);
     }
 
     /**
@@ -190,11 +180,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Override
     public boolean isInQueue() {
-        return getParent().getQueue().contains(this);
+        return Hudson.getInstance().getQueue().contains(this);
     }
 
     public JDK getJDK() {
-        return getParent().getJDK(jdk);
+        return Hudson.getInstance().getJDK(jdk);
     }
 
     /**
@@ -444,7 +434,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(!Hudson.adminCheck(req,rsp))
             return;
 
-        getParent().getQueue().cancel(this);
+        Hudson.getInstance().getQueue().cancel(this);
         rsp.forwardToPreviousPage(req);
     }
 

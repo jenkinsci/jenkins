@@ -179,6 +179,10 @@ public final class Slave implements Node, Serializable {
         return new ComputerImpl(this);
     }
 
+    public FilePath getWorkspaceFor(TopLevelItem item) {
+        return getWorkspaceRoot().child(item.getName());
+    }
+
     /**
      * Root directory on this slave where all the job workspaces are laid out.
      */

@@ -17,7 +17,6 @@ import hudson.util.FormFieldValidator;
 import hudson.util.Scrambler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
@@ -217,37 +216,11 @@ public class SubversionSCM extends AbstractCVSFamilySCM implements Serializable 
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, final BuildListener listener, File changelogFile) throws IOException, InterruptedException {
-        boolean result;
-
         if(useUpdate && isUpdatable(workspace, listener)) {
-            result = update(launcher,workspace,listener);
-            if(!result)
+            if(!update(launcher,workspace,listener))
                 return false;
         } else {
-            final ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
-            result = workspace.act(new FileCallable<Boolean>() {
-                public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
-                    Util.deleteContentsRecursive(ws);
-                    SVNUpdateClient svnuc = createSvnClientManager(authProvider).getUpdateClient();
-                    svnuc.setEventHandler(new SubversionUpdateEventHandler(listener));
-
-                    StringTokenizer tokens = new StringTokenizer(modules);
-                    while(tokens.hasMoreTokens()) {
-                        try {
-                            SVNURL url = SVNURL.parseURIEncoded(tokens.nextToken());
-                            listener.getLogger().println("Checking out "+url);
-
-                            svnuc.doCheckout(url, new File(ws, getLastPathComponent(url.getPath())), SVNRevision.HEAD, SVNRevision.HEAD, true );
-                        } catch (SVNException e) {
-                            e.printStackTrace(listener.error("Error in subversion"));
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-            });
-            if(!result)
+            if(!checkout(launcher,workspace, listener))
                 return false;
         }
 
@@ -263,6 +236,34 @@ public class SubversionSCM extends AbstractCVSFamilySCM implements Serializable 
         }
 
         return calcChangeLog(build, changelogFile, listener);
+    }
+
+    public boolean checkout(Launcher launcher, FilePath workspace, final TaskListener listener) throws IOException, InterruptedException {
+        boolean result;
+        final ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
+        result = workspace.act(new FileCallable<Boolean>() {
+            public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
+                Util.deleteContentsRecursive(ws);
+                SVNUpdateClient svnuc = createSvnClientManager(authProvider).getUpdateClient();
+                svnuc.setEventHandler(new SubversionUpdateEventHandler(listener));
+
+                StringTokenizer tokens = new StringTokenizer(modules);
+                while(tokens.hasMoreTokens()) {
+                    try {
+                        SVNURL url = SVNURL.parseURIEncoded(tokens.nextToken());
+                        listener.getLogger().println("Checking out "+url);
+
+                        svnuc.doCheckout(url, new File(ws, getLastPathComponent(url.getPath())), SVNRevision.HEAD, SVNRevision.HEAD, true );
+                    } catch (SVNException e) {
+                        e.printStackTrace(listener.error("Error in subversion"));
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        });
+        return result;
     }
 
     /**

@@ -6,7 +6,9 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
 import hudson.model.Items;
 import hudson.model.Job;
+import hudson.model.ItemGroup;
 import hudson.util.DescribableList;
+import hudson.FilePath;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -34,6 +36,17 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
         reporters.setOwner(this);
+    }
+
+    @Override
+    public FilePath getWorkspace() {
+        // TODO: implement this method later
+        throw new UnsupportedOperationException();
+    }
+
+
+    public MavenModuleSet getParent() {
+        return (MavenModuleSet)super.getParent();
     }
 
     @Override

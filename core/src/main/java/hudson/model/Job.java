@@ -72,8 +72,8 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      */
     private CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<JobProperty<? super JobT>>();
 
-    protected Job(String name) {
-        super(name);
+    protected Job(ItemGroup parent,String name) {
+        super(parent,name);
         getBuildDir().mkdirs();
     }
 
@@ -112,10 +112,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
     private void saveNextBuildNumber() throws IOException {
         getNextBuildNumberFile().write(String.valueOf(nextBuildNumber)+'\n');
-    }
-
-    public final Hudson getParent() {
-        return Hudson.getInstance();
     }
 
     public boolean isInQueue() {

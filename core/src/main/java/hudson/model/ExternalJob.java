@@ -23,6 +23,11 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
     }
 
     @Override
+    public Hudson getParent() {
+        return (Hudson)super.getParent();
+    }
+
+    @Override
     protected void reload() {
         this.runs.load(this,new Constructor<ExternalRun>() {
             public ExternalRun create(File dir) throws IOException {

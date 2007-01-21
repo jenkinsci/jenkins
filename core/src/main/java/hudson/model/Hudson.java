@@ -10,6 +10,7 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.FilePath;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -576,6 +577,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
     public File getRootDir() {
         return root;
+    }
+
+    public FilePath getWorkspaceFor(TopLevelItem item) {
+        return new FilePath(new File(item.getRootDir(),"workspace"));
     }
 
     public boolean isUseSecurity() {

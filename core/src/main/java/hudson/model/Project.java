@@ -9,6 +9,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
+import hudson.FilePath;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -69,6 +70,18 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
             buildWrappers = new Vector<BuildWrapper>();
 
         updateTransientActions();
+    }
+
+    @Override
+    public Hudson getParent() {
+        return Hudson.getInstance();
+    }
+
+    @Override
+    public FilePath getWorkspace() {
+        Node node = getLastBuiltOn();
+        if(node==null)  node = getParent();
+        return node.getWorkspaceFor(this);
     }
 
     @Override

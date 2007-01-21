@@ -1,29 +1,30 @@
 package hudson.maven;
 
+import hudson.FilePath;
+import hudson.Launcher;
 import hudson.model.AbstractItem;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
 import hudson.model.ItemGroup;
-import hudson.model.TopLevelItem;
-import hudson.model.TopLevelItemDescriptor;
 import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Project;
-import hudson.model.Descriptor.FormException;
-import hudson.util.CopyOnWriteMap;
-import hudson.scm.SCM;
+import hudson.model.TaskListener;
+import hudson.model.TopLevelItem;
+import hudson.model.TopLevelItemDescriptor;
 import hudson.scm.NullSCM;
+import hudson.scm.SCM;
 import hudson.scm.SCMS;
+import hudson.util.CopyOnWriteMap;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
 
 /**
  * Group of {@link MavenModule}s.
@@ -61,7 +62,7 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
     private boolean disabled;
 
     public MavenModuleSet(String name) {
-        super(name);
+        super(Hudson.getInstance(),name);
     }
 
     public String getUrlChildPrefix() {
@@ -100,6 +101,14 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         return getItems();
     }
 
+    /**
+     * Gets the workspace of this job.
+     */
+    public FilePath getWorkspace() {
+        // TODO: support roaming and etc
+        return Hudson.getInstance().getWorkspaceFor(this);
+    }
+
 
     public void onLoad(String name) throws IOException {
         super.onLoad(name);
@@ -122,6 +131,22 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
             }
         }
     }
+
+    /**
+     * Obtains a workspace.
+     */
+    public boolean checkout(Launcher launcher, TaskListener listener) throws IOException {
+        try {
+            FilePath workspace = getWorkspace();
+            workspace.mkdirs();
+
+            return scm.checkout(launcher, workspace, listener);
+        } catch (InterruptedException e) {
+            e.printStackTrace(listener.fatalError("SCM check out aborted"));
+            return false;
+        }
+    }
+
 
     public synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if(!Hudson.adminCheck(req,rsp))
