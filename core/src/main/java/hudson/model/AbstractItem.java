@@ -15,29 +15,44 @@ import java.util.Collection;
 // Java doesn't let multiple inheritance.
 public abstract class AbstractItem extends Actionable implements Item {
     /**
+     * Project name.
+     */
+    protected /*final*/ transient String name;
+
+    /**
      * Root directory for this view item on the file system.
      */
     protected transient File root;
+
+    protected AbstractItem(String name) {
+        doSetName(name);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDisplayName() {
+        return getName();
+    }
 
     public File getRootDir() {
         return root;
     }
 
     /**
+     * Just update {@link #name} and {@link #root}, since they are linked.
+     */
+    protected void doSetName(String name) {
+        this.name = name;
+        this.root = new File(new File(Hudson.getInstance().getRootDir(),"jobs"),name);
+        this.root.mkdirs();
+    }
+
+    /**
      * Gets all the jobs that this {@link Item} contains as descendants.
      */
     public abstract Collection<? extends Job> getAllJobs();
-
-    /**
-     * Gets the name of the view item.
-     *
-     * <p>
-     * The name must be unique among all {@link Item}s in this Hudson,
-     * because we allow a single {@link Item} to show up in multiple
-     * {@link View}s.
-     */
-    public abstract String getName();
-
 
     public final String getFullName() {
         String n = getParent().getFullName();
@@ -50,6 +65,7 @@ public abstract class AbstractItem extends Actionable implements Item {
      * This is an opporunity to do a post load processing.
      */
     public void onLoad(String name) throws IOException {
+        doSetName(name);
     }
 
     /**

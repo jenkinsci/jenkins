@@ -25,23 +25,13 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGroup<MavenModule> {
-    private final String name;
-
     /**
      * All {@link MavenModule}s.
      */
-    transient final Map<String,MavenModule> modules = new CopyOnWriteMap.Tree<String,MavenModule>();
+    transient /*final*/ Map<String,MavenModule> modules = new CopyOnWriteMap.Tree<String,MavenModule>();
 
     public MavenModuleSet(String name) {
-        this.name = name;
-    }
-
-    public String getDisplayName() {
-        return name;
-    }
-
-    public String getName() {
-        return name;
+        super(name);
     }
 
     public String getUrlChildPrefix() {
@@ -76,7 +66,7 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
                 return child.isDirectory();
             }
         });
-        modules.clear();
+        modules = new CopyOnWriteMap.Tree<String,MavenModule>();
         for (File subdir : subdirs) {
             try {
                 MavenModule item = (MavenModule) Items.load(subdir);

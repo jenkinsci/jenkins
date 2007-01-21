@@ -51,10 +51,6 @@ import java.util.SortedMap;
  */
 public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>>
         extends AbstractItem implements ExtensionPoint {
-    /**
-     * Project name.
-     */
-    protected /*final*/ transient String name;
 
     /**
      * Project description. Can be HTML.
@@ -82,13 +78,12 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     private CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<JobProperty<? super JobT>>();
 
     protected Job(String name) {
-        doSetName(name);
+        super(name);
         getBuildDir().mkdirs();
     }
 
     public void onLoad(String name) throws IOException {
         super.onLoad(name);
-        doSetName(name);
 
         TextFile f = getNextBuildNumberFile();
         if(f.exists()) {
@@ -114,14 +109,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     public void onCopiedFrom(Item src) {
         super.onCopiedFrom(src);
         this.nextBuildNumber = 1;     // reset the next build number
-    }
-
-    /**
-     * Just update {@link #name} and {@link #root}, since they are linked.
-     */
-    private void doSetName(String name) {
-        this.name = name;
-        this.root = new File(new File(Hudson.getInstance().getRootDir(),"jobs"),name);
     }
 
     private TextFile getNextBuildNumberFile() {
@@ -183,14 +170,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
     public void setLogRotator(LogRotator logRotator) {
         this.logRotator = logRotator;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDisplayName() {
-        return getName();
     }
 
     /**
