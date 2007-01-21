@@ -168,6 +168,7 @@ function replaceDescription() {
           method : 'get',
           onComplete : function(x) {
             d.innerHTML = x.responseText;
+            d.getElementsByTagName("TEXTAREA")[0].focus();
           }
         }
     );
