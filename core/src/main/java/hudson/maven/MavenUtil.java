@@ -1,7 +1,13 @@
 package hudson.maven;
 
-import org.apache.maven.embedder.MavenEmbedderException;
 import hudson.model.TaskListener;
+import org.apache.maven.embedder.MavenEmbedderException;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -28,5 +34,27 @@ class MavenUtil {
         maven.start();
 
         return maven;
+    }
+
+    /**
+     * Recursively resolves module POMs that are referenced from
+     * the given {@link MavenProject} and parses them into
+     * {@link MavenProject}s.
+     */
+    public static void resolveModules(MavenEmbedder embedder, MavenProject project) throws ProjectBuildingException {
+
+        File basedir = project.getFile().getParentFile();
+
+        List<MavenProject> modules = new ArrayList<MavenProject>();
+
+        for (String modulePath : (List<String>) project.getModules()) {
+            File moduleFile = new File(new File(basedir, modulePath),"pom.xml");
+
+            MavenProject child = embedder.readProject(moduleFile);
+            resolveModules(embedder,child);
+            modules.add(child);
+        }
+
+        project.setCollectedProjects(modules);
     }
 }
