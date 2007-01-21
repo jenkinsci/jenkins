@@ -688,15 +688,15 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
      */
-    /*package*/ void deleteJob(Job job) throws IOException {
+    /*package*/ void deleteJob(TopLevelItem item) throws IOException {
         for (ItemListener l : viewItemListeners)
-            l.onDeleted(job);
+            l.onDeleted(item);
 
-        items.remove(job.getName());
+        items.remove(item.getName());
         if(views!=null) {
             for (ListView v : views) {
                 synchronized(v) {
-                    v.jobNames.remove(job.getName());
+                    v.jobNames.remove(item.getName());
                 }
             }
             save();

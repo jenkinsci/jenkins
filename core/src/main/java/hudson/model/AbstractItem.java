@@ -1,10 +1,14 @@
 package hudson.model;
 
 import hudson.XmlFile;
+import hudson.Util;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Partial default implementation of {@link Item}.
@@ -90,5 +94,18 @@ public abstract class AbstractItem extends Actionable implements Item {
 
     protected final XmlFile getConfigFile() {
         return Items.getConfigFile(this);
+    }
+
+    /**
+     * Deletes this item.
+     */
+    public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
+        Util.deleteRecursive(root);
+
+        if(this instanceof TopLevelItem)
+            Hudson.getInstance().deleteJob((TopLevelItem)this);
+        rsp.sendRedirect2(req.getContextPath()+"/");
     }
 }

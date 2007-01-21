@@ -639,18 +639,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     /**
-     * Deletes this job.
-     */
-    public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
-
-        Util.deleteRecursive(root);
-        getParent().deleteJob(this);
-        rsp.sendRedirect2(req.getContextPath()+"/");
-    }
-
-    /**
      * Renames this job.
      */
     public /*not synchronized. see renameTo()*/ void doDoRename( StaplerRequest req, StaplerResponse rsp ) throws IOException {
