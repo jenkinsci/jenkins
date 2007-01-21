@@ -10,6 +10,8 @@ import java.util.Collection;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletException;
+
 /**
  * Partial default implementation of {@link Item}.
  *
@@ -22,6 +24,11 @@ public abstract class AbstractItem extends Actionable implements Item {
      * Project name.
      */
     protected /*final*/ transient String name;
+
+    /**
+     * Project description. Can be HTML.
+     */
+    protected String description;
 
     /**
      * Root directory for this view item on the file system.
@@ -42,6 +49,20 @@ public abstract class AbstractItem extends Actionable implements Item {
 
     public File getRootDir() {
         return root;
+    }
+
+    /**
+     * Gets the project description HTML.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the project description HTML.
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**
@@ -94,6 +115,19 @@ public abstract class AbstractItem extends Actionable implements Item {
 
     protected final XmlFile getConfigFile() {
         return Items.getConfigFile(this);
+    }
+
+    /**
+     * Accepts the new description.
+     */
+    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
+
+        req.setCharacterEncoding("UTF-8");
+        setDescription(req.getParameter("description"));
+        save();
+        rsp.sendRedirect(".");  // go to the top page
     }
 
     /**

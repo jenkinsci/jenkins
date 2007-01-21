@@ -53,11 +53,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         extends AbstractItem implements ExtensionPoint {
 
     /**
-     * Project description. Can be HTML.
-     */
-    protected String description;
-
-    /**
      * Next build number.
      * Kept in a separate file because this is the only information
      * that gets updated often. This allows the rest of the configuration
@@ -145,20 +140,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
     public int getNextBuildNumber() {
         return nextBuildNumber;
-    }
-
-    /**
-     * Gets the project description HTML.
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Sets the project description HTML.
-     */
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     /**
@@ -476,19 +457,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         } else {
             rsp.sendRedirect(".");
         }
-    }
-
-    /**
-     * Accepts the new description.
-     */
-    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
-
-        req.setCharacterEncoding("UTF-8");
-        description = req.getParameter("description");
-        save();
-        rsp.sendRedirect(".");  // go to the top page
     }
 
     /**
