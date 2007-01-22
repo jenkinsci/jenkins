@@ -90,7 +90,8 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
     }
 
     public String getUrlChildPrefix() {
-        return "module";
+        // seemingly redundant "./" is used to make sure that ':' is not interpreted as the scheme identifier
+        return ".";
     }
 
     public Hudson getParent() {
@@ -141,6 +142,12 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
 
     public MavenModule getModule(String name) {
         return getItem(name);
+    }
+
+    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        if(ModuleName.isValid(token))
+            return getModule(token);
+        return super.getDynamic(token,req,rsp);
     }
 
     public File getRootDirFor(MavenModule child) {
