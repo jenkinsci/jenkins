@@ -30,7 +30,7 @@ public abstract class AbstractItem extends Actionable implements Item {
      */
     protected String description;
 
-    private ItemGroup parent;
+    private transient ItemGroup parent;
 
     protected AbstractItem(ItemGroup parent, String name) {
         this.parent = parent;
