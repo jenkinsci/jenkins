@@ -47,7 +47,7 @@
               <img src="${rootURL}/images/${iconSize}/${job.buildStatusUrl}" />
             </td>
             <td>
-              <a href="${jobBaseUrl}${job.url}">
+              <a href="${jobBaseUrl}${job.shortUrl}">
                   ${job.displayName}
               </a>
             </td>
@@ -55,7 +55,7 @@
               <j:choose>
                 <j:when test="${lsBuild!=null}">
                   ${lsBuild.timestampString}
-                  (<a href="${jobBaseUrl}${job.url}lastSuccessfulBuild/">#${lsBuild.number}</a>)
+                  (<a href="${jobBaseUrl}${job.shortUrl}lastSuccessfulBuild/">#${lsBuild.number}</a>)
                 </j:when>
                 <j:otherwise>
                   N/A
@@ -66,7 +66,7 @@
               <j:choose>
                 <j:when test="${lfBuild!=null}">
                   ${lfBuild.timestampString}
-                  (<a href="${jobBaseUrl}${job.url}lastFailedBuild/">#${lfBuild.number}</a>)
+                  (<a href="${jobBaseUrl}${job.shortUrl}lastFailedBuild/">#${lfBuild.number}</a>)
                 </j:when>
                 <j:otherwise>
                   N/A
@@ -92,7 +92,7 @@
             <l:isAdmin>
               <td>
                 <j:if test="${job.buildable}">
-                  <a href="${jobBaseUrl}${job.url}build">
+                  <a href="${jobBaseUrl}${job.shortUrl}build">
                     <img src="${rootURL}/images/${subIconSize}/clock.gif" title="Schedule a build" border="0" /></a>
                 </j:if>
               </td>

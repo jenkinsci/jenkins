@@ -69,11 +69,17 @@ public interface Item extends PersistenceRoot {
     String getFullName();
 
     /**
-     * Returns the URL of this project relative to the context root of the application.
+     * Returns the URL of this item relative to the context root of the application.
      *
      * @see AbstractItem#getUrl() for how to implement this.
      */
     String getUrl();
+
+    /**
+     * Returns the URL of this item relative to the parent {@link ItemGroup}.
+     * @see AbstractItem#getShortUrl() for how to implement this.
+     */
+    String getShortUrl();
 
     /**
      * Called right after when a {@link Item} is loaded from disk.

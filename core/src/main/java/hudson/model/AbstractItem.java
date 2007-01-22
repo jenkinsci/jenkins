@@ -107,7 +107,11 @@ public abstract class AbstractItem extends Actionable implements Item {
     }
 
     public final String getUrl() {
-        return getParent().getUrl()+getParent().getUrlChildPrefix()+'/'+getName()+'/';
+        return getParent().getUrl()+getShortUrl();
+    }
+
+    public String getShortUrl() {
+        return getParent().getUrlChildPrefix()+'/'+getName()+'/';
     }
 
     /**
