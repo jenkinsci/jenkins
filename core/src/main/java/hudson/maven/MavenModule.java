@@ -34,9 +34,16 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
 
     private transient ModuleName moduleName;
 
+    /**
+     * Relative path to this module's root directory
+     * from {@link MavenModuleSet#getWorkspace()} 
+     */
+    private String relativePath;
+
     /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom) {
         super(parent, pom.name.toFileSystemName());
-        displayName = pom.displayName;
+        this.displayName = pom.displayName;
+        this.relativePath = pom.relativePath;
     }
 
     protected void doSetName(String name) {
@@ -54,8 +61,7 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
 
     @Override
     public FilePath getWorkspace() {
-        // TODO: implement this method later
-        throw new UnsupportedOperationException();
+        return getParent().getWorkspace().child(relativePath);
     }
 
     public ModuleName getModuleName() {

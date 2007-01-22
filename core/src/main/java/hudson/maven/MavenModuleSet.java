@@ -6,18 +6,18 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractItem;
 import hudson.model.Descriptor.FormException;
+import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Hudson;
+import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
 import hudson.model.JDK;
+import hudson.model.LargeText;
 import hudson.model.Node;
 import hudson.model.Project;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.model.LargeText;
-import hudson.model.Item;
-import hudson.model.DirectoryBrowserSupport;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
@@ -37,10 +37,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Group of {@link MavenModule}s.
@@ -215,10 +216,11 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
                     try {
                         MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
                         MavenProject mp = embedder.readProject(pom);
-                        MavenUtil.resolveModules(embedder,mp);
+                        Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
+                        MavenUtil.resolveModules(embedder,mp,"",relPath);
 
                         List<PomInfo> infos = new ArrayList<PomInfo>();
-                        toPomInfo(mp,infos);
+                        toPomInfo(mp,relPath,infos);
                         return infos;
                     } catch (MavenEmbedderException e) {
                         // TODO: better error handling needed
@@ -228,10 +230,10 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
                     }
                 }
 
-                private void toPomInfo(MavenProject mp, List<PomInfo> infos) {
-                    infos.add(new PomInfo(mp));
+                private void toPomInfo(MavenProject mp, Map<MavenProject,String> relPath, List<PomInfo> infos) {
+                    infos.add(new PomInfo(mp,relPath.get(mp)));
                     for (MavenProject child : (List<MavenProject>)mp.getCollectedProjects())
-                        toPomInfo(child,infos);
+                        toPomInfo(child,relPath,infos);
                 }
             });
 

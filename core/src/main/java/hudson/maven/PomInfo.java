@@ -19,9 +19,18 @@ final class PomInfo implements Serializable {
      */
     public final String displayName;
 
-    public PomInfo(MavenProject project) {
+    /**
+     * Relative path from the root directory of the root POM to
+     * the root directory of this module.
+     *
+     * Strings like "" (if this is the root), "abc", "foo/bar/zot".
+     */
+    public final String relativePath;
+
+    public PomInfo(MavenProject project, String relPath) {
         this.name = new ModuleName(project.getGroupId(),project.getArtifactId());
         this.displayName = project.getName();
+        this.relativePath = relPath;
     }
 
     private static final long serialVersionUID = 1L;
