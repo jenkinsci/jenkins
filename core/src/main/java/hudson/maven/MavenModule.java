@@ -4,14 +4,13 @@ import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Items;
-import hudson.model.Job;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.Job;
 import hudson.util.DescribableList;
+import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.apache.maven.project.MavenProject;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -47,13 +46,13 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     }
 
     protected void doSetName(String name) {
-        super.doSetName(name);
         moduleName = ModuleName.fromFileSystemName(name);
+        super.doSetName(moduleName.toString());
     }
 
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
-        super.onLoad(parent, name);
+        super.onLoad(parent,name);
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
         reporters.setOwner(this);

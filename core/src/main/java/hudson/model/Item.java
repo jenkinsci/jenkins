@@ -78,6 +78,11 @@ public interface Item extends PersistenceRoot {
     /**
      * Called right after when a {@link Item} is loaded from disk.
      * This is an opporunity to do a post load processing.
+     *
+     * @param name
+     *      Name of the directory (not a path --- just the name portion) from
+     *      which the configuration was loaded. This usually becomes the
+     *      {@link #getName() name} of this item.
      */
     void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException;
 
@@ -92,7 +97,7 @@ public interface Item extends PersistenceRoot {
     /**
      * Save the settings to a file.
      *
-     * Use {@link ItemLoader#getConfigFile(Item)}
+     * Use {@link Items#getConfigFile(Item)}
      * or {@link AbstractItem#getConfigFile()} to obtain the file
      * to save the data.
      */

@@ -144,7 +144,7 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
     }
 
     public File getRootDirFor(MavenModule child) {
-        return new File(new File(getRootDir(),"modules"),child.getName());
+        return new File(new File(getRootDir(),"modules"),child.getModuleName().toFileSystemName());
     }
 
     public Collection<MavenModule> getAllJobs() {

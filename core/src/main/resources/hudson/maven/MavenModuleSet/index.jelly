@@ -5,42 +5,7 @@
       <h1>Project ${it.name}</h1>
       <t:editableDescription adminOnly="true"/>
 
-      <!-- inject main part here -->
-
-      <h2>Modules</h2>
-      <ul>
-        <j:forEach var="m" items="${it.modules}">
-          <li><a href="module/${m.moduleName}/">${m.displayName}</a></li>
-        </j:forEach>
-      </ul>
-
-      <h2>Permalinks</h2>
-      <ul>
-        <j:if test="${it.lastBuild!=null}">
-          <li>
-            <a href="lastBuild/">Last build
-              (#${it.lastBuild.number}), ${it.lastBuild.timestampString} ago</a>
-          </li>
-        </j:if>
-        <j:if test="${it.lastStableBuild!=null}">
-          <li>
-            <a href="lastStableBuild/">Last stable build
-              (#${it.lastStableBuild.number}), ${it.lastStableBuild.timestampString} ago</a>
-          </li>
-        </j:if>
-        <j:if test="${it.lastSuccessfulBuild!=null}">
-          <li>
-            <a href="lastSuccessfulBuild/">Last successful build
-              (#${it.lastSuccessfulBuild.number}), ${it.lastSuccessfulBuild.timestampString} ago</a>
-          </li>
-        </j:if>
-        <j:if test="${it.lastFailedBuild!=null}">
-          <li>
-            <a href="lastFailedBuild/">Last failed build
-              (#${it.lastFailedBuild.number}), ${it.lastFailedBuild.timestampString} ago</a>
-          </li>
-        </j:if>
-      </ul>
+      <t:projectView jobs="${it.modules}" showViewTabs="${false}" />
     </l:main-panel>
   </l:layout>
 </j:jelly>
