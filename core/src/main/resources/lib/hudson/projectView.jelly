@@ -48,7 +48,7 @@
             </td>
             <td>
               <a href="${jobBaseUrl}${job.url}">
-                  ${job.name}
+                  ${job.displayName}
               </a>
             </td>
             <td data="${h.ifThenElse(lsBuild==null,'-',lsBuild.timestampString2)}">
