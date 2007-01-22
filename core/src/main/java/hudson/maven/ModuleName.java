@@ -41,6 +41,14 @@ public class ModuleName implements Comparable<ModuleName> {
         return new ModuleName(n.substring(0,idx),n.substring(idx+1));
     }
 
+    /**
+     * Checks if the given name is valid module name string format
+     * created by {@link #toString()}.
+     */
+    public static boolean isValid(String n) {
+        return n.indexOf(':')>0;
+    }
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
