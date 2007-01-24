@@ -16,6 +16,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Collections;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -95,7 +96,7 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
 
     public List<MavenModule> getDownstreamProjects() {
         // TODO
-        throw new UnsupportedOperationException();
+        return Collections.emptyList();
     }
 
     /**
