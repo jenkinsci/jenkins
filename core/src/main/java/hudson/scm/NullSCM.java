@@ -18,7 +18,7 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public class NullSCM extends AbstractCVSFamilySCM /*to reuse createEmptyChangeLog*/ {
+public class NullSCM extends SCM {
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
         // no change
         return false;

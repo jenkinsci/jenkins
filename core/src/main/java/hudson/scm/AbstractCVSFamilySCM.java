@@ -20,7 +20,7 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-abstract class AbstractCVSFamilySCM implements SCM {
+abstract class AbstractCVSFamilySCM extends SCM {
     /**
      * Invokes the command with the specified command line option and wait for its completion.
      *
@@ -58,23 +58,5 @@ abstract class AbstractCVSFamilySCM implements SCM {
             env.putAll(EnvVars.masterEnvVars);
         buildEnvVars(env);
         return env;
-    }
-
-    protected final boolean createEmptyChangeLog(File changelogFile, BuildListener listener, String rootTag) {
-        try {
-            FileWriter w = new FileWriter(changelogFile);
-            w.write("<"+rootTag +"/>");
-            w.close();
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace(listener.error(e.getMessage()));
-            return false;
-        }
-    }
-
-    protected final String nullify(String s) {
-        if(s==null)     return null;
-        if(s.trim().length()==0)    return null;
-        return s;
     }
 }

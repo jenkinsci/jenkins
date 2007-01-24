@@ -11,6 +11,7 @@ import hudson.model.TaskListener;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.FileWriter;
 import java.util.Map;
 
 /**
@@ -22,7 +23,7 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public interface SCM extends Describable<SCM>, ExtensionPoint {
+public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     /**
      * Checks if there has been any changes to this module in the repository.
@@ -46,7 +47,7 @@ public interface SCM extends Describable<SCM>, ExtensionPoint {
      *      interruption is usually caused by the user aborting the computation.
      *      this exception should be simply propagated all the way up.
      */
-    boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException;
+    public abstract boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException;
 
     /**
      * Obtains a fresh workspace of the module(s) into the specified directory
@@ -76,7 +77,7 @@ public interface SCM extends Describable<SCM>, ExtensionPoint {
      *      interruption is usually caused by the user aborting the build.
      *      this exception will cause the build to fail.
      */
-    boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
+    public abstract boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
 
     /**
      * Checks out (or updates) the code into the workspace, but without computing changelog.
@@ -84,21 +85,39 @@ public interface SCM extends Describable<SCM>, ExtensionPoint {
      * TODO: This is an ugly abstraction.
      * come back and check if this abstraction is really making much sense.
      */
-    boolean checkout(Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException;
+    public abstract boolean checkout(Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException;
 
     /**
      * Adds environmental variables for the builds to the given map.
      */
-    void buildEnvVars(Map<String,String> env);
+    public abstract void buildEnvVars(Map<String,String> env);
 
     /**
      * Gets the top directory of the checked out module.
      * @param workspace
      */
-    FilePath getModuleRoot(FilePath workspace);
+    public abstract FilePath getModuleRoot(FilePath workspace);
 
     /**
      * The returned object will be used to parse <tt>changelog.xml</tt>.
      */
-    ChangeLogParser createChangeLogParser();
+    public abstract ChangeLogParser createChangeLogParser();
+
+    protected final boolean createEmptyChangeLog(File changelogFile, BuildListener listener, String rootTag) {
+        try {
+            FileWriter w = new FileWriter(changelogFile);
+            w.write("<"+rootTag +"/>");
+            w.close();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace(listener.error(e.getMessage()));
+            return false;
+        }
+    }
+
+    protected final String nullify(String s) {
+        if(s==null)     return null;
+        if(s.trim().length()==0)    return null;
+        return s;
+    }
 }

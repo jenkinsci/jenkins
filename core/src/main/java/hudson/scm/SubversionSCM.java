@@ -69,7 +69,7 @@ import java.util.StringTokenizer;
  *
  * @author Kohsuke Kawaguchi
  */
-public class SubversionSCM extends AbstractCVSFamilySCM implements Serializable {
+public class SubversionSCM extends SCM implements Serializable {
     private final String modules;
     private boolean useUpdate;
     private String username;
