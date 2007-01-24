@@ -116,7 +116,7 @@ public final class FingerprintMap {
             // the fingerprint doesn't seem to be loaded thus far, so let's load it now.
             // the care needs to be taken that other threads might be trying to do the same.
             Loading l = new Loading();
-            if(!(value==null ? core.putIfAbsent(md5sum,l)!=null : core.replace(md5sum,value,l))) {
+            if(value==null ? core.putIfAbsent(md5sum,l)!=null : !core.replace(md5sum,value,l)) {
                 // the value has changed since then. another thread is attempting to do the same.
                 // go back to square 1 and try it again.
                 continue;
@@ -130,7 +130,7 @@ public final class FingerprintMap {
             if(fp!=null)
                 core.put(md5sum,new WeakReference<Fingerprint>(fp));
             else
-                core.put(md5sum,null);
+                core.remove(md5sum);
 
             return fp;
         }
