@@ -228,7 +228,7 @@ public final class Slave implements Node, Serializable {
                     try {
                         listener.getLogger().println("Launching slave agent");
                         listener.getLogger().println("$ "+slave.agentCommand);
-                        Process proc = Runtime.getRuntime().exec(slave.agentCommand);
+                        final Process proc = Runtime.getRuntime().exec(slave.agentCommand);
 
                         // capture error information from stderr. this will terminate itself
                         // when the process is killed.
@@ -242,6 +242,7 @@ public final class Slave implements Node, Serializable {
                                 if(cause!=null)
                                     cause.printStackTrace(listener.error("slave agent was terminated"));
                                 channel = null;
+                                proc.destroy();
                             }
                         });
 
