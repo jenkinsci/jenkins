@@ -27,6 +27,11 @@ public final class FingerprintMap {
      */
     private final ConcurrentHashMap<String,Object> core = new ConcurrentHashMap<String,Object>();
 
+    /**
+     * Used in {@link FingerprintMap#core} to indicate that the loading of a fingerprint
+     * is in progress, so that we can avoid creating two {@link Fingerprint}s for the same hash code,
+     * but do so without having a single lock.
+     */
     private static class Loading {
         private Fingerprint value;
         private boolean set;
@@ -111,7 +116,7 @@ public final class FingerprintMap {
             // the fingerprint doesn't seem to be loaded thus far, so let's load it now.
             // the care needs to be taken that other threads might be trying to do the same.
             Loading l = new Loading();
-            if(!core.replace(md5sum,value,l)) {
+            if(!(value==null ? core.putIfAbsent(md5sum,l)!=null : core.replace(md5sum,value,l))) {
                 // the value has changed since then. another thread is attempting to do the same.
                 // go back to square 1 and try it again.
                 continue;
