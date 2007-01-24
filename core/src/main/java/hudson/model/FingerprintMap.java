@@ -66,7 +66,10 @@ public final class FingerprintMap {
                 return fp;  // found it
         }
 
-        return Fingerprint.load(toByteArray(md5sum));
+        Fingerprint fp = Fingerprint.load(toByteArray(md5sum));
+        if(fp!=null)
+            core.put(md5sum,new WeakReference<Fingerprint>(fp));
+        return fp;
     }
 
     private byte[] toByteArray(String md5sum) {
