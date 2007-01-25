@@ -579,7 +579,8 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         listener.getLogger().println("$ computing changelog");
 
         FilePath baseDir = build.getProject().getWorkspace();
-       final String cvspassFile = getDescriptor().getCvspassFile();
+        final String cvspassFile = getDescriptor().getCvspassFile();
+        final String cvsExe = getDescriptor().getCvsExe();
 
         try {
             // range of time for detecting changes
@@ -608,6 +609,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                         }
                     };
                     task.setProject(new org.apache.tools.ant.Project());
+                    task.setCvsExe(cvsExe);
                     task.setDir(ws);
                     if(cvspassFile.length()!=0)
                         task.setPassfile(new File(cvspassFile));
