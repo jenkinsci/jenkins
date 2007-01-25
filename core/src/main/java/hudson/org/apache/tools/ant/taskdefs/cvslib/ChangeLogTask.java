@@ -17,9 +17,9 @@
 package hudson.org.apache.tools.ant.taskdefs.cvslib;
 
 import hudson.util.ForkOutputStream;
+import hudson.org.apache.tools.ant.taskdefs.AbstractCvsTask;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.AbstractCvsTask;
 import org.apache.tools.ant.taskdefs.LogOutputStream;
 import org.apache.tools.ant.taskdefs.cvslib.CvsVersion;
 
