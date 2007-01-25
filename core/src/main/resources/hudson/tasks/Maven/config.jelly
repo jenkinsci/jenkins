@@ -8,7 +8,6 @@
     </select>
   </f:entry>
   <f:entry title="Goals">
-    <input class="setting-input" name="maven_targets"
-      type="text" value="${instance.targets}"/>
+    <f:expandableTextbox name="maven_targets" value="${instance.targets}" />
   </f:entry>
 </j:jelly>

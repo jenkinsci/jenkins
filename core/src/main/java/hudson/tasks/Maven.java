@@ -22,7 +22,10 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public class Maven extends Builder {
-
+    /**
+     * The targets and other maven options.
+     * Can be separated by SP or NL.
+     */
     private final String targets;
 
     /**
@@ -62,9 +65,11 @@ public class Maven extends Builder {
         else
             execName = "maven.bat";
 
+        String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
+
         MavenInstallation ai = getMaven();
         if(ai==null)
-            cmd = execName+' '+targets;
+            cmd = execName+' '+normalizedTarget;
         else {
             File exec = ai.getExecutable();
             if(exec==null) {
@@ -75,7 +80,7 @@ public class Maven extends Builder {
                 listener.fatalError(exec+" doesn't exist");
                 return false;
             }
-            cmd = exec.getPath()+' '+targets;
+            cmd = exec.getPath()+' '+normalizedTarget;
         }
 
         Map<String,String> env = build.getEnvVars();
