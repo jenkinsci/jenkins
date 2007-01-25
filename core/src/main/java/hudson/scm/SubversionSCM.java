@@ -657,15 +657,15 @@ public class SubversionSCM extends SCM implements Serializable {
                 rsp.forward(Hudson.getInstance(),"error",req);
             }
         }
+
+        static {
+            DAVRepositoryFactory.setup();   // http, https
+            SVNRepositoryFactoryImpl.setup();   // svn, svn+xxx
+            FSRepositoryFactory.setup();    // file
+        }
     }
 
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = Logger.getLogger(SubversionSCM.class.getName());
-
-    static {
-        DAVRepositoryFactory.setup();   // http, https
-        SVNRepositoryFactoryImpl.setup();   // svn, svn+xxx
-        FSRepositoryFactory.setup();    // file
-    }
 }
