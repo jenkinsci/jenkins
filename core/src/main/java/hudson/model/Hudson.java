@@ -233,6 +233,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
+     * Gets the trigger descriptor by name. Primarily used for making them web-visible.
+     */
+    public Descriptor<Trigger> getTrigger(String shortClassName) {
+        return findDescriptor(shortClassName, Triggers.TRIGGERS);
+    }
+
+    /**
      * Finds a descriptor that has the specified name.
      */
     private <T extends Describable<T>>
