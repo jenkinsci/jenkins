@@ -145,10 +145,15 @@ public abstract class AbstractCvsTask extends Task {
     private ExecuteStreamHandler executeStreamHandler;
     private OutputStream outputStream;
     private OutputStream errorStream;
+    private String cvsExe = "cvs";
 
     /** empty no-arg constructor*/
     public AbstractCvsTask() {
         super();
+    }
+
+    public void setCvsExe(String cvsExe) {
+        this.cvsExe = cvsExe;
     }
 
     /**
@@ -738,7 +743,7 @@ public abstract class AbstractCvsTask extends Task {
         if (c == null) {
             return;
         }
-        c.setExecutable("cvs");
+        c.setExecutable(cvsExe);
         if (cvsPackage != null) {
             c.createArgument().setLine(cvsPackage);
         }
