@@ -3,6 +3,7 @@ package hudson.scm;
 import hudson.model.User;
 import hudson.model.AbstractBuild;
 import hudson.MarkupText;
+import hudson.Util;
 
 import java.util.Collections;
 
@@ -85,25 +86,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * Message escaped for HTML
          */
         public String getMsgEscaped() {
-            String msg = getMsg();
-            StringBuffer buf = new StringBuffer(msg.length()+64);
-            for( int i=0; i<msg.length(); i++ ) {
-                char ch = msg.charAt(i);
-                if(ch=='\n')
-                    buf.append("<br>");
-                else
-                if(ch=='<')
-                    buf.append("&lt;");
-                else
-                if(ch=='&')
-                    buf.append("&amp;");
-                else
-                if(ch==' ')
-                    buf.append("&nbsp;");
-                else
-                    buf.append(ch);
-            }
-            return buf.toString();
+            return Util.escape(getMsg());
         }
     }
 }

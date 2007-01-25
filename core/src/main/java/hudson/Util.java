@@ -1,14 +1,11 @@
 package hudson;
 
 import hudson.model.TaskListener;
-import hudson.model.Project;
-import hudson.model.TopLevelItem;
 import hudson.util.IOException2;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 
-import javax.servlet.ServletException;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -20,22 +17,22 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
-import java.util.Collection;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.security.MessageDigest;
-import java.security.DigestInputStream;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -350,6 +347,30 @@ public class Util {
         } catch (IOException e) {
             throw new Error(e); // impossible
         }
+    }
+
+    /**
+     * Escapes HTML unsafe characters like &lt;, &amp;to the respective character entities.
+     */
+    public static String escape(String text) {
+        StringBuffer buf = new StringBuffer(text.length()+64);
+        for( int i=0; i<text.length(); i++ ) {
+            char ch = text.charAt(i);
+            if(ch=='\n')
+                buf.append("<br>");
+            else
+            if(ch=='<')
+                buf.append("&lt;");
+            else
+            if(ch=='&')
+                buf.append("&amp;");
+            else
+            if(ch==' ')
+                buf.append("&nbsp;");
+            else
+                buf.append(ch);
+        }
+        return buf.toString();
     }
 
     private static char toDigit(int n) {
