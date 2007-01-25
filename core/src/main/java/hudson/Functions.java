@@ -307,4 +307,8 @@ public class Functions {
     public static String getWin32ErrorMessage(IOException e) {
         return Util.getWin32ErrorMessage(e);
     }
+
+    public static boolean isMultiline(String s) {
+        return s.indexOf('\r')>=0 || s.indexOf('\n')>=0;
+    }
 }
