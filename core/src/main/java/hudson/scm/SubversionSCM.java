@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -60,6 +61,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Subversion.
@@ -599,9 +602,18 @@ public class SubversionSCM extends SCM implements Serializable {
                             
                             repository.testConnection();
                         } catch (SVNException e) {
-                            message += "Unable to access "+url+" : "+e.getErrorMessage();
+                            StringWriter sw = new StringWriter();
+                            e.printStackTrace(new PrintWriter(sw));
+
+                            message += "Unable to access "+url+" : "+Util.escape( e.getErrorMessage().getFullMessage());
+                            message += " <a href='#' id=svnerrorlink onclick='javascript:" +
+                                "document.getElementById(\"svnerror\").style.display=\"block\";" +
+                                "document.getElementById(\"svnerrorlink\").style.display=\"none\";" +
+                                "return false;'>(show details)</a>";
+                            message += "<pre id=svnerror style='display:none'>"+sw+"</pre>";
                             message += " (Maybe you need to <a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>?)";
                             message += "<br>";
+                            logger.log(Level.INFO, "Failed to access subversion repository "+url,e);
                         }
                     }
 
@@ -648,6 +660,8 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     private static final long serialVersionUID = 1L;
+
+    private static final Logger logger = Logger.getLogger(SubversionSCM.class.getName());
 
     static {
         DAVRepositoryFactory.setup();   // http, https
