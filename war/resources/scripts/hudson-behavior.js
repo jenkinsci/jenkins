@@ -267,3 +267,13 @@ function AutoScroller(scrollContainer) {
         }
     };
 }
+
+
+// used in expandableTextbox.jelly to change a input field into a text area
+function expandTextArea(button,id) {
+    button.style.display="none";
+    var field = document.getElementById(id);
+    var value = field.value.replace(/ +/g,'\n');
+    field.parentNode.parentNode.parentNode.parentNode.innerHTML =
+        "<textarea rows=8 class='setting-input' name='"+field.name+"'>"+value+"</textarea>";
+}

@@ -12,7 +12,6 @@
     such as '-Dprop=value'. Also, &lt;a href='${rootURL}/env-vars.html' target=_new>some
     environment variables are available to the build script&lt;/a>
     ">
-    <input class="setting-input" name="ant_targets"
-      type="text" value="${instance.targets}"/>
+    <f:expandableTextbox name="ant_targets" value="${instance.targets}" />
   </f:entry>
 </j:jelly>

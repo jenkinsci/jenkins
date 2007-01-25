@@ -20,7 +20,10 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public class Ant extends Builder {
-
+    /**
+     * The targets, properties, and other Ant options.
+     * Either separated by whitespace or newline.
+     */
     private final String targets;
 
     /**
@@ -60,16 +63,18 @@ public class Ant extends Builder {
         else
             execName = "ant";
 
+        String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
+
         AntInstallation ai = getAnt();
         if(ai==null)
-            cmd = execName+' '+targets;
+            cmd = execName+' '+normalizedTarget;
         else {
             File exec = ai.getExecutable();
             if(!ai.getExists()) {
                 listener.fatalError(exec+" doesn't exist");
                 return false;
             }
-            cmd = exec.getPath()+' '+targets;
+            cmd = exec.getPath()+' '+normalizedTarget;
         }
 
         Map<String,String> env = build.getEnvVars();
