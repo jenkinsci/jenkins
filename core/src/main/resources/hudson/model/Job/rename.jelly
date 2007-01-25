@@ -8,6 +8,7 @@
 		    Are you sure about renaming ${it.name} to ${newName}?
         <input type="hidden" name="newName" value="${newName}" />
         <input type="submit" value="Yes" />
+        <input type="button" value="No" onclick="javascript:history.back()" />
 		  </form>
 		</l:main-panel>
 	</l:layout>
