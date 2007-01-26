@@ -23,7 +23,7 @@
 
         <!-- job property configurations -->
         <j:set var="instances" value="${it.properties}" />
-        <j:forEach var="d" items="${it.descriptor.propertyDescriptors}" varStatus="loop">
+        <j:forEach var="d" items="${it.descriptor.getPropertyDescriptors(it.getClass())}" varStatus="loop">
           <f:section title="${d.displayName}">
             <j:set var="descriptor" value="${d}" />
             <j:set var="instance" value="${instances[d]}" />
