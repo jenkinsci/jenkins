@@ -190,7 +190,7 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         for (Project p : Hudson.getInstance().getProjects()) {
             boolean isUpstream = upstream.contains(p);
             synchronized(p) {
-                List<AbstractProject> newChildProjects = p.getDownstreamProjects();
+                List<AbstractProject> newChildProjects = new ArrayList<AbstractProject>(p.getDownstreamProjects());
 
                 if(isUpstream) {
                     if(!newChildProjects.contains(this))
