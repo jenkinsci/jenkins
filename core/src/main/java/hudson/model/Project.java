@@ -131,12 +131,10 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         return new Build(this,dir);
     }
 
-    public List<AbstractProject> getDownstreamProjects() {
+    protected void buildDependencyGraph(DependencyGraph graph) {
         BuildTrigger buildTrigger = (BuildTrigger) getPublishers().get(BuildTrigger.DESCRIPTOR);
-        if(buildTrigger==null)
-            return new ArrayList<AbstractProject>();
-        else
-            return buildTrigger.getChildProjects();
+        if(buildTrigger!=null)
+             graph.addDependency(this,buildTrigger.getChildProjects());
     }
 
     @Override
@@ -212,7 +210,10 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         save();
 
         // notify the queue as the project might be now tied to different node
-        Hudson.getInstance().getQueue().scheduleMaintenance();  
+        Hudson.getInstance().getQueue().scheduleMaintenance();
+
+        // dependency setting might have been changed by the user, so rebuild.
+        Hudson.getInstance().rebuildDependencyGraph();
     }
 
     private void updateTransientActions() {

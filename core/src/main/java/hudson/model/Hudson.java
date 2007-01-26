@@ -122,6 +122,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
     private List<JDK> jdks = new ArrayList<JDK>();
 
+    private transient volatile DependencyGraph dependencyGraph = DependencyGraph.EMPTY;
+
     /**
      * Set of installed cluster nodes.
      *
@@ -801,6 +803,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                 e.printStackTrace(); // TODO: logging
             }
         }
+        rebuildDependencyGraph();
     }
 
     /**
@@ -1337,6 +1340,17 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         }
 
         return r;
+    }
+
+    /**
+     * Rebuilds the dependency map.
+     */
+    public void rebuildDependencyGraph() {
+        dependencyGraph = new DependencyGraph();
+    }
+
+    public DependencyGraph getDependencyGraph() {
+        return dependencyGraph;
     }
 
     public static final class MasterComputer extends Computer {

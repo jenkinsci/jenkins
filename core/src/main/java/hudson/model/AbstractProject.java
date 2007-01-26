@@ -19,7 +19,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -351,15 +350,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Gets the other {@link AbstractProject}s that should be built
      * when a build of this project is completed.
      */
-    public abstract List<? extends AbstractProject> getDownstreamProjects();
+    public final List<AbstractProject> getDownstreamProjects() {
+        return Hudson.getInstance().getDependencyGraph().getDownstream(this);
+    }
 
-    public List<AbstractProject> getUpstreamProjects() {
-        List<AbstractProject> r = new ArrayList<AbstractProject>();
-        for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) ) {
-            if(p.getDownstreamProjects().contains(this))
-                r.add(p);
-        }
-        return r;
+    public final List<AbstractProject> getUpstreamProjects() {
+        return Hudson.getInstance().getDependencyGraph().getUpstream(this);
     }
 
     /**
@@ -399,6 +395,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 value.add(rs);
         }
     }
+
+    /**
+     * Builds the dependency graph.
+     * @see DependencyGraph
+     */
+    protected abstract void buildDependencyGraph(DependencyGraph graph);
 
 //
 //

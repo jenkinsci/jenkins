@@ -7,6 +7,8 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
+import hudson.model.DependencyGraph;
+import hudson.model.Hudson;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -94,9 +96,8 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         return true;
     }
 
-    public List<MavenModule> getDownstreamProjects() {
+    protected void buildDependencyGraph(DependencyGraph graph) {
         // TODO
-        return Collections.emptyList();
     }
 
     /**
@@ -116,5 +117,8 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         }
 
         save();
+
+        // dependency setting might have been changed by the user, so rebuild.
+        Hudson.getInstance().rebuildDependencyGraph();
     }
 }
