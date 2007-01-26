@@ -276,6 +276,11 @@ public final class PluginWrapper {
     public String getVersion() {
         String v = manifest.getMainAttributes().getValue("Plugin-Version");
         if(v!=null)      return v;
+
+        // plugins generated before maven-hpi-plugin 1.3 should still have this attribute
+        v = manifest.getMainAttributes().getValue("Implementation-Version");
+        if(v!=null)      return v;
+
         return "???";
     }
 
