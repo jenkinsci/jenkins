@@ -309,6 +309,7 @@ public class Functions {
     }
 
     public static boolean isMultiline(String s) {
+        if(s==null)     return false;
         return s.indexOf('\r')>=0 || s.indexOf('\n')>=0;
     }
 }
