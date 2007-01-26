@@ -13,27 +13,34 @@
             Changes will take effect when you restart Hudson
           </div>
         </div>
-        <table id="pluginList">
-          <j:forEach var="p" items="${it.pluginManager.plugins}">
-            <tr class="hoverback">
-              <td class="plugin-description">
-                <h4>${p.longName}</h4>
-                <div stlyle="padding-left: 1em">
-                  <j:set var="indexPage" value="${p.indexPage.toString()}" />
-                  <j:if test="${!empty(indexPage)}">
-                    <j:include uri="${indexPage}" />
-                  </j:if>
-                </div>
-              </td>
-              <td>
-                <j:set var="state" value="${h.ifThenElse(p.enabled,'Disable','Enable')}"/>
-                <input type="button" value="${state}" onclick="flip(event)"
-                       url="pluginManager/plugin/${p.shortName}"
-                       original="${h.ifThenElse(p.active,'Disable','Enable')}"/>
-              </td>
-            </tr>
-          </j:forEach>
-        </table>
+        <j:choose>
+          <j:when test="${empty(it.pluginManager.plugins)}">
+            No plugins installed.
+          </j:when>
+          <j:otherwise>
+            <table id="pluginList">
+              <j:forEach var="p" items="${it.pluginManager.plugins}">
+                <tr class="hoverback">
+                  <td class="plugin-description">
+                    <h4>${p.longName} &#x2014; ver.${p.version}</h4>
+                    <div stlyle="padding-left: 1em">
+                      <j:set var="indexPage" value="${p.indexPage.toString()}" />
+                      <j:if test="${!empty(indexPage)}">
+                        <j:include uri="${indexPage}" />
+                      </j:if>
+                    </div>
+                  </td>
+                  <td>
+                    <j:set var="state" value="${h.ifThenElse(p.enabled,'Disable','Enable')}"/>
+                    <input type="button" value="${state}" onclick="flip(event)"
+                           url="pluginManager/plugin/${p.shortName}"
+                           original="${h.ifThenElse(p.active,'Disable','Enable')}"/>
+                  </td>
+                </tr>
+              </j:forEach>
+            </table>
+          </j:otherwise>
+        </j:choose>
       </s:block>
     </s:form>
     <script>

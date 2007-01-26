@@ -271,6 +271,15 @@ public final class PluginWrapper {
     }
 
     /**
+     * Returns the version number of this plugin
+     */
+    public String getVersion() {
+        String v = manifest.getMainAttributes().getValue("Plugin-Version");
+        if(v!=null)      return v;
+        return "???";
+    }
+
+    /**
      * Gets the "abc" portion from "abc.ext".
      */
     private static String getShortName(File archive) {
