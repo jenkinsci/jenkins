@@ -33,7 +33,7 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     /**
      * Gets the {@link JobPropertyDescriptor}s applicable for a given job type.
      */
-    public List<JobPropertyDescriptor> getPropertyDescriptors(Class<? extends Job> clazz) {
+    public static List<JobPropertyDescriptor> getPropertyDescriptors(Class<? extends Job> clazz) {
         List<JobPropertyDescriptor> r = new ArrayList<JobPropertyDescriptor>();
         for (JobPropertyDescriptor p : Jobs.PROPERTIES)
             if(p.isApplicable(clazz))
