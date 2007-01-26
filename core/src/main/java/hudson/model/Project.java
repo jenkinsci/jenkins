@@ -159,8 +159,10 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
      * Accepts submission from the configuration page.
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-
         Set<AbstractProject> upstream = Collections.emptySet();
+        if(req.getParameter("pseudoUpstreamTrigger")!=null) {
+            upstream = new HashSet<AbstractProject>(Items.fromNameList(req.getParameter("upstreamProjects"),AbstractProject.class));
+        }
 
         synchronized(this) {
             try {
@@ -181,12 +183,13 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
             }
         }
 
-        if(req.getParameter("pseudoUpstreamTrigger")!=null) {
-            upstream = new HashSet<AbstractProject>(Items.fromNameList(req.getParameter("upstreamProjects"),AbstractProject.class));
-        }
+        // dependency setting might have been changed by the user, so rebuild.
+        Hudson.getInstance().rebuildDependencyGraph();
 
-        // this needs to be done after we release the lock on this,
+        // reflect the submission of the pseudo 'upstream build trriger'.
+        // this needs to be done after we release the lock on 'this',
         // or otherwise we could dead-lock
+
         for (Project p : Hudson.getInstance().getProjects()) {
             boolean isUpstream = upstream.contains(p);
             synchronized(p) {
@@ -212,7 +215,7 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         // notify the queue as the project might be now tied to different node
         Hudson.getInstance().getQueue().scheduleMaintenance();
 
-        // dependency setting might have been changed by the user, so rebuild.
+        // this is to reflect the upstream build adjustments done above
         Hudson.getInstance().rebuildDependencyGraph();
     }
 
