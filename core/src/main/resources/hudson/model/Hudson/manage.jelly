@@ -25,9 +25,7 @@
         Discard all the loaded data in memory and reload everything from file system.
         Useful when you modified config files directly on disk. 
       </local:feature>
-      <j:if test="${!empty(it.pluginManager.plugins)}">
-        <local:feature icon="gear2.gif"          href="managePlugins" title="Manage Plugins"/>
-      </j:if>
+      <local:feature icon="gear2.gif"          href="managePlugins" title="Manage Plugins"/>
       <local:feature icon="computer.gif"     href="systemInfo"  title="System Information">
         Displays various environmental information to assist trouble-shooting.
       </local:feature>
