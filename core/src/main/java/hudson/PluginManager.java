@@ -7,6 +7,8 @@ import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +33,8 @@ public final class PluginManager {
      * All active plugins.
      */
     private final List<PluginWrapper> activePlugins = new ArrayList<PluginWrapper>();
+
+    private final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>();
 
     /**
      * Plug-in root directory.
@@ -72,6 +76,7 @@ public final class PluginManager {
                 if(p.isActive())
                     activePlugins.add(p);
             } catch (IOException e) {
+                failedPlugins.add(new FailedPlugin(arc.getName(),e));
                 LOGGER.log(Level.SEVERE, "Failed to load a plug-in " + arc, e);
             }
         }
@@ -79,6 +84,10 @@ public final class PluginManager {
 
     public List<PluginWrapper> getPlugins() {
         return plugins;
+    }
+
+    public List<FailedPlugin> getFailedPlugins() {
+        return failedPlugins;
     }
 
     public PluginWrapper getPlugin(String shortName) {
@@ -153,4 +162,22 @@ public final class PluginManager {
 
     private static final Logger LOGGER = Logger.getLogger(PluginManager.class.getName());
 
+    /**
+     * Remembers why a plugin failed to deploy.
+     */
+    public static final class FailedPlugin {
+        public final String name;
+        public final IOException cause;
+
+        public FailedPlugin(String name, IOException cause) {
+            this.name = name;
+            this.cause = cause;
+        }
+
+        public String getExceptionString() {
+            StringWriter sw = new StringWriter();
+            cause.printStackTrace(new PrintWriter(sw));
+            return sw.toString();
+        }
+    }
 }

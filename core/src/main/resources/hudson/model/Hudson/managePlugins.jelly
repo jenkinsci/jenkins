@@ -14,7 +14,7 @@
           </div>
         </div>
         <j:choose>
-          <j:when test="${empty(it.pluginManager.plugins)}">
+          <j:when test="${empty(it.pluginManager.plugins) &amp;&amp; empty(it.pluginManager.failedPlugins)}">
             No plugins installed.
           </j:when>
           <j:otherwise>
@@ -35,6 +35,17 @@
                     <input type="button" value="${state}" onclick="flip(event)"
                            url="pluginManager/plugin/${p.shortName}"
                            original="${h.ifThenElse(p.active,'Disable','Enable')}"/>
+                  </td>
+                </tr>
+              </j:forEach>
+              <!-- failed ones -->
+              <j:forEach var="p" items="${it.pluginManager.failedPlugins}">
+                <tr class="hoverback">
+                  <td class="plugin-description">
+                    <h4 class="error">Failed : ${p.name}</h4>
+                    <div stlyle="padding-left: 1em">
+                      <pre>${p.exceptionString}</pre>
+                    </div>
                   </td>
                 </tr>
               </j:forEach>
