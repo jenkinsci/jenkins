@@ -154,6 +154,11 @@ public abstract class Descriptor<T extends Describable<T>> {
 
     /**
      * Loads the data from the disk into this object.
+     *
+     * <p>
+     * The constructor of the derived class must call this method.
+     * (If we do that in the base class, the derived class won't
+     * get a chance to set default values.)
      */
     protected synchronized void load() {
         XmlFile file = getConfigFile();
