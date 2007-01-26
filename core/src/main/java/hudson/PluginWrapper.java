@@ -184,17 +184,11 @@ public final class PluginWrapper {
                 this.plugin = (Plugin)plugin;
                 this.plugin.wrapper = this;
             } catch (ClassNotFoundException e) {
-                IOException ioe = new IOException("Unable to load " + className + " from " + archive);
-                ioe.initCause(e);
-                throw ioe;
+                throw new IOException2("Unable to load " + className + " from " + archive,e);
             } catch (IllegalAccessException e) {
-                IOException ioe = new IOException("Unable to create instance of " + className + " from " + archive);
-                ioe.initCause(e);
-                throw ioe;
+                throw new IOException2("Unable to create instance of " + className + " from " + archive,e);
             } catch (InstantiationException e) {
-                IOException ioe = new IOException("Unable to create instance of " + className + " from " + archive);
-                ioe.initCause(e);
-                throw ioe;
+                throw new IOException2("Unable to create instance of " + className + " from " + archive,e);
             }
 
             // initialize plugin
@@ -203,9 +197,7 @@ public final class PluginWrapper {
                 plugin.start();
             } catch(Throwable t) {
                 // gracefully handle any error in plugin.
-                IOException ioe = new IOException("Failed to initialize");
-                ioe.initCause(t);
-                throw ioe;
+                throw new IOException2("Failed to initialize",t);
             }
         } finally {
             Thread.currentThread().setContextClassLoader(old);
