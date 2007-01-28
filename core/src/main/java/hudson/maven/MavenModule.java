@@ -1,14 +1,15 @@
 package hudson.maven;
 
+import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.model.AbstractProject;
+import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
-import hudson.model.DependencyGraph;
-import hudson.model.Hudson;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -17,8 +18,10 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -42,10 +45,17 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
      */
     private String relativePath;
 
+    /**
+     * List of modules that this module declares direct dependencies on.
+     */
+    @CopyOnWrite
+    private Set<ModuleName> dependencies;
+
     /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom) {
         super(parent, pom.name.toFileSystemName());
         this.displayName = pom.displayName;
         this.relativePath = pom.relativePath;
+        this.dependencies = pom.dependencies;
     }
 
     protected void doSetName(String name) {
@@ -59,6 +69,8 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
         reporters.setOwner(this);
+        if(dependencies==null)
+            dependencies = Collections.emptySet();
     }
 
     @Override
@@ -97,7 +109,16 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
-        // TODO
+        Map<ModuleName,MavenModule> modules = new HashMap<ModuleName,MavenModule>();
+
+        for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class))
+            modules.put(m.getModuleName(),m);
+
+        for (ModuleName d : dependencies) {
+            MavenModule src = modules.get(d);
+            if(src!=null)
+                graph.addDependency(src,this);
+        }
     }
 
     /**
