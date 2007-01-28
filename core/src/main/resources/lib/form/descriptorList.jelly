@@ -15,7 +15,7 @@
 
 	      <j:set var="descriptor" value="${d}" />
 	      <j:set var="instance" value="${instances[d]}" />
-	      <st:include from="${d}" page="${d.configPage}"/>
+	      <st:include from="${d}" page="${d.configPage}" optional="true" />
 	    </f:optionalBlock>
 	  </j:forEach>
 	</f:section>
