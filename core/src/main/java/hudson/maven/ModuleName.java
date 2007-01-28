@@ -53,7 +53,7 @@ public class ModuleName implements Comparable<ModuleName> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        PluginName that = (PluginName) o;
+        ModuleName that = (ModuleName) o;
 
         return artifactId.equals(that.artifactId)
             && groupId.equals(that.groupId);
