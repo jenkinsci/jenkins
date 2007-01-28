@@ -5,6 +5,12 @@ import org.apache.maven.project.MavenProject;
 import java.io.Serializable;
 
 /**
+ * Serialziable representation of the key information obtained from Maven POM.
+ *
+ * <p>
+ * This is used for the master to introspect POM, which is only available
+ * as {@link MavenProject} object on slaves.
+ *
  * @author Kohsuke Kawaguchi
  */
 final class PomInfo implements Serializable {
