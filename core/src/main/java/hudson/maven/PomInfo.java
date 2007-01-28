@@ -1,8 +1,12 @@
 package hudson.maven;
 
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.model.Dependency;
 
 import java.io.Serializable;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Serialziable representation of the key information obtained from Maven POM.
@@ -33,10 +37,18 @@ final class PomInfo implements Serializable {
      */
     public final String relativePath;
 
+    /**
+     * Dependency of this project.
+     */
+    public final Set<ModuleName> dependencies = new HashSet<ModuleName>();
+
     public PomInfo(MavenProject project, String relPath) {
         this.name = new ModuleName(project.getGroupId(),project.getArtifactId());
         this.displayName = project.getName();
         this.relativePath = relPath;
+
+        for (Dependency dep : (List<Dependency>)project.getDependencies())
+            dependencies.add(new ModuleName(dep.getGroupId(),dep.getArtifactId()));
     }
 
     private static final long serialVersionUID = 1L;
