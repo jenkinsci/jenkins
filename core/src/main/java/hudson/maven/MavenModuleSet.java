@@ -253,6 +253,8 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
                 }
             }
 
+            Hudson.getInstance().rebuildDependencyGraph();
+
         } catch (IOException e) {
             e.printStackTrace(listener.error("Failed to parse POMs"));
         } catch (InterruptedException e) {
