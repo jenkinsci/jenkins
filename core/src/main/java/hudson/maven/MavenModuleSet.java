@@ -18,6 +18,8 @@ import hudson.model.Project;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.model.BuildableItem;
+import hudson.model.BuildAuthorizationToken;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
@@ -53,7 +55,7 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGroup<MavenModule> {
+public class MavenModuleSet extends AbstractItem implements TopLevelItem, BuildableItem, ItemGroup<MavenModule> {
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
@@ -84,6 +86,8 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
      * affinity to the master, and null to indicate free-roam.
      */
     private String assignedNode;
+
+    private BuildAuthorizationToken authToken;
 
     public MavenModuleSet(String name) {
         super(Hudson.getInstance(),name);
@@ -200,6 +204,15 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
             e.printStackTrace(listener.fatalError("SCM check out aborted"));
             return false;
         }
+    }
+
+    public BuildAuthorizationToken getAuthToken() {
+        return authToken;
+    }
+
+    public void scheduleBuild() {
+        // TODO
+        throw new UnsupportedOperationException();
     }
 
     private transient LargeText parsePomBuffer;
@@ -330,6 +343,13 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
             parsePomBuffer.doProgressText(req,rsp);
     }
 
+    /**
+     * Schedules a new build command.
+     */
+    public void doBuild( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        BuildAuthorizationToken.startBuildIfAuthorized(authToken,this,req,rsp);
+    }
+
     public synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if(!Hudson.adminCheck(req,rsp))
             return;
@@ -338,6 +358,7 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
             disabled = req.getParameter("disable")!=null;
             jdk = req.getParameter("jdk");
             setScm(SCMS.parseSCM(req));
+            authToken = BuildAuthorizationToken.create(req);
 
             if(req.getParameter("hasSlaveAffinity")!=null) {
                 assignedNode = Util.fixNull(req.getParameter("slave"));

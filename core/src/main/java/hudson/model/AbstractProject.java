@@ -35,7 +35,7 @@ import java.util.Vector;
  * @author Kohsuke Kawaguchi
  * @see AbstractBuild
  */
-public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> {
+public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem {
 
     private SCM scm = new NullSCM();
 
@@ -84,9 +84,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     private String jdk;
 
-    private boolean enableRemoteTrigger = false;
+    /**
+     * @deprecated
+     */
+    private transient boolean enableRemoteTrigger;
 
-    private String authToken = null;
+    private BuildAuthorizationToken authToken = null;
 
     /**
      * List of all {@link Trigger}s for this project.
@@ -194,14 +197,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         save();
     }
 
-    public boolean isEnableRemoteTrigger() {
-        // no need to enable this option if security disabled
-        return (Hudson.getInstance().isUseSecurity())
-                && enableRemoteTrigger;
-    }
-
-    public String getAuthToken() {
-            return authToken;
+    public BuildAuthorizationToken getAuthToken() {
+        return authToken;
     }
 
     public SortedMap<Integer, ? extends R> _getRuns() {
@@ -411,21 +408,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a new build command.
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if (authorizedToStartBuild(req, rsp)) {
-            scheduleBuild();
-            rsp.forwardToPreviousPage(req);
-        }
-    }
-
-    private boolean authorizedToStartBuild(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if (isEnableRemoteTrigger()) {
-            String providedToken = req.getParameter("token");
-            if (providedToken != null && providedToken.equals(getAuthToken())) {
-                return true;
-            }
-        }
-
-        return Hudson.adminCheck(req, rsp);
+        BuildAuthorizationToken.startBuildIfAuthorized(authToken,this,req,rsp);
     }
 
     /**
@@ -464,12 +447,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             assignedNode = null;
         }
 
-        if (req.getParameter("pseudoRemoteTrigger") != null) {
-            authToken = req.getParameter("authToken");
-            enableRemoteTrigger = true;
-        } else {
-            enableRemoteTrigger = false;
-        }
+        authToken = BuildAuthorizationToken.create(req);
 
         try {
             setScm(SCMS.parseSCM(req));
