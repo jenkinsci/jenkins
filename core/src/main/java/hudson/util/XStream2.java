@@ -1,9 +1,13 @@
 package hudson.util;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.DataHolder;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.model.Hudson;
 
 /**
@@ -38,5 +42,40 @@ public class XStream2 extends XStream {
         registerConverter(new RetrotranslatorEnumConverter(),10);
         registerConverter(new CopyOnWriteList.ConverterImpl(getClassMapper()),10);
         registerConverter(new DescribableList.ConverterImpl(getClassMapper()),10);
+
+        // this should come after all the XStream's default simpler converters,
+        // but before reflection-based one kicks in.
+        registerConverter(new AssociatedConverterImpl(),-10);
+    }
+
+    private static final class AssociatedConverterImpl implements Converter {
+        private Converter findConverter(Class t) {
+            try {
+                Class<?> cl = t.getClassLoader().loadClass(t.getName() + "$ConverterImpl");
+                return (Converter)cl.newInstance();
+            } catch (ClassNotFoundException e) {
+                return null;
+            } catch (IllegalAccessException e) {
+                IllegalAccessError x = new IllegalAccessError();
+                x.initCause(e);
+                throw x;
+            } catch (InstantiationException e) {
+                InstantiationError x = new InstantiationError();
+                x.initCause(e);
+                throw x;
+            }
+        }
+
+        public boolean canConvert(Class type) {
+            return findConverter(type)!=null;
+        }
+
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            findConverter(source.getClass()).marshal(source,writer,context);
+        }
+
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            return findConverter(context.getRequiredType()).unmarshal(reader,context);
+        }
     }
 }
