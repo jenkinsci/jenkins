@@ -7,6 +7,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Stack;
 import java.util.Map.Entry;
 
 /**
@@ -101,6 +104,30 @@ public final class DependencyGraph {
     public void addDependency(Collection<? extends AbstractProject> from, AbstractProject to) {
         for (AbstractProject p : from)
             addDependency(p,to);
+    }
+
+    /**
+     * Returns true if a project has a non-direct dependency to another project.
+     * <p>
+     * A non-direct dependency is a path of dependency "edge"s from the source to the destination,
+     * where the length is greater than 1.
+     */
+    public boolean hasIndirectDependencies(AbstractProject src, AbstractProject dst) {
+        Set<AbstractProject> visited = new HashSet<AbstractProject>();
+        Stack<AbstractProject> queue = new Stack<AbstractProject>();
+
+        queue.addAll(getDownstream(src));
+        queue.remove(dst);
+
+        while(!queue.isEmpty()) {
+            AbstractProject p = queue.pop();
+            if(p==dst)
+                return true;
+            if(visited.add(p))
+                queue.addAll(getDownstream(p));
+        }
+
+        return false;
     }
 
     private void add(Map<AbstractProject, List<AbstractProject>> map, AbstractProject src, AbstractProject dst) {
