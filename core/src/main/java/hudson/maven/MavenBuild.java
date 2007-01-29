@@ -202,19 +202,5 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             //    setResult(Result.FAILURE);
             //}
         }
-
-        //private boolean build(BuildListener listener, Map<?, Builder> steps) throws IOException, InterruptedException {
-        //    for( Builder bs : steps.values() )
-        //        if(!bs.perform(Build.this, launcher, listener))
-        //            return false;
-        //    return true;
-        //}
-
-        //private boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) {
-        //    for( BuildStep bs : steps.values() )
-        //        if(!bs.preBuild(Build.this,listener))
-        //            return false;
-        //    return true;
-        //}
     }
 }

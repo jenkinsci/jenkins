@@ -203,17 +203,35 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
     }
 
     private transient LargeText parsePomBuffer;
+    private transient boolean parsePomSucceeded;
+
+    public static enum PomLinkMode {
+        NONE, IN_PROGRESS, ERROR;
+    }
+
+    /**
+     * Returns how to display 'parsing POM' link.
+     */
+    public PomLinkMode getPomLinkMode() {
+        LargeText buf = parsePomBuffer;
+        if(buf==null)   return PomLinkMode.NONE;
+        if(!buf.isComplete())   return PomLinkMode.IN_PROGRESS;
+        if(!parsePomSucceeded)  return PomLinkMode.ERROR;
+        return PomLinkMode.NONE;
+    }
 
     public void parsePOMs() {
         ByteBuffer buf = new ByteBuffer();
         parsePomBuffer = new LargeText(buf,false);
+        parsePomSucceeded = false;
         final StreamTaskListener listener = new StreamTaskListener(buf);
         try {
-            // TODO: shall checkout do updates as well?
             Launcher launcher = getAssignedNode().createLauncher(listener);
+            listener.getLogger().println("Fetching up-to-date workspace");
             if(!checkout(launcher,listener))
                 return;
 
+            listener.getLogger().println("Parsing POMs");
             // TODO: this needs to be moved to its own class since MavenModuleSet is not serializable
             List<PomInfo> poms = getWorkspace().act(new FileCallable<List<PomInfo>>() {
                 public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
@@ -254,6 +272,8 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
             }
 
             Hudson.getInstance().rebuildDependencyGraph();
+            listener.getLogger().println("done");
+            parsePomSucceeded = true;
 
         } catch (IOException e) {
             e.printStackTrace(listener.error("Failed to parse POMs"));
@@ -283,7 +303,7 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
                 parsePOMs();
             }
         }).start();
-        rsp.sendRedirect("parsePOM");
+        rsp.sendRedirect(".");
     }
 
     /**

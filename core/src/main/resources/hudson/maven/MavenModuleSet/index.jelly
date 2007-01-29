@@ -5,6 +5,12 @@
       <h1>Project ${it.name}</h1>
       <t:editableDescription adminOnly="true"/>
 
+      <!-- if we are parsing POM, display a link -->
+      <div>
+        <j:set var="pomLink" value="${it.pomLinkMode}"/>
+        <st:include from="${pomLink}" page="${pomLink.name()}.jelly" />
+      </div>
+
       <t:projectView jobs="${it.modules}" showViewTabs="${false}" />
     </l:main-panel>
   </l:layout>
