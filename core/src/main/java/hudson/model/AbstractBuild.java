@@ -91,7 +91,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          */
         protected Launcher launcher;
 
-        public final Result run(BuildListener listener) throws Exception {
+        public Result run(BuildListener listener) throws Exception {
             Node node = Executor.currentExecutor().getOwner().getNode();
             assert builtOn==null;
             builtOn = node.getNodeName();
@@ -100,21 +100,19 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if(node instanceof Slave)
                 listener.getLogger().println("Building remotely on "+node.getNodeName());
 
-            if(!project.checkout(AbstractBuild.this,launcher,listener,new File(getRootDir(),"changelog.xml")))
+            if(checkout(listener))
                 return Result.FAILURE;
-
-            SCM scm = project.getScm();
-
-            AbstractBuild.this.scm = scm.createChangeLogParser();
-            AbstractBuild.this.changeSet = AbstractBuild.this.calcChangeSet();
-
-            for (SCMListener l : Hudson.getInstance().getSCMListeners())
-                l.onChangeLogParsed(AbstractBuild.this,listener,changeSet);
 
             Result result = doRun(listener);
             if(result!=null)
                 return result;  // abort here
 
+            createLastSuccessfulLink(listener);
+
+            return Result.SUCCESS;
+        }
+
+        private void createLastSuccessfulLink(BuildListener listener) {
             if(!isWindows()) {
                 try {
                     // ignore a failure.
@@ -132,8 +130,20 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     e.printStackTrace( log );
                 }
             }
+        }
 
-            return Result.SUCCESS;
+        private boolean checkout(BuildListener listener) throws Exception {
+            if(!project.checkout(AbstractBuild.this,launcher,listener,new File(getRootDir(),"changelog.xml")))
+                return true;
+
+            SCM scm = project.getScm();
+
+            AbstractBuild.this.scm = scm.createChangeLogParser();
+            AbstractBuild.this.changeSet = AbstractBuild.this.calcChangeSet();
+
+            for (SCMListener l : Hudson.getInstance().getSCMListeners())
+                l.onChangeLogParsed(AbstractBuild.this,listener,changeSet);
+            return false;
         }
 
         /**

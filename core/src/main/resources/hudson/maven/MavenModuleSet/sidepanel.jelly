@@ -18,5 +18,6 @@
       </l:isAdmin>
       <st:include page="actions.jelly" />
     </l:tasks>
+    <st:include page="buildHistory.jelly" />
   </l:side-panel>
 </j:jelly>

@@ -35,10 +35,10 @@ import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 
 /**
@@ -149,12 +149,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         this.logRotator = logRotator;
     }
 
-    /**
-     * @deprecated
-     *      This method always return a singleton set.
-     *      Calling this method from {@link Job} is pointless.
-     */
-    public Set<Job> getAllJobs() {
+    public Collection<? extends Job> getAllJobs() {
         return Collections.<Job>singleton(this);
     }
 

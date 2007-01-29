@@ -16,6 +16,12 @@
 
         <st:include page="configure-common.jelly" />
 
+        <!-- TODO: move this to the appropriate place -->
+        <f:section title="Build Triggers">
+          <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
+          <st:include page="../../model/BuildAuthorizationToken/config.jelly" />
+        </f:section>
+
         <f:block>
           <input type="submit" name="Submit" value="Save" />
         </f:block>

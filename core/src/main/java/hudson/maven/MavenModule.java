@@ -10,6 +10,7 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
+import hudson.model.Node;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -99,6 +100,14 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
 
     public MavenModuleSet getParent() {
         return (MavenModuleSet)super.getParent();
+    }
+
+    /**
+     * {@link MavenModule} uses the workspace of the {@link MavenModuleSet},
+     * so it always needs to be built on the same slave as the parent.
+     */
+    public Node getAssignedNode() {
+        return getParent().getAssignedNode();
     }
 
     @Override
