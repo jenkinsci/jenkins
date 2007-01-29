@@ -1,5 +1,10 @@
 package hudson.maven;
 
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.Extension;
+import org.apache.maven.model.Dependency;
+
 /**
  * Version independent name of a Maven project.
  * 
@@ -12,6 +17,22 @@ public class ModuleName implements Comparable<ModuleName> {
     public ModuleName(String groupId, String artifactId) {
         this.groupId = groupId;
         this.artifactId = artifactId;
+    }
+
+    public ModuleName(MavenProject project) {
+        this(project.getGroupId(),project.getArtifactId());
+    }
+
+    public ModuleName(Plugin plugin) {
+        this(plugin.getGroupId(),plugin.getArtifactId());
+    }
+
+    public ModuleName(Extension ext) {
+        this(ext.getGroupId(),ext.getArtifactId());
+    }
+
+    public ModuleName(Dependency dep) {
+        this(dep.getGroupId(),dep.getArtifactId());
     }
 
     /**
