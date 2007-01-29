@@ -6,6 +6,8 @@ import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.AbstractProject;
+import hudson.model.Hudson;
+import hudson.model.DependencyGraph;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
@@ -120,7 +122,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                         r.postBuild(buildProxy,p,listener);
                 }
 
-                return null;
+                return Result.SUCCESS;
             } catch (MavenEmbedderException e) {
                 throw new IOException2(e);
             } catch (ProjectBuildingException e) {
@@ -176,6 +178,18 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
 
         public void post(BuildListener listener) {
+            if(!getResult().isWorseThan(Result.UNSTABLE)) {
+                // trigger dependency builds
+                DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+                for( AbstractProject down : getParent().getDownstreamProjects()) {
+                    if(!graph.hasIndirectDependencies(getParent(),down))
+                        // if there's a longer dependency path to this project,
+                        // then scheduling the build now is going to be a waste,
+                        // so don't do that.
+                        listener.getLogger().println("Triggering a new build of "+p.getName());
+                        down.scheduleBuild();
+                }
+            }
             //// run all of them even if one of them failed
             //try {
             //    for( Publisher bs : project.getPublishers().values() )
