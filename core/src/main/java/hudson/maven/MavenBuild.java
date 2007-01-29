@@ -186,7 +186,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                         // if there's a longer dependency path to this project,
                         // then scheduling the build now is going to be a waste,
                         // so don't do that.
-                        listener.getLogger().println("Triggering a new build of "+p.getName());
+                        listener.getLogger().println("Triggering a new build of "+down.getName());
                         down.scheduleBuild();
                 }
             }
