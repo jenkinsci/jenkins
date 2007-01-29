@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * Serialziable representation of the key information obtained from Maven POM.
+ * Serializable representation of the key information obtained from Maven POM.
  *
  * <p>
  * This is used for the master to introspect POM, which is only available
