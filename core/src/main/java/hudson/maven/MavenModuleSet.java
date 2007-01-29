@@ -263,12 +263,26 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
             });
 
             synchronized(modules) {
+                Map<ModuleName,MavenModule> old = new HashMap<ModuleName, MavenModule>(modules);
+
                 modules.clear();
                 for (PomInfo pom : poms) {
-                    MavenModule mm = new MavenModule(this,pom);
+                    MavenModule mm = old.get(pom.name);
+                    if(mm!=null) {// found an existing matching module
+                        mm.reconfigure(pom);
+                        modules.put(pom.name,mm);
+                    } else {// this looks like a new module
+                        mm = new MavenModule(this,pom);
+                        modules.put(mm.getModuleName(),mm);
+                    }
                     mm.save();
-                    modules.put(mm.getModuleName(),mm);
                 }
+
+                // remaining modules are no longer active.
+                old.keySet().removeAll(modules.keySet());
+                for (MavenModule om : old.values())
+                    om.disable();
+                modules.putAll(old);
             }
 
             Hudson.getInstance().rebuildDependencyGraph();

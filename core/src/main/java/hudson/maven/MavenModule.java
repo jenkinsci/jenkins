@@ -53,6 +53,16 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
 
     /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom) {
         super(parent, pom.name.toFileSystemName());
+        reconfigure(pom);
+    }
+
+    /**
+     * Called to update the module with the new POM.
+     * <p>
+     * This method is invoked on {@link MavenModule} that has the matching
+     * {@link ModuleName}.
+     */
+    /*package*/ final void reconfigure(PomInfo pom) {
         this.displayName = pom.displayName;
         this.relativePath = pom.relativePath;
         this.dependencies = pom.dependencies;
@@ -141,5 +151,15 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
 
         // dependency setting might have been changed by the user, so rebuild.
         Hudson.getInstance().rebuildDependencyGraph();
+    }
+
+    /**
+     * Marks this build as disabled.
+     */
+    public void disable() throws IOException {
+        if(!disabled) {
+            disabled = true;
+            save();
+        }
     }
 }
