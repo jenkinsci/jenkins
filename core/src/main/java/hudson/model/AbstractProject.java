@@ -418,7 +418,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     private boolean authorizedToStartBuild(StaplerRequest req, StaplerResponse rsp) throws IOException {
-
         if (isEnableRemoteTrigger()) {
             String providedToken = req.getParameter("token");
             if (providedToken != null && providedToken.equals(getAuthToken())) {
@@ -426,7 +425,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
         }
 
-         return Hudson.adminCheck(req, rsp);
+        return Hudson.adminCheck(req, rsp);
     }
 
     /**
