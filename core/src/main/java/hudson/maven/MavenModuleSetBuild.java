@@ -106,6 +106,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     Map<ModuleName,MavenModule> old = new HashMap<ModuleName, MavenModule>(modules);
 
                     modules.clear();
+                    project.setRootModule(poms.get(0).name);
                     for (PomInfo pom : poms) {
                         MavenModule mm = old.get(pom.name);
                         if(mm!=null) {// found an existing matching module
@@ -126,6 +127,11 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 }
 
                 Hudson.getInstance().rebuildDependencyGraph();
+
+                // start the build
+                listener.getLogger().println("Triggering "+project.getRootModule().getModuleName());
+                project.getRootModule().scheduleBuild();
+                
                 return null;
             } catch (IOException e) {
                 e.printStackTrace(listener.error("Failed to parse POMs"));
@@ -141,8 +147,6 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         }
 
         public void post(BuildListener listener) {
-            // TODO: trigger module builds
-            // select the right modules to build based on changelog
         }
     }
 }

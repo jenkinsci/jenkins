@@ -41,6 +41,11 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
      */
     transient /*final*/ Map<ModuleName,MavenModule> modules = new CopyOnWriteMap.Tree<ModuleName,MavenModule>();
 
+    /**
+     * Name of the top-level module.
+     */
+    private ModuleName rootModule;
+
     public MavenModuleSet(String name) {
         super(Hudson.getInstance(),name);
     }
@@ -149,6 +154,17 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
             e.printStackTrace(listener.fatalError("SCM check out aborted"));
             return false;
         }
+    }
+
+    public MavenModule getRootModule() {
+        return modules.get(rootModule);
+    }
+
+    /*package*/ void setRootModule(ModuleName rootModule) throws IOException {
+        if(this.rootModule!=null && this.rootModule.equals(rootModule))
+            return; // no change
+        this.rootModule = rootModule;
+        save();
     }
 
 //
