@@ -70,7 +70,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * True to suspend new builds.
      */
-    private boolean disabled;
+    protected boolean disabled;
 
     /**
      * Identifies {@link JDK} to be used.
