@@ -212,7 +212,7 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
             // TODO: shall checkout do updates as well?
             Launcher launcher = getAssignedNode().createLauncher(listener);
             if(!checkout(launcher,listener))
-            return;
+                return;
 
             // TODO: this needs to be moved to its own class since MavenModuleSet is not serializable
             List<PomInfo> poms = getWorkspace().act(new FileCallable<List<PomInfo>>() {
@@ -273,6 +273,10 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
 //
 //
 
+    /**
+     * Triggers the POM parsing and eventually updates the list of {@link MavenModule}s under
+     * this project.
+     */
     public void doStartParsePOM(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         new Thread(new Runnable() {
             public void run() {
@@ -316,7 +320,8 @@ public class MavenModuleSet extends AbstractItem implements TopLevelItem, ItemGr
         }
 
         save();
-        rsp.sendRedirect(".");
+        // SCM setting might have changed. Reparse POMs.
+        rsp.sendRedirect("./startParsePOM");
     }
 
     /**
