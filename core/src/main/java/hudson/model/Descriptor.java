@@ -19,7 +19,10 @@ import java.util.logging.Logger;
  *
  * <p>
  * {@link Descriptor} is an object that has metadata about a {@link Describable}
- * object, and also serves as a factory. A {@link Descriptor}/{@link Describable}
+ * object, and also serves as a factory (in a way this relationship is similar
+ * to {@link Object}/{@link Class} relationship.
+ *
+ * A {@link Descriptor}/{@link Describable}
  * combination is used throughout in Hudson to implement a
  * configuration/extensibility mechanism.
  *
