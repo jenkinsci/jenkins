@@ -25,7 +25,7 @@
       </f:entry>
     </f:optionalBlock>
     <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
-    <st:include page="../BuildAuthorizationToken/config.jelly" />
+    <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />
   </f:descriptorList>
 
 

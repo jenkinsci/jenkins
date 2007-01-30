@@ -19,7 +19,7 @@
         <!-- TODO: move this to the appropriate place -->
         <f:section title="Build Triggers">
           <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
-          <st:include page="../../model/BuildAuthorizationToken/config.jelly" />
+          <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />
         </f:section>
 
         <f:block>
