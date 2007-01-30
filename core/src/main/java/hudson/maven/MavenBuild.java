@@ -182,12 +182,13 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 // trigger dependency builds
                 DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
                 for( AbstractProject down : getParent().getDownstreamProjects()) {
-                    if(!graph.hasIndirectDependencies(getParent(),down))
+                    if(!graph.hasIndirectDependencies(getParent(),down)) {
                         // if there's a longer dependency path to this project,
                         // then scheduling the build now is going to be a waste,
                         // so don't do that.
                         listener.getLogger().println("Triggering a new build of "+down.getName());
                         down.scheduleBuild();
+                    }
                 }
             }
             //// run all of them even if one of them failed
