@@ -185,6 +185,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return Hudson.getInstance().getQueue().contains(this);
     }
 
+    /**
+     * Returns true if a build of this project is in progress.
+     */
+    public boolean isBuilding() {
+        R b = getLastBuild();
+        return b!=null && b.isBuilding();
+    }
+
     public JDK getJDK() {
         return Hudson.getInstance().getJDK(jdk);
     }
@@ -233,6 +241,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return null;
         else
             return b.getBuiltOn();
+    }
+
+    /**
+     * Returns true if this project's build execution should be blocked
+     * for temporary reasons. This method is used by {@link Queue}.
+     *
+     * <p>
+     * A project must be blocked if its own previous build is in progress,
+     * but derived classes can also check other conditions.
+     */
+    protected boolean isBuildBlocked() {
+        return isBuilding();
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {

@@ -91,6 +91,19 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
         return jobs;
     }
 
+    @Override
+    protected boolean isBuildBlocked() {
+        if(super.isBuildBlocked())
+            return true;
+        // updating the workspace (=our build) cannot be done
+        // if someone else is still touching the workspace.
+        for (MavenModule m : modules.values()) {
+            if(m.isBuilding())
+                return true;
+        }
+        return false;
+    }
+
     /**
      * Gets the workspace of this job.
      */

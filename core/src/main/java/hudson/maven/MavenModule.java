@@ -123,6 +123,18 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     }
 
     @Override
+    protected boolean isBuildBlocked() {
+        if(super.isBuildBlocked())
+            return true;
+
+        // if the module set's new build is planned or in progress,
+        // don't start a new build. Otherwise on a busy maven project
+        // MavenModuleSet will never get a chance to run.
+        MavenModuleSet p = getParent();
+        return p.isBuilding() || p.isInQueue();
+    }
+
+    @Override
     public boolean isFingerprintConfigured() {
         return true;
     }

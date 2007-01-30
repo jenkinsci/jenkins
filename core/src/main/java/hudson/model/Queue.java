@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -218,6 +217,9 @@ public class Queue {
      */
     public AbstractProject pop() throws InterruptedException {
         final Executor exec = Executor.currentExecutor();
+
+        // used in the finally block to check if we are returning from this method normally
+        // or abnormally via an exception
         boolean successfulReturn = false;
 
         try {
@@ -239,6 +241,14 @@ public class Queue {
                     Iterator<AbstractProject> itr = buildables.iterator();
                     while(itr.hasNext()) {
                         AbstractProject p = itr.next();
+
+                        // one last check to make sure this build is not blocked.
+                        if(p.isBuildBlocked()) {
+                            itr.remove();
+                            blockedProjects.add(p);
+                            continue;
+                        }
+                        
                         JobOffer runner = choose(p);
                         if(runner==null)
                             // if we couldn't find the executor that fits,
@@ -327,7 +337,7 @@ public class Queue {
             return null;
         }
 
-        // otherwise let's see if the last node that this project was built is available
+        // otherwise let's see if the last node where this project was built is available
         // it has up-to-date workspace, so that's usually preferable.
         // (but we can't use an exclusive node)
         n = p.getLastBuiltOn();
@@ -390,9 +400,8 @@ public class Queue {
     private synchronized void maintain() {
         Iterator<AbstractProject> itr = blockedProjects.iterator();
         while(itr.hasNext()) {
-            AbstractProject<?,?> p = itr.next();
-            AbstractBuild lastBuild = p.getLastBuild();
-            if (lastBuild == null || !lastBuild.isBuilding()) {
+            AbstractProject p = itr.next();
+            if(!p.isBuildBlocked()) {
                 // ready to be executed
                 itr.remove();
                 buildables.add(p);
@@ -405,16 +414,16 @@ public class Queue {
             if(!top.timestamp.before(new GregorianCalendar()))
                 return; // finished moving all ready items from queue
 
-            AbstractBuild lastBuild = top.project.getLastBuild();
-            if(lastBuild==null || !lastBuild.isBuilding()) {
+            AbstractProject p = top.project;
+            if(!p.isBuildBlocked()) {
                 // ready to be executed immediately
                 queue.remove(top);
-                buildables.add(top.project);
+                buildables.add(p);
             } else {
-                // this can't be built know because another build is in progress
+                // this can't be built now because another build is in progress
                 // set this project aside.
                 queue.remove(top);
-                blockedProjects.add(top.project);
+                blockedProjects.add(p);
             }
         }
     }
