@@ -173,7 +173,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a build of this project.
      */
     public void scheduleBuild() {
-        if(!disabled)
+        if(!isDisabled())
             Hudson.getInstance().getQueue().add(this);
     }
 
