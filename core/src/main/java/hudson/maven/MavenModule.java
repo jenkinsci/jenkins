@@ -107,7 +107,7 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
      * so it always needs to be built on the same slave as the parent.
      */
     public Node getAssignedNode() {
-        return getParent().getAssignedNode();
+        return getParent().getLastBuiltOn();
     }
 
     @Override
