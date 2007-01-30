@@ -35,16 +35,6 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class Queue {
-
-    private static final Comparator<Item> itemComparator = new Comparator<Item>() {
-        public int compare(Item lhs, Item rhs) {
-            int r = lhs.timestamp.getTime().compareTo(rhs.timestamp.getTime());
-            if(r!=0)    return r;
-
-            return lhs.id-rhs.id;
-        }
-    };
-
     /**
      * Items in the queue ordered by {@link Item#timestamp}.
      *
@@ -52,7 +42,7 @@ public class Queue {
      * This consists of {@link Item}s that cannot be run yet
      * because its time has not yet come.
      */
-    private final Set<Item> queue = new TreeSet<Item>(itemComparator);
+    private final Set<Item> queue = new TreeSet<Item>();
 
     /**
      * {@link Project}s that can be built immediately
@@ -434,7 +424,7 @@ public class Queue {
     /**
      * Item in a queue.
      */
-    public class Item {
+    public class Item implements Comparable<Item> {
         /**
          * This item can be run after this time.
          */
@@ -517,6 +507,14 @@ public class Queue {
 
             return "???";
         }
+
+        public int compareTo(Item that) {
+            int r = this.timestamp.getTime().compareTo(that.timestamp.getTime());
+            if(r!=0)    return r;
+
+            return this.id-that.id;
+        }
+
     }
 
     /**
