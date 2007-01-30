@@ -59,7 +59,7 @@ public class ArtifactArchiver extends Publisher {
         dir.mkdirs();
 
         try {
-            p.getWorkspace().copyRecursiveTo(artifacts,new FilePath(dir));
+            p.getWorkspace().copyRecursiveTo(artifacts,excludes,new FilePath(dir));
         } catch (IOException e) {
             Util.displayIOException(e,listener);
             e.printStackTrace(listener.error("Failed to archive artifacts: "+artifacts));
