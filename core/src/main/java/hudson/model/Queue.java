@@ -202,8 +202,6 @@ public class Queue {
      * Returns true if this queue contains the said project.
      */
     public synchronized boolean contains(AbstractProject p) {
-        // if this project is already scheduled,
-        // don't do anything
         if(blockedProjects.contains(p) || buildables.contains(p))
             return true;
         for (Item item : queue) {
