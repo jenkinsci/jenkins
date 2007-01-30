@@ -25,17 +25,27 @@ public class ArtifactArchiver extends Publisher {
     private final String artifacts;
 
     /**
+     * Possibly null 'excludes' pattern as in Ant.
+     */
+    private final String excludes;
+
+    /**
      * Just keep the last successful artifact set, no more.
      */
     private final boolean latestOnly;
 
-    public ArtifactArchiver(String artifacts, boolean latestOnly) {
+    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
         this.artifacts = artifacts;
+        this.excludes = excludes;
         this.latestOnly = latestOnly;
     }
 
     public String getArtifacts() {
         return artifacts;
+    }
+
+    public String getExcludes() {
+        return excludes;
     }
 
     public boolean isLatestOnly() {
@@ -97,6 +107,7 @@ public class ArtifactArchiver extends Publisher {
         public Publisher newInstance(StaplerRequest req) {
             return new ArtifactArchiver(
                 req.getParameter("artifacts").trim(),
+                Util.fixEmpty(req.getParameter("artifacts_excludes").trim()),
                 req.getParameter("artifacts_latest_only")!=null);
         }
     };

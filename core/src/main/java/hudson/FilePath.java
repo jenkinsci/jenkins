@@ -506,13 +506,19 @@ public final class FilePath implements Serializable {
         void close() throws IOException;
     }
 
+    public int copyRecursiveTo(String fileMask, FilePath target) throws IOException, InterruptedException {
+        return copyRecursiveTo(fileMask,null,target);
+    }
+
     /**
      * Copies the files that match the given file mask to the specified target node.
      *
+     * @param excludes
+     *      Files to be excluded. Can be null.
      * @return
      *      the number of files copied.
      */
-    public int copyRecursiveTo(final String fileMask, final FilePath target) throws IOException, InterruptedException {
+    public int copyRecursiveTo(final String fileMask, final String excludes, final FilePath target) throws IOException, InterruptedException {
         if(this.channel==target.channel) {
             // local to local copy.
             return act(new FileCallable<Integer>() {
@@ -542,6 +548,7 @@ public final class FilePath implements Serializable {
                         FileSet src = new FileSet();
                         src.setDir(base);
                         src.setIncludes(fileMask);
+                        src.setExcludes(excludes);
                         copyTask.addFileset(src);
 
                         copyTask.execute();

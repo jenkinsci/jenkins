@@ -1,16 +1,14 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:entry title="Files to archive"
-	  description="
-	   Can use wildcards like 'module/dist/**/*.zip'.
-	   See &lt;a href='http://ant.apache.org/manual/CoreTypes/fileset.html'>
-	   the @includes of Ant fileset&lt;/a> for the exact format.
-	   the base directory is &lt;a href='ws/'>the workspace&lt;/a>.
-	  ">
-	  <input class="setting-input" name="artifacts"
-	    type="text" value="${instance.artifacts}"/>
+	<f:entry title="Files to archive" help="/help/tasks/artifactArchiver/includes.html">
+	  <f:textbox name="artifacts" value="${instance.artifacts}"/>
 	</f:entry>
-  <f:entry title="">
-    <f:checkbox name="artifacts_latest_only" checked="${instance.latestOnly}" />
-    Discard all but the last successful artifact to save disk space
-  </f:entry>
+  <f:advanced>
+    <f:entry title="Excludes" help="/help/tasks/artifactArchiver/excludes.html">
+      <f:textbox name="artifacts_excludes" value="${instance.excludes}"/>
+    </f:entry>
+    <f:entry title="">
+      <f:checkbox name="artifacts_latest_only" checked="${instance.latestOnly}" />
+      Discard all but the last successful artifact to save disk space
+    </f:entry>
+  </f:advanced>
 </j:jelly>

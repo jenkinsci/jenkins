@@ -68,7 +68,7 @@
           <!--
             enable automatic reloading when some files change.
           -->
-          <scanIntervalSeconds>1</scanIntervalSeconds>
+          <!--scanIntervalSeconds>1</scanIntervalSeconds-->
           <webAppSourceDirectory>${basedir}/resources</webAppSourceDirectory>
           <systemProperties>
             <systemProperty>
