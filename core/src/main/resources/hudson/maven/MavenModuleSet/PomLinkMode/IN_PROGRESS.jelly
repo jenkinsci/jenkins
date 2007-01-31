@@ -1,3 +1,0 @@
-<j:jelly xmlns:j="jelly:core">
-  <a href="./parsePOM">Parsing POMs...</a>
-</j:jelly>
