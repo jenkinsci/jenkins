@@ -22,7 +22,9 @@ import org.apache.maven.project.MavenProject;
  * implementation needs  ...
  *
  * <p>
- * This is the {@link MavenBuild} equivalent of {@link BuildStep}.
+ * This is the {@link MavenBuild} equivalent of {@link BuildStep}. Instances
+ * of {@link MavenReporter}s are persisted with {@link MavenModule}/{@link MavenModuleSet},
+ * possibly with configuration specific to that job.
  *
  *
  * <h2>Callback Firing Sequence</h2>
