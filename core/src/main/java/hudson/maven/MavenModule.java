@@ -102,6 +102,17 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         return (MavenModuleSet)super.getParent();
     }
 
+    /*package*/ int peekNextBuildNumber() {
+        return nextBuildNumber;
+    }
+
+    /*package*/ void updateNextBuildNumber(int next) throws IOException {
+        if(next>nextBuildNumber) {
+            this.nextBuildNumber = next;
+            saveNextBuildNumber();
+        }
+    }
+
     /**
      * {@link MavenModule} uses the workspace of the {@link MavenModuleSet},
      * so it always needs to be built on the same slave as the parent.

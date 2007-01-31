@@ -2,6 +2,7 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.triggers.Trigger;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
@@ -12,6 +13,7 @@ import hudson.model.Job;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.model.Executor;
 import hudson.util.CopyOnWriteMap;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -149,6 +151,33 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
                 e.printStackTrace(); // TODO: logging
             }
         }
+    }
+
+    /**
+     * To make it easy to grasp relationship among modules
+     * and the module set, we'll align the build numbers of
+     * all the modules.
+     *
+     * <p>
+     * This method is invoked from {@link Executor#run()},
+     * and because of the mutual exclusion among {@link MavenModuleSetBuild}
+     * and {@link MavenBuild}, we can safely touch all the modules.
+     */
+    public synchronized int assignBuildNumber() throws IOException {
+        // determine the next value
+        int next = this.nextBuildNumber;
+        for (MavenModule m : modules.values())
+            next = Math.max(next,m.peekNextBuildNumber());
+
+        if(this.nextBuildNumber!=next) {
+            this.nextBuildNumber=next;
+            this.saveNextBuildNumber();
+        }
+
+        for (MavenModule m : modules.values())
+            m.updateNextBuildNumber(next);
+
+        return super.assignBuildNumber();
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {

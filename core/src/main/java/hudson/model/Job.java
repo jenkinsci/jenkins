@@ -110,7 +110,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         return new TextFile(new File(this.getRootDir(),"nextBuildNumber"));
     }
 
-    private void saveNextBuildNumber() throws IOException {
+    protected void saveNextBuildNumber() throws IOException {
         getNextBuildNumberFile().write(String.valueOf(nextBuildNumber)+'\n');
     }
 
