@@ -195,7 +195,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                 ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(os));
 
                 if(flatten) {
-                    archive(ws, module, zos);
+                    archive(ws, module, zos,true);
                 } else {
                     StringTokenizer tokens = new StringTokenizer(module);
                     while(tokens.hasMoreTokens()) {
@@ -216,7 +216,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                             m = m.substring(0, idx);
                             mf = mf.getParentFile();
                         }
-                        archive(mf,m,zos);
+                        archive(mf,m,zos,true);
                     }
                 }
                 zos.close();
@@ -267,7 +267,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
      * @param relPath
      *      The path name in ZIP to store this directory with.
      */
-    private void archive(File dir,String relPath,ZipOutputStream zos) throws IOException {
+    private void archive(File dir,String relPath,ZipOutputStream zos, boolean isRoot) throws IOException {
         Set<String> knownFiles = new HashSet<String>();
         // see http://www.monkey.org/openbsd/archive/misc/9607/msg00056.html for what Entries.Log is for
         parseCVSEntries(new File(dir,"CVS/Entries"),knownFiles);
@@ -277,9 +277,12 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         knownFiles.add("CVS");
 
         File[] files = dir.listFiles();
-        if(files==null)
-            throw new IOException("No such directory exists. Did you specify the correct branch?: "+dir);
-
+        if(files==null) {
+            if(isRoot)
+                throw new IOException("No such directory exists. Did you specify the correct branch/tag?: "+dir);
+            else
+                throw new IOException("No such directory exists. Looks like someone is modifying the workspace concurrently: "+dir);
+        }
         for( File f : files ) {
             String name = relPath+'/'+f.getName();
             if(f.isDirectory()) {
@@ -288,7 +291,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                     // but also make sure that we archive CVS/*, which doesn't have CVS/CVS
                     continue;
                 }
-                archive(f,name,zos);
+                archive(f,name,zos,false);
             } else {
                 if(!dir.getName().equals("CVS"))
                     // we only need to archive CVS control files, not the actual workspace files
