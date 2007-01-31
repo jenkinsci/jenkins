@@ -296,7 +296,7 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         public SvnInfo(SVNInfo info) {
-            this( info.getURL().toDecodedString(), info.getRevision().getNumber() );
+            this( info.getURL().toDecodedString(), info.getCommittedRevision().getNumber() );
         }
 
         public SVNURL getSVNURL() throws SVNException {
