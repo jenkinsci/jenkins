@@ -413,6 +413,31 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * List up files in this directory that matches the given Ant-style filter.
+     *
+     * @param includes
+     *      See {@link FileSet} for the syntax. String like "foo/*.zip".
+     */
+    public FilePath[] list(final String includes) throws IOException, InterruptedException {
+        return act(new FileCallable<FilePath[]>() {
+            public FilePath[] invoke(File f, VirtualChannel channel) throws IOException {
+                FileSet fs = new FileSet();
+                fs.setDir(f);
+                fs.setIncludes(includes);
+
+                DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+                String[] files = ds.getIncludedFiles();
+
+                FilePath[] r = new FilePath[files.length];
+                for( int i=0; i<r.length; i++ )
+                    r[i] = new FilePath(new File(f,files[i]));
+
+                return r;
+            }
+        });
+    }
+
+    /**
      * Reads this file.
      */
     public InputStream read() throws IOException {
