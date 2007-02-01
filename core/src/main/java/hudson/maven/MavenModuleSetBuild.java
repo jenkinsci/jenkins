@@ -58,35 +58,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         protected Result doRun(final BuildListener listener) throws Exception {
             try {
                 listener.getLogger().println("Parsing POMs");
-                // TODO: this needs to be moved to its own class since MavenModuleSet is not serializable
-                List<PomInfo> poms = project.getWorkspace().act(new FileCallable<List<PomInfo>>() {
-                    public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
-                        // TODO: this logic needs to be smarter
-                        File pom = new File(ws,"pom.xml");
-
-                        try {
-                            MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
-                            MavenProject mp = embedder.readProject(pom);
-                            Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
-                            MavenUtil.resolveModules(embedder,mp,"",relPath);
-
-                            List<PomInfo> infos = new ArrayList<PomInfo>();
-                            toPomInfo(mp,relPath,infos);
-                            return infos;
-                        } catch (MavenEmbedderException e) {
-                            // TODO: better error handling needed
-                            throw new IOException2(e);
-                        } catch (ProjectBuildingException e) {
-                            throw new IOException2(e);
-                        }
-                    }
-
-                    private void toPomInfo(MavenProject mp, Map<MavenProject,String> relPath, List<PomInfo> infos) {
-                        infos.add(new PomInfo(mp,relPath.get(mp)));
-                        for (MavenProject child : (List<MavenProject>)mp.getCollectedProjects())
-                            toPomInfo(child,relPath,infos);
-                    }
-                });
+                List<PomInfo> poms = project.getWorkspace().act(new PomParser(listener));
 
                 // update the module list
                 Map<ModuleName,MavenModule> modules = project.modules;
@@ -136,5 +108,42 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
         public void post(BuildListener listener) {
         }
+    }
+
+    private static final class PomParser implements FileCallable<List<PomInfo>> {
+        private final BuildListener listener;
+
+        public PomParser(BuildListener listener) {
+            this.listener = listener;
+        }
+
+        public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
+            // TODO: this logic needs to be smarter
+            File pom = new File(ws,"pom.xml");
+
+            try {
+                MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
+                MavenProject mp = embedder.readProject(pom);
+                Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
+                MavenUtil.resolveModules(embedder,mp,"",relPath);
+
+                List<PomInfo> infos = new ArrayList<PomInfo>();
+                toPomInfo(mp,relPath,infos);
+                return infos;
+            } catch (MavenEmbedderException e) {
+                // TODO: better error handling needed
+                throw new IOException2(e);
+            } catch (ProjectBuildingException e) {
+                throw new IOException2(e);
+            }
+        }
+
+        private void toPomInfo(MavenProject mp, Map<MavenProject,String> relPath, List<PomInfo> infos) {
+            infos.add(new PomInfo(mp,relPath.get(mp)));
+            for (MavenProject child : (List<MavenProject>)mp.getCollectedProjects())
+                toPomInfo(child,relPath,infos);
+        }
+
+        private static final long serialVersionUID = 1L;
     }
 }
