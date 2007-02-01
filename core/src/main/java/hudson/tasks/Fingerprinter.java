@@ -258,7 +258,7 @@ public class Fingerprinter extends Publisher implements Serializable {
                 Integer existing = r.get(bp.getJob());
                 if(existing!=null && existing>bp.getNumber())
                     continue;   // the record in the map is already up to date
-                r.put((Project)bp.getJob(),bp.getNumber());
+                r.put(bp.getJob(),bp.getNumber());
             }
             
             return r;

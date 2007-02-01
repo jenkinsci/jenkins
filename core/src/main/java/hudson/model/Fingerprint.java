@@ -60,8 +60,8 @@ public class Fingerprint implements ModelObject {
          * Gets the {@link Job} that this pointer points to,
          * or null if such a job no longer exists.
          */
-        public Job getJob() {
-            return Hudson.getInstance().getItemByFullName(name,Job.class);
+        public AbstractProject getJob() {
+            return Hudson.getInstance().getItemByFullName(name,AbstractProject.class);
         }
 
         /**
