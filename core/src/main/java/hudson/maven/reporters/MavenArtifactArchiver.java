@@ -52,7 +52,7 @@ public class MavenArtifactArchiver extends MavenReporter {
         File file = a.getFile();
         if(file==null)
             return; // perhaps build failed and didn't leave an artifact
-        if(file.isDirectory())
+        if(!file.exists() || file.isDirectory())
             return; // during a build maven sets a class folder instead of a jar file as artifact. ignore.
 
         listener.getLogger().println("Archiving "+ file);

@@ -92,7 +92,7 @@ public class MavenFingerprinter extends MavenReporter {
      */
     private boolean record(MavenBuildProxy build, final boolean produced, Artifact a) throws IOException, InterruptedException {
         File f = a.getFile();
-        if(f==null || f.isDirectory() || !files.add(f))
+        if(f==null || !f.exists() || f.isDirectory() || !files.add(f))
             return false;
 
         // new file
