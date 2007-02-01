@@ -10,6 +10,7 @@ import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
+import hudson.model.Action;
 import hudson.FilePath;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import org.kohsuke.stapler.StaplerRequest;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Records fingerprints of the builds to keep track of dependencies.
@@ -47,20 +49,38 @@ public class MavenFingerprinter extends MavenReporter {
     }
 
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
+        boolean updated = false;
+
         // really nice if we can do this in preExecute,
         // but dependency resolution only happens after preExecute.
-        record(build,false,pom.getArtifacts());
+        updated |= record(build,false,pom.getArtifacts());
 
         // try to pick up artifacts as soon as they are found.
-        record(build,true,pom.getArtifact());
-        record(build,true,pom.getAttachedArtifacts());
+        updated |= record(build,true,pom.getArtifact());
+        updated |= record(build,true,pom.getAttachedArtifacts());
+
+        if(updated) {
+            build.execute(new BuildCallable<Void,IOException>() {
+                public Void call(MavenBuild build) throws IOException, InterruptedException {
+                    // update the build action with new fingerprints
+                    FingerprintAction a = build.getAction(FingerprintAction.class);
+                    List<Action> actions = build.getActions();
+                    if(a!=null)
+                        actions.remove(a);
+                    actions.add(new FingerprintAction(build,record));
+                    return null;
+                }
+            });
+        }
 
         return true;
     }
 
-    private void record(MavenBuildProxy build, boolean produced, Collection<Artifact> artifacts) throws IOException, InterruptedException {
+    private boolean record(MavenBuildProxy build, boolean produced, Collection<Artifact> artifacts) throws IOException, InterruptedException {
+        boolean updated = false;
         for (Artifact a : artifacts)
-            record(build,produced,a);
+            updated |= record(build,produced,a);
+        return updated;
     }
 
     /**
@@ -70,10 +90,10 @@ public class MavenFingerprinter extends MavenReporter {
      * This method contains the logic to avoid doubly recording the fingerprint
      * of the same file.
      */
-    private void record(MavenBuildProxy build, final boolean produced, Artifact a) throws IOException, InterruptedException {
+    private boolean record(MavenBuildProxy build, final boolean produced, Artifact a) throws IOException, InterruptedException {
         File f = a.getFile();
         if(f==null || !files.add(f))
-            return;
+            return false;
 
         // new file
         final String digest = new FilePath(f).digest();
@@ -87,17 +107,6 @@ public class MavenFingerprinter extends MavenReporter {
                 return null;
             }
         });
-    }
-
-    public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
-        if(!record.isEmpty()) {
-            build.execute(new BuildCallable<Void,IOException>() {
-                public Void call(MavenBuild build) throws IOException, InterruptedException {
-                    build.getActions().add(new FingerprintAction(build,record));
-                    return null;
-                }
-            });
-        }
         return true;
     }
 
