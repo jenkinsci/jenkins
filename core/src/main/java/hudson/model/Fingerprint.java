@@ -42,11 +42,11 @@ public class Fingerprint implements ModelObject {
         }
 
         public BuildPtr(Run run) {
-            this( run.getParent().getName(), run.getNumber() );
+            this( run.getParent().getFullName(), run.getNumber() );
         }
 
         /**
-         * Gets the name of the job.
+         * Gets {@link Job#getFullName() the full name of the job}.
          * <p>
          * Such job could be since then removed,
          * so there might not be a corresponding
@@ -92,14 +92,14 @@ public class Fingerprint implements ModelObject {
          * Returns true if {@link BuildPtr} points to the given run.
          */
         public boolean is(Run r) {
-            return r.getNumber()==number && r.getParent().getName().equals(name);
+            return r.getNumber()==number && r.getParent().getFullName().equals(name);
         }
 
         /**
          * Returns true if {@link BuildPtr} points to the given job.
          */
         public boolean is(Job job) {
-            return job.getName().equals(name);
+            return job.getFullName().equals(name);
         }
     }
 
