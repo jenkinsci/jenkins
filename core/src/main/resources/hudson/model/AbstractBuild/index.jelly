@@ -104,7 +104,7 @@
         <ul style="list-style-type: none;">
           <j:forEach var="item" items="${upstream}">
             <li>
-              <a href="${rootURL}/${item.key.url}">${item.key.name}</a>
+              <a href="${rootURL}/${item.key.url}">${item.key.displayName}</a>
               <t:buildLink job="${item.key}" number="${item.value}" />
             </li>
           </j:forEach>
@@ -116,7 +116,7 @@
         <ul style="list-style-type: none;">
           <j:forEach var="item" items="${downstream}">
             <li>
-              <a href="${rootURL}/${item.key.url}">${item.key.name}</a>
+              <a href="${rootURL}/${item.key.url}">${item.key.displayName}</a>
               <j:choose>
                 <j:when test="${item.value.isEmpty()}">
                   (none)
