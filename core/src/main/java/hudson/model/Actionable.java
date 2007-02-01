@@ -38,13 +38,9 @@ public abstract class Actionable extends AbstractModelObject {
     }
 
     public <T extends Action> T getAction(Class<T> type) {
-        for (Action a : getActions()) {
-            if (type.isInstance(a)) {
-                @SuppressWarnings("unchecked") // type.cast() not available in JDK 1.4; XXX doesn't retro* emulate it?
-                T _a = (T) a;
-                return _a;
-            }
-        }
+        for (Action a : getActions())
+            if (type.isInstance(a))
+                return type.cast(a);
         return null;
     }
 
