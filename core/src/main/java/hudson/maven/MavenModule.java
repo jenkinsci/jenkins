@@ -42,7 +42,9 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
 
     /**
      * Relative path to this module's root directory
-     * from {@link MavenModuleSet#getWorkspace()} 
+     * from {@link MavenModuleSet#getWorkspace()}.
+     *
+     * The path separator is normalized to '/'.
      */
     private String relativePath;
 
