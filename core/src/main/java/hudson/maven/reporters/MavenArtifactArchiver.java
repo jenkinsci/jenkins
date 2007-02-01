@@ -15,6 +15,7 @@ import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -48,10 +49,13 @@ public class MavenArtifactArchiver extends MavenReporter {
      * Archives the given {@link Artifact}.
      */
     private void record(MavenBuildProxy build, Artifact a, BuildListener listener, Set<FilePath> archivedFiles) throws IOException, InterruptedException {
-        if(a.getFile()==null)
+        File file = a.getFile();
+        if(file==null)
             return; // perhaps build failed and didn't leave an artifact
+        if(file.isDirectory())
+            return; // during a build maven sets a class folder instead of a jar file as artifact. ignore.
 
-        listener.getLogger().println("Archiving "+a.getFile());
+        listener.getLogger().println("Archiving "+ file);
 
         FilePath target = build.getArtifactsDir()
             .child(a.getGroupId())
@@ -59,7 +63,7 @@ public class MavenArtifactArchiver extends MavenReporter {
             .child(a.getVersion())
             .child(a.getArtifactId() + '-' + a.getVersion() + (a.getClassifier() != null ? '-' + a.getClassifier() : "") + '.' + a.getType());
 
-        new FilePath(a.getFile()).copyTo(target);
+        new FilePath(file).copyTo(target);
 
         archivedFiles.add(target);
     }
