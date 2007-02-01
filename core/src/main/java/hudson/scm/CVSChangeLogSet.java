@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Collection;
+import java.util.AbstractList;
 
 /**
  * {@link ChangeLogSet} for CVS.
@@ -138,6 +140,18 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
 
         public User getAuthor() {
             return author;
+        }
+
+        public Collection<String> getAffectedPaths() {
+            return new AbstractList<String>() {
+                public String get(int index) {
+                    return files.get(index).getName();
+                }
+
+                public int size() {
+                    return files.size();
+                }
+            };
         }
 
         public void setUser(String author) {

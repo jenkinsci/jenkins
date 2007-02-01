@@ -1,10 +1,11 @@
 package hudson.scm;
 
-import hudson.model.User;
-import hudson.model.AbstractBuild;
 import hudson.MarkupText;
 import hudson.Util;
+import hudson.model.AbstractBuild;
+import hudson.model.User;
 
+import java.util.Collection;
 import java.util.Collections;
 
 /**
@@ -70,6 +71,18 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          *      never null.
          */
         public abstract User getAuthor();
+
+        /**
+         * Returns a set of paths in the workspace that was
+         * affected by this change.
+         *
+         * <p>
+         * Contains string like 'foo/bar/zot'. No leading/trailing '/',
+         * and separator must be normalized to '/'.
+         *
+         * @return never null.
+         */
+        public abstract Collection<String> getAffectedPaths();
 
         /**
          * Gets the text fully marked up by {@link ChangeLogAnnotator}.

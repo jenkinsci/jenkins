@@ -40,12 +40,6 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
 
     private transient ModuleName moduleName;
 
-    /**
-     * Relative path to this module's root directory
-     * from {@link MavenModuleSet#getWorkspace()}.
-     *
-     * The path separator is normalized to '/'.
-     */
     private String relativePath;
 
     /**
@@ -84,6 +78,16 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         reporters.setOwner(this);
         if(dependencies==null)
             dependencies = Collections.emptySet();
+    }
+
+    /**
+     * Relative path to this module's root directory
+     * from {@link MavenModuleSet#getWorkspace()}.
+     *
+     * The path separator is normalized to '/'.
+     */
+    public String getRelativePath() {
+        return relativePath;
     }
 
     @Override

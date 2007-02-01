@@ -7,12 +7,13 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.DependencyGraph;
-import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.scm.ChangeLogSet;
+import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.IOException2;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedderException;
@@ -51,6 +52,30 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
     public MavenBuild(MavenModule project, File buildDir) throws IOException {
         super(project, buildDir);
+    }
+
+    /**
+     * Gets the {@link MavenModuleSetBuild} that has the same build number.
+     *
+     * @return
+     *      null if no such build exists, which happens when the module build
+     *      is manually triggered.
+     */
+    public MavenModuleSetBuild getParentBuild() {
+        return getParent().getParent().getBuildByNumber(getNumber());
+    }
+
+    @Override
+    public ChangeLogSet<? extends Entry> getChangeSet() {
+        return new FilteredChangeLogSet(this);
+    }
+
+    /**
+     * We always get the changeset from {@link MavenModuleSetBuild}.
+     */
+    @Override
+    public boolean hasChangeSetComputed() {
+        return true;
     }
 
     @Override

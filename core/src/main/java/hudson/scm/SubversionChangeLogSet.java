@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
+import java.util.AbstractList;
 
 /**
  * {@link ChangeLogSet} for Subversion.
@@ -70,6 +72,17 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
 
         public User getAuthor() {
             return author;
+        }
+
+        public Collection<String> getAffectedPaths() {
+            return new AbstractList<String>() {
+                public String get(int index) {
+                    return paths.get(index).value;
+                }
+                public int size() {
+                    return paths.size();
+                }
+            };
         }
 
         public void setUser(String author) {
