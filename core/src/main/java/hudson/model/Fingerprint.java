@@ -335,7 +335,7 @@ public class Fingerprint implements ModelObject {
     private final String fileName;
 
     /**
-     * Range of builds that use this file keyed by a job name.
+     * Range of builds that use this file keyed by a job full name.
      */
     private final Hashtable<String,RangeSet> usages = new Hashtable<String,RangeSet>();
 
@@ -405,14 +405,14 @@ public class Fingerprint implements ModelObject {
      * <p>
      * These builds of this job has used this file.
      */
-    public RangeSet getRangeSet(String jobName) {
-        RangeSet r = usages.get(jobName);
+    public RangeSet getRangeSet(String jobFullName) {
+        RangeSet r = usages.get(jobFullName);
         if(r==null) r = new RangeSet();
         return r;
     }
 
     public RangeSet getRangeSet(Job job) {
-        return getRangeSet(job.getName());
+        return getRangeSet(job.getFullName());
     }
 
     /**
@@ -429,19 +429,19 @@ public class Fingerprint implements ModelObject {
         return usages;
     }
 
-    public synchronized void add(Build b) throws IOException {
-        add(b.getParent().getName(),b.getNumber());
+    public synchronized void add(AbstractBuild b) throws IOException {
+        add(b.getParent().getFullName(),b.getNumber());
     }
 
     /**
      * Records that a build of a job has used this file.
      */
-    public synchronized void add(String jobName, int n) throws IOException {
+    public synchronized void add(String jobFullName, int n) throws IOException {
         synchronized(usages) {
-            RangeSet r = usages.get(jobName);
+            RangeSet r = usages.get(jobFullName);
             if(r==null) {
                 r = new RangeSet();
-                usages.put(jobName,r);
+                usages.put(jobFullName,r);
             }
             r.add(n);
         }
