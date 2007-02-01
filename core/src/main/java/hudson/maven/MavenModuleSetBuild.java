@@ -58,7 +58,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         protected Result doRun(final BuildListener listener) throws Exception {
             try {
                 listener.getLogger().println("Parsing POMs");
-                List<PomInfo> poms = project.getWorkspace().act(new PomParser(listener));
+                List<PomInfo> poms = project.getWorkspace().act(new PomParser(listener,project.getRootPOM()));
 
                 // update the module list
                 Map<ModuleName,MavenModule> modules = project.modules;
@@ -93,6 +93,9 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 project.getRootModule().scheduleBuild();
                 
                 return null;
+            } catch (AbortException e) {
+                // error should have been already reported.
+                return Result.FAILURE;
             } catch (IOException e) {
                 e.printStackTrace(listener.error("Failed to parse POMs"));
                 return Result.FAILURE;
@@ -112,14 +115,21 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
     private static final class PomParser implements FileCallable<List<PomInfo>> {
         private final BuildListener listener;
+        private final String rootPOM;
 
-        public PomParser(BuildListener listener) {
+        public PomParser(BuildListener listener, String rootPOM) {
             this.listener = listener;
+            this.rootPOM = rootPOM;
         }
 
         public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
-            // TODO: this logic needs to be smarter
-            File pom = new File(ws,"pom.xml");
+            File pom = new File(ws,rootPOM);
+
+            if(!pom.exists()) {
+                listener.getLogger().println("No such file "+pom);
+                listener.getLogger().println("Perhaps you need to specify the correct POM file path in the project configuration?");
+                throw new AbortException();
+            }
 
             try {
                 MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
@@ -144,6 +154,10 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 toPomInfo(child,relPath,infos);
         }
 
+        private static final long serialVersionUID = 1L;
+    }
+
+    private static class AbortException extends IOException {
         private static final long serialVersionUID = 1L;
     }
 }

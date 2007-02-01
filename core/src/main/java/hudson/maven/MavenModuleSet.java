@@ -2,6 +2,7 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.triggers.Trigger;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
@@ -47,6 +48,8 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
      * Name of the top-level module.
      */
     private ModuleName rootModule;
+
+    private String rootPOM;
 
     public MavenModuleSet(String name) {
         super(Hudson.getInstance(),name);
@@ -202,6 +205,15 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
         return modules.get(rootModule);
     }
 
+    /**
+     * Gets the location of top-level <tt>pom.xml</tt> relative to the workspace root.
+     */
+    public String getRootPOM() {
+        if(rootPOM==null)   return "pom.xml";
+        return rootPOM;
+    }
+
+
     /*package*/ void setRootModule(ModuleName rootModule) throws IOException {
         if(this.rootModule!=null && this.rootModule.equals(rootModule))
             return; // no change
@@ -219,6 +231,9 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
         if(!Hudson.adminCheck(req,rsp))
             return;
 
+        rootPOM = Util.fixEmpty(req.getParameter("rootPOM"));
+        if(rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
+        
         super.doConfigSubmit(req,rsp);
 
         save();

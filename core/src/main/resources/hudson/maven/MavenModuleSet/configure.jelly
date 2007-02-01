@@ -22,6 +22,12 @@
           <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />
         </f:section>
 
+        <f:section title="Build">
+          <f:entry title="root POM" help="/help/maven/root-pom.html">
+            <f:textbox name="rootPOM" value="${it.rootPOM}"/>
+          </f:entry>
+        </f:section>
+
         <f:block>
           <input type="submit" name="Submit" value="Save" />
         </f:block>
