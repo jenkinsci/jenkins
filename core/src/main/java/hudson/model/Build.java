@@ -1,12 +1,9 @@
 package hudson.model;
 
-import hudson.model.Fingerprint.BuildPtr;
-import hudson.model.Fingerprint.RangeSet;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapper.Environment;
 import hudson.tasks.Builder;
-import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.SCMTrigger;
@@ -48,40 +45,6 @@ public final class Build extends AbstractBuild<Project,Build> {
      */
     public AbstractTestResultAction getTestResultAction() {
         return getAction(AbstractTestResultAction.class);
-    }
-
-    @Override
-    public RangeSet getDownstreamRelationship(AbstractProject that) {
-        RangeSet rs = new RangeSet();
-
-        FingerprintAction f = getAction(FingerprintAction.class);
-        if(f==null)     return rs;
-
-        // look for fingerprints that point to this build as the source, and merge them all
-        for (Fingerprint e : f.getFingerprints().values()) {
-            BuildPtr o = e.getOriginal();
-            if(o!=null && o.is(this))
-                rs.add(e.getRangeSet(that));
-        }
-
-        return rs;
-    }
-
-    @Override
-    public int getUpstreamRelationship(AbstractProject that) {
-        FingerprintAction f = getAction(FingerprintAction.class);
-        if(f==null)     return -1;
-
-        int n = -1;
-
-        // look for fingerprints that point to the given project as the source, and merge them all
-        for (Fingerprint e : f.getFingerprints().values()) {
-            BuildPtr o = e.getOriginal();
-            if(o!=null && o.is(that))
-                n = Math.max(n,o.getNumber());
-        }
-
-        return n;
     }
 
     /**

@@ -8,6 +8,7 @@ import hudson.maven.MavenBuild;
 import static hudson.model.Hudson.isWindows;
 import hudson.model.listeners.SCMListener;
 import hudson.model.Fingerprint.RangeSet;
+import hudson.model.Fingerprint.BuildPtr;
 import hudson.scm.CVSChangeLogParser;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
@@ -246,7 +247,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      range of build numbers that represent which downstream builds are using this build.
      *      The range will be empty if no build of that project matches this.
      */
-    public abstract RangeSet getDownstreamRelationship(AbstractProject that);
+    public RangeSet getDownstreamRelationship(AbstractProject that) {
+        RangeSet rs = new RangeSet();
+
+        FingerprintAction f = getAction(FingerprintAction.class);
+        if(f==null)     return rs;
+
+        // look for fingerprints that point to this build as the source, and merge them all
+        for (Fingerprint e : f.getFingerprints().values()) {
+            BuildPtr o = e.getOriginal();
+            if(o!=null && o.is(this))
+                rs.add(e.getRangeSet(that));
+        }
+
+        return rs;
+    }
 
     /**
      * Gets the dependency relationship from this build (as the sink)
@@ -256,7 +271,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      Build number of the upstream build that feed into this build,
      *      or -1 if no record is available.
      */
-    public abstract int getUpstreamRelationship(AbstractProject that);
+    public int getUpstreamRelationship(AbstractProject that) {
+        FingerprintAction f = getAction(FingerprintAction.class);
+        if(f==null)     return -1;
+
+        int n = -1;
+
+        // look for fingerprints that point to the given project as the source, and merge them all
+        for (Fingerprint e : f.getFingerprints().values()) {
+            BuildPtr o = e.getOriginal();
+            if(o!=null && o.is(that))
+                n = Math.max(n,o.getNumber());
+        }
+
+        return n;
+    }
 
     /**
      * Gets the downstream builds of this build, which are the builds of the

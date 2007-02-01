@@ -58,18 +58,6 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         run(new RunnerImpl());
     }
 
-    @Override
-    public RangeSet getDownstreamRelationship(AbstractProject that) {
-        // TODO
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getUpstreamRelationship(AbstractProject that) {
-        // TODO
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * Runs Maven and builds the project.
      *

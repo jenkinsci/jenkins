@@ -2,10 +2,8 @@ package hudson.maven;
 
 import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.Build;
 import hudson.model.BuildListener;
-import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
@@ -50,16 +48,6 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
     public void run() {
         run(new RunnerImpl());
-    }
-
-    public RangeSet getDownstreamRelationship(AbstractProject that) {
-        // TODO
-        return new RangeSet();
-    }
-
-    public int getUpstreamRelationship(AbstractProject that) {
-        // TODO
-        return -1;
     }
 
     /**
