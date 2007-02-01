@@ -103,7 +103,7 @@ public class MavenFingerprinter extends MavenReporter {
         build.execute(new BuildCallable<Void,IOException>() {
             public Void call(MavenBuild build) throws IOException, InterruptedException {
                 FingerprintMap map = Hudson.getInstance().getFingerprintMap();
-                map.getOrCreate(produced?build:null, name, digest);
+                map.getOrCreate(produced?build:null, name, digest).add(build);
                 return null;
             }
         });
