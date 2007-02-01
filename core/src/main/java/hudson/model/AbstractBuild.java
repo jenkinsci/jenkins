@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.Launcher;
 import hudson.Proc.LocalProc;
 import hudson.Util;
+import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.maven.MavenBuild;
 import static hudson.model.Hudson.isWindows;
 import hudson.model.listeners.SCMListener;
@@ -23,6 +24,7 @@ import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -286,6 +288,65 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
         return r;
     }
+
+    /**
+     * Gets the changes in the dependency between the given build and this build.
+     */
+    public Map<AbstractProject,DependencyChange> getDependencyChanges(AbstractBuild from) {
+        if(from==null)             return Collections.emptyMap(); // make it easy to call this from views
+        FingerprintAction n = this.getAction(FingerprintAction.class);
+        FingerprintAction o = from.getAction(FingerprintAction.class);
+        if(n==null || o==null)     return Collections.emptyMap();
+
+        Map<AbstractProject,Integer> ndep = n.getDependencies();
+        Map<AbstractProject,Integer> odep = o.getDependencies();
+
+        Map<AbstractProject,DependencyChange> r = new HashMap<AbstractProject,DependencyChange>();
+
+        for (Map.Entry<AbstractProject,Integer> entry : odep.entrySet()) {
+            AbstractProject p = entry.getKey();
+            Integer oldNumber = entry.getValue();
+            Integer newNumber = ndep.get(p);
+            if(newNumber!=null && oldNumber.compareTo(newNumber)<0) {
+                r.put(p,new DependencyChange(p,oldNumber,newNumber));
+            }
+        }
+
+        return r;
+    }
+
+    /**
+     * Represents a change in the dependency.
+     */
+    public static final class DependencyChange {
+        /**
+         * The dependency project.
+         */
+        public final AbstractProject project;
+        /**
+         * Version of the dependency project used in the previous build.
+         */
+        public final int fromId;
+        /**
+         * {@link Build} object for {@link #fromId}. Can be null if the log is gone.
+         */
+        public final AbstractBuild from;
+        /**
+         * Version of the dependency project used in this build.
+         */
+        public final int toId;
+
+        public final AbstractBuild to;
+
+        public DependencyChange(AbstractProject<?,?> project, int fromId, int toId) {
+            this.project = project;
+            this.fromId = fromId;
+            this.toId = toId;
+            this.from = project.getBuildByNumber(fromId);
+            this.to = project.getBuildByNumber(toId);
+        }
+    }
+    
 
 //
 //
