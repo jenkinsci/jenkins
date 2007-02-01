@@ -13,6 +13,8 @@ import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.model.Result;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
 import org.apache.tools.ant.DirectoryScanner;
@@ -185,13 +187,16 @@ public class Fingerprinter extends Publisher implements Serializable {
      * Action for displaying fingerprints.
      */
     public static final class FingerprintAction implements Action {
-        private final Build build;
+        private final AbstractBuild build;
 
+        /**
+         * From file name to the digest.
+         */
         private final Map<String,String> record;
 
         private transient WeakReference<Map<String,Fingerprint>> ref;
 
-        public FingerprintAction(Build build, Map<String, String> record) {
+        public FingerprintAction(AbstractBuild build, Map<String, String> record) {
             this.build = build;
             this.record = record;
         }
@@ -208,7 +213,7 @@ public class Fingerprinter extends Publisher implements Serializable {
             return "fingerprints";
         }
 
-        public Build getBuild() {
+        public AbstractBuild getBuild() {
             return build;
         }
 
@@ -242,8 +247,8 @@ public class Fingerprinter extends Publisher implements Serializable {
          * Gets the dependency to other builds in a map.
          * Returns build numbers instead of {@link Build}, since log records may be gone.
          */
-        public Map<Project,Integer> getDependencies() {
-            Map<Project,Integer> r = new HashMap<Project,Integer>();
+        public Map<AbstractProject,Integer> getDependencies() {
+            Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
 
             for (Fingerprint fp : getFingerprints().values()) {
                 BuildPtr bp = fp.getOriginal();
