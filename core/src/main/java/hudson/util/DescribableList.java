@@ -10,6 +10,7 @@ import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.maven.MavenReporterDescriptor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
 
 /**
  * Persisted list of {@link Describable}s with some operations specific
@@ -42,6 +44,17 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     public void add(T item) throws IOException {
         data.add(item);
         owner.save();
+    }
+
+    public T get(D descriptor) {
+        for (T t : data)
+            if(t.getDescriptor()==descriptor)
+                return t;
+        return null;
+    }
+
+    public boolean contains(D d) {
+        return get(d)!=null;
     }
 
     public void remove(D descriptor) throws IOException {
@@ -70,6 +83,10 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         return data.toArray(array);
     }
 
+    public void addAllTo(Collection<? super T> dst) {
+        data.addAllTo(dst);
+    }
+
     /**
      * Rebuilds the list by creating a fresh instances from the submitted form.
      *
@@ -77,7 +94,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * This method is almost always used by the owner.
      * This method does not invoke the save method.
      */
-    public void rebuild(StaplerRequest req, List<Descriptor<T>> descriptors, String prefix) throws FormException {
+    public void rebuild(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException {
         List<T> newList = new ArrayList<T>();
 
         for( int i=0; i< descriptors.size(); i++ ) {
@@ -89,7 +106,6 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
 
         data.replaceBy(newList);
     }
-
 
     public interface Owner {
         /**

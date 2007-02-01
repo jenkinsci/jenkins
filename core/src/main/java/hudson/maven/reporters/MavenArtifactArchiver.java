@@ -1,12 +1,13 @@
 package hudson.maven.reporters;
 
 import hudson.FilePath;
-import hudson.maven.MavenBuildProxy;
-import hudson.maven.MavenReporter;
 import hudson.maven.MavenBuild;
+import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
+import hudson.maven.MavenModule;
+import hudson.maven.MavenReporter;
+import hudson.maven.MavenReporterDescriptor;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
 import org.apache.maven.artifact.Artifact;
@@ -14,8 +15,8 @@ import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Archives artifacts of the build.
@@ -67,7 +68,7 @@ public class MavenArtifactArchiver extends MavenReporter {
         return DescriptorImpl.DESCRIPTOR;
     }
 
-    public static final class DescriptorImpl extends Descriptor<MavenReporter> {
+    public static final class DescriptorImpl extends MavenReporterDescriptor {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         private DescriptorImpl() {
@@ -79,6 +80,10 @@ public class MavenArtifactArchiver extends MavenReporter {
         }
 
         public MavenArtifactArchiver newInstance(StaplerRequest req) throws FormException {
+            return new MavenArtifactArchiver();
+        }
+
+        public MavenReporter newAutoInstance(MavenModule module) {
             return new MavenArtifactArchiver();
         }
     }

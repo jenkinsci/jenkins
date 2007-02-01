@@ -1,37 +1,39 @@
 package hudson.maven;
 
+import hudson.FilePath;
 import hudson.FilePath.FileCallable;
+import hudson.maven.PluginManagerInterceptor.AbortException;
 import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
-import hudson.model.Result;
-import hudson.model.Run;
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import hudson.model.BuildListener;
 import hudson.model.DependencyGraph;
 import hudson.model.Fingerprint.RangeSet;
-import hudson.remoting.VirtualChannel;
+import hudson.model.Hudson;
+import hudson.model.Result;
+import hudson.model.Run;
 import hudson.remoting.Channel;
+import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
-import hudson.FilePath;
-import hudson.maven.PluginManagerInterceptor.AbortException;
 import org.apache.maven.BuildFailureException;
-import org.apache.maven.plugin.PluginManager;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.embedder.PlexusLoggerAdapter;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.monitor.event.DefaultEventMonitor;
 import org.apache.maven.monitor.event.EventMonitor;
+import org.apache.maven.plugin.PluginManager;
 import org.apache.maven.project.DuplicateProjectException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
-import org.codehaus.plexus.util.dag.CycleDetectedException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.util.dag.CycleDetectedException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -168,13 +170,19 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
     private class RunnerImpl extends AbstractRunner {
         protected Result doRun(BuildListener listener) throws Exception {
-            //if(!preBuild(listener,project.getBuilders()))
-            //    return Result.FAILURE;
-            //if(!preBuild(listener,project.getPublishers()))
-            //    return Result.FAILURE;
+            // pick up a list of reporters to run
+            List<MavenReporter> reporters = new ArrayList<MavenReporter>();
+            getProject().getReporters().addAllTo(reporters);
+            for (MavenReporterDescriptor d : MavenReporters.LIST) {
+                if(getProject().getReporters().contains(d))
+                    continue;   // already configured
+                MavenReporter auto = d.newAutoInstance(getProject());
+                if(auto!=null)
+                    reporters.add(auto);
+            }
 
             return getProject().getModuleRoot().act(new Builder(listener,new ProxyImpl(),
-                getProject().getReporters().toArray(new MavenReporter[0])));
+                reporters.toArray(new MavenReporter[0])));
         }
 
         public void post(BuildListener listener) {

@@ -1,15 +1,14 @@
 package hudson.maven;
 
-import hudson.model.Describable;
-import hudson.model.BuildListener;
-import hudson.model.Action;
-import hudson.model.Project;
 import hudson.ExtensionPoint;
+import hudson.model.Action;
+import hudson.model.BuildListener;
+import hudson.model.Describable;
+import hudson.model.Project;
 import hudson.tasks.BuildStep;
+import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
-
-import org.apache.maven.project.MavenProject;
 
 /**
  * Listens to the build execution of {@link MavenBuild},
@@ -145,4 +144,6 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
     public Action getProjectAction(MavenModule project) {
         return null;
     }
+
+    public abstract MavenReporterDescriptor getDescriptor();
 }

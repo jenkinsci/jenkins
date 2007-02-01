@@ -99,6 +99,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         return core.toArray(array);
     }
 
+    public void addAllTo(Collection<? super E> dst) {
+        dst.addAll(core);
+    }
+
     /**
      * {@link Converter} implementation for XStream.
      */
