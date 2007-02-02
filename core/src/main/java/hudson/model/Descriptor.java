@@ -81,6 +81,8 @@ public abstract class Descriptor<T extends Describable<T>> {
 
     /**
      * Human readable name of this kind of configurable object.
+     * <p>
+     * Used as the caption when the user chooses what job type to create.
      */
     public abstract String getDisplayName();
 
