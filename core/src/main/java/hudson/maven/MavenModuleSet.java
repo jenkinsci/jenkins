@@ -245,17 +245,23 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
         return DESCRIPTOR;
     }
 
-    public static final TopLevelItemDescriptor DESCRIPTOR = new TopLevelItemDescriptor(MavenModuleSet.class) {
+    public static final TopLevelItemDescriptor DESCRIPTOR = new DescriptorImpl();
+
+    static {
+        Items.XSTREAM.alias("maven2-module-set", MavenModule.class);
+    }
+
+    public static final class DescriptorImpl extends TopLevelItemDescriptor {
+        private DescriptorImpl() {
+            super(MavenModuleSet.class);
+        }
+
         public String getDisplayName() {
-            return "Building a maven2 project";
+            return "Build a maven2 project (alpha)";
         }
 
         public MavenModuleSet newInstance(String name) {
             return new MavenModuleSet(name);
         }
-    };
-
-    static {
-        Items.XSTREAM.alias("maven2-module-set", MavenModule.class);
     }
 }

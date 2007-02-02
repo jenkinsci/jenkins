@@ -1,0 +1,6 @@
+<div>
+  This type of job allows you to record the execution of a process run outside Hudson
+  (perhaps even on a remote machine.) This is designed so that you can use Hudson
+  as a dashboard of your existing automation system. See
+  <a href="https://hudson.dev.java.net/cron.html">the documentation for more details.</a>
+</div>

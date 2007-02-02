@@ -270,13 +270,19 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         return DESCRIPTOR;
     }
 
-    public static final TopLevelItemDescriptor DESCRIPTOR = new TopLevelItemDescriptor(Project.class) {
+    public static final TopLevelItemDescriptor DESCRIPTOR = new DescriptorImpl();
+
+    public static final class DescriptorImpl extends TopLevelItemDescriptor {
+        private DescriptorImpl() {
+            super(Project.class);
+        }
+
         public String getDisplayName() {
-            return "Building a software project";
+            return "Build a free-style software project";
         }
 
         public Project newInstance(String name) {
             return new Project(Hudson.getInstance(),name);
         }
-    };
+    }
 }

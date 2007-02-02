@@ -71,13 +71,19 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
         return DESCRIPTOR;
     }
 
-    public static final TopLevelItemDescriptor DESCRIPTOR = new TopLevelItemDescriptor(ExternalJob.class) {
+    public static final TopLevelItemDescriptor DESCRIPTOR = new DescriptorImpl();
+
+    public static final class DescriptorImpl extends TopLevelItemDescriptor {
+        private DescriptorImpl() {
+            super(ExternalJob.class);
+        }
+
         public String getDisplayName() {
-            return "Monitoring an external job";
+            return "Monitor an external job";
         }
 
         public ExternalJob newInstance(String name) {
             return new ExternalJob(name);
         }
-    };
+    }
 }

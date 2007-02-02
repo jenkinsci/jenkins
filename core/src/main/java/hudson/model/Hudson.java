@@ -427,6 +427,16 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
+     * Gets the names of all the {@link TopLevelItem}s.
+     */
+    public Collection<String> getTopLevelItemNames() {
+        List<String> names = new ArrayList<String>();
+        for (TopLevelItem j : items.values())
+            names.add(j.getName());
+        return names;
+    }
+
+    /**
      * Every job belongs to us.
      *
      * @deprecated
@@ -944,7 +954,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
         req.setCharacterEncoding("UTF-8");
         String name = req.getParameter("name").trim();
-        String jobType = req.getParameter("type");
         String mode = req.getParameter("mode");
 
         try {
@@ -966,15 +975,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
         TopLevelItem result;
 
-        if(mode.equals("newJob")) {
-            if(jobType ==null) {
-                // request forged?
-                rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                return null;
-            }
-            // redirect to the project config screen
-            result = createProject(Items.getDescriptor(jobType), name);
-        } else {
+        if(mode.equals("copyJob")) {
             TopLevelItem src = getItem(req.getParameter("from"));
             if(src==null) {
                 rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -990,6 +991,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             result = (TopLevelItem)Items.load(this,result.getRootDir());
             result.onCopiedFrom(src);
             items.put(name,result);
+        } else {
+            // redirect to the project config screen
+            result = createProject(Items.getDescriptor(mode), name);
         }
 
         for (ItemListener l : viewItemListeners)
