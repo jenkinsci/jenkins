@@ -3,9 +3,9 @@ package hudson.maven;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.triggers.Trigger;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
+import hudson.model.Executor;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -14,7 +14,6 @@ import hudson.model.Job;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.model.Executor;
 import hudson.util.CopyOnWriteMap;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -246,10 +245,6 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
     }
 
     public static final TopLevelItemDescriptor DESCRIPTOR = new DescriptorImpl();
-
-    static {
-        Items.XSTREAM.alias("maven2-module-set", MavenModule.class);
-    }
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {
         private DescriptorImpl() {

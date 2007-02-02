@@ -104,5 +104,6 @@ public class Items {
     static {
         XSTREAM.alias("project",Project.class);
         XSTREAM.alias("maven2", MavenModule.class);
+        XSTREAM.alias("maven2-module-set", MavenModule.class);
     }
 }
