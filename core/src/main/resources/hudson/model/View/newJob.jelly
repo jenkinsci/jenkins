@@ -7,7 +7,7 @@
 		<l:main-panel>
 		  <s:form method="post" action="createItem">
 		    <s:entry title="Job name">
-		      <input type="text" name="name" class="setting-input" />
+		      <s:textbox name="name" checkUrl="'${rootURL}/itemExistsCheck?value='+this.value" />
 		    </s:entry>
 
         <j:getStatic var="jobs" className="hudson.model.Items" field="LIST" />

@@ -11,6 +11,7 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.FilePath;
+import static hudson.Util.fixEmpty;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -1315,6 +1316,28 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                 }
 
                 ok();
+            }
+        }.process();
+    }
+
+    /**
+     * Checks if the top-level item with the given name exists.
+     */
+    public void doItemExistsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        // this method can be used to check if a file exists anywhere in the file system,
+        // so it should be protected.
+        new FormFieldValidator(req,rsp,true) {
+            protected void check() throws IOException, ServletException {
+                String job = fixEmpty(request.getParameter("value"));
+                if(job==null) {
+                    ok(); // nothing is entered yet
+                    return;
+                }
+
+                if(getItem(job)==null)
+                    ok();
+                else
+                    error("Job named "+job+" already exists");
             }
         }.process();
     }
