@@ -8,6 +8,7 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.util.FormFieldValidator;
+import hudson.util.ArgumentListBuilder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -57,8 +58,6 @@ public class Maven extends Builder {
     public boolean perform(Build build, Launcher launcher, BuildListener listener) {
         Project proj = build.getProject();
 
-        String cmd;
-
         String execName;
         if(launcher.isUnix())
             execName = "maven";
@@ -67,10 +66,11 @@ public class Maven extends Builder {
 
         String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
 
+        ArgumentListBuilder args = new ArgumentListBuilder();
         MavenInstallation ai = getMaven();
-        if(ai==null)
-            cmd = execName+' '+normalizedTarget;
-        else {
+        if(ai==null) {
+            args.add(execName).addTokenized(normalizedTarget);
+        } else {
             File exec = ai.getExecutable();
             if(exec==null) {
                 listener.fatalError("Couldn't find any executable in "+ai.getMavenHome());
@@ -80,7 +80,7 @@ public class Maven extends Builder {
                 listener.fatalError(exec+" doesn't exist");
                 return false;
             }
-            cmd = exec.getPath()+' '+normalizedTarget;
+            args.add(exec.getPath()).addTokenized(normalizedTarget);
         }
 
         Map<String,String> env = build.getEnvVars();
@@ -91,7 +91,7 @@ public class Maven extends Builder {
         env.put("MAVEN_TERMINATE_CMD","on");
 
         try {
-            int r = launcher.launch(cmd,env,listener.getLogger(),proj.getModuleRoot()).join();
+            int r = launcher.launch(args.toCommandArray(),env,listener.getLogger(),proj.getModuleRoot()).join();
             return r==0;
         } catch (IOException e) {
             Util.displayIOException(e,listener);
