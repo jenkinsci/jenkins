@@ -1,4 +1,5 @@
 <div>
   Build a maven2 project. Hudson takes advantage of your POM files and
-  drastically reduces the configuration.
+  drastically reduces the configuration. Still a work in progress, but
+  exposed for soliciting feedback.
 </div>
