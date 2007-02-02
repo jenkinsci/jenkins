@@ -23,8 +23,9 @@ public class Items {
     /**
      * List of all installed {@link TopLevelItem} types.
      */
-    public static final List<TopLevelItemDescriptor> LIST = (List)Descriptor.toList(
+    public static final List<TopLevelItemDescriptor> LIST = Descriptor.toList(
         Project.DESCRIPTOR,
+        MavenModuleSet.DESCRIPTOR,
         ExternalJob.DESCRIPTOR
     );
 
@@ -102,11 +103,6 @@ public class Items {
 
     static {
         XSTREAM.alias("project",Project.class);
-
-        // hide maven support until it gets ready
-        if(Boolean.getBoolean("hudson.maven")) {
-            LIST.add(MavenModuleSet.DESCRIPTOR);
-            Items.XSTREAM.alias("maven2", MavenModule.class);
-        }
+        XSTREAM.alias("maven2", MavenModule.class);
     }
 }
