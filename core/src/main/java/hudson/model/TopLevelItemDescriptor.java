@@ -16,6 +16,17 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <p>
+     * Used as the caption when the user chooses what job type to create.
+     * The descriptor implementation also needs to have <tt>detail.jelly</tt>
+     * script, which will be used to render the text below the caption
+     * that expains the job type.
+     */
+    public abstract String getDisplayName();
+
+    /**
      * @deprecated
      *      This is not a valid operation for {@link Job}s.
      */
