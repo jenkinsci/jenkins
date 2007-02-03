@@ -1,30 +1,29 @@
 package hudson.maven.reporters;
 
-import hudson.maven.MavenReporter;
-import hudson.maven.MavenBuildProxy;
-import hudson.maven.MavenReporterDescriptor;
-import hudson.maven.MavenModule;
-import hudson.maven.MojoInfo;
+import hudson.FilePath;
 import hudson.maven.MavenBuild;
+import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
+import hudson.maven.MavenModule;
+import hudson.maven.MavenReporter;
+import hudson.maven.MavenReporterDescriptor;
+import hudson.maven.MojoInfo;
+import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
-import hudson.model.Action;
-import hudson.FilePath;
 import hudson.tasks.Fingerprinter.FingerprintAction;
-import org.kohsuke.stapler.StaplerRequest;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
 
-import java.io.IOException;
 import java.io.File;
-import java.util.Set;
-import java.util.HashSet;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Records fingerprints of the builds to keep track of dependencies.
@@ -123,10 +122,6 @@ public class MavenFingerprinter extends MavenReporter {
 
         public String getDisplayName() {
             return "Record fingerprints";
-        }
-
-        public MavenFingerprinter newInstance(StaplerRequest req) throws FormException {
-            return new MavenFingerprinter();
         }
 
         public MavenReporter newAutoInstance(MavenModule module) {

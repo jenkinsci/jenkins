@@ -4,6 +4,7 @@ import hudson.maven.reporters.MavenArtifactArchiver;
 import hudson.model.Descriptor;
 import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.jelly.JellyClassTearOff;
 
 /**
@@ -33,6 +34,14 @@ public abstract class MavenReporterDescriptor extends Descriptor<MavenReporter> 
      * and receive event callbacks.
      */
     public MavenReporter newAutoInstance(MavenModule module) {
+        return null;
+    }
+
+    /**
+     * If {@link #hasConfigScreen() the reporter has no configuration screen},
+     * this method can safely return null, which is the default implementation.
+     */
+    public MavenReporter newInstance(StaplerRequest req) throws FormException {
         return null;
     }
 

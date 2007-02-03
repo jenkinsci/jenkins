@@ -12,10 +12,9 @@ import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
-import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -81,10 +80,6 @@ public class MavenArtifactArchiver extends MavenReporter {
 
         public String getDisplayName() {
             return "Archive the artifacts";
-        }
-
-        public MavenArtifactArchiver newInstance(StaplerRequest req) throws FormException {
-            return new MavenArtifactArchiver();
         }
 
         public MavenReporter newAutoInstance(MavenModule module) {
