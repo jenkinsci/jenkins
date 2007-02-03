@@ -1,7 +1,10 @@
 package hudson.maven;
 
-import hudson.model.Descriptor;
 import hudson.maven.reporters.MavenArtifactArchiver;
+import hudson.model.Descriptor;
+import org.apache.commons.jelly.JellyException;
+import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.jelly.JellyClassTearOff;
 
 /**
  * {@link Descriptor} for {@link MavenReporter}.
@@ -31,5 +34,18 @@ public abstract class MavenReporterDescriptor extends Descriptor<MavenReporter> 
      */
     public MavenReporter newAutoInstance(MavenModule module) {
         return null;
+    }
+
+    /**
+     * Returns true if this descriptor has <tt>config.jelly</tt>.
+     */
+    public final boolean hasConfigScreen() {
+        MetaClass c = MetaClass.get(getClass());
+        try {
+            JellyClassTearOff tearOff = c.loadTearOff(JellyClassTearOff.class);
+            return tearOff.findScript(getConfigPage())!=null;
+        } catch(JellyException e) {
+            return false;
+        }
     }
 }

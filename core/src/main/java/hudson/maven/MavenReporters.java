@@ -5,6 +5,7 @@ import hudson.maven.reporters.MavenArtifactArchiver;
 import hudson.maven.reporters.MavenFingerprinter;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -18,4 +19,16 @@ public final class MavenReporters {
         MavenArtifactArchiver.DescriptorImpl.DESCRIPTOR,
         MavenFingerprinter.DescriptorImpl.DESCRIPTOR
     );
+
+    /**
+     * Gets the subset of {@link #LIST} that has configuration screen.
+     */
+    public static List<MavenReporterDescriptor> getConfigurableList() {
+        List<MavenReporterDescriptor> r = new ArrayList<MavenReporterDescriptor>();
+        for (MavenReporterDescriptor d : LIST) {
+            if(d.hasConfigScreen())
+                r.add(d);
+        }
+        return r;
+    }
 }

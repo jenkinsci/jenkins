@@ -32,9 +32,11 @@
     </f:entry>
   </f:section>
 
-  <j:getStatic var="reporters" className="hudson.maven.MavenReporters" field="LIST" />
-  <f:descriptorList title="Build Settings"
-                    descriptors="${reporters}"
-                    instances="${it.reporters.toMap()}"
-                    varName="reporter" />
+  <j:invokeStatic var="reporters" className="hudson.maven.MavenReporters" method="getConfigurableList" />
+  <j:if test="${!empty(reporters)}">
+    <f:descriptorList title="Build Settings"
+                      descriptors="${reporters}"
+                      instances="${it.reporters.toMap()}"
+                      varName="reporter" />
+  </j:if>
 </j:jelly>
