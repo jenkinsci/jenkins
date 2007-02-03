@@ -49,4 +49,8 @@ public final class PluginName {
         result = 31 * result + version.hashCode();
         return result;
     }
+
+    public boolean matches(String groupId, String artifactId) {
+        return this.groupId.equals(groupId) && this.artifactId.equals(artifactId);
+    }
 }
