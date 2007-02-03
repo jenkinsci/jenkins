@@ -269,8 +269,6 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
         super.doConfigSubmit(req,rsp);
 
         save();
-        // SCM setting might have changed. Reparse POMs.
-        scheduleBuild();
     }
 
     public TopLevelItemDescriptor getDescriptor() {
