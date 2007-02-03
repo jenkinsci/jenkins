@@ -120,7 +120,7 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
 
     @Override
     public FilePath getWorkspace() {
-        return getParent().getWorkspace().child(relativePath);
+        return getParent().getModuleRoot().child(relativePath);
     }
 
     public ModuleName getModuleName() {
