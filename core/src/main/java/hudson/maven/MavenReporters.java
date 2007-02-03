@@ -3,6 +3,7 @@ package hudson.maven;
 import hudson.model.Descriptor;
 import hudson.maven.reporters.MavenArtifactArchiver;
 import hudson.maven.reporters.MavenFingerprinter;
+import hudson.maven.reporters.MavenJavadocArchiver;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -17,7 +18,8 @@ public final class MavenReporters {
      */
     public static final List<MavenReporterDescriptor> LIST = Descriptor.toList(
         MavenArtifactArchiver.DescriptorImpl.DESCRIPTOR,
-        MavenFingerprinter.DescriptorImpl.DESCRIPTOR
+        MavenFingerprinter.DescriptorImpl.DESCRIPTOR,
+        MavenJavadocArchiver.DescriptorImpl.DESCRIPTOR
     );
 
     /**

@@ -14,8 +14,8 @@ import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
-import hudson.util.IOException2;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.IOException2;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.embedder.PlexusLoggerAdapter;
@@ -33,7 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -174,8 +173,16 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             return new FilePath(MavenBuild.this.getRootDir());
         }
 
+        public FilePath getProjectRootDir() {
+            return new FilePath(MavenBuild.this.getParent().getRootDir());
+        }
+
         public FilePath getArtifactsDir() {
             return new FilePath(MavenBuild.this.getArtifactsDir());
+        }
+
+        public void setResult(Result result) {
+            MavenBuild.this.setResult(result);
         }
 
         private Object writeReplace() {

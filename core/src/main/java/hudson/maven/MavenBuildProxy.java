@@ -1,6 +1,7 @@
 package hudson.maven;
 
 import hudson.FilePath;
+import hudson.model.Result;
 
 import java.io.Serializable;
 import java.io.IOException;
@@ -39,9 +40,19 @@ public interface MavenBuildProxy {
     FilePath getRootDir();
 
     /**
+     * Root directory of the parent of this build.
+     */
+    FilePath getProjectRootDir();
+
+    /**
      * @see MavenBuild#getArtifactsDir()
      */
     FilePath getArtifactsDir();
+
+    /**
+     * @see MavenBuild#setResult(Result)
+     */
+    void setResult(Result result);
 
     public interface BuildCallable<V,T extends Throwable> extends Serializable {
         /**
