@@ -78,6 +78,10 @@ public final class MojoInfo {
      *      conversion rules associated with it (for example, {@link File} would
      *      resolve relative path against POM base directory.)
      *
+     * @return
+     *      The configuration value either specified in POM, or inherited from
+     *      parent POM, or default value if one is specified in mojo.
+     *
      * @throws ComponentConfigurationException
      *      Not sure when exactly this is thrown, but it's probably when
      *      the configuration in POM is syntactically incorrect. 
