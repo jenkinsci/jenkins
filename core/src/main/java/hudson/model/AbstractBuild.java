@@ -110,7 +110,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if(result!=null)
                 return result;  // abort here
 
-            createLastSuccessfulLink(listener);
+            if(getResult()==null || getResult()==Result.SUCCESS)
+                createLastSuccessfulLink(listener);
 
             return Result.SUCCESS;
         }

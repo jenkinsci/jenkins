@@ -32,21 +32,25 @@ public class MavenJavadocArchiver extends MavenReporter {
 
         File destDir;
         try {
-            destDir = mojo.getConfigurationValue("destDir", File.class);
+            destDir = mojo.getConfigurationValue("outputDirectory", File.class);
         } catch (ComponentConfigurationException e) {
             e.printStackTrace(listener.fatalError("Unable to obtain the destDir from javadoc mojo"));
             build.setResult(Result.FAILURE);
             return true;
         }
-        FilePath target = build.getProjectRootDir().child("javadoc");
 
-        try {
-            listener.getLogger().println("Archiving javadoc");
-            new FilePath(destDir).copyRecursiveTo("**/*",target);
-        } catch (IOException e) {
-            Util.displayIOException(e,listener);
-            e.printStackTrace(listener.fatalError("Unable to copy Javadoc from "+destDir+" to "+target));
-            build.setResult(Result.FAILURE);
+        if(destDir.exists()) {
+            // javadoc:javadoc just skips itself when the current project is not a java project 
+            FilePath target = build.getProjectRootDir().child("javadoc");
+
+            try {
+                listener.getLogger().println("Archiving javadoc");
+                new FilePath(destDir).copyRecursiveTo("**/*",target);
+            } catch (IOException e) {
+                Util.displayIOException(e,listener);
+                e.printStackTrace(listener.fatalError("Unable to copy Javadoc from "+destDir+" to "+target));
+                build.setResult(Result.FAILURE);
+            }
         }
 
         return true;
