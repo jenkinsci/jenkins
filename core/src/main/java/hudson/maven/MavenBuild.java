@@ -42,6 +42,12 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
+    /**
+     * {@link MavenReporter}s that will contribute project actions.
+     * Can be null if there's none.
+     */
+    /*package*/ List<MavenReporter> projectActionReporters;
+
     public MavenBuild(MavenModule job) throws IOException {
         super(job);
     }
@@ -81,6 +87,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     @Override
     public void run() {
         run(new RunnerImpl());
+        getProject().updateTransientActions();
     }
 
     /**
@@ -183,6 +190,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
         public void setResult(Result result) {
             MavenBuild.this.setResult(result);
+        }
+
+        public void registerAsProjectAction(MavenReporter reporter) {
+            if(projectActionReporters==null)
+                projectActionReporters = new ArrayList<MavenReporter>();
+            projectActionReporters.add(reporter);
         }
 
         private Object writeReplace() {

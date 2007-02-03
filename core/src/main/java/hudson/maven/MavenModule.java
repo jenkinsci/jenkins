@@ -4,6 +4,7 @@ import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
@@ -12,6 +13,7 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Node;
+import hudson.triggers.Trigger;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -22,8 +24,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -55,6 +59,15 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     @CopyOnWrite
     private Set<ModuleName> dependencies;
 
+    /**
+     * {@link Action}s contributed from {@link #triggers} and {@link MavenBuild#projectActionReporters}
+     * from the last build.
+     *
+     * We don't want to persist them separately, and these actions
+     * come and go as configuration change, so it's kept separate.
+     */
+    private transient /*final*/ List<Action> transientActions = new Vector<Action>();
+
     /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom) {
         super(parent, pom.name.toFileSystemName());
         reconfigure(pom);
@@ -85,6 +98,7 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         reporters.setOwner(this);
         if(dependencies==null)
             dependencies = Collections.emptySet();
+        updateTransientActions();
     }
 
     /**
@@ -194,6 +208,37 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
             MavenModule src = modules.get(d);
             if(src!=null)
                 graph.addDependency(src,this);
+        }
+    }
+
+    public synchronized List<Action> getActions() {
+        // add all the transient actions, too
+        List<Action> actions = new Vector<Action>(super.getActions());
+        actions.addAll(transientActions);
+        return actions;
+    }
+
+    /*package*/ void updateTransientActions() {
+        if(transientActions==null)
+            transientActions = new Vector<Action>();    // happens when loaded from disk
+        synchronized(transientActions) {
+            transientActions.clear();
+
+            MavenBuild lb = getLastBuild();
+            if(lb==null)    return;
+            
+            List<MavenReporter> list = lb.projectActionReporters;
+            if(list!=null)
+                for (MavenReporter step : list) {
+                    Action a = step.getProjectAction(this);
+                    if(a!=null)
+                        transientActions.add(a);
+                }
+            for (Trigger trigger : triggers) {
+                Action a = trigger.getProjectAction();
+                if(a!=null)
+                    transientActions.add(a);
+            }
         }
     }
 

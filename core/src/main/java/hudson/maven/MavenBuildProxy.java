@@ -54,6 +54,16 @@ public interface MavenBuildProxy {
      */
     void setResult(Result result);
 
+    /**
+     * Nominates that the reporter will contribute a project action
+     * for this build by using {@link MavenReporter#getProjectAction(MavenModule)}.
+     *
+     * <p>
+     * The specified {@link MavenReporter} object will be transfered to the master
+     * and will become a persisted part of the {@link MavenBuild}. 
+     */
+    void registerAsProjectAction(MavenReporter reporter);
+
     public interface BuildCallable<V,T extends Throwable> extends Serializable {
         /**
          * Performs computation and returns the result,

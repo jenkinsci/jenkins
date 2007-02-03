@@ -141,7 +141,7 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
      * Equivalent of {@link BuildStep#getProjectAction(Project)}
      * for {@link MavenReporter}.
      */
-    public Action getProjectAction(MavenModule project) {
+    public Action getProjectAction(MavenModule module) {
         return null;
     }
 

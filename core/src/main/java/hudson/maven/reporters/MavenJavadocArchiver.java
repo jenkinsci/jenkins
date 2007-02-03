@@ -2,6 +2,8 @@ package hudson.maven.reporters;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.tasks.JavadocArchiver;
+import hudson.tasks.JavadocArchiver.JavadocAction;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
@@ -9,6 +11,7 @@ import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.model.Action;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 import org.kohsuke.stapler.StaplerRequest;
@@ -51,9 +54,16 @@ public class MavenJavadocArchiver extends MavenReporter {
                 e.printStackTrace(listener.fatalError("Unable to copy Javadoc from "+destDir+" to "+target));
                 build.setResult(Result.FAILURE);
             }
+
+            build.registerAsProjectAction(this);
         }
 
         return true;
+    }
+
+
+    public Action getProjectAction(MavenModule project) {
+        return new JavadocAction(project);
     }
 
     public DescriptorImpl getDescriptor() {

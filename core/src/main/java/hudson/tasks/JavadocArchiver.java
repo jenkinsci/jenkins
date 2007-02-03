@@ -12,6 +12,7 @@ import hudson.model.Project;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Result;
 import hudson.model.Actionable;
+import hudson.model.AbstractItem;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -41,7 +42,7 @@ public class JavadocArchiver extends Publisher {
     /**
      * Gets the directory where the Javadoc is stored for the given project.
      */
-    private static File getJavadocDir(Project project) {
+    private static File getJavadocDir(AbstractItem project) {
         return new File(project.getRootDir(),"javadoc");
     }
 
@@ -82,9 +83,9 @@ public class JavadocArchiver extends Publisher {
     };
 
     public static final class JavadocAction extends Actionable implements ProminentProjectAction {
-        private final Project project;
+        private final AbstractItem project;
 
-        public JavadocAction(Project project) {
+        public JavadocAction(AbstractItem project) {
             this.project = project;
         }
 
