@@ -2,19 +2,17 @@ package hudson.maven.reporters;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.tasks.JavadocArchiver;
-import hudson.tasks.JavadocArchiver.JavadocAction;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
+import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Result;
-import hudson.model.Action;
+import hudson.tasks.JavadocArchiver.JavadocAction;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
-import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,10 +77,6 @@ public class MavenJavadocArchiver extends MavenReporter {
 
         public String getDisplayName() {
             return "Publish javadoc";
-        }
-
-        public MavenJavadocArchiver newInstance(StaplerRequest req) throws FormException {
-            return new MavenJavadocArchiver();
         }
 
         public MavenJavadocArchiver newAutoInstance(MavenModule module) {
