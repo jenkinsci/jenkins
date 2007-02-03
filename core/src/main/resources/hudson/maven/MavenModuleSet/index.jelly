@@ -6,7 +6,7 @@
       <t:editableDescription adminOnly="true"/>
 
       <j:choose>
-        <j:when test="${empty(it.moldules)}">
+        <j:when test="${empty(it.modules)}">
           <div>
             Please <a href="build">perform a build</a> so that Hudson can
             parse the list of modules from POM.
