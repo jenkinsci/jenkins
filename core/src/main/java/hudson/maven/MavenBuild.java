@@ -138,7 +138,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                         r.postBuild(buildProxy,p,listener);
                 }
 
-                return Result.SUCCESS;
+                return null;
             } catch (MavenEmbedderException e) {
                 throw new IOException2(e);
             } catch (ProjectBuildingException e) {
