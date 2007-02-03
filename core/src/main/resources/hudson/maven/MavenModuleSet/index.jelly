@@ -5,7 +5,17 @@
       <h1>Project ${it.name}</h1>
       <t:editableDescription adminOnly="true"/>
 
-      <t:projectView jobs="${it.modules}" showViewTabs="${false}" />
+      <j:choose>
+        <j:when test="${empty(it.moldules)}">
+          <div>
+            Please <a href="build">perform a build</a> so that Hudson can
+            parse the list of modules from POM.
+          </div>
+        </j:when>
+        <j:otherwise>
+          <t:projectView jobs="${it.modules}" showViewTabs="${false}" />
+        </j:otherwise>
+      </j:choose>
     </l:main-panel>
   </l:layout>
 </j:jelly>
