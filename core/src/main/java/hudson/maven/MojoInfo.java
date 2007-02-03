@@ -8,6 +8,8 @@ import org.codehaus.plexus.component.configurator.converters.lookup.DefaultConve
 import org.codehaus.plexus.component.configurator.converters.ConfigurationConverter;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 
+import java.io.File;
+
 /**
  * Information about Mojo to be executed. This object provides
  * convenient access to various mojo information, so that {@link MavenReporter}
@@ -65,6 +67,21 @@ public final class MojoInfo {
         return mojoExecution.getMojoDescriptor().getGoal();
     }
 
+    /**
+     * Obtains the configuration value of the mojo.
+     *
+     * @param configName
+     *      The name of the child element in the &lt;configuration> of mojo.
+     * @param type
+     *      The Java class of the configuration value. While every element
+     *      can be read as {@link String}, often different types have a different
+     *      conversion rules associated with it (for example, {@link File} would
+     *      resolve relative path against POM base directory.)
+     *
+     * @throws ComponentConfigurationException
+     *      Not sure when exactly this is thrown, but it's probably when
+     *      the configuration in POM is syntactically incorrect. 
+     */
     public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
         PlexusConfiguration child = configuration.getChild(configName);
         if(child==null) return null;    // no such config
