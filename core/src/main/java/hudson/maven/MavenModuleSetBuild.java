@@ -58,7 +58,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         protected Result doRun(final BuildListener listener) throws Exception {
             try {
                 listener.getLogger().println("Parsing POMs");
-                List<PomInfo> poms = project.getWorkspace().act(new PomParser(listener,project.getRootPOM()));
+                List<PomInfo> poms = project.getModuleRoot().act(new PomParser(listener,project.getRootPOM()));
 
                 // update the module list
                 Map<ModuleName,MavenModule> modules = project.modules;
