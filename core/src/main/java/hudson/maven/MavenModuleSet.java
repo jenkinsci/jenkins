@@ -37,7 +37,7 @@ import java.util.Set;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule> {
+public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule> {
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
@@ -49,6 +49,13 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
     private ModuleName rootModule;
 
     private String rootPOM;
+
+    private String goals;
+
+    /**
+     * Default goals specified in POM. Can be null.
+     */
+    private String defaultGoals;
 
     public MavenModuleSet(String name) {
         super(Hudson.getInstance(),name);
@@ -212,11 +219,35 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
         return rootPOM;
     }
 
+    /**
+     * Gets the list of goals to execute.
+     */
+    public String getGoals() {
+        if(goals==null) {
+            if(defaultGoals!=null)  return defaultGoals;
+            return "install";
+        }
+        return goals;
+    }
 
-    /*package*/ void setRootModule(ModuleName rootModule) throws IOException {
+    /**
+     * Gets the list of goals specified by the user,
+     * without taking inheritance and POM default goals
+     * into account.
+     *
+     * <p>
+     * This is only used to present the UI screen, and in
+     * all the other cases {@link #getGoals()} should be used.
+     */
+    public String getUserConfiguredGoals() {
+        return goals;
+    }
+
+    /*package*/ void reconfigure(PomInfo rootPom) throws IOException {
         if(this.rootModule!=null && this.rootModule.equals(rootModule))
             return; // no change
-        this.rootModule = rootModule;
+        this.rootModule = rootPom.name;
+        this.defaultGoals = rootPom.defaultGoal;
         save();
     }
 
@@ -230,9 +261,11 @@ public class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSe
         if(!Hudson.adminCheck(req,rsp))
             return;
 
-        rootPOM = Util.fixEmpty(req.getParameter("rootPOM"));
+        rootPOM = Util.fixEmpty(req.getParameter("rootPOM").trim());
         if(rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
-        
+
+        goals = Util.fixEmpty(req.getParameter("goals").trim());
+
         super.doConfigSubmit(req,rsp);
 
         save();

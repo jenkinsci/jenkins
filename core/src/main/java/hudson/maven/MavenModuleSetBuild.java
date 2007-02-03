@@ -66,7 +66,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     Map<ModuleName,MavenModule> old = new HashMap<ModuleName, MavenModule>(modules);
 
                     modules.clear();
-                    project.setRootModule(poms.get(0).name);
+                    project.reconfigure(poms.get(0));
                     for (PomInfo pom : poms) {
                         MavenModule mm = old.get(pom.name);
                         if(mm!=null) {// found an existing matching module

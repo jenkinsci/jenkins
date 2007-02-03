@@ -55,4 +55,8 @@ public class ArgumentListBuilder {
         r.args.addAll(this.args);
         return r;
     }
+
+    public List<String> toList() {
+        return args;
+    }
 }

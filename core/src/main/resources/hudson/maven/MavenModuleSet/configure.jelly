@@ -26,6 +26,9 @@
           <f:entry title="root POM" help="/help/maven/root-pom.html">
             <f:textbox name="rootPOM" value="${it.rootPOM}"/>
           </f:entry>
+          <f:entry title="Goals" help="/help/maven/goals.html">
+            <f:textbox name="goals" value="${it.userConfiguredGoals}"/>
+          </f:entry>
         </f:section>
 
         <f:block>

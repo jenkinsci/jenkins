@@ -15,6 +15,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.IOException2;
+import hudson.util.ArgumentListBuilder;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.embedder.PlexusLoggerAdapter;
@@ -92,11 +93,13 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         private final BuildListener listener;
         private final MavenBuildProxy buildProxy;
         private final MavenReporter[] reporters;
+        private final List<String> goals;
 
-        public Builder(BuildListener listener,MavenBuildProxy buildProxy,MavenReporter[] reporters) {
+        public Builder(BuildListener listener,MavenBuildProxy buildProxy,MavenReporter[] reporters, List<String> goals) {
             this.listener = listener;
             this.buildProxy = buildProxy;
             this.reporters = reporters;
+            this.goals = goals;
         }
 
         public Result invoke(File moduleRoot, VirtualChannel channel) throws IOException {
@@ -125,8 +128,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                     r.preBuild(buildProxy,p,listener);
 
                 try {
-                    embedder.execute(p, Arrays.asList("install"),
-                        eventMonitor,
+                    embedder.execute(p, goals, eventMonitor,
                         new TransferListenerImpl(listener),
                         null, // TODO: allow additional properties to be specified
                         pom.getParentFile());
@@ -194,8 +196,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                     reporters.add(auto);
             }
 
-            return getProject().getModuleRoot().act(new Builder(listener,new ProxyImpl(),
-                reporters.toArray(new MavenReporter[0])));
+            ArgumentListBuilder args = new ArgumentListBuilder();
+            args.addTokenized(getProject().getGoals());
+
+            return getProject().getModuleRoot().act(new Builder(
+                listener,new ProxyImpl(),
+                reporters.toArray(new MavenReporter[0]), args.toList()));
         }
 
         public void post(BuildListener listener) {

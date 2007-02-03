@@ -46,9 +46,15 @@ final class PomInfo implements Serializable {
      */
     public final Set<ModuleName> dependencies = new HashSet<ModuleName>();
 
+    /**
+     * The default goal specified in POM or null.
+     */
+    public final String defaultGoal;
+
     public PomInfo(MavenProject project, String relPath) {
         this.name = new ModuleName(project);
         this.displayName = project.getName();
+        this.defaultGoal = project.getDefaultGoal();
         this.relativePath = relPath;
 
         for (Dependency dep : (List<Dependency>)project.getDependencies())

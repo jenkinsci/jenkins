@@ -2,6 +2,7 @@ package hudson.maven;
 
 import hudson.CopyOnWrite;
 import hudson.FilePath;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
@@ -41,6 +42,12 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     private transient ModuleName moduleName;
 
     private String relativePath;
+
+    /**
+     * If this module has goals specified by itself.
+     * Otherwise leave it null to use the default goals specified in the parent.
+     */
+    private String goals;
 
     /**
      * List of modules that this module declares direct dependencies on.
@@ -88,6 +95,27 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
      */
     public String getRelativePath() {
         return relativePath;
+    }
+
+    /**
+     * Gets the list of goals to execute for this module.
+     */
+    public String getGoals() {
+        if(goals!=null) return goals;
+        return getParent().getGoals();
+    }
+
+    /**
+     * Gets the list of goals specified by the user,
+     * without taking inheritance and POM default goals
+     * into account.
+     *
+     * <p>
+     * This is only used to present the UI screen, and in
+     * all the other cases {@link #getGoals()} should be used.
+     */
+    public String getUserConfiguredGoals() {
+        return goals;
     }
 
     @Override
@@ -184,6 +212,8 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         } catch (FormException e) {
             sendError(e,req,rsp);
         }
+
+        goals = Util.fixEmpty(req.getParameter("goals").trim());
 
         save();
 

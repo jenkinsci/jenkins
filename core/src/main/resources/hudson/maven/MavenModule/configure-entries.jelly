@@ -26,6 +26,12 @@
     </j:if>
   </f:descriptorList>
 
+  <f:section title="Build">
+    <f:entry title="Goals" help="/help/maven/module-goals.html">
+      <f:textbox name="goals" value="${it.userConfiguredGoals}"/>
+    </f:entry>
+  </f:section>
+
   <j:getStatic var="reporters" className="hudson.maven.MavenReporters" field="LIST" />
   <f:descriptorList title="Build Settings"
                     descriptors="${reporters}"
