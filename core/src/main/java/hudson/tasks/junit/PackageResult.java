@@ -1,6 +1,6 @@
 package hudson.tasks.junit;
 
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -37,7 +37,7 @@ public final class PackageResult extends MetaTabulatedResult {
         return packageName;
     }
 
-    public Build getOwner() {
+    public AbstractBuild<?,?> getOwner() {
         return parent.getOwner();
     }
 

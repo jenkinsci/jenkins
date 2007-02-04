@@ -6,6 +6,7 @@ import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.Project;
 import hudson.model.Result;
+import hudson.model.AbstractBuild;
 import hudson.util.ChartUtil;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.ColorPalette;
@@ -38,9 +39,9 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractTestResultAction<T extends AbstractTestResultAction> implements Action {
-    public final Build owner;
+    public final AbstractBuild<?,?> owner;
 
-    protected AbstractTestResultAction(Build owner) {
+    protected AbstractTestResultAction(AbstractBuild owner) {
         this.owner = owner;
     }
 
@@ -84,7 +85,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     }
 
     private <U extends AbstractTestResultAction> U getPreviousResult(Class<U> type) {
-        Build b = owner;
+        AbstractBuild<?,?> b = owner;
         while(true) {
             b = b.getPreviousBuild();
             if(b==null)

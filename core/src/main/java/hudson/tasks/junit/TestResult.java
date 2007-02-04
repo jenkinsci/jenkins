@@ -1,6 +1,6 @@
 package hudson.tasks.junit;
 
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
 import hudson.util.IOException2;
 import org.apache.tools.ant.DirectoryScanner;
 import org.dom4j.DocumentException;
@@ -57,19 +57,30 @@ public final class TestResult extends MetaTabulatedResult {
     TestResult() {
     }
 
-    TestResult(long buildTime, DirectoryScanner results) throws IOException {
+    /**
+     * Collect reports from the given {@link DirectoryScanner}, while
+     * filtering out all files that were created before the given tiem.
+     */
+    public TestResult(long buildTime, DirectoryScanner results) throws IOException {
         String[] includedFiles = results.getIncludedFiles();
         File baseDir = results.getBasedir();
 
         for (String value : includedFiles) {
             File reportFile = new File(baseDir, value);
-            try {
-                if(buildTime <= reportFile.lastModified())
-                    // only count files that were actually updated during this build
-                    suites.add(new SuiteResult(reportFile));
-            } catch (DocumentException e) {
-                throw new IOException2("Failed to read "+reportFile,e);
-            }
+            // only count files that were actually updated during this build
+            if(buildTime <= reportFile.lastModified())
+                parse(reportFile);
+        }
+    }
+
+    /**
+     * Parses an additional report file.
+     */
+    public void parse(File reportFile) throws IOException {
+        try {
+            suites.add(new SuiteResult(reportFile));
+        } catch (DocumentException e) {
+            throw new IOException2("Failed to read "+reportFile,e);
         }
     }
 
@@ -77,7 +88,7 @@ public final class TestResult extends MetaTabulatedResult {
         return "Test Result";
     }
 
-    public Build getOwner() {
+    public AbstractBuild<?,?> getOwner() {
         return parent.owner;
     }
 
@@ -131,16 +142,26 @@ public final class TestResult extends MetaTabulatedResult {
     }
 
     /**
-     * Builds up the transient part of the data structure.
+     * Builds up the transient part of the data structure
+     * from results {@link #parse(File) parsed} so far.
+     *
+     * <p>
+     * After the data is frozen, more files can be parsed
+     * and then freeze can be called again.
      */
-    void freeze(TestResultAction parent) {
+    public void freeze(TestResultAction parent) {
         this.parent = parent;
-        suitesByName = new HashMap<String,SuiteResult>();
-        totalTests = 0;
-        failedTests = new ArrayList<CaseResult>();
-        byPackages = new TreeMap<String,PackageResult>();
+        if(suitesByName==null) {
+            // freeze for the first time
+            suitesByName = new HashMap<String,SuiteResult>();
+            totalTests = 0;
+            failedTests = new ArrayList<CaseResult>();
+            byPackages = new TreeMap<String,PackageResult>();
+        }
+
         for (SuiteResult s : suites) {
-            s.freeze(this);
+            if(!s.freeze(this))
+                continue;
 
             suitesByName.put(s.getName(),s);
 

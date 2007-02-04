@@ -1,6 +1,6 @@
 package hudson.tasks.junit;
 
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -31,7 +31,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         return parent;
     }
 
-    public Build getOwner() {
+    public AbstractBuild<?,?> getOwner() {
         return parent.getOwner();
     }
 

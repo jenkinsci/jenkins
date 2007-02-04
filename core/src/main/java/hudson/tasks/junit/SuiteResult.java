@@ -88,9 +88,13 @@ public final class SuiteResult implements Serializable {
         return null;
     }
 
-    public void freeze(TestResult owner) {
+    /*package*/ boolean freeze(TestResult owner) {
+        if(this.parent!=null)
+            return false;   // already frozen
+
         this.parent = owner;
         for (CaseResult c : cases)
             c.freeze(this);
+        return true;
     }
 }

@@ -1,8 +1,9 @@
 package hudson.util;
 
-import org.jfree.chart.JFreeChart;
+import hudson.model.AbstractBuild;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -12,8 +13,6 @@ import java.awt.Font;
 import java.awt.HeadlessException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-
-import hudson.model.Build;
 
 /**
  * Chart generation utility code around JFreeChart.
@@ -28,9 +27,9 @@ public class ChartUtil {
      * Can be used as a graph label. Only displays numbers.
      */
     public static final class NumberOnlyBuildLabel implements Comparable<NumberOnlyBuildLabel> {
-        public final Build build;
+        public final AbstractBuild build;
 
-        public NumberOnlyBuildLabel(Build build) {
+        public NumberOnlyBuildLabel(AbstractBuild build) {
             this.build = build;
         }
 

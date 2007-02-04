@@ -2,8 +2,8 @@ package hudson.tasks.junit;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
+import hudson.model.AbstractBuild;
 import hudson.model.Action;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.StringConverter2;
@@ -34,7 +34,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     private Integer totalCount;
 
 
-    TestResultAction(Build owner, TestResult result, BuildListener listener) {
+    public TestResultAction(AbstractBuild owner, TestResult result, BuildListener listener) {
         super(owner);
 
         result.freeze(this);

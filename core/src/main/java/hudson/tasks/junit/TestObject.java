@@ -1,6 +1,6 @@
 package hudson.tasks.junit;
 
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
 import hudson.model.ModelObject;
 
 import java.io.Serializable;
@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @author Kohsuke Kawaguchi
  */
 public abstract class TestObject implements ModelObject, Serializable {
-    public abstract Build getOwner();
+    public abstract AbstractBuild<?,?> getOwner();
 
     /**
      * Gets the counter part of this {@link TestObject} in the previous run.

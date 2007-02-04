@@ -1,6 +1,6 @@
 package hudson.tasks.junit;
 
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
 import org.dom4j.Element;
 
 import java.util.Comparator;
@@ -138,7 +138,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         return parent;
     }
 
-    public Build getOwner() {
+    public AbstractBuild<?,?> getOwner() {
         return parent.getParent().getOwner();
     }
 
