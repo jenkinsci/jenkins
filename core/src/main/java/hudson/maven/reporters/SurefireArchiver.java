@@ -7,10 +7,12 @@ import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
+import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.junit.TestResult;
 import hudson.tasks.junit.TestResultAction;
+import hudson.tasks.test.TestResultProjectAction;
 import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -68,12 +70,18 @@ public class SurefireArchiver extends MavenReporter {
                     build.getActions().add(action);
                     if(tr.getFailCount()>0)
                         build.setResult(Result.UNSTABLE);
+                    build.registerAsProjectAction(SurefireArchiver.this);
                     return null;
                 }
             });
         }
 
         return true;
+    }
+
+
+    public Action getProjectAction(MavenModule module) {
+        return new TestResultProjectAction(module);
     }
 
     private boolean isSurefireTest(MojoInfo mojo) {

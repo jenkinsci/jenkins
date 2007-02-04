@@ -1,8 +1,8 @@
 package hudson.tasks.test;
 
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Build;
-import hudson.model.Project;
 import hudson.tasks.junit.JUnitResultArchiver;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -27,9 +27,9 @@ public class TestResultProjectAction implements Action {
     /**
      * Project that owns this action.
      */
-    public final Project project;
+    public final AbstractProject<?,?> project;
 
-    public TestResultProjectAction(Project project) {
+    public TestResultProjectAction(AbstractProject<?,?> project) {
         this.project = project;
     }
 
@@ -49,7 +49,7 @@ public class TestResultProjectAction implements Action {
     }
 
     protected AbstractTestResultAction getLastTestResultAction() {
-        Build b = project.getLastSuccessfulBuild();
+        AbstractBuild<?,?> b = project.getLastSuccessfulBuild();
         if(b!=null) {
             AbstractTestResultAction a = b.getTestResultAction();
             if(a!=null) return a;

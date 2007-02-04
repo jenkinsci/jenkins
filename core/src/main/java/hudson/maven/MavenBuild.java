@@ -90,6 +90,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         return getAction(AbstractTestResultAction.class);
     }
 
+    public void registerAsProjectAction(MavenReporter reporter) {
+        if(projectActionReporters==null)
+            projectActionReporters = new ArrayList<MavenReporter>();
+        projectActionReporters.add(reporter);
+    }
+    
     @Override
     public void run() {
         run(new RunnerImpl());
@@ -199,9 +205,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
 
         public void registerAsProjectAction(MavenReporter reporter) {
-            if(projectActionReporters==null)
-                projectActionReporters = new ArrayList<MavenReporter>();
-            projectActionReporters.add(reporter);
+            MavenBuild.this.registerAsProjectAction(reporter);
         }
 
         private Object writeReplace() {
