@@ -4,6 +4,7 @@ import hudson.Launcher;
 import hudson.Proc.LocalProc;
 import hudson.Util;
 import hudson.tasks.Fingerprinter.FingerprintAction;
+import hudson.tasks.test.AbstractTestResultAction;
 import hudson.maven.MavenBuild;
 import static hudson.model.Hudson.isWindows;
 import hudson.model.listeners.SCMListener;
@@ -210,6 +211,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         return env;
     }
+
+    public Calendar due() {
+        return timestamp;
+    }
+
+    /**
+     * Gets {@link AbstractTestResultAction} associated with this build if any.
+     * <p>
+     */
+    public abstract AbstractTestResultAction getTestResultAction();
 
     /**
      * Invoked by {@link Executor} to performs a build.

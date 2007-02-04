@@ -11,7 +11,6 @@ import hudson.triggers.SCMTrigger;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -36,17 +35,11 @@ public final class Build extends AbstractBuild<Project,Build> {
         super(project,buildDir);
     }
 
-    public Calendar due() {
-        return timestamp;
-    }
-
-    /**
-     * Gets {@link AbstractTestResultAction} associated with this build if any.
-     */
+    @Override
     public AbstractTestResultAction getTestResultAction() {
         return getAction(AbstractTestResultAction.class);
     }
-
+    
     /**
      * During the build this field remembers {@link Environment}s created by
      * {@link BuildWrapper}. This design is bit ugly but forced due to compatibility.

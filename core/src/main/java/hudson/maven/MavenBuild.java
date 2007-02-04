@@ -1,6 +1,7 @@
 package hudson.maven;
 
 import hudson.FilePath;
+import hudson.tasks.test.AbstractTestResultAction;
 import hudson.FilePath.FileCallable;
 import hudson.maven.PluginManagerInterceptor.AbortException;
 import hudson.model.AbstractBuild;
@@ -82,6 +83,11 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     @Override
     public boolean hasChangeSetComputed() {
         return true;
+    }
+
+    @Override
+    public AbstractTestResultAction getTestResultAction() {
+        return getAction(AbstractTestResultAction.class);
     }
 
     @Override

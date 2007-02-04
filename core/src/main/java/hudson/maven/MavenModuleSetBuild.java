@@ -8,6 +8,7 @@ import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
+import hudson.tasks.test.AbstractTestResultAction;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
@@ -44,6 +45,12 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
     MavenModuleSetBuild(MavenModuleSet project, File buildDir) throws IOException {
         super(project, buildDir);
+    }
+
+    @Override
+    public AbstractTestResultAction getTestResultAction() {
+        // TODO
+        return null;
     }
 
     public void run() {
