@@ -2,7 +2,7 @@
     displays the build queue.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:pane title="Build Queue" width="2">
+  <l:pane title="Build Queue" width="2" id="buildQueue">
     <j:choose>
       <j:when test="${empty(app.queue.items)}">
         <tr>
@@ -44,5 +44,8 @@
         </j:forEach>
       </j:otherwise>
     </j:choose>
+    <script>
+      refreshPart('buildQueue',"./ajaxBuildQueue");
+    </script>
   </l:pane>
 </j:jelly>

@@ -277,3 +277,25 @@ function expandTextArea(button,id) {
     field.parentNode.parentNode.parentNode.parentNode.innerHTML =
         "<textarea rows=8 class='setting-input' name='"+field.name+"'>"+value+"</textarea>";
 }
+
+
+// refresh a part of the HTML specified by the given ID,
+// by using the contents fetched from the given URL.
+function refreshPart(id,url) {
+    window.setTimeout(function() {
+        new Ajax.Request(url, {
+            method: "get",
+            onComplete: function(rsp, _) {
+                var hist = $(id);
+                var p = hist.parentNode;
+                var next = hist.nextSibling;
+                p.removeChild(hist);
+
+                var div = document.createElement('div');
+                div.innerHTML = rsp.responseText;
+
+                p.insertBefore(div.firstChild, next);
+            }
+        });
+    }, 5000);
+}
