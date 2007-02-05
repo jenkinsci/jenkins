@@ -1,7 +1,6 @@
 package hudson.maven;
 
 import hudson.FilePath;
-import hudson.tasks.test.AbstractTestResultAction;
 import hudson.FilePath.FileCallable;
 import hudson.maven.PluginManagerInterceptor.AbortException;
 import hudson.model.AbstractBuild;
@@ -15,8 +14,8 @@ import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.ArgumentListBuilder;
-import hudson.util.IOException2;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.embedder.PlexusLoggerAdapter;
@@ -121,6 +120,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
 
         public Result invoke(File moduleRoot, VirtualChannel channel) throws IOException {
+            MavenProject p=null;
             try {
                 MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
                 File pom = new File(moduleRoot,"pom.xml").getAbsoluteFile(); // MavenEmbedder only works if it's absolute
@@ -132,7 +132,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 // event monitor is mostly useless. It only provides a few strings
                 EventMonitor eventMonitor = new DefaultEventMonitor( new PlexusLoggerAdapter( new EmbedderLoggerImpl(listener) ) );
 
-                MavenProject p = embedder.readProject(pom);
+                p = embedder.readProject(pom);
                 PluginManagerInterceptor interceptor;
 
                 try {
@@ -145,38 +145,47 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 for (MavenReporter r : reporters)
                     r.preBuild(buildProxy,p,listener);
 
-                try {
-                    embedder.execute(p, goals, eventMonitor,
-                        new TransferListenerImpl(listener),
-                        null, // TODO: allow additional properties to be specified
-                        pom.getParentFile());
+                embedder.execute(p, goals, eventMonitor,
+                    new TransferListenerImpl(listener),
+                    null, // TODO: allow additional properties to be specified
+                    pom.getParentFile());
 
-                    interceptor.fireLeaveModule();
-                } finally {
-                    for (MavenReporter r : reporters)
-                        r.postBuild(buildProxy,p,listener);
-                }
+                interceptor.fireLeaveModule();
 
                 return null;
             } catch (MavenEmbedderException e) {
-                throw new IOException2(e);
+                buildProxy.setResult(Result.FAILURE);
+                e.printStackTrace(listener.error(e.getMessage()));
             } catch (ProjectBuildingException e) {
-                throw new IOException2(e);
+                buildProxy.setResult(Result.FAILURE);
+                e.printStackTrace(listener.error(e.getMessage()));
             } catch (CycleDetectedException e) {
-                throw new IOException2(e);
+                buildProxy.setResult(Result.FAILURE);
+                e.printStackTrace(listener.error(e.getMessage()));
             } catch (LifecycleExecutionException e) {
-                throw new IOException2(e);
+                buildProxy.setResult(Result.FAILURE);
+                e.printStackTrace(listener.error(e.getMessage()));
             } catch (BuildFailureException e) {
-                throw new IOException2(e);
+                buildProxy.setResult(Result.FAILURE);
+                e.printStackTrace(listener.error(e.getMessage()));
             } catch (DuplicateProjectException e) {
-                throw new IOException2(e);
+                buildProxy.setResult(Result.FAILURE);
+                e.printStackTrace(listener.error(e.getMessage()));
             } catch (AbortException e) {
                 listener.error("build aborted");
-                return Result.FAILURE;
             } catch (InterruptedException e) {
                 listener.error("build aborted");
-                return Result.FAILURE;
+            } finally {
+                // this should happen after a build is marked as a failure
+                try {
+                    if(p!=null)
+                        for (MavenReporter r : reporters)
+                            r.postBuild(buildProxy,p,listener);
+                } catch (InterruptedException e) {
+                    buildProxy.setResult(Result.FAILURE);
+                }
             }
+            return Result.FAILURE;
         }
     }
 
