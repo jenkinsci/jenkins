@@ -135,12 +135,16 @@ public abstract class Descriptor<T extends Describable<T>> {
         return configure( (HttpServletRequest) req );
     }
 
-    public final String getConfigPage() {
-        return '/'+clazz.getName().replace('.','/').replace('$','/')+"/config.jelly";
+    public String getConfigPage() {
+        return getViewPage(clazz, "config.jelly");
     }
 
-    public final String getGlobalConfigPage() {
-        return '/'+clazz.getName().replace('.','/').replace('$','/')+"/global.jelly";
+    public String getGlobalConfigPage() {
+        return getViewPage(clazz, "global.jelly");
+    }
+
+    protected final String getViewPage(Class<?> clazz, String pageName) {
+        return '/'+ clazz.getName().replace('.','/').replace('$','/')+"/"+ pageName;
     }
 
 

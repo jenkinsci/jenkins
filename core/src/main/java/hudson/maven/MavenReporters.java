@@ -5,6 +5,7 @@ import hudson.maven.reporters.MavenArtifactArchiver;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenJavadocArchiver;
 import hudson.maven.reporters.SurefireArchiver;
+import hudson.maven.reporters.MavenMailer;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -21,7 +22,8 @@ public final class MavenReporters {
         MavenArtifactArchiver.DescriptorImpl.DESCRIPTOR,
         MavenFingerprinter.DescriptorImpl.DESCRIPTOR,
         MavenJavadocArchiver.DescriptorImpl.DESCRIPTOR,
-        SurefireArchiver.DescriptorImpl.DESCRIPTOR
+        SurefireArchiver.DescriptorImpl.DESCRIPTOR,
+        MavenMailer.DescriptorImpl.DESCRIPTOR
     );
 
     /**

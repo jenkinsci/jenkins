@@ -253,7 +253,7 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         super.doConfigSubmit(req, rsp);
 
         try {
-            reporters.rebuild(req,MavenReporters.LIST,"reporter");
+            reporters.rebuild(req,MavenReporters.getConfigurableList(),"reporter");
         } catch (FormException e) {
             sendError(e,req,rsp);
         }
