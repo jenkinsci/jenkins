@@ -130,6 +130,38 @@ public final class DependencyGraph {
         return false;
     }
 
+    /**
+     * Gets all the direct and indirect upstream dependencies of the given project.
+     */
+    public Set<AbstractProject> getTransitiveUpstream(AbstractProject src) {
+        return getTransitive(backward,src);
+    }
+
+    /**
+     * Gets all the direct and indirect downstream dependencies of the given project.
+     */
+    public Set<AbstractProject> getTransitiveDownstream(AbstractProject src) {
+        return getTransitive(forward,src);
+    }
+
+    private Set<AbstractProject> getTransitive(Map<AbstractProject, List<AbstractProject>> direction, AbstractProject src) {
+        Set<AbstractProject> visited = new HashSet<AbstractProject>();
+        Stack<AbstractProject> queue = new Stack<AbstractProject>();
+
+        queue.add(src);
+
+        while(!queue.isEmpty()) {
+            AbstractProject p = queue.pop();
+
+            for (AbstractProject child : get(direction,p)) {
+                if(visited.add(child))
+                    queue.add(child);
+            }
+        }
+
+        return visited;
+    }
+
     private void add(Map<AbstractProject, List<AbstractProject>> map, AbstractProject src, AbstractProject dst) {
         List<AbstractProject> set = map.get(src);
         if(set==null) {
