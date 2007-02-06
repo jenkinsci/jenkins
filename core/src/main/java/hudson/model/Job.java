@@ -370,6 +370,8 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
     /**
      * Returns the last successful build, if any. Otherwise null.
+     * A stable build would include either {@link Result#SUCCESS} or {@link Result#UNSTABLE}.
+     * @see #getLastStableBuild() 
      */
     public RunT getLastSuccessfulBuild() {
         RunT r = getLastBuild();
