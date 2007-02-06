@@ -40,6 +40,18 @@ import java.util.regex.Pattern;
 public class Util {
 
     /**
+     * Creates a filtered sublist.
+     */
+    public static <T> List<T> filter( List<?> base, Class<T> type ) {
+        List<T> r = new ArrayList<T>();
+        for (Object i : base) {
+            if(type.isInstance(i))
+                r.add(type.cast(i));
+        }
+        return r;
+    }
+
+    /**
      * Replaces the occurrence of '$key' by <tt>properties.get('key')</tt>.
      *
      * <p>
