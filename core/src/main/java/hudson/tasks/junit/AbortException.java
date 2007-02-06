@@ -1,11 +1,9 @@
 package hudson.tasks.junit;
 
-import java.io.IOException;
-
 /**
  * Used to signal an orderly abort of the processing.
  */
-class AbortException extends IOException {
+class AbortException extends RuntimeException {
     public AbortException(String msg) {
         super(msg);
     }
