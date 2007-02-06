@@ -1,6 +1,7 @@
 package hudson.maven;
 
 import hudson.FilePath;
+import hudson.Util;
 import hudson.FilePath.FileCallable;
 import hudson.maven.PluginManagerInterceptor.AbortException;
 import hudson.model.AbstractBuild;
@@ -35,6 +36,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -247,16 +249,80 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             if(!getResult().isWorseThan(Result.UNSTABLE)) {
                 // trigger dependency builds
                 DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
-                for( AbstractProject down : getParent().getDownstreamProjects()) {
-                    if(!graph.hasIndirectDependencies(getParent(),down)) {
+                for( AbstractProject<?,?> down : getParent().getDownstreamProjects()) {
+                    if(graph.hasIndirectDependencies(getParent(),down))
                         // if there's a longer dependency path to this project,
                         // then scheduling the build now is going to be a waste,
                         // so don't do that.
+                        // let the longer path eventually trigger this build
+                        continue;
+
+                    // if the downstream module depends on multiple modules,
+                    // only trigger them when all the upstream dependencies are updated.
+                    boolean trigger = true;
+                    
+                    AbstractBuild<?,?> dlb = down.getLastBuild(); // can be null.
+                    for (MavenModule up : Util.filter(down.getUpstreamProjects(),MavenModule.class)) {
+                        MavenBuild ulb;
+                        if(up==getProject()) {
+                            // the current build itself is not registered as lastSuccessfulBuild
+                            // at this point, so we have to take that into account. ugly.
+                            if(getResult()==null || !getResult().isWorseThan(Result.UNSTABLE))
+                                ulb = MavenBuild.this;
+                            else
+                                ulb = up.getLastSuccessfulBuild();
+                        } else
+                            ulb = up.getLastSuccessfulBuild();
+                        if(ulb==null) {
+                            // if no usable build is available from the upstream,
+                            // then we have to wait at least until this build is ready
+                            trigger = false;
+                            break;
+                        }
+
+                        // if no record of the relationship in the last build
+                        // is available, we'll just have to assume that the condition
+                        // for the new build is met, or else no build will be fired forever.
+                        if(dlb==null)   continue;
+                        int n = dlb.getUpstreamRelationship(up);
+                        if(n==-1)   continue;
+
+                        assert ulb.getNumber()>=n;
+
+                        if(ulb.getNumber()==n) {
+                            // there's no new build of this upstream since the last build
+                            // of the downstream, and the upstream build is in progress.
+                            // The new downstream build should wait until this build is started
+                            if(isUpstreamBuilding(graph,up)) {
+                                trigger = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if(trigger) {
                         listener.getLogger().println("Triggering a new build of "+down.getName());
                         down.scheduleBuild();
                     }
                 }
             }
+        }
+
+        /**
+         * Returns true if any of the upstream project (or itself) is either
+         * building or is in the queue.
+         * <p>
+         * This means eventually there will be an automatic triggering of
+         * the given project (provided that all builds went smoothly.)
+         */
+        private boolean isUpstreamBuilding(DependencyGraph graph, AbstractProject project) {
+            Set<AbstractProject> tups = graph.getTransitiveUpstream(project);
+            tups.add(project);
+            for (AbstractProject tup : tups) {
+                if(tup.isBuilding() || tup.isInQueue())
+                    return true;
+            }
+            return false;
         }
     }
 }
