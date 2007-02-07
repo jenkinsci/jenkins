@@ -268,5 +268,5 @@ public class Mailer extends Publisher {
     /**
      * Debug probe point to be activated by the scripting console.
      */
-    public boolean debug = false;
+    public static boolean debug = false;
 }
