@@ -284,7 +284,7 @@ function expandTextArea(button,id) {
 function refreshPart(id,url) {
     window.setTimeout(function() {
         new Ajax.Request(url, {
-            method: "get",
+            method: "post",
             onComplete: function(rsp, _) {
                 var hist = $(id);
                 var p = hist.parentNode;
