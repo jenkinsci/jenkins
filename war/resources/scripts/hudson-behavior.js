@@ -285,7 +285,7 @@ function refreshPart(id,url) {
     window.setTimeout(function() {
         new Ajax.Request(url, {
             method: "post",
-            onComplete: function(rsp, _) {
+            onSuccess: function(rsp) {
                 var hist = $(id);
                 var p = hist.parentNode;
                 var next = hist.nextSibling;
