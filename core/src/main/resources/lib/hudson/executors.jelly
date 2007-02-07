@@ -53,8 +53,10 @@
 	      </tr>
 	    </j:forEach>
 	  </j:forEach>
-    <script defer="defer">
-      refreshPart('executors',"./ajaxExecutors");
-    </script>
+    <j:if test="${!h.isAutoRefresh(request)}">
+      <script defer="defer">
+        refreshPart('executors',"./ajaxExecutors");
+      </script>
+    </j:if>
 	</l:pane>
 </j:jelly>

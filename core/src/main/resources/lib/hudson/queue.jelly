@@ -44,8 +44,10 @@
         </j:forEach>
       </j:otherwise>
     </j:choose>
-    <script defer="defer">
-      refreshPart('buildQueue',"./ajaxBuildQueue");
-    </script>
+    <j:if test="${!h.isAutoRefresh(request)}">
+      <script defer="defer">
+        refreshPart('buildQueue',"./ajaxBuildQueue");
+      </script>
+    </j:if>
   </l:pane>
 </j:jelly>
