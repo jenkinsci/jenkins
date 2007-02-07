@@ -18,7 +18,7 @@
 	    <!-- fetches the latest update from the server -->
 	    function fetchNext(e,href) {
 	      new Ajax.Request(href,{
-	          method: "get",
+	          method: "post",
 	          parameters: "start="+e.fetchedBytes,
 	          onComplete: function(rsp,_) {
               <!-- append text and do autoscroll if applicable-->
