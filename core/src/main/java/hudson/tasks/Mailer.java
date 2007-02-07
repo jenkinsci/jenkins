@@ -49,6 +49,8 @@ public class Mailer extends Publisher {
     private transient boolean failureOnly;
 
     public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
+        if(debug)
+            listener.getLogger().println("Running mailer");
         return new MailSender<Project,Build>(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals) {
             /** Check whether a path (/-separated) will be archived. */
             @Override
@@ -262,4 +264,9 @@ public class Mailer extends Publisher {
             }
         }
     }
+
+    /**
+     * Debug probe point to be activated by the scripting console.
+     */
+    public boolean debug = false;
 }
