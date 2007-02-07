@@ -53,7 +53,7 @@
 	      </tr>
 	    </j:forEach>
 	  </j:forEach>
-    <script>
+    <script defer="defer">
       refreshPart('executors',"./ajaxExecutors");
     </script>
 	</l:pane>

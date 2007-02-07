@@ -44,7 +44,7 @@
         </j:forEach>
       </j:otherwise>
     </j:choose>
-    <script>
+    <script defer="defer">
       refreshPart('buildQueue',"./ajaxBuildQueue");
     </script>
   </l:pane>
