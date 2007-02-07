@@ -4,6 +4,7 @@ import hudson.util.CharSpool;
 import hudson.util.CountingOutputStream;
 import hudson.util.WriterOutputStream;
 import hudson.util.ByteBuffer;
+import hudson.util.LineEndNormalizingWriter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -152,7 +153,7 @@ public class LargeText {
         if(!completed)
             rsp.addHeader("X-More-Data","true");
 
-        spool.writeTo(rsp.getWriter());
+        spool.writeTo(new LineEndNormalizingWriter(rsp.getWriter()));
 
     }
 
