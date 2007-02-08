@@ -2,7 +2,7 @@
   Displays the console output
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.parent.name} #${it.number} Console" norefresh="true">
+  <l:layout title="${it.parent.displayName} #${it.number} Console" norefresh="true">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <t:buildCaption>
