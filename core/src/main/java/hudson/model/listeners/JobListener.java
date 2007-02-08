@@ -51,6 +51,7 @@ public abstract class JobListener implements ExtensionPoint {
         }
 
         public void onLoaded() {
+            listener.onLoaded();
         }
 
         public void onDeleted(Item item) {
