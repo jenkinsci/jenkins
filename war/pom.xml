@@ -206,19 +206,5 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!--
-      When Hudson runs in Jetty launched from Maven, plugin-tools-api.jar visible
-      to Jetty mojo becomes visible to Hudson running inside it.
-
-      This causes a problem because whereas embedded Maven should have loaded another copy
-      of this in its own classworlds, instead we'd end up seeing this class from Jetty.
-      So to prevent this problem, make sure to load this jar from the web application itself,
-      so that it can still resolve the same underlying Maven classes.
-    -->
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-tools-api</artifactId>
-      <version>2.0.4</version>
-    </dependency>
   </dependencies>
 </project>
