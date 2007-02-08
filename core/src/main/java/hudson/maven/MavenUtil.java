@@ -23,7 +23,7 @@ class MavenUtil {
     public static MavenEmbedder createEmbedder(TaskListener listener) throws MavenEmbedderException {
         MavenEmbedder maven = new MavenEmbedder();
 
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        ClassLoader cl = MavenUtil.class.getClassLoader();
         maven.setClassLoader(cl);
         maven.setLogger( new EmbedderLoggerImpl(listener) );
         // if we let Plexus find components, there's no guaranteed ordering,
