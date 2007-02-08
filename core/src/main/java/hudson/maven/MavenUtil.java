@@ -6,9 +6,12 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Enumeration;
+import java.net.URL;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -24,7 +27,7 @@ class MavenUtil {
         MavenEmbedder maven = new MavenEmbedder();
 
         ClassLoader cl = MavenUtil.class.getClassLoader();
-        maven.setClassLoader(cl);
+        maven.setClassLoader(new MaskingClassLoader(cl));
         maven.setLogger( new EmbedderLoggerImpl(listener) );
         // if we let Plexus find components, there's no guaranteed ordering,
         // so Plexus may well find the DefaultPluginManager from maven.jar instead of
@@ -69,5 +72,39 @@ class MavenUtil {
         }
 
         project.setCollectedProjects(modules);
+    }
+
+    private static final class MaskingClassLoader extends ClassLoader {
+
+        public MaskingClassLoader(ClassLoader parent) {
+            super(parent);
+        }
+
+        public Enumeration<URL> getResources(String name) throws IOException {
+            final Enumeration<URL> e = super.getResources(name);
+            return new Enumeration<URL>() {
+                URL next;
+
+                public boolean hasMoreElements() {
+                    fetch();
+                    return next!=null;
+                }
+
+                public URL nextElement() {
+                    fetch();
+                    URL r = next;
+                    next = null;
+                    return r;
+                }
+
+                private void fetch() {
+                    while(next==null && e.hasMoreElements()) {
+                        next = e.nextElement();
+                        if(next.toExternalForm().contains("maven-plugin-tools-api"))
+                            next = null;
+                    }
+                }
+            };
+        }
     }
 }
