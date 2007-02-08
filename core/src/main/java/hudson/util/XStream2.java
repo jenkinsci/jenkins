@@ -51,6 +51,8 @@ public class XStream2 extends XStream {
     private static final class AssociatedConverterImpl implements Converter {
         private Converter findConverter(Class t) {
             try {
+                if(t==null || t.getClassLoader()==null)
+                    return null;
                 Class<?> cl = t.getClassLoader().loadClass(t.getName() + "$ConverterImpl");
                 return (Converter)cl.newInstance();
             } catch (ClassNotFoundException e) {
