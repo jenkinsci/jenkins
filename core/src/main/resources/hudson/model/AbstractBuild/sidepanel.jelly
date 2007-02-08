@@ -2,7 +2,7 @@
   Side panel for the build view.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:header title="${it.parent.name} build &#x23;${it.number}" />
+  <l:header />
   <l:side-panel>
     <l:tasks>
       <j:set var="buildUrl" value="${h.decompose(request)}" />
