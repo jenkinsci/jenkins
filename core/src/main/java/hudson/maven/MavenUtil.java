@@ -74,6 +74,19 @@ class MavenUtil {
         project.setCollectedProjects(modules);
     }
 
+    /**
+     * When we run in Jetty during development, embedded Maven will end up
+     * seeing some of the Maven class visibel through Jetty, and this confuses it.
+     *
+     * <p>
+     * Specifically, embedded Maven will find all the component descriptors
+     * visible through Jetty, yet when it comes to loading classes, classworlds
+     * still load classes from local realms created inside embedder.
+     *
+     * <p>
+     * This classloader prevents this issue by hiding the component descriptor
+     * visible through Jetty.
+     */
     private static final class MaskingClassLoader extends ClassLoader {
 
         public MaskingClassLoader(ClassLoader parent) {
