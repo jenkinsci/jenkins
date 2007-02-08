@@ -58,10 +58,10 @@ public class Ant extends Builder {
         String cmd;
 
         String execName;
-        if(onWindows)
-            execName = "ant.bat";
-        else
+        if(launcher.isUnix())
             execName = "ant";
+        else
+            execName = "ant.bat";
 
         String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
 
@@ -81,7 +81,7 @@ public class Ant extends Builder {
         if(ai!=null)
             env.put("ANT_HOME",ai.getAntHome());
 
-        if(onWindows) {
+        if(!launcher.isUnix()) {
             // on Windows, executing batch file can't return the correct error code,
             // so we need to wrap it into cmd.exe.
             // double %% is needed because we want ERRORLEVEL to be expanded after
@@ -228,6 +228,4 @@ public class Ant extends Builder {
             return getExecutable().exists();
         }
     }
-
-    private static final boolean onWindows = File.separatorChar == '\\';
 }
