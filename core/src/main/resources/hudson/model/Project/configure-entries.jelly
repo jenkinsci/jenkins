@@ -6,11 +6,7 @@
 
 
   <!-- build triggers config pane -->
-  <j:getStatic var="triggers" className="hudson.triggers.Triggers" field="TRIGGERS" />
-  <f:descriptorList title="Build Triggers"
-                    descriptors="${triggers}"
-                    instances="${it.triggers}"
-                    varName="trigger">
+  <f:triggerDescriptorList>
     <!-- pseudo-trigger to list upstream projects. -->
     <j:set var="up" value="${it.upstreamProjects}" />
     <f:optionalBlock name="pseudoUpstreamTrigger"
@@ -26,7 +22,7 @@
     </f:optionalBlock>
     <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
     <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />
-  </f:descriptorList>
+  </f:triggerDescriptorList>
 
 
   <!-- build wrapper config pane -->

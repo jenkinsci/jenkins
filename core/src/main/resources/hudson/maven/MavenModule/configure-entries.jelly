@@ -6,25 +6,10 @@
 
 
   <!-- build triggers config pane -->
-  <j:getStatic var="triggers" className="hudson.triggers.Triggers" field="TRIGGERS" />
-  <f:descriptorList title="Build Triggers"
-                    descriptors="${triggers}"
-                    instances="${it.triggers}"
-                    varName="trigger">
+  <f:triggerDescriptorList>
     <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
-    <j:if test="${app.useSecurity}">
-      <f:optionalBlock name="pseudoRemoteTrigger"
-          help="/help/project-config/triggerRemotely.html"
-          title="Trigger builds remotely (e.g., from scripts)"
-          checked="${it.enableRemoteTrigger}">
-        <f:entry title="Authentication Token">
-          <f:textbox class="setting-input" name="authToken" value="${it.authToken}" />
-          Use the following URL to trigger build remotely:
-          <tt>HUDSON_URL</tt>/${it.url}build?token=<tt>TOKEN_NAME</tt>
-        </f:entry>
-    </f:optionalBlock>
-    </j:if>
-  </f:descriptorList>
+    <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />
+  </f:triggerDescriptorList>
 
   <f:section title="Build">
     <f:entry title="Goals" help="/help/maven/module-goals.html">

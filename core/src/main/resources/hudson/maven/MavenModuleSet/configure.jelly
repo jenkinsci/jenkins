@@ -16,11 +16,11 @@
 
         <st:include page="configure-common.jelly" />
 
-        <!-- TODO: move this to the appropriate place -->
-        <f:section title="Build Triggers">
+        <!-- build triggers config pane -->
+        <f:triggerDescriptorList>
           <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
           <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />
-        </f:section>
+        </f:triggerDescriptorList>
 
         <f:section title="Build">
           <f:entry title="root POM" help="/help/maven/root-pom.html">

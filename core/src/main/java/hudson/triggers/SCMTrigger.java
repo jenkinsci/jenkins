@@ -5,8 +5,9 @@ import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Descriptor;
+import hudson.model.Item;
 import hudson.model.Project;
+import hudson.model.SCMedItem;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
@@ -30,7 +31,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class SCMTrigger extends Trigger {
+public class SCMTrigger extends Trigger<SCMedItem> {
     /**
      * If we'd like to run another polling run, this is set to true.
      *
@@ -96,7 +97,7 @@ public class SCMTrigger extends Trigger {
      * Start polling if it's scheduled.
      */
     public synchronized void startPolling() {
-        AbstractBuild b = (AbstractBuild)project.getLastBuild();
+        AbstractBuild b = job.asProject().getLastBuild();
 
         if(b!=null && b.isBuilding())
             return; // build in progress
@@ -115,16 +116,16 @@ public class SCMTrigger extends Trigger {
      * Returns the file that records the last/current polling activity.
      */
     public File getLogFile() {
-        return new File(project.getRootDir(),"scm-polling.log");
+        return new File(job.getRootDir(),"scm-polling.log");
     }
 
-    public Descriptor<Trigger> getDescriptor() {
+    public TriggerDescriptor getDescriptor() {
         return DESCRIPTOR;
     }
 
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static final class DescriptorImpl extends Descriptor<Trigger> {
+    public static final class DescriptorImpl extends TriggerDescriptor {
         /**
          * Used to control the execution of the polling tasks.
          */
@@ -141,6 +142,10 @@ public class SCMTrigger extends Trigger {
             load();
             // create an executor
             update();
+        }
+
+        public boolean isApplicable(Item item) {
+            return item instanceof SCMedItem;
         }
 
         public ExecutorService getExecutor() {
@@ -209,7 +214,7 @@ public class SCMTrigger extends Trigger {
      */
     public final class SCMAction implements Action {
         public AbstractProject<?,?> getOwner() {
-            return project;
+            return job.asProject();
         }
 
         public String getIconFileName() {
@@ -217,7 +222,7 @@ public class SCMTrigger extends Trigger {
         }
 
         public String getDisplayName() {
-            return project.getScm().getDescriptor().getDisplayName()+" Polling Log";
+            return job.getScm().getDescriptor().getDisplayName()+" Polling Log";
         }
 
         public String getUrlName() {
@@ -243,12 +248,12 @@ public class SCMTrigger extends Trigger {
                 TaskListener listener = new StreamTaskListener(fos);
 
                 try {
-                    LOGGER.info("Polling SCM changes of "+project.getName());
+                    LOGGER.info("Polling SCM changes of "+ job.getName());
 
                     PrintStream logger = listener.getLogger();
                     long start = System.currentTimeMillis();
                     logger.println("Started on "+new Date().toLocaleString());
-                    boolean result = project.pollSCMChanges(listener);
+                    boolean result = job.pollSCMChanges(listener);
                     logger.println("Done. Took "+ Util.getTimeSpanString(System.currentTimeMillis()-start));
                     if(result)
                         logger.println("Changes found");
@@ -266,8 +271,8 @@ public class SCMTrigger extends Trigger {
 
         public void run() {
             if(runPolling()) {
-                LOGGER.info("SCM changes detected in "+project.getName());
-                project.scheduleBuild();
+                LOGGER.info("SCM changes detected in "+ job.getName());
+                job.scheduleBuild();
             }
 
             synchronized(SCMTrigger.this) {

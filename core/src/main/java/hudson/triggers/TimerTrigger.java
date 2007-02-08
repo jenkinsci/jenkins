@@ -3,6 +3,8 @@ package hudson.triggers;
 import antlr.ANTLRException;
 import static hudson.Util.fixNull;
 import hudson.model.Descriptor;
+import hudson.model.BuildableItem;
+import hudson.model.Item;
 import hudson.scheduler.CronTabList;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
@@ -16,24 +18,28 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class TimerTrigger extends Trigger {
+public class TimerTrigger extends Trigger<BuildableItem> {
     public TimerTrigger(String cronTabSpec) throws ANTLRException {
         super(cronTabSpec);
     }
 
     protected void run() {
-        project.scheduleBuild();
+        job.scheduleBuild();
     }
 
-    public Descriptor<Trigger> getDescriptor() {
+    public TriggerDescriptor getDescriptor() {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<Trigger> DESCRIPTOR = new DescriptorImpl();
+    public static final TriggerDescriptor DESCRIPTOR = new DescriptorImpl();
 
-    public static class DescriptorImpl extends Descriptor<Trigger> {
+    public static class DescriptorImpl extends TriggerDescriptor {
         public DescriptorImpl() {
             super(TimerTrigger.class);
+        }
+
+        public boolean isApplicable(Item item) {
+            return item instanceof BuildableItem;
         }
 
         public String getDisplayName() {

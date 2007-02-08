@@ -12,6 +12,7 @@ import hudson.scm.SCM;
 import hudson.scm.SCMS;
 import hudson.triggers.Trigger;
 import hudson.triggers.Triggers;
+import hudson.triggers.TriggerDescriptor;
 import hudson.util.EditDistance;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -94,7 +95,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * List of all {@link Trigger}s for this project.
      */
-    protected List<Trigger> triggers = new Vector<Trigger>();
+    protected List<Trigger<?>> triggers = new Vector<Trigger<?>>();
 
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
@@ -119,7 +120,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         if(triggers==null)
             // it didn't exist in < 1.28
-            triggers = new Vector<Trigger>();
+            triggers = new Vector<Trigger<?>>();
         for (Trigger t : triggers)
             t.start(this,false);
     }
@@ -314,11 +315,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Adds a new {@link Trigger} to this {@link Project} if not active yet.
      */
-    public void addTrigger(Trigger trigger) throws IOException {
+    public void addTrigger(Trigger<?> trigger) throws IOException {
         addToList(trigger,triggers);
     }
 
-    public void removeTrigger(Descriptor<Trigger> trigger) throws IOException {
+    public void removeTrigger(TriggerDescriptor trigger) throws IOException {
         removeFromList(trigger,triggers);
     }
 
@@ -349,8 +350,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    public synchronized Map<Descriptor<Trigger>,Trigger> getTriggers() {
-        return Descriptor.toMap(triggers);
+    public synchronized Map<TriggerDescriptor,Trigger> getTriggers() {
+        return (Map)Descriptor.toMap(triggers);
     }
 
 //
@@ -474,7 +475,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
             for (Trigger t : triggers)
                 t.stop();
-            buildDescribable(req, Triggers.TRIGGERS, triggers, "trigger");
+            buildDescribable(req, Triggers.getApplicableTriggers(this), triggers, "trigger");
             for (Trigger t : triggers)
                 t.start(this,true);
         } catch (FormException e) {
@@ -482,7 +483,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    protected final <T extends Describable<T>> void buildDescribable(StaplerRequest req, List<Descriptor<T>> descriptors, List<T> result, String prefix)
+    protected final <T extends Describable<T>> void buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, List<T> result, String prefix)
         throws FormException {
 
         result.clear();

@@ -29,7 +29,7 @@ import java.util.Vector;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Project extends AbstractProject<Project,Build> implements TopLevelItem {
+public class Project extends AbstractProject<Project,Build> implements TopLevelItem, SCMedItem {
 
     /**
      * List of active {@link Builder}s configured for this project.
@@ -70,6 +70,10 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
             buildWrappers = new Vector<BuildWrapper>();
 
         updateTransientActions();
+    }
+
+    public AbstractProject<?, ?> asProject() {
+        return this;
     }
 
     @Override

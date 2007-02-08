@@ -30,6 +30,7 @@ import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.triggers.Triggers;
+import hudson.triggers.TriggerDescriptor;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.FormFieldValidator;
@@ -238,15 +239,15 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * Gets the trigger descriptor by name. Primarily used for making them web-visible.
      */
-    public Descriptor<Trigger> getTrigger(String shortClassName) {
-        return findDescriptor(shortClassName, Triggers.TRIGGERS);
+    public TriggerDescriptor getTrigger(String shortClassName) {
+        return (TriggerDescriptor)findDescriptor(shortClassName, Triggers.TRIGGERS);
     }
 
     /**
      * Finds a descriptor that has the specified name.
      */
     private <T extends Describable<T>>
-    Descriptor<T> findDescriptor(String shortClassName, Collection<Descriptor<T>> descriptors) {
+    Descriptor<T> findDescriptor(String shortClassName, Collection<? extends Descriptor<T>> descriptors) {
         String name = '.'+shortClassName;
         for (Descriptor<T> d : descriptors) {
             if(d.clazz.getName().endsWith(name))
@@ -905,7 +906,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             for( Descriptor<SCM> scmd : SCMS.SCMS )
                 result &= scmd.configure(req);
 
-            for( Descriptor<Trigger> d : Triggers.TRIGGERS )
+            for( TriggerDescriptor d : Triggers.TRIGGERS )
                 result &= d.configure(req);
 
             for( JobPropertyDescriptor d : Jobs.PROPERTIES )

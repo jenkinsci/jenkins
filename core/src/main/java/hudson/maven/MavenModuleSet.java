@@ -14,6 +14,7 @@ import hudson.model.Job;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.model.SCMedItem;
 import hudson.util.CopyOnWriteMap;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -37,7 +38,7 @@ import java.util.Set;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule> {
+public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem {
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
@@ -217,6 +218,10 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
     public String getRootPOM() {
         if(rootPOM==null)   return "pom.xml";
         return rootPOM;
+    }
+
+    public AbstractProject<?,?> asProject() {
+        return this;
     }
 
     /**
