@@ -1,6 +1,6 @@
 <!-- Displays the chart that show how long builds are taking -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="Build time trend">
+  <l:layout title="${it.displayName} Build time trend">
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
       <j:choose>
