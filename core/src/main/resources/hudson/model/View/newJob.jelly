@@ -13,7 +13,7 @@
         <j:getStatic var="jobs" className="hudson.model.Items" field="LIST" />
         <j:forEach var="d" items="${jobs}">
           <s:block>
-            <input type="radio" name="mode" value="${d.displayName}" />
+            <input type="radio" name="mode" value="${d.displayName}" onchange="$('ok').disabled=false" />
             <st:nbsp/>
             <b>${d.displayName}</b>
           </s:block>
@@ -32,7 +32,7 @@
         </s:entry>
 
 		    <s:block>
-		      <input type="submit" name="Submit" value="OK" />
+		      <input type="submit" name="Submit" value="OK" id="ok" disabled="true" style="margin-left:5em" />
 		    </s:block>
 		  </s:form>
 		</l:main-panel>
