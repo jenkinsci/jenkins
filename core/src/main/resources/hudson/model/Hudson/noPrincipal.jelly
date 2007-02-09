@@ -1,0 +1,12 @@
+<!-- there seems to be no authentication -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout>
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <div style="margin: 2em; color:red; font-weight:bold">
+        The web container doesn't seem to be configured to do authentication.
+        Check the container documentation and/or also consult <tt>users@hudson.dev.java.net</tt>
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
