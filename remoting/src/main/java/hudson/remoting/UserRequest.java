@@ -104,11 +104,17 @@ final class UserResponse<RSP,EXC extends Throwable> implements Serializable {
     }
 
     public RSP retrieve(Channel channel, ClassLoader cl) throws IOException, ClassNotFoundException, EXC {
-        Object o = new ObjectInputStreamEx(new ByteArrayInputStream(response), cl).readObject();
-        if(isException)
-            throw (EXC)o;
-        else
-            return (RSP) o;
+        Channel old = Channel.setCurrent(channel);
+        try {
+            Object o = new ObjectInputStreamEx(new ByteArrayInputStream(response), cl).readObject();
+
+            if(isException)
+                throw (EXC)o;
+            else
+                return (RSP) o;
+        } finally {
+            Channel.setCurrent(old);
+        }
     }
 
     private static final long serialVersionUID = 1L;
