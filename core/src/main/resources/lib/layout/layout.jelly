@@ -51,7 +51,8 @@
               </form-->
               <j:if test="${app.useSecurity}">
                 <j:choose>
-                  <j:when test="${request.isUserInRole('admin')}">
+                  <!-- getUserPrincipal() call needed to work around http://jira.codehaus.org/browse/JETTY-234 -->
+                  <j:when test="${request.userPrincipal!=null &amp;&amp; request.isUserInRole('admin')}">
                     <a style="color:white" href="${rootURL}/logout"><b>logout</b></a>
                   </j:when>
                   <j:otherwise>
