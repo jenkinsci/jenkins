@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -311,6 +313,13 @@ public final class Slave implements Node, Serializable {
             new LargeText(getLogFile(),false).doProgressText(req,rsp);
         }
 
+        /**
+         * Serves jar files for JNLP slave agents.
+         */
+        public JnlpJar getJnlpJars(String fileName) {
+            return new JnlpJar(fileName);
+        }
+
         @Override
         protected void kill() {
             super.kill();
@@ -337,6 +346,38 @@ public final class Slave implements Node, Serializable {
         }
 
         private static final Logger logger = Logger.getLogger(ComputerImpl.class.getName());
+    }
+
+    /**
+     * Web-bound object used to serve jar files for JNLP.
+     */
+    public static final class JnlpJar {
+        private final String className;
+
+        public JnlpJar(String className) {
+            this.className = className;
+        }
+
+        public void doIndex( StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            // where is the jar file?
+            // we can't use ServletContext.getResourcePaths() because
+            // during debugging there's no WEB-INF/lib.
+            URL classFile = getClass().getClassLoader().getResource(className.replace('.', '/') + ".class");
+            if(classFile==null) {
+                rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            String loc = classFile.toExternalForm().substring(4);// cut off jar:
+            loc = loc.substring(0,loc.lastIndexOf('!'));
+
+
+            URLConnection con = new URL(loc).openConnection();
+            InputStream in = con.getInputStream();
+            rsp.serveFile(req, in, con.getLastModified(), con.getContentLength(), "*.jar" );
+            in.close();
+        }
+
     }
 
     public Launcher createLauncher(TaskListener listener) {

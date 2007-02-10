@@ -6,7 +6,7 @@
   <l:isAdmin>
     <!-- See http://java.sun.com/j2se/1.5.0/docs/guide/javaws/developersguide/syntax.html for the syntax -->
     <jnlp spec="1.0+"
-        codebase="${rootURL}/computer/${it.node.nodName}/">
+        codebase="${rootURL}/computer/${it.node.nodeName}/">
 
       <information>
         <title>Slave Agent for ${it.displayName}</title>
@@ -15,12 +15,13 @@
       </information>
 
       <security>
-          <all-permissions/>
+        <all-permissions/>
       </security>
 
       <resources>
         <j2se version="1.5"/>
-        <jar href="jnlp-agent.jar"/>
+        <jar href="jnlpJars/hudson.jnlp.Main"/><!-- JNLP agent jar -->
+        <jar href="jnlpJars/hudson.remoting.Channel"/><!-- remoting jar -->
       </resources>
 
       <application-desc main-class="hudson.jnlp.Main">
