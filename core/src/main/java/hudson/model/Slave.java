@@ -235,20 +235,16 @@ public final class Slave implements Node, Serializable {
                         new StreamCopyThread("stderr copier for remote agent on "+slave.getNodeName(),
                             proc.getErrorStream(), launchLog).start();
 
-                        channel = new Channel(nodeName,threadPoolForRemoting,
-                            proc.getInputStream(),proc.getOutputStream(), launchLog);
-                        channel.addListener(new Listener() {
-                            public void onClosed(Channel c,IOException cause) {
+                        setChannel(proc.getInputStream(),proc.getOutputStream(),launchLog,new Listener() {
+                            public void onClosed(Channel channel, IOException cause) {
                                 if(cause!=null)
                                     cause.printStackTrace(listener.error("slave agent was terminated"));
-                                channel = null;
                                 proc.destroy();
                             }
                         });
 
                         logger.info("slave agent launched for "+slave.getNodeName());
 
-                        Hudson.getInstance().getQueue().scheduleMaintenance();
                     } catch (IOException e) {
                         Util.displayIOException(e,listener);
 
@@ -261,6 +257,26 @@ public final class Slave implements Node, Serializable {
                     }
                 }
             });
+        }
+
+        /**
+         * Creates a {@link Channel} from the given stream and sets that to this slave.
+         */
+        public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Listener listener) throws IOException {
+            synchronized(this) {
+                if(this.channel!=null)
+                    throw new IllegalStateException("Already connected");
+
+                channel = new Channel(nodeName,threadPoolForRemoting,
+                    in,out, launchLog);
+                channel.addListener(new Listener() {
+                    public void onClosed(Channel c,IOException cause) {
+                        ComputerImpl.this.channel = null;
+                    }
+                });
+                channel.addListener(listener);
+            }
+            Hudson.getInstance().getQueue().scheduleMaintenance();
         }
 
         @Override

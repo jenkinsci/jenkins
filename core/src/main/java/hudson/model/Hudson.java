@@ -11,6 +11,7 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.FilePath;
+import hudson.TcpSlaveAgentListener;
 import static hudson.Util.fixEmpty;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
@@ -155,6 +156,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public transient final PluginManager pluginManager;
 
+    public transient final TcpSlaveAgentListener tcpSlaveAgentListener;
+
     /**
      * List of registered {@link JobListener}s.
      */
@@ -179,6 +182,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         // load plugins.
         pluginManager = new PluginManager(context);
 
+        tcpSlaveAgentListener = new TcpSlaveAgentListener();
+
         // work around to have MavenModule register itself until we either move it to a plugin
         // or make it a part of the core.
         Items.LIST.hashCode();
@@ -191,6 +196,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
         for (ItemListener l : viewItemListeners)
             l.onLoaded();
+    }
+
+    public TcpSlaveAgentListener getTcpSlaveAgentListener() {
+        return tcpSlaveAgentListener;
     }
 
     /**

@@ -1,0 +1,34 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <st:contentType value="application/x-java-jnlp-file" />
+  <j:set var="rootURL"
+         value="${request.scheme}://${request.serverName}:${request.serverPort}${request.contextPath}" />
+
+  <l:isAdmin>
+    <!-- See http://java.sun.com/j2se/1.5.0/docs/guide/javaws/developersguide/syntax.html for the syntax -->
+    <jnlp spec="1.0+"
+        codebase="${rootURL}/computer/${it.node.nodName}/">
+
+      <information>
+        <title>Slave Agent for ${it.displayName}</title>
+        <vendor>Hudson project</vendor>
+        <homepage href="https://hudson.dev.java.net/"/>
+      </information>
+
+      <security>
+          <all-permissions/>
+      </security>
+
+      <resources>
+        <j2se version="1.5"/>
+        <jar href="jnlp-agent.jar"/>
+      </resources>
+
+      <application-desc main-class="hudson.jnlp.Main">
+        <argument>${request.serverName}</argument>
+        <argument>${app.tcpSlaveAgentListener.port}</argument>
+        <argument>${app.tcpSlaveAgentListener.secretKey}</argument>
+        <argument>${it.node.nodeName}</argument>
+      </application-desc>
+    </jnlp>
+  </l:isAdmin>
+</j:jelly>
