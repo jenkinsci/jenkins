@@ -846,6 +846,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         }
         ExternalJob.reloadThread.interrupt();
         Trigger.timer.cancel();
+        tcpSlaveAgentListener.shutdown();
 
         if(pluginManager!=null) // be defensive. there could be some ugly timing related issues
             pluginManager.stop();

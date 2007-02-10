@@ -66,6 +66,8 @@ public class TcpSlaveAgentListener extends Thread {
             secretKey = Util.toHexString(random);
             secretFile.write(secretKey);
         }
+
+        start();
     }
 
     /**
@@ -95,12 +97,15 @@ public class TcpSlaveAgentListener extends Thread {
     }
 
     /**
-     * Shuts down the listener and waits until the shutdown is complete. 
+     * Initiates the shuts down of the listener. 
      */
-    public void shutdown() throws InterruptedException, IOException {
+    public void shutdown() {
         shuttingDown = true;
-        serverSocket.close();
-        join();
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to close down TCP port",e);
+        }
     }
 
     private final class ConnectionHandler extends Thread {
