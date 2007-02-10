@@ -177,6 +177,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
+        <version>2.1</version>
         <configuration>
           <archive>
             <manifest>
