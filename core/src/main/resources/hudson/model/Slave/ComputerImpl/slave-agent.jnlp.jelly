@@ -3,6 +3,9 @@
   <j:set var="rootURL"
          value="${request.scheme}://${request.serverName}:${request.serverPort}${request.contextPath}" />
 
+  <!--
+    See http://www.dallaway.com/acad/webstart/ for obtaining the certificate.
+  -->
   <l:isAdmin>
     <!-- See http://java.sun.com/j2se/1.5.0/docs/guide/javaws/developersguide/syntax.html for the syntax -->
     <jnlp spec="1.0+"
@@ -20,8 +23,8 @@
 
       <resources>
         <j2se version="1.5"/>
-        <jar href="jnlpJars/hudson.jnlp.Main"/><!-- JNLP agent jar -->
-        <jar href="jnlpJars/hudson.remoting.Channel"/><!-- remoting jar -->
+        <jar href="jnlpJars/hudson.jnlp.Main.jar"/><!-- JNLP agent jar -->
+        <jar href="jnlpJars/hudson.remoting.Channel.jar"/><!-- remoting jar -->
       </resources>
 
       <application-desc main-class="hudson.jnlp.Main">

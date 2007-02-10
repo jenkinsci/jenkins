@@ -316,8 +316,8 @@ public final class Slave implements Node, Serializable {
         /**
          * Serves jar files for JNLP slave agents.
          */
-        public JnlpJar getJnlpJars(String fileName) {
-            return new JnlpJar(fileName);
+        public JnlpJar getJnlpJars(String fileNamePlusJar) {
+            return new JnlpJar(fileNamePlusJar.substring(0,fileNamePlusJar.length()-4)); // remove .jar
         }
 
         @Override
