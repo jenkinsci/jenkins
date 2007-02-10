@@ -18,6 +18,7 @@
   <modules>
     <module>remoting</module>
     <module>core</module>
+    <module>jnlp-agent</module>
     <module>war</module>
   </modules>
   
