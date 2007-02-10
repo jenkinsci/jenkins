@@ -10,7 +10,33 @@
   <artifactId>jnlp-agent</artifactId>
   <packaging>jar</packaging>
   <name>Hudson JNLP slave agent</name>
-  
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+              <!--
+                during the development, debug profile defined in ../pom.xml will cause
+                the jars to be signed by a self-certified dummy public key.
+                
+                For release, you should define the real values in ~/.m2/settings.xml
+              -->
+              <alias>${hudson.sign.alias}</alias>
+              <storepass>${hudson.sign.storepass}</storepass>
+              <keystore>${hudson.sign.keystore}</keystore>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
   <dependencies>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>

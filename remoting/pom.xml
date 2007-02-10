@@ -137,6 +137,11 @@
                     <attribute name="Main-Class" value="hudson.remoting.Launcher" />
                   </manifest>
                 </jar>
+                <!-- see ../jnlp-agent/pom.xml for details -->
+                <signjar jar="target/${artifactId}-${version}-jdk14.jar"
+                  alias="${hudson.sign.alias}"
+                  keystore="${hudson.sign.keystore}"
+                  storepass="${hudson.sign.storepass}" />
               </tasks>
             </configuration>
             <goals>
@@ -179,6 +184,24 @@
             </manifest>
           </archive>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+              <!--
+                during the development, debug profile defined in ../pom.xml will cause
+                the jars to be signed by a self-certified dummy public key.
+                
+                For release, you should define the real values in ~/.m2/settings.xml
+              -->
+              <alias>${hudson.sign.alias}</alias>
+              <storepass>${hudson.sign.storepass}</storepass>
+              <keystore>${hudson.sign.keystore}</keystore>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

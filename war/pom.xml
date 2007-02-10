@@ -71,6 +71,13 @@
           -->
           <!--scanIntervalSeconds>1</scanIntervalSeconds-->
           <webAppSourceDirectory>${basedir}/resources</webAppSourceDirectory>
+          <!--realm for debug
+          <userRealms>
+            <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
+              <name>hudsonRealm</name>
+              <config>src/realm.properties</config>
+            </userRealm>
+          </userRealms>-->
           <systemProperties>
             <systemProperty>
               <name>HUDSON_HOME</name>
@@ -123,6 +130,11 @@
       <artifactId>remoting</artifactId>
       <version>${version}</version>
       <classifier>${hudsonClassifier}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson.main</groupId>
+      <artifactId>jnlp-agent</artifactId>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
