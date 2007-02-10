@@ -393,7 +393,10 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                     actualCmd = cmd.clone();
                     actualCmd.add(modulePath.getName());
                     modulePath = modulePath.getParent();
-                    baseName = baseName.substring(0,baseName.lastIndexOf('/'));
+                    int slash = baseName.lastIndexOf('/');
+                    if (slash > 0) {
+                        baseName = baseName.substring(0, slash);
+                    }
                 }
 
                 if(!run(launcher,actualCmd,listener,
