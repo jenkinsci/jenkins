@@ -20,7 +20,7 @@ public class Main {
                     }
                 });
             }
-        }, args[0], Integer.parseInt(args[1]));
+        }, args[0], Integer.parseInt(args[1]), args[2], args[3]);
         engine.start();
     }
 }
