@@ -32,6 +32,11 @@ public interface BuildStep {
     /**
      * Runs the step over the given build and reports the progress to the listener.
      *
+     * <p>
+     * A plugin can contribute the action object to {@link Build#getActions()}
+     * so that a 'report' becomes a part of the persisted data of {@link Build}.
+     * This is how JUnit plugin attaches the test report to a build page, for example.
+     *
      * @return
      *      true if the build can continue, false if there was an error
      *      and the build needs to be aborted.
