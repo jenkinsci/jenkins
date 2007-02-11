@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.logging.Logger;
 
 /**
  * Represents an XML data file that Hudson uses as a data file.
@@ -87,6 +88,7 @@ public final class XmlFile {
      * Loads the contents of this file into a new object.
      */
     public Object read() throws IOException {
+        LOGGER.fine("Reading "+file);
         Reader r = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
         try {
             return xs.fromXML(r);
@@ -148,4 +150,6 @@ public final class XmlFile {
      * {@link XStream} instance is supposed to be thread-safe.
      */
     private static final XStream DEFAULT_XSTREAM = new XStream2();
+
+    private static final Logger LOGGER = Logger.getLogger(XmlFile.class.getName());
 }
