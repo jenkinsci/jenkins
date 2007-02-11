@@ -2,6 +2,8 @@ package hudson.jnlp;
 
 import javax.swing.SwingUtilities;
 import javax.swing.JOptionPane;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -25,7 +27,10 @@ public class Main {
             public void error(final Throwable t) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        JOptionPane.showMessageDialog(frame,t,"Error",
+                        StringWriter sw = new StringWriter();
+                        t.printStackTrace(new PrintWriter(sw));
+                        JOptionPane.showMessageDialog(
+                            frame,sw.toString(),"Error",
                             JOptionPane.ERROR_MESSAGE);
                         System.exit(-1);
                     }
