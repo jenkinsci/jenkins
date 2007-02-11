@@ -16,6 +16,12 @@ import java.io.Serializable;
  * the JUnit test result trend shows up in the project top page.
  * See {@link TestResultProjectAction}.
  *
+ * <p>
+ * Actions are often serialized as a part of {@link Actionable}
+ * (for example with {@link Build}.) In some other cases,
+ * {@link Action}s are transient and not persisted (such as
+ * when it's used with {@link Job}).
+ *
  * @author Kohsuke Kawaguchi
  */
 public interface Action extends Serializable, ModelObject {
