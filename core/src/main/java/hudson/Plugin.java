@@ -20,6 +20,16 @@ import java.net.URL;
  * <p>
  * A plugin needs to derive from this class.
  *
+ * <p>
+ * One instance of a plugin is created by Hudson, and used as the entry point
+ * to plugin functionality.
+ *
+ * <p>
+ * A plugin is bound to URL space of Hudson as <tt>${rootURL}/plugin/foo/</tt>,
+ * where "foo" is taken from your plugin name "foo.hpi". All your web resources
+ * in src/main/webapp are visible from this URL, and you can also define Jelly
+ * views against your Plugin class, and those are visible in this URL, too.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.42
  */
