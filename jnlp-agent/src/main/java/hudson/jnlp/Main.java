@@ -27,6 +27,7 @@ public class Main {
                     public void run() {
                         JOptionPane.showMessageDialog(frame,t,"Error",
                             JOptionPane.ERROR_MESSAGE);
+                        System.exit(-1);
                     }
                 });
             }
