@@ -261,11 +261,13 @@ public final class Slave implements Node, Serializable {
             });
         }
 
+        private final Object channelLock = new Object();
+
         /**
          * Creates a {@link Channel} from the given stream and sets that to this slave.
          */
         public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Listener listener) throws IOException {
-            synchronized(this) {
+            synchronized(channelLock) {
                 if(this.channel!=null)
                     throw new IllegalStateException("Already connected");
 
