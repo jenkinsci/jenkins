@@ -54,6 +54,10 @@ public interface BuildStep {
      * Returns an action object if this {@link BuildStep} has an action
      * to contribute to a {@link Project}.
      *
+     * <p>
+     * {@link Project} calls this method for every {@link BuildStep} that
+     * it owns when the rendering is requested.
+     *
      * @param project
      *      {@link Project} that owns this build step,
      *      since {@link BuildStep} object doesn't usually have this "parent" pointer.
