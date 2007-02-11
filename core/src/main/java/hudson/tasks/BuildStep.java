@@ -8,11 +8,10 @@ import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.tasks.junit.JUnitResultArchiver;
 
-import java.util.List;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.io.IOException;
-import java.io.Serializable;
+import java.util.List;
 
 /**
  * One step of the whole build process.
