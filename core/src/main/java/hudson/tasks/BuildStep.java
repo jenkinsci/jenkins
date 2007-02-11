@@ -12,9 +12,24 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * One step of the whole build process.
+ *
+ * <h2>Persistence</h2>
+ * <p>
+ * These objects are persisted as a part of {@link Project} by XStream.
+ * The save operation happens without any notice, and the restore operation
+ * happens without calling the constructor, just like Java serialization.
+ *
+ * <p>
+ * So generally speaking, derived classes should use instance variables
+ * only for keeping configuration. You can still store objects you use
+ * for processing, like a parser of some sort, but they need to be marked
+ * as <tt>transient</tt>, and the code needs to be aware that they might
+ * be null (which is the case when you access the field for the first time
+ * the object is restored.)
  *
  * @author Kohsuke Kawaguchi
  */
