@@ -28,14 +28,42 @@
               <directory>${basedir}/target/generated-resources</directory>
             </resource>
           </webResources>
+          <!-- for putting Main-Class into war -->
+          <archive>
+            <manifest>
+              <mainClass>Main</mainClass>
+            </manifest>
+          </archive>
         </configuration>
       </plugin>
       <plugin>
-        <!-- for copying remoting jar to $WAR/WEB-INF/slave.jar -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <!-- compile src/launcher/java/Main.java into hudson.war -->
+          <execution>
+            <phase>generate-resources</phase>
+            <configuration>
+              <tasks>
+                <mkdir dir="target/generated-resources" />
+                <!-- needs to be forked because Maven doesn't seem to put tools.jar in classpath -->
+                <javac srcdir="src/launcher/java" includes="Main.java" source="1.4" target="1.4"
+                       destdir="target/generated-resources" fork="true" />
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>dependency-maven-plugin</artifactId>
         <executions>
+          <!-- for copying remoting jar to $WAR/WEB-INF/slave.jar -->
           <execution>
+            <id>copy-slave.jar</id>
             <phase>generate-resources</phase>
             <goals>
               <goal>copy</goal>
@@ -51,6 +79,25 @@
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${basedir}/target/generated-resources/WEB-INF</outputDirectory>
+            </configuration>
+          </execution>
+          <!-- for copying winstone.jar -->
+          <execution>
+            <id>copy-winstone.jar</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>winstone</groupId>
+                  <artifactId>winstone</artifactId>
+                  <version>0.9.6</version>
+                  <destFileName>winstone.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${basedir}/target/generated-resources</outputDirectory>
             </configuration>
           </execution>
         </executions>
