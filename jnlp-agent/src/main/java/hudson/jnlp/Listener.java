@@ -9,4 +9,5 @@ package hudson.jnlp;
  */
 public interface Listener {
     void status(String msg);
+    void error(Throwable t);
 }

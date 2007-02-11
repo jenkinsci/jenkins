@@ -1,6 +1,7 @@
 package hudson.jnlp;
 
 import javax.swing.SwingUtilities;
+import javax.swing.JOptionPane;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -20,7 +21,16 @@ public class Main {
                     }
                 });
             }
-        }, args[0], Integer.parseInt(args[1]), args[2], args[3]);
+
+            public void error(final Throwable t) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        JOptionPane.showMessageDialog(frame,t,"Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            }
+        }, args[0], args[1], args[2], args[3]);
         engine.start();
     }
 }
