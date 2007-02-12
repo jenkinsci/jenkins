@@ -206,6 +206,15 @@ public final class Slave implements Node, Serializable {
             super(slave);
         }
 
+        public Slave getNode() {
+            return (Slave)super.getNode();
+        }
+
+        @Override
+        public boolean isJnlpAgent() {
+            return getNode().getCommand().length()==0;
+        }
+
         /**
          * Launches a remote agent.
          */

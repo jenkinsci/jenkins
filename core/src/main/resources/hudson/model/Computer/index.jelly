@@ -19,17 +19,43 @@
         Slave ${it.displayName}
       </h1>
 
-      <j:if test="${it.offline &amp;&amp; !it.temporarilyOffline}">
-        <p class="error">
-          This node is offline because Hudson failed to launch the slave agent on it.
-          <a href="log">See log for more details</a>
-        </p>
-        <l:isAdmin>
-          <form method="get" action="launchSlaveAgent">
-            <input type="submit" value="Launch slave agent"  />
-          </form>
-        </l:isAdmin>
-      </j:if>
+      <j:choose>
+        <j:when test="${it.jnlpAgent}">
+          <j:choose>
+            <j:when test="${it.offline &amp;&amp; !it.temporarilyOffline}">
+              <l:isAdmin>
+                <p>
+                  <a href="slave-agent.jnlp">
+                    <img src="${rootURL}/images/webstart.gif" alt="launch agent" />
+                    Launch slave agent
+                  </a>
+                </p>
+                <p>
+                  (Click the above link from this slave computer to launch the slave agent via JNLP)
+                </p>
+              </l:isAdmin>
+            </j:when>
+            <j:otherwise>
+              <p>
+                Connected via JNLP agent.
+              </p>
+            </j:otherwise>
+          </j:choose>
+        </j:when>
+        <j:otherwise>
+          <j:if test="${it.offline &amp;&amp; !it.temporarilyOffline}">
+            <p class="error">
+              This node is offline because Hudson failed to launch the slave agent on it.
+              <a href="log">See log for more details</a>
+            </p>
+            <l:isAdmin>
+              <form method="get" action="launchSlaveAgent">
+                <input type="submit" value="Launch slave agent"  />
+              </form>
+            </l:isAdmin>
+          </j:if>
+        </j:otherwise>
+      </j:choose>
 
       <h2>Projects tied on ${it.displayName}</h2>
       <j:set var="jobs" value="${it.tiedJobs}" />

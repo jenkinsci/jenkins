@@ -101,6 +101,13 @@ public abstract class Computer implements ModelObject {
     }
 
     /**
+     * Returns true if this computer is supposed to be launched via JNLP.
+     */
+    public boolean isJnlpAgent() {
+        return false;
+    }
+
+    /**
      * Returns true if this node is marked temporarily offline by the user.
      *
      * <p>
