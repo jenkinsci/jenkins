@@ -221,44 +221,46 @@ public final class Slave implements Node, Serializable {
             }
             final OutputStream launchLog = os;
 
-            // launch the slave agent asynchronously
-            threadPoolForRemoting.execute(new Runnable() {
-                // TODO: do this only for nodes that are so configured.
-                // TODO: support passive connection via JNLP
-                public void run() {
-                    final StreamTaskListener listener = new StreamTaskListener(launchLog);
-                    try {
-                        listener.getLogger().println("Launching slave agent");
-                        listener.getLogger().println("$ "+slave.agentCommand);
-                        final Process proc = Runtime.getRuntime().exec(slave.agentCommand);
+            if(slave.agentCommand.length()>0) {
+                // launch the slave agent asynchronously
+                threadPoolForRemoting.execute(new Runnable() {
+                    // TODO: do this only for nodes that are so configured.
+                    // TODO: support passive connection via JNLP
+                    public void run() {
+                        final StreamTaskListener listener = new StreamTaskListener(launchLog);
+                        try {
+                            listener.getLogger().println("Launching slave agent");
+                            listener.getLogger().println("$ "+slave.agentCommand);
+                            final Process proc = Runtime.getRuntime().exec(slave.agentCommand);
 
-                        // capture error information from stderr. this will terminate itself
-                        // when the process is killed.
-                        new StreamCopyThread("stderr copier for remote agent on "+slave.getNodeName(),
-                            proc.getErrorStream(), launchLog).start();
+                            // capture error information from stderr. this will terminate itself
+                            // when the process is killed.
+                            new StreamCopyThread("stderr copier for remote agent on "+slave.getNodeName(),
+                                proc.getErrorStream(), launchLog).start();
 
-                        setChannel(proc.getInputStream(),proc.getOutputStream(),launchLog,new Listener() {
-                            public void onClosed(Channel channel, IOException cause) {
-                                if(cause!=null)
-                                    cause.printStackTrace(listener.error("slave agent was terminated"));
-                                proc.destroy();
-                            }
-                        });
+                            setChannel(proc.getInputStream(),proc.getOutputStream(),launchLog,new Listener() {
+                                public void onClosed(Channel channel, IOException cause) {
+                                    if(cause!=null)
+                                        cause.printStackTrace(listener.error("slave agent was terminated"));
+                                    proc.destroy();
+                                }
+                            });
 
-                        logger.info("slave agent launched for "+slave.getNodeName());
+                            logger.info("slave agent launched for "+slave.getNodeName());
 
-                    } catch (IOException e) {
-                        Util.displayIOException(e,listener);
+                        } catch (IOException e) {
+                            Util.displayIOException(e,listener);
 
-                        String msg = Util.getWin32ErrorMessage(e);
-                        if(msg==null)   msg="";
-                        else            msg=" : "+msg;
-                        msg = "Unable to launch the slave agent for " + slave.getNodeName() + msg;
-                        logger.log(Level.SEVERE,msg,e);
-                        e.printStackTrace(listener.error(msg));
+                            String msg = Util.getWin32ErrorMessage(e);
+                            if(msg==null)   msg="";
+                            else            msg=" : "+msg;
+                            msg = "Unable to launch the slave agent for " + slave.getNodeName() + msg;
+                            logger.log(Level.SEVERE,msg,e);
+                            e.printStackTrace(listener.error(msg));
+                        }
                     }
-                }
-            });
+                });
+            }
         }
 
         private final Object channelLock = new Object();
