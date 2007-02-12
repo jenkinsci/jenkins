@@ -23,8 +23,8 @@
 
       <resources>
         <j2se version="1.5"/>
-        <jar href="jnlpJars/hudson.jnlp.Main.jar"/><!-- JNLP agent jar -->
-        <jar href="jnlpJars/hudson.remoting.Channel.jar"/><!-- remoting jar -->
+        <jar href="jnlpJars/jnlp-agent.jar"/>
+        <jar href="jnlpJars/slave.jar"/><!-- remoting jar -->
       </resources>
 
       <application-desc main-class="hudson.jnlp.Main">

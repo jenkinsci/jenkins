@@ -318,8 +318,8 @@ public final class Slave implements Node, Serializable {
         /**
          * Serves jar files for JNLP slave agents.
          */
-        public JnlpJar getJnlpJars(String fileNamePlusJar) {
-            return new JnlpJar(fileNamePlusJar.substring(0,fileNamePlusJar.length()-4)); // remove .jar
+        public JnlpJar getJnlpJars(String fileName) {
+            return new JnlpJar(fileName);
         }
 
         @Override
@@ -354,27 +354,20 @@ public final class Slave implements Node, Serializable {
      * Web-bound object used to serve jar files for JNLP.
      */
     public static final class JnlpJar {
-        private final String className;
+        private final String fileName;
 
-        public JnlpJar(String className) {
-            this.className = className;
+        public JnlpJar(String fileName) {
+            this.fileName = fileName;
         }
 
         public void doIndex( StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // where is the jar file?
-            // we can't use ServletContext.getResourcePaths() because
-            // during debugging there's no WEB-INF/lib.
-            URL classFile = getClass().getClassLoader().getResource(className.replace('.', '/') + ".class");
-            if(classFile==null) {
-                rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
-                return;
+            URL res = req.getServletContext().getResource("/WEB-INF/" + fileName);
+            if(res==null) {
+                // during the development this path doesn't have the files.
+                res = new URL(new File(".").getAbsoluteFile().toURL(),"target/generated-resources/WEB-INF/"+fileName);
             }
 
-            String loc = classFile.toExternalForm().substring(4);// cut off jar:
-            loc = loc.substring(0,loc.lastIndexOf('!'));
-
-
-            URLConnection con = new URL(loc).openConnection();
+            URLConnection con = res.openConnection();
             InputStream in = con.getInputStream();
             rsp.serveFile(req, in, con.getLastModified(), con.getContentLength(), "*.jar" );
             in.close();
