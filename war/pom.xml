@@ -81,6 +81,28 @@
               <outputDirectory>${basedir}/target/generated-resources/WEB-INF</outputDirectory>
             </configuration>
           </execution>
+          <!--
+            for copying remoting jar to $WAR/WEB-INF/remoting.jar
+            this is always JDK 1.5 jar, to make it easy to deploy JNLP agent.
+          -->
+          <execution>
+            <id>copy-remoting.jar</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.jvnet.hudson.main</groupId>
+                  <artifactId>remoting</artifactId>
+                  <version>${version}</version>
+                  <destFileName>remoting.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${basedir}/target/generated-resources/WEB-INF</outputDirectory>
+            </configuration>
+          </execution>
           <!-- for copying remoting jar to $WAR/WEB-INF/jnlp-agent.jar -->
           <execution>
             <id>copy-jnlp-agent.jar</id>

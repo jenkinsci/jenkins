@@ -24,7 +24,7 @@
       <resources>
         <j2se version="1.5"/>
         <jar href="jnlpJars/jnlp-agent.jar"/>
-        <jar href="jnlpJars/slave.jar"/><!-- remoting jar -->
+        <jar href="jnlpJars/remoting.jar"/>
       </resources>
 
       <application-desc main-class="hudson.jnlp.Main">
