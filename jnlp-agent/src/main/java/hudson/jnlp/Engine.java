@@ -71,9 +71,7 @@ public class Engine extends Thread {
                     break;
                 }
             }
-        } catch (IOException e) {
-            listener.error(e);
-        } catch (InterruptedException e) {
+        } catch (Throwable e) {
             listener.error(e);
         }
     }
