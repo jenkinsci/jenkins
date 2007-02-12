@@ -1,14 +1,18 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <h2>Module Builds</h2>
   <j:set var="builds" value="${it.moduleBuilds}" />
-  <ul>
+  <table>
     <j:forEach var="m" items="${builds}">
-      <li>
-        <a href="${rootURL}/${m.key.url}">${m.key.displayName}</a>
-        <j:forEach var="b" items="${m.value}">
-          <t:buildLink job="${m.key}" number="${b.number}" />
-        </j:forEach>
-      </li>
+      <tr>
+        <td style="white-space:nowrap;">
+          <a href="${rootURL}/${m.key.url}">${m.key.displayName}</a>
+        </td>
+        <td>
+          <j:forEach var="b" items="${m.value}">
+            <t:buildLink job="${m.key}" number="${b.number}" />
+          </j:forEach>
+        </td>
+      </tr>
     </j:forEach>
-  </ul>
+  </table>
 </j:jelly>
