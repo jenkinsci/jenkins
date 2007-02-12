@@ -102,6 +102,7 @@
               <goal>single</goal>
             </goals>
             <configuration>
+              <finalName>remoting-${version}</finalName>
               <descriptors>
                 <descriptor>assembly-uberjar-14.xml</descriptor>
               </descriptors>
@@ -147,6 +148,23 @@
             <goals>
               <goal>run</goal>
             </goals>
+          </execution>
+          <!-- sign uberjar, which is used as slave.jar in the release profile -->
+          <execution>
+            <id>signUberjar</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <!-- see ../jnlp-agent/pom.xml for details -->
+                <signjar jar="target/${artifactId}-${version}-jdk14-jar-with-dependencies.jar"
+                  alias="${hudson.sign.alias}"
+                  keystore="${hudson.sign.keystore}"
+                  storepass="${hudson.sign.storepass}" />
+              </tasks>
+            </configuration>
           </execution>
         </executions>
       </plugin>
