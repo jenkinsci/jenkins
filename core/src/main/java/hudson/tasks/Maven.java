@@ -1,14 +1,17 @@
 package hudson.tasks;
 
 import hudson.CopyOnWrite;
+import hudson.FilePath.FileCallable;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
-import hudson.util.FormFieldValidator;
+import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -16,6 +19,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * Build by using Maven.
@@ -55,20 +59,62 @@ public class Maven extends Builder {
         return null;
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) {
-        Project proj = build.getProject();
+    /**
+     * Looks for <tt>pom.xlm</tt> or <tt>project.xml</tt> to determine the maven executable
+     * name.
+     */
+    private static final class DecideDefaultMavenCommand implements FileCallable<String> {
+        // command line arguments.
+        private final String arguments;
 
-        String execName;
-        if(launcher.isUnix())
-            execName = "maven";
-        else
-            execName = "maven.bat";
+        public DecideDefaultMavenCommand(String arguments) {
+            this.arguments = arguments;
+        }
+
+        public String invoke(File ws, VirtualChannel channel) throws IOException {
+            String seed=null;
+
+            // check for the -f option
+            StringTokenizer tokens = new StringTokenizer(arguments);
+            while(tokens.hasMoreTokens()) {
+                String t = tokens.nextToken();
+                if(t.equals("-f") && tokens.hasMoreTokens()) {
+                    File file = new File(ws,tokens.nextToken());
+                    if(!file.exists())
+                        continue;   // looks like an error, but let the execution fail later
+                    if(file.isDirectory())
+                        // in M1, you specify a directory in -f
+                        seed = "maven";
+                    else
+                        // in M2, you specify a POM file name.
+                        seed = "mvn";
+                    break;
+                }
+            }
+
+            if(seed==null) {
+                if(new File(ws,"pom.xml").exists())
+                    seed = "mvn";
+                else
+                    // err on Maven 1 to be closer to the behavior in < 1.81
+                    seed = "maven";
+            }
+
+            if(Functions.isWindows())
+                seed += ".bat";
+            return seed;
+        }
+    }
+
+    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        Project proj = build.getProject();
 
         String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
 
         ArgumentListBuilder args = new ArgumentListBuilder();
         MavenInstallation ai = getMaven();
         if(ai==null) {
+            String execName = proj.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
             args.add(execName).addTokenized(normalizedTarget);
         } else {
             File exec = ai.getExecutable();
