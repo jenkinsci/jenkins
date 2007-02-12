@@ -314,6 +314,18 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         return _getRuns().get(n);
     }
 
+    /**
+     * Gets the youngest build #m that satisfies <tt>n&lt;=m</tt>.
+     *
+     * This is useful when you'd like to fetch a build but the exact build might be already
+     * gone (deleted, rotated, etc.)
+     */
+    public RunT getNearestBuild(int n) {
+        SortedMap<Integer, ? extends RunT> m = _getRuns().tailMap(n);
+        if(m.isEmpty()) return null;
+        return m.get(m.firstKey());
+    }
+
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         try {
             // try to interpret the token as build number
