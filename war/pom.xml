@@ -81,6 +81,25 @@
               <outputDirectory>${basedir}/target/generated-resources/WEB-INF</outputDirectory>
             </configuration>
           </execution>
+          <!-- for copying remoting jar to $WAR/WEB-INF/jnlp-agent.jar -->
+          <execution>
+            <id>copy-jnlp-agent.jar</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.jvnet.hudson.main</groupId>
+                  <artifactId>jnlp-agent</artifactId>
+                  <version>${version}</version>
+                  <destFileName>jnlp-agent.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${basedir}/target/generated-resources/WEB-INF</outputDirectory>
+            </configuration>
+          </execution>
           <!-- for copying winstone.jar -->
           <execution>
             <id>copy-winstone.jar</id>
@@ -182,6 +201,11 @@
       <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>jnlp-agent</artifactId>
       <version>${version}</version>
+      <!--
+        not really a test scope, but we use dependency-maven-plugin to copy this jar,
+        so we don't want this to be bundled in war by maven-war-plugin.
+      -->
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
