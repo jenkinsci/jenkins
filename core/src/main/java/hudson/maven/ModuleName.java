@@ -4,6 +4,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Extension;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.ReportPlugin;
 
 /**
  * Version independent name of a Maven project.
@@ -24,6 +25,10 @@ public class ModuleName implements Comparable<ModuleName> {
     }
 
     public ModuleName(Plugin plugin) {
+        this(plugin.getGroupId(),plugin.getArtifactId());
+    }
+
+    public ModuleName(ReportPlugin plugin) {
         this(plugin.getGroupId(),plugin.getArtifactId());
     }
 

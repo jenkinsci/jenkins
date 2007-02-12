@@ -4,6 +4,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Extension;
+import org.apache.maven.model.ReportPlugin;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -65,7 +66,7 @@ final class PomInfo implements Serializable {
             dependencies.add(new ModuleName(parent));
 
         addPluginsAsDependencies(project.getBuildPlugins(),dependencies);
-        addPluginsAsDependencies(project.getReportPlugins(),dependencies);
+        addReportPluginsAsDependencies(project.getReportPlugins(),dependencies);
 
         List<Extension> extensions = project.getBuildExtensions();
         if(extensions!=null)
@@ -76,6 +77,12 @@ final class PomInfo implements Serializable {
     private void addPluginsAsDependencies(List<Plugin> plugins, Set<ModuleName> dependencies) {
         if(plugins==null)   return;
         for (Plugin p : plugins)
+            dependencies.add(new ModuleName(p));
+    }
+
+    private void addReportPluginsAsDependencies(List<ReportPlugin> plugins, Set<ModuleName> dependencies) {
+        if(plugins==null)   return;
+        for (ReportPlugin p : plugins)
             dependencies.add(new ModuleName(p));
     }
 
