@@ -134,6 +134,9 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         return r;
     }
 
+    /**
+     * Peeks the next build number.
+     */
     public int getNextBuildNumber() {
         return nextBuildNumber;
     }

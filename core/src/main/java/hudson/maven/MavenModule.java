@@ -150,10 +150,6 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         return (MavenModuleSet)super.getParent();
     }
 
-    /*package*/ int peekNextBuildNumber() {
-        return nextBuildNumber;
-    }
-
     /*package*/ void updateNextBuildNumber(int next) throws IOException {
         if(next>nextBuildNumber) {
             this.nextBuildNumber = next;

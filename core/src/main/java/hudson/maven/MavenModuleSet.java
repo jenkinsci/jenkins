@@ -27,6 +27,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Group of {@link MavenModule}s.
@@ -175,9 +177,24 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
      */
     public synchronized int assignBuildNumber() throws IOException {
         // determine the next value
+        updateNextBuildNumber();
+
+        return super.assignBuildNumber();
+    }
+
+    public synchronized int getNextBuildNumber() {
+        try {
+            updateNextBuildNumber();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE,"Failed to save the next build number",e);
+        }
+        return nextBuildNumber;
+    }
+
+    private void updateNextBuildNumber() throws IOException {
         int next = this.nextBuildNumber;
         for (MavenModule m : modules.values())
-            next = Math.max(next,m.peekNextBuildNumber());
+            next = Math.max(next,m.getNextBuildNumber());
 
         if(this.nextBuildNumber!=next) {
             this.nextBuildNumber=next;
@@ -186,8 +203,6 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
 
         for (MavenModule m : modules.values())
             m.updateNextBuildNumber(next);
-
-        return super.assignBuildNumber();
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
@@ -295,4 +310,6 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
             return new MavenModuleSet(name);
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(MavenModuleSet.class.getName());
 }
