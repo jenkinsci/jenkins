@@ -96,6 +96,7 @@
         </t:summary>
       </table>
 
+      <st:include page="main.jelly" optional="true" />
 
       <!-- upstream/downstream builds -->
       <j:set var="upstream" value="${it.upstreamBuilds}" />

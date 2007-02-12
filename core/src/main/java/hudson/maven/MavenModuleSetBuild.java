@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 
 /**
  * {@link Build} for {@link MavenModuleSet}.
@@ -51,6 +53,37 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
     public AbstractTestResultAction getTestResultAction() {
         // TODO
         return null;
+    }
+
+    /**
+     * Computes the module builds that correspond to this build.
+     * <p>
+     * A module may be built multiple times (by the user action),
+     * so the value is a list.
+     */
+    public Map<MavenModule,List<MavenBuild>> getModuleBuilds() {
+        Collection<MavenModule> mods = getParent().getModules();
+
+        // identify the build number range. [start,end)
+        int start = getNumber();
+        int end;
+        MavenModuleSetBuild nb = getNextBuild();
+        end = nb!=null ? nb.getNumber() : Integer.MAX_VALUE;
+
+        // preserve the order by using LinkedHashMap
+        Map<MavenModule,List<MavenBuild>> r = new LinkedHashMap<MavenModule,List<MavenBuild>>(mods.size());
+
+        for (MavenModule m : mods) {
+            List<MavenBuild> builds = new ArrayList<MavenBuild>();
+            MavenBuild b = m.getNearestBuild(start);
+            while(b!=null && b.getNumber()<end) {
+                builds.add(b);
+                b = b.getNextBuild();
+            }
+            r.put(m,builds);
+        }
+
+        return r;
     }
 
     public void run() {
