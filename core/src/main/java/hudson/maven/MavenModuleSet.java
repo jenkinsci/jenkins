@@ -1,7 +1,6 @@
 package hudson.maven;
 
 import hudson.FilePath;
-import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
@@ -11,10 +10,10 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
 import hudson.model.Job;
-import hudson.model.TaskListener;
+import hudson.model.Node;
+import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.model.SCMedItem;
 import hudson.util.CopyOnWriteMap;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -27,8 +26,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Group of {@link MavenModule}s.
@@ -122,8 +121,9 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
      * Gets the workspace of this job.
      */
     public FilePath getWorkspace() {
-        // TODO: support roaming and etc
-        return Hudson.getInstance().getWorkspaceFor(this);
+        Node node = getLastBuiltOn();
+        if(node==null)  node = Hudson.getInstance();
+        return node.getWorkspaceFor(this);
     }
 
     @Override
@@ -207,20 +207,6 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
 
     protected void buildDependencyGraph(DependencyGraph graph) {
         // no dependency for this.
-    }
-
-    /**
-     * Obtains a workspace.
-     */
-    public boolean checkout(Launcher launcher, TaskListener listener) throws IOException {
-        try {
-            FilePath workspace = getWorkspace();
-            workspace.mkdirs();
-            return getScm().checkout(launcher, workspace, listener);
-        } catch (InterruptedException e) {
-            e.printStackTrace(listener.fatalError("SCM check out aborted"));
-            return false;
-        }
     }
 
     public MavenModule getRootModule() {
