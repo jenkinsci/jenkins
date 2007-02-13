@@ -281,7 +281,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public boolean pollSCMChanges( TaskListener listener ) {
         if(scm==null) {
             listener.getLogger().println("No SCM");
-            return false;   // no SCM
+            return false;
+        }
+        if(isDisabled()) {
+            listener.getLogger().println("Build disabled");
+            return false;
         }
 
         try {
