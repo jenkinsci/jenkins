@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.81-SNAPSHOT</version>
+    <version>1.81</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -47,8 +47,7 @@
               <tasks>
                 <mkdir dir="target/generated-resources" />
                 <!-- needs to be forked because Maven doesn't seem to put tools.jar in classpath -->
-                <javac srcdir="src/launcher/java" includes="Main.java" source="1.4" target="1.4"
-                       destdir="target/generated-resources" fork="true" />
+                <javac srcdir="src/launcher/java" includes="Main.java" source="1.4" target="1.4" destdir="target/generated-resources" fork="true" />
               </tasks>
             </configuration>
             <goals>
