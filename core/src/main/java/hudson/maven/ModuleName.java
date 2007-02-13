@@ -6,12 +6,14 @@ import org.apache.maven.model.Extension;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.ReportPlugin;
 
+import java.io.Serializable;
+
 /**
  * Version independent name of a Maven project.
  * 
  * @author Kohsuke Kawaguchi
  */
-public class ModuleName implements Comparable<ModuleName> {
+public class ModuleName implements Comparable<ModuleName>, Serializable {
     public final String groupId;
     public final String artifactId;
 
@@ -98,4 +100,6 @@ public class ModuleName implements Comparable<ModuleName> {
         if(r!=0)    return r;
         return this.artifactId.compareTo(that.artifactId);
     }
+
+    private static final long serialVersionUID = 1L;
 }
