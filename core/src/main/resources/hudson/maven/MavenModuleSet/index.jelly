@@ -7,10 +7,17 @@
 
       <j:choose>
         <j:when test="${empty(it.modules)}">
-          <div>
-            Please <a href="build">perform a build</a> so that Hudson can
-            parse the list of modules from POM.
-          </div>
+          <j:choose>
+            <j:when test="${it.inQueue or it.building}">
+              A build is in progress to parse the list of modules from POM.
+            </j:when>
+            <j:otherwise>
+              <div>
+                Please <a href="build">perform a build</a> so that Hudson can
+                parse the list of modules from POM.
+              </div>
+            </j:otherwise>
+          </j:choose>
         </j:when>
         <j:otherwise>
           <t:projectView jobs="${it.modules}" showViewTabs="${false}" />
