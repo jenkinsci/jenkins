@@ -192,13 +192,27 @@ public class Channel implements VirtualChannel {
      * {@inheritDoc}
      */
     public <T> T export(Class<T> type, T instance) {
+        return export(type,instance,true);
+    }
+
+    /**
+     * @param userProxy
+     *      If true, the returned proxy will be capable to handle classes
+     *      defined in the user classloader as parameters and return values.
+     *      Such proxy relies on {@link RemoteClassLoader} and related mechanism,
+     *      so it's not usable for implementing lower-layer services that are
+     *      used by {@link RemoteClassLoader}.
+     *
+     *      To create proxies for objects inside remoting, pass in false. 
+     */
+    /*package*/ <T> T export(Class<T> type, T instance, boolean userProxy) {
         if(instance==null)
             return null;
 
         // proxy will unexport this instance when it's GC-ed on the remote machine.
         final int id = export(instance);
         return type.cast(Proxy.newProxyInstance( type.getClassLoader(), new Class[]{type},
-            new RemoteInvocationHandler(id)));
+            new RemoteInvocationHandler(id,userProxy)));
     }
 
     /*package*/ int export(Object instance) {

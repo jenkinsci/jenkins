@@ -89,7 +89,7 @@ final class RemoteClassLoader extends ClassLoader {
     }
 
     public static IClassLoader export(ClassLoader cl, Channel local) {
-        return local.export(IClassLoader.class, new ClassLoaderProxy(cl));
+        return local.export(IClassLoader.class, new ClassLoaderProxy(cl), false);
     }
 
     /**
