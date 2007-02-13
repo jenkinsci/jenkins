@@ -6,7 +6,7 @@
       from &lt;a href='${rootURL}/scm/SubversionSCM/enterCredential'&gt;here&lt;/a&gt;.
     ">
     <f:textbox name="svn_modules" value="${scm.modules}"
-               checkUrl="'${rootURL}/scm/SubversionSCM/authenticationCheck?value='+this.value" />
+               checkUrl="'${rootURL}/scm/SubversionSCM/authenticationCheck?value='+encode(this.value)" />
   </f:entry>
   <f:entry title="Use update"
     description="

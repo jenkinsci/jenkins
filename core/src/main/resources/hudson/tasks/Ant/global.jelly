@@ -12,7 +12,7 @@
           <f:entry title="ANT_HOME">
             <input class="setting-input validated" name="ant_home"
               type="text" value="${inst.antHome}"
-              checkUrl="'builder/Ant/checkAntHome?value='+this.value"/>
+              checkUrl="'builder/Ant/checkAntHome?value='+escape(this.value)"/>
           </f:entry>
           <f:entry title="">
             <div align="right">

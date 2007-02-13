@@ -7,14 +7,14 @@
     </f:description>
     <f:entry title="cvs executable" help="/help/_cvs/cvsexe.html">
 	    <f:textbox name="cvs_exe" value="${descriptor.cvsExe}"
-        checkUrl="'${rootURL}/scm/CVSSCM/cvsExeCheck?value='+this.value" />
+        checkUrl="'${rootURL}/scm/CVSSCM/cvsExeCheck?value='+escape(this.value)" />
 	  </f:entry>
     <f:entry title=".cvspass file"
 	    description=".cvspass file to load passwords from. Leave it empty to read from $HOME/.cvspass"
       help="/help/_cvs/cvspass.jelly">
 	    <input class="setting-input validated" name="cvs_cvspass"
 	      type="text" value="${descriptor.cvspassFile}"
-        checkUrl="'${rootURL}/scm/CVSSCM/cvsPassCheck?value='+this.value" />
+        checkUrl="'${rootURL}/scm/CVSSCM/cvsPassCheck?value='+escape(this.value)" />
 	  </f:entry>
 
 	  <!--

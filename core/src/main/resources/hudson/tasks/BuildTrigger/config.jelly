@@ -3,6 +3,6 @@
 	  description="Multiple projects can be specified like 'abc, def'">
 	  <input class="setting-input validated" name="childProjects"
 	    type="text" value="${instance.childProjectsValue}"
-      checkUrl="'${rootURL}/publisher/BuildTrigger/check?value='+this.value"/>
+      checkUrl="'${rootURL}/publisher/BuildTrigger/check?value='+escape(this.value)"/>
 	</f:entry>
 </j:jelly>

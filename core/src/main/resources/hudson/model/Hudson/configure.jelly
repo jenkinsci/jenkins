@@ -96,7 +96,7 @@
               <s:entry title="JAVA_HOME" description="${status}">
                 <input class="setting-input validated" name="jdk_home"
                   type="text" value="${inst.javaHome}"
-                  checkUrl="'javaHomeCheck?value='+this.value"/>
+                  checkUrl="'javaHomeCheck?value='+escape(this.value)"/>
               </s:entry>
               <s:entry title="">
                 <div align="right">

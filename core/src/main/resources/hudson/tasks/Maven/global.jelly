@@ -12,7 +12,7 @@
           <f:entry title="MAVEN_HOME">
             <input class="setting-input validated" name="maven_home"
               type="text" value="${inst.mavenHome}"
-              checkUrl="'builder/Maven/checkMavenHome?value='+this.value"/>
+              checkUrl="'builder/Maven/checkMavenHome?value='+escape(this.value)"/>
           </f:entry>
           <f:entry title="">
             <div align="right">

@@ -3,7 +3,7 @@
 	  <f:editableComboBox id="cvs_root" clazz="setting-input validated"
         name="cvs_root" value="${scm.cvsRoot}"
 	      items="${app.allCvsRoots}"
-        checkUrl="'${rootURL}/scm/CVSSCM/cvsrootCheck?value='+this.value" />
+        checkUrl="'${rootURL}/scm/CVSSCM/cvsrootCheck?value='+escape(this.value)" />
 	</f:entry>
 	<f:entry title="Module(s)" help="/help/_cvs/modules.html">
 	  <f:textbox name="cvs_module" value="${scm.allModules}"/>
