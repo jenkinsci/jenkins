@@ -128,4 +128,6 @@ public class MavenFingerprinter extends MavenReporter {
             return new MavenFingerprinter();
         }
     }
+
+    private static final long serialVersionUID = 1L;
 }

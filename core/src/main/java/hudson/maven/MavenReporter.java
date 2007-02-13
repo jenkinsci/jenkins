@@ -9,6 +9,7 @@ import hudson.tasks.BuildStep;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * Listens to the build execution of {@link MavenBuild},
@@ -43,7 +44,7 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  * @see MavenReporters
  */
-public abstract class MavenReporter implements Describable<MavenReporter>, ExtensionPoint {
+public abstract class MavenReporter implements Describable<MavenReporter>, ExtensionPoint, Serializable {
     /**
      * Called before the actual maven2 execution begins.
      *

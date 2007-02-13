@@ -66,4 +66,6 @@ public class MavenMailer extends MavenReporter {
             return m;
         }
     }
+
+    private static final long serialVersionUID = 1L;
 }

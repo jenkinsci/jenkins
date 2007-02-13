@@ -107,4 +107,6 @@ public class SurefireArchiver extends MavenReporter {
             return new SurefireArchiver();
         }
     }
+
+    private static final long serialVersionUID = 1L;
 }

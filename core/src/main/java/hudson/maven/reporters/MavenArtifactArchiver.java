@@ -86,4 +86,6 @@ public class MavenArtifactArchiver extends MavenReporter {
             return new MavenArtifactArchiver();
         }
     }
+
+    private static final long serialVersionUID = 1L;
 }

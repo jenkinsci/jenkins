@@ -83,4 +83,6 @@ public class MavenJavadocArchiver extends MavenReporter {
             return new MavenJavadocArchiver();
         }
     }
+
+    private static final long serialVersionUID = 1L;
 }
