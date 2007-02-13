@@ -54,7 +54,7 @@ public abstract class FormFieldValidator {
      * Sends out an HTML fragment that indicates an error.
      */
     public void error(String message) throws IOException, ServletException {
-        response.setContentType("text/html");
+        response.setContentType("text/html;charset=UTF-8");
         response.getWriter().print("<div class=error>"+message+"</div>");
     }
 }
