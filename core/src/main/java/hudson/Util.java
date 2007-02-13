@@ -64,9 +64,11 @@ public class Util {
             // identify the key
             int end=idx+1;
             while(end<s.length()) {
-                char ch = s.charAt(end++);
+                char ch = s.charAt(end);
                 if(!Character.isJavaIdentifierPart(ch))
                     break;
+                else
+                    end++;
             }
             String key = s.substring(idx+1,end);
             String value = properties.get(key);
