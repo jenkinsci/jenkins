@@ -9,7 +9,7 @@
   
   <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.81</version>
+  <version>1.82-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Hudson main module</name>
@@ -26,7 +26,6 @@
     <connection>scm:cvs:pserver:guest@cvs.dev.java.net:/cvs:hudson/hudson/main</connection>
     <developerConnection>scm:cvs:pserver:kohsuke@cvs.dev.java.net:/cvs:hudson/hudson/main</developerConnection>
     <url>https://hudson.dev.java.net/source/browse/hudson/hudson/main</url>
-    <tag>hudson-1_81</tag>
   </scm>
   
   <build>
