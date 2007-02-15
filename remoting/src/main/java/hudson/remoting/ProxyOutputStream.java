@@ -53,7 +53,7 @@ final class ProxyOutputStream extends OutputStream {
 
         // if we already have bytes to write, do so now.
         if(tmp!=null) {
-            write(tmp.toByteArray());
+            channel.send(new Chunk(oid,tmp.toByteArray()));
             tmp = null;
         }
         if(closed)  // already marked closed?
