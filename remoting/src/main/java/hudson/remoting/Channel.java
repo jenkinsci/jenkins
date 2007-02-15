@@ -69,13 +69,16 @@ import java.util.logging.Logger;
 public class Channel implements VirtualChannel {
     private final ObjectInputStream ois;
     private final ObjectOutputStream oos;
+    private final String name;
     /*package*/ final Executor executor;
 
     /**
      * If true, this data channel is already closed and
      * no further calls are accepted.
      */
-    private boolean closed = false;
+    private volatile boolean closed = false;
+
+    private volatile boolean closing = false;
 
     /*package*/ final Map<Integer,Request<?,?>> pendingCalls = new Hashtable<Integer,Request<?,?>>();
 
@@ -116,6 +119,7 @@ public class Channel implements VirtualChannel {
      *      be useful for debugging/trouble-shooting.
      */
     public Channel(String name, Executor exec, InputStream is, OutputStream os, OutputStream header) throws IOException {
+        this.name = name;
         this.executor = exec;
 
         // write the magic preamble.
@@ -328,7 +332,8 @@ public class Channel implements VirtualChannel {
             try {
                 channel.close();
             } catch (IOException e) {
-                logger.log(Level.SEVERE,"close command failed",e);
+                logger.log(Level.SEVERE,"close command failed on "+channel.name,e);
+                logger.log(Level.INFO,"close command created at",createdAt);
             }
         }
 
@@ -343,6 +348,8 @@ public class Channel implements VirtualChannel {
     public synchronized void close() throws IOException {
         // make sure no other commands get executed in between.
         if(closed)  return;
+        if(closing) return;
+        closing=true;
 
         send(new CloseCommand());
         oos.close();
@@ -376,7 +383,7 @@ public class Channel implements VirtualChannel {
                 }
                 ois.close();
             } catch (IOException e) {
-                logger.log(Level.SEVERE, "I/O error in channel",e);
+                logger.log(Level.SEVERE, "I/O error in channel "+name,e);
                 terminate(e);
             }
         }
