@@ -274,7 +274,10 @@ function expandTextArea(button,id) {
     button.style.display="none";
     var field = document.getElementById(id);
     var value = field.value.replace(/ +/g,'\n');
-    field.parentNode.parentNode.parentNode.parentNode.innerHTML =
+    var n = field;
+    while(n.tagName!="TABLE")
+        n = n.parentNode;
+    n.parentNode.innerHTML =
         "<textarea rows=8 class='setting-input' name='"+field.name+"'>"+value+"</textarea>";
 }
 

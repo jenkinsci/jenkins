@@ -7,14 +7,14 @@
   TODO: support @checkUrl
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
-  <table border="0" style="width:100%" cellspacing="0" cellpadding="0">
-    <j:choose>
-      <j:when test="${h.isMultiline(attrs.value)}">
-        <!-- multiline text area to begin with -->
-        <textarea rows="8" class='setting-input' name='${attrs.name}'>${attrs.value}</textarea>
-      </j:when>
-      <j:otherwise>
-        <!-- single line textbox with expand button -->
+  <j:choose>
+    <j:when test="${h.isMultiline(attrs.value)}">
+      <!-- multiline text area to begin with -->
+      <textarea rows="8" class='setting-input' name='${attrs.name}'>${attrs.value}</textarea>
+    </j:when>
+    <j:otherwise>
+      <!-- single line textbox with expand button -->
+      <table border="0" style="width:100%" cellspacing="0" cellpadding="0">
         <tr>
           <td width="*">
             <input class="setting-input" name="${attrs.name}" id="textarea.${attrs.name}"
@@ -23,7 +23,7 @@
             <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${attrs.name}')" />
           </td>
         </tr>
-      </j:otherwise>
-    </j:choose>
-  </table>
+      </table>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
