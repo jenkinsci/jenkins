@@ -11,6 +11,6 @@ public class DummyClassLoaderTest extends TestCase {
         Callable c = (Callable) cl.loadClass("hudson.remoting.test.TestCallable").newInstance();
         System.out.println(c.call());
         // make sure that the returned class is loaded from the dummy classloader
-        assertTrue(c.call().toString().startsWith(DummyClassLoader.class.getName()));
+        assertTrue(((Object[])c.call())[0].toString().startsWith(DummyClassLoader.class.getName()));
     }
 }
