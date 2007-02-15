@@ -8,6 +8,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
+import java.nio.charset.UnsupportedCharsetException;
 
 /**
  * {@link OutputStream} that writes to {@link Writer}
@@ -24,7 +25,7 @@ public class WriterOutputStream extends OutputStream {
 
     public WriterOutputStream(Writer out) {
         this.writer = out;
-        decoder = Charset.defaultCharset().newDecoder();
+        decoder = DEFAULT_CHARSET.newDecoder();
     }
 
     public void write(int b) throws IOException {
@@ -88,6 +89,17 @@ public class WriterOutputStream extends OutputStream {
             }
             // otherwise treat it as an error
             r.throwException();
+        }
+    }
+
+    private static final Charset DEFAULT_CHARSET = getDefaultCharset();
+
+    private static Charset getDefaultCharset() {
+        try {
+            String encoding = System.getProperty("file.encoding");
+            return Charset.forName(encoding);
+        } catch (UnsupportedCharsetException e) {
+            return Charset.forName("UTF-8");
         }
     }
 }
