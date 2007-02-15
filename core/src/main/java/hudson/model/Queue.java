@@ -147,10 +147,15 @@ public class Queue {
 
     /**
      * Schedule a new build for this project.
+     *
+     * @return
+     *      true if the project is actually added to the queue.
+     *      false if the queue contained it and therefore the add()
+     *      was noop
      */
-    public synchronized void add( AbstractProject p ) {
+    public synchronized boolean add( AbstractProject p ) {
         if(contains(p))
-            return; // no double queueing
+            return false; // no double queueing
 
         // put the item in the queue
         Calendar due = new GregorianCalendar();
@@ -158,6 +163,7 @@ public class Queue {
         queue.add(new Item(due,p));
 
         scheduleMaintenance();   // let an executor know that a new item is in the queue.
+        return true;
     }
 
     public synchronized void cancel( AbstractProject<?,?> p ) {

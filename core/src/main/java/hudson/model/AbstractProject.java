@@ -172,10 +172,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Schedules a build of this project.
+     *
+     * @return
+     *      true if the project is actually added to the queue.
+     *      false if the queue contained it and therefore the add()
+     *      was noop
      */
-    public void scheduleBuild() {
-        if(!isDisabled())
-            Hudson.getInstance().getQueue().add(this);
+    public boolean scheduleBuild() {
+        if(isDisabled())    return false;
+        return Hudson.getInstance().getQueue().add(this);
     }
 
     /**

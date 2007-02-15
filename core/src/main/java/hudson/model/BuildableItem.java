@@ -11,5 +11,5 @@ package hudson.model;
  * @see BuildAuthorizationToken
  */
 public interface BuildableItem extends Item {
-    void scheduleBuild();
+    boolean scheduleBuild();
 }

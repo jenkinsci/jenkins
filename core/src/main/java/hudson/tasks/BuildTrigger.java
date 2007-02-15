@@ -16,6 +16,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -49,9 +50,18 @@ public class BuildTrigger extends Publisher {
 
     public boolean perform(Build build, Launcher launcher, BuildListener listener) {
         if(build.getResult()== Result.SUCCESS) {
+            PrintStream logger = listener.getLogger();
             for (AbstractProject p : getChildProjects()) {
-                listener.getLogger().println("Triggering a new build of "+p.getName());
-                p.scheduleBuild();
+                if(p.isDisabled()) {
+                    logger.println(p.getName()+" is disabled. Triggering skiiped");
+                    continue;
+                }
+                String name = p.getName()+" #"+p.getNextBuildNumber();
+                if(!p.scheduleBuild()) {
+                    logger.println("Triggering a new build of "+name);
+                } else {
+                    logger.println(name+" is already in the queue");
+                }
             }
         }
 
