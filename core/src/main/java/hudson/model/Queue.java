@@ -81,6 +81,7 @@ public class Queue {
         }
 
         public void set(AbstractProject p) {
+            assert this.project==null;
             this.project = p;
             event.signal();
         }
@@ -157,6 +158,8 @@ public class Queue {
         if(contains(p))
             return false; // no double queueing
 
+        LOGGER.fine(p.getName()+" added to queue");
+
         // put the item in the queue
         Calendar due = new GregorianCalendar();
         due.add(Calendar.SECOND, p.getQuietPeriod());
@@ -167,6 +170,7 @@ public class Queue {
     }
 
     public synchronized void cancel( AbstractProject<?,?> p ) {
+        LOGGER.fine("Cancelling "+p.getName());
         for (Iterator itr = queue.iterator(); itr.hasNext();) {
             Item item = (Item) itr.next();
             if(item.project==p) {
@@ -287,10 +291,14 @@ public class Queue {
                     offer.event.block(sleep);
 
                 synchronized(this) {
+                    // retract the offer object
+                    assert parked.get(exec)==offer;
+                    parked.remove(exec);
+
                     // am I woken up because I have a project to build?
                     if(offer.project!=null) {
+                        LOGGER.fine("Pop returning "+offer.project+" for "+exec.getName());
                         // if so, just build it
-                        successfulReturn = true;
                         return offer.project;
                     }
                     // otherwise run a queue maintenance
@@ -299,23 +307,22 @@ public class Queue {
         } finally {
             synchronized(this) {
                 // remove myself from the parked list
-                JobOffer offer = parked.get(exec);
-                if(offer!=null) {
-                    if(!successfulReturn && offer.project!=null) {
-                        // we are already assigned a project,
-                        // ask for someone else to build it.
-                        // note that while this thread is waiting for CPU
-                        // someone else can schedule this build again.
-                        if(!contains(offer.project))
-                            buildables.add(offer.project);
-                    }
-
-                    // since this executor might have been chosen for
-                    // maintenance, schedule another one. Worst case
-                    // we'll just run a pointless maintenance, and that's
-                    // fine.
-                    scheduleMaintenance();
+                JobOffer offer = parked.remove(exec);
+                if(offer!=null && offer.project!=null) {
+                    // we are already assigned a project,
+                    // ask for someone else to build it.
+                    // note that while this thread is waiting for CPU
+                    // someone else can schedule this build again,
+                    // so check the contains method first.
+                    if(!contains(offer.project))
+                        buildables.add(offer.project);
                 }
+
+                // since this executor might have been chosen for
+                // maintenance, schedule another one. Worst case
+                // we'll just run a pointless maintenance, and that's
+                // fine.
+                scheduleMaintenance();
             }
         }
     }
@@ -404,11 +411,15 @@ public class Queue {
      * appropriately.
      */
     private synchronized void maintain() {
+        if(LOGGER.isLoggable(Level.FINE))
+            LOGGER.fine("Queue maintenance started "+this);
+
         Iterator<AbstractProject> itr = blockedProjects.iterator();
         while(itr.hasNext()) {
             AbstractProject p = itr.next();
             if(!p.isBuildBlocked()) {
                 // ready to be executed
+                LOGGER.fine(p.getName()+" no longer blocked");
                 itr.remove();
                 buildables.add(p);
             }
@@ -424,11 +435,13 @@ public class Queue {
             if(!p.isBuildBlocked()) {
                 // ready to be executed immediately
                 queue.remove(top);
+                LOGGER.fine(p.getName()+" ready to build");
                 buildables.add(p);
             } else {
                 // this can't be built now because another build is in progress
                 // set this project aside.
                 queue.remove(top);
+                LOGGER.fine(p.getName()+" is blocked");
                 blockedProjects.add(p);
             }
         }
