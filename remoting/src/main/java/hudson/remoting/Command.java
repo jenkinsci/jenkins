@@ -14,6 +14,17 @@ import java.io.Serializable;
  */
 abstract class Command implements Serializable {
     /**
+     * This exception captures the stack trace of where the Command object is created.
+     * This is useful for diagnosing the error when command fails to execute on the remote peer. 
+     */
+    public final Exception createdAt;
+
+
+    protected Command() {
+        this.createdAt = new Source();
+    }
+
+    /**
      * Called on a remote system to perform this command.
      *
      * @param channel
@@ -22,4 +33,15 @@ abstract class Command implements Serializable {
     protected abstract void execute(Channel channel);
 
     private static final long serialVersionUID = 1L;
+
+    private final class Source extends Exception {
+        public Source() {
+        }
+
+        public String toString() {
+            return "Command "+Command.this.toString()+" created at";
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
 }
