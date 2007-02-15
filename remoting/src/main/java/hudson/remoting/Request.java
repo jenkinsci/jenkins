@@ -71,9 +71,10 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
         while(response==null)
             wait(); // wait until the response arrives
 
-        EXC exc = response.exception;
+        Object exc = response.exception;
+
         if(exc !=null)
-            throw exc; // some versions of JDK fails to compile this line. If so, upgrade your JDK. 
+            throw (EXC)exc; // some versions of JDK fails to compile this line. If so, upgrade your JDK.
 
         return response.returnValue;
     }
@@ -189,4 +190,18 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = Logger.getLogger(Request.class.getName());
+
+    //private static final Unsafe unsafe = getUnsafe();
+
+    //private static Unsafe getUnsafe() {
+    //    try {
+    //        Field f = Unsafe.class.getDeclaredField("theUnsafe");
+    //        f.setAccessible(true);
+    //        return (Unsafe)f.get(null);
+    //    } catch (NoSuchFieldException e) {
+    //        throw new Error(e);
+    //    } catch (IllegalAccessException e) {
+    //        throw new Error(e);
+    //    }
+    //}
 }
