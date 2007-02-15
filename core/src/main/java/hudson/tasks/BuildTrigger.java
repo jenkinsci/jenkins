@@ -56,6 +56,9 @@ public class BuildTrigger extends Publisher {
                     logger.println(p.getName()+" is disabled. Triggering skiiped");
                     continue;
                 }
+
+                // this is not completely accurate, as a new build might be triggered
+                // between these calls
                 String name = p.getName()+" #"+p.getNextBuildNumber();
                 if(!p.scheduleBuild()) {
                     logger.println("Triggering a new build of "+name);
