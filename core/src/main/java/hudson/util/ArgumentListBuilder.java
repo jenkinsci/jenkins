@@ -3,6 +3,7 @@ package hudson.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Arrays;
 
 /**
  * Used to build up arguments for a process invocation.
@@ -14,6 +15,11 @@ public class ArgumentListBuilder {
 
     public ArgumentListBuilder add(String a) {
         args.add(a);
+        return this;
+    }
+
+    public ArgumentListBuilder prepend(String... args) {
+        this.args.addAll(0, Arrays.asList(args));
         return this;
     }
 

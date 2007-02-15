@@ -8,6 +8,7 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.util.FormFieldValidator;
+import hudson.util.ArgumentListBuilder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -55,7 +56,7 @@ public class Ant extends Builder {
     public boolean perform(Build build, Launcher launcher, BuildListener listener) {
         Project proj = build.getProject();
 
-        String cmd;
+        ArgumentListBuilder args = new ArgumentListBuilder();
 
         String execName;
         if(launcher.isUnix())
@@ -66,16 +67,17 @@ public class Ant extends Builder {
         String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
 
         AntInstallation ai = getAnt();
-        if(ai==null)
-            cmd = execName+' '+normalizedTarget;
-        else {
+        if(ai==null) {
+            args.add(execName);
+        } else {
             File exec = ai.getExecutable();
             if(!ai.getExists()) {
                 listener.fatalError(exec+" doesn't exist");
                 return false;
             }
-            cmd = exec.getPath()+' '+normalizedTarget;
+            args.add(exec.getPath());
         }
+        args.addTokenized(normalizedTarget);
 
         Map<String,String> env = build.getEnvVars();
         if(ai!=null)
@@ -86,11 +88,12 @@ public class Ant extends Builder {
             // so we need to wrap it into cmd.exe.
             // double %% is needed because we want ERRORLEVEL to be expanded after
             // batch file executed, not before. This alone shows how broken Windows is...
-            cmd = "cmd.exe /C "+cmd+" && exit %%ERRORLEVEL%%";
+            args.prepend("cmd.exe","/C");
+            args.add("&&","exit","%%ERRORLEVEL%%");
         }
 
         try {
-            int r = launcher.launch(cmd,env,listener.getLogger(),proj.getModuleRoot()).join();
+            int r = launcher.launch(args.toCommandArray(),env,listener.getLogger(),proj.getModuleRoot()).join();
             return r==0;
         } catch (IOException e) {
             Util.displayIOException(e,listener);
