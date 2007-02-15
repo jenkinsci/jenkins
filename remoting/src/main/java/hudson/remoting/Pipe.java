@@ -10,6 +10,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Pipe for the remote {@link Callable} and the local program to talk to each other.
@@ -159,7 +160,7 @@ public final class Pipe implements Serializable {
                 channel.unexport(oidRos);
                 ros.connect(channel, oidPos);
             } catch (IOException e) {
-                logger.severe("Failed to connect to pipe");
+                logger.log(Level.SEVERE,"Failed to connect to pipe",e);
             }
         }
     }
