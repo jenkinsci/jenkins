@@ -110,7 +110,7 @@ public final class DirectoryBrowserSupport {
             ContentInfo ci = f.act(new ContentInfo());
 
             InputStream in = f.read();
-            rsp.serveFile(req, in, ci.lastModified, ci.contentLength, f.getName() );
+            rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, f.getName() );
             in.close();
         }
     }
