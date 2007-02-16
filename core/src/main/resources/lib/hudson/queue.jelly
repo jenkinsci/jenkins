@@ -38,8 +38,10 @@
               </script>
             </td>
             <td class="pane" width="16" align="center" valign="middle">
-              <a href="${rootURL}/${item.project.url}cancelQueue"><img src="${rootURL}/images/16x16/stop.gif" alt="cancel this build" /></a>
-            </td>
+              <l:isAdmin>
+                <a href="${rootURL}/${item.project.url}cancelQueue"><img src="${rootURL}/images/16x16/stop.gif" alt="cancel this build" /></a>
+              </l:isAdmin>
+             </td>
           </tr>
         </j:forEach>
       </j:otherwise>

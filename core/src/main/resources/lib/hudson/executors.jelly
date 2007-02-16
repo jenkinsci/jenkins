@@ -46,7 +46,9 @@
                 <t:buildProgressBar build="${e.currentBuild}"/>
 	            </td>
 	            <td class="pane" width="16" align="center" valign="middle">
-	              <a href="${rootURL}/computers/${cloop.index}/executors/${eloop.index}/stop"><img src="${rootURL}/images/16x16/stop.gif" alt="terminate this build" /></a>
+                <l:isAdmin>
+                  <a href="${rootURL}/computers/${cloop.index}/executors/${eloop.index}/stop"><img src="${rootURL}/images/16x16/stop.gif" alt="terminate this build" /></a>
+                </l:isAdmin>
 	            </td>
 	          </j:otherwise>
 	        </j:choose>
