@@ -305,7 +305,7 @@ public final class Slave implements Node, Serializable {
                 return;
             }
 
-            launch((Slave) getNode());
+            launch(getNode());
 
             // TODO: would be nice to redirect the user to "launching..." wait page,
             // then spend a few seconds there and poll for the completion periodically.
