@@ -11,6 +11,12 @@ import java.io.PrintWriter;
 public class Main {
 
     public static void main(String[] args) {
+        // see http://forum.java.sun.com/thread.jspa?threadID=706976&tstart=0
+        // not sure if this is the cause, but attempting to fix
+        // https://hudson.dev.java.net/issues/show_bug.cgi?id=310
+        // by overwriting the security manager.
+        System.setSecurityManager(null);
+
         GUI.setUILookAndFeel();
         final MainDialog frame = new MainDialog();
         frame.setVisible(true);
