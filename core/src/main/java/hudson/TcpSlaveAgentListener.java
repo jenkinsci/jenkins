@@ -53,7 +53,7 @@ public class TcpSlaveAgentListener extends Thread {
     public TcpSlaveAgentListener() throws IOException {
         serverSocket = new ServerSocket(0);
 
-        LOGGER.info("JNLP slage agent listener started on TCP port "+getPort());
+        LOGGER.info("JNLP slave agent listener started on TCP port "+getPort());
 
         // get or create the secret
         TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key"));
