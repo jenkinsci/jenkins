@@ -159,7 +159,7 @@ public class Util {
         return tmp;
     }
 
-    private static final Pattern errorCodeParser = Pattern.compile(".*error=([0-9]+).*");
+    private static final Pattern errorCodeParser = Pattern.compile(".*CreateProcess.*error=([0-9]+).*");
 
     /**
      * On Windows, error messages for IOException aren't very helpful.
@@ -178,9 +178,6 @@ public class Util {
      *      null if there seems to be no error code or if the platform is not Win32.
      */
     public static String getWin32ErrorMessage(IOException e) {
-        if(File.separatorChar!='\\')
-            return null; // not Windows
-
         Matcher m = errorCodeParser.matcher(e.getMessage());
         if(!m.matches())
             return null; // failed to parse
