@@ -38,6 +38,7 @@ import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 import org.tmatesoft.svn.core.wc.xml.SVNXMLLogHandler;
+import org.xml.sax.helpers.LocatorImpl;
 
 import javax.servlet.ServletException;
 import javax.xml.transform.TransformerConfigurationException;
@@ -143,6 +144,8 @@ public class SubversionSCM extends SCM implements Serializable {
         TransformerHandler th = createTransformerHandler();
         th.setResult(new StreamResult(changelogFile));
         SVNXMLLogHandler logHandler = new SVNXMLLogHandler(th);
+        // work around for http://svnkit.com/tracker/view.php?id=175
+        th.setDocumentLocator(DUMMY_LOCATOR);
         logHandler.startDocument();
 
 
@@ -665,7 +668,13 @@ public class SubversionSCM extends SCM implements Serializable {
 
     private static final Logger logger = Logger.getLogger(SubversionSCM.class.getName());
 
-    static { new Initializer(); }
+    private static final LocatorImpl DUMMY_LOCATOR = new LocatorImpl();
+
+    static {
+        new Initializer();
+        DUMMY_LOCATOR.setLineNumber(-1);
+        DUMMY_LOCATOR.setColumnNumber(-1);
+    }
     
     private static final class Initializer {
         static {
