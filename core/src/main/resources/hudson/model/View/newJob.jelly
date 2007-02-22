@@ -22,7 +22,7 @@
           </s:entry>
         </j:forEach>
         <s:block>
-          <input type="radio" name="mode" value="copyJob" />
+          <input type="radio" name="mode" value="copyJob" onchange="$('ok').disabled=false" />
           <st:nbsp/>
           <b>Copy existing job</b>
         </s:block>
