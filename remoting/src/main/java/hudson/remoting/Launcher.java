@@ -1,6 +1,8 @@
 package hudson.remoting;
 
 import java.io.OutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,12 +21,15 @@ public class Launcher {
         // and messing up the stream.
         OutputStream os = System.out;
         System.setOut(System.err);
+        main(System.in,os);
+        System.exit(0);
+    }
 
+    public static void main(InputStream is, OutputStream os) throws IOException, InterruptedException {
         ExecutorService executor = Executors.newCachedThreadPool();
-        Channel channel = new Channel("channel", executor, System.in, os);
+        Channel channel = new Channel("channel", executor, is, os);
         System.err.println("channel started");
         channel.join();
         System.err.println("channel stopped");
-        System.exit(0);
     }
 }
