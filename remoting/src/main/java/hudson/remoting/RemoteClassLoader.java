@@ -109,7 +109,7 @@ final class RemoteClassLoader extends ClassLoader {
         public byte[] fetch(String className) throws ClassNotFoundException {
             InputStream in = cl.getResourceAsStream(className.replace('.', '/') + ".class");
             if(in==null)
-                throw new ClassNotFoundException();
+                throw new ClassNotFoundException(className);
 
             try {
                 return readFully(in);
