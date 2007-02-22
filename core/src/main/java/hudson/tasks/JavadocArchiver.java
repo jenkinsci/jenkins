@@ -98,7 +98,11 @@ public class JavadocArchiver extends Publisher {
         }
 
         public String getIconFileName() {
-            return "help.gif";
+            if(getJavadocDir(project).exists())
+                return "help.gif";
+            else
+                // hide it since we don't have javadoc yet.
+                return null;
         }
 
         public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
