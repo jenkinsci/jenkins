@@ -871,9 +871,11 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                         return;
                     }
 
+                    Matcher m = CVSROOT_PSERVER_PATTERN.matcher(v);
+
                     // CVSROOT format isn't really that well defined. So it's hard to check this rigorously.
                     if(v.startsWith(":pserver") || v.startsWith(":ext")) {
-                        if(!CVSROOT_PSERVER_PATTERN.matcher(v).matches()) {
+                        if(!m.matches()) {
                             error("Invalid CVSROOT string");
                             return;
                         }
@@ -885,24 +887,26 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                     // check .cvspass file to see if it has entry.
                     // CVS handles authentication only if it's pserver.
                     if(v.startsWith(":pserver")) {
-                        String cvspass = getCvspassFile();
-                        File passfile;
-                        if(cvspass.equals("")) {
-                            passfile = new File(new File(System.getProperty("user.home")),".cvspass");
-                        } else {
-                            passfile = new File(cvspass);
-                        }
+                        if(m.group(2)==null) {// if password is not specified in CVSROOT 
+                            String cvspass = getCvspassFile();
+                            File passfile;
+                            if(cvspass.equals("")) {
+                                passfile = new File(new File(System.getProperty("user.home")),".cvspass");
+                            } else {
+                                passfile = new File(cvspass);
+                            }
 
-                        if(passfile.exists()) {
-                            // It's possible that we failed to locate the correct .cvspass file location,
-                            // so don't report an error if we couldn't locate this file.
-                            //
-                            // if this is explicitly specified, then our system config page should have
-                            // reported an error.
-                            if(!scanCvsPassFile(passfile, v)) {
-                                error("It doesn't look like this CVSROOT has its password set." +
-                                    " Would you like to set it now?");
-                                return;
+                            if(passfile.exists()) {
+                                // It's possible that we failed to locate the correct .cvspass file location,
+                                // so don't report an error if we couldn't locate this file.
+                                //
+                                // if this is explicitly specified, then our system config page should have
+                                // reported an error.
+                                if(!scanCvsPassFile(passfile, v)) {
+                                    error("It doesn't look like this CVSROOT has its password set." +
+                                        " Would you like to set it now?");
+                                    return;
+                                }
                             }
                         }
                     }
@@ -940,7 +944,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         }
 
         private static final Pattern CVSROOT_PSERVER_PATTERN =
-            Pattern.compile(":(ext|pserver):[^@:]+@[^:]+:(\\d+:)?.+");
+            Pattern.compile(":(ext|pserver):[^@:]+(:[^@:]+)?@[^:]+:(\\d+:)?.+");
 
         /**
          * Runs cvs login command.
