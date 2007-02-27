@@ -526,6 +526,10 @@ public final class FilePath implements Serializable {
      * TODO: this might not be the most efficient way to do the copy.
      */
     interface RemoteCopier {
+        /**
+         * @param fileName
+         *      relative path name to the output file. Path separator must be '/'.
+         */
         void open(String fileName) throws IOException;
         void write(byte[] buf, int len) throws IOException;
         void close() throws IOException;
@@ -625,6 +629,8 @@ public final class FilePath implements Serializable {
                                 for( String f : files) {
                                     File file = new File(base, f);
 
+                                    if(Functions.isWindows())
+                                        f = f.replace('\\','/');
                                     copier.open(f);
 
                                     FileInputStream in = new FileInputStream(file);
