@@ -82,7 +82,6 @@
           </execution>
           <!--
             for copying remoting jar to $WAR/WEB-INF/remoting.jar
-            this is always JDK 1.5 jar, to make it easy to deploy JNLP agent.
           -->
           <execution>
             <id>copy-remoting.jar</id>
@@ -96,6 +95,7 @@
                   <groupId>org.jvnet.hudson.main</groupId>
                   <artifactId>remoting</artifactId>
                   <version>${version}</version>
+                  <classifier>${hudsonRemotingClassifier}</classifier>
                   <destFileName>remoting.jar</destFileName>
                 </artifactItem>
               </artifactItems>
@@ -115,6 +115,7 @@
                   <groupId>org.jvnet.hudson.main</groupId>
                   <artifactId>jnlp-agent</artifactId>
                   <version>${version}</version>
+                  <classifier>${hudsonRemotingClassifier}</classifier>
                   <destFileName>jnlp-agent.jar</destFileName>
                 </artifactItem>
               </artifactItems>
