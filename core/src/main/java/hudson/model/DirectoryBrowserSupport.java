@@ -76,11 +76,6 @@ public final class DirectoryBrowserSupport {
             isFingerprint = true;
         }
 
-        if(!f.exists()) {
-            rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-
         if(f.isDirectory()) {
             if(!req.getRequestURL().toString().endsWith("/")) {
                 rsp.sendRedirect2(req.getRequestURL().append('/').toString());
@@ -103,6 +98,10 @@ public final class DirectoryBrowserSupport {
             }
         }
 
+        if(!f.exists()) {
+            rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
 
         if(isFingerprint) {
             rsp.forward(Hudson.getInstance().getFingerprint(f.digest()),"/",req);
