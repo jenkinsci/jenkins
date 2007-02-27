@@ -808,7 +808,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public static final Comparator<Run> ORDER_BY_DATE = new Comparator<Run>() {
         public int compare(Run lhs, Run rhs) {
-            return -lhs.getTimestamp().compareTo(rhs.getTimestamp());
+            long lt = lhs.getTimestamp().getTimeInMillis();
+            long rt = rhs.getTimestamp().getTimeInMillis();
+            if(lt>rt)   return -1;
+            if(lt<rt)   return 1;
+            return 0;
         }
     };
 

@@ -87,7 +87,11 @@ public abstract class View extends AbstractModelObject {
         }
 
         public int compareTo(UserInfo that) {
-            return that.lastChange.compareTo(this.lastChange);
+            long rhs = that.lastChange.getTimeInMillis();
+            long lhs = this.lastChange.getTimeInMillis();
+            if(rhs>lhs) return 1;
+            if(rhs<lhs) return -1;
+            return 0;
         }
     }
 
