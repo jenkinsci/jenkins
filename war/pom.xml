@@ -115,7 +115,6 @@
                   <groupId>org.jvnet.hudson.main</groupId>
                   <artifactId>jnlp-agent</artifactId>
                   <version>${version}</version>
-                  <classifier>${hudsonRemotingClassifier}</classifier>
                   <destFileName>jnlp-agent.jar</destFileName>
                 </artifactItem>
               </artifactItems>
