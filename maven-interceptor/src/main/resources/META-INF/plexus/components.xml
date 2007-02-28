@@ -1,0 +1,40 @@
+<!--
+  Override the plugin manager
+-->
+<component-set>
+  <components>
+    <component>
+      <role>org.apache.maven.plugin.PluginManager</role>
+      <implementation>hudson.maven.agent.PluginManagerInterceptor</implementation>
+      <requirements>
+        <requirement>
+          <role>org.apache.maven.project.path.PathTranslator</role>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.plugin.MavenPluginCollector</role>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.plugin.version.PluginVersionManager</role>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.artifact.factory.ArtifactFactory</role>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.artifact.resolver.ArtifactResolver</role>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.artifact.metadata.ArtifactMetadataSource</role>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.plugin.PluginMappingManager</role>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.execution.RuntimeInformation</role>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.project.MavenProjectBuilder</role>
+        </requirement>
+      </requirements>
+    </component>
+  </components>
+</component-set>
