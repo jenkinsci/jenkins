@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.84-SNAPSHOT</version>
+    <version>1.84</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -121,7 +121,7 @@
             <manifest>
               <mainClass>hudson.Main</mainClass>
               <addClasspath>true</addClasspath>
-              <classpathPrefix></classpathPrefix>
+              <classpathPrefix />
             </manifest>
           </archive>
         </configuration>
