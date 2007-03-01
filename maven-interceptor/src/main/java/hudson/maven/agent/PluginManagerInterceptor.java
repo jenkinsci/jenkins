@@ -33,10 +33,7 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
 
     private final Method mergeMojoConfiguration;
 
-    /**
-     * Used to detect when to fire {@link MavenReporter#enterModule}
-     */
-    private MavenProject lastModule;
+    private PluginManagerListener listener;
 
     public PluginManagerInterceptor() {
         try {
@@ -48,6 +45,10 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
             x.initCause(e);
             throw x;
         }
+    }
+
+    public void setListener(PluginManagerListener listener) {
+        this.listener = listener;
     }
 
     public void executeMojo(MavenProject project, MojoExecution mojoExecution, MavenSession session) throws ArtifactResolutionException, MojoExecutionException, MojoFailureException, ArtifactNotFoundException, InvalidDependencyVersionException, PluginManagerException, PluginConfigurationException {
@@ -85,42 +86,16 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
                                                                                           session.getExecutionProperties() );
 
         try {
-            if(lastModule!=project) {
-                // module change
-                fireLeaveModule();
-                fireEnterModule(project);
-            }
-
-            //MojoInfo info = new MojoInfo(mojoExecution, mergedConfiguration, eval);
-            //for (MavenReporter r : reporters)
-            //    if(!r.preExecute(buildProxy,project,info,listener))
-            //        throw new AbortException(r+" failed");
-            System.out.println("*********** "+mojoExecution.getMojoDescriptor().getGoal());
-
+            if(listener!=null)
+                listener.preExecute(project,mojoExecution,mergedConfiguration,eval);
             super.executeMojo(project, mojoExecution, session);
-            //for (MavenReporter r : reporters)
-            //    if(!r.postExecute(buildProxy,project, info,listener))
-            //        throw new AbortException(r+" failed");
+            if(listener!=null)
+                listener.postExecute(project,mojoExecution,mergedConfiguration,eval);
         } catch (InterruptedException e) {
             // orderly abort
             throw new AbortException("Execution aborted",e);
         } catch (IOException e) {
             throw new PluginManagerException(e.getMessage(),e);
-        }
-    }
-
-    private void fireEnterModule(MavenProject project) throws InterruptedException, IOException, AbortException {
-        lastModule = project;
-        //for (MavenReporter r : reporters)
-        //    if(!r.enterModule(buildProxy,project,listener))
-        //        throw new AbortException(r+" failed");
-    }
-
-    /*package*/ void fireLeaveModule() throws InterruptedException, IOException, AbortException {
-        if(lastModule!=null) {
-            //for (MavenReporter r : reporters)
-            //    if(!r.leaveModule(buildProxy,lastModule,listener))
-            //        throw new AbortException(r+" failed");
         }
     }
 
@@ -142,7 +117,7 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
     }
 
     /**
-     * Thrown when {@link MavenReporter} returned false to orderly
+     * Thrown when {@link PluginManagerListener} returned false to orderly
      * abort the execution. The caller shouldn't dump the stack trace for
      * this exception.
      */
