@@ -33,7 +33,12 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
 
     private final Method mergeMojoConfiguration;
 
-    private PluginManagerListener listener;
+    /**
+     * {@link PluginManagerListener} that receives events.
+     * There's no way external code can connect to a running instance of
+     * {@link PluginManagerInterceptor}, so this cannot be made instance fields. 
+     */
+    private static PluginManagerListener listener;
 
     public PluginManagerInterceptor() {
         try {
@@ -47,8 +52,8 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
         }
     }
 
-    public void setListener(PluginManagerListener listener) {
-        this.listener = listener;
+    public static void setListener(PluginManagerListener _listener) {
+        listener = _listener;
     }
 
     public void executeMojo(MavenProject project, MojoExecution mojoExecution, MavenSession session) throws ArtifactResolutionException, MojoExecutionException, MojoFailureException, ArtifactNotFoundException, InvalidDependencyVersionException, PluginManagerException, PluginConfigurationException {
