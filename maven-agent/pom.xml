@@ -29,11 +29,6 @@
   <dependencies>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
-      <artifactId>remoting</artifactId>
-      <version>${version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>maven-interceptor</artifactId>
       <version>${version}</version>
     </dependency>
@@ -47,6 +42,12 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
       <version>2.0.4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson.main</groupId>
+      <artifactId>remoting</artifactId>
+      <version>${version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
