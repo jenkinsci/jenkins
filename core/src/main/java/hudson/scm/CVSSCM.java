@@ -118,6 +118,17 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         this.flatten = flatten && module.indexOf(' ')==-1;
     }
 
+    private String compression() {
+        // CVS 1.11.22 manual:
+        // If the access method is omitted, then if the repository starts with
+        // `/', then `:local:' is assumed.  If it does not start with `/' then
+        // either `:ext:' or `:server:' is assumed.
+        boolean local = cvsroot.startsWith("/") || cvsroot.startsWith(":local:") || cvsroot.startsWith(":fork:");
+        // For local access, compression is senseless. For remote, use z3:
+        // http://root.cern.ch/root/CVS.html#checkout
+        return local ? "-z0" : "-z3";
+    }
+
     public String getCvsRoot() {
         return cvsroot;
     }
@@ -243,7 +254,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         dir.deleteContents();
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.add(getDescriptor().getCvsExe(),debugLogging?"-t":"-Q","-z9","-d",cvsroot,"co");
+        cmd.add(getDescriptor().getCvsExe(),debugLogging?"-t":"-Q",compression(),"-d",cvsroot,"co");
         if(branch!=null)
             cmd.add("-r",branch);
         if(flatten)
@@ -334,7 +345,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         List<String> changedFileNames = new ArrayList<String>();    // file names relative to the workspace
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.add(getDescriptor().getCvsExe(),"-q","-z9");
+        cmd.add(getDescriptor().getCvsExe(),"-q",compression());
         if(dryRun)
             cmd.add("-n");
         cmd.add("update","-PdC");
