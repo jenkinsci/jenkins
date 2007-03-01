@@ -33,7 +33,16 @@ import java.util.logging.SimpleFormatter;
  * @author Kohsuke Kawaguchi
  */
 public class Functions {
-    private int iota=0;
+    private static volatile int globalIota = 0;
+
+    private int iota;
+
+    public Functions() {
+        iota = globalIota;
+        // concurrent requests can use the same ID --- we are just trying to
+        // prevent the same user from seeing the same ID repeatedly.
+        globalIota+=1000;
+    }
 
     /**
      * Generates an unique ID.
