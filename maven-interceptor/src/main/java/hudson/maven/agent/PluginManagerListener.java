@@ -13,6 +13,6 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public interface PluginManagerListener {
-    void preExecute(MavenProject project,MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException;
-    void postExecute(MavenProject project,MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException;
+    void preExecute(MavenProject project,MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException, AbortException;
+    void postExecute(MavenProject project,MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException, AbortException;
 }
