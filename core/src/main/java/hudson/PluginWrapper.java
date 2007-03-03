@@ -56,7 +56,7 @@ public final class PluginWrapper {
      * Loaded plugin instance.
      * Null if disabled.
      */
-    public final Plugin plugin;
+    private Plugin plugin;
 
     /**
      * {@link ClassLoader} for loading classes from this plugin.
@@ -83,6 +83,27 @@ public final class PluginWrapper {
     private final String shortName;
 
     /**
+     * True if this plugin is activated for this session.
+     * The snapshot of <tt>disableFile.exists()</tt> as of the start up.
+     */
+    private final boolean active;
+
+    private final File archive;
+
+    private final List<Dependency> dependencies = new ArrayList<Dependency>();
+
+    private static final class Dependency {
+        public final String shortName;
+        public final String version;
+
+        public Dependency(String s) {
+            int idx = s.indexOf(':');
+            this.shortName = s.substring(0,idx);
+            this.version = s.substring(idx+1);
+        }
+    }
+
+    /**
      * @param archive
      *      A .hpi archive file jar file, or a .hpl linked plugin.
      *
@@ -92,6 +113,7 @@ public final class PluginWrapper {
      */
     public PluginWrapper(PluginManager owner, File archive) throws IOException {
         LOGGER.info("Loading plugin: "+archive);
+        this.archive = archive;
 
         this.shortName = getShortName(archive);
 
@@ -161,14 +183,32 @@ public final class PluginWrapper {
         disableFile = new File(archive.getPath()+".disabled");
         if(disableFile.exists()) {
             LOGGER.info("Plugin is disabled");
-            this.plugin = null;
-            return;
+            this.active = false;
+        } else {
+            this.active = true;
         }
 
+        // compute dependencies
+        String v = Util.fixNull(manifest.getMainAttributes().getValue("Plugin-Dependencies"));
+        for(String s : v.split(","))
+            dependencies.add(new Dependency(s));
+    }
+
+    /**
+     * Loads the plugin and starts it.
+     *
+     * <p>
+     * This should be done after all the classloaders are constructed for
+     * all the plugins, so that dependencies can be properly loaded by plugins.
+     */
+    /*package*/ void load(PluginManager owner) throws IOException {
         String className = manifest.getMainAttributes().getValue("Plugin-Class");
         if(className ==null) {
             throw new IOException("Plugin installation failed. No 'Plugin-Class' entry in the manifest of "+archive);
         }
+
+        if(!active)
+            return;
 
         // override the context classloader so that XStream activity in plugin.start()
         // will be able to resolve classes in this plugin
@@ -248,6 +288,13 @@ public final class PluginWrapper {
         return shortName;
     }
 
+    /**
+     * Gets the instance of {@link Plugin} contributed by this plugin.
+     */
+    public Plugin getPlugin() {
+        return plugin;
+    }
+
     @Override
     public String toString() {
         return "Plugin:" + getShortName();
@@ -321,7 +368,7 @@ public final class PluginWrapper {
      * Returns true if this plugin is enabled for this session.
      */
     public boolean isActive() {
-        return plugin!=null;
+        return active;
     }
 
     /**

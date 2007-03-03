@@ -80,6 +80,16 @@ public final class PluginManager {
                 LOGGER.log(Level.SEVERE, "Failed to load a plug-in " + arc, e);
             }
         }
+
+        for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[0]))
+            try {
+                p.load(this);
+            } catch (IOException e) {
+                failedPlugins.add(new FailedPlugin(p.getShortName(),e));
+                LOGGER.log(Level.SEVERE, "Failed to load a plug-in " + p.getShortName(), e);
+                activePlugins.remove(p);
+                plugins.remove(p);
+            }
     }
 
     public List<PluginWrapper> getPlugins() {

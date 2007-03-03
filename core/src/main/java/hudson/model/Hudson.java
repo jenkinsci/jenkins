@@ -309,7 +309,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     public Plugin getPlugin(String shortName) {
         PluginWrapper p = pluginManager.getPlugin(shortName);
         if(p==null)     return null;
-        return p.plugin;
+        return p.getPlugin();
     }
 
     /**
