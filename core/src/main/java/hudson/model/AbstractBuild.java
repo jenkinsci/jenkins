@@ -95,6 +95,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          */
         protected Launcher launcher;
 
+        /**
+         * Returns the current {@link Node} on which we are buildling.
+         */
+        protected final Node getCurrentNode() {
+            return Executor.currentExecutor().getOwner().getNode();
+        }
+
         public Result run(BuildListener listener) throws Exception {
             Node node = Executor.currentExecutor().getOwner().getNode();
             assert builtOn==null;
