@@ -302,10 +302,10 @@ public final class Slave implements Node, Serializable {
                     // TODO: maybe I should generalize this kind of "post initialization" processing
                     PrintWriter log = new PrintWriter(launchLog,true);
                     FilePath dst = new FilePath(channel,getNode().getRemoteFS());
-                    log.println("Copying maven-agent.jar");
                     new FilePath(Which.jarFile(Main.class)).copyTo(dst.child("maven-agent.jar"));
-                    log.println("Copying maven-interceptor.jar");
+                    log.println("Copied maven-agent.jar");
                     new FilePath(Which.jarFile(PluginManagerInterceptor.class)).copyTo(dst.child("maven-interceptor.jar"));
+                    log.println("Copied maven-interceptor.jar");
                 }
 
                 // prevent others from seeing a channel that's not properly initialized yet
