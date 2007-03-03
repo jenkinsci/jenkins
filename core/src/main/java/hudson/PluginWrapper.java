@@ -1,5 +1,6 @@
 package hudson;
 
+import hudson.model.Hudson;
 import hudson.util.IOException2;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -98,6 +99,8 @@ public final class PluginWrapper {
 
         public Dependency(String s) {
             int idx = s.indexOf(':');
+            if(idx==-1)
+                throw new IllegalArgumentException("Illegal dependency specifier "+s);
             this.shortName = s.substring(0,idx);
             this.version = s.substring(idx+1);
         }
@@ -111,7 +114,7 @@ public final class PluginWrapper {
      *      if an installation of this plugin failed. The caller should
      *      proceed to work with other plugins.
      */
-    public PluginWrapper(PluginManager owner, File archive) throws IOException {
+    public PluginWrapper(File archive) throws IOException {
         LOGGER.info("Loading plugin: "+archive);
         this.archive = archive;
 
@@ -178,7 +181,8 @@ public final class PluginWrapper {
 
             this.baseResourceURL = expandDir.toURL();
         }
-        this.classLoader = new URLClassLoader(paths.toArray(new URL[0]), getClass().getClassLoader());
+        ClassLoader dependencyLoader = new DependencyClassLoader(getClass().getClassLoader());
+        this.classLoader = new URLClassLoader(paths.toArray(new URL[0]), dependencyLoader);
 
         disableFile = new File(archive.getPath()+".disabled");
         if(disableFile.exists()) {
@@ -189,9 +193,11 @@ public final class PluginWrapper {
         }
 
         // compute dependencies
-        String v = Util.fixNull(manifest.getMainAttributes().getValue("Plugin-Dependencies"));
-        for(String s : v.split(","))
-            dependencies.add(new Dependency(s));
+        String v = manifest.getMainAttributes().getValue("Plugin-Dependencies");
+        if(v!=null) {
+            for(String s : v.split(","))
+                dependencies.add(new Dependency(s));
+        }
     }
 
     /**
@@ -438,4 +444,30 @@ public final class PluginWrapper {
             return name.endsWith(".jar");
         }
     };
+
+    /**
+     * Used to load classes from dependency plugins.
+     */
+    final class DependencyClassLoader extends ClassLoader {
+        public DependencyClassLoader(ClassLoader parent) {
+            super(parent);
+        }
+
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            PluginManager m = Hudson.getInstance().getPluginManager();
+            for (Dependency dep : dependencies) {
+                PluginWrapper p = m.getPlugin(dep.shortName);
+                if(p!=null)
+                    try {
+                        p.classLoader.loadClass(name);
+                    } catch (ClassNotFoundException _) {
+                        // try next
+                    }
+            }
+
+            throw new ClassNotFoundException(name);
+        }
+
+        // TODO: delegate resources? watch out for diamond dependencies
+    }
 }
