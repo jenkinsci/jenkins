@@ -252,7 +252,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             }
 
             // start maven process
-            ArgumentListBuilder args = buildMavenCmdLine();
+            ArgumentListBuilder args = buildMavenCmdLine(listener);
 
             Channel channel = launcher.launchChannel(args.toCommandArray(), new String[0],
                 listener.getLogger(), getProject().getModuleRoot());
@@ -273,8 +273,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
 
         // UGLY....
-        private ArgumentListBuilder buildMavenCmdLine() throws IOException, InterruptedException {
+        private ArgumentListBuilder buildMavenCmdLine(BuildListener listener) throws IOException, InterruptedException {
             MavenInstallation mvn = getParent().getParent().getMaven();
+            if(mvn==null) {
+                listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
+                throw new RunnerAbortedException();
+            }
 
             // find classworlds.jar
             File bootDir = new File(mvn.getHomeDir(), "core/boot");
@@ -283,8 +287,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                     return name.startsWith("classworlds") && name.endsWith(".jar");
                 }
             });
-            if(classworlds==null || classworlds.length==0)
-                throw new IOException("No classworlds*.jar found in "+bootDir+" -- Is this a valid maven2 directory?");
+            if(classworlds==null || classworlds.length==0) {
+                listener.error("No classworlds*.jar found in "+bootDir+" -- Is this a valid maven2 directory?");
+                throw new RunnerAbortedException();
+            }
 
             boolean isMaster = getCurrentNode()==Hudson.getInstance();
             FilePath slaveRoot=null;

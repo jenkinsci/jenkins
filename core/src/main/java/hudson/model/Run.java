@@ -505,10 +505,26 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     protected static interface Runner {
-        Result run( BuildListener listener ) throws Exception;
+        /**
+         * Performs the main build and returns the status code.
+         *
+         * @throws Exception
+         *      exception will be recorded and the build will be considered a failure.
+         */
+        Result run( BuildListener listener ) throws Exception, RunnerAbortedException;
 
+        /**
+         * Performs the post-build action.
+         */
         void post( BuildListener listener );
     }
+
+    /**
+     * Used in {@link Runner#run} to indicates that a fatal error in a build
+     * is reported to {@link BuildListener} and the build should be simply aborted
+     * without further recording a stack trace.
+     */
+    public static final class RunnerAbortedException extends RuntimeException {}
 
     protected final void run(Runner job) {
         if(result!=null)
@@ -535,6 +551,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     LOGGER.info(toString()+" main build action completed: "+result);
                 } catch (ThreadDeath t) {
                     throw t;
+                } catch( RunnerAbortedException e ) {
+                    result = Result.FAILURE;
                 } catch( Throwable e ) {
                     handleFatalBuildProblem(listener,e);
                     result = Result.FAILURE;
