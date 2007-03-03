@@ -199,7 +199,7 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
         return nextBuildNumber;
     }
 
-    /*package*/ void updateNextBuildNumber() throws IOException {
+    private void updateNextBuildNumber() throws IOException {
         int next = this.nextBuildNumber;
         for (MavenModule m : modules.values())
             next = Math.max(next,m.getNextBuildNumber());

@@ -68,9 +68,10 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
      */
     private transient /*final*/ List<Action> transientActions = new Vector<Action>();
 
-    /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom) {
+    /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom, int firstBuildNumber) throws IOException {
         super(parent, pom.name.toFileSystemName());
         reconfigure(pom);
+        updateNextBuildNumber(firstBuildNumber);
     }
 
     /**
