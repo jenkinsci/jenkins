@@ -116,6 +116,9 @@ public final class Slave implements Node, Serializable {
         return description;
     }
 
+    /**
+     * Gets the root directory of the Hudson workspace on this slave. 
+     */
     public FilePath getFilePath() {
         return new FilePath(getComputer().getChannel(),remoteFS);
     }
