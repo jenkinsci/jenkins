@@ -284,7 +284,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 }
             });
             if(classworlds==null || classworlds.length==0)
-                throw new IOException("No classworlds*.jar found in "+bootDir" -- Is this a valid maven2 directory?");
+                throw new IOException("No classworlds*.jar found in "+bootDir+" -- Is this a valid maven2 directory?");
 
             boolean isMaster = getCurrentNode()==Hudson.getInstance();
             FilePath slaveRoot=null;
