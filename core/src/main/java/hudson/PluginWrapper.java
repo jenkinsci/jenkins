@@ -212,6 +212,12 @@ public final class PluginWrapper {
             throw new IOException("Plugin installation failed. No 'Plugin-Class' entry in the manifest of "+archive);
         }
 
+        // make sure dependencies exist
+        for (Dependency d : dependencies) {
+            if(owner.getPlugin(d.shortName)==null)
+                throw new IOException("Dependency "+d.shortName+" doesn't exist");
+        }
+
         if(!active)
             return;
 
