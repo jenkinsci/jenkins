@@ -160,6 +160,13 @@ public class TcpSlaveAgentListener extends Thread {
                             }
                         }
                     });
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.WARNING,"Connection #"+id+" aborted",e);
+                try {
+                    s.close();
+                } catch (IOException _) {
+                    // try to clean up the socket
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING,"Connection #"+id+" failed",e);
                 try {

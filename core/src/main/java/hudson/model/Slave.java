@@ -7,6 +7,8 @@ import hudson.Launcher.LocalLauncher;
 import hudson.Proc;
 import hudson.Proc.RemoteProc;
 import hudson.Util;
+import hudson.maven.agent.Main;
+import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -15,6 +17,7 @@ import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Pipe;
+import hudson.remoting.Which;
 import hudson.util.NullStream;
 import hudson.util.StreamCopyThread;
 import hudson.util.StreamTaskListener;
@@ -30,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Level;
@@ -258,6 +262,8 @@ public final class Slave implements Node, Serializable {
 
                             logger.info("slave agent launched for "+slave.getNodeName());
 
+                        } catch (InterruptedException e) {
+                            e.printStackTrace(listener.error("aborted"));
                         } catch (IOException e) {
                             Util.displayIOException(e,listener);
 
@@ -278,12 +284,12 @@ public final class Slave implements Node, Serializable {
         /**
          * Creates a {@link Channel} from the given stream and sets that to this slave.
          */
-        public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Listener listener) throws IOException {
+        public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Listener listener) throws IOException, InterruptedException {
             synchronized(channelLock) {
                 if(this.channel!=null)
                     throw new IllegalStateException("Already connected");
 
-                channel = new Channel(nodeName,threadPoolForRemoting,
+                Channel channel = new Channel(nodeName,threadPoolForRemoting,
                     in,out, launchLog);
                 channel.addListener(new Listener() {
                     public void onClosed(Channel c,IOException cause) {
@@ -291,6 +297,19 @@ public final class Slave implements Node, Serializable {
                     }
                 });
                 channel.addListener(listener);
+
+                {// send jars that we need for our operations
+                    // TODO: maybe I should generalize this kind of "post initialization" processing
+                    PrintWriter log = new PrintWriter(launchLog,true);
+                    FilePath dst = new FilePath(channel,getNode().getRemoteFS());
+                    log.println("Copying maven-agent.jar");
+                    new FilePath(Which.jarFile(Main.class)).copyTo(dst.child("maven-agent.jar"));
+                    log.println("Copying maven-interceptor.jar");
+                    new FilePath(Which.jarFile(PluginManagerInterceptor.class)).copyTo(dst.child("maven-interceptor.jar"));
+                }
+
+                // prevent others from seeing a channel that's not properly initialized yet
+                this.channel = channel;
             }
             Hudson.getInstance().getQueue().scheduleMaintenance();
         }
