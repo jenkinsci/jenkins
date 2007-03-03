@@ -31,7 +31,7 @@ public class LaunchTest extends TestCase {
         args.add(Main.class.getName());
 
         // M2_HOME
-        args.add("c:\\development\\Java\\maven2");
+        args.add(System.getProperty("maven.home"));
         // remoting.jar
         args.add(Which.jarFile(Launcher.class).getPath());
         // interceptor.jar
