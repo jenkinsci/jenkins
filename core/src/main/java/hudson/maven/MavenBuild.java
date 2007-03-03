@@ -254,7 +254,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             // start maven process
             ArgumentListBuilder args = buildMavenCmdLine(listener);
 
-            Channel channel = launcher.launchChannel(args.toCommandArray(), new String[0],
+            Channel channel = launcher.launchChannel(args.toCommandArray(),
                 listener.getLogger(), getProject().getModuleRoot());
 
             // Maven started.

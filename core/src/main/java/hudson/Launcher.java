@@ -97,9 +97,8 @@ public abstract class Launcher {
      * return it.
      *
      * @param out
-     *      The stderr from the launched process will be sent to this stream.
      */
-    public abstract Channel launchChannel(String[] cmd, String[] env, OutputStream out, FilePath workDir) throws IOException;
+    public abstract Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir) throws IOException;
 
     /**
      * Returns true if this {@link Launcher} is going to launch on Unix.
@@ -146,10 +145,10 @@ public abstract class Launcher {
             return f==null ? null : new File(f.getRemote());
         }
 
-        public Channel launchChannel(String[] cmd, String[] env, OutputStream out, FilePath workDir) throws IOException {
+        public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir) throws IOException {
             printCommandLine(cmd, workDir);
 
-            Process proc = Runtime.getRuntime().exec(cmd, env, toFile(workDir));
+            Process proc = Runtime.getRuntime().exec(cmd, null, toFile(workDir));
 
             // TODO: don't we need the equivalent of 'Proc' here? to abort it 
 

@@ -421,14 +421,14 @@ public final class Slave implements Node, Serializable {
                 return new RemoteProc(getChannel().callAsync(new RemoteLaunchCallable(cmd, env, in, out, workDir)));
             }
 
-            public Channel launchChannel(String[] cmd, String[] env, OutputStream err, FilePath _workDir) throws IOException {
+            public Channel launchChannel(String[] cmd, OutputStream err, FilePath _workDir) throws IOException {
                 printCommandLine(cmd, _workDir);
 
                 Pipe in  = Pipe.createLocalToRemote();
                 Pipe out = Pipe.createRemoteToLocal();
                 final String workDir = _workDir==null ? null : _workDir.getRemote();
 
-                getChannel().callAsync(new RemoteChannelLaunchCallable(cmd, env, in, out, workDir));
+                getChannel().callAsync(new RemoteChannelLaunchCallable(cmd, in, out, workDir));
 
                 return new Channel("remotely launched channel on "+getNodeName(),
                     Computer.threadPoolForRemoting, out.getIn(), in.getOut());
@@ -521,21 +521,19 @@ public final class Slave implements Node, Serializable {
 
     private static class RemoteChannelLaunchCallable implements Callable<Integer,IOException> {
         private final String[] cmd;
-        private final String[] env;
         private final Pipe in;
         private final Pipe out;
         private final String workDir;
 
-        public RemoteChannelLaunchCallable(String[] cmd, String[] env, Pipe in, Pipe out, String workDir) {
+        public RemoteChannelLaunchCallable(String[] cmd, Pipe in, Pipe out, String workDir) {
             this.cmd = cmd;
-            this.env = env;
             this.in = in;
             this.out = out;
             this.workDir = workDir;
         }
 
         public Integer call() throws IOException {
-            Proc p = new LocalLauncher(TaskListener.NULL).launch(cmd, env, in.getIn(), out.getOut(),
+            Proc p = new LocalLauncher(TaskListener.NULL).launch(cmd, null, in.getIn(), out.getOut(),
                 workDir ==null ? null : new FilePath(new File(workDir)));
             return p.join();
         }
