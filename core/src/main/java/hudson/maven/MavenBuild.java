@@ -10,6 +10,7 @@ import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.Slave;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
@@ -271,6 +272,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             }
         }
 
+        // UGLY....
         private ArgumentListBuilder buildMavenCmdLine() throws IOException, InterruptedException {
             MavenInstallation mvn = getParent().getParent().getMaven();
 
@@ -284,13 +286,18 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             if(classworlds==null || classworlds.length==0)
                 throw new IOException("No classworlds*.jar found in "+bootDir);
 
+            boolean isMaster = getCurrentNode()==Hudson.getInstance();
+            FilePath slaveRoot=null;
+            if(!isMaster)
+                slaveRoot = ((Slave)getCurrentNode()).getFilePath();
 
             ArgumentListBuilder args = new ArgumentListBuilder();
             args.add(launcher.getChannel().call(new getJavaExe()));
             args.add("-cp");
-            args.add(Which.jarFile(Main.class)+
+            args.add(
+                (isMaster?Which.jarFile(Main.class).getAbsolutePath():slaveRoot.child("maven-agent.jar").getRemote())+
                 (launcher.isUnix()?":":";")+
-                classworlds[0].getAbsolutePath()); // TODO locate Main.jar
+                classworlds[0].getAbsolutePath());
             args.add(Main.class.getName());
 
             // M2_HOME
@@ -299,7 +306,9 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             // remoting.jar
             args.add(Which.jarFile(Launcher.class).getPath());
             // interceptor.jar
-            args.add(Which.jarFile(hudson.maven.agent.PluginManagerInterceptor.class).getPath()); // TODO
+            args.add(isMaster?
+                Which.jarFile(hudson.maven.agent.PluginManagerInterceptor.class).getAbsolutePath():
+                slaveRoot.child("maven-interceptor.jar").getRemote());
             return args;
         }
 
