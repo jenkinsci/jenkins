@@ -113,6 +113,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                             mm.reconfigure(pom);
                             modules.put(pom.name,mm);
                         } else {// this looks like a new module
+                            listener.getLogger().println("Discovered a new module "+pom.name+" "+pom.displayName);
                             mm = new MavenModule(project,pom,getNumber());
                             modules.put(mm.getModuleName(),mm);
                         }
