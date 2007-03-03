@@ -71,7 +71,7 @@ public final class PluginManager {
         }
         for( File arc : archives ) {
             try {
-                PluginWrapper p = new PluginWrapper(this, arc);
+                PluginWrapper p = new PluginWrapper(this,arc);
                 plugins.add(p);
                 if(p.isActive())
                     activePlugins.add(p);

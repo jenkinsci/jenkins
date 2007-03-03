@@ -1,6 +1,5 @@
 package hudson;
 
-import hudson.model.Hudson;
 import hudson.util.IOException2;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -114,7 +113,7 @@ public final class PluginWrapper {
      *      if an installation of this plugin failed. The caller should
      *      proceed to work with other plugins.
      */
-    public PluginWrapper(File archive) throws IOException {
+    public PluginWrapper(PluginManager owner, File archive) throws IOException {
         LOGGER.info("Loading plugin: "+archive);
         this.archive = archive;
 
@@ -181,7 +180,7 @@ public final class PluginWrapper {
 
             this.baseResourceURL = expandDir.toURL();
         }
-        ClassLoader dependencyLoader = new DependencyClassLoader(getClass().getClassLoader());
+        ClassLoader dependencyLoader = new DependencyClassLoader(getClass().getClassLoader(),owner);
         this.classLoader = new URLClassLoader(paths.toArray(new URL[0]), dependencyLoader);
 
         disableFile = new File(archive.getPath()+".disabled");
@@ -449,17 +448,19 @@ public final class PluginWrapper {
      * Used to load classes from dependency plugins.
      */
     final class DependencyClassLoader extends ClassLoader {
-        public DependencyClassLoader(ClassLoader parent) {
+        private final PluginManager manager;
+
+        public DependencyClassLoader(ClassLoader parent, PluginManager manager) {
             super(parent);
+            this.manager = manager;
         }
 
         protected Class<?> findClass(String name) throws ClassNotFoundException {
-            PluginManager m = Hudson.getInstance().getPluginManager();
             for (Dependency dep : dependencies) {
-                PluginWrapper p = m.getPlugin(dep.shortName);
+                PluginWrapper p = manager.getPlugin(dep.shortName);
                 if(p!=null)
                     try {
-                        p.classLoader.loadClass(name);
+                        return p.classLoader.loadClass(name);
                     } catch (ClassNotFoundException _) {
                         // try next
                     }
