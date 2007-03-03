@@ -261,7 +261,7 @@ public abstract class Computer implements ModelObject {
     }
 
 
-    protected static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new DaemonThreadFactory());
+    public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new DaemonThreadFactory());
 
 //
 //

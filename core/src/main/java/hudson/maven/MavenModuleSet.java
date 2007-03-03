@@ -2,6 +2,8 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.tasks.Maven;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
 import hudson.model.Executor;
@@ -58,6 +60,12 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
      * Default goals specified in POM. Can be null.
      */
     private String defaultGoals;
+
+    /**
+     * Identifies {@link MavenInstallation} to be used.
+     * Null to indicate 'default' maven.
+     */
+    private String mavenName;
 
     public MavenModuleSet(String name) {
         super(Hudson.getInstance(),name);
@@ -237,6 +245,18 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
     }
 
     /**
+     * Gets the Maven to invoke.
+     * If null, we pick any random Maven installation.
+     */
+    public MavenInstallation getMaven() {
+        for( MavenInstallation i : DESCRIPTOR.getMavenDescriptor().getInstallations() ) {
+            if(mavenName==null || i.getName().equals(mavenName))
+                return i;
+        }
+        return null;
+    }
+
+    /**
      * Gets the list of goals specified by the user,
      * without taking inheritance and POM default goals
      * into account.
@@ -271,6 +291,7 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
         if(rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
+        mavenName = req.getParameter("maven_version");
 
         super.doConfigSubmit(req,rsp);
 
@@ -281,7 +302,7 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
         return DESCRIPTOR;
     }
 
-    public static final TopLevelItemDescriptor DESCRIPTOR = new DescriptorImpl();
+    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {
         private DescriptorImpl() {
@@ -294,6 +315,10 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
 
         public MavenModuleSet newInstance(String name) {
             return new MavenModuleSet(name);
+        }
+        
+        public Maven.DescriptorImpl getMavenDescriptor() {
+            return Maven.DESCRIPTOR;
         }
     }
 

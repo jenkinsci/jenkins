@@ -10,12 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URI;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -29,6 +23,8 @@ public class LaunchTest extends TestCase {
         args.add("java");
         
         //args.add("-Xrunjdwp:transport=dt_socket,server=y,address=8000");
+
+        System.out.println(Channel.class);
 
         args.add("-cp");
         args.add(Which.jarFile(Main.class)+File.pathSeparator+Which.jarFile(ClassWorld.class));

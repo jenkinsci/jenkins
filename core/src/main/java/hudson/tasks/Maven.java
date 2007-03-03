@@ -251,6 +251,10 @@ public class Maven extends Builder {
             return mavenHome;
         }
 
+        public File getHomeDir() {
+            return new File(mavenHome);
+        }
+
         /**
          * Human readable display name.
          */

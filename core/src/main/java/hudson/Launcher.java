@@ -2,8 +2,11 @@ package hudson;
 
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
+import hudson.model.Computer;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.Channel;
 import hudson.Proc.LocalProc;
+import hudson.util.StreamCopyThread;
 
 import java.io.File;
 import java.io.IOException;
@@ -90,6 +93,15 @@ public abstract class Launcher {
     public abstract Proc launch(String[] cmd,String[] env,InputStream in,OutputStream out, FilePath workDir) throws IOException;
 
     /**
+     * Launches a specified process and connects its input/output to a {@link Channel}, then
+     * return it.
+     *
+     * @param out
+     *      The stderr from the launched process will be sent to this stream.
+     */
+    public abstract Channel launchChannel(String[] cmd, String[] env, OutputStream out, FilePath workDir) throws IOException;
+
+    /**
      * Returns true if this {@link Launcher} is going to launch on Unix.
      */
     public boolean isUnix() {
@@ -127,7 +139,25 @@ public abstract class Launcher {
 
         public Proc launch(String[] cmd,String[] env,InputStream in,OutputStream out, FilePath workDir) throws IOException {
             printCommandLine(cmd, workDir);
-            return new LocalProc(cmd,Util.mapToEnv(inherit(env)),in,out, workDir==null ? null : new File(workDir.getRemote()));
+            return new LocalProc(cmd,Util.mapToEnv(inherit(env)),in,out, toFile(workDir));
+        }
+
+        private File toFile(FilePath f) {
+            return f==null ? null : new File(f.getRemote());
+        }
+
+        public Channel launchChannel(String[] cmd, String[] env, OutputStream out, FilePath workDir) throws IOException {
+            printCommandLine(cmd, workDir);
+
+            Process proc = Runtime.getRuntime().exec(cmd, env, toFile(workDir));
+
+            // TODO: don't we need the equivalent of 'Proc' here? to abort it 
+
+            Thread t2 = new StreamCopyThread(cmd+": stderr copier", proc.getErrorStream(), out);
+            t2.start();
+
+            return new Channel("locally launched channel on "+cmd,
+                Computer.threadPoolForRemoting, proc.getInputStream(), proc.getOutputStream(), out);
         }
 
         /**

@@ -14,6 +14,7 @@ import hudson.remoting.Channel.Listener;
 import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.Pipe;
 import hudson.util.NullStream;
 import hudson.util.StreamCopyThread;
 import hudson.util.StreamTaskListener;
@@ -398,6 +399,19 @@ public final class Slave implements Node, Serializable {
                 return new RemoteProc(getChannel().callAsync(new RemoteLaunchCallable(cmd, env, in, out, workDir)));
             }
 
+            public Channel launchChannel(String[] cmd, String[] env, OutputStream err, FilePath _workDir) throws IOException {
+                printCommandLine(cmd, _workDir);
+
+                Pipe in  = Pipe.createLocalToRemote();
+                Pipe out = Pipe.createRemoteToLocal();
+                final String workDir = _workDir==null ? null : _workDir.getRemote();
+
+                getChannel().callAsync(new RemoteChannelLaunchCallable(cmd, env, in, out, workDir));
+
+                return new Channel("remotely launched channel on "+getNodeName(),
+                    Computer.threadPoolForRemoting, out.getIn(), in.getOut());
+            }
+
             @Override
             public boolean isUnix() {
                 // Windows can handle '/' as a path separator but Unix can't,
@@ -476,6 +490,30 @@ public final class Slave implements Node, Serializable {
 
         public Integer call() throws IOException {
             Proc p = new LocalLauncher(TaskListener.NULL).launch(cmd, env, in, out,
+                workDir ==null ? null : new FilePath(new File(workDir)));
+            return p.join();
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    private static class RemoteChannelLaunchCallable implements Callable<Integer,IOException> {
+        private final String[] cmd;
+        private final String[] env;
+        private final Pipe in;
+        private final Pipe out;
+        private final String workDir;
+
+        public RemoteChannelLaunchCallable(String[] cmd, String[] env, Pipe in, Pipe out, String workDir) {
+            this.cmd = cmd;
+            this.env = env;
+            this.in = in;
+            this.out = out;
+            this.workDir = workDir;
+        }
+
+        public Integer call() throws IOException {
+            Proc p = new LocalLauncher(TaskListener.NULL).launch(cmd, env, in.getIn(), out.getOut(),
                 workDir ==null ? null : new FilePath(new File(workDir)));
             return p.join();
         }

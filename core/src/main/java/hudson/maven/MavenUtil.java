@@ -29,11 +29,6 @@ class MavenUtil {
         ClassLoader cl = MavenUtil.class.getClassLoader();
         maven.setClassLoader(new MaskingClassLoader(cl));
         maven.setLogger( new EmbedderLoggerImpl(listener) );
-        // if we let Plexus find components, there's no guaranteed ordering,
-        // so Plexus may well find the DefaultPluginManager from maven.jar instead of
-        // our override. So use this mechanism to make sure ours are loaded first
-        // before Plexus goes service loader discovery.
-        maven.setOverridingComponentsXml(cl.getResource("META-INF/plexus/hudson-components.xml"));
 
         maven.start();
 

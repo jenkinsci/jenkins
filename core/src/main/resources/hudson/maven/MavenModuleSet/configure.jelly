@@ -23,7 +23,15 @@
         </f:triggerDescriptorList>
 
         <f:section title="Build">
-          <f:entry title="root POM" help="/help/maven/root-pom.html">
+          <f:entry title="Maven Version">
+            <select class="setting-input" name="maven_version">
+              <option>(Default)</option>
+              <j:forEach var="inst" items="${it.descriptor.mavenDescriptor.mavenInstallations}">
+                <f:option selected="${inst.name==instance.maven.name}">${inst.name}</f:option>
+              </j:forEach>
+            </select>
+          </f:entry>
+          <f:entry title="Root POM" help="/help/maven/root-pom.html">
             <f:textbox name="rootPOM" value="${it.rootPOM}"/>
           </f:entry>
           <f:entry title="Goals" help="/help/maven/goals.html">

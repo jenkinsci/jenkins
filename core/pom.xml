@@ -214,6 +214,11 @@
       <version>1.1.0</version>
     </dependency>
     <dependency>
+      <groupId>${groupId}</groupId>
+      <artifactId>maven-agent</artifactId>
+      <version>${version}</version>
+    </dependency>
+    <dependency>
       <groupId>net.sf.retrotranslator</groupId>
       <artifactId>retrotranslator-runtime</artifactId>
       <version>1.0.8</version>
