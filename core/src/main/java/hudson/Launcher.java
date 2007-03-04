@@ -97,8 +97,9 @@ public abstract class Launcher {
      * return it.
      *
      * @param out
+     *      Where the stderr from the launched process will be sent.
      */
-    public abstract Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir) throws IOException;
+    public abstract Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir) throws IOException, InterruptedException;
 
     /**
      * Returns true if this {@link Launcher} is going to launch on Unix.

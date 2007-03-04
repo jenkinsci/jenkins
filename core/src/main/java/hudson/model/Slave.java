@@ -421,17 +421,16 @@ public final class Slave implements Node, Serializable {
                 return new RemoteProc(getChannel().callAsync(new RemoteLaunchCallable(cmd, env, in, out, workDir)));
             }
 
-            public Channel launchChannel(String[] cmd, OutputStream err, FilePath _workDir) throws IOException {
+            public Channel launchChannel(String[] cmd, OutputStream err, FilePath _workDir) throws IOException, InterruptedException {
                 printCommandLine(cmd, _workDir);
 
-                Pipe in  = Pipe.createLocalToRemote();
                 Pipe out = Pipe.createRemoteToLocal();
                 final String workDir = _workDir==null ? null : _workDir.getRemote();
 
-                getChannel().callAsync(new RemoteChannelLaunchCallable(cmd, in, out, workDir));
+                OutputStream os = getChannel().call(new RemoteChannelLaunchCallable(cmd, out, err, workDir));
 
                 return new Channel("remotely launched channel on "+getNodeName(),
-                    Computer.threadPoolForRemoting, out.getIn(), in.getOut());
+                    Computer.threadPoolForRemoting, out.getIn(), os);
             }
 
             @Override
@@ -519,23 +518,30 @@ public final class Slave implements Node, Serializable {
         private static final long serialVersionUID = 1L;
     }
 
-    private static class RemoteChannelLaunchCallable implements Callable<Integer,IOException> {
+    private static class RemoteChannelLaunchCallable implements Callable<OutputStream,IOException> {
         private final String[] cmd;
-        private final Pipe in;
         private final Pipe out;
         private final String workDir;
+        private final OutputStream err;
 
-        public RemoteChannelLaunchCallable(String[] cmd, Pipe in, Pipe out, String workDir) {
+        public RemoteChannelLaunchCallable(String[] cmd, Pipe out, OutputStream err, String workDir) {
             this.cmd = cmd;
-            this.in = in;
             this.out = out;
+            this.err = new RemoteOutputStream(err);
             this.workDir = workDir;
         }
 
-        public Integer call() throws IOException {
-            Proc p = new LocalLauncher(TaskListener.NULL).launch(cmd, null, in.getIn(), out.getOut(),
-                workDir ==null ? null : new FilePath(new File(workDir)));
-            return p.join();
+        public OutputStream call() throws IOException {
+            Process p = Runtime.getRuntime().exec(cmd, null, workDir == null ? null : new File(workDir));
+
+            new StreamCopyThread("stdin copier for remote agent on "+cmd,
+                p.getInputStream(), out.getOut()).start();
+            new StreamCopyThread("stderr copier for remote agent on "+cmd,
+                p.getErrorStream(), err).start();
+
+            // TODO: don't we need to join?
+            
+            return new RemoteOutputStream(p.getOutputStream());
         }
 
         private static final long serialVersionUID = 1L;
