@@ -1,10 +1,9 @@
-package hudson.maven.agent;
+package org.apache.maven.lifecycle;
 
+import org.apache.maven.BuildFailureException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.monitor.event.EventDispatcher;
-import org.apache.maven.BuildFailureException;
-import org.apache.maven.lifecycle.LifecycleExecutionException;
 
 /**
  * Event notification for the start/end of the maven execution.

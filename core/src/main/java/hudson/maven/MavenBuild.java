@@ -2,7 +2,7 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.maven.agent.Main;
+import hudson.maven.agent.*;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -22,6 +22,7 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOException2;
 import org.codehaus.classworlds.NoSuchRealmException;
+import org.apache.maven.lifecycle.LifecycleExecutorInterceptor;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -100,8 +101,6 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
     /**
      * Runs Maven and builds the project.
-     *
-     * This code is executed on the remote machine.
      */
     private static final class Builder implements Callable<Result,IOException> {
         private final BuildListener listener;
@@ -116,8 +115,15 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             this.goals = goals;
         }
 
+        /**
+         * This code is executed inside the maven jail process.
+         */
         public Result call() throws IOException {
             try {
+                PluginManagerInterceptor pmi = new PluginManagerInterceptor(buildProxy, reporters, listener);
+                hudson.maven.agent.PluginManagerInterceptor.setListener(pmi);
+                LifecycleExecutorInterceptor.setListener(pmi);
+
                 int r = Main.launch(goals.toArray(new String[goals.size()]));
                 return r==0 ? Result.SUCCESS : Result.FAILURE;
             } catch (NoSuchMethodException e) {
@@ -131,71 +137,6 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             } catch (ClassNotFoundException e) {
                 throw new IOException2(e);
             }
-            //MavenProject p=null;
-            //try {
-            //    MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
-            //    File pom = new File("pom.xml").getAbsoluteFile(); // MavenEmbedder only works if it's absolute
-            //    if(!pom.exists()) {
-            //        listener.error("No POM: "+pom);
-            //        return Result.FAILURE;
-            //    }
-            //
-            //    // event monitor is mostly useless. It only provides a few strings
-            //    EventMonitor eventMonitor = new DefaultEventMonitor( new PlexusLoggerAdapter( new EmbedderLoggerImpl(listener) ) );
-            //
-            //    p = embedder.readProject(pom);
-            //    PluginManagerInterceptor interceptor;
-            //
-            //    try {
-            //        interceptor = (PluginManagerInterceptor)embedder.getContainer().lookup(PluginManager.class.getName());
-            //        interceptor.setBuilder(buildProxy,reporters,listener);
-            //    } catch (ComponentLookupException e) {
-            //        throw new Error(e); // impossible
-            //    }
-            //
-            //    for (MavenReporter r : reporters)
-            //        r.preBuild(buildProxy,p,listener);
-            //
-            //    embedder.execute(p, goals, eventMonitor,
-            //        new TransferListenerImpl(listener),
-            //        null, // TODO: allow additional properties to be specified
-            //        pom.getParentFile());
-            //
-            //    interceptor.fireLeaveModule();
-            //
-            //    return null;
-            //} catch (MavenEmbedderException e) {
-            //    buildProxy.setResult(Result.FAILURE);
-            //    e.printStackTrace(listener.error(e.getMessage()));
-            //} catch (ProjectBuildingException e) {
-            //    buildProxy.setResult(Result.FAILURE);
-            //    e.printStackTrace(listener.error(e.getMessage()));
-            //} catch (CycleDetectedException e) {
-            //    buildProxy.setResult(Result.FAILURE);
-            //    e.printStackTrace(listener.error(e.getMessage()));
-            //} catch (LifecycleExecutionException e) {
-            //    buildProxy.setResult(Result.FAILURE);
-            //    e.printStackTrace(listener.error(e.getMessage()));
-            //} catch (BuildFailureException e) {
-            //    buildProxy.setResult(Result.FAILURE);
-            //    e.printStackTrace(listener.error(e.getMessage()));
-            //} catch (DuplicateProjectException e) {
-            //    buildProxy.setResult(Result.FAILURE);
-            //    e.printStackTrace(listener.error(e.getMessage()));
-            //} catch (AbortException e) {
-            //    listener.error("build aborted");
-            //} catch (InterruptedException e) {
-            //    listener.error("build aborted");
-            //} finally {
-            //    // this should happen after a build is marked as a failure
-            //    try {
-            //        if(p!=null)
-            //            for (MavenReporter r : reporters)
-            //                r.postBuild(buildProxy,p,listener);
-            //    } catch (InterruptedException e) {
-            //        buildProxy.setResult(Result.FAILURE);
-            //    }
-            //}
         }
     }
 
@@ -300,7 +241,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             ArgumentListBuilder args = new ArgumentListBuilder();
             args.add(launcher.getChannel().call(new getJavaExe()));
 
-            // args.add("-Xrunjdwp:transport=dt_socket,server=y,address=8002");
+            args.add("-Xrunjdwp:transport=dt_socket,server=y,address=8002");
 
             args.add("-cp");
             args.add(
