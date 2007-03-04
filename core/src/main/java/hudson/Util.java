@@ -178,7 +178,10 @@ public class Util {
      *      null if there seems to be no error code or if the platform is not Win32.
      */
     public static String getWin32ErrorMessage(IOException e) {
-        Matcher m = errorCodeParser.matcher(e.getMessage());
+        String msg = e.getMessage();
+        if(msg==null)
+            return null; // no message
+        Matcher m = errorCodeParser.matcher(msg);
         if(!m.matches())
             return null; // failed to parse
 
