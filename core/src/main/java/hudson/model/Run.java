@@ -758,6 +758,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         save();
         rsp.forwardToPreviousPage(req);
     }
+
+    /**
+     * Marks this build to keep the log.
+     */
+    public void keepLog() throws IOException {
+        keepLog = true;
+        save();
+    }
     
     /**
      * Deletes the build when the button is pressed.
