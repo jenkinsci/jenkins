@@ -88,6 +88,12 @@ final class ProxyOutputStream extends OutputStream {
         }
     }
 
+
+    public void flush() throws IOException {
+        if(channel!=null)
+            channel.send(new Flush(oid));
+    }
+
     public synchronized void close() throws IOException {
         closed = true;
         if(channel!=null) {
@@ -125,6 +131,32 @@ final class ProxyOutputStream extends OutputStream {
 
         public String toString() {
             return "Pipe.Chunk("+oid+","+buf.length+")";
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * {@link Command} for flushing.
+     */
+    private static final class Flush extends Command {
+        private final int oid;
+
+        public Flush(int oid) {
+            this.oid = oid;
+        }
+
+        protected void execute(Channel channel) {
+            OutputStream os = (OutputStream) channel.getExportedObject(oid);
+            try {
+                os.flush();
+            } catch (IOException e) {
+                // ignore errors
+            }
+        }
+
+        public String toString() {
+            return "Pipe.Flush("+oid+")";
         }
 
         private static final long serialVersionUID = 1L;
