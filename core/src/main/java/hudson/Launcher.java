@@ -123,7 +123,14 @@ public abstract class Launcher {
         }
         buf.append('$');
         for (String c : cmd) {
-            buf.append(' ').append(c);
+            buf.append(' ');
+            if(c.indexOf(' ')>=0) {
+                if(c.indexOf('"')>=0)
+                    buf.append('\'').append(c).append('\'');
+                else
+                    buf.append('"').append(c).append('"');
+            } else
+                buf.append(c);
         }
         listener.getLogger().println(buf.toString());
     }
