@@ -241,7 +241,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             ArgumentListBuilder args = new ArgumentListBuilder();
             args.add(launcher.getChannel().call(new getJavaExe()));
 
-            args.add("-Xrunjdwp:transport=dt_socket,server=y,address=8002");
+            //args.add("-Xrunjdwp:transport=dt_socket,server=y,address=8002");
 
             args.add("-cp");
             args.add(
