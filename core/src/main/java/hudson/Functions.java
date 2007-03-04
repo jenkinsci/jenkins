@@ -321,4 +321,8 @@ public class Functions {
         if(s==null)     return false;
         return s.indexOf('\r')>=0 || s.indexOf('\n')>=0;
     }
+
+    public static String encode(String s) {
+        return Util.encode(s);
+    }
 }
