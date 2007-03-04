@@ -60,13 +60,16 @@ public class MavenFingerprinter extends MavenReporter {
 
         if(updated) {
             build.execute(new BuildCallable<Void,IOException>() {
+                // record is transient, so needs to make a copy first
+                private final Map<String, String> r = record;
+
                 public Void call(MavenBuild build) throws IOException, InterruptedException {
                     // update the build action with new fingerprints
                     FingerprintAction a = build.getAction(FingerprintAction.class);
                     List<Action> actions = build.getActions();
                     if(a!=null)
                         actions.remove(a);
-                    actions.add(new FingerprintAction(build,record));
+                    actions.add(new FingerprintAction(build,r));
                     return null;
                 }
             });
