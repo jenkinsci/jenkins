@@ -1224,6 +1224,11 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                     continue;
                 }
                 listener.getLogger().println("Tagging "+e.getKey()+" to "+e.getValue());
+                try {
+                    e.getKey().keepLog();
+                } catch (IOException x) {
+                    x.printStackTrace(listener.error("Failed to mark "+e.getKey()+" for keep"));
+                }
                 ta.perform(e.getValue(), listener);
                 listener.getLogger().println();
             }
