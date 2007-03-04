@@ -1,6 +1,5 @@
 package hudson.remoting;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -9,8 +8,8 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.Serializable;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Pipe for the remote {@link Callable} and the local program to talk to each other.
@@ -121,7 +120,7 @@ public final class Pipe implements Serializable {
         if(ois.readBoolean()) {
             // local will write to remote
             in = null;
-            out = new BufferedOutputStream(new ProxyOutputStream(channel, ois.readInt()));
+            out = new ProxyOutputStream(channel, ois.readInt());
         } else {
             // local will read from remote.
             // tell the remote system about this local read pipe
