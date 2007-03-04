@@ -372,8 +372,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /*package*/ void removeComputer(Computer computer) {
         Iterator<Entry<Node,Computer>> itr=computers.entrySet().iterator();
         while(itr.hasNext()) {
-            if(itr.next().getValue()==computer) {
-                itr.remove();
+            Entry<Node, Computer> e = itr.next();
+            if(e.getValue()==computer) {
+                computers.remove(e.getKey());
                 return;
             }
         }
@@ -506,7 +507,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             public int compare(Computer lhs, Computer rhs) {
                 if(lhs.getNode()==Hudson.this)  return -1;
                 if(rhs.getNode()==Hudson.this)  return 1;
-                return lhs.getNode().getNodeName().compareTo(rhs.getNode().getNodeName());
+                return lhs.getDisplayName().compareTo(rhs.getDisplayName());
             }
         });
         return r;
