@@ -63,20 +63,27 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
      * @throws EXC
      *      If the {@link #perform(Channel)} throws an exception.
      */
-    public synchronized final RSP call(Channel channel) throws EXC, InterruptedException, IOException {
-        response=null;
+    public final RSP call(Channel channel) throws EXC, InterruptedException, IOException {
+        // Channel.send() locks channel, and there are other call sequences
+        // (  like Channel.terminate()->Request.abort()->Request.onCompleted()  )
+        // that locks channel -> request, so lock objects in the same order
+        synchronized(channel) {
+            synchronized(this) {
+                response=null;
 
-        channel.pendingCalls.put(id,this);
-        channel.send(this);
-        while(response==null)
-            wait(); // wait until the response arrives
+                channel.pendingCalls.put(id,this);
+                channel.send(this);
+                while(response==null)
+                    wait(); // wait until the response arrives
 
-        Object exc = response.exception;
+                Object exc = response.exception;
 
-        if(exc !=null)
-            throw (EXC)exc; // some versions of JDK fails to compile this line. If so, upgrade your JDK.
+                if(exc !=null)
+                    throw (EXC)exc; // some versions of JDK fails to compile this line. If so, upgrade your JDK.
 
-        return response.returnValue;
+                return response.returnValue;
+            }
+        }
     }
 
     /**
