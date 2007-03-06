@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
  */
 public class LaunchTest extends TestCase {
     public void test1() throws Throwable {
+/*
         List<String> args = new ArrayList<String>();
         args.add("java");
         
@@ -60,6 +61,7 @@ public class LaunchTest extends TestCase {
         ch.close();
 
         System.out.println("done");
+*/
     }
 
     public static void copyStream(InputStream in, OutputStream out) throws IOException {
