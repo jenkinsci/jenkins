@@ -73,16 +73,19 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
 
                 channel.pendingCalls.put(id,this);
                 channel.send(this);
-                while(response==null)
-                    wait(); // wait until the response arrives
-
-                Object exc = response.exception;
-
-                if(exc !=null)
-                    throw (EXC)exc; // some versions of JDK fails to compile this line. If so, upgrade your JDK.
-
-                return response.returnValue;
             }
+        }
+
+        synchronized(this) {
+            while(response==null)
+                wait(); // wait until the response arrives
+
+            Object exc = response.exception;
+
+            if(exc !=null)
+                throw (EXC)exc; // some versions of JDK fails to compile this line. If so, upgrade your JDK.
+
+            return response.returnValue;
         }
     }
 
