@@ -22,7 +22,7 @@ public class LaunchTest extends TestCase {
         List<String> args = new ArrayList<String>();
         args.add("java");
         
-        //args.add("-Xrunjdwp:transport=dt_socket,server=y,address=8000");
+        args.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8002");
 
         System.out.println(Channel.class);
 
