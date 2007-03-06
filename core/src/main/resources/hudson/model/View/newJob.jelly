@@ -13,7 +13,7 @@
         <j:getStatic var="jobs" className="hudson.model.Items" field="LIST" />
         <j:forEach var="d" items="${jobs}">
           <s:block>
-            <input type="radio" name="mode" value="${d.displayName}" onchange="$('ok').disabled=false" />
+            <input type="radio" name="mode" value="${d.displayName}" onchange="$('ok').disabled=false" onclick="$('ok').disabled=false" />
             <st:nbsp/>
             <b>${d.displayName}</b>
           </s:block>
@@ -22,7 +22,7 @@
           </s:entry>
         </j:forEach>
         <s:block>
-          <input type="radio" name="mode" value="copyJob" onchange="$('ok').disabled=false" />
+          <input type="radio" name="mode" value="copyJob" onchange="$('ok').disabled=false" onclick="$('ok').disabled=false" />
           <st:nbsp/>
           <b>Copy existing job</b>
         </s:block>
