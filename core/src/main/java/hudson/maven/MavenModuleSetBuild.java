@@ -164,6 +164,18 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             this.rootPOM = rootPOM;
         }
 
+        /**
+         * Computes the path of {@link #rootPOM}.
+         *
+         * Returns "abc" if rootPOM="abc/pom.xml"
+         * If rootPOM="pom.xml", this method returns "".
+         */
+        private String getRootPath() {
+            int idx = Math.max(rootPOM.lastIndexOf('/'), rootPOM.lastIndexOf('\\'));
+            if(idx==-1) return "";
+            return rootPOM.substring(0,idx);
+        }
+
         public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
             File pom = new File(ws,rootPOM);
 
@@ -177,7 +189,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
-                MavenUtil.resolveModules(embedder,mp,"",relPath);
+                MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath);
 
                 List<PomInfo> infos = new ArrayList<PomInfo>();
                 toPomInfo(mp,relPath,infos);
