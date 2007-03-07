@@ -173,9 +173,15 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
     }
 
-    private static final class getJavaExe implements Callable<String,IOException> {
+    private static final class GetJavaExe implements Callable<String,IOException> {
         public String call() throws IOException {
             return new File(new File(System.getProperty("java.home")),"bin/java").getPath();
+        }
+    }
+
+    private static final class GetRemotingJar implements Callable<String,IOException> {
+        public String call() throws IOException {
+            return Which.jarFile(Launcher.class).getPath();
         }
     }
 
@@ -239,7 +245,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 slaveRoot = ((Slave)getCurrentNode()).getFilePath();
 
             ArgumentListBuilder args = new ArgumentListBuilder();
-            args.add(launcher.getChannel().call(new getJavaExe()));
+            args.add(launcher.getChannel().call(new GetJavaExe()));
 
             //args.add("-Xrunjdwp:transport=dt_socket,server=y,address=8002");
 
@@ -253,8 +259,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             // M2_HOME
             args.add(mvn.getMavenHome());
 
-            // remoting.jar
-            args.add(Which.jarFile(Launcher.class).getPath());
+            // remoting.jar // TODO: locate it on remote node
+            args.add(launcher.getChannel().call(new GetRemotingJar()));
             // interceptor.jar
             args.add(isMaster?
                 Which.jarFile(hudson.maven.agent.PluginManagerInterceptor.class).getAbsolutePath():
