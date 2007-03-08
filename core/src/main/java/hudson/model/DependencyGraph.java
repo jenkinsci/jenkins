@@ -1,5 +1,13 @@
 package hudson.model;
 
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.graph_layouter.Layout;
+import org.kohsuke.graph_layouter.Navigator;
+import org.kohsuke.graph_layouter.Direction;
+
+import javax.servlet.ServletOutputStream;
+import javax.imageio.ImageIO;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +19,17 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Stack;
 import java.util.Map.Entry;
+import java.io.IOException;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Rectangle;
+import java.awt.Graphics2D;
+import java.awt.Color;
+import java.awt.Point;
+import java.awt.HeadlessException;
+import java.awt.FontMetrics;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 
 /**
  * Maintains the build dependencies between {@link AbstractProject}s
@@ -178,6 +197,97 @@ public final class DependencyGraph {
         }
         return Collections.unmodifiableMap(m);
     }
+
+    /**
+     * Experimental visualization of project dependencies.
+     */
+    public void doGraph( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        try {
+
+            // creates a dummy graphics just so that we can measure font metrics
+            BufferedImage emptyImage = new BufferedImage(1,1, BufferedImage.TYPE_INT_RGB );
+            Graphics2D graphics = emptyImage.createGraphics();
+            graphics.setFont(FONT);
+            final FontMetrics fontMetrics = graphics.getFontMetrics();
+
+            // TODO: timestamp check
+            Layout<AbstractProject> layout = new Layout<AbstractProject>(new Navigator<AbstractProject>() {
+                public Collection<AbstractProject> vertices() {
+                    // only include projects that have some dependency
+                    List<AbstractProject> r = new ArrayList<AbstractProject>();
+                    for (AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class)) {
+                        if(!getDownstream(p).isEmpty() || !getUpstream(p).isEmpty())
+                            r.add(p);
+                    }
+                    return r;
+                }
+
+                public Collection<AbstractProject> edge(AbstractProject p) {
+                    return getDownstream(p);
+                }
+
+                public Dimension getSize(AbstractProject p) {
+                    int w = fontMetrics.stringWidth(p.getDisplayName()) + MARGIN*2;
+                    return new Dimension(w, fontMetrics.getHeight() + MARGIN*2);
+                }
+            }, Direction.LEFTRIGHT);
+
+            Rectangle area = layout.calcDrawingArea();
+            area.grow(4,4); // give it a bit of margin
+            BufferedImage image = new BufferedImage(area.width, area.height, BufferedImage.TYPE_INT_RGB );
+            Graphics2D g2 = image.createGraphics();
+            g2.setTransform(AffineTransform.getTranslateInstance(-area.x,-area.y));
+            g2.setPaint(Color.WHITE);
+            g2.fill(area);
+            g2.setFont(FONT);
+
+            g2.setPaint(Color.BLACK);
+            for( AbstractProject p : layout.vertices() ) {
+                final Point sp = center(layout.vertex(p));
+
+                for (AbstractProject q : layout.edges(p)) {
+                    Point cur=sp;
+                    for( Point pt : layout.edge(p,q) ) {
+                        g2.drawLine(cur.x, cur.y, pt.x, pt.y);
+                        cur=pt;
+                    }
+
+                    final Point ep = center(layout.vertex(q));
+                    g2.drawLine(cur.x, cur.y, ep.x, ep.y);
+                }
+            }
+
+            int diff = fontMetrics.getAscent()+fontMetrics.getLeading()/2;
+            
+            for( AbstractProject p : layout.vertices() ) {
+                Rectangle r = layout.vertex(p);
+                g2.setPaint(Color.WHITE);
+                g2.fillRect(r.x, r.y, r.width, r.height);
+                g2.setPaint(Color.BLACK);
+                g2.drawRect(r.x, r.y, r.width, r.height);
+                g2.drawString(p.getDisplayName(), r.x+MARGIN, r.y+MARGIN+ diff);
+            }
+
+            rsp.setContentType("image/png");
+            ServletOutputStream os = rsp.getOutputStream();
+            ImageIO.write(image, "PNG", os);
+            os.close();
+        } catch(HeadlessException e) {
+            // not available. send out error message
+            rsp.sendRedirect2(req.getContextPath()+"/images/headless.png");
+        }
+    }
+
+    private Point center(Rectangle r) {
+        return new Point(r.x+r.width/2,r.y+r.height/2);
+    }
+
+    private static final Font FONT = new Font("TimesRoman", Font.PLAIN, 10);
+    /**
+     * Margins between the project name and its bounding box.
+     */
+    private static final int MARGIN = 4;
+
 
     private static final Comparator<AbstractProject> NAME_COMPARATOR = new Comparator<AbstractProject>() {
         public int compare(AbstractProject lhs, AbstractProject rhs) {

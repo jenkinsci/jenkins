@@ -239,6 +239,12 @@
       <version>1.22</version>
     </dependency>
     <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>graph-layouter</artifactId>
+      <classifier>jdk14</classifier>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
       <groupId>antlr</groupId>
       <artifactId>antlr</artifactId>
       <version>2.7.6</version>
