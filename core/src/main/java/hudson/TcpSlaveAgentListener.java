@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.File;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -135,7 +136,7 @@ public class TcpSlaveAgentListener extends Thread {
                 }
 
                 String nodeName = in.readUTF();
-                Computer computer = Hudson.getInstance().getComputer(nodeName);
+                ComputerImpl computer = (ComputerImpl) Hudson.getInstance().getComputer(nodeName);
                 if(computer==null) {
                     error(out, "No such slave: "+nodeName);
                     return;
@@ -148,7 +149,10 @@ public class TcpSlaveAgentListener extends Thread {
 
                 out.println("Welcome");
 
-                ((ComputerImpl)computer).setChannel(s.getInputStream(),s.getOutputStream(),null,
+                OutputStream log = computer.openLogFile();
+                new PrintWriter(log).println("JNLP agent connected from "+s.getInetAddress());
+                
+                computer.setChannel(s.getInputStream(),s.getOutputStream(),log,
                     new Listener() {
                         public void onClosed(Channel channel, IOException cause) {
                             if(cause!=null)

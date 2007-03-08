@@ -229,14 +229,7 @@ public final class Slave implements Node, Serializable {
         private void launch(final Slave slave) {
             closeChannel();
 
-            OutputStream os;
-            try {
-                os = new FileOutputStream(getLogFile());
-            } catch (FileNotFoundException e) {
-                logger.log(Level.SEVERE, "Failed to create log file "+getLogFile(),e);
-                os = new NullStream();
-            }
-            final OutputStream launchLog = os;
+            final OutputStream launchLog = openLogFile();
 
             if(slave.agentCommand.length()>0) {
                 // launch the slave agent asynchronously
@@ -280,6 +273,17 @@ public final class Slave implements Node, Serializable {
                     }
                 });
             }
+        }
+
+        public OutputStream openLogFile() {
+            OutputStream os;
+            try {
+                os = new FileOutputStream(getLogFile());
+            } catch (FileNotFoundException e) {
+                logger.log(Level.SEVERE, "Failed to create log file "+getLogFile(),e);
+                os = new NullStream();
+            }
+            return os;
         }
 
         private final Object channelLock = new Object();
