@@ -72,12 +72,18 @@ public interface Item extends PersistenceRoot {
      * Returns the URL of this item relative to the context root of the application.
      *
      * @see AbstractItem#getUrl() for how to implement this.
+     *
+     * @return
+     *      URL that ends with '/'.
      */
     String getUrl();
 
     /**
      * Returns the URL of this item relative to the parent {@link ItemGroup}.
      * @see AbstractItem#getShortUrl() for how to implement this.
+     *
+     * @return
+     *      URL that ends with '/'.
      */
     String getShortUrl();
 
