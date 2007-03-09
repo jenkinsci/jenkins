@@ -88,15 +88,6 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         return node.getWorkspaceFor(this);
     }
 
-    @Override
-    public BallColor getIconColor() {
-        if(isDisabled())
-            // use grey to indicate that the build is disabled
-            return BallColor.GREY;
-        else
-            return super.getIconColor();
-    }
-
     public synchronized Map<Descriptor<Builder>,Builder> getBuilders() {
         return Descriptor.toMap(builders);
     }

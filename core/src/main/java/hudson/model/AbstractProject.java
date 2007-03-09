@@ -170,6 +170,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return disabled;
     }
 
+    @Override
+    public BallColor getIconColor() {
+        if(isDisabled())
+            // use grey to indicate that the build is disabled
+            return BallColor.GREY;
+        else
+            return super.getIconColor();
+    }
+    
     /**
      * Schedules a build of this project.
      *
