@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.PrintWriter;
+import java.io.BufferedOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Level;
@@ -434,7 +435,7 @@ public final class Slave implements Node, Serializable {
                 OutputStream os = getChannel().call(new RemoteChannelLaunchCallable(cmd, out, err, workDir));
 
                 return new Channel("remotely launched channel on "+getNodeName(),
-                    Computer.threadPoolForRemoting, out.getIn(), os);
+                    Computer.threadPoolForRemoting, out.getIn(), new BufferedOutputStream(os));
             }
 
             @Override
