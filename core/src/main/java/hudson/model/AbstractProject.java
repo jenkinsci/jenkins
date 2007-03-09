@@ -163,7 +163,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public final boolean isBuildable() {
-        return true;
+        return !isDisabled();
     }
 
     public boolean isDisabled() {
