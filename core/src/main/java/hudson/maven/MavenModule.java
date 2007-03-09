@@ -143,6 +143,11 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     }
 
     @Override
+    public String getShortUrl() {
+        return moduleName.toFileSystemName();
+    }
+
+    @Override
     public String getDisplayName() {
         return displayName;
     }

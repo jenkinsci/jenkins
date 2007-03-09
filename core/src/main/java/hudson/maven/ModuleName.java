@@ -64,7 +64,7 @@ public class ModuleName implements Comparable<ModuleName>, Serializable {
     }
 
     public static ModuleName fromString(String n) {
-        int idx = n.indexOf(':');
+        int idx = Math.max(n.indexOf(':'),n.indexOf('$'));
         if(idx<0)   throw new IllegalArgumentException(n);
         return new ModuleName(n.substring(0,idx),n.substring(idx+1));
     }
@@ -74,7 +74,7 @@ public class ModuleName implements Comparable<ModuleName>, Serializable {
      * created by {@link #toString()}.
      */
     public static boolean isValid(String n) {
-        return n.indexOf(':')>0;
+        return Math.max(n.indexOf(':'),n.indexOf('$'))>0;
     }
 
     public boolean equals(Object o) {
