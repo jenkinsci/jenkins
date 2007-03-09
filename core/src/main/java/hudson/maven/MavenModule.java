@@ -263,6 +263,15 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         Hudson.getInstance().rebuildDependencyGraph();
     }
 
+    public synchronized void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
+
+        super.doDoDelete(req, rsp);
+
+        getParent().onModuleDeleted(this);
+    }
+
     /**
      * Marks this build as disabled.
      */

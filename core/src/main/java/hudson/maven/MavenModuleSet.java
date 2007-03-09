@@ -96,6 +96,15 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
         return getItem(name);
     }
 
+    /**
+     * Called by {@link MavenModule#doDoDelete(StaplerRequest, StaplerResponse)}.
+     * Real deletion is done by the caller, and this method only adjusts the
+     * data structure the parent maintains.
+     */
+    /*package*/ void onModuleDeleted(MavenModule module) {
+        modules.remove(module.getModuleName());
+    }
+
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         if(ModuleName.isValid(token))
             return getModule(token);
