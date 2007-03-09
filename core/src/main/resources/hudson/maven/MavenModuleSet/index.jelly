@@ -20,7 +20,16 @@
           </j:choose>
         </j:when>
         <j:otherwise>
-          <t:projectView jobs="${it.modules}" showViewTabs="${false}" />
+          <j:set var="needsView" value="${it.hasDisabledModule()}" />
+          <t:projectView jobs="${it.getDisabledModules(false)}" showViewTabs="${needsView}">
+            <!-- view tab bar -->
+            <j:if test="${needsView}">
+              <l:tabBar>
+                <l:tab name="Modules" active="${true}" />
+                <l:tab name="Disabled" active="${false}" href="./disabled" />
+              </l:tabBar>
+            </j:if>
+          </t:projectView>
         </j:otherwise>
       </j:choose>
     </l:main-panel>

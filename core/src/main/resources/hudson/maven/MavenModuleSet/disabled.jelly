@@ -1,0 +1,26 @@
+<!--
+  list disabled modules
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.name}">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>Project ${it.name}</h1>
+      <p>
+        These modules are no longer a part of the project, but left for archival purpose.
+        If you'd like to delete them permanently, choose "delete project" from module page.
+      </p>
+
+      <j:choose>
+        <j:otherwise>
+          <t:projectView jobs="${it.getDisabledModules(true)}" showViewTabs="${true}">
+            <l:tabBar>
+              <l:tab name="Modules" active="${false}" href="." />
+              <l:tab name="Disabled" active="${true}" href="./disabled" />
+            </l:tabBar>
+          </t:projectView>
+        </j:otherwise>
+      </j:choose>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

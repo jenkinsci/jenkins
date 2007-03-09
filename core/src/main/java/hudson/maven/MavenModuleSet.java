@@ -2,6 +2,7 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.triggers.Trigger;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.model.AbstractProject;
@@ -28,6 +29,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -103,6 +106,30 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
      */
     /*package*/ void onModuleDeleted(MavenModule module) {
         modules.remove(module.getModuleName());
+    }
+
+    /**
+     * Returns true if there's any disabled module.
+     */
+    public boolean hasDisabledModule() {
+        for (MavenModule m : modules.values()) {
+            if(m.isDisabled())
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Possibly empty list of all disabled modules (if disabled==true)
+     * or all enabeld modules (if disabled==false)
+     */
+    public Collection<MavenModule> getDisabledModules(boolean disabled) {
+        List<MavenModule> r = new ArrayList<MavenModule>();
+        for (MavenModule m : modules.values()) {
+            if(m.isDisabled()==disabled)
+                r.add(m);
+        }
+        return r;
     }
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {

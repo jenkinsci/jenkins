@@ -66,7 +66,7 @@
           </p>
         </j:when>
         <j:otherwise>
-          <t:projectView jobs="${it.tiedJobs}" showViewTabs="false" jobBaseUrl="${rootURL}/" />
+          <t:projectView jobs="${it.tiedJobs}" jobBaseUrl="${rootURL}/" />
         </j:otherwise>
       </j:choose>
 
