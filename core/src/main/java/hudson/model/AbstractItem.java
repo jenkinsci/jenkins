@@ -144,11 +144,19 @@ public abstract class AbstractItem extends Actionable implements Item {
     public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         if(!Hudson.adminCheck(req,rsp))
             return;
-        Util.deleteRecursive(getRootDir());
+        performDelete();
 
         if(this instanceof TopLevelItem)
             Hudson.getInstance().deleteJob((TopLevelItem)this);
+
         Hudson.getInstance().rebuildDependencyGraph();
-        rsp.sendRedirect2(req.getContextPath()+"/");
+        rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
+    }
+
+    /**
+     * Does the real job of deleting the item.
+     */
+    protected void performDelete() throws IOException {
+        Util.deleteRecursive(getRootDir());
     }
 }
