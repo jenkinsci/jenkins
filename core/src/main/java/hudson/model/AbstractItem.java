@@ -148,6 +148,7 @@ public abstract class AbstractItem extends Actionable implements Item {
 
         if(this instanceof TopLevelItem)
             Hudson.getInstance().deleteJob((TopLevelItem)this);
+        Hudson.getInstance().rebuildDependencyGraph();
         rsp.sendRedirect2(req.getContextPath()+"/");
     }
 }
