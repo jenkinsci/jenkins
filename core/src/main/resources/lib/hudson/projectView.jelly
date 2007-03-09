@@ -42,7 +42,7 @@
         <j:forEach var="job" items="${jobs}">
           <j:set var="lsBuild" value="${job.lastSuccessfulBuild}" />
           <j:set var="lfBuild" value="${job.lastFailedBuild}" />
-          <tr>
+          <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
             <td data="${job.iconColor.ordinal()}">
               <img src="${rootURL}/images/${iconSize}/${job.buildStatusUrl}" />
             </td>

@@ -323,6 +323,10 @@ th.pane {
   font-weight: bold;
 }
 
+.disabledJob {
+  color: gray;
+}
+
 .spinner {
   padding-left: 32px;
   padding-top: 0.5em;
