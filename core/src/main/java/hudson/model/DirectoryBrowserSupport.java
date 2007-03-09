@@ -75,6 +75,13 @@ public final class DirectoryBrowserSupport {
             f = f.getParent();
             isFingerprint = true;
         }
+        if(f.getParent().getName().equals("*zip*")) {
+            // the expected syntax is foo/bar/*zip*/bar.zip
+            // the last 'bar.zip' portion is to causes browses to set a good default file name 
+            rsp.setContentType("application/zip");
+            f.getParent().getParent().createZipArchive(rsp.getOutputStream());
+            return;
+        }
 
         if(f.isDirectory()) {
             if(!req.getRequestURL().toString().endsWith("/")) {
@@ -91,6 +98,7 @@ public final class DirectoryBrowserSupport {
                 req.setAttribute("files", f.act(new ChildPathBuilder()));
                 req.setAttribute("icon",icon);
                 req.setAttribute("path",path);
+                req.setAttribute("dir",f);
                 req.getView(this,"dir.jelly").forward(req,rsp);
                 return;
             } else {

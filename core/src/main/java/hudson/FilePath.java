@@ -27,6 +27,8 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
+import java.util.zip.ZipEntry;
 import java.net.URI;
 
 /**
@@ -145,6 +147,39 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Creates a zip file from this directory or a file and sends that to the given output stream.
+     */
+    public void createZipArchive(OutputStream os) throws IOException, InterruptedException {
+        final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
+        act(new FileCallable<Void>() {
+            private transient byte[] buf;
+            public Void invoke(File f, VirtualChannel channel) throws IOException {
+                buf = new byte[8192];
+
+                ZipOutputStream zip = new ZipOutputStream(out);
+                scan(f,zip,"");
+                zip.close();
+                return null;
+            }
+
+            private void scan(File f, ZipOutputStream zip, String path) throws IOException {
+                if(f.isDirectory()) {
+                    for( File child : f.listFiles() )
+                        scan(child,zip,path+f.getName()+'/');
+                } else {
+                    zip.putNextEntry(new ZipEntry(path+f.getName()));
+                    FileInputStream in = new FileInputStream(f);
+                    int len;
+                    while((len=in.read(buf))>0)
+                        zip.write(buf,0,len);
+                    in.close();
+                    zip.closeEntry();
+                }
+            }
+        });
+    }
+
+    /**
      * Code that gets executed on the machine where the {@link FilePath} is local.
      * Used to act on {@link FilePath}.
      *
@@ -260,15 +295,19 @@ public final class FilePath implements Serializable {
      * This method assumes that the file name is the same between local and remote.
      */
     public String getName() {
-        int len = remote.length()-1;
+        String r = remote;
+        if(r.endsWith("\\") || r.endsWith("/"))
+            r = r.substring(0,r.length()-1);
+
+        int len = r.length()-1;
         while(len>=0) {
-            char ch = remote.charAt(len);
+            char ch = r.charAt(len);
             if(ch=='\\' || ch=='/')
                 break;
             len--;
         }
 
-        return remote.substring(len+1);
+        return r.substring(len+1);
     }
 
     /**

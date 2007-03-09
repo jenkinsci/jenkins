@@ -39,6 +39,16 @@
               </j:if>
             </tr>
           </j:forEach>
+          <tr>
+            <td style="text-align:right;" colspan="3">
+              <div style="margin-top: 1em;">
+                <a href="*zip*/${dir.name}.zip">
+                  <img src="${rootURL}/images/16x16/package.gif"/>
+                  (all files in zip)
+                </a>
+              </div>
+            </td>
+          </tr>
         </table>
       </div>
     </l:main-panel>
