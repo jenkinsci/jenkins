@@ -26,4 +26,12 @@ public enum BallColor {
         if(name().endsWith("_ANIME"))   return this;
         else                            return valueOf(name()+"_ANIME");
     }
+
+    /**
+     * Gets the unanimated version.
+     */
+    public BallColor noAnime() {
+        if(name().endsWith("_ANIME"))   return valueOf(name().substring(0,name().length()-6));
+        else                            return this;
+    }
 }
