@@ -54,6 +54,21 @@
               <goal>run</goal>
             </goals>
           </execution>
+          <!-- created signed war -->
+          <execution>
+            <id>signWar</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <!-- see ../jnlp-agent/pom.xml for details -->
+                <signjar  jar="target/hudson.war" alias="${hudson.sign.alias}"
+                          keystore="${hudson.sign.keystore}" storepass="${hudson.sign.storepass}" />
+              </tasks>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
