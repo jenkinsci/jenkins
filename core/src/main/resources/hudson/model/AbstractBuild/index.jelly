@@ -97,7 +97,7 @@
 
         <!-- give actions a chance to contribute summary item -->
         <j:forEach var="a" items="${it.actions}">
-          <st:include page="summary.jelly" from="${a}" optional="true" />
+          <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
         </j:forEach>
       </table>
 
