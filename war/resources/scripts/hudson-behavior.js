@@ -344,3 +344,10 @@ function encode(str){
     }
     return s0;
 }
+
+function makeTooltip(id,text) {
+    new YAHOO.widget.Tooltip("tooltip-"+id, {
+      context:id,
+      text:text,
+      showDelay:500 } );
+}
