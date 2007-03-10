@@ -1,16 +1,15 @@
-import javax.swing.JOptionPane;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URISyntaxException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.IOException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
-import java.util.List;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Launcher class for stand-alone execution of Hudson as
@@ -58,9 +57,13 @@ public class Main {
         String loc = classFile.toExternalForm().substring(4);// cut off jar:
         loc = loc.substring(0,loc.lastIndexOf('!'));
 
+        // JNLP launcher's classloader incorrectly returns file:c:/foobar/...
+        if(loc.startsWith("file:") && !loc.startsWith("file:/")) {
+            loc = "file:/"+loc.substring(5);
+        }
+
         // assume 'loc' is a file URL and return the file name.
         // toURI needed to handle %20 in URL.
-        JOptionPane.showMessageDialog(null,loc);
         return new File(new URL(loc).toURI().getPath());
     }
 
