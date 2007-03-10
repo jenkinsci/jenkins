@@ -8,10 +8,12 @@ import hudson.model.Run;
 import hudson.model.Items;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -324,5 +326,12 @@ public class Functions {
 
     public static String encode(String s) {
         return Util.encode(s);
+    }
+
+    public void adminCheck(StaplerRequest req, StaplerResponse rsp,boolean required) throws IOException, ServletException {
+        if(required && !Hudson.adminCheck(req,rsp)) {
+            // check failed
+            throw new ServletException("Unauthorized access");
+        }
     }
 }

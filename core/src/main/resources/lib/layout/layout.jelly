@@ -5,6 +5,7 @@
   Attributes:
    title : controls the HTML page title. Mandatory.
    norefresh : set to "true" to disable auto refresh for this page.
+   secured : set to "true" to fail unless the caller is admin.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
 <st:contentType value="text/html;charset=UTF-8" />
@@ -13,6 +14,9 @@
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null)}"/>
 <html>
   <head>
+    <!-- if this page needs to be secured, make sure the user is admin -->
+    ${h.adminCheck(request,response,secured)}
+
     <title>${h.appendIfNotNull(title, ' [Hudson]', 'Hudson')}</title>
     <link rel="stylesheet" href="${rootURL}/css/style.css" type="text/css" />
     <link rel="stylesheet" href="${rootURL}/css/color.css" type="text/css" />
