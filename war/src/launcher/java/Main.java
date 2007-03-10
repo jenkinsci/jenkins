@@ -1,3 +1,4 @@
+import javax.swing.JOptionPane;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URISyntaxException;
@@ -59,6 +60,7 @@ public class Main {
 
         // assume 'loc' is a file URL and return the file name.
         // toURI needed to handle %20 in URL.
+        JOptionPane.showMessageDialog(null,loc);
         return new File(new URL(loc).toURI().getPath());
     }
 
