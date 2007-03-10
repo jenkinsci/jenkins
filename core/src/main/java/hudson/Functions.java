@@ -328,10 +328,23 @@ public class Functions {
         return Util.encode(s);
     }
 
-    public void adminCheck(StaplerRequest req, StaplerResponse rsp,boolean required) throws IOException, ServletException {
+    public static void adminCheck(StaplerRequest req, StaplerResponse rsp,boolean required) throws IOException, ServletException {
         if(required && !Hudson.adminCheck(req,rsp)) {
             // check failed
             throw new ServletException("Unauthorized access");
         }
+    }
+
+    /**
+     * Infers the hudson installation URL from the given request.
+     */
+    public static String inferHudsonURL(StaplerRequest req) {
+        StringBuilder buf = new StringBuilder();
+        buf.append(req.getScheme()).append("://");
+        buf.append(req.getServerName());
+        if(req.getLocalPort()!=80)
+            buf.append(':').append(req.getLocalPort());
+        buf.append('/').append(req.getContextPath());
+        return buf.toString();
     }
 }

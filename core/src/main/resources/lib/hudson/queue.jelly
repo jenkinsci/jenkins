@@ -30,12 +30,7 @@
               <a href="${rootURL}/${item.project.url}">
                 ${item.project.name}
               </a>
-              <script>
-                new YAHOO.widget.Tooltip("tooltip-${id}", {
-                  context:"${id}",
-                  text:"${item.why}",
-                  showDelay:500 } );
-              </script>
+              <t:tooltip id="${id}">${item.why}</t:tooltip>
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <l:isAdmin>
