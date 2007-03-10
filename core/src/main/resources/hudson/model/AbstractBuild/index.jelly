@@ -94,6 +94,11 @@
             </j:otherwise>
           </j:choose>
         </t:summary>
+
+        <!-- give actions a chance to contribute summary item -->
+        <j:forEach var="a" items="${it.actions}">
+          <st:include page="summary.jelly" from="${a}" optional="true" />
+        </j:forEach>
       </table>
 
       <st:include page="main.jelly" optional="true" />
