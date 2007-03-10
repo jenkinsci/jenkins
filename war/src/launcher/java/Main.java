@@ -19,6 +19,8 @@ import java.util.Arrays;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
+        File me = whoAmI();
+
         // locate Winstone jar
         URL jar = Main.class.getResource("winstone.jar");
 
@@ -27,6 +29,13 @@ public class Main {
         copyStream(jar.openStream(), new FileOutputStream(tmpJar));
         tmpJar.deleteOnExit();
 
+        // clean up any previously extracted copy, since
+        // winstone doesn't do so and that causes problems when newer version of Hudson
+        // is deployed.
+        File tempFile = File.createTempFile("dummy", "dummy");
+        deleteContents(new File(tempFile.getParent(), "winstone/" + me.getName()));
+        tempFile.delete();
+
         // locate the Winstone launcher
         ClassLoader cl = new URLClassLoader(new URL[]{tmpJar.toURL()});
         Class launcher = cl.loadClass("winstone.Launcher");
@@ -34,7 +43,7 @@ public class Main {
 
         // figure out the arguments
         List arguments = new ArrayList(Arrays.asList(args));
-        arguments.add(0,"--warfile="+whoAmI().getAbsolutePath());
+        arguments.add(0,"--warfile="+ me.getAbsolutePath());
 
         // run
         mainMethod.invoke(null,new Object[]{arguments.toArray(new String[0])});
@@ -53,12 +62,23 @@ public class Main {
         return new File(new URL(loc).toURI().getPath());
     }
 
-    public static void copyStream(InputStream in, OutputStream out) throws IOException {
+    private static void copyStream(InputStream in, OutputStream out) throws IOException {
         byte[] buf = new byte[8192];
         int len;
         while((len=in.read(buf))>0)
             out.write(buf,0,len);
         in.close();
         out.close();
+    }
+
+    private static void deleteContents(File file) throws IOException {
+        if(file.isDirectory()) {
+            File[] files = file.listFiles();
+            if(files!=null) {// be defensive
+                for (int i = 0; i < files.length; i++)
+                    deleteContents(files[i]);
+            }
+        }
+        file.delete();
     }
 }
