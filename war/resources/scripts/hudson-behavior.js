@@ -9,20 +9,29 @@ var FormChecker = {
 
   inProgress : false,
 
-  delayedCheck : function(checkUrl,targetElement) {
-    this.queue.push({url:checkUrl,target:targetElement});
+  delayedCheck : function(url,method,target) {
+    this.queue.push({url:url, method:method, target:target});
     this.schedule();
+  },
+
+  sendRequest : function(url,params) {
+    if(params.method=="post") {
+      var idx = url.indexOf('?');
+      params.parameters = url.substring(idx+1);
+      url = url.substring(0,idx);
+    }
+    new Ajax.Request(url,params);
   },
 
   schedule : function() {
     if(this.inProgress)  return;
     if(this.queue.length==0) return;
 
-    next = this.queue.shift();
+    var next = this.queue.shift();
     this.inProgress = true;
 
-    new Ajax.Request(next.url, {
-        method : 'get',
+    this.sendRequest(next.url, {
+        method : next.method,
         onComplete : function(x) {
           next.target.innerHTML = x.responseText;
           FormChecker.inProgress = false;
@@ -86,12 +95,14 @@ var hudsonRules = {
   ".validated" : function(e) {
     e.targetElement = findFollowingTR(e,"validation-error-area").firstChild.nextSibling;
     e.targetUrl = function() {return eval(this.getAttribute("checkUrl"));};
+    var method = e.getAttribute("checkMethod");
+    if(!method) method="get";
 
-    FormChecker.delayedCheck(e.targetUrl(),e.targetElement);
+    FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
 
     e.onchange = function() {
-      new Ajax.Request(this.targetUrl(), {
-          method : 'get',
+      FormChecker.sendRequest(this.targetUrl(), {
+          method : method,
           onComplete : function(x) {e.targetElement.innerHTML = x.responseText;}
         }
       );
