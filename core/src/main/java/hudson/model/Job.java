@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
 import hudson.util.ChartUtil;
@@ -457,7 +458,19 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
         keepDependencies = req.getParameter("keepDependencies")!=null;
 
-        save();
+    try {
+        properties.clear();
+        for (JobPropertyDescriptor d : JobPropertyDescriptor.getPropertyDescriptors(getClass())) {
+            JobProperty prop = d.newInstance(req);
+            if(prop!=null)
+                properties.add(prop);
+        }
+    } catch (FormException e) {
+        throw new ServletException(e);
+    }
+
+
+    save();
 
         String newName = req.getParameter("name");
         if(newName!=null && !newName.equals(name)) {
