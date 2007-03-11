@@ -27,6 +27,8 @@ import java.util.Calendar;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -392,6 +394,27 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             this.toId = toId;
             this.from = project.getBuildByNumber(fromId);
             this.to = project.getBuildByNumber(toId);
+        }
+
+        /**
+         * Gets the {@link AbstractBuild} objects (fromId,toId].
+         * <p>
+         * This method returns all such available builds in the ascending order
+         * of IDs, but due to log rotations, some builds may be already unavailable. 
+         */
+        public List<AbstractBuild> getBuilds() {
+            List<AbstractBuild> r = new ArrayList<AbstractBuild>();
+
+            AbstractBuild<?,?> b = (AbstractBuild)project.getNearestBuild(fromId);
+            if(b!=null && b.getNumber()==fromId)
+                b = b.getNextBuild(); // fromId exclusive
+
+            while(b!=null && b.getNumber()<=toId) {
+                r.add(b);
+                b = b.getNextBuild();
+            }
+
+            return r;
         }
     }
     
