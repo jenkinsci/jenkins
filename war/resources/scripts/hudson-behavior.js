@@ -3,7 +3,7 @@ var iota = 0;
 
 // Form check code
 //========================================================
-var Form = {
+var FormChecker = {
   // pending requests
   queue : [],
 
@@ -25,8 +25,8 @@ var Form = {
         method : 'get',
         onComplete : function(x) {
           next.target.innerHTML = x.responseText;
-          Form.inProgress = false;
-          Form.schedule();
+          FormChecker.inProgress = false;
+          FormChecker.schedule();
         }
       }
     );
@@ -87,7 +87,7 @@ var hudsonRules = {
     e.targetElement = findFollowingTR(e,"validation-error-area").firstChild.nextSibling;
     e.targetUrl = function() {return eval(this.getAttribute("checkUrl"));};
 
-    Form.delayedCheck(e.targetUrl(),e.targetElement);
+    FormChecker.delayedCheck(e.targetUrl(),e.targetElement);
 
     e.onchange = function() {
       new Ajax.Request(this.targetUrl(), {
@@ -354,3 +354,24 @@ function makeTooltip(id,text) {
       text:text,
       showDelay:500 } );
 }
+
+// when there are multiple form elements of the same name,
+// this method returns the input field of the given name that pairs up
+// with the specified 'base' input element.
+Form.findMatchingInput = function(base, name) {
+    // find the FORM element that owns us
+    var f = base;
+    while (f.tagName != "FORM")
+        f = f.parentNode;
+
+    var bases = Form.getInputs(f, null, base.name);
+    var targets = Form.getInputs(f, null, name);
+
+    for (var i=0; i<bases.length; i++) {
+        if (bases[i] == base)
+            return targets[i];
+    }
+
+    return null;        // not found
+}
+
