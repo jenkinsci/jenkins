@@ -345,6 +345,9 @@ function encode(str){
     return s0;
 }
 
+// create a tooltip that applies to the element of the specified ID.
+// @param text
+//    HTML text of the tooltip
 function makeTooltip(id,text) {
     new YAHOO.widget.Tooltip("tooltip-"+id, {
       context:id,
