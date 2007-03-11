@@ -6,6 +6,8 @@ import hudson.model.Node;
 import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.Items;
+import hudson.model.JobPropertyDescriptor;
+import hudson.model.Job;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -346,5 +348,9 @@ public class Functions {
             buf.append(':').append(req.getLocalPort());
         buf.append('/').append(req.getContextPath());
         return buf.toString();
+    }
+
+    public static List<JobPropertyDescriptor> getJobPropertyDescriptors(Class<? extends Job> clazz) {
+        return JobPropertyDescriptor.getPropertyDescriptors(clazz);
     }
 }
