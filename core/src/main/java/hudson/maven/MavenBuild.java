@@ -259,7 +259,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             // M2_HOME
             args.add(mvn.getMavenHome());
 
-            // remoting.jar // TODO: locate it on remote node
+            // remoting.jar
             args.add(launcher.getChannel().call(new GetRemotingJar()));
             // interceptor.jar
             args.add(isMaster?
