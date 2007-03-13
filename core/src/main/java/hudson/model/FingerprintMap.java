@@ -68,7 +68,6 @@ class FingerprintParams {
     final AbstractBuild build;
     final String fileName;
 
-
     public FingerprintParams(AbstractBuild build, String fileName) {
         this.build = build;
         this.fileName = fileName;
