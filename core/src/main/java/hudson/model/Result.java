@@ -14,19 +14,19 @@ public final class Result implements Serializable {
     /**
      * The build didn't have any fatal errors not errors.
      */
-    public static final Result SUCCESS = new Result("SUCCESS",0);
+    public static final Result SUCCESS = new Result("SUCCESS",BallColor.BLUE,0);
     /**
      * The build didn't have any fatal errors but some errors.
      */
-    public static final Result UNSTABLE = new Result("UNSTABLE",1);
+    public static final Result UNSTABLE = new Result("UNSTABLE",BallColor.YELLOW,1);
     /**
      * The build had a fatal error.
      */
-    public static final Result FAILURE = new Result("FAILURE",2);
+    public static final Result FAILURE = new Result("FAILURE",BallColor.RED,2);
     /**
      * The build was manually aborted.
      */
-    public static final Result ABORTED = new Result("ABORTED",3);
+    public static final Result ABORTED = new Result("ABORTED",BallColor.GREY,3);
 
     private final String name;
 
@@ -35,8 +35,14 @@ public final class Result implements Serializable {
      */
     private final int ordinal;
 
-    private Result(String name, int ordinal) {
+    /**
+     * Default ball color for this status.
+     */
+    public final BallColor color;
+
+    private Result(String name, BallColor color, int ordinal) {
         this.name = name;
+        this.color = color;
         this.ordinal = ordinal;
     }
 
