@@ -311,12 +311,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public BallColor getIconColor() {
         if(!isBuilding()) {
             // already built
-            if(result==Result.SUCCESS)
-                return BallColor.BLUE;
-            if(result== Result.UNSTABLE)
-                return BallColor.YELLOW;
-            else
-                return BallColor.RED;
+            return result.color;
         }
 
         // a new build is in progress
