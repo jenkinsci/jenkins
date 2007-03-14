@@ -1,11 +1,14 @@
 package hudson.maven;
 
 import hudson.ExtensionPoint;
+import hudson.Launcher;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Project;
+import hudson.model.Build;
 import hudson.tasks.BuildStep;
+import hudson.tasks.Publisher;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
@@ -127,6 +130,9 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
     /**
      * Called after the actual maven2 execution completed.
      *
+     * <p>
+     * Note that at this point the build result is still not determined.
+     *
      * @return
      *      See {@link #preBuild}
      * @throws InterruptedException
@@ -135,6 +141,17 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
      *      See {@link #preBuild}
      */
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
+        return true;
+    }
+
+    /**
+     * Called after the maven execution finished and the result is determined.
+     *
+     * <p>
+     * This method fires after {@link #postBuild(MavenBuildProxy, MavenProject, BuildListener)}.
+     * Works like {@link Publisher#perform(Build, Launcher, BuildListener)}.
+     */
+    public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         return true;
     }
 

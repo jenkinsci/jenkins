@@ -186,9 +186,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     }
 
     private class RunnerImpl extends AbstractRunner {
+        private List<MavenReporter> reporters = new ArrayList<MavenReporter>();
+
         protected Result doRun(BuildListener listener) throws Exception {
             // pick up a list of reporters to run
-            List<MavenReporter> reporters = new ArrayList<MavenReporter>();
             getProject().getReporters().addAllTo(reporters);
             for (MavenReporterDescriptor d : MavenReporters.LIST) {
                 if(getProject().getReporters().contains(d))
@@ -269,6 +270,17 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
 
         public void post(BuildListener listener) {
+            try {
+                for (MavenReporter reporter : reporters)
+                    reporter.end(MavenBuild.this,launcher,listener);
+            } catch (InterruptedException e) {
+                e.printStackTrace(listener.fatalError("aborted"));
+                setResult(Result.FAILURE);
+            } catch (IOException e) {
+                e.printStackTrace(listener.fatalError("failed"));
+                setResult(Result.FAILURE);
+            }
+
             if(!getResult().isWorseThan(Result.UNSTABLE)) {
                 // trigger dependency builds
                 DependencyGraph graph = Hudson.getInstance().getDependencyGraph();

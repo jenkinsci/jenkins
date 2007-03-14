@@ -1,15 +1,14 @@
 package hudson.maven.reporters;
 
+import hudson.Launcher;
+import hudson.maven.MavenBuild;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
-import hudson.maven.MavenBuildProxy;
-import hudson.maven.MavenBuild;
-import hudson.maven.MavenBuildProxy.BuildCallable;
-import hudson.tasks.Mailer;
-import hudson.tasks.MailSender;
+import hudson.maven.MavenModule;
 import hudson.model.BuildListener;
+import hudson.tasks.MailSender;
+import hudson.tasks.Mailer;
 import org.kohsuke.stapler.StaplerRequest;
-import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
 
@@ -24,14 +23,8 @@ public class MavenMailer extends MavenReporter {
     public boolean dontNotifyEveryUnstableBuild;
     public boolean sendToIndividuals;
 
-
-    public boolean postBuild(MavenBuildProxy build, MavenProject pom, final BuildListener listener) throws InterruptedException, IOException {
-        build.execute(new BuildCallable<Void,IOException>() {
-            public Void call(MavenBuild build) throws IOException, InterruptedException {
-                new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals).execute(build,listener);
-                return null;
-            }
-        });
+    public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        new MailSender<MavenModule,MavenBuild>(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals).execute(build,listener);
         return true;
     }
 
