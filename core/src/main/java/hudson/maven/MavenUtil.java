@@ -30,6 +30,9 @@ class MavenUtil {
         maven.setClassLoader(new MaskingClassLoader(cl));
         maven.setLogger( new EmbedderLoggerImpl(listener) );
 
+        // make sure ~/.m2 exists to avoid http://www.nabble.com/BUG-Report-tf3401736.html
+        new File( MavenEmbedder.userHome, ".m2" ).mkdirs();
+
         maven.start();
 
         return maven;
