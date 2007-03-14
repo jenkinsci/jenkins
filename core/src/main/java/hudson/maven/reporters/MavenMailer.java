@@ -13,6 +13,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.IOException;
 
 /**
+ * Sends out an e-mail notification for Maven build result.
  * @author Kohsuke Kawaguchi
  */
 public class MavenMailer extends MavenReporter {
