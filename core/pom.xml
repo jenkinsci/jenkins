@@ -54,10 +54,19 @@
               <tasks>
                 <taskdef name="retrotranslator" classpathref="maven.test.classpath" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" />
                 <mkdir dir="target/classes14" />
+                
+                <!-- pick up the manfiest -->
+                <unjar src="target/${artifactId}-${version}.jar" dest="target">
+                  <patternset>
+                    <include name="META-INF/MANIFEST.MF"/>
+                  </patternset>
+                </unjar>
+                
                 <retrotranslator destdir="target/classes14"><!-- verify="true" detects false-positive errors against some references to remoting-->
                   <src path="target/classes" />
                 </retrotranslator>
-                <jar basedir="target/classes14" destfile="target/${artifactId}-${version}-jdk14.jar" />
+                <jar basedir="target/classes14" destfile="target/${artifactId}-${version}-jdk14.jar"
+                     manifest="target/META-INF/MANIFEST.MF" />
               </tasks>
             </configuration>
             <goals>
