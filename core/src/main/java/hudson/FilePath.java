@@ -176,6 +176,8 @@ public final class FilePath implements Serializable {
                     zip.closeEntry();
                 }
             }
+            
+            private static final long serialVersionUID = 1L;
         });
     }
 
