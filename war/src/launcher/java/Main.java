@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.JarURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,17 +55,11 @@ public class Main {
      */
     public static File whoAmI() throws IOException, URISyntaxException {
         URL classFile = Main.class.getClassLoader().getResource("Main.class");
-        String loc = classFile.toExternalForm().substring(4);// cut off jar:
-        loc = loc.substring(0,loc.lastIndexOf('!'));
 
-        // JNLP launcher's classloader incorrectly returns file:c:/foobar/...
-        if(loc.startsWith("file:") && !loc.startsWith("file:/")) {
-            loc = "file:/"+loc.substring(5);
-        }
-
-        // assume 'loc' is a file URL and return the file name.
-        // toURI needed to handle %20 in URL.
-        return new File(new URL(loc).toURI().getPath());
+        // JNLP returns the URL where the jar was originally placed (like http://hudson.dev.java.net/...)
+        // not the local cached file. So we need a rather round about approach to get to
+        // the local file name.
+        return new File(((JarURLConnection)classFile.openConnection()).getJarFile().getName());
     }
 
     private static void copyStream(InputStream in, OutputStream out) throws IOException {
