@@ -3,6 +3,7 @@ package hudson.maven.agent;
 import org.codehaus.classworlds.ClassRealm;
 import org.codehaus.classworlds.Launcher;
 import org.codehaus.classworlds.NoSuchRealmException;
+import org.codehaus.classworlds.DefaultClassRealm;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -43,7 +44,8 @@ public class Main {
 
         // create a realm for loading remoting subsystem.
         // this needs to be able to see maven.
-        ClassRealm remoting = launcher.getWorld().getRealm("plexus.core.maven").createChildRealm("hudson-remoting");
+        ClassRealm remoting = new DefaultClassRealm(launcher.getWorld(),"hudson-remoting", launcher.getSystemClassLoader());
+        remoting.setParent(launcher.getWorld().getRealm("plexus.core.maven"));
         remoting.addConstituent(remotingJar.toURL());
 
         // we'll use stdin/out to talk to the host,
