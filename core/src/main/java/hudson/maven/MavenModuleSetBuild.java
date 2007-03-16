@@ -192,7 +192,11 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath);
 
                 List<PomInfo> infos = new ArrayList<PomInfo>();
-                toPomInfo(mp,relPath,infos);
+                toPomInfo(mp,null,relPath,infos);
+
+                for (PomInfo pi : infos)
+                    pi.cutCycle();
+
                 return infos;
             } catch (MavenEmbedderException e) {
                 // TODO: better error handling needed
@@ -202,10 +206,11 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             }
         }
 
-        private void toPomInfo(MavenProject mp, Map<MavenProject,String> relPath, List<PomInfo> infos) {
-            infos.add(new PomInfo(mp,relPath.get(mp)));
+        private void toPomInfo(MavenProject mp, PomInfo parent, Map<MavenProject,String> relPath, List<PomInfo> infos) {
+            PomInfo pi = new PomInfo(mp, parent, relPath.get(mp));
+            infos.add(pi);
             for (MavenProject child : (List<MavenProject>)mp.getCollectedProjects())
-                toPomInfo(child,relPath,infos);
+                toPomInfo(child,pi,relPath,infos);
         }
 
         private static final long serialVersionUID = 1L;

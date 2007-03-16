@@ -52,18 +52,24 @@ final class PomInfo implements Serializable {
      */
     public final String defaultGoal;
 
-    public PomInfo(MavenProject project, String relPath) {
+    /**
+     * Parent module.
+     */
+    public final PomInfo parent;
+
+    public PomInfo(MavenProject project, PomInfo parent, String relPath) {
         this.name = new ModuleName(project);
         this.displayName = project.getName();
         this.defaultGoal = project.getDefaultGoal();
         this.relativePath = relPath;
+        this.parent = parent;
 
         for (Dependency dep : (List<Dependency>)project.getDependencies())
             dependencies.add(new ModuleName(dep));
 
-        MavenProject parent = project.getParent();
-        if(parent!=null)
-            dependencies.add(new ModuleName(parent));
+        MavenProject parentProject = project.getParent();
+        if(parentProject!=null)
+            dependencies.add(new ModuleName(parentProject));
 
         addPluginsAsDependencies(project.getBuildPlugins(),dependencies);
         addReportPluginsAsDependencies(project.getReportPlugins(),dependencies);
@@ -84,6 +90,21 @@ final class PomInfo implements Serializable {
         if(plugins==null)   return;
         for (ReportPlugin p : plugins)
             dependencies.add(new ModuleName(p));
+    }
+
+    /**
+     * Avoids dependency cycles.
+     *
+     * <p>
+     * People often write configuration in parent POMs that use the plugin
+     * which is a part of the build. To avoid this kind of dependency,
+     * make sure parent POMs don't depend on a child module.
+     */
+    /*package*/ void cutCycle() {
+        for(PomInfo p=parent; p!=null; p=p.parent) {
+            if(p.dependencies.contains(name))
+                p.dependencies.remove(name);
+        }
     }
 
     private static final long serialVersionUID = 1L;
