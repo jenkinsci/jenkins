@@ -248,7 +248,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             ArgumentListBuilder args = new ArgumentListBuilder();
             args.add(launcher.getChannel().call(new GetJavaExe()));
 
-            //args.add("-Xrunjdwp:transport=dt_socket,server=y,address=8002");
+            if(debugPort!=0)
+                args.add("-Xrunjdwp:transport=dt_socket,server=y,address="+debugPort);
 
             args.add("-cp");
             args.add(
@@ -359,5 +360,16 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             }
             return false;
         }
+    }
+
+    /**
+     * If not 0, launch Maven with a debugger port.
+     */
+    public static int debugPort;
+
+    static {
+        String port = System.getProperty(MavenBuild.class.getName() + ".debugPort");
+        if(port!=null)
+            debugPort = Integer.parseInt(port);
     }
 }
