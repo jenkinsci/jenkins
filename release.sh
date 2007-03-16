@@ -11,3 +11,7 @@ javanettasks uploadFile hudson /releases/source-bundles/$id "`date +"%Y/%m/%d"` 
 javanettasks announce hudson "Hudson $id released" << EOF
 See <a href="https://hudson.dev.java.net/changelog.html">the changelog</a> for details.
 EOF
+
+# this is for the JNLP start
+cp target/checkout/war/target/hudson.war target/checkout/war/target/hudson.jar
+javanettasks uploadFile hudson /releases/jnlp/hudson.jar "version $id" Stable target/checkout/war/target/hudson.jar
