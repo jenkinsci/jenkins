@@ -8,6 +8,8 @@ import java.util.List;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
+ * List of all installed SCMs.
+ * 
  * @author Kohsuke Kawaguchi
  */
 public class SCMS {
