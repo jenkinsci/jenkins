@@ -227,4 +227,53 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         }
     }
 
+    /**
+     * Represents CVS revision number like "1.5.3.2". Immutable.
+     */
+    public static class Revision {
+        public final int[] numbers;
+
+        public Revision(int[] numbers) {
+            this.numbers = numbers;
+            assert numbers.length%2==0;
+        }
+
+        public Revision(String s) {
+            String[] tokens = s.split(".");
+            numbers = new int[tokens.length];
+            for( int i=0; i<tokens.length; i++ )
+                numbers[i] = Integer.parseInt(tokens[i]);
+            assert numbers.length%2==0;
+        }
+
+        /**
+         * Returns a new {@link Revision} that represents the previous revision.
+         *
+         * @return
+         *      null if there's no previous version, meaning this is "1.1"
+         */
+        public Revision getPrevious() {
+            if(numbers[numbers.length-1]==1) {
+                // x.y.z.1 => x.y
+                int[] p = new int[numbers.length-2];
+                System.arraycopy(numbers,0,p,0,p.length);
+                if(p.length==0)     return null;
+                return new Revision(p);
+            }
+
+            int[] p = numbers.clone();
+            p[p.length-1]--;
+
+            return new Revision(p);
+        }
+
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            for (int n : numbers) {
+                if(buf.length()>0)  buf.append('.');
+                buf.append(n);
+            }
+            return buf.toString();
+        }
+    }
 }
