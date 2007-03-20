@@ -11,11 +11,11 @@
     <td class="setting-name">
       ${attrs.title}
     </td>
-    <td>
+    <td class="setting-main">
       <d:invokeBody />
     </td>
     <j:if test="${attrs.help!=null}">
-      <td>
+      <td class="setting-help">
         <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${rootURL}/images/16x16/help.gif" alt="Help for feature: ${title}" /></a>
       </td>
     </j:if>

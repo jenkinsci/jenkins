@@ -160,12 +160,19 @@ pre.console {
   overflow: auto;
 }
 
+.setting-leftspace {
+  width: 2em;
+}
+
 .setting-name {
   white-space: nowrap;
 }
 
-.setting-leftspace {
-  width: 2em;
+.setting-main {
+  width: 100%; /* try to make this column as big as possible. */
+}
+.setting-help {
+  width: 16px;
 }
 
 .setting-input {
@@ -316,6 +323,7 @@ th.pane {
   border: 1px solid #ccb;
   background: #eed;
   padding: 4px;
+  white-space: normal;  
 }
 
 .error {

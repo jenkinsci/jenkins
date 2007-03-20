@@ -10,8 +10,8 @@ import hudson.model.Describable;
 import hudson.model.TaskListener;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -24,6 +24,18 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
+
+    /**
+     * Returns the {@link RepositoryBrowser} for files
+     * controlled by this {@link SCM}.
+     *
+     * @return
+     *      null to indicate that there's no configured browser
+     *      for this SCM instance.
+     */
+    public RepositoryBrowser getBrowser() {
+        return null;
+    }
 
     /**
      * Checks if there has been any changes to this module in the repository.
@@ -102,6 +114,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * The returned object will be used to parse <tt>changelog.xml</tt>.
      */
     public abstract ChangeLogParser createChangeLogParser();
+
+    public abstract SCMDescriptor getDescriptor();
 
     protected final boolean createEmptyChangeLog(File changelogFile, BuildListener listener, String rootTag) {
         try {

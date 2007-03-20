@@ -23,6 +23,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.scm.CVSSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
+import hudson.scm.SCMDescriptor;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -921,7 +922,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             for( Descriptor<BuildWrapper> d : BuildWrappers.WRAPPERS )
                 result &= d.configure(req);
 
-            for( Descriptor<SCM> scmd : SCMS.SCMS )
+            for( SCMDescriptor scmd : SCMS.SCMS )
                 result &= scmd.configure(req);
 
             for( TriggerDescriptor d : Triggers.TRIGGERS )

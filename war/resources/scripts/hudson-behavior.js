@@ -386,3 +386,17 @@ Form.findMatchingInput = function(base, name) {
     return null;        // not found
 }
 
+// used witih <dropdownList> and <dropdownListBlock> to control visibility
+function updateDropDownList(sel) {
+    // alert('Yay! '+sel.value+' '+sel.selectedIndex);
+    for (var i = 0; i < sel.forms.length; i++) {
+        var show = sel.selectedIndex == i;
+        var f = sel.forms[i];
+        var td = f.start;
+        while (true) {
+            td.style.display = (show ? "" : "none");
+            if (td == f.end) break;
+            td = td.nextSibling;
+        }
+    }
+}

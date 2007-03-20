@@ -118,6 +118,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         super.doConfigSubmit(req,rsp);
         // make sure to reload to reflect this config change.
         nextUpdate = 0;
+        save();
     }
 
 

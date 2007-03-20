@@ -1,0 +1,46 @@
+<!--
+  Foldable block expanded when the corresponding item is selected in the drop-down list.
+
+  @name (mandatory)
+    name of the drop-down list.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+  <!-- first invoke the body to collect all <dropdownListBlock> -->
+  <j:useList var="dropdownItems" />
+  <d:invokeBody />
+
+  <j:set var="id" value="${h.generateId()}"/>
+  <f:entry title="${title}">
+    <!-- create drop-down list -->
+    <select name="${name}" id="${id}" onchange="updateDropDownList(this)">
+      <j:forEach var="item" items="${dropdownItems}">
+        <f:option selected="${item.selected}" value="${item.value}">${item.title}</f:option>
+      </j:forEach>
+    </select>
+    <script>
+        $$('${id}').forms = [];
+    </script>
+  </f:entry>
+
+  <!-- generate the actual form entries -->
+  <j:forEach var="item" items="${dropdownItems}">
+    <!-- sandwitch them by a marker so that we now what to show/hide -->
+    <j:set var="sid" value="${h.generateId()}"/>
+    <j:set var="eid" value="${h.generateId()}"/>
+    <tr id="${sid}" style="display:none" />
+    <d:invoke script="${item.body}" />
+    <tr id="${eid}" style="display:none" />
+    <script>
+      $$('${id}').forms.push({
+        start: $$('${sid}'),
+        end: $$('${eid}')
+      });
+    </script>
+  </j:forEach>
+
+  <!-- set the initial visibility -->
+  <script>
+    updateDropDownList($$('${id}'));
+  </script>
+</j:jelly>

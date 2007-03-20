@@ -110,6 +110,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
         }
 
         public void addPath( Path p ) {
+            p.entry = this;
             paths.add(p);
         }
 
@@ -118,9 +119,17 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
         }
     }
 
+    /**
+     * A file in a commit.
+     */
     public static class Path {
+        private LogEntry entry;
         private char action;
         private String value;
+
+        public LogEntry getLogEntry() {
+            return entry;
+        }
 
         public void setAction(String action) {
             this.action = action.charAt(0);

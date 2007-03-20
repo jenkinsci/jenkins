@@ -5,7 +5,6 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -32,7 +31,7 @@ public class NullSCM extends SCM {
         return true;
     }
 
-    public Descriptor<SCM> getDescriptor() {
+    public SCMDescriptor getDescriptor() {
         return DESCRIPTOR;
     }
 
@@ -48,7 +47,7 @@ public class NullSCM extends SCM {
         return new NullChangeLogParser();
     }
 
-    static final Descriptor<SCM> DESCRIPTOR = new Descriptor<SCM>(NullSCM.class) {
+    static final SCMDescriptor DESCRIPTOR = new SCMDescriptor(NullSCM.class,null) {
         public String getDisplayName() {
             return "None";
         }

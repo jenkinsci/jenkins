@@ -1,0 +1,16 @@
+<!--
+  Foldable block expanded when the corresponding item is selected in the drop-down list.
+
+  @value (mandatory)
+    value of the list item. set to <option value="...">
+  @title (mandatory)
+    human readable text displayed for this list item.
+  @selected (mandatory)
+    is this value initially selected?
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:mute>
+    ${dropdownItems.add(attrs)}
+    ${attrs.put('body',context.getVariable('org.apache.commons.jelly.body'))}
+  </j:mute>
+</j:jelly>

@@ -443,34 +443,31 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Accepts submission from the configuration page.
      */
-    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
+    public synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        if (!Hudson.adminCheck(req, rsp))
             return;
 
         req.setCharacterEncoding("UTF-8");
 
         description = req.getParameter("description");
 
-        if(req.getParameter("logrotate")!=null)
+        if (req.getParameter("logrotate") != null)
             logRotator = LogRotator.DESCRIPTOR.newInstance(req);
         else
             logRotator = null;
 
-        keepDependencies = req.getParameter("keepDependencies")!=null;
+        keepDependencies = req.getParameter("keepDependencies") != null;
 
-    try {
-        properties.clear();
-        for (JobPropertyDescriptor d : JobPropertyDescriptor.getPropertyDescriptors(getClass())) {
-            JobProperty prop = d.newInstance(req);
-            if(prop!=null)
-                properties.add(prop);
+        try {
+            properties.clear();
+            for (JobPropertyDescriptor d : JobPropertyDescriptor.getPropertyDescriptors(getClass())) {
+                JobProperty prop = d.newInstance(req);
+                if (prop != null)
+                    properties.add(prop);
+            }
+        } catch (FormException e) {
+            throw new ServletException(e);
         }
-    } catch (FormException e) {
-        throw new ServletException(e);
-    }
-
-
-    save();
 
         String newName = req.getParameter("name");
         if(newName!=null && !newName.equals(name)) {

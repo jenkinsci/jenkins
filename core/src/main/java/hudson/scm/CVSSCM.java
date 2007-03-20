@@ -11,7 +11,6 @@ import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.LargeText;
@@ -108,14 +107,23 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
      */
     private boolean flatten;
 
+    private CVSRepositoryBrowser repositoryBrowser;
 
-    public CVSSCM(String cvsroot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean flatten) {
+    /**
+     * @stapler-constructor
+     */
+    public CVSSCM(String cvsroot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy) {
         this.cvsroot = cvsroot;
         this.module = module.trim();
         this.branch = nullify(branch);
         this.cvsRsh = nullify(cvsRsh);
         this.canUseUpdate = canUseUpdate;
-        this.flatten = flatten && module.indexOf(' ')==-1;
+        this.flatten = !legacy && module.indexOf(' ')==-1;
+    }
+
+    @Override
+    public CVSRepositoryBrowser getBrowser() {
+        return repositoryBrowser;
     }
 
     private String compression() {
@@ -697,7 +705,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             env.put("CVS_PASSFILE",cvspass);
     }
 
-    public static final class DescriptorImpl extends Descriptor<SCM> implements ModelObject {
+    public static final class DescriptorImpl extends SCMDescriptor implements ModelObject {
         static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         /**
@@ -710,18 +718,17 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
          */
         private String cvsExe;
 
-        /**
-         * Copy-on-write.
-         */
-        private volatile Map<String,RepositoryBrowser> browsers = new HashMap<String,RepositoryBrowser>();
+        // compatibility only
+        private transient Map<String,RepositoryBrowser> browsers;
 
+        // compatibility only
         class RepositoryBrowser {
             String diffURL;
             String browseURL;
         }
 
         DescriptorImpl() {
-            super(CVSSCM.class);
+            super(CVSSCM.class,CVSRepositoryBrowser.class);
             load();
         }
 
@@ -733,15 +740,10 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             return "CVS";
         }
 
-        public SCM newInstance(StaplerRequest req) {
-            return new CVSSCM(
-                req.getParameter("cvs_root"),
-                req.getParameter("cvs_module"),
-                req.getParameter("cvs_branch"),
-                req.getParameter("cvs_rsh"),
-                req.getParameter("cvs_use_update")!=null,
-                req.getParameter("cvs_legacy")==null
-            );
+        public SCM newInstance(StaplerRequest req) throws FormException {
+            CVSSCM scm = req.bindParameters(CVSSCM.class, "cvs.");
+            scm.repositoryBrowser = RepositoryBrowsers.createInstance(CVSRepositoryBrowser.class,req,"cvs.browser");
+            return scm;
         }
 
         public String getCvspassFile() {
@@ -761,34 +763,9 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             save();
         }
 
-        /**
-         * Gets the URL that shows the diff.
-         */
-        public String getDiffURL(String cvsRoot, String pathName, String oldRev, String newRev) {
-            RepositoryBrowser b = browsers.get(cvsRoot);
-            if(b==null)   return null;
-            return b.diffURL.replaceAll("%%P",pathName).replace("%%r",oldRev).replace("%%R",newRev);
-
-        }
-
         public boolean configure( StaplerRequest req ) {
             cvsPassFile = fixEmpty(req.getParameter("cvs_cvspass").trim());
             cvsExe = fixEmpty(req.getParameter("cvs_exe").trim());
-
-            Map<String,RepositoryBrowser> browsers = new HashMap<String, RepositoryBrowser>();
-            int i=0;
-            while(true) {
-                String root = req.getParameter("cvs_repobrowser_cvsroot" + i);
-                if(root==null)  break;
-
-                RepositoryBrowser rb = new RepositoryBrowser();
-                rb.browseURL = req.getParameter("cvs_repobrowser"+i);
-                rb.diffURL = req.getParameter("cvs_repobrowser_diff"+i);
-                browsers.put(root,rb);
-
-                i++;
-            }
-            this.browsers = browsers;
 
             save();
 

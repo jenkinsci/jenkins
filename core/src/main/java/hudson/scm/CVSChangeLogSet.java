@@ -185,7 +185,20 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         private String prevrevision;
         private boolean dead;
 
+        /**
+         * Gets the full file name in the CVS repository, like
+         * "/foo/bar/zot.c"
+         */
         public String getName() {
+            return name;
+        }
+
+        /**
+         * Gets just the last component of the path, like "zot.c"
+         */
+        public String getSimpleName() {
+            int idx = name.lastIndexOf('/');
+            if(idx>0)   return name.substring(idx+1);
             return name;
         }
 
@@ -239,7 +252,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         }
 
         public Revision(String s) {
-            String[] tokens = s.split(".");
+            String[] tokens = s.split("\\.");
             numbers = new int[tokens.length];
             for( int i=0; i<tokens.length; i++ )
                 numbers[i] = Integer.parseInt(tokens[i]);
@@ -248,6 +261,8 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
 
         /**
          * Returns a new {@link Revision} that represents the previous revision.
+         *
+         * For example, "1.5"->"1.4", "1.5.2.13"->"1.5.2.12", "1.5.2.1"->"1.5"
          *
          * @return
          *      null if there's no previous version, meaning this is "1.1"

@@ -8,7 +8,6 @@ import static hudson.Util.fixNull;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -62,8 +61,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Subversion.
@@ -476,7 +475,7 @@ public class SubversionSCM extends SCM implements Serializable {
         return tokens[tokens.length-1]; // return the last token
     }
 
-    public static final class DescriptorImpl extends Descriptor<SCM> {
+    public static final class DescriptorImpl extends SCMDescriptor {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         /**
@@ -559,7 +558,7 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         private DescriptorImpl() {
-            super(SubversionSCM.class);
+            super(SubversionSCM.class,null);
             load();
         }
 
