@@ -311,8 +311,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return true;
             }
 
-            // TODO: do this by using the right slave
-            return scm.pollChanges(this, new LocalLauncher(listener), workspace, listener );
+            return scm.pollChanges(this, workspace.createLauncher(listener), workspace, listener );
         } catch (IOException e) {
             e.printStackTrace(listener.fatalError(e.getMessage()));
             return false;
