@@ -8,6 +8,9 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.DelegatingCallable;
 import hudson.util.IOException2;
 import hudson.model.Hudson;
+import hudson.model.TaskListener;
+import hudson.Launcher.LocalLauncher;
+import hudson.Launcher.RemoteLauncher;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -691,6 +694,17 @@ public final class FilePath implements Serializable {
                 }
             });
         }
+    }
+
+    /**
+     * Creates a {@link Launcher} for starting processes on the node
+     * that has this path.
+     */
+    public Launcher createLauncher(TaskListener listener) {
+        if(channel==null)
+            return new LocalLauncher(listener);
+        else
+            return new RemoteLauncher(listener,channel,isUnix());
     }
 
     @Deprecated
