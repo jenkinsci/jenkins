@@ -698,7 +698,7 @@ public final class FilePath implements Serializable {
 
     /**
      * Creates a {@link Launcher} for starting processes on the node
-     * that has this path.
+     * that has this file.
      */
     public Launcher createLauncher(TaskListener listener) {
         if(channel==null)
