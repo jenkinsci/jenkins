@@ -111,6 +111,12 @@ public class Mailer extends Publisher {
          * which is usually <tt>localhost</tt>.
          */
         private String smtpHost;
+        
+        /**
+         * If true use SSL on port 465 (standard SMTPS).
+         */
+        private boolean useSsl;
+        
 
         public DescriptorImpl() {
             super(Mailer.class);
@@ -146,7 +152,23 @@ public class Mailer extends Publisher {
             Properties props = new Properties(System.getProperties());
             if(smtpHost!=null)
                 props.put("mail.smtp.host",smtpHost);
-
+            if (useSsl) {
+            	/* This allows the user to override settings by setting system properties but
+            	 * also allows us to use the default SMTPs port of 465 if no port is already set.
+            	 * It would be cleaner to use smtps, but that's done by calling session.getTransport()...
+            	 * and thats done in mail sender, and it would be a bit of a hack to get it all to
+            	 * coordinate, and we can make it work through setting mail.smtp properties.
+            	 */
+            	props.put("mail.smtp.auth","true");
+            	if (props.getProperty("mail.smtp.socketFactory.port") == null) {
+				    props.put("mail.smtp.port", "465");
+    				props.put("mail.smtp.socketFactory.port", "465");
+            	}
+            	if (props.getProperty("mail.smtp.socketFactory.class") == null) {
+            		props.put("mail.smtp.socketFactory.class","javax.net.ssl.SSLSocketFactory");
+            	}
+				props.put("mail.smtp.socketFactory.fallback", "false");
+			}
             return Session.getInstance(props,getAuthenticator());
         }
 
@@ -176,7 +198,7 @@ public class Mailer extends Publisher {
             } else {
                 smtpAuthUsername = smtpAuthPassword = null;
             }
-
+            useSsl = req.getParameter("mailer_smtp_use_ssl")!=null;
             save();
             return super.configure(req);
         }
@@ -206,6 +228,10 @@ public class Mailer extends Publisher {
 
         public String getSmtpAuthPassword() {
             return smtpAuthPassword;
+        }
+        
+        public boolean getUseSsl() {
+        	return useSsl;
         }
 
         public Publisher newInstance(StaplerRequest req) {

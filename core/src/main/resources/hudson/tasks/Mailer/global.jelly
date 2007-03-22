@@ -20,7 +20,7 @@
       <input class="setting-input" name="mailer_hudson_url"
         type="text" value="${h.ifThenElse(descriptor.url!=null,descriptor.url,h.inferHudsonURL(request))}"/>
     </f:entry>
-    <!--f:advanced-->
+    <f:advanced>
       <f:optionalBlock name="mailer.useSMTPAuth" title="Use SMTP Authentication" checked="${descriptor.smtpAuthUserName!=null}"
           help="/help/tasks/mailer/smtpAuth.html">
         <f:entry title="User Name">
@@ -32,6 +32,10 @@
                  type="password" value="${descriptor.smtpAuthPassword}"/>
         </f:entry>
       </f:optionalBlock>
-    <!--/f:advanced-->
+      <f:entry title="Use SSL"
+               help="/help/tasks/mailer/smtp-use-ssl.html">
+        <f:checkbox name="mailer_smtp_use_ssl" checked="${descriptor.useSsl}" />
+      </f:entry>
+    </f:advanced>
   </f:section>
 </j:jelly>
