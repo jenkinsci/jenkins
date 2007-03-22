@@ -1,5 +1,5 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <st:contentType value="text/xml;charset=UTF-8" />
+  <st:contentType value="application/atom+xml;charset=UTF-8" />
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
   <j:set var="rootURL"
          value="${request.scheme}://${request.serverName}:${request.serverPort}${request.contextPath}" />
