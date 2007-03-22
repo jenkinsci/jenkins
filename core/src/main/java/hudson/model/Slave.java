@@ -1,11 +1,8 @@
 package hudson.model;
 
-import hudson.CloseProofOutputStream;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Launcher.LocalLauncher;
-import hudson.Proc;
-import hudson.Proc.RemoteProc;
+import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerInterceptor;
@@ -13,10 +10,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
-import hudson.remoting.RemoteInputStream;
-import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
-import hudson.remoting.Pipe;
 import hudson.remoting.Which;
 import hudson.util.NullStream;
 import hudson.util.StreamCopyThread;
@@ -32,9 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.io.PrintWriter;
-import java.io.BufferedOutputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Level;
@@ -415,36 +408,11 @@ public final class Slave implements Node, Serializable {
     }
 
     public Launcher createLauncher(TaskListener listener) {
-        return new Launcher(listener, getComputer().getChannel()) {
-            public Proc launch(final String[] cmd, final String[] env, InputStream _in, OutputStream _out, FilePath _workDir) throws IOException {
-                printCommandLine(cmd,_workDir);
+        // Windows can handle '/' as a path separator but Unix can't,
+        // so err on Unix side
+        boolean isUnix = remoteFS.indexOf("\\") == -1;
 
-                final OutputStream out = new RemoteOutputStream(new CloseProofOutputStream(_out));
-                final InputStream  in  = _in==null ? null : new RemoteInputStream(_in);
-                final String workDir = _workDir==null ? null : _workDir.getRemote();
-
-                return new RemoteProc(getChannel().callAsync(new RemoteLaunchCallable(cmd, env, in, out, workDir)));
-            }
-
-            public Channel launchChannel(String[] cmd, OutputStream err, FilePath _workDir) throws IOException, InterruptedException {
-                printCommandLine(cmd, _workDir);
-
-                Pipe out = Pipe.createRemoteToLocal();
-                final String workDir = _workDir==null ? null : _workDir.getRemote();
-
-                OutputStream os = getChannel().call(new RemoteChannelLaunchCallable(cmd, out, err, workDir));
-
-                return new Channel("remotely launched channel on "+getNodeName(),
-                    Computer.threadPoolForRemoting, out.getIn(), new BufferedOutputStream(os));
-            }
-
-            @Override
-            public boolean isUnix() {
-                // Windows can handle '/' as a path separator but Unix can't,
-                // so err on Unix side
-                return remoteFS.indexOf("\\")==-1;
-            }
-        };
+        return new RemoteLauncher(listener, getComputer().getChannel(),isUnix);
     }
 
     /**
@@ -498,57 +466,4 @@ public final class Slave implements Node, Serializable {
      * @deprecated
      */
     private transient String command;
-
-    private static class RemoteLaunchCallable implements Callable<Integer,IOException> {
-        private final String[] cmd;
-        private final String[] env;
-        private final InputStream in;
-        private final OutputStream out;
-        private final String workDir;
-
-        public RemoteLaunchCallable(String[] cmd, String[] env, InputStream in, OutputStream out, String workDir) {
-            this.cmd = cmd;
-            this.env = env;
-            this.in = in;
-            this.out = out;
-            this.workDir = workDir;
-        }
-
-        public Integer call() throws IOException {
-            Proc p = new LocalLauncher(TaskListener.NULL).launch(cmd, env, in, out,
-                workDir ==null ? null : new FilePath(new File(workDir)));
-            return p.join();
-        }
-
-        private static final long serialVersionUID = 1L;
-    }
-
-    private static class RemoteChannelLaunchCallable implements Callable<OutputStream,IOException> {
-        private final String[] cmd;
-        private final Pipe out;
-        private final String workDir;
-        private final OutputStream err;
-
-        public RemoteChannelLaunchCallable(String[] cmd, Pipe out, OutputStream err, String workDir) {
-            this.cmd = cmd;
-            this.out = out;
-            this.err = new RemoteOutputStream(err);
-            this.workDir = workDir;
-        }
-
-        public OutputStream call() throws IOException {
-            Process p = Runtime.getRuntime().exec(cmd, null, workDir == null ? null : new File(workDir));
-
-            new StreamCopyThread("stdin copier for remote agent on "+cmd,
-                p.getInputStream(), out.getOut()).start();
-            new StreamCopyThread("stderr copier for remote agent on "+cmd,
-                p.getErrorStream(), err).start();
-
-            // TODO: don't we need to join?
-            
-            return new RemoteOutputStream(p.getOutputStream());
-        }
-
-        private static final long serialVersionUID = 1L;
-    }
 }
