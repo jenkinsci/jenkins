@@ -358,6 +358,10 @@ public class Channel implements VirtualChannel {
         terminate(null);
     }
 
+    public String toString() {
+        return super.toString()+":"+name;
+    }
+
     private final class ReaderThread extends Thread {
         public ReaderThread(String name) {
             super("Channel reader thread: "+name);
