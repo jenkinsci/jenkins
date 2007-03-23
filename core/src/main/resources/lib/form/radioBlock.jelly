@@ -47,7 +47,8 @@
 	          }
 	        }
 	    ]]></script>
-	    <input type="radio" name="${name}" value="${value}" onclick="javascript:updateRb${rb_id}()"
+	    <input type="radio" name="${name}" value="${value}"
+             onclick="javascript:updateRb${rb_id}()" onchange="javascript:updateRb${rb_id}()"
              id="Rb${rb_id}" checked="${h.ifThenElse(checked,'true',null)}" />
 	    ${title}
 	  </td>
