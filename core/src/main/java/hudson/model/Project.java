@@ -163,8 +163,6 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         buildDescribable(req, BuildStep.BUILDERS, builders, "builder");
         buildDescribable(req, BuildStep.PUBLISHERS, publishers, "publisher");
 
-        super.doConfigSubmit(req,rsp);
-
         updateTransientActions();
     }
 
