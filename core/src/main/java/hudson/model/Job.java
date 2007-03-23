@@ -465,16 +465,26 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
                 if (prop != null)
                     properties.add(prop);
             }
-        } catch (FormException e) {
-            throw new ServletException(e);
-        }
 
-        String newName = req.getParameter("name");
-        if(newName!=null && !newName.equals(name)) {
-            rsp.sendRedirect("rename?newName="+newName);
-        } else {
-            rsp.sendRedirect(".");
+            submit(req,rsp);
+
+            save();
+
+            String newName = req.getParameter("name");
+            if(newName!=null && !newName.equals(name)) {
+                rsp.sendRedirect("rename?newName="+newName);
+            } else {
+                rsp.sendRedirect(".");
+            }
+        } catch (FormException e) {
+            sendError(e,req,rsp);
         }
+    }
+
+    /**
+     * Derived class can override this to perform additional config submission work.
+     */
+    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
     }
 
     /**

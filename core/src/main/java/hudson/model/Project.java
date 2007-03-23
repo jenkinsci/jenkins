@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.FilePath;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
@@ -9,7 +10,6 @@ import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
-import hudson.FilePath;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -150,32 +150,31 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
 // actions
 //
 //
-    /**
-     * Accepts submission from the configuration page.
-     */
+    @Override
+    protected void submit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+        super.submit(req,rsp);
+
+        if(!Hudson.adminCheck(req,rsp))
+            return;
+
+        req.setCharacterEncoding("UTF-8");
+
+        buildDescribable(req, BuildWrappers.WRAPPERS, buildWrappers, "wrapper");
+        buildDescribable(req, BuildStep.BUILDERS, builders, "builder");
+        buildDescribable(req, BuildStep.PUBLISHERS, publishers, "publisher");
+
+        super.doConfigSubmit(req,rsp);
+
+        updateTransientActions();
+    }
+
+    @Override
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        super.doConfigSubmit(req,rsp);
+
         Set<AbstractProject> upstream = Collections.emptySet();
         if(req.getParameter("pseudoUpstreamTrigger")!=null) {
             upstream = new HashSet<AbstractProject>(Items.fromNameList(req.getParameter("upstreamProjects"),AbstractProject.class));
-        }
-
-        synchronized(this) {
-            try {
-                if(!Hudson.adminCheck(req,rsp))
-                    return;
-
-                req.setCharacterEncoding("UTF-8");
-
-                buildDescribable(req, BuildWrappers.WRAPPERS, buildWrappers, "wrapper");
-                buildDescribable(req, BuildStep.BUILDERS, builders, "builder");
-                buildDescribable(req, BuildStep.PUBLISHERS, publishers, "publisher");
-
-                super.doConfigSubmit(req,rsp);
-
-                updateTransientActions();
-            } catch (FormException e) {
-                sendError(e,req,rsp);
-            }
         }
 
         // dependency setting might have been changed by the user, so rebuild.
@@ -204,8 +203,6 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
                 }
             }
         }
-
-        save();
 
         // notify the queue as the project might be now tied to different node
         Hudson.getInstance().getQueue().scheduleMaintenance();

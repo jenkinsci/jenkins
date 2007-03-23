@@ -2,7 +2,6 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Launcher.LocalLauncher;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
@@ -11,8 +10,8 @@ import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
 import hudson.triggers.Trigger;
-import hudson.triggers.Triggers;
 import hudson.triggers.TriggerDescriptor;
+import hudson.triggers.Triggers;
 import hudson.util.EditDistance;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -460,8 +459,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         rsp.forwardToPreviousPage(req);
     }
 
-    public synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        super.doConfigSubmit(req, rsp);
+    @Override
+    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+        super.submit(req,rsp);
 
         disabled = req.getParameter("disable")!=null;
 
@@ -487,17 +487,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         authToken = BuildAuthorizationToken.create(req);
 
-        try {
-            setScm(SCMS.parseSCM(req));
+        setScm(SCMS.parseSCM(req));
 
-            for (Trigger t : triggers)
-                t.stop();
-            buildDescribable(req, Triggers.getApplicableTriggers(this), triggers, "trigger");
-            for (Trigger t : triggers)
-                t.start(this,true);
-        } catch (FormException e) {
-            throw new ServletException(e);
-        }
+        for (Trigger t : triggers)
+            t.stop();
+        buildDescribable(req, Triggers.getApplicableTriggers(this), triggers, "trigger");
+        for (Trigger t : triggers)
+            t.start(this,true);
     }
 
     protected final <T extends Describable<T>> void buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, List<T> result, String prefix)

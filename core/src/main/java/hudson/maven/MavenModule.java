@@ -251,18 +251,12 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         return reporters;
     }
 
-    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        super.doConfigSubmit(req, rsp);
+    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+        super.submit(req, rsp);
 
-        try {
-            reporters.rebuild(req,MavenReporters.getConfigurableList(),"reporter");
-        } catch (FormException e) {
-            sendError(e,req,rsp);
-        }
+        reporters.rebuild(req,MavenReporters.getConfigurableList(),"reporter");
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
-
-        save();
 
         // dependency setting might have been changed by the user, so rebuild.
         Hudson.getInstance().rebuildDependencyGraph();

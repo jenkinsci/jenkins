@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.SortedMap;
 
+import hudson.model.Descriptor.FormException;
+
 /**
  * {@link Job} that monitors activities that happen outside Hudson,
  * which requires occasional batch reload activity to obtain the up-to-date information.
@@ -114,11 +116,11 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
      */
     protected abstract void reload();
 
-    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        super.doConfigSubmit(req,rsp);
+    @Override
+    protected void submit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+        super.submit(req,rsp);
         // make sure to reload to reflect this config change.
         nextUpdate = 0;
-        save();
     }
 
 

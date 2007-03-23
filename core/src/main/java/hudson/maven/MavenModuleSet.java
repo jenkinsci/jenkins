@@ -2,11 +2,9 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.triggers.Trigger;
-import hudson.tasks.Maven;
-import hudson.tasks.Maven.MavenInstallation;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Executor;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -17,6 +15,8 @@ import hudson.model.Node;
 import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.tasks.Maven;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.CopyOnWriteMap;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -25,12 +25,12 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -319,19 +319,14 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
 //
 //
 
-    public synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+        super.submit(req,rsp);
 
         rootPOM = Util.fixEmpty(req.getParameter("rootPOM").trim());
         if(rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
         mavenName = req.getParameter("maven_version");
-
-        super.doConfigSubmit(req,rsp);
-
-        save();
     }
 
     public TopLevelItemDescriptor getDescriptor() {
