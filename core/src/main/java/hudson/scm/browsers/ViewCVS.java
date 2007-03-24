@@ -51,7 +51,7 @@ public final class ViewCVS extends CVSRepositoryBrowser {
         return null;
     }
 
-    private String trimHeadSlash(String s) {
+    protected static String trimHeadSlash(String s) {
         if(s.startsWith("/"))   return s.substring(1);
         return s;
     }
