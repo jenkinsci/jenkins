@@ -52,9 +52,17 @@ public abstract class FormFieldValidator {
 
     /**
      * Sends out an HTML fragment that indicates an error.
+     *
+     * @param message
+     *      Human readable message to be sent. <tt>error(null)</tt>
+     *      can be used as <tt>ok()</tt>.
      */
     public void error(String message) throws IOException, ServletException {
-        response.setContentType("text/html;charset=UTF-8");
-        response.getWriter().print("<div class=error>"+message+"</div>");
+        if(message==null) {
+            ok();
+        } else {
+            response.setContentType("text/html;charset=UTF-8");
+            response.getWriter().print("<div class=error>"+message+"</div>");
+        }
     }
 }
