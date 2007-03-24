@@ -7,6 +7,7 @@ import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.DelegatingCallable;
 import hudson.util.IOException2;
+import hudson.util.FormFieldValidator;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.Launcher.LocalLauncher;
@@ -713,9 +714,13 @@ public final class FilePath implements Serializable {
      * Validates the ant file mask (like "foo/bar/*.txt")
      * against this directory, and try to point out the problem.
      *
+     * <p>
+     * This is useful in conjunction with {@link FormFieldValidator}.
+     *
      * @return
      *      null if no error was found.
      * @since 1.90
+     * @see FormFieldValidator.WorkspaceFileMask
      */
     public String validateAntFileMask(final String fileMask) throws IOException, InterruptedException {
         return act(new FileCallable<String>() {
@@ -744,8 +749,11 @@ public final class FilePath implements Serializable {
 
                     int idx = Math.max(pattern.lastIndexOf('\\'),pattern.lastIndexOf('/'));
                     if(idx<0) {
-                        return MessageFormat.format("''{0}'' doesn''t match anything: even ''{1}'' doesn't exist",
-                            fileMask, pattern );
+                        if(pattern.equals(fileMask))
+                            return MessageFormat.format("''{0}'' doesn''t match anything", fileMask );
+                        else
+                            return MessageFormat.format("''{0}'' doesn''t match anything: even ''{1}'' doesn't exist",
+                                fileMask, pattern );
                     }
 
                     // cut off the trailing component and try again
