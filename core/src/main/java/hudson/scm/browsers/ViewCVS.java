@@ -63,26 +63,6 @@ public final class ViewCVS extends CVSRepositoryBrowser {
         return new QueryBuilder(url.getQuery());
     }
 
-    private static final class QueryBuilder {
-        private final StringBuilder buf = new StringBuilder();
-
-        public QueryBuilder(String s) {
-            add(s);
-        }
-
-        private QueryBuilder add(String s) {
-            if(s==null)     return this; // nothing to add
-            if(buf.length()==0) buf.append('?');
-            else                buf.append('&');
-            buf.append(s);
-            return this;
-        }
-
-        public String toString() {
-            return buf.toString();
-        }
-    }
-
     public Descriptor<RepositoryBrowser> getDescriptor() {
         return DESCRIPTOR;
     }
