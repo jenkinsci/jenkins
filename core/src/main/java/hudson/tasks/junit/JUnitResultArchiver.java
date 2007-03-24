@@ -2,11 +2,16 @@ package hudson.tasks.junit;
 
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
+import hudson.FilePath;
+import static hudson.Util.fixEmpty;
+import hudson.util.FormFieldValidator;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
+import hudson.model.Hudson;
+import hudson.model.AbstractProject;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.Publisher;
 import hudson.tasks.test.TestResultProjectAction;
@@ -14,7 +19,9 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -107,6 +114,39 @@ public class JUnitResultArchiver extends Publisher implements Serializable {
 
         public String getDisplayName() {
             return "Publish JUnit test result report";
+        }
+
+        /**
+         * Performs on-the-fly validation on the file mask wildcard.
+         */
+        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            // this method can be used to check if a file exists anywhere in the file system,
+            // so it should be protected.
+            new FormFieldValidator(req,rsp,true) {
+                protected void check() throws IOException, ServletException {
+                    String value = fixEmpty(request.getParameter("value"));
+                    AbstractProject<?,?> p = Hudson.getInstance().getItemByFullName(request.getParameter("job"),AbstractProject.class);
+
+                    if(value==null || p==null) {
+                        ok(); // none entered yet, or something is seriously wrong
+                        return;
+                    }
+
+                    try {
+                        FilePath ws = p.getWorkspace();
+
+                        if(!ws.exists()) {// no workspace. can't check
+                            ok();
+                            return;
+                        }
+
+                        error(ws.validateAntFileMask(value));
+                    } catch (InterruptedException e) {
+                        ok(); // coundn't check
+                        return;
+                    }
+                }
+            }.process();
         }
 
         public Publisher newInstance(StaplerRequest req) {

@@ -6,7 +6,7 @@
       such as 'myproject/target/test-reports/*.xml'.
       Basedir of the fileset is &lt;a href='ws/'>the workspace root&lt;/a>.
     ">
-    <input class="setting-input" name="junitreport_includes"
-      type="text" value="${instance.testResults}"/>
+    <f:textbox name="junitreport_includes" value="${instance.testResults}"
+               checkUrl="'${rootURL}/publisher/JUnitResultArchiver/check?job=${it.fullName}&amp;value='+escape(this.value)"/>
   </f:entry>
 </j:jelly>
