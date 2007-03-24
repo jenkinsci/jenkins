@@ -76,6 +76,7 @@ public class SubversionSCM extends SCM implements Serializable {
     private final String modules;
     private boolean useUpdate;
     private String username;
+    private final SubversionRepositoryBrowser browser;
 
     /**
      * @deprecated
@@ -83,7 +84,7 @@ public class SubversionSCM extends SCM implements Serializable {
      */
     private transient String otherOptions;
 
-    SubversionSCM(String modules, boolean useUpdate, String username) {
+    SubversionSCM(String modules, boolean useUpdate, String username, SubversionRepositoryBrowser browser) {
         StringBuilder normalizedModules = new StringBuilder();
         StringTokenizer tokens = new StringTokenizer(modules);
         while(tokens.hasMoreTokens()) {
@@ -98,6 +99,7 @@ public class SubversionSCM extends SCM implements Serializable {
         this.modules = normalizedModules.toString();
         this.useUpdate = useUpdate;
         this.username = nullify(username);
+        this.browser = browser;
     }
 
     /**
@@ -114,6 +116,10 @@ public class SubversionSCM extends SCM implements Serializable {
 
     public String getUsername() {
         return username;
+    }
+
+    public RepositoryBrowser getBrowser() {
+        return browser;
     }
 
     private Collection<String> getModuleDirNames() {
@@ -566,11 +572,12 @@ public class SubversionSCM extends SCM implements Serializable {
             return "Subversion";
         }
 
-        public SCM newInstance(StaplerRequest req) {
+        public SCM newInstance(StaplerRequest req) throws FormException {
             return new SubversionSCM(
                 req.getParameter("svn_modules"),
                 req.getParameter("svn_use_update")!=null,
-                req.getParameter("svn_username")
+                req.getParameter("svn_username"),
+                RepositoryBrowsers.createInstance(SubversionRepositoryBrowser.class,req,"svn.browser")
             );
         }
 
