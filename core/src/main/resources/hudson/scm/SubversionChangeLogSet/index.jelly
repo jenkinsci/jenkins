@@ -2,6 +2,8 @@
   Displays the Subversion change log.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="browser" value="${it.build.parent.scm.browser}"/>
+
   <h2>Summary</h2>
   <ol>
     <j:forEach var="cs" items="${it.logs}">
@@ -14,7 +16,11 @@
         <td colspan="2" class="changeset">
           <a name="detail${loop.index}"></a>
           <div class="changeset-message">
-            <b>Revision ${cs.revision} by <a href="${rootURL}/${cs.author.url}/">${cs.author}</a>:</b><br/>
+            <b>
+              Revision
+              <a href="${browser.getChangeSetLink(cs)}">${cs.revision}</a>
+              by <a href="${rootURL}/${cs.author.url}/">${cs.author}</a>:
+            </b><br/>
             ${cs.msgAnnotated}
           </div>
         </td>
@@ -23,7 +29,13 @@
       <j:forEach var="p" items="${cs.paths}">
         <tr>
           <td><t:editTypeIcon type="${p.editType}" /></td>
-          <td>${p.value}</td>
+          <td>
+            <a href="${browser.getFileLink(p)}">${p.value}</a>
+            <j:if test="${browser!=null}">
+              <st:nbsp/>
+              <a href="${browser.getDiffLink(p)}">(diff)</a>
+            </j:if>
+          </td>
         </tr>
       </j:forEach>
     </j:forEach>

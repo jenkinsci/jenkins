@@ -2,6 +2,8 @@
   Displays the Subversion change log digest.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="browser" value="${it.build.parent.scm.browser}"/>
+
   <j:set var="rev" value="${it.revisionMap}" />
   <j:choose>
     <j:when test="${empty(rev)}">
@@ -31,7 +33,14 @@
         <j:forEach var="cs" items="${it.logs}" varStatus="loop">
           <li>
             ${cs.msgAnnotated}
-            (<a href="changes#detail${loop.index}">detail</a>)
+            (<a href="changes#detail${loop.index}">detail</a>
+
+            <j:set var="cslink" value="${browser.getChangeSetLink(cs)}"/>
+            <j:if test="${cslink!=null}">
+              <j:text>/</j:text>
+              <a href="${cslink}">${browser.descriptor.displayName}</a>
+            </j:if>
+            <j:text>)</j:text>
           </li>
         </j:forEach>
       </ol>
