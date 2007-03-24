@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
- * {@link RepositoryBrowser} for
+ * {@link RepositoryBrowser} for CVS.
  * @author Kohsuke Kawaguchi
  */
 public final class ViewCVS extends CVSRepositoryBrowser {
