@@ -22,19 +22,5 @@
 	  (run CVS in a way compatible with older versions of Hudson &lt;1.21)
 	</f:entry>
 
-  <!-- TODO: share with all SCMs -->
-  <f:dropdownList name="cvs.browser" title="Repository browser">
-    <f:dropdownListBlock value="auto" title="(Auto)" />
-    <j:set var="currentBrowser" value="${scm.browser}"/>
-    <j:forEach var="d" items="${scmd.browserDescriptors}" varStatus="loop">
-      <f:dropdownListBlock value="${loop.index}" title="${d.displayName}" selected="${currentBrowser.descriptor==d}">
-        <f:nested>
-          <table width="100%">
-            <j:set var="browser" value="${h.ifThenElse(currentBrowser.descriptor==d, currentBrowser, null)}"/>
-            <st:include from="${d}" page="${d.configPage}"/>
-          </table>
-        </f:nested>
-      </f:dropdownListBlock>
-    </j:forEach>
-  </f:dropdownList>
+  <t:listScmBrowsers name="cvs.browser" />
 </j:jelly>
