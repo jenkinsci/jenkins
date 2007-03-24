@@ -101,9 +101,9 @@ public abstract class View extends AbstractModelObject {
     public final boolean hasPeople() {
         for (Item item : getItems()) {
             for (Job job : item.getAllJobs()) {
-                if (job instanceof Project) {
-                    Project p = (Project) job;
-                    for (Build build : p.getBuilds()) {
+                if (job instanceof AbstractProject) {
+                    AbstractProject<?,?> p = (AbstractProject) job;
+                    for (AbstractBuild build : p.getBuilds()) {
                         for (Entry entry : build.getChangeSet()) {
                             User user = entry.getAuthor();
                             if(user!=null)
