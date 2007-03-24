@@ -118,7 +118,7 @@ public class SubversionSCM extends SCM implements Serializable {
         return username;
     }
 
-    public RepositoryBrowser getBrowser() {
+    public SubversionRepositoryBrowser getBrowser() {
         return browser;
     }
 
