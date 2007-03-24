@@ -5,6 +5,7 @@ import hudson.Launcher;
 import hudson.FilePath;
 import static hudson.Util.fixEmpty;
 import hudson.util.FormFieldValidator;
+import hudson.util.FormFieldValidator.WorkspaceFileMask;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -120,32 +121,7 @@ public class JUnitResultArchiver extends Publisher implements Serializable {
          * Performs on-the-fly validation on the file mask wildcard.
          */
         public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // this method can be used to check if a file exists anywhere in the file system,
-            // so it should be protected.
-            new FormFieldValidator(req,rsp,true) {
-                protected void check() throws IOException, ServletException {
-                    String value = fixEmpty(request.getParameter("value"));
-                    AbstractProject<?,?> p = Hudson.getInstance().getItemByFullName(request.getParameter("job"),AbstractProject.class);
-
-                    if(value==null || p==null) {
-                        ok(); // none entered yet, or something is seriously wrong
-                        return;
-                    }
-
-                    try {
-                        FilePath ws = p.getWorkspace();
-
-                        if(!ws.exists()) {// no workspace. can't check
-                            ok();
-                            return;
-                        }
-
-                        error(ws.validateAntFileMask(value));
-                    } catch (InterruptedException e) {
-                        ok(); // coundn't check
-                    }
-                }
-            }.process();
+            new FormFieldValidator.WorkspaceFileMask(req,rsp).process();
         }
 
         public Publisher newInstance(StaplerRequest req) {

@@ -1,7 +1,10 @@
 package hudson.util;
 
 import hudson.Util;
+import hudson.FilePath;
+import static hudson.Util.fixEmpty;
 import hudson.model.Hudson;
+import hudson.model.AbstractProject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -63,6 +66,41 @@ public abstract class FormFieldValidator {
         } else {
             response.setContentType("text/html;charset=UTF-8");
             response.getWriter().print("<div class=error>"+message+"</div>");
+        }
+    }
+
+    /**
+     * Checks the file mask (specified in the 'value' query parameter) against
+     * the current workspace.
+     * @since 1.90.
+     */
+    public static class WorkspaceFileMask extends FormFieldValidator {
+
+        public WorkspaceFileMask(StaplerRequest request, StaplerResponse response) {
+            super(request, response, false);
+        }
+
+        protected void check() throws IOException, ServletException {
+            String value = fixEmpty(request.getParameter("value"));
+            AbstractProject<?,?> p = Hudson.getInstance().getItemByFullName(request.getParameter("job"),AbstractProject.class);
+
+            if(value==null || p==null) {
+                ok(); // none entered yet, or something is seriously wrong
+                return;
+            }
+
+            try {
+                FilePath ws = p.getWorkspace();
+
+                if(!ws.exists()) {// no workspace. can't check
+                    ok();
+                    return;
+                }
+
+                error(ws.validateAntFileMask(value));
+            } catch (InterruptedException e) {
+                ok(); // coundn't check
+            }
         }
     }
 }
