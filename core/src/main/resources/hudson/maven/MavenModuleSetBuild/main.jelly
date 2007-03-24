@@ -8,9 +8,16 @@
           <a href="${rootURL}/${m.key.url}">${m.key.displayName}</a>
         </td>
         <td>
-          <j:forEach var="b" items="${m.value}">
-            <t:buildLink job="${m.key}" number="${b.number}" />
-          </j:forEach>
+          <j:choose>
+            <j:when test="${empty(m.value)}">
+              (none)
+            </j:when>
+            <j:otherwise>
+              <j:forEach var="b" items="${m.value}">
+                <t:buildLink job="${m.key}" number="${b.number}" />
+              </j:forEach>
+            </j:otherwise>
+          </j:choose>
         </td>
       </tr>
     </j:forEach>
