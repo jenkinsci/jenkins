@@ -158,7 +158,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * When a build is {@link #isBuilding() in progress}, this method
      * may return null or a temporary intermediate result.
      */
-    public final Result getResult() {
+    public Result getResult() {
         return result;
     }
 
@@ -311,7 +311,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public BallColor getIconColor() {
         if(!isBuilding()) {
             // already built
-            return result.color;
+            return getResult().color;
         }
 
         // a new build is in progress
