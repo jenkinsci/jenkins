@@ -16,5 +16,10 @@
 	      type="text" value="${descriptor.cvspassFile}"
         checkUrl="'${rootURL}/scm/CVSSCM/cvsPassCheck?value='+escape(this.value)" />
 	  </f:entry>
-	</f:section>
+
+    <!--
+      if we ever support "advanced" option for CVS, support
+      https://hudson.dev.java.net/issues/show_bug.cgi?id=385
+    -->
+  </f:section>
 </j:jelly>
