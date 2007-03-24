@@ -8,6 +8,7 @@ import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.model.Descriptor;
 
 import java.net.URL;
+import java.net.MalformedURLException;
 import java.io.IOException;
 import java.text.MessageFormat;
 
@@ -31,7 +32,9 @@ public class ViewSVN extends SubversionRepositoryBrowser {
     /**
      * @stapler-constructor
      */
-    public ViewSVN(URL url) {
+    public ViewSVN(URL url) throws MalformedURLException {
+        if(!url.toExternalForm().endsWith("/"))
+            url = new URL(url.toExternalForm()+'/');
         this.url = url;
     }
 

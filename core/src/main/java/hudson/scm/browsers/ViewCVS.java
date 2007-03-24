@@ -10,6 +10,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.MalformedURLException;
 
 /**
  * {@link RepositoryBrowser} for CVS.
@@ -28,7 +29,9 @@ public final class ViewCVS extends CVSRepositoryBrowser {
     /**
      * @stapler-constructor
      */
-    public ViewCVS(URL url) {
+    public ViewCVS(URL url) throws MalformedURLException {
+        if(!url.toExternalForm().endsWith("/"))
+            url = new URL(url.toExternalForm()+'/');
         this.url = url;
     }
 
