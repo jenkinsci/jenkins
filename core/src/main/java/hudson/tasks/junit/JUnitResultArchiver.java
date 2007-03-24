@@ -143,7 +143,6 @@ public class JUnitResultArchiver extends Publisher implements Serializable {
                         error(ws.validateAntFileMask(value));
                     } catch (InterruptedException e) {
                         ok(); // coundn't check
-                        return;
                     }
                 }
             }.process();
