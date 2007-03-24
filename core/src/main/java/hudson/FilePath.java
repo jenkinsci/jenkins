@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
 import java.net.URI;
+import java.text.MessageFormat;
 
 /**
  * {@link File} like object with remoting support.
@@ -699,12 +700,60 @@ public final class FilePath implements Serializable {
     /**
      * Creates a {@link Launcher} for starting processes on the node
      * that has this file.
+     * @since 1.89
      */
     public Launcher createLauncher(TaskListener listener) {
         if(channel==null)
             return new LocalLauncher(listener);
         else
             return new RemoteLauncher(listener,channel,isUnix());
+    }
+
+    /**
+     * Validates the ant file mask (like "foo/bar/*.txt")
+     * against this directory, and try to point out the problem.
+     *
+     * @return
+     *      null if no error was found.
+     * @since 1.90
+     */
+    public String validateAntFileMask(final String fileMask) throws IOException, InterruptedException {
+        return act(new FileCallable<String>() {
+            public String invoke(File dir, VirtualChannel channel) throws IOException {
+                String previous = null;
+                String pattern = fileMask;
+
+                while(true) {
+                    FileSet fs = new FileSet();
+                    fs.setDir(dir);
+                    fs.setIncludes(pattern);
+
+                    DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+
+                    if(ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0) {
+                        // found a match
+                        if(pattern.equals(fileMask))
+                            return null;    // no error
+                        if(previous==null)
+                            return MessageFormat.format("''{0}'' doesn''t match anything, although ''{1}'' exists",
+                                fileMask, pattern );
+                        else
+                            return MessageFormat.format("''{0}'' doesn''t match anything: ''{1}'' exists but not ''{2}''",
+                                fileMask, pattern, previous );
+                    }
+
+                    int idx = Math.max(pattern.lastIndexOf('\\'),pattern.lastIndexOf('/'));
+                    if(idx<0) {
+                        return MessageFormat.format("''{0}'' doesn''t match anything: even ''{1}'' doesn't exist",
+                            fileMask, pattern );
+                    }
+
+                    // cut off the trailing component and try again
+                    previous = pattern;
+                    pattern = pattern.substring(0,idx);
+                }
+            }
+        });
     }
 
     @Deprecated
