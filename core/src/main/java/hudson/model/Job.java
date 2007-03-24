@@ -322,9 +322,9 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * gone (deleted, rotated, etc.)
      */
     public RunT getNearestBuild(int n) {
-        SortedMap<Integer, ? extends RunT> m = _getRuns().tailMap(n);
+        SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n);
         if(m.isEmpty()) return null;
-        return m.get(m.firstKey());
+        return m.get(m.lastKey());
     }
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
