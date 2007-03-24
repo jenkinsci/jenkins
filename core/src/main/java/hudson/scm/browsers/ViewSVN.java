@@ -33,8 +33,6 @@ public class ViewSVN extends SubversionRepositoryBrowser {
      * @stapler-constructor
      */
     public ViewSVN(URL url) throws MalformedURLException {
-        if(!url.toExternalForm().endsWith("/"))
-            url = new URL(url.toExternalForm()+'/');
         this.url = url;
     }
 
