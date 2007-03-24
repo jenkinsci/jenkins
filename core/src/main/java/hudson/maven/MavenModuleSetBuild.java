@@ -56,6 +56,20 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
     }
 
     /**
+     * Displays the combined status of all modules. 
+     */
+    @Override
+    public Result getResult() {
+        Result r = super.getResult();
+
+        for (List<MavenBuild> list : getModuleBuilds().values())
+            for (MavenBuild build : list)
+                r = r.combine(build.getResult());
+
+        return r;
+    }
+
+    /**
      * Computes the module builds that correspond to this build.
      * <p>
      * A module may be built multiple times (by the user action),
