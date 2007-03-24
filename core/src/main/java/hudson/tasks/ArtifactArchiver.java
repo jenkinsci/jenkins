@@ -3,12 +3,15 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.util.FormFieldValidator;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 
@@ -95,7 +98,13 @@ public class ArtifactArchiver extends Publisher {
     }
 
 
-    public static final Descriptor<Publisher> DESCRIPTOR = new Descriptor<Publisher>(ArtifactArchiver.class) {
+    public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
+
+    public static class DescriptorImpl extends Descriptor<Publisher> {
+        public DescriptorImpl() {
+            super(ArtifactArchiver.class);
+        }
+
         public String getDisplayName() {
             return "Archive the artifacts";
         }
@@ -104,11 +113,18 @@ public class ArtifactArchiver extends Publisher {
             return "/help/project-config/archive-artifact.html";
         }
 
+        /**
+         * Performs on-the-fly validation on the file mask wildcard.
+         */
+        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new FormFieldValidator.WorkspaceFileMask(req,rsp).process();
+        }
+
         public Publisher newInstance(StaplerRequest req) {
             return new ArtifactArchiver(
                 req.getParameter("artifacts").trim(),
                 Util.fixEmpty(req.getParameter("artifacts_excludes").trim()),
                 req.getParameter("artifacts_latest_only")!=null);
         }
-    };
+    }
 }

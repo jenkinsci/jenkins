@@ -17,10 +17,13 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
+import hudson.util.FormFieldValidator;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -166,7 +169,13 @@ public class Fingerprinter extends Publisher implements Serializable {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<Publisher> DESCRIPTOR = new Descriptor<Publisher>(Fingerprinter.class) {
+    public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
+
+    public static class DescriptorImpl extends Descriptor<Publisher> {
+        public DescriptorImpl() {
+            super(Fingerprinter.class);
+        }
+
         public String getDisplayName() {
             return "Record fingerprints of files to track usage";
         }
@@ -175,13 +184,19 @@ public class Fingerprinter extends Publisher implements Serializable {
             return "/help/project-config/fingerprint.html";
         }
 
+        /**
+         * Performs on-the-fly validation on the file mask wildcard.
+         */
+        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new FormFieldValidator.WorkspaceFileMask(req,rsp).process();
+        }
+
         public Publisher newInstance(StaplerRequest req) {
             return new Fingerprinter(
                 req.getParameter("fingerprint_targets").trim(),
                 req.getParameter("fingerprint_artifacts")!=null);
         }
-    };
-
+    }
 
     /**
      * Action for displaying fingerprints.

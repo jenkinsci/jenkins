@@ -6,8 +6,8 @@
      the @includes of Ant fileset&lt;/a> for the exact format.
      the base directory is &lt;a href='ws/'>the workspace&lt;/a>.
     ">
-    <input class="setting-input" name="fingerprint_targets"
-      type="text" value="${instance.targets}"/>
+    <f:textbox name="fingerprint_targets" value="${instance.targets}"
+               checkUrl="'${rootURL}/publisher/Fingerprinter/check?job=${it.fullName}&amp;value='+escape(this.value)" />
   </f:entry>
   <f:entry title="">
     <f:checkbox name="fingerprint_artifacts" checked="${instance.recordBuildArtifacts}" />
