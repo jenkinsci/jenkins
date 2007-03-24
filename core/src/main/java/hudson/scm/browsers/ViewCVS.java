@@ -3,9 +3,9 @@ package hudson.scm.browsers;
 import hudson.model.Descriptor;
 import hudson.scm.CVSChangeLogSet.File;
 import hudson.scm.CVSChangeLogSet.Revision;
+import hudson.scm.CVSRepositoryBrowser;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.RepositoryBrowser;
-import hudson.scm.CVSRepositoryBrowser;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -89,7 +89,7 @@ public final class ViewCVS extends CVSRepositoryBrowser {
             return "ViewCVS";
         }
 
-        public RepositoryBrowser newInstance(StaplerRequest req) throws FormException {
+        public ViewCVS newInstance(StaplerRequest req) throws FormException {
             return req.bindParameters(ViewCVS.class,"viewcvs.");
         }
     };
