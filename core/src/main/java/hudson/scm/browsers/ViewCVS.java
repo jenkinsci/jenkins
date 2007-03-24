@@ -68,6 +68,7 @@ public final class ViewCVS extends CVSRepositoryBrowser {
         }
 
         private QueryBuilder add(String s) {
+            if(s==null)     return this; // nothing to add
             if(buf.length()==0) buf.append('?');
             else                buf.append('&');
             buf.append(s);
