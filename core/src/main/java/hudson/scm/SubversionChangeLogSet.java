@@ -135,6 +135,9 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             this.action = action.charAt(0);
         }
 
+        /**
+         * Path in the repository. Such as <tt>/test/trunk/foo.c</tt>
+         */
         public String getValue() {
             return value;
         }
