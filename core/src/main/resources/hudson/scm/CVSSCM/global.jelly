@@ -16,30 +16,5 @@
 	      type="text" value="${descriptor.cvspassFile}"
         checkUrl="'${rootURL}/scm/CVSSCM/cvsPassCheck?value='+escape(this.value)" />
 	  </f:entry>
-
-	  <!--
-	  <f:entry title="Repository browser" help="/help/system-config/cvs-browser.html">
-	    <table width="100%">
-	      <j:forEach var="root" items="${app.allCvsRoots}" varStatus="loop">
-	        <f:entry title="CVSROOT">
-	          ${root}
-	        </f:entry>
-	        <f:entry title="URL">
-	          <input name="cvs_repobrowser_cvsroot${loop.index}"
-	            type="hidden" value="${root}">
-
-	          <j:set var="key" value="repository-browser.${root}" />
-	          <input class="setting-input" name="cvs_repobrowser${loop.index}"
-	            type="text" value="${descriptor.properties[key]}">
-	        </f:entry>
-	        <f:entry title="Diff URL">
-	          <j:set var="key" value="repository-browser.diff.${root}" />
-	          <input class="setting-input" name="cvs_repobrowser_diff${loop.index}"
-	            type="text" value="${descriptor.properties[key]}">
-	        </f:entry>
-	      </j:forEach>
-	    </table>
-	  </f:entry>
-	  -->
 	</f:section>
 </j:jelly>
