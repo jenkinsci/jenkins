@@ -22,7 +22,7 @@ import java.net.URL;
  * @since 1.89
  * @see RepositoryBrowsers
  */
-public abstract class RepositoryBrowser implements ExtensionPoint, Describable<RepositoryBrowser> {
+public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> implements ExtensionPoint, Describable<RepositoryBrowser<?>> {
     /**
      * Determines the link to the given change set.
      *
@@ -31,5 +31,13 @@ public abstract class RepositoryBrowser implements ExtensionPoint, Describable<R
      *      URL for a change set (for example, ViewCVS doesn't have
      *      any page for a change set, whereas FishEye does.)
      */
-    public abstract URL getChangeSetLink(ChangeLogSet.Entry changeSet) throws IOException;
+    public abstract URL getChangeSetLink(E changeSet) throws IOException;
+
+    /**
+     * If the given string starts with '/', return a string that removes it.
+     */
+    protected static String trimHeadSlash(String s) {
+        if(s.startsWith("/"))   return s.substring(1);
+        return s;
+    }
 }

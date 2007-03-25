@@ -1,14 +1,14 @@
 package hudson.scm;
 
-import java.net.URL;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * {@link RepositoryBrowser} for Subversion.
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class SubversionRepositoryBrowser extends RepositoryBrowser {
+public abstract class SubversionRepositoryBrowser extends RepositoryBrowser<SubversionChangeLogSet.LogEntry> {
     /**
      * Determines the link to the diff between the version
      * in the specified revision of {@link SubversionChangeLogSet.Path} to its previous version.

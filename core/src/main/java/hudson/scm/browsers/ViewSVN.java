@@ -6,7 +6,6 @@ import hudson.scm.RepositoryBrowser;
 import hudson.scm.SubversionChangeLogSet;
 import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.scm.SubversionRepositoryBrowser;
-import static hudson.scm.browsers.ViewCVS.trimHeadSlash;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -48,19 +47,19 @@ public class ViewSVN extends SubversionRepositoryBrowser {
     }
 
     @Override
-    public URL getChangeSetLink(Entry changeSet) throws IOException {
-        return new URL(url,"."+param().add("view=rev").add("revision="+((SubversionChangeLogSet.LogEntry)changeSet).getRevision()));
+    public URL getChangeSetLink(SubversionChangeLogSet.LogEntry changeSet) throws IOException {
+        return new URL(url,"."+param().add("view=rev").add("revision="+changeSet.getRevision()));
     }
 
     private QueryBuilder param() {
         return new QueryBuilder(url.getQuery());
     }
 
-    public Descriptor<RepositoryBrowser> getDescriptor() {
+    public Descriptor<RepositoryBrowser<?>> getDescriptor() {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<RepositoryBrowser> DESCRIPTOR = new Descriptor<RepositoryBrowser>(ViewSVN.class) {
+    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new Descriptor<RepositoryBrowser<?>>(ViewSVN.class) {
         public String getDisplayName() {
             return "ViewSVN";
         }

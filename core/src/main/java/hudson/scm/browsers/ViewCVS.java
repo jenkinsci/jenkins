@@ -3,6 +3,7 @@ package hudson.scm.browsers;
 import hudson.model.Descriptor;
 import hudson.scm.CVSChangeLogSet.File;
 import hudson.scm.CVSChangeLogSet.Revision;
+import hudson.scm.CVSChangeLogSet.CVSChangeLog;
 import hudson.scm.CVSRepositoryBrowser;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.RepositoryBrowser;
@@ -48,24 +49,19 @@ public final class ViewCVS extends CVSRepositoryBrowser {
     /**
      * No changeset support in ViewCVS.
      */
-    public URL getChangeSetLink(Entry changeSet) throws IOException {
+    public URL getChangeSetLink(CVSChangeLog changeSet) throws IOException {
         return null;
-    }
-
-    protected static String trimHeadSlash(String s) {
-        if(s.startsWith("/"))   return s.substring(1);
-        return s;
     }
 
     private QueryBuilder param() {
         return new QueryBuilder(url.getQuery());
     }
 
-    public Descriptor<RepositoryBrowser> getDescriptor() {
+    public Descriptor<RepositoryBrowser<?>> getDescriptor() {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<RepositoryBrowser> DESCRIPTOR = new Descriptor<RepositoryBrowser>(ViewCVS.class) {
+    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new Descriptor<RepositoryBrowser<?>>(ViewCVS.class) {
         public String getDisplayName() {
             return "ViewCVS";
         }

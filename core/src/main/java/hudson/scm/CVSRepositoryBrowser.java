@@ -1,5 +1,7 @@
 package hudson.scm;
 
+import hudson.scm.CVSChangeLogSet.CVSChangeLog;
+
 import java.net.URL;
 import java.io.IOException;
 
@@ -8,7 +10,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class CVSRepositoryBrowser extends RepositoryBrowser {
+public abstract class CVSRepositoryBrowser extends RepositoryBrowser<CVSChangeLog> {
     /**
      * Determines the link to the diff between the version
      * in the {@link CVSChangeLogSet.File} to its previous version.
