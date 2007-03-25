@@ -1,17 +1,16 @@
 package hudson.scm.browsers;
 
 import hudson.model.Descriptor;
+import hudson.scm.CVSChangeLogSet.CVSChangeLog;
 import hudson.scm.CVSChangeLogSet.File;
 import hudson.scm.CVSChangeLogSet.Revision;
-import hudson.scm.CVSChangeLogSet.CVSChangeLog;
 import hudson.scm.CVSRepositoryBrowser;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.RepositoryBrowser;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * {@link RepositoryBrowser} for CVS.
@@ -35,7 +34,7 @@ public final class ViewCVS extends CVSRepositoryBrowser {
     }
 
     public URL getFileLink(File file) throws IOException {
-        return new URL(url,trimHeadSlash(file.getName())+param());
+        return new URL(url,trimHeadSlash(file.getFullName())+param());
     }
 
     public URL getDiffLink(File file) throws IOException {
