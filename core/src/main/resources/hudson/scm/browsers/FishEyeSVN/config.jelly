@@ -3,4 +3,7 @@
     <f:textbox name="fisheye.svn.url" value="${browser.url}"
         checkUrl="'${rootURL}/repositoryBrowser/FishEyeSVN/check?value='+escape(this.value)"/>
   </f:entry>
+  <f:entry title="Root module" help="/help/scm-browsers/fisheye-svn/root-module.html">
+    <f:textbox name="fisheye.svn.rootModule" value="${browser.rootModule}" />
+  </f:entry>
 </j:jelly>

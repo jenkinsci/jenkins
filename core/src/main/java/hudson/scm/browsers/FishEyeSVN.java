@@ -32,24 +32,54 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
     public final URL url;
 
     /**
+     * Root SVN module name (like 'foo/bar' &mdash; normalized to
+     * have no leading nor trailing slash.) Can be empty.
+     */
+    private final String rootModule;
+
+    /**
      * @stapler-constructor
      */
-    public FishEyeSVN(URL url) throws MalformedURLException {
+    public FishEyeSVN(URL url, String rootModule) throws MalformedURLException {
         if(!url.toExternalForm().endsWith("/"))
             url = new URL(url.toExternalForm()+"/");
         this.url = url;
+
+        // normalize
+        rootModule = rootModule.trim();
+        if(rootModule.startsWith("/"))
+            rootModule = rootModule.substring(1);
+        if(rootModule.endsWith("/"))
+            rootModule = rootModule.substring(0,rootModule.length()-1);
+
+        this.rootModule = rootModule;
+    }
+
+    public String getRootModule() {
+        if(rootModule==null)
+            return "";  // compatibility
+        return rootModule;
     }
 
     @Override
     public URL getDiffLink(Path path) throws IOException {
         int r = path.getLogEntry().getRevision();
-        return new URL(url,trimHeadSlash(path.getValue())+
-            MessageFormat.format("?r1={0}&r2={1}",r-1,r));
+        return new URL(url, getPath(path)+MessageFormat.format("?r1={0}&r2={1}",r-1,r));
     }
 
     @Override
     public URL getFileLink(Path path) throws IOException {
-        return new URL(url,trimHeadSlash(path.getValue()));
+        return new URL(url, getPath(path));
+    }
+
+    /**
+     * Trims off the root module portion to compute the path within FishEye.
+     */
+    private String getPath(Path path) {
+        String s = trimHeadSlash(path.getValue());
+        if(s.startsWith(rootModule)) // this should be always true, but be defensive
+            s = trimHeadSlash(s.substring(rootModule.length()));
+        return s;
     }
 
     /**
