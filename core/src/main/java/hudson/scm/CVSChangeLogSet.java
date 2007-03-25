@@ -60,6 +60,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
 
         digester.addObjectCreate("*/entry/file",File.class);
         digester.addBeanPropertySetter("*/entry/file/name");
+        digester.addBeanPropertySetter("*/entry/file/fullName");
         digester.addBeanPropertySetter("*/entry/file/revision");
         digester.addBeanPropertySetter("*/entry/file/prevrevision");
         digester.addCallMethod("*/entry/file/dead","setDead");
@@ -182,13 +183,14 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
 
     public static class File {
         private String name;
+        private String fullName;
         private String revision;
         private String prevrevision;
         private boolean dead;
         private CVSChangeLog parent;
 
         /**
-         * Gets the full file name in the CVS repository, like
+         * Gets the path name in the CVS repository, like
          * "foo/bar/zot.c"
          *
          * <p>
@@ -196,6 +198,40 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
          */
         public String getName() {
             return name;
+        }
+
+        /**
+         * Gets the full path name in the CVS repository.
+         *
+         * <p>
+         * Unlike {@link #getName()}, this method returns
+         * a full name from the root of the CVS repository.
+         */
+        public String getFullName() {
+            if(fullName==null) {
+                // Hudson < 1.91 doesn't record full path name for CVS,
+                // so try to infer that from the current CVS setting.
+                // This is an approximation since the config could have changed
+                // since this build has done.
+                SCM scm = parent.getParent().build.getProject().getScm();
+                if(scm instanceof CVSSCM) {
+                    CVSSCM cvsscm = (CVSSCM) scm;
+                    if(cvsscm.isFlatten()) {
+                        fullName = '/'+cvsscm.getAllModules()+'/'+name;
+                    } else {
+                        // multi-module set up.
+                        fullName = '/'+name;
+                    }
+                } else {
+                    // no way to infer.
+                    fullName = '/'+name;
+                }
+            }
+            return fullName;
+        }
+
+        public void setFullName(String fullName) {
+            this.fullName = fullName;
         }
 
         /**
