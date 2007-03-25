@@ -194,7 +194,7 @@ class ChangeLogParser {
             try {
                 File repo = new File(new File(owner.getDir(), m_file), "../CVS/Repository");
                 String module = FileUtils.readFileToString(repo, null);// not sure what encoding CVS uses.
-                m_fullName = module+'/'+m_file;
+                m_fullName = '/'+module+'/'+m_file;
             } catch (IOException e) {
                 // failed to read
                 m_fullName = null;
