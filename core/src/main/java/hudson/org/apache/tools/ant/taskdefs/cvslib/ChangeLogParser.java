@@ -18,6 +18,7 @@ package hudson.org.apache.tools.ant.taskdefs.cvslib;
 // patched to work around http://issues.apache.org/bugzilla/show_bug.cgi?id=38583
 
 import org.apache.tools.ant.Project;
+import org.apache.commons.io.FileUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,6 +31,8 @@ import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * A class used to parse the output of the CVS log command.
@@ -68,6 +71,7 @@ class ChangeLogParser {
 
     //The following is data used while processing stdout of CVS command
     private String m_file;
+    private String m_fullName;
     private String m_date;
     private String m_author;
     private String m_comment;
@@ -186,6 +190,16 @@ class ChangeLogParser {
     private void processFile(final String line) {
         if (line.startsWith("Working file:")) {
             m_file = line.substring(14, line.length());
+
+            try {
+                File repo = new File(new File(owner.getDir(), m_file), "../CVS/Repository");
+                String module = FileUtils.readFileToString(repo, null);// not sure what encoding CVS uses.
+                m_fullName = module+'/'+m_file;
+            } catch (IOException e) {
+                // failed to read
+                m_fullName = null;
+            }
+
             m_status = GET_SYMBOLIC_NAMES;
         }
     }
@@ -289,7 +303,7 @@ class ChangeLogParser {
 
         owner.log("Recorded a change: "+m_date+','+m_author+','+m_revision+"(branch="+branch+"),"+m_comment,Project.MSG_VERBOSE);
 
-        entry.addFile(m_file, m_revision, m_previousRevision, branch, m_dead);
+        entry.addFile(m_file, m_fullName, m_revision, m_previousRevision, branch, m_dead);
     }
 
     /**
@@ -331,6 +345,7 @@ class ChangeLogParser {
      */
     private void reset() {
         m_file = null;
+        m_fullName = null;
         m_date = null;
         m_author = null;
         m_comment = null;

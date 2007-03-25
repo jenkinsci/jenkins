@@ -36,8 +36,8 @@ class CVSEntry {
         m_comment = comment;
     }
 
-    public void addFile(String file, String revision, String previousRevision, String branch, boolean dead) {
-        m_files.addElement(new RCSFile(file, revision, previousRevision, branch, dead));
+    public void addFile(String file, String fullName, String revision, String previousRevision, String branch, boolean dead) {
+        m_files.addElement(new RCSFile(file, fullName, revision, previousRevision, branch, dead));
     }
 
     // maybe null, in case of error

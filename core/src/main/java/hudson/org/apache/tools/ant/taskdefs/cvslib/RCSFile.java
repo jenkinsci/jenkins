@@ -23,6 +23,7 @@ package hudson.org.apache.tools.ant.taskdefs.cvslib;
  */
 class RCSFile {
     private String m_name;
+    private String m_fullName;
     private String m_revision;
     private String m_previousRevision;
     private boolean m_dead;
@@ -30,11 +31,13 @@ class RCSFile {
 
 
     RCSFile(final String name,
+            final String fullName,
                   final String revision,
                   final String previousRevision,
                   final String branch,
                   final boolean dead) {
         m_name = name;
+        m_fullName = fullName;
         m_revision = revision;
         if (!revision.equals(previousRevision)) {
             m_previousRevision = previousRevision;
@@ -48,6 +51,9 @@ class RCSFile {
         return m_name;
     }
 
+    public String getFullName() {
+        return m_fullName;
+    }
 
     String getRevision() {
         return m_revision;
