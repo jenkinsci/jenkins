@@ -1,5 +1,6 @@
 package hudson.scm;
 
+import static hudson.Util.fixNull;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
@@ -113,6 +114,9 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
      * @stapler-constructor
      */
     public CVSSCM(String cvsroot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy) {
+        if(fixNull(branch).equals("HEAD"))
+            branch = null;
+
         this.cvsroot = cvsroot;
         this.module = module.trim();
         this.branch = nullify(branch);
@@ -848,6 +852,22 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                 req.setAttribute("error",e);
                 rsp.forward(this,"versionCheckError",req);
             }
+        }
+
+        /**
+         * Checks the correctness of the branch name.
+         */
+        public void doBranchCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new FormFieldValidator(req,rsp,false) {
+                protected void check() throws IOException, ServletException {
+                    String v = fixNull(request.getParameter("value"));
+
+                    if(v.equals("HEAD"))
+                        error("Technically, HEAD is not a branch in CVS. Leave this field empty to build the trunk.");
+                    else
+                        ok();
+                }
+            }.process();
         }
 
         /**

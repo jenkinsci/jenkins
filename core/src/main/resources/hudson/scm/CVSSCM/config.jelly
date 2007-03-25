@@ -9,7 +9,8 @@
 	  <f:textbox name="cvs.module" value="${scm.allModules}"/>
 	</f:entry>
 	<f:entry title="Branch" help="/help/_cvs/branch.html">
-	  <f:textbox name="cvs.branch" value="${scm.branch}"/>
+	  <f:textbox name="cvs.branch" value="${scm.branch}"
+        checkUrl="'${rootURL}/scm/CVSSCM/branchCheck?value='+escape(this.value)"/>
 	</f:entry>
 	<f:entry title="CVS_RSH" help="/help/_cvs/cvs-rsh.html">
 	  <f:textbox name="cvs.cvsRsh" value="${scm.cvsRsh}"/>
