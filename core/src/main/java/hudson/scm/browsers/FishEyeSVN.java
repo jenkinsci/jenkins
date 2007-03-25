@@ -72,7 +72,13 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new Descriptor<RepositoryBrowser<?>>(FishEyeSVN.class) {
+    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new DescriptorImpl();
+
+    public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
+        public DescriptorImpl() {
+            super(FishEyeSVN.class);
+        }
+
         public String getDisplayName() {
             return "FishEye";
         }
@@ -112,7 +118,6 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
             return req.bindParameters(FishEyeSVN.class,"fisheye.svn.");
         }
 
-    };
-
-    private static final Pattern URL_PATTERN = Pattern.compile(".+/browse/[^/]+/");
+        private static final Pattern URL_PATTERN = Pattern.compile(".+/browse/[^/]+/");
+    }
 }
