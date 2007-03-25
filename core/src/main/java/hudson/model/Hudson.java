@@ -24,6 +24,8 @@ import hudson.scm.CVSSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
 import hudson.scm.SCMDescriptor;
+import hudson.scm.RepositoryBrowser;
+import hudson.scm.RepositoryBrowsers;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -230,6 +232,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public Descriptor<SCM> getScm(String shortClassName) {
         return findDescriptor(shortClassName,SCMS.SCMS);
+    }
+
+    /**
+     * Gets the repository browser descriptor by name. Primarily used for making them web-visible.
+     */
+    public Descriptor<RepositoryBrowser<?>> getRepositoryBrowser(String shortClassName) {
+        return findDescriptor(shortClassName,RepositoryBrowsers.LIST);
     }
 
     /**
