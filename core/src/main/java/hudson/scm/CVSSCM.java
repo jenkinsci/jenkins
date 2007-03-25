@@ -705,7 +705,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             env.put("CVS_PASSFILE",cvspass);
     }
 
-    public static final class DescriptorImpl extends SCMDescriptor implements ModelObject {
+    public static final class DescriptorImpl extends SCMDescriptor<CVSSCM> implements ModelObject {
         static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         /**
@@ -772,7 +772,12 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             return true;
         }
 
-    //
+        @Override
+        public boolean isBrowserReusable(CVSSCM x, CVSSCM y) {
+            return x.getCvsRoot().equals(y.getCvsRoot());
+        }
+
+        //
     // web methods
     //
 

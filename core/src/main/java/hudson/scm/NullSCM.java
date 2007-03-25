@@ -47,7 +47,7 @@ public class NullSCM extends SCM {
         return new NullChangeLogParser();
     }
 
-    static final SCMDescriptor DESCRIPTOR = new SCMDescriptor(NullSCM.class,null) {
+    static final SCMDescriptor DESCRIPTOR = new SCMDescriptor<NullSCM>(NullSCM.class,null) {
         public String getDisplayName() {
             return "None";
         }

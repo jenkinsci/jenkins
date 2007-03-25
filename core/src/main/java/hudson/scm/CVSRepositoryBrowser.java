@@ -1,6 +1,8 @@
 package hudson.scm;
 
 import hudson.scm.CVSChangeLogSet.CVSChangeLog;
+import hudson.model.AbstractProject;
+import hudson.model.Hudson;
 
 import java.net.URL;
 import java.io.IOException;

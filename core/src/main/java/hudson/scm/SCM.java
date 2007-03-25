@@ -24,17 +24,45 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
+    /**
+     * Stores {@link AutoBrowserHolder}. Lazily created.
+     */
+    private transient AutoBrowserHolder autoBrowserHolder;
+
+    protected SCM() {
+        getDescriptor().generation++;
+    }
 
     /**
      * Returns the {@link RepositoryBrowser} for files
      * controlled by this {@link SCM}.
      *
      * @return
-     *      null to indicate that there's no configured browser
+     *      null to indicate that there's no explicitly configured browser
      *      for this SCM instance.
+     *
+     * @see #getEffectiveBrowser()
      */
     public RepositoryBrowser getBrowser() {
         return null;
+    }
+
+    /**
+     * Returns the applicable {@link RepositoryBrowser} for files
+     * controlled by this {@link SCM}.
+     *
+     * <p>
+     * This method attempts to find applicable browser
+     * from other job configurations. 
+     */
+    public final RepositoryBrowser getEffectiveBrowser() {
+        RepositoryBrowser b = getBrowser();
+        if(b!=null)
+            return b;
+        if(autoBrowserHolder==null)
+            autoBrowserHolder = new AutoBrowserHolder(this);
+        return autoBrowserHolder.get();
+
     }
 
     /**

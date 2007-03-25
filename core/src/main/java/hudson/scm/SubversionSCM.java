@@ -481,7 +481,7 @@ public class SubversionSCM extends SCM implements Serializable {
         return tokens[tokens.length-1]; // return the last token
     }
 
-    public static final class DescriptorImpl extends SCMDescriptor {
+    public static final class DescriptorImpl extends SCMDescriptor<SubversionSCM> {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         /**

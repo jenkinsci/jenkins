@@ -9,7 +9,7 @@
     </j:forEach>
   </ol>
 
-  <j:set var="browser" value="${it.build.parent.scm.browser}"/>
+  <j:set var="browser" value="${it.build.parent.scm.effectiveBrowser}"/>
 
   <table class="pane" style="border:none">
     <j:forEach var="cs" items="${it.logs}" varStatus="loop">
