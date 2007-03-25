@@ -171,6 +171,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         }
 
         public void addFile( File f ) {
+            f.parent = this;
             files.add(f);
         }
 
@@ -184,6 +185,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         private String revision;
         private String prevrevision;
         private boolean dead;
+        private CVSChangeLog parent;
 
         /**
          * Gets the full file name in the CVS repository, like
@@ -240,6 +242,10 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             if(revision.equals("1.1"))
                 return EditType.ADD;
             return EditType.EDIT;
+        }
+
+        public CVSChangeLog getParent() {
+            return parent;
         }
     }
 
