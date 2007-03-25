@@ -1,16 +1,21 @@
 package hudson.scm.browsers;
 
+import static hudson.Util.fixEmpty;
 import hudson.model.Descriptor;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
 import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.scm.SubversionRepositoryBrowser;
+import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.regex.Pattern;
 
 /**
  * {@link RepositoryBrowser} for FishEye SVN.
@@ -72,8 +77,42 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
             return "FishEye";
         }
 
+        /**
+         * Performs on-the-fly validation of the URL.
+         */
+        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new FormFieldValidator.URLCheck(req,rsp) {
+                protected void check() throws IOException, ServletException {
+                    String value = fixEmpty(request.getParameter("value"));
+                    if(value==null) {// nothing entered yet
+                        ok();
+                        return;
+                    }
+
+                    if(!value.endsWith("/")) value+='/';
+                    if(!URL_PATTERN.matcher(value).matches()) {
+                        error("The URL should end like <tt>.../browse/foobar/</tt>");
+                        return;
+                    }
+
+                    try {
+                        if(findText(open(new URL(value)),"FishEye")) {
+                            ok();
+                        } else {
+                            error("This is a valid URL but it doesn't look like FishEye");
+                        }
+                    } catch (IOException e) {
+                        handleIOException(value,e);
+                    }
+                }
+            }.process();
+        }
+
         public FishEyeSVN newInstance(StaplerRequest req) throws FormException {
             return req.bindParameters(FishEyeSVN.class,"fisheye.svn.");
         }
+
     };
+
+    private static final Pattern URL_PATTERN = Pattern.compile(".+/browse/[^/]+/");
 }
