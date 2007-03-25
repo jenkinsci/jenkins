@@ -4,6 +4,7 @@ import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.scm.browsers.ViewCVS;
 import hudson.scm.browsers.ViewSVN;
+import hudson.scm.browsers.FishEyeSVN;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +23,8 @@ public class RepositoryBrowsers {
      */
     public static final List<Descriptor<RepositoryBrowser<?>>> LIST = Arrays.asList(
         ViewCVS.DESCRIPTOR,
-        ViewSVN.DESCRIPTOR
+        ViewSVN.DESCRIPTOR,
+        FishEyeSVN.DESCRIPTOR
     );
 
     /**
