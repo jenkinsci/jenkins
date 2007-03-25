@@ -9,8 +9,23 @@
     is this value initially selected?
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:mute>
-    ${dropdownItems.add(attrs)}
-    ${attrs.put('body',context.getVariable('org.apache.commons.jelly.body'))}
-  </j:mute>
+  <j:choose>
+    <j:when test="${dropdownListMode=='createSelectField'}">
+      <f:option selected="${selected}" value="${value}">${title}</f:option>
+    </j:when>
+    <j:when test="${dropdownListMode=='generateEntries'}">
+      <!-- sandwitch them by a marker so that we now what to show/hide -->
+      <j:set var="sid" value="${h.generateId()}"/>
+      <j:set var="eid" value="${h.generateId()}"/>
+      <tr id="${sid}" style="display:none" />
+      <d:invokeBody />
+      <tr id="${eid}" style="display:none" />
+      <script>
+        $$('${id}').forms.push({
+          start: $$('${sid}'),
+          end: $$('${eid}')
+        });
+      </script>
+    </j:when>
+  </j:choose>
 </j:jelly>
