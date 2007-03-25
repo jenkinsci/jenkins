@@ -26,10 +26,19 @@ import java.io.Serializable;
  */
 public interface Action extends Serializable, ModelObject {
     /**
-     * Gets the file name of the icon (relative to /images/24x24).
+     * Gets the file name of the icon.
      *
      * @return
-     *      null to hide it from the task list. This is normally not very useful,
+     *      If just a file name (like "abc.gif") is returned, it will be
+     *      interpreted as a file name inside <tt>/images/24x24</tt>.
+     *      This is useful for using one of the stock images.
+     *      <p>
+     *      If an absolute file name that starts from '/' is returned (like
+     *      "/plugin/foo/abc.gif'), then it will be interpreted as a path
+     *      from the context root of Hudson. This is useful to pick up
+     *      image files from a plugin.
+     *      <p>
+     *      Finally, return null to hide it from the task list. This is normally not very useful,
      *      but this can be used for actions that only contribute <tt>floatBox.jelly</tt>
      *      and no task list item.
      */
