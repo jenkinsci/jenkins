@@ -109,6 +109,10 @@ public class ChangeLogTask extends AbstractCvsTask {
         m_dir = dir;
     }
 
+    public File getDir() {
+        return m_dir;
+    }
+
 
     /**
      * Set the output stream for the log.
