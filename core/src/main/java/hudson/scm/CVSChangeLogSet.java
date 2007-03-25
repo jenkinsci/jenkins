@@ -187,7 +187,10 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
 
         /**
          * Gets the full file name in the CVS repository, like
-         * "/foo/bar/zot.c"
+         * "foo/bar/zot.c"
+         *
+         * <p>
+         * The path is relative to the workspace root.
          */
         public String getName() {
             return name;
