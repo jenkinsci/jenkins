@@ -7,6 +7,7 @@
     <l:main-panel>
       <j:set var="from" value="${request.getParameter('from')}"/>
       <j:set var="to" value="${request.getParameter('to')}"/>
+      <j:set var="browser" value="${it.scm.effectiveBrowser}"/>
 
       <h1>
         Changes
@@ -27,10 +28,23 @@
                 (<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</a></h2>
 
               <ol>
-                <j:forEach var="c" items="${b.changeSet.iterator()}">
+                <j:forEach var="c" items="${b.changeSet.iterator()}" varStatus="loop">
                   <li>
                     ${c.msgAnnotated}
-                    [<a href="${rootURL}/${c.author.url}/">${c.author}</a>]
+
+                    &#8212;
+
+                    <a href="${rootURL}/${c.author.url}/">${c.author}</a> /
+
+                    <j:set var="cslink" value="${browser.getChangeSetLink(c)}"/>
+                    <j:choose>
+                      <j:when test="${cslink!=null}">
+                        <a href="${cslink}">${browser.descriptor.displayName}</a>
+                      </j:when>
+                      <j:otherwise>
+                        <a href="${b.number}/changes#detail${loop.index}">detail</a>
+                      </j:otherwise>
+                    </j:choose>
                   </li>
                 </j:forEach>
               </ol>
