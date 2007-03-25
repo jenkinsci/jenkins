@@ -201,7 +201,8 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         }
 
         /**
-         * Gets the full path name in the CVS repository.
+         * Gets the full path name in the CVS repository,
+         * like "/module/foo/bar/zot.c"
          *
          * <p>
          * Unlike {@link #getName()}, this method returns
