@@ -18,7 +18,6 @@ package hudson.org.apache.tools.ant.taskdefs.cvslib;
 // patched to work around http://issues.apache.org/bugzilla/show_bug.cgi?id=38583
 
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Task;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -90,9 +89,9 @@ class ChangeLogParser {
     /** rcs entries */
     private final Hashtable<String,CVSEntry> m_entries = new Hashtable<String,CVSEntry>();
 
-    private final Task owner;
+    private final ChangeLogTask owner;
 
-    public ChangeLogParser(Task owner) {
+    public ChangeLogParser(ChangeLogTask owner) {
         this.owner = owner;
     }
 
