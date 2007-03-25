@@ -18,6 +18,10 @@ import java.net.URL;
  * <p>
  * {@link RepositoryBrowser} is persisted with {@link SCM}.
  *
+ * <p>
+ * To have Hudson recognize {@link RepositoryBrowser}, add the descriptor
+ * to {@link RepositoryBrowsers#LIST}.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.89
  * @see RepositoryBrowsers
