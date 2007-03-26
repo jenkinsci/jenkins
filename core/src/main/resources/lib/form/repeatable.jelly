@@ -14,9 +14,11 @@
       status variable that indicates the loop status.
     @items
       The item collection to loop over.
-    @noAddButton :
+    @noAddButton
       true if the default 'add' button shouldn't be displayed.
-
+    @minimum
+      at least provide this number of copies initially.
+      minimum="1" is useful to make sure there's always at least one entry.
 
   HTML structure:
     this tag mainly produces the nested DIVs with CSS classes as follows:
@@ -65,6 +67,15 @@
       </div>
     </j:forEach>
     <j:remove var="${var}" />
+
+    <j:if test="${minimum}">
+      <j:forEach begin="${size(items)+1}" end="${minimum}" var="i">
+        <div class="repeated-chunk">
+          <d:invokeBody />
+        </div>
+      </j:forEach>
+    </j:if>
+
     <div id="block${id}-insertion-point" />
     <j:if test="${!attrs.noAddButton}">
       <input type="button" value="Add" class="repeatable-add" />
