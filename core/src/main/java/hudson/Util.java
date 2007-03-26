@@ -243,6 +243,11 @@ public class Util {
         return v;
     }
 
+    public static String removeTrailingSlash(String s) {
+        if(s.endsWith("/")) return s.substring(0,s.length()-1);
+        else                return s;
+    }
+
     /**
      * Write-only buffer.
      */
