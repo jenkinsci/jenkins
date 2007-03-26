@@ -53,7 +53,6 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -119,13 +118,11 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     /**
-     * this method is beeing kept for compatibility reasons with older hudson
-     * installations. All data is beeing stored in the {@link #locations} filed
-     * which is basically a list of {@link ModuleLocation}s
+     * @deprecated
+     *      as of 1.91. Use {@link #getLocations()} instead.
      */
-    @Deprecated
     public String getModules() {
-        return modules;
+        return null;
     }
 
     /**
@@ -163,14 +160,6 @@ public class SubversionSCM extends SCM implements Serializable {
 
     public SubversionRepositoryBrowser getBrowser() {
         return browser;
-    }
-
-    private Collection<String> getModuleDirNames() {
-        List<String> dirs = new ArrayList<String>();
-        for (ModuleLocation l : getLocations()) {
-            dirs.add(l.local);
-        }
-        return dirs;
     }
 
     private boolean calcChangeLog(AbstractBuild<?, ?> build, File changelogFile, BuildListener listener) throws IOException {
@@ -390,9 +379,9 @@ public class SubversionSCM extends SCM implements Serializable {
 
                 SVNWCClient svnWc = createSvnClientManager(authProvider).getWCClient();
                 // invoke the "svn info"
-                for( String module : getModuleDirNames() ) {
+                for( ModuleLocation module : getLocations() ) {
                     try {
-                        SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws,module),SVNRevision.WORKING));
+                        SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws,module.local),SVNRevision.WORKING));
                         revisions.put(info.url,info);
                     } catch (SVNException e) {
                         e.printStackTrace(listener.error("Failed to parse svn info for "+module));
