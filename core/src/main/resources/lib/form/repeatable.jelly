@@ -18,9 +18,35 @@
       true if the default 'add' button shouldn't be displayed.
 
 
-  The caller of this tag should define a button to add a new copy and delete
-  the current copy. Such button should have 'repeatable-add' CSS class and
-  'repeatable-delete' CSS class respectively (it can have other CSS classes.) 
+  HTML structure:
+    this tag mainly produces the nested DIVs with CSS classes as follows:
+
+    <div class="repeated-container">   // container for the whole thing
+      <div class="repeated-chunk">
+        ... copy 1 ...
+      <div class="repeated-chunk">
+        ... copy 2 ...
+      ...
+
+    The 'repeated-chunk' DIVs will also have additional CSS classes that represent
+    their positions among siblings:
+
+      first : first chunk among the siblings
+      last  : last chunk among the siblings
+      middle: neither first nor last
+      only  : it is the only chunk (automatically get first and last at the same time)
+
+  Usage Note:
+    The caller of this tag should define a button to add a new copy and delete
+    the current copy. Such buttons should have 'repeatable-add' CSS class and
+    'repeatable-delete' CSS class respectively (it can have other CSS classes),
+    so that their event handlers get properly wired up.
+
+    The positional CSS classes on 'repeated-chunk' DIVs (as explained above)
+    can be used to control the visibility of such buttons. For example, this allows
+    you to hide 'delete' button if there's only one item, or only show 'add' button
+    on the last row. There are a few CSS classes already defined in style.css
+    for this purpose.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set var="id" value="${h.generateId()}"/>
