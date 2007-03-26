@@ -60,6 +60,10 @@ public final class Result implements Serializable {
         return this.ordinal > that.ordinal;
     }
 
+    public boolean isWorseOrEqualTo(Result that) {
+        return this.ordinal >= that.ordinal;
+    }
+
     public String toString() {
         return name;
     }
