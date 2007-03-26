@@ -29,10 +29,6 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     private transient AutoBrowserHolder autoBrowserHolder;
 
-    protected SCM() {
-        getDescriptor().generation++;
-    }
-
     /**
      * Returns the {@link RepositoryBrowser} for files
      * controlled by this {@link SCM}.
