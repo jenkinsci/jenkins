@@ -5,6 +5,7 @@ import hudson.util.KeyedDataStorage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Cache of {@link Fingerprint}s.
@@ -17,6 +18,14 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public final class FingerprintMap extends KeyedDataStorage<Fingerprint,FingerprintParams> {
+
+    /**
+     * @deprecated
+     *      Some old version of Hudson incorrectly serialized this information to the disk.
+     *      So we need this field to be here for such configuration to be read correctly.
+     *      This field is otherwise no longer in use.
+     */
+    private transient ConcurrentHashMap<String,Object> core = new ConcurrentHashMap<String,Object>();
 
     /**
      * Returns true if there's some data in the fingerprint database.
