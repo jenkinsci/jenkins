@@ -1,4 +1,7 @@
 <!--
   Delete button for the <repeatable> tag.
+
+  As of 1.91, left for backward compatibility.
 -->
-<input type="button" value="Delete" onclick="delete${repeatBlockId}(event)" />
+<input type="button" value="${h.ifThenElse(attrs.value==null,'Delete',attrs.value)}"
+       class="repeatable-delete" />

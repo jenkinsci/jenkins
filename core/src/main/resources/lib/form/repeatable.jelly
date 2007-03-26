@@ -1,56 +1,53 @@
 <!--
-  Repeatable blocks where duplicates can be added/removed at client.
+  Repeatable blocks used to present UI where the user can configure multiple entries
+  of the same kind (see the Java installations configuration in the system config.)
 
-	<%@attribute name="var" required="true" rtexprvalue="false" %>
-	<%@attribute name="varStatus" required="false" rtexprvalue="false" %>
-	<%@attribute name="items" required="true" rtexprvalue="true" type="java.lang.Object" %>
+  This tag works like <j:forEach> and repeatedly evaluate the body so that
+  initially all the items get their own copy. This tag also evaluate the body
+  once more with var=null to create a 'master copy', which is the template entry
+  used when a new copy is inserted.
+
+  Attributes:
+    @var
+      variable that receives the item of the current iteration.
+    @varStatus
+      status variable that indicates the loop status.
+    @items
+      The item collection to loop over.
+    @noAddButton :
+      true if the default 'add' button shouldn't be displayed.
+
+
+  The caller of this tag should define a button to add a new copy and delete
+  the current copy. Such button should have 'repeatable-add' CSS class and
+  'repeatable-delete' CSS class respectively (it can have other CSS classes.) 
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<j:set target="${requestScope}" property="repeatBlockId" value="${repeatBlockId+1}" />
-	<script>
-	  function expand${repeatBlockId}() {
-	    ip = document.getElementById("block${repeatBlockId}-insertion-point");
-	    <!--
-	      importNode isn't supported in IE.
-	      nc = document.importNode(node,true);
-	    -->
-	    nc = document.createElement("div");
-	    nc.className = "repeated-chunk";
-	    nc.innerHTML = block${repeatBlockId}HTML;
-	    ip.parentNode.insertBefore(nc,ip);
+  <j:set var="id" value="${h.generateId()}"/>
 
-      Behaviour.applySubtree(nc);
-    }
-
-	  function delete${repeatBlockId}(ev) {
-	    t = ev.target;	// DOM Lv2
-	    if(t==null)
-	      t = ev.srcElement;	// for IE
-
-	    while(t.className!="repeated-chunk")
-	      t = t.parentNode;
-	    t.parentNode.removeChild(t);
-	  }
-	</script>
-	<!-- this is the master copy -->
-	<div id="block${repeatBlockId}-master" class="repeated-chunk" style="display:none">
-	  <d:invokeBody />
-	</div>
-	<!-- then populate them for each item -->
-	<j:forEach var="loop" varStatus="loopStatus" items="${items}">
-	  <div class="repeated-chunk">
-	    <!-- how do I do this without using Java code? -->
-	    <j:set var="${var}" value="${loop}" />
-	    <d:invokeBody />
-	  </div>
-	</j:forEach>
-	<j:remove var="${var}" />
-	<script>
-	  <!-- master needs to be deleted from the form, or its entry will be sent. -->
-	  var master${repeatBlockId} = document.getElementById("block${repeatBlockId}-master");
-	  var block${repeatBlockId}HTML = master${repeatBlockId}.innerHTML;
-	  master${repeatBlockId}.parentNode.removeChild(master${repeatBlockId});
-	</script>
-	<div id="block${repeatBlockId}-insertion-point" />
-	<input type="button" value="Add" onclick="expand${repeatBlockId}()" />
+  <div class="repeated-container" id="block${id}-container">
+    <!-- this is the master copy -->
+    <div id="block${id}-master" class="repeated-chunk" style="display:none">
+      <d:invokeBody />
+    </div>
+    <!-- then populate them for each item -->
+    <j:forEach var="loop" varStatus="loopStatus" items="${items}">
+      <div class="repeated-chunk">
+        <!-- how do I do this without using Java code? -->
+        <j:set var="${var}" value="${loop}" />
+        <d:invokeBody />
+      </div>
+    </j:forEach>
+    <j:remove var="${var}" />
+    <div id="block${id}-insertion-point" />
+    <j:if test="${!attrs.noAddButton}">
+      <input type="button" value="Add" class="repeatable-add" />
+    </j:if>
+  </div>
+  <script>
+    object(repetableSupport).init(
+      'block${id}-container',
+      'block${id}-master',
+      'block${id}-insertion-point');
+  </script>
 </j:jelly>
