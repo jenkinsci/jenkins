@@ -28,6 +28,8 @@ public class SCMS {
      */
     public static SCM parseSCM(StaplerRequest req) throws FormException {
         int scmidx = Integer.parseInt(req.getParameter("scm"));
-        return SCMS.get(scmidx).newInstance(req);
+        SCMDescriptor<?> d = SCMS.get(scmidx);
+        d.generation++;
+        return d.newInstance(req);
     }
 }
