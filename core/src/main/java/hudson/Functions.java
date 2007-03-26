@@ -372,7 +372,7 @@ public class Functions {
      * Works like JSTL build-in size(x) function,
      * but handle null gracefully.
      */
-    public static int size(Object o) throws Exception {
+    public static int size2(Object o) throws Exception {
         if(o==null) return 0;
         return ASTSizeFunction.sizeOf(o);
     }
