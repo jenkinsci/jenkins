@@ -91,7 +91,7 @@ public class SubversionSCM extends SCM implements Serializable {
     @Deprecated
     private transient String otherOptions;
     @Deprecated
-    private transient String modules;
+    private String modules;
 
     SubversionSCM(String[] remoteLocations, String[] localLocations,
             boolean useUpdate, String username, SubversionRepositoryBrowser browser) {
