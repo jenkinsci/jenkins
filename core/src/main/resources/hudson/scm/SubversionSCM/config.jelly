@@ -1,13 +1,12 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="Modules"
-    description="URL of SVN module. Multiple URLs can be specified.">           
+  <f:entry title="Modules">
     <f:repeatable var="loc" items="${scm.locations}" noAddButton="true" minimum="1">
       <table width="100%">
-        <f:entry title="Repository URL">
+        <f:entry title="Repository URL" help="/help/subversion/url.html">
           <f:textbox name="svn.location_remote" value="${loc.remote}"
             checkUrl="'${rootURL}/scm/SubversionSCM/svnRemoteLocationCheck?value='+escape(this.value)"/>
         </f:entry>
-        <f:entry title="Local module directory (optional)">
+        <f:entry title="Local module directory (optional)" help="/help/subversion/local.html">
           <f:textbox name="svn.location_local" value="${loc.local}"
             checkUrl="'${rootURL}/scm/SubversionSCM/svnLocalLocationCheck?value='+escape(this.value)"/>     
         </f:entry>
