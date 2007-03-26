@@ -85,7 +85,7 @@ public class SubversionSCM extends SCM implements Serializable {
     private ModuleLocation[] locations = new ModuleLocation[0];
     private boolean useUpdate;
     private String username;
-    private final transient SubversionRepositoryBrowser browser;
+    private final SubversionRepositoryBrowser browser;
 
     // No longer in use but left for serialization compatibility.
     @Deprecated
