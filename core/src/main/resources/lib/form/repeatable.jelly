@@ -69,9 +69,9 @@
     <j:remove var="${var}" />
 
     <j:if test="${minimum}">
-      <j:forEach begin="${h.ifThenElse(items!=null,size(items),0)}" end="${minimum-1}" var="i">
+      <j:forEach begin="${h.size(items)}" end="${minimum-1}" var="i">
         <div class="repeated-chunk">
-          <d:invokeBody /> 
+          <d:invokeBody />
         </div>
       </j:forEach>
     </j:if>
