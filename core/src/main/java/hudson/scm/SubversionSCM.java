@@ -4,7 +4,6 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
-import static hudson.Util.fixNull;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -63,6 +62,7 @@ import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Subversion.
@@ -73,41 +73,84 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class SubversionSCM extends SCM implements Serializable {
-    private final String modules;
+    /**
+     * the locations field is used to store all configured SVN locations (with
+     * their local and remote part). Direct access to this filed should be
+     * avoided and the getLocations() method should be used instead. This is
+     * needed to make importing of old hudson-configurations possible as
+     * getLocations() will check if the modules field has been set and import
+     * the data.
+     * 
+     * @since 1.91
+     */
+    private ModuleLocation[] locations = new ModuleLocation[0];
     private boolean useUpdate;
     private String username;
     private final SubversionRepositoryBrowser browser;
 
-    /**
-     * @deprecated
-     *      No longer in use but left for serialization compatibility.
-     */
+    // No longer in use but left for serialization compatibility.
+    @Deprecated
     private transient String otherOptions;
+    @Deprecated
+    private transient String modules;
 
-    SubversionSCM(String modules, boolean useUpdate, String username, SubversionRepositoryBrowser browser) {
-        StringBuilder normalizedModules = new StringBuilder();
-        StringTokenizer tokens = new StringTokenizer(modules);
-        while(tokens.hasMoreTokens()) {
-            if(normalizedModules.length()>0)    normalizedModules.append(' ');
-            String m = tokens.nextToken();
-            if(m.endsWith("/"))
-                // the normalized name is always without the trailing '/'
-                m = m.substring(0,m.length()-1);
-            normalizedModules.append(m);
-       }
+    SubversionSCM(String[] remoteLocations, String[] localLocations,
+            boolean useUpdate, String username, SubversionRepositoryBrowser browser) {
 
-        this.modules = normalizedModules.toString();
+        List<ModuleLocation> modules = new ArrayList<ModuleLocation>();
+        if (remoteLocations != null && localLocations != null) {
+            int entries = Math.min(remoteLocations.length, localLocations.length);
+
+            for (int i = 0; i < entries; i++) {
+                // the remote (repository) location
+                String remoteLoc = nullify(remoteLocations[i]);
+
+                if (remoteLoc != null) {// null if skipped
+                    remoteLoc = Util.removeTrailingSlash(remoteLoc.trim());
+                    modules.add(new ModuleLocation(remoteLoc, nullify(localLocations[i])));
+                }
+            }
+        }
+        locations = modules.toArray(new ModuleLocation[modules.size()]);
+
         this.useUpdate = useUpdate;
         this.username = nullify(username);
         this.browser = browser;
     }
 
     /**
-     * Whitespace-separated list of SVN URLs that represent
-     * modules to be checked out.
+     * this method is beeing kept for compatibility reasons with older hudson
+     * installations. All data is beeing stored in the {@link #locations} filed
+     * which is basically a list of {@link ModuleLocation}s
      */
+    @Deprecated
     public String getModules() {
         return modules;
+    }
+
+    /**
+     * list of all configured svn locations
+     * 
+     * @since 1.91
+     */
+    public ModuleLocation[] getLocations() {
+        // check if we've got a old location
+        if (modules != null) {
+            // import the old configuration
+            List<ModuleLocation> oldLocations = new ArrayList<ModuleLocation>();
+            StringTokenizer tokens = new StringTokenizer(modules);
+            while (tokens.hasMoreTokens()) {
+                // the remote (repository location)
+                // the normalized name is always without the trailing '/'
+                String remoteLoc = Util.removeTrailingSlash(tokens.nextToken());
+
+                oldLocations.add(new ModuleLocation(remoteLoc, null));
+            }
+
+            locations = oldLocations.toArray(new ModuleLocation[oldLocations.size()]);
+            modules = null;
+        }
+        return locations;
     }
 
     public boolean isUseUpdate() {
@@ -124,9 +167,8 @@ public class SubversionSCM extends SCM implements Serializable {
 
     private Collection<String> getModuleDirNames() {
         List<String> dirs = new ArrayList<String>();
-        StringTokenizer tokens = new StringTokenizer(modules);
-        while(tokens.hasMoreTokens()) {
-            dirs.add(getLastPathComponent(tokens.nextToken()));
+        for (ModuleLocation l : getLocations()) {
+            dirs.add(l.local);
         }
         return dirs;
     }
@@ -153,10 +195,8 @@ public class SubversionSCM extends SCM implements Serializable {
         th.setDocumentLocator(DUMMY_LOCATOR);
         logHandler.startDocument();
 
-
-        StringTokenizer tokens = new StringTokenizer(modules);
-        while(tokens.hasMoreTokens()) {
-            String url = tokens.nextToken();
+        for (ModuleLocation l : getLocations()) {
+            String url = l.remote;
             Long prevRev = previousRevisions.get(url);
             if(prevRev==null) {
                 logger.println("no revision recorded for "+url+" in the previous build");
@@ -255,13 +295,12 @@ public class SubversionSCM extends SCM implements Serializable {
                     SVNUpdateClient svnuc = createSvnClientManager(authProvider).getUpdateClient();
                     svnuc.setEventHandler(new SubversionUpdateEventHandler(listener));
 
-                    StringTokenizer tokens = new StringTokenizer(modules);
-                    while(tokens.hasMoreTokens()) {
+                    for (ModuleLocation l : getLocations()) {
                         try {
-                            SVNURL url = SVNURL.parseURIEncoded(tokens.nextToken());
+                            SVNURL url = SVNURL.parseURIEncoded(l.remote);
                             listener.getLogger().println("Checking out "+url);
 
-                            svnuc.doCheckout(url, new File(ws, getLastPathComponent(url.getPath())), SVNRevision.HEAD, SVNRevision.HEAD, true );
+                            svnuc.doCheckout(url, new File(ws, l.local), SVNRevision.HEAD, SVNRevision.HEAD, true);
                         } catch (SVNException e) {
                             e.printStackTrace(listener.error("Error in subversion"));
                             return false;
@@ -379,12 +418,11 @@ public class SubversionSCM extends SCM implements Serializable {
                 SVNUpdateClient svnuc = createSvnClientManager(authProvider).getUpdateClient();
                 svnuc.setEventHandler(new SubversionUpdateEventHandler(listener));
 
-                StringTokenizer tokens = new StringTokenizer(modules);
-                while(tokens.hasMoreTokens()) {
+                for (ModuleLocation l : getLocations()) {
                     try {
-                        String url = tokens.nextToken();
+                        String url = l.remote;
                         listener.getLogger().println("Updating "+url);
-                        svnuc.doUpdate(new File(ws, getLastPathComponent(url)), SVNRevision.HEAD, true );
+                        svnuc.doUpdate(new File(ws, l.local), SVNRevision.HEAD, true);
                     } catch (SVNException e) {
                         e.printStackTrace(listener.error("Error in subversion"));
                         return false;
@@ -403,10 +441,9 @@ public class SubversionSCM extends SCM implements Serializable {
 
         return workspace.act(new FileCallable<Boolean>() {
             public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
-                StringTokenizer tokens = new StringTokenizer(modules);
-                while(tokens.hasMoreTokens()) {
-                    String url = tokens.nextToken();
-                    String moduleName = getLastPathComponent(url);
+                for (ModuleLocation l : getLocations()) {
+                    String url = l.remote;
+                    String moduleName = l.local;
                     File module = new File(ws,moduleName);
 
                     if(!module.exists()) {
@@ -466,14 +503,9 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     public FilePath getModuleRoot(FilePath workspace) {
-        String s;
-
-        // if multiple URLs are specified, pick the first one
-        int idx = modules.indexOf(' ');
-        if(idx>=0)  s = modules.substring(0,idx);
-        else        s = modules;
-
-        return workspace.child(getLastPathComponent(s));
+        if (getLocations().length > 0)
+            return workspace.child(getLocations()[0].local);
+        return workspace;
     }
 
     private static String getLastPathComponent(String s) {
@@ -574,11 +606,11 @@ public class SubversionSCM extends SCM implements Serializable {
 
         public SCM newInstance(StaplerRequest req) throws FormException {
             return new SubversionSCM(
-                req.getParameter("svn_modules"),
-                req.getParameter("svn_use_update")!=null,
+                req.getParameterValues("svn.location_remote"),
+                req.getParameterValues("svn.location_local"),
+                req.getParameter("svn_use_update") != null,
                 req.getParameter("svn_username"),
-                RepositoryBrowsers.createInstance(SubversionRepositoryBrowser.class,req,"svn.browser")
-            );
+                RepositoryBrowsers.createInstance(SubversionRepositoryBrowser.class, req, "svn.browser"));
         }
 
         /**
@@ -587,51 +619,6 @@ public class SubversionSCM extends SCM implements Serializable {
          */
         public ISVNAuthenticationProvider createAuthenticationProvider() {
             return new SVNAuthenticationProviderImpl(new RemotableSVNAuthenticationProviderImpl());
-        }
-
-        /**
-         * Used in the job configuration page to check if authentication for the SVN URLs
-         * are available.
-         */
-        public void doAuthenticationCheck(final StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new FormFieldValidator(req,rsp,true) {
-                protected void check() throws IOException, ServletException {
-                    StringTokenizer tokens = new StringTokenizer(fixNull(request.getParameter("value")));
-                    String message="";
-
-                    while(tokens.hasMoreTokens()) {
-                        String url = tokens.nextToken();
-
-                        try {
-                            SVNRepository repository = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(url));
-
-                            ISVNAuthenticationManager sam = SVNWCUtil.createDefaultAuthenticationManager();
-                            sam.setAuthenticationProvider(createAuthenticationProvider());
-                            repository.setAuthenticationManager(sam);
-                            
-                            repository.testConnection();
-                        } catch (SVNException e) {
-                            StringWriter sw = new StringWriter();
-                            e.printStackTrace(new PrintWriter(sw));
-
-                            message += "Unable to access "+url+" : "+Util.escape( e.getErrorMessage().getFullMessage());
-                            message += " <a href='#' id=svnerrorlink onclick='javascript:" +
-                                "document.getElementById(\"svnerror\").style.display=\"block\";" +
-                                "document.getElementById(\"svnerrorlink\").style.display=\"none\";" +
-                                "return false;'>(show details)</a>";
-                            message += "<pre id=svnerror style='display:none'>"+sw+"</pre>";
-                            message += " (Maybe you need to <a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>?)";
-                            message += "<br>";
-                            logger.log(Level.INFO, "Failed to access subversion repository "+url,e);
-                        }
-                    }
-
-                    if(message.length()==0)
-                        ok();
-                    else
-                        error(message);
-                }
-            }.process();
         }
 
         /**
@@ -667,7 +654,91 @@ public class SubversionSCM extends SCM implements Serializable {
             }
         }
 
-        static { new Initializer(); }
+        /**
+         * validate the value for a remote (repository) location.
+         */
+        public void doSvnRemoteLocationCheck(final StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            // this can be used to hit any accessible URL, so limit that to admins
+            new FormFieldValidator(req, rsp, true) {
+                protected void check() throws IOException, ServletException {
+                    // syntax check first
+                    String url = Util.nullify(request.getParameter("value"));
+                    if (url == null) {
+                        error("Repository URL is mandatory");
+                        return;
+                    }
+
+                    // remove unneeded whitespaces
+                    url = url.trim();
+                    if(!URL_PATTERN.matcher(url).matches()) {
+                        error("Invalid URL syntax. See "
+                            + "<a href=\"http://svnbook.red-bean.com/en/1.2/svn-book.html#svn.basic.in-action.wc.tbl-1\">this</a> "
+                            + "for information about valid URLs.");
+                        return;
+                    }
+
+                    // test the connection
+                    try {
+                        SVNRepository repository = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(url));
+
+                        ISVNAuthenticationManager sam = SVNWCUtil.createDefaultAuthenticationManager();
+                        sam.setAuthenticationProvider(createAuthenticationProvider());
+                        repository.setAuthenticationManager(sam);
+
+                        repository.testConnection();
+                        ok();
+                    } catch (SVNException e) {
+                        StringWriter sw = new StringWriter();
+                        e.printStackTrace(new PrintWriter(sw));
+
+                        String message="";
+                        message += "Unable to access "+url+" : "+Util.escape( e.getErrorMessage().getFullMessage());
+                        message += " <a href='#' id=svnerrorlink onclick='javascript:" +
+                            "document.getElementById(\"svnerror\").style.display=\"block\";" +
+                            "document.getElementById(\"svnerrorlink\").style.display=\"none\";" +
+                            "return false;'>(show details)</a>";
+                        message += "<pre id=svnerror style='display:none'>"+sw+"</pre>";
+                        message += " (Maybe you need to <a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>?)";
+                        message += "<br>";
+                        logger.log(Level.INFO, "Failed to access subversion repository "+url,e);
+                        error(message);
+                    }
+                }
+            }.process();
+        }
+
+        private static final Pattern URL_PATTERN = Pattern.compile("(https?|svn(\\+\\w+)|file)://.+");
+
+        /**
+         * validate the value for a local location (local checkout directory).
+         */
+        public void doSvnLocalLocationCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new FormFieldValidator(req, rsp, false) {
+                protected void check() throws IOException, ServletException {
+                    String v = Util.nullify(request.getParameter("value"));
+                    if (v == null) {
+                        // local directory is optional so this is ok
+                        ok();
+                        return;
+                    }
+
+                    v = v.trim();
+
+                    // check if a absolute path has been supplied
+                    // (the last check with the regex will match windows drives)
+                    if (v.startsWith("/") || v.startsWith("\\") || v.startsWith("..") || v.matches("^[A-Za-z]:")) {
+                        error("absolute path is not allowed");
+                    }
+
+                    // all tests passed so far
+                    ok();
+                }
+            }.process();
+        }
+
+        static {
+            new Initializer();
+        }
     }
 
     private static final long serialVersionUID = 1L;
@@ -681,12 +752,32 @@ public class SubversionSCM extends SCM implements Serializable {
         DUMMY_LOCATOR.setLineNumber(-1);
         DUMMY_LOCATOR.setColumnNumber(-1);
     }
-    
+
     private static final class Initializer {
         static {
             DAVRepositoryFactory.setup();   // http, https
             SVNRepositoryFactoryImpl.setup();   // svn, svn+xxx
             FSRepositoryFactory.setup();    // file
         }
+    }
+
+    /**
+     * small structure to store local and remote (repository) location
+     * information of the repository. As a addition it holds the invalid field
+     * to make failure messages when doing a checkout possible
+     */
+    public static final class ModuleLocation implements Serializable {
+        public final String remote;
+        public final String local;
+
+        public ModuleLocation(String remote, String local) {
+            if(local==null)
+                local = getLastPathComponent(remote);
+
+            this.remote = remote.trim();
+            this.local = local.trim();
+        }
+
+        private static final long serialVersionUID = 1L;
     }
 }
