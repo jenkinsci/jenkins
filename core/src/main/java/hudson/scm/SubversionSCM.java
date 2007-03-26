@@ -653,7 +653,7 @@ public class SubversionSCM extends SCM implements Serializable {
                     // syntax check first
                     String url = Util.nullify(request.getParameter("value"));
                     if (url == null) {
-                        error("Repository URL is mandatory");
+                        ok(); // not entered yet
                         return;
                     }
 
