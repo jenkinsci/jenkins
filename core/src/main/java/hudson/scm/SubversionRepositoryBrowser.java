@@ -26,4 +26,6 @@ public abstract class SubversionRepositoryBrowser extends RepositoryBrowser<Subv
      *      null if the browser doesn't have any suitable URL.
      */
     public abstract URL getFileLink(SubversionChangeLogSet.Path path) throws IOException;
+
+    private static final long serialVersionUID = 1L;
 }

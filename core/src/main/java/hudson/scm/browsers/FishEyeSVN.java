@@ -150,4 +150,6 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
 
         private static final Pattern URL_PATTERN = Pattern.compile(".+/browse/[^/]+/");
     }
+
+    private static final long serialVersionUID = 1L;
 }

@@ -68,4 +68,6 @@ public class ViewSVN extends SubversionRepositoryBrowser {
             return req.bindParameters(ViewSVN.class,"viewsvn.");
         }
     };
+
+    private static final long serialVersionUID = 1L;
 }

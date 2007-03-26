@@ -4,6 +4,7 @@ import hudson.ExtensionPoint;
 import hudson.model.Describable;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 
 /**
@@ -26,7 +27,7 @@ import java.net.URL;
  * @since 1.89
  * @see RepositoryBrowsers
  */
-public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> implements ExtensionPoint, Describable<RepositoryBrowser<?>> {
+public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> implements ExtensionPoint, Describable<RepositoryBrowser<?>>, Serializable {
     /**
      * Determines the link to the given change set.
      *
@@ -44,4 +45,6 @@ public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> implements
         if(s.startsWith("/"))   return s.substring(1);
         return s;
     }
+
+    private static final long serialVersionUID = 1L;
 }

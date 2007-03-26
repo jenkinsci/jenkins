@@ -30,4 +30,6 @@ public abstract class CVSRepositoryBrowser extends RepositoryBrowser<CVSChangeLo
      *      null if the browser doesn't have any suitable URL.
      */
     public abstract URL getFileLink(CVSChangeLogSet.File file) throws IOException;
+
+        private static final long serialVersionUID = 1L;
 }
