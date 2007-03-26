@@ -12,6 +12,7 @@ import hudson.model.Action;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.apache.commons.jexl.parser.ASTSizeFunction;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -365,5 +366,14 @@ public class Functions {
             return name.substring(1);
         else
             return "images/24x24/"+name;
+    }
+
+    /**
+     * Works like JSTL build-in size(x) function,
+     * but handle null gracefully.
+     */
+    public static int size(Object o) throws Exception {
+        if(o==null) return 0;
+        return ASTSizeFunction.sizeOf(o);
     }
 }
