@@ -541,3 +541,16 @@ TABLE.fingerprint-in-build TD {
   padding-left: 32px;
 }
 */
+
+
+
+/* ========================= repeatable elements ========================= */
+
+.repeated-chunk .show-if-last      { display: none; }
+.repeated-chunk.last .show-if-last { display: inline; }
+
+.repeated-chunk .show-if-not-last      { display: inline; }
+.repeated-chunk.last .show-if-not-last { display: none; }
+
+.repeated-chunk .show-if-not-only      { display: inline; }
+.repeated-chunk.only .show-if-not-only { display: none; }
