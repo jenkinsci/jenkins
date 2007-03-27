@@ -19,6 +19,7 @@
     <td colspan="3">
       <f:checkbox name="${name}" onclick="javascript:updateOptionalBlock('oe_s${oe_id}','oe_e${oe_id}','oe_c${oe_id}')"
                   id="oe_c${oe_id}" checked="${checked}" />
+      <st:nbsp/>
       <label for="oe_c${oe_id}">${title}</label>
     </td>
     <j:if test="${help!=null}">
