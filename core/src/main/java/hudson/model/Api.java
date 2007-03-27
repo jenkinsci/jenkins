@@ -2,23 +2,22 @@ package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
+import hudson.util.XStream2;
+import net.sf.json.JSONObject;
+import net.sf.json.util.JSONBuilder;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 import java.beans.Introspector;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Set;
-import java.util.HashSet;
+import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
-import java.net.URL;
-import java.lang.reflect.Field;
-
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import hudson.util.XStream2;
-import net.sf.json.util.JSONBuilder;
-import net.sf.json.JSONObject;
+import java.util.Set;
 
 /**
  * Used to expose remote access API for ".../api/"
@@ -124,19 +123,23 @@ public class Api extends AbstractModelObject {
                 builder.endArray();
                 return;
             }
-            if(Collection.class.isAssignableFrom(c)) {
+            if(bean instanceof Collection) {
                 builder.array();
                 for (Object item : (Collection) bean)
                     write(item,builder);
                 builder.endArray();
                 return;
             }
-            if(Map.class.isAssignableFrom(c)) {
+            if(bean instanceof Map) {
                 builder.object();
                 for (Map.Entry e : ((Map<?,?>) bean).entrySet()) {
                     builder.key(e.getKey().toString());
                     write(e.getValue(),builder);
                 }
+                return;
+            }
+            if(bean instanceof Enum) {
+                builder.value(bean);
                 return;
             }
 
@@ -149,6 +152,7 @@ public class Api extends AbstractModelObject {
 
             for( Field f : bean.getClass().getFields() ) {
                 try {
+                    f.setAccessible(true);
                     Object value = f.get(bean);
                     if(value!=null) {
                         builder.key(f.getName());

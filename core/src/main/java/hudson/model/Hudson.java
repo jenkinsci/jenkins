@@ -1373,13 +1373,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
     public Api getApi(final StaplerRequest req) {
         class hudson {
-            List<job> jobs = new ArrayList<job>();
+            public List<job> jobs = new ArrayList<job>();
 
             class job {
-                String name;
-                String url;
-                BallColor color;
-                Integer lastBuild;
+                public String name;
+                public String url;
+                public BallColor color;
+                public Integer lastBuild;
 
                 public job(TopLevelItem item) {
                     this.name = item.getName();
