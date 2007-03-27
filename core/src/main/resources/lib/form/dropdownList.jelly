@@ -19,8 +19,12 @@
   </f:entry>
 
   <!-- generate the actual form entries -->
-  <j:set var="dropdownListMode" value="generateEntries" />
-  <d:invokeBody />
+  <f:nested>
+    <table width="100%">
+      <j:set var="dropdownListMode" value="generateEntries" />
+      <d:invokeBody />
+    </table>
+  </f:nested>
 
   <!-- set the initial visibility -->
   <script>
