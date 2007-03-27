@@ -83,7 +83,8 @@ class ChangeLogWriter {
 
             output.println("\t\t<file>");
             output.println("\t\t\t<name>" + file.getName() + "</name>");
-            output.println("\t\t\t<fullName>" + file.getFullName() + "</fullName>");
+            if(file.getFullName()!=null)
+                output.println("\t\t\t<fullName>" + file.getFullName() + "</fullName>");
             output.println("\t\t\t<revision>" + file.getRevision()
                 + "</revision>");
 
