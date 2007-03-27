@@ -1,17 +1,17 @@
 package hudson;
 
+import hudson.Launcher.LocalLauncher;
+import hudson.Launcher.RemoteLauncher;
+import hudson.model.Hudson;
+import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
+import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Pipe;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
-import hudson.remoting.DelegatingCallable;
-import hudson.util.IOException2;
 import hudson.util.FormFieldValidator;
-import hudson.model.Hudson;
-import hudson.model.TaskListener;
-import hudson.Launcher.LocalLauncher;
-import hudson.Launcher.RemoteLauncher;
+import hudson.util.IOException2;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -29,12 +29,11 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.Writer;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
-import java.net.URI;
-import java.text.MessageFormat;
+import java.util.zip.ZipOutputStream;
 
 /**
  * {@link File} like object with remoting support.
@@ -740,19 +739,19 @@ public final class FilePath implements Serializable {
                         if(pattern.equals(fileMask))
                             return null;    // no error
                         if(previous==null)
-                            return MessageFormat.format("''{0}'' doesn''t match anything, although ''{1}'' exists",
+                            return String.format("'%s' doesn't match anything, although '%s' exists",
                                 fileMask, pattern );
                         else
-                            return MessageFormat.format("''{0}'' doesn''t match anything: ''{1}'' exists but not ''{2}''",
+                            return String.format("'%s' doesn't match anything: '%s' exists but not '%s'",
                                 fileMask, pattern, previous );
                     }
 
                     int idx = Math.max(pattern.lastIndexOf('\\'),pattern.lastIndexOf('/'));
                     if(idx<0) {
                         if(pattern.equals(fileMask))
-                            return MessageFormat.format("''{0}'' doesn''t match anything", fileMask );
+                            return String.format("'%s' doesn't match anything", fileMask );
                         else
-                            return MessageFormat.format("''{0}'' doesn''t match anything: even ''{1}'' doesn't exist",
+                            return String.format("'%s' doesn't match anything: even '%s' doesn't exist",
                                 fileMask, pattern );
                     }
 

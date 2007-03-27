@@ -14,7 +14,6 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.regex.Pattern;
 
 /**
@@ -64,7 +63,7 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
     @Override
     public URL getDiffLink(Path path) throws IOException {
         int r = path.getLogEntry().getRevision();
-        return new URL(url, getPath(path)+MessageFormat.format("?r1={0}&r2={1}",r-1,r));
+        return new URL(url, getPath(path)+String.format("?r1=%d&r2=%d",r-1,r));
     }
 
     @Override
