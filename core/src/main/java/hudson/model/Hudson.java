@@ -3,16 +3,16 @@ package hudson.model;
 import com.thoughtworks.xstream.XStream;
 import groovy.lang.GroovyShell;
 import hudson.FeedAdapter;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
-import hudson.Util;
-import hudson.XmlFile;
-import hudson.FilePath;
 import hudson.TcpSlaveAgentListener;
+import hudson.Util;
 import static hudson.Util.fixEmpty;
+import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -21,11 +21,11 @@ import hudson.model.listeners.SCMListener;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.CVSSCM;
-import hudson.scm.SCM;
-import hudson.scm.SCMS;
-import hudson.scm.SCMDescriptor;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.RepositoryBrowsers;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
+import hudson.scm.SCMS;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -33,8 +33,8 @@ import hudson.tasks.Builder;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
-import hudson.triggers.Triggers;
 import hudson.triggers.TriggerDescriptor;
+import hudson.triggers.Triggers;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.FormFieldValidator;
@@ -68,15 +68,14 @@ import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.StringTokenizer;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -387,10 +386,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /*package*/ void removeComputer(Computer computer) {
-        Iterator<Entry<Node,Computer>> itr=computers.entrySet().iterator();
-        while(itr.hasNext()) {
-            Entry<Node, Computer> e = itr.next();
-            if(e.getValue()==computer) {
+        for (Entry<Node, Computer> e : computers.entrySet()) {
+            if (e.getValue() == computer) {
                 computers.remove(e.getKey());
                 return;
             }
@@ -1372,6 +1369,36 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                     error("Job named "+job+" already exists");
             }
         }.process();
+    }
+
+    public Api getApi(final StaplerRequest req) {
+        class hudson {
+            List<job> jobs = new ArrayList<job>();
+
+            class job {
+                String name;
+                String url;
+                BallColor color;
+                Integer lastBuild;
+
+                public job(TopLevelItem item) {
+                    this.name = item.getName();
+                    this.url = req.getRootPath()+'/'+item.getUrl();
+                    if (item instanceof Job) {
+                        Job job = (Job) item;
+                        color = job.getIconColor();
+                        lastBuild =job.getLastBuild()!=null ? job.getLastBuild().getNumber() : null;
+                    }
+                }
+            }
+
+            hudson() {
+                for (TopLevelItem item : getItems())
+                    jobs.add(new job(item));
+            }
+        }
+
+        return new Api(new hudson());
     }
 
 

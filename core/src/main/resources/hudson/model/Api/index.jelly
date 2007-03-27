@@ -1,0 +1,32 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+	<l:layout title="Remoting API">
+		<l:main-panel>
+      <h1>Remote API</h1>
+
+      <p>
+        Many objects of Hudson provides the remote access API. They are available
+        at <tt>${rootURL}/.../api/</tt> where "..." portion is the object for
+        which you'd like to access.
+      </p>
+
+      <dl>
+        <dt><a href="xml">XML API</a></dt>
+        <dd>
+          Access data exposed in <a href="..">HTML</a> as XML for machine consumption.
+        </dd>
+
+        <dt><a href="json">JSON API</a></dt>
+        <dd>
+          Access the same data as JSON for JavaScript-based access. Supports
+          <a href="http://ajaxian.com/archives/jsonp-json-with-padding">JSONP</a> through
+          the optional <tt>jsonp=<i>callbackname</i></tt> query parameter.
+        </dd>
+      </dl>
+
+      <p>
+        For more information about remote API in Hudson, see
+        <a href="https://hudson.dev.java.net/remote-api.html">the documentation</a>.
+      </p>
+    </l:main-panel>
+	</l:layout>
+</j:jelly>
