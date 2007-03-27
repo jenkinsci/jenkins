@@ -11,67 +11,6 @@
   <packaging>jar</packaging>
   <name>Hudson remoting layer</name>
   
-  <profiles>
-    <profile>
-      <id>jdk15</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <!--
-            Have Maven recognize test directory only for JDK1.5.
-            They are written against the remoting module in their
-            untranslated form, so they won't run on 1.4.
-          -->
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <configuration>
-              <sources>
-                <source>src/test/java</source>
-              </sources>
-            </configuration>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>add-test-source</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <!-- run retrotranslator only for releases -->
-    <profile>
-      <id>jdk14</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>retrotranslator-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <phase>process-classes</phase>
-                <goals>
-                  <goal>translate</goal>
-                </goals>
-                <configuration>
-                  <includes>
-                    <include>
-                      <directory>target/classes</directory>
-                    </include>
-                  </includes>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-
   <build>
     <plugins>
       <!--
@@ -130,9 +69,7 @@
               <tasks>
                 <taskdef name="retrotranslator" classpathref="maven.test.classpath" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" />
                 <mkdir dir="target/classes14" />
-                <retrotranslator destdir="target/classes14"><!-- verify="true" detects false-positive errors against some references to remoting-->
-                  <src path="target/classes" />
-                </retrotranslator>
+                <retrotranslator srcdir="target/classes" destdir="target/classes14" /><!-- verify="true" detects false-positive errors against some references to remoting-->
                 <jar basedir="target/classes14" destfile="target/${artifactId}-${version}-jdk14.jar">
                   <manifest>
                     <attribute name="Main-Class" value="hudson.remoting.Launcher" />
@@ -223,7 +160,7 @@
     <dependency>
       <groupId>net.sf.retrotranslator</groupId>
       <artifactId>retrotranslator-runtime</artifactId>
-      <version>1.0.8</version>
+      <version>1.2.1</version>
     </dependency>
     <dependency>
       <!--
@@ -232,7 +169,7 @@
       -->
       <groupId>net.sf.retrotranslator</groupId>
       <artifactId>retrotranslator-transformer</artifactId>
-      <version>1.0.8</version>
+      <version>1.2.1</version>
       <scope>test</scope>
     </dependency>
     <!-- test dependencies -->

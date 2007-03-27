@@ -62,9 +62,7 @@
                   </patternset>
                 </unjar>
                 
-                <retrotranslator destdir="target/classes14"><!-- verify="true" detects false-positive errors against some references to remoting-->
-                  <src path="target/classes" />
-                </retrotranslator>
+                <retrotranslator srcdir="target/classes" destdir="target/classes14" /><!-- verify="true" detects false-positive errors against some references to remoting-->
                 <jar basedir="target/classes14" destfile="target/${artifactId}-${version}-jdk14.jar" manifest="target/META-INF/MANIFEST.MF" />
               </tasks>
             </configuration>
@@ -229,7 +227,7 @@
     <dependency>
       <groupId>net.sf.retrotranslator</groupId>
       <artifactId>retrotranslator-runtime</artifactId>
-      <version>1.0.8</version>
+      <version>1.2.1</version>
     </dependency>
     <dependency>
       <!--
@@ -238,7 +236,7 @@
       -->
       <groupId>net.sf.retrotranslator</groupId>
       <artifactId>retrotranslator-transformer</artifactId>
-      <version>1.0.8</version>
+      <version>1.2.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
