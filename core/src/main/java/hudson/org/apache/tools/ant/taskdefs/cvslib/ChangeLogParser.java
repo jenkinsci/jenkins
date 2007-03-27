@@ -29,6 +29,8 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.File;
@@ -191,13 +193,14 @@ class ChangeLogParser {
         if (line.startsWith("Working file:")) {
             m_file = line.substring(14, line.length());
 
+            File repo = new File(new File(owner.getDir(), m_file), "../CVS/Repository");
             try {
-                File repo = new File(new File(owner.getDir(), m_file), "../CVS/Repository");
                 String module = FileUtils.readFileToString(repo, null);// not sure what encoding CVS uses.
                 String simpleName = m_file.substring(m_file.lastIndexOf('/')+1);
                 m_fullName = '/'+module.trim()+'/'+simpleName;
             } catch (IOException e) {
                 // failed to read
+                LOGGER.log(Level.WARNING, "Failed to read CVS/Repository at "+repo,e);
                 m_fullName = null;
             }
 
@@ -355,4 +358,6 @@ class ChangeLogParser {
         m_dead = false;
         branches.clear();
     }
+
+    private static final Logger LOGGER = Logger.getLogger(ChangeLogParser.class.getName());
 }
