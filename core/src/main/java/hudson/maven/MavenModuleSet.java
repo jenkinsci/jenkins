@@ -70,6 +70,11 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
      */
     private String mavenName;
 
+    /**
+     * Equivalent of CLI <tt>MAVEN_OPTS</tt>. Can be null.
+     */
+    private String mavenOpts;
+
     public MavenModuleSet(String name) {
         super(Hudson.getInstance(),name);
     }
@@ -281,6 +286,14 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
     }
 
     /**
+     * Possibly null, whitespace-separated (including TAB, NL, etc) VM options
+     * to be used to launch Maven process.
+     */
+    public String getMavenOpts() {
+        return mavenOpts;
+    }
+
+    /**
      * Gets the Maven to invoke.
      * If null, we pick any random Maven installation.
      */
@@ -326,6 +339,7 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
         if(rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
+        mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
         mavenName = req.getParameter("maven_version");
     }
 

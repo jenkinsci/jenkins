@@ -28,5 +28,10 @@
     <f:entry title="Goals" help="/help/maven/goals.html">
       <f:textbox name="goals" value="${it.userConfiguredGoals}"/>
     </f:entry>
+    <f:advanced>
+      <f:entry title="MAVEN_OPTS" help="/help/maven/maven-opts.html">
+        <f:expandableTextbox name="mavenOpts" value="${instance.mavenOpts}" />
+      </f:entry>
+    </f:advanced>
   </f:section>
 </j:jelly>

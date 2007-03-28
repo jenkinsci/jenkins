@@ -220,7 +220,11 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             }
         }
 
-        // UGLY....
+        /**
+         * Builds the command line argument list to launch the maven process.
+         *
+         * UGLY.
+         */
         private ArgumentListBuilder buildMavenCmdLine(BuildListener listener) throws IOException, InterruptedException {
             MavenInstallation mvn = getParent().getParent().getMaven();
             if(mvn==null) {
@@ -250,6 +254,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
             if(debugPort!=0)
                 args.add("-Xrunjdwp:transport=dt_socket,server=y,address="+debugPort);
+
+            args.addTokenized(getParent().getParent().getMavenOpts());
 
             args.add("-cp");
             args.add(
