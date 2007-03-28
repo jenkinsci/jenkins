@@ -54,9 +54,9 @@ public abstract class View extends AbstractModelObject {
     public static final class UserInfo implements Comparable<UserInfo> {
         private final User user;
         private Calendar lastChange;
-        private Project project;
+        private AbstractProject project;
 
-        UserInfo(User user, Project p, Calendar lastChange) {
+        UserInfo(User user, AbstractProject p, Calendar lastChange) {
             this.user = user;
             this.project = p;
             this.lastChange = lastChange;
@@ -70,7 +70,7 @@ public abstract class View extends AbstractModelObject {
             return lastChange;
         }
 
-        public Project getProject() {
+        public AbstractProject getProject() {
             return project;
         }
 
@@ -123,9 +123,9 @@ public abstract class View extends AbstractModelObject {
         Map<User,UserInfo> users = new HashMap<User,UserInfo>();
         for (Item item : getItems()) {
             for (Job job : item.getAllJobs()) {
-                if (job instanceof Project) {
-                    Project p = (Project) job;
-                    for (Build build : p.getBuilds()) {
+                if (job instanceof AbstractProject) {
+                    AbstractProject<?,?> p = (AbstractProject) job;
+                    for (AbstractBuild build : p.getBuilds()) {
                         for (Entry entry : build.getChangeSet()) {
                             User user = entry.getAuthor();
 
