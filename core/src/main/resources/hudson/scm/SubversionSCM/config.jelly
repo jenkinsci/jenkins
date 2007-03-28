@@ -4,7 +4,7 @@
       <table width="100%">
         <f:entry title="Repository URL" help="/help/subversion/url.html">
           <f:textbox name="svn.location_remote" value="${loc.remote}"
-            checkUrl="'${rootURL}/scm/SubversionSCM/svnRemoteLocationCheck?value='+escape(this.value)"/>
+            checkUrl="'${rootURL}/scm/SubversionSCM/svnRemoteLocationCheck?value='+encode(this.value)"/>
         </f:entry>
         <f:entry title="Local module directory (optional)" help="/help/subversion/local.html">
           <f:textbox name="svn.location_local" value="${loc.local}"
