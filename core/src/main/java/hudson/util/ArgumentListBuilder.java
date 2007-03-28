@@ -46,6 +46,7 @@ public class ArgumentListBuilder {
      * Decomposes the given token into multiple arguments by splitting via whitespace.
      */
     public ArgumentListBuilder addTokenized(String s) {
+        if(s==null) return this;
         StringTokenizer tokens = new StringTokenizer(s);
         while(tokens.hasMoreTokens())
             add(tokens.nextToken());
