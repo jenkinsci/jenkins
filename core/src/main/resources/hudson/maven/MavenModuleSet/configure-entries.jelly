@@ -30,7 +30,7 @@
     </f:entry>
     <f:advanced>
       <f:entry title="MAVEN_OPTS" help="/help/maven/maven-opts.html">
-        <f:expandableTextbox name="mavenOpts" value="${instance.mavenOpts}" />
+        <f:expandableTextbox name="mavenOpts" value="${it.mavenOpts}" />
       </f:entry>
     </f:advanced>
   </f:section>
