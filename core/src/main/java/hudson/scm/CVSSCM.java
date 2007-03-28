@@ -650,11 +650,18 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                     task.setStart(startTime);
                     task.setEnd(endTime);
                     if(changedFiles!=null) {
-                        // if the directory doesn't exist, cvs changelog will die, so filter them out.
-                        // this means we'll lose the log of those changes
-                        for (String filePath : changedFiles) {
-                            if(new File(ws,filePath).getParentFile().exists())
-                                task.addFile(filePath);
+                        // we can optimize the processing if we know what files have changed.
+                        // but also try not to make the command line too long so as no to hit
+                        // the system call limit to the command line length (see issue #389)
+                        // the choice of the number is arbitrary, but normally we don't really
+                        // expect continuous builds to have too many changes, so this should be OK.
+                        if(changedFiles.size()<100) {
+                            // if the directory doesn't exist, cvs changelog will die, so filter them out.
+                            // this means we'll lose the log of those changes
+                            for (String filePath : changedFiles) {
+                                if(new File(ws,filePath).getParentFile().exists())
+                                    task.addFile(filePath);
+                            }
                         }
                     } else {
                         // fallback
