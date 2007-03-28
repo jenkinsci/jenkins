@@ -179,26 +179,6 @@
               </execution>
             </executions>
           </plugin>
-          <!-- run retrotranslator only during the release, so that debug build gets faster -->
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>retrotranslator-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <phase>process-classes</phase>
-                <goals>
-                  <goal>translate</goal>
-                </goals>
-                <configuration>
-                  <includes>
-                    <include>
-                      <directory>target/classes</directory>
-                    </include>
-                  </includes>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
         </plugins>
       </build>
       <properties>
