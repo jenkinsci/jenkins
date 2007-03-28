@@ -696,8 +696,6 @@ public class SubversionSCM extends SCM implements Serializable {
             }.process();
         }
 
-        private static final Pattern URL_PATTERN = Pattern.compile("(https?|svn(\\+\\w+)?|file)://.+");
-
         /**
          * validate the value for a local location (local checkout directory).
          */
@@ -729,6 +727,8 @@ public class SubversionSCM extends SCM implements Serializable {
             new Initializer();
         }
     }
+
+    static final Pattern URL_PATTERN = Pattern.compile("(https?|svn(\\+[a-z0-9]+)?|file)://.+");
 
     private static final long serialVersionUID = 1L;
 
