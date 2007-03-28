@@ -6,6 +6,7 @@ import hudson.model.Describable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.net.MalformedURLException;
 
 /**
  * Connects Hudson to repository browsers like ViewCVS or FishEye,
@@ -44,6 +45,26 @@ public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> implements
     protected static String trimHeadSlash(String s) {
         if(s.startsWith("/"))   return s.substring(1);
         return s;
+    }
+
+    /**
+     * Normalize the URL so that it ends with '/'.
+     * <p>
+     * An attention is paid to preserve the query parameters in URL if any. 
+     */
+    protected static URL normalizeToEndWithSlash(URL url) {
+        if(url.getPath().endsWith("/"))
+            return url;
+
+        // normalize
+        String q = url.getQuery();
+        q = q!=null?('?'+q):"";
+        try {
+            return new URL(url,url.getPath()+'/'+q);
+        } catch (MalformedURLException e) {
+            // impossible
+            throw new Error(e);
+        }
     }
 
     private static final long serialVersionUID = 1L;

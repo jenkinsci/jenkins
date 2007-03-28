@@ -40,9 +40,7 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
      * @stapler-constructor
      */
     public FishEyeSVN(URL url, String rootModule) throws MalformedURLException {
-        if(!url.toExternalForm().endsWith("/"))
-            url = new URL(url.toExternalForm()+"/");
-        this.url = url;
+        this.url = normalizeToEndWithSlash(url);
 
         // normalize
         rootModule = rootModule.trim();

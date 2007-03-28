@@ -30,7 +30,7 @@ public final class ViewCVS extends CVSRepositoryBrowser {
      * @stapler-constructor
      */
     public ViewCVS(URL url) throws MalformedURLException {
-        this.url = url;
+        this.url = normalizeToEndWithSlash(url);
     }
 
     public URL getFileLink(File file) throws IOException {

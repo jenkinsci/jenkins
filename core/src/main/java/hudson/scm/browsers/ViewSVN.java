@@ -32,7 +32,7 @@ public class ViewSVN extends SubversionRepositoryBrowser {
      * @stapler-constructor
      */
     public ViewSVN(URL url) throws MalformedURLException {
-        this.url = url;
+        this.url = normalizeToEndWithSlash(url);
     }
 
     @Override
