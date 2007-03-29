@@ -206,6 +206,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
             ArgumentListBuilder margs = new ArgumentListBuilder();
             margs.add("-N");
+            margs.add("-f",getParent().getModuleRoot().child("pom.xml").getRemote());
             margs.addTokenized(getProject().getGoals());
 
             boolean normalExit = false;
@@ -227,7 +228,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
          */
         public Channel newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
             return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
-                out, getProject().getModuleRoot());
+                out, getProject().getParent().getModuleRoot());
         }
 
         /**
