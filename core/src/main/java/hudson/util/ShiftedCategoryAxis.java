@@ -47,6 +47,7 @@ public final class ShiftedCategoryAxis extends CategoryAxis {
             - calculateCategorySize(categoryCount, area, edge) / 2;
     }
 
+    @Override
     protected AxisState drawCategoryLabels(Graphics2D g2,
                                            Rectangle2D plotArea,
                                            Rectangle2D dataArea,
@@ -61,6 +62,9 @@ public final class ShiftedCategoryAxis extends CategoryAxis {
         if (isTickLabelsVisible()) {
             List ticks = refreshTicks(g2, state, plotArea, edge);
             state.setTicks(ticks);
+
+            // remember the last drawn label so that we can avoid drawing overlapping labels.
+            Rectangle2D r = null;
 
             int categoryIndex = 0;
             Iterator iterator = ticks.iterator();
@@ -110,27 +114,31 @@ public final class ShiftedCategoryAxis extends CategoryAxis {
                 }
                 Rectangle2D area = new Rectangle2D.Double(x0, y0, (x1 - x0),
                         (y1 - y0));
-                Point2D anchorPoint = RectangleAnchor.coordinates(area,
-                        position.getCategoryAnchor());
-                TextBlock block = tick.getLabel();
-                block.draw(g2, (float) anchorPoint.getX(),
-                        (float) anchorPoint.getY(), position.getLabelAnchor(),
-                        (float) anchorPoint.getX(), (float) anchorPoint.getY(),
-                        position.getAngle());
-                Shape bounds = block.calculateBounds(g2,
-                        (float) anchorPoint.getX(), (float) anchorPoint.getY(),
-                        position.getLabelAnchor(), (float) anchorPoint.getX(),
-                        (float) anchorPoint.getY(), position.getAngle());
-                if (plotState != null && plotState.getOwner() != null) {
-                    EntityCollection entities
-                        = plotState.getOwner().getEntityCollection();
-                    if (entities != null) {
-                        String tooltip = getCategoryLabelToolTip(
-                                tick.getCategory());
-                        entities.add(new CategoryLabelEntity(tick.getCategory(),
-                                bounds, tooltip, null));
+                if(r==null || !r.intersects(area)) {
+                    Point2D anchorPoint = RectangleAnchor.coordinates(area,
+                            position.getCategoryAnchor());
+                    TextBlock block = tick.getLabel();
+                    block.draw(g2, (float) anchorPoint.getX(),
+                            (float) anchorPoint.getY(), position.getLabelAnchor(),
+                            (float) anchorPoint.getX(), (float) anchorPoint.getY(),
+                            position.getAngle());
+                    Shape bounds = block.calculateBounds(g2,
+                            (float) anchorPoint.getX(), (float) anchorPoint.getY(),
+                            position.getLabelAnchor(), (float) anchorPoint.getX(),
+                            (float) anchorPoint.getY(), position.getAngle());
+                    if (plotState != null && plotState.getOwner() != null) {
+                        EntityCollection entities
+                            = plotState.getOwner().getEntityCollection();
+                        if (entities != null) {
+                            String tooltip = getCategoryLabelToolTip(
+                                    tick.getCategory());
+                            entities.add(new CategoryLabelEntity(tick.getCategory(),
+                                    bounds, tooltip, null));
+                        }
                     }
+                    r = bounds.getBounds2D();
                 }
+
                 categoryIndex++;
             }
 
