@@ -568,8 +568,10 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         }
 
         DataSetBuilder<String,Label> data = new DataSetBuilder<String, Label>();
-        for( Run r : getBuilds() )
+        for( Run r : getBuilds() ) {
+            if(r.isBuilding())  continue;
             data.add( ((double)r.getDuration())/(1000*60), "mins", new Label(r));
+        }
 
         final CategoryDataset dataset = data.build();
 
