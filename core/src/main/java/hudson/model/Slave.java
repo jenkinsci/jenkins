@@ -320,6 +320,13 @@ public final class Slave implements Node, Serializable {
             return channel;
         }
 
+        public void doDoDisconnect(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            if(!Hudson.adminCheck(req,rsp))
+                return;
+            closeChannel();
+            rsp.sendRedirect(".");
+        }
+
         public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             if(channel!=null) {
                 rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
