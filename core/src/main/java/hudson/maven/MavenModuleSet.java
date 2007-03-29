@@ -228,6 +228,9 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
                 e.printStackTrace(); // TODO: logging
             }
         }
+
+        if(reporters==null)
+            reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
     }
 
     /**
@@ -370,8 +373,6 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
         mavenName = req.getParameter("maven_version");
 
-        if(reporters==null)
-            reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
         reporters.rebuild(req,MavenReporters.getConfigurableList(),"reporter");
     }
 
