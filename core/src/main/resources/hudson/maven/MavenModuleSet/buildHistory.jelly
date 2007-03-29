@@ -1,7 +1,4 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:set var="queue" value="${it.queueItems}"/>
-  <j:if test="${!empty(queue)}">
-    <t:queue items="${queue}"/>
-  </j:if>
+  <t:queue items="${it.queueItems}"/>
   <st:include page="/hudson/model/Job/buildHistory.jelly" />
 </j:jelly>

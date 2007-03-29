@@ -1,0 +1,10 @@
+<!--
+  Used to asynchronously update build queue
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <st:contentType value="text/html;charset=UTF-8" />
+  <j:set var="rootURL" value="${request.contextPath}" />
+  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+
+  <t:queue items="${it.ququeItems}" />
+</j:jelly>
