@@ -71,7 +71,7 @@ public final class ShiftedCategoryAxis extends CategoryAxis {
                 g2.setPaint(getTickLabelPaint(tick.getCategory()));
 
                 CategoryLabelPosition position
-                    = this.categoryLabelPositions.getLabelPosition(edge);
+                    = this.getCategoryLabelPositions().getLabelPosition(edge);
                 double x0 = 0.0;
                 double x1 = 0.0;
                 double y0 = 0.0;
@@ -81,7 +81,7 @@ public final class ShiftedCategoryAxis extends CategoryAxis {
                             dataArea, edge);
                     x1 = getCategoryEnd(categoryIndex, ticks.size(), dataArea,
                             edge);
-                    y1 = state.getCursor() - this.categoryLabelPositionOffset;
+                    y1 = state.getCursor() - this.getCategoryLabelPositionOffset();
                     y0 = y1 - state.getMax();
                 }
                 else if (edge == RectangleEdge.BOTTOM) {
@@ -89,7 +89,7 @@ public final class ShiftedCategoryAxis extends CategoryAxis {
                             dataArea, edge);
                     x1 = getCategoryEnd(categoryIndex, ticks.size(), dataArea,
                             edge);
-                    y0 = state.getCursor() + this.categoryLabelPositionOffset;
+                    y0 = state.getCursor() + this.getCategoryLabelPositionOffset();
                     y1 = y0 + state.getMax();
                 }
                 else if (edge == RectangleEdge.LEFT) {
@@ -97,7 +97,7 @@ public final class ShiftedCategoryAxis extends CategoryAxis {
                             dataArea, edge);
                     y1 = getCategoryEnd(categoryIndex, ticks.size(), dataArea,
                             edge);
-                    x1 = state.getCursor() - this.categoryLabelPositionOffset;
+                    x1 = state.getCursor() - this.getCategoryLabelPositionOffset();
                     x0 = x1 - state.getMax();
                 }
                 else if (edge == RectangleEdge.RIGHT) {
@@ -105,7 +105,7 @@ public final class ShiftedCategoryAxis extends CategoryAxis {
                             dataArea, edge);
                     y1 = getCategoryEnd(categoryIndex, ticks.size(), dataArea,
                             edge);
-                    x0 = state.getCursor() + this.categoryLabelPositionOffset;
+                    x0 = state.getCursor() + this.getCategoryLabelPositionOffset();
                     x1 = x0 - state.getMax();
                 }
                 Rectangle2D area = new Rectangle2D.Double(x0, y0, (x1 - x0),
