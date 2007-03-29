@@ -1,13 +1,16 @@
 package hudson.maven;
 
 import hudson.Util;
-import hudson.tasks.Maven.MavenInstallation;
+import hudson.util.NullStream;
 import hudson.model.BuildListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.tasks.Maven.MavenInstallation;
 
+import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -21,8 +24,16 @@ import java.util.WeakHashMap;
  * @author Kohsuke Kawaguchi
  */
 final class ProcessCache {
+    /**
+     * Implemented by the caller to create a new process
+     * (when a new one is needed.)
+     */
     interface Factory {
-        Channel newProcess(BuildListener listener) throws IOException, InterruptedException;
+        /**
+         * @param out
+         *      The output from the process should be sent to this output stream.
+         */
+        Channel newProcess(BuildListener listener,OutputStream out) throws IOException, InterruptedException;
         String getMavenOpts();
         MavenInstallation getMavenInstallation();
     }
@@ -38,14 +49,16 @@ final class ProcessCache {
         private final String mavenOpts;
         private final PerChannel parent;
         private final MavenInstallation installation;
+        private final RedirectableOutputStream output;
 
         private int age = 0;
 
-        MavenProcess(PerChannel parent, String mavenOpts, MavenInstallation installation, Channel channel) {
+        MavenProcess(PerChannel parent, String mavenOpts, MavenInstallation installation, Channel channel, RedirectableOutputStream output) {
             this.parent = parent;
             this.mavenOpts = mavenOpts;
             this.channel = channel;
             this.installation = installation;
+            this.output = output;
         }
 
         boolean matches(String mavenOpts,MavenInstallation installation) {
@@ -56,6 +69,7 @@ final class ProcessCache {
             if(age>=MAX_AGE || maxProcess==0)
                 discard();
             else {
+                output.set(new NullStream());
                 // make room for the new process and reuse.
                 synchronized(parent.processes) {
                     while(parent.processes.size()>=maxProcess)
@@ -119,22 +133,37 @@ final class ProcessCache {
                     listener.getLogger().println("Reusing existing maven process");
                     itr.remove();
                     p.age++;
+                    p.output.set(listener.getLogger());
                     return p;
                 }
             }
         }
 
-        return new MavenProcess(list,mavenOpts,installation,factory.newProcess(listener));
+        RedirectableOutputStream out = new RedirectableOutputStream(listener.getLogger());
+        return new MavenProcess(list,mavenOpts,installation,factory.newProcess(listener,out),out);
     }
 
 
 
     public static int MAX_AGE = 5;
 
+    /**
+     * Noop callable used for checking the sanity of the maven process in the cache.
+     */
     private static class Noop implements Callable<Object,RuntimeException>, Serializable {
         public Object call() {
             return null;
         }
         private static final long serialVersionUID = 1L;
+    }
+
+    static class RedirectableOutputStream extends FilterOutputStream {
+        public RedirectableOutputStream(OutputStream out) {
+            super(out);
+        }
+
+        public void set(OutputStream os) {
+            super.out = os;
+        }
     }
 }

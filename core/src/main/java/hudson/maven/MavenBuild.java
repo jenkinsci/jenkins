@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -224,11 +225,9 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         /**
          * Starts maven process.
          */
-        public Channel newProcess(BuildListener listener) throws IOException, InterruptedException {
-            ArgumentListBuilder args = buildMavenCmdLine(listener);
-
-            return launcher.launchChannel(args.toCommandArray(),
-                listener.getLogger(), getProject().getModuleRoot());
+        public Channel newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
+            return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
+                out, getProject().getModuleRoot());
         }
 
         /**
