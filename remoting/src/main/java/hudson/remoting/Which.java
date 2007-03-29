@@ -13,7 +13,10 @@ import java.net.URL;
  */
 public class Which {
     public static File jarFile(Class clazz) throws IOException {
-        String res = clazz.getClassLoader().getResource(clazz.getName().replace('.', '/') + ".class").toExternalForm();
+        ClassLoader cl = clazz.getClassLoader();
+        if(cl==null)
+            return new File("${java.home}rt.jar");
+        String res = cl.getResource(clazz.getName().replace('.', '/') + ".class").toExternalForm();
         if(res.startsWith("jar:")) {
             res = res.substring(4,res.lastIndexOf('!')); // cut off jar: and the file name portion
             return new File(decode(new URL(res).getPath()));
