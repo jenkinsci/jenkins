@@ -6,5 +6,5 @@
   <j:set var="rootURL" value="${request.contextPath}" />
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
 
-  <t:queue items="${it.ququeItems}" />
+  <t:queue items="${it.quequeItems}" />
 </j:jelly>
