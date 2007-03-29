@@ -245,7 +245,7 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     }
 
     /**
-     * List of active {@link MavenReporter}s configured for this project.
+     * List of active {@link MavenReporter}s configured for this module.
      */
     public DescribableList<MavenReporter, Descriptor<MavenReporter>> getReporters() {
         return reporters;
