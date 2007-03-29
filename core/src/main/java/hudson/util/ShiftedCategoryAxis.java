@@ -21,6 +21,10 @@ import java.util.Iterator;
 /**
  * {@link CategoryAxis} shifted to left to eliminate redundant space
  * between area and the Y-axis.
+ *
+ * <p>
+ * This class also implements X-axis label skipping algorithm to
+ * avoid drawing overlapping labels.
  */
 public final class ShiftedCategoryAxis extends CategoryAxis {
     public ShiftedCategoryAxis(String label) {
