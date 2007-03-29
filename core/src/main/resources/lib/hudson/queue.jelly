@@ -1,10 +1,14 @@
 <!--
-    displays the build queue.
+  displays the build queue.
+
+  Attributes:
+    @items
+      Queue items to be displayed. Normally ${app.queue.items}
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:pane title="Build Queue" width="2" id="buildQueue">
     <j:choose>
-      <j:when test="${empty(app.queue.items)}">
+      <j:when test="${empty(items)}">
         <tr>
           <td class="pane" colspan="2">
             No builds in the queue.
@@ -23,7 +27,7 @@
             </td>
           </tr>
         </j:if>
-        <j:forEach var="item" items="${app.queue.items}">
+        <j:forEach var="item" items="${items}">
           <tr>
             <j:set var="id" value="${h.generateId()}"/>
             <td class="pane" width="100%" id="${id}">

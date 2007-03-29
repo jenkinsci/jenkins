@@ -19,7 +19,7 @@
         <st:include page="sidepanel2.jelly" />
       </l:isAdmin>
     </l:tasks>
-    <t:queue />
+    <t:queue items="${app.queue.items}" />
     <t:executors />
   </l:side-panel>
 </j:jelly>
