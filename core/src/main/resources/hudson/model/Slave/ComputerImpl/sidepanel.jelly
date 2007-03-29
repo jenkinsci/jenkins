@@ -10,7 +10,9 @@
       <l:isAdmin>
         <l:task icon="images/24x24/clipboard.gif" href="log" title="Log" />
         <l:task icon="images/24x24/computer.gif" href="systemInfo" title="System Information" />
-        <l:task icon="images/24x24/edit-delete.gif" href="disconnect" title="Disconnect" />
+        <j:if test="${it.channel!=null}">
+          <l:task icon="images/24x24/edit-delete.gif" href="disconnect" title="Disconnect" />
+        </j:if>
       </l:isAdmin>
     </l:tasks>
   </l:side-panel>
