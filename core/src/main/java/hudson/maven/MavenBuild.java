@@ -185,10 +185,13 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
     }
 
-    private class RunnerImpl extends AbstractRunner {
+    private class RunnerImpl extends AbstractRunner implements ProcessCache.Factory {
         private List<MavenReporter> reporters = new ArrayList<MavenReporter>();
+        private BuildListener listener;
 
         protected Result doRun(BuildListener listener) throws Exception {
+            this.listener = listener;
+
             // pick up a list of reporters to run
             getProject().getReporters().addAllTo(reporters);
             getProject().getParent().getReporters().addAllTo(reporters);
@@ -201,25 +204,34 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                     reporters.add(auto);
             }
 
-            // start maven process
-            ArgumentListBuilder args = buildMavenCmdLine(listener);
-
-            Channel channel = launcher.launchChannel(args.toCommandArray(),
-                listener.getLogger(), getProject().getModuleRoot());
-
-            // Maven started.
+            ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), getMavenOpts(), this);
 
             ArgumentListBuilder margs = new ArgumentListBuilder();
             margs.add("-N");
             margs.addTokenized(getProject().getGoals());
 
+            boolean normalExit = false;
             try {
-                return channel.call(new Builder(
+                Result r = process.channel.call(new Builder(
                     listener,new ProxyImpl(),
                     reporters.toArray(new MavenReporter[0]), margs.toList()));
+                normalExit = true;
+                return r;
             } finally {
-                channel.close();
+                if(normalExit)  process.recycle();
+                else            process.discard();
             }
+        }
+
+
+        /**
+         * Starts maven process.
+         */
+        public Channel newProcess() throws IOException, InterruptedException {
+            ArgumentListBuilder args = buildMavenCmdLine(listener);
+
+            return launcher.launchChannel(args.toCommandArray(),
+                listener.getLogger(), getProject().getModuleRoot());
         }
 
         /**
@@ -257,7 +269,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             if(debugPort!=0)
                 args.add("-Xrunjdwp:transport=dt_socket,server=y,address="+debugPort);
 
-            args.addTokenized(getParent().getParent().getMavenOpts());
+            args.addTokenized(getMavenOpts());
 
             args.add("-cp");
             args.add(
@@ -276,6 +288,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 Which.jarFile(hudson.maven.agent.PluginManagerInterceptor.class).getAbsolutePath():
                 slaveRoot.child("maven-interceptor.jar").getRemote());
             return args;
+        }
+
+        private String getMavenOpts() {
+            return getParent().getParent().getMavenOpts();
         }
 
         public void post(BuildListener listener) {
@@ -375,9 +391,19 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
      */
     public static int debugPort;
 
+    private static int MAX_PROCESS_CACHE;
+
     static {
         String port = System.getProperty(MavenBuild.class.getName() + ".debugPort");
         if(port!=null)
             debugPort = Integer.parseInt(port);
+
+        String m = System.getProperty(MavenBuild.class.getName() + ".maxProcessCache");
+        if(m!=null)
+            MAX_PROCESS_CACHE = Integer.parseInt(m);
+        else
+            MAX_PROCESS_CACHE = 0;
     }
+
+    private static final ProcessCache mavenProcessCache = new ProcessCache(MAX_PROCESS_CACHE);
 }

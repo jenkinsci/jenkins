@@ -63,8 +63,11 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         Result r = super.getResult();
 
         for (List<MavenBuild> list : getModuleBuilds().values())
-            for (MavenBuild build : list)
-                r = r.combine(build.getResult());
+            for (MavenBuild build : list) {
+                Result br = build.getResult();
+                if(br!=null)
+                    r = r.combine(br);
+            }
 
         return r;
     }
