@@ -15,6 +15,7 @@ import hudson.model.Node;
 import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.model.Queue;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.CopyOnWriteMap;
@@ -303,6 +304,18 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
                 return i;
         }
         return null;
+    }
+
+    /**
+     * Returns the {@link MavenModule}s that are in the queue.
+     */
+    public List<Queue.Item> getQueueItems() {
+        List<Queue.Item> r = new ArrayList<hudson.model.Queue.Item>();
+        for( Queue.Item item : Hudson.getInstance().getQueue().getItems() ) {
+            if(item.project.getParent()==this || item.project==this)
+                r.add(item);
+        }
+        return r;
     }
 
     /**
