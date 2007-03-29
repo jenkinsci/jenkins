@@ -187,11 +187,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
     private class RunnerImpl extends AbstractRunner implements ProcessCache.Factory {
         private List<MavenReporter> reporters = new ArrayList<MavenReporter>();
-        private BuildListener listener;
 
         protected Result doRun(BuildListener listener) throws Exception {
-            this.listener = listener;
-
             // pick up a list of reporters to run
             getProject().getReporters().addAllTo(reporters);
             getProject().getParent().getReporters().addAllTo(reporters);
@@ -204,7 +201,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                     reporters.add(auto);
             }
 
-            ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), getMavenOpts(), this);
+            ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener, this);
 
             ArgumentListBuilder margs = new ArgumentListBuilder();
             margs.add("-N");
@@ -227,7 +224,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         /**
          * Starts maven process.
          */
-        public Channel newProcess() throws IOException, InterruptedException {
+        public Channel newProcess(BuildListener listener) throws IOException, InterruptedException {
             ArgumentListBuilder args = buildMavenCmdLine(listener);
 
             return launcher.launchChannel(args.toCommandArray(),
@@ -240,7 +237,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
          * UGLY.
          */
         private ArgumentListBuilder buildMavenCmdLine(BuildListener listener) throws IOException, InterruptedException {
-            MavenInstallation mvn = getParent().getParent().getMaven();
+            MavenInstallation mvn = getMavenInstallation();
             if(mvn==null) {
                 listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
                 throw new RunnerAbortedException();
@@ -290,8 +287,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             return args;
         }
 
-        private String getMavenOpts() {
+        public String getMavenOpts() {
             return getParent().getParent().getMavenOpts();
+        }
+
+        public MavenInstallation getMavenInstallation() {
+            return getParent().getParent().getMaven();
         }
 
         public void post(BuildListener listener) {

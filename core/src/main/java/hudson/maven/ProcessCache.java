@@ -1,6 +1,8 @@
 package hudson.maven;
 
 import hudson.Util;
+import hudson.tasks.Maven.MavenInstallation;
+import hudson.model.BuildListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -20,27 +22,34 @@ import java.util.WeakHashMap;
  */
 final class ProcessCache {
     interface Factory {
-        Channel newProcess() throws IOException, InterruptedException;
+        Channel newProcess(BuildListener listener) throws IOException, InterruptedException;
+        String getMavenOpts();
+        MavenInstallation getMavenInstallation();
     }
 
     class MavenProcess {
         /**
+         * Channel connected to the maven process.
+         */
+        final Channel channel;
+        /**
          * MAVEN_OPTS of this VM.
          */
-        final String mavenOpts;
-        final Channel channel;
+        private final String mavenOpts;
         private final PerChannel parent;
+        private final MavenInstallation installation;
 
         private int age = 0;
 
-        MavenProcess(PerChannel parent, String mavenOpts, Channel channel) {
+        MavenProcess(PerChannel parent, String mavenOpts, MavenInstallation installation, Channel channel) {
             this.parent = parent;
             this.mavenOpts = mavenOpts;
             this.channel = channel;
+            this.installation = installation;
         }
 
-        boolean matches(String mavenOpts) {
-            return Util.fixNull(this.mavenOpts).equals(Util.fixNull(mavenOpts));
+        boolean matches(String mavenOpts,MavenInstallation installation) {
+            return Util.fixNull(this.mavenOpts).equals(Util.fixNull(mavenOpts)) && this.installation==installation;
         }
 
         public void recycle() throws IOException {
@@ -87,12 +96,18 @@ final class ProcessCache {
         return r;
     }
 
-    public MavenProcess get(VirtualChannel owner, String mavenOpts, Factory factory) throws InterruptedException, IOException {
+    /**
+     * Gets or creates a new maven process for launch.
+     */
+    public MavenProcess get(VirtualChannel owner, BuildListener listener, Factory factory) throws InterruptedException, IOException {
+        String mavenOpts = factory.getMavenOpts();
+        MavenInstallation installation = factory.getMavenInstallation();
+
         PerChannel list = get(owner);
         synchronized(list) {
             for (Iterator<MavenProcess> itr = list.processes.iterator(); itr.hasNext();) {
                 MavenProcess p =  itr.next();
-                if(p.matches(mavenOpts)) {
+                if(p.matches(mavenOpts, installation)) {
                     try {// quickly check if this process is still alive
                         p.channel.call(new Noop());
                     } catch (IOException e) {
@@ -101,6 +116,7 @@ final class ProcessCache {
                         continue;
                     }
 
+                    listener.getLogger().println("Reusing existing maven process");
                     itr.remove();
                     p.age++;
                     return p;
@@ -108,7 +124,7 @@ final class ProcessCache {
             }
         }
 
-        return new MavenProcess(list,mavenOpts, factory.newProcess());
+        return new MavenProcess(list,mavenOpts,installation,factory.newProcess(listener));
     }
 
 
