@@ -66,7 +66,14 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
         } catch (Throwable e) {
             // propagate this to the calling process
             try {
-                return new UserResponse<RSP,EXC>(serialize(e,channel),true);
+                byte[] response;
+                try {
+                    response = serialize(e, channel);
+                } catch (NotSerializableException x) {
+                    // perhaps the thrown runtime exception is of time we can't handle
+                    response = serialize(new ProxyException(e), channel);
+                }
+                return new UserResponse<RSP,EXC>(response,true);
             } catch (IOException x) {
                 // throw it as a lower-level exception
                 throw (EXC)x;
