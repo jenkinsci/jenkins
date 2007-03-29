@@ -312,7 +312,7 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
     public List<Queue.Item> getQueueItems() {
         List<Queue.Item> r = new ArrayList<hudson.model.Queue.Item>();
         for( Queue.Item item : Hudson.getInstance().getQueue().getItems() ) {
-            if(item.project.getParent()==this || item.project==this)
+            if(item.project.getParent()==this || (Object)item.project==this)
                 r.add(item);
         }
         return r;
