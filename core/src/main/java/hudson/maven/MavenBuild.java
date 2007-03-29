@@ -191,6 +191,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         protected Result doRun(BuildListener listener) throws Exception {
             // pick up a list of reporters to run
             getProject().getReporters().addAllTo(reporters);
+            getProject().getParent().getReporters().addAllTo(reporters);
+            
             for (MavenReporterDescriptor d : MavenReporters.LIST) {
                 if(getProject().getReporters().contains(d))
                     continue;   // already configured

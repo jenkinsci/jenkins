@@ -16,9 +16,11 @@ import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.Queue;
+import hudson.model.Descriptor;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.CopyOnWriteMap;
+import hudson.util.DescribableList;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -45,7 +47,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem {
+public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, DescribableList.Owner {
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
@@ -75,6 +77,12 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
      * Equivalent of CLI <tt>MAVEN_OPTS</tt>. Can be null.
      */
     private String mavenOpts;
+
+    /**
+     * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
+     */
+    private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
+        new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
 
     public MavenModuleSet(String name) {
         super(Hudson.getInstance(),name);
@@ -136,6 +144,13 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
                 r.add(m);
         }
         return r;
+    }
+
+    /**
+     * List of active {@link MavenReporter}s that should be applied to all module builds.
+     */
+    public DescribableList<MavenReporter, Descriptor<MavenReporter>> getReporters() {
+        return reporters;
     }
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
@@ -354,6 +369,10 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
         goals = Util.fixEmpty(req.getParameter("goals").trim());
         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
         mavenName = req.getParameter("maven_version");
+
+        if(reporters==null)
+            reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
+        reporters.rebuild(req,MavenReporters.getConfigurableList(),"reporter");
     }
 
     public TopLevelItemDescriptor getDescriptor() {
