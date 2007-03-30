@@ -465,6 +465,9 @@ var repetableSupport = {
             if(Element.hasClassName(n,"repeated-chunk"))
                 children.push(n);
 
+        if(children.length==0) {
+            // noop
+        } else
         if(children.length==1) {
             children[0].className = "repeated-chunk first last only";
         } else {
