@@ -21,3 +21,7 @@ WWW=../../../www
 jarUrl=$(cat target/upload.log | grep "^Posted" | sed -e "s/Posted //g")
 perl -p -e "s|https://.+hudson\.jar|$jarUrl|" $WWW/hudson.jnlp
 cp $WWW/hudson.jnlp $WWW/$id.jnlp
+
+# update changelog.html
+perl -ni -e "print unless /=END=.+/" $WWW/changelog.html
+perl -ni -e 'print; print "<h3>What'\''s new in 1.$id</h3>\n<ul>\n  <li>\n</ul>\n=END=-->\n" if /=BEGIN=/' $WWW/changelog.html
