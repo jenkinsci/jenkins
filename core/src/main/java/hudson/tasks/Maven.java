@@ -221,6 +221,10 @@ public class Maven extends Builder {
             new FormFieldValidator(req,rsp,true) {
                 public void check() throws IOException, ServletException {
                     File f = getFileParameter("value");
+                    if(f.getPath().equals("")) {
+                        error("MAVEN_HOME is required");
+                        return;
+                    }
                     if(!f.isDirectory()) {
                         error(f+" is not a directory");
                         return;
