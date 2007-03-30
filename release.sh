@@ -14,4 +14,10 @@ EOF
 
 # this is for the JNLP start
 cp target/checkout/war/target/hudson.war target/checkout/war/target/hudson.jar
-javanettasks uploadFile hudson /releases/jnlp/hudson.jar "version $id" Stable target/checkout/war/target/hudson.jar
+javanettasks uploadFile hudson /releases/jnlp/hudson.jar "version $id" Stable target/checkout/war/target/hudson.jar | tee target/upload.log
+
+# replace the jar file link accordingly
+WWW=../../../www
+jarUrl=$(cat target/upload.log | grep "^Posted" | sed -e "s/Posted //g")
+perl -p -e "s|https://.+hudson\.jar|$jarUrl|" $WWW/hudson.jnlp
+cp $WWW/hudson.jnlp $WWW/$id.jnlp
