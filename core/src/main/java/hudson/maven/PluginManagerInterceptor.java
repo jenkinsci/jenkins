@@ -90,11 +90,11 @@ public class PluginManagerInterceptor implements PluginManagerListener, Lifecycl
                 throw new AbortException(r+" failed");
     }
 
-    public void postExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException, AbortException {
+    public void postExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException, AbortException {
         MojoInfo info = new MojoInfo(exec, mergedConfig, eval);
 
         for (MavenReporter r : reporters)
-            if(!r.postExecute(buildProxy,project, info,listener))
+            if(!r.postExecute(buildProxy,project,info,listener,exception))
                 throw new AbortException(r+" failed");
     }
     

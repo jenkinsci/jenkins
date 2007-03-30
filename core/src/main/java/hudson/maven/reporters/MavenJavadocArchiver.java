@@ -24,7 +24,7 @@ import java.io.IOException;
  */
 public class MavenJavadocArchiver extends MavenReporter {
 
-    public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
+    public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
         if(!mojo.pluginName.matches("org.apache.maven.plugins","maven-javadoc-plugin"))
             return true;
 

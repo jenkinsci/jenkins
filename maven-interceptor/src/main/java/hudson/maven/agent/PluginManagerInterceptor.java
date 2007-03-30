@@ -93,9 +93,17 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
         try {
             if(listener!=null)
                 listener.preExecute(project,mojoExecution,mergedConfiguration,eval);
-            super.executeMojo(project, mojoExecution, session);
-            if(listener!=null)
-                listener.postExecute(project,mojoExecution,mergedConfiguration,eval);
+            try {
+                super.executeMojo(project, mojoExecution, session);
+                if(listener!=null)
+                    listener.postExecute(project,mojoExecution,mergedConfiguration,eval,null);
+            } catch (MojoExecutionException e) {
+                if(listener!=null)
+                    listener.postExecute(project,mojoExecution,mergedConfiguration,eval,e);
+            } catch (MojoFailureException e) {
+                if(listener!=null)
+                    listener.postExecute(project,mojoExecution,mergedConfiguration,eval,e);
+            }
         } catch (InterruptedException e) {
             // orderly abort
             throw new AbortException("Execution aborted",e);

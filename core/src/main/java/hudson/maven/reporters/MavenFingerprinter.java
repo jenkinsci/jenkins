@@ -47,7 +47,7 @@ public class MavenFingerprinter extends MavenReporter {
         return true;
     }
 
-    public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
+    public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
         boolean updated = false;
 
         // really nice if we can do this in preExecute,

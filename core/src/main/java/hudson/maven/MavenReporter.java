@@ -10,6 +10,8 @@ import hudson.model.Build;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Publisher;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.MojoExecutionException;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -122,8 +124,14 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
      * Called after execution of a single mojo.
      * <p>
      * See {@link #preExecute} for the contract.
+     *
+     * @param error
+     *      If mojo execution failed with {@link MojoFailureException} or
+     *      {@link MojoExecutionException}, this method is still invoked
+     *      with those error objects.
+     *      If mojo executed successfully, this parameter is null.
      */
-    public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
+    public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
         return true;
     }
 

@@ -36,7 +36,7 @@ public class SurefireArchiver extends MavenReporter {
         return true;
     }
 
-    public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, final BuildListener listener) throws InterruptedException, IOException {
+    public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, final BuildListener listener, Throwable error) throws InterruptedException, IOException {
         if (!isSurefireTest(mojo)) return true;
 
         File reportsDir;

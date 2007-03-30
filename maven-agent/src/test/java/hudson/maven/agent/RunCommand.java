@@ -28,7 +28,7 @@ public class RunCommand implements Callable {
                 System.out.println("***** "+exec.getMojoDescriptor().getGoal());
             }
 
-            public void postExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException, AbortException {
+            public void postExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException, AbortException {
                 System.out.println("==== "+exec.getMojoDescriptor().getGoal());
             }
         });
