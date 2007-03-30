@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.Properties;
 
 /**
  * Hold on to launched Maven processes so that multiple builds
@@ -50,15 +51,23 @@ final class ProcessCache {
         private final PerChannel parent;
         private final MavenInstallation installation;
         private final RedirectableOutputStream output;
+        /**
+         * System properties captured right after the process is created.
+         * Each time the process is reused, the system properties are reset,
+         * since Maven corrupts them as a side-effect of the build.
+         */
+        private final Properties systemProperties;
 
         private int age = 0;
 
-        MavenProcess(PerChannel parent, String mavenOpts, MavenInstallation installation, Channel channel, RedirectableOutputStream output) {
+        MavenProcess(PerChannel parent, String mavenOpts, MavenInstallation installation, Channel channel, RedirectableOutputStream output) throws IOException, InterruptedException {
             this.parent = parent;
             this.mavenOpts = mavenOpts;
             this.channel = channel;
             this.installation = installation;
             this.output = output;
+
+            systemProperties =  channel.call(new GetSystemProperties());
         }
 
         boolean matches(String mavenOpts,MavenInstallation installation) {
@@ -122,8 +131,10 @@ final class ProcessCache {
             for (Iterator<MavenProcess> itr = list.processes.iterator(); itr.hasNext();) {
                 MavenProcess p =  itr.next();
                 if(p.matches(mavenOpts, installation)) {
-                    try {// quickly check if this process is still alive
-                        p.channel.call(new Noop());
+                    // reset the system property.
+                    // this also serves as the sanity check.
+                    try {
+                        p.channel.call(new SetSystemProperties(p.systemProperties));
                     } catch (IOException e) {
                         p.discard();
                         itr.remove();
@@ -150,9 +161,23 @@ final class ProcessCache {
     /**
      * Noop callable used for checking the sanity of the maven process in the cache.
      */
-    private static class Noop implements Callable<Object,RuntimeException>, Serializable {
+    private static class SetSystemProperties implements Callable<Object,RuntimeException>, Serializable {
+        private final Properties properties;
+
+        public SetSystemProperties(Properties properties) {
+            this.properties = properties;
+        }
+
         public Object call() {
+            System.setProperties(properties);
             return null;
+        }
+        private static final long serialVersionUID = 1L;
+    }
+
+    private static class GetSystemProperties implements Callable<Properties,RuntimeException>, Serializable {
+        public Properties call() {
+            return System.getProperties();
         }
         private static final long serialVersionUID = 1L;
     }
