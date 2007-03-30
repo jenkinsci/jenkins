@@ -1,12 +1,14 @@
 package hudson;
 
-import java.io.FilterOutputStream;
+import hudson.util.DelegatingOutputStream;
+
 import java.io.OutputStream;
 
 /**
+ * {@link OutputStream} that blocks {@link #close()} method.
  * @author Kohsuke Kawaguchi
  */
-public class CloseProofOutputStream extends FilterOutputStream {
+public class CloseProofOutputStream extends DelegatingOutputStream {
     public CloseProofOutputStream(OutputStream out) {
         super(out);
     }

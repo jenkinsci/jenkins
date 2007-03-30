@@ -9,7 +9,7 @@ import java.io.OutputStream;
  *
  * @author Kohsuke Kawaguchi
  */
-public class CountingOutputStream extends FilterOutputStream {
+public class CountingOutputStream extends DelegatingOutputStream {
     private int count = 0;
 
     public int getCount() {

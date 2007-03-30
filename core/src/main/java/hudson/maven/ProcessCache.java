@@ -1,22 +1,22 @@
 package hudson.maven;
 
 import hudson.Util;
-import hudson.util.NullStream;
 import hudson.model.BuildListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.util.DelegatingOutputStream;
+import hudson.util.NullStream;
 
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.Properties;
+import java.util.WeakHashMap;
 
 /**
  * Hold on to launched Maven processes so that multiple builds
@@ -182,7 +182,7 @@ final class ProcessCache {
         private static final long serialVersionUID = 1L;
     }
 
-    static class RedirectableOutputStream extends FilterOutputStream {
+    static class RedirectableOutputStream extends DelegatingOutputStream {
         public RedirectableOutputStream(OutputStream out) {
             super(out);
         }
