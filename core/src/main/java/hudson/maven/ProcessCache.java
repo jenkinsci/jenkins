@@ -66,8 +66,7 @@ final class ProcessCache {
             this.channel = channel;
             this.installation = installation;
             this.output = output;
-
-            systemProperties =  channel.call(new GetSystemProperties());
+            this.systemProperties = channel.call(new GetSystemProperties());
         }
 
         boolean matches(String mavenOpts,MavenInstallation installation) {
