@@ -12,6 +12,15 @@
 
   <f:section title="Build">
     <j:set var="mavens" value="${it.descriptor.mavenDescriptor.installations}" />
+    <j:if test="${empty(mavens)}">
+      <!-- no maven installation is configured. this will be an error, so warn the user now -->
+      <f:entry title="Maven Version">
+        <span class="error">
+          Hudson needs to konw where your Maven2 is installed.&lt;br>
+          Please do so from <a href="${rootURL}/configure">the system configuration</a>.
+        </span>
+      </f:entry>
+    </j:if>
     <j:if test="${mavens.size() &gt; 1}">
       <!-- choice not necessary if there's no choice -->
       <f:entry title="Maven Version">
