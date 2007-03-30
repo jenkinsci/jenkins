@@ -3,6 +3,7 @@ package hudson.maven;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.agent.*;
+import hudson.maven.reporters.SurefireArchiver;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -125,8 +126,18 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 hudson.maven.agent.PluginManagerInterceptor.setListener(pmi);
                 LifecycleExecutorInterceptor.setListener(pmi);
 
+                markAsSuccess = false;
+
                 int r = Main.launch(goals.toArray(new String[goals.size()]));
-                return r==0 ? Result.SUCCESS : Result.FAILURE;
+
+                if(r==0)    return Result.SUCCESS;
+
+                if(markAsSuccess) {
+                    listener.getLogger().println("Maven failed with error.");
+                    return Result.SUCCESS;
+                }
+
+                return Result.FAILURE;
             } catch (NoSuchMethodException e) {
                 throw new IOException2(e);
             } catch (IllegalAccessException e) {
@@ -407,4 +418,24 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     }
 
     private static final ProcessCache mavenProcessCache = new ProcessCache(MAX_PROCESS_CACHE);
+
+    /**
+     * Used by selected {@link MavenReporter}s to notify the maven build agent
+     * that even though Maven is going to fail, we should report the build as
+     * success.
+     *
+     * <p>
+     * This rather ugly hook is necessary to mark builds as unstable, since
+     * maven considers a test failure to be a build failure, which will otherwise
+     * mark the build as FAILED.
+     *
+     * <p>
+     * It's OK for this field to be static, because the JVM where this is actually
+     * used is in the Maven JVM, so only one build is going on for the whole JVM.
+     *
+     * <p>
+     * Even though this field is public, please consider this field reserved
+     * for {@link SurefireArchiver}. Subject to change without notice.
+     */
+    public static boolean markAsSuccess;
 }

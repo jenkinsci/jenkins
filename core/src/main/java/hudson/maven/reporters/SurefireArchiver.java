@@ -13,6 +13,7 @@ import hudson.model.Result;
 import hudson.tasks.junit.TestResult;
 import hudson.tasks.junit.TestResultAction;
 import hudson.tasks.test.TestResultProjectAction;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -64,16 +65,22 @@ public class SurefireArchiver extends MavenReporter {
 
             final TestResult tr = new TestResult(started.getTime() - 1000/*error margin*/, ds);
 
-            build.execute(new BuildCallable<Void, IOException>() {
-                public Void call(MavenBuild build) throws IOException, InterruptedException {
+            int failCount = build.execute(new BuildCallable<Integer, IOException>() {
+                public Integer call(MavenBuild build) throws IOException, InterruptedException {
                     TestResultAction action = new TestResultAction(build, tr, listener);
                     build.getActions().add(action);
                     if(tr.getFailCount()>0)
                         build.setResult(Result.UNSTABLE);
                     build.registerAsProjectAction(SurefireArchiver.this);
-                    return null;
+                    return tr.getFailCount();
                 }
             });
+
+            // if surefire plugin is going to kill maven because of a test failure,
+            // intercept that (or otherwise build will be marked as failure)
+            if(failCount>0 && error instanceof MojoFailureException) {
+                MavenBuild.markAsSuccess = true;
+            }
         }
 
         return true;
