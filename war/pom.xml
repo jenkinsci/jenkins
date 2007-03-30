@@ -237,11 +237,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>xalan</groupId>
-      <artifactId>xalan</artifactId>
-      <version>2.7.0</version>
-    </dependency>
-    <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>hudson-core</artifactId>
       <version>${version}</version>
@@ -252,10 +247,10 @@
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
         </exclusion>
-        <!--exclusion>
+        <exclusion>
           <groupId>xalan</groupId>
           <artifactId>xalan</artifactId>
-        </exclusion-->
+        </exclusion>
         <exclusion>
           <groupId>xerces</groupId>
           <artifactId>xercesImpl</artifactId>
