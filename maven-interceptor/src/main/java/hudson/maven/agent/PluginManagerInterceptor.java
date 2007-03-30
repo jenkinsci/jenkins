@@ -100,9 +100,11 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
             } catch (MojoExecutionException e) {
                 if(listener!=null)
                     listener.postExecute(project,mojoExecution,mergedConfiguration,eval,e);
+                throw e;
             } catch (MojoFailureException e) {
                 if(listener!=null)
                     listener.postExecute(project,mojoExecution,mergedConfiguration,eval,e);
+                throw e;
             }
         } catch (InterruptedException e) {
             // orderly abort
