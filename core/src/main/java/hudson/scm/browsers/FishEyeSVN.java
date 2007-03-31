@@ -6,6 +6,7 @@ import hudson.scm.RepositoryBrowser;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
 import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.scm.SubversionRepositoryBrowser;
+import hudson.scm.EditType;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -60,6 +61,8 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
 
     @Override
     public URL getDiffLink(Path path) throws IOException {
+        if(path.getEditType()!= EditType.EDIT)
+            return null;    // no diff if this is not an edit change
         int r = path.getLogEntry().getRevision();
         return new URL(url, getPath(path)+String.format("?r1=%d&r2=%d",r-1,r));
     }

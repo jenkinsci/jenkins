@@ -31,9 +31,10 @@
           <td><t:editTypeIcon type="${p.editType}" /></td>
           <td>
             <a href="${browser.getFileLink(p)}">${p.value}</a>
-            <j:if test="${browser!=null}">
+            <j:set var="diff" value="${browser.getDiffLink(p)}"/>
+            <j:if test="${diff!=null}">
               <st:nbsp/>
-              <a href="${browser.getDiffLink(p)}">(diff)</a>
+              <a href="${diff}">(diff)</a>
             </j:if>
           </td>
         </tr>

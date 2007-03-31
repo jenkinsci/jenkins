@@ -6,6 +6,7 @@ import hudson.scm.RepositoryBrowser;
 import hudson.scm.SubversionChangeLogSet;
 import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.scm.SubversionRepositoryBrowser;
+import hudson.scm.EditType;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -37,6 +38,8 @@ public class ViewSVN extends SubversionRepositoryBrowser {
 
     @Override
     public URL getDiffLink(Path path) throws IOException {
+        if(path.getEditType()!= EditType.EDIT)
+            return null;    // no diff if this is not an edit change
         int r = path.getLogEntry().getRevision();
         return new URL(url,trimHeadSlash(path.getValue())+param().add("r1="+(r-1)).add("r2="+r));
     }
