@@ -528,6 +528,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     public Computer getComputer(String name) {
+        if(name.equals("(master)"))
+            name = "";
+
         for (Computer c : computers.values()) {
             if(c.getNode().getNodeName().equals(name))
                 return c;
@@ -1442,6 +1445,16 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     public static final class MasterComputer extends Computer {
         private MasterComputer() {
             super(Hudson.getInstance());
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "master";
+        }
+
+        @Override
+        public String getCaption() {
+            return "Master"; 
         }
 
         @Override

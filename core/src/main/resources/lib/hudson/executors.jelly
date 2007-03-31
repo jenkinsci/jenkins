@@ -8,8 +8,18 @@
 	      <j:when test="${c.node==app}">
 	        <tr>
 	          <th class="pane">No.</th>
-	          <th class="pane">Status</th>
-	          <th class="pane"><st:nbsp/></th>
+	          <th class="pane">
+              <j:choose>
+                <j:when test="${empty(app.slaves)}">
+                  Status
+                </j:when>
+                <j:otherwise>
+                  <a href="${rootURL}/computer/(master)/">Master</a>
+                  <j:if test="${c.offline}">(offline)</j:if>
+                </j:otherwise>
+              </j:choose>
+            </th>
+            <th class="pane"><st:nbsp/></th>
 	        </tr>
 	      </j:when>
 	      <j:otherwise>

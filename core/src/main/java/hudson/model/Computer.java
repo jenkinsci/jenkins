@@ -140,6 +140,10 @@ public abstract class Computer implements ModelObject {
         return nodeName;
     }
 
+    public String getCaption() {
+        return "Slave "+nodeName;
+    }
+
     public String getUrl() {
         return "computer/"+getDisplayName()+"/";
     }

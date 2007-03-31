@@ -16,7 +16,7 @@
 
       <h1>
         <img src="${rootURL}/images/48x48/${it.icon}" width="48" height="48" />
-        Slave ${it.displayName}
+        ${it.caption}
       </h1>
 
       <j:choose>
