@@ -59,7 +59,7 @@ public class ExternalRun extends Run<ExternalJob,ExternalRun> {
      * </run>
      * </xmp></pre>
      */
-    public void acceptRemoteSubmission(final Reader in) {
+    public void acceptRemoteSubmission(final Reader in) throws IOException {
         final long[] duration = new long[1];
         run(new Runner() {
             public Result run(BuildListener listener) throws Exception {
@@ -93,8 +93,11 @@ public class ExternalRun extends Run<ExternalJob,ExternalRun> {
             }
         });
 
-        if(duration[0]!=0)
+        if(duration[0]!=0) {
             super.duration = duration[0];
+            // save the updated duration
+            save();
+        }
     }
 
 }
