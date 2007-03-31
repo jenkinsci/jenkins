@@ -190,11 +190,6 @@
               <value>true</value>
             </systemProperty>
             <systemProperty>
-              <!-- enable experimental Maven support during debugging -->
-              <name>hudson.maven</name>
-              <value>true</value>
-            </systemProperty>
-            <systemProperty>
               <!-- load view resources from the source directly, again for real time change -->
               <name>stapler.resourcePath</name>
               <value>../core/src/main/resources</value>
