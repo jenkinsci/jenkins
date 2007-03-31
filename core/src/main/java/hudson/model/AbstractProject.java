@@ -6,6 +6,7 @@ import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
+import hudson.model.Queue.*;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
@@ -197,6 +198,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public boolean isInQueue() {
         return Hudson.getInstance().getQueue().contains(this);
+    }
+
+    @Override
+    public Queue.Item getQueueItem() {
+        return Hudson.getInstance().getQueue().getItem(this);
     }
 
     /**

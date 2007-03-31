@@ -120,6 +120,13 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     /**
+     * If this job is in the build queue, return its item.
+     */
+    public Queue.Item getQueueItem() {
+        return null;
+    }
+
+    /**
      * If true, it will keep all the build logs of dependency components.
      */
     public boolean isKeepDependencies() {

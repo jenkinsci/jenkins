@@ -208,6 +208,23 @@ public class Queue {
     }
 
     /**
+     * Gets the information about the queue item for the given project.
+     *
+     * @return null if the project is not in the queue.
+     */
+    public synchronized Item getItem(AbstractProject p) {
+        if(blockedProjects.contains(p))
+            return new Item(new GregorianCalendar(),p,true,false);
+        if(buildables.contains(p))
+            return new Item(new GregorianCalendar(),p,false,true); 
+        for (Item item : queue) {
+            if (item.project == p)
+                return item;
+        }
+        return null;
+    }
+
+    /**
      * Returns true if this queue contains the said project.
      */
     public synchronized boolean contains(AbstractProject p) {
