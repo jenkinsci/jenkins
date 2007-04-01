@@ -32,6 +32,7 @@ import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNInfo;
 import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
+import org.tmatesoft.svn.core.wc.SVNStatusClient;
 import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
@@ -54,9 +55,11 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -83,6 +86,12 @@ public class SubversionSCM extends SCM implements Serializable {
      * @since 1.91
      */
     private ModuleLocation[] locations = new ModuleLocation[0];
+    
+    /**
+     * the svn:externals urls
+     */
+    private transient Set<String> externals = new HashSet<String>();
+    
     private boolean useUpdate;
     private String username;
     private final SubversionRepositoryBrowser browser;
@@ -176,7 +185,8 @@ public class SubversionSCM extends SCM implements Serializable {
         boolean changelogFileCreated = false;
 
         SVNLogClient svnlc = createSvnClientManager(getDescriptor().createAuthenticationProvider()).getLogClient();
-
+        SVNWCClient svnwc = createSvnClientManager(getDescriptor().createAuthenticationProvider()).getWCClient();
+        
         TransformerHandler th = createTransformerHandler();
         th.setResult(new StreamResult(changelogFile));
         SVNXMLLogHandler logHandler = new SVNXMLLogHandler(th);
@@ -204,6 +214,36 @@ public class SubversionSCM extends SCM implements Serializable {
                     false, true, Long.MAX_VALUE, logHandler);
             } catch (SVNException e) {
                 e.printStackTrace(listener.error("revision check failed on "+url));
+            }
+            changelogFileCreated = true;
+        }
+        for(String path : externals){
+        	
+        	String exturl = null;
+			try {
+				exturl = getUrlForPath(build.getProject().getWorkspace(), path);
+			} catch (InterruptedException e1) {
+                e1.printStackTrace(listener.error("revision check failed on external "+path));
+			}
+        	
+            Long prevRev = previousRevisions.get(exturl);
+            if(prevRev==null) {
+                logger.println("no revision recorded for "+exturl+" in the previous build");
+                continue;
+            }
+            Long thisRev = thisRevisions.get(exturl);
+            if(thisRev.equals(prevRev)) {
+                logger.println("no change for "+exturl+" since the previous build");
+                continue;
+            }
+
+            try {
+                svnlc.doLog(SVNURL.parseURIEncoded(exturl),null,
+                SVNRevision.create(prevRev), SVNRevision.create(prevRev+1),
+                    SVNRevision.create(thisRev),
+                    false, true, Long.MAX_VALUE, logHandler);
+            } catch (SVNException e) {
+                e.printStackTrace(listener.error("revision check failed on "+exturl));
             }
             changelogFileCreated = true;
         }
@@ -254,6 +294,28 @@ public class SubversionSCM extends SCM implements Serializable {
 
         return revisions;
     }
+    
+    /*package*/ static Set<String> parseExternalsFile(AbstractProject project) throws IOException {
+        Set<String> ext = new HashSet<String>(); // workspace-relative path
+        {// read the revision file of the last build
+            File file = getExternalsFile(project);
+            if(!file.exists())
+                // nothing to compare against
+                return ext;
+
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            try {
+            	String line;
+            	while((line=br.readLine())!=null) {
+            		ext.add(line);
+            	}
+            } finally {
+            	br.close();
+            }
+        }
+
+        return ext;
+    }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, final BuildListener listener, File changelogFile) throws IOException, InterruptedException {
         if(!checkout(launcher,workspace, listener))
@@ -270,9 +332,37 @@ public class SubversionSCM extends SCM implements Serializable {
             w.close();
         }
 
+        // write out the externals info
+        w = new PrintWriter(new FileOutputStream(getExternalsFile(build.getProject())));
+        try {
+            for (String p : externals) {
+                w.println( p );
+            }
+        } finally {
+            w.close();
+        }
+        
         return calcChangeLog(build, changelogFile, listener);
     }
 
+    private String getUrlForPath(FilePath workspace, final String path) throws IOException, InterruptedException {
+    	final ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
+    	return workspace.act(new FileCallable<String>() {
+            public String invoke(File ws, VirtualChannel channel) throws IOException {
+                SVNWCClient svnwc = createSvnClientManager(authProvider).getWCClient();
+
+                SVNInfo info;
+				try {
+					info = svnwc.doInfo(new File(ws, path), SVNRevision.WORKING);
+	                return info.getURL().toDecodedString();
+				} catch (SVNException e) {
+					e.printStackTrace();
+					return null;
+				}
+            }
+        });
+    }
+    
     public boolean checkout(Launcher launcher, FilePath workspace, final TaskListener listener) throws IOException, InterruptedException {
         if(useUpdate && isUpdatable(workspace, listener)) {
             return update(launcher,workspace,listener);
@@ -282,20 +372,23 @@ public class SubversionSCM extends SCM implements Serializable {
                 public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
                     Util.deleteContentsRecursive(ws);
                     SVNUpdateClient svnuc = createSvnClientManager(authProvider).getUpdateClient();
-                    svnuc.setEventHandler(new SubversionUpdateEventHandler(listener));
+
+                    externals.clear();
 
                     for (ModuleLocation l : getLocations()) {
                         try {
                             SVNURL url = SVNURL.parseURIEncoded(l.remote);
                             listener.getLogger().println("Checking out "+url);
-
+                            
+                            svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
                             svnuc.doCheckout(url, new File(ws, l.local), SVNRevision.HEAD, SVNRevision.HEAD, true);
+                            
                         } catch (SVNException e) {
                             e.printStackTrace(listener.error("Error in subversion"));
                             return false;
                         }
                     }
-
+                    listener.getLogger().println("Found externals: " + externals);
                     return true;
                 }
             });
@@ -387,6 +480,15 @@ public class SubversionSCM extends SCM implements Serializable {
                         e.printStackTrace(listener.error("Failed to parse svn info for "+module));
                     }
                 }
+                for(String local : externals){
+                    try {
+                        SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws, local),SVNRevision.WORKING));
+                        revisions.put(info.url,info);
+                    } catch (SVNException e) {
+                        e.printStackTrace(listener.error("Failed to parse svn info for external "+local));
+                    }
+                	
+                }
 
                 return revisions;
             }
@@ -400,23 +502,35 @@ public class SubversionSCM extends SCM implements Serializable {
         return new File(build.getRootDir(),"revision.txt");
     }
 
+    /**
+     * Gets the file that stores the externals.
+     */
+    private static File getExternalsFile(AbstractProject project) {
+        return new File(project.getRootDir(),"svnexternals.txt");
+    }
+    
     public boolean update(Launcher launcher, FilePath workspace, final TaskListener listener) throws IOException, InterruptedException {
         final ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
         return workspace.act(new FileCallable<Boolean>() {
             public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
                 SVNUpdateClient svnuc = createSvnClientManager(authProvider).getUpdateClient();
-                svnuc.setEventHandler(new SubversionUpdateEventHandler(listener));
 
+                externals.clear();
+                
                 for (ModuleLocation l : getLocations()) {
                     try {
                         String url = l.remote;
                         listener.getLogger().println("Updating "+url);
+
+                        svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
                         svnuc.doUpdate(new File(ws, l.local), SVNRevision.HEAD, true);
+                        
                     } catch (SVNException e) {
                         e.printStackTrace(listener.error("Error in subversion"));
                         return false;
                     }
                 }
+                listener.getLogger().println("Found externals: " + externals);
                 return true;
             }
         });
@@ -458,6 +572,10 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+    	
+    	// we need to load the externals info, if any
+    	this.externals = parseExternalsFile(project);
+    	
         // current workspace revision
         Map<String,SvnInfo> wsRev = buildRevisionMap(workspace, listener);
 
@@ -769,4 +887,5 @@ public class SubversionSCM extends SCM implements Serializable {
 
         private static final long serialVersionUID = 1L;
     }
+    
 }

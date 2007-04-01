@@ -11,14 +11,16 @@
  */
 package hudson.scm;
 
-import org.tmatesoft.svn.core.SVNCancelException;
-import org.tmatesoft.svn.core.wc.ISVNEventHandler;
-import org.tmatesoft.svn.core.wc.SVNEvent;
-import org.tmatesoft.svn.core.wc.SVNStatusType;
-import org.tmatesoft.svn.core.wc.SVNEventAction;
 import hudson.model.TaskListener;
 
 import java.io.PrintStream;
+import java.util.Set;
+
+import org.tmatesoft.svn.core.SVNCancelException;
+import org.tmatesoft.svn.core.wc.ISVNEventHandler;
+import org.tmatesoft.svn.core.wc.SVNEvent;
+import org.tmatesoft.svn.core.wc.SVNEventAction;
+import org.tmatesoft.svn.core.wc.SVNStatusType;
 
 /**
  * Just prints out the progress of svn update/checkout operation in a way similar to
@@ -27,9 +29,17 @@ import java.io.PrintStream;
 final class SubversionUpdateEventHandler implements ISVNEventHandler {
 
     private final PrintStream out;
-
-    public SubversionUpdateEventHandler(TaskListener listener) {
+    
+    /**
+     * to record external urls
+     */
+    private final Set<String> externals;
+    private final String modulePath;
+    
+    public SubversionUpdateEventHandler(TaskListener listener, Set<String> externals, String modulePath) {
         this.out = listener.getLogger();
+        this.externals = externals;
+        this.modulePath = modulePath;
     }
 
     public void handleEvent(SVNEvent event, double progress) {
@@ -85,6 +95,7 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
             out.println("Fetching external item into '"
                     + event.getFile().getAbsolutePath() + "'");
             out.println("External at revision " + event.getRevision());
+            externals.add(modulePath + "/" + event.getPath());
             return;
         } else if (action == SVNEventAction.UPDATE_COMPLETED) {
             /*
