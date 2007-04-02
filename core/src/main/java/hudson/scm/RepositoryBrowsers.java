@@ -2,6 +2,7 @@ package hudson.scm;
 
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.scm.browsers.FishEyeCVS;
 import hudson.scm.browsers.FishEyeSVN;
 import hudson.scm.browsers.ViewCVS;
 import hudson.scm.browsers.ViewSVN;
@@ -22,7 +23,8 @@ public class RepositoryBrowsers {
     public static final List<Descriptor<RepositoryBrowser<?>>> LIST = Descriptor.toList(
         ViewCVS.DESCRIPTOR,
         ViewSVN.DESCRIPTOR,
-        FishEyeSVN.DESCRIPTOR
+        FishEyeSVN.DESCRIPTOR,
+        FishEyeCVS.DESCRIPTOR
     );
 
     /**

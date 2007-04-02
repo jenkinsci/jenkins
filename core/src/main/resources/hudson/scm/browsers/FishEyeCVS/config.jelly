@@ -1,0 +1,6 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry title="URL" help="/help/scm-browsers/fisheye-cvs/url.html">
+    <f:textbox name="fisheye.cvs.url" value="${browser.url}"
+        checkUrl="'${rootURL}/repositoryBrowser/FishEyeCVS/check?value='+escape(this.value)"/>
+  </f:entry>
+</j:jelly>

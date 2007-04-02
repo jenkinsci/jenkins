@@ -1,0 +1,123 @@
+/*
+ * FishEyeCVS.java
+ *
+ * Created on Apr 2, 2007, 5:44:06 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package hudson.scm.browsers;
+
+import hudson.Util;
+import hudson.model.Descriptor;
+import hudson.scm.CVSChangeLogSet;
+import hudson.scm.CVSChangeLogSet.File;
+import hudson.scm.CVSChangeLogSet.Revision;
+import hudson.scm.CVSRepositoryBrowser;
+import hudson.scm.RepositoryBrowser;
+import hudson.util.FormFieldValidator;
+import java.io.IOException;
+import java.net.URL;
+import java.util.regex.Pattern;
+import javax.servlet.ServletException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+/**
+ * Repository browser for CVS in a FishEye server.
+ */
+public final class FishEyeCVS extends CVSRepositoryBrowser {
+
+    /**
+     * The URL of the FishEye repository, e.g.
+     * <tt>http://deadlock.nbextras.org/fisheye/browse/netbeans/</tt>
+     */
+    public final URL url;
+
+    /**
+     * @stapler-constructor
+     */
+    public FishEyeCVS(URL url) {
+        this.url = normalizeToEndWithSlash(url);
+    }
+
+    @Override
+    public URL getDiffLink(File file) throws IOException {
+        Revision r = new Revision(file.getRevision());
+        Revision p = r.getPrevious();
+        if (p == null) {
+            return null;
+        }
+        return new URL(url, trimHeadSlash(file.getFullName()) + new QueryBuilder(url.getQuery()).add("r1=" + p).add("r2=" + r));
+    }
+
+    @Override
+    public URL getFileLink(File file) throws IOException {
+        return new URL(url, trimHeadSlash(file.getFullName()) + new QueryBuilder(url.getQuery()).add("r=" + file.getRevision()));
+    }
+
+    @Override
+    public URL getChangeSetLink(CVSChangeLogSet.CVSChangeLog changeSet) throws IOException {
+        return null;
+    }
+
+    @Override
+    public Descriptor<RepositoryBrowser<?>> getDescriptor() {
+        return DESCRIPTOR;
+    }
+
+    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new DescriptorImpl();
+
+    public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
+
+        public DescriptorImpl() {
+            super(FishEyeCVS.class);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "FishEye";
+        }
+
+        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new FormFieldValidator.URLCheck(req,rsp) {
+                @Override
+                protected void check() throws IOException, ServletException {
+                    String value = Util.fixEmpty(request.getParameter("value"));
+                    if (value == null) {
+                        ok();
+                        return;
+                    }
+                    if (!value.endsWith("/")) {
+                        value += '/';
+                    }
+                    if (!URL_PATTERN.matcher(value).matches()) {
+                        error("The URL should end like <tt>.../browse/foobar/</tt>");
+                        return;
+                    }
+                    try {
+                        if (findText(open(new URL(value)), "FishEye")) {
+                            ok();
+                        } else {
+                            error("This is a valid URL but it doesn't look like FishEye");
+                        }
+                    } catch (IOException e) {
+                        handleIOException(value, e);
+                    }
+                }
+            }.process();
+        }
+
+        @Override
+        public FishEyeCVS newInstance(StaplerRequest req) throws FormException {
+            return req.bindParameters(FishEyeCVS.class, "fisheye.cvs.");
+        }
+
+        private static final Pattern URL_PATTERN = Pattern.compile(".+/browse/[^/]+/");
+
+    }
+
+    private static final long serialVersionUID = 1L;
+
+}
