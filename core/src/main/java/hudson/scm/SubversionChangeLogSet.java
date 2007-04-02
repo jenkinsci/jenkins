@@ -54,6 +54,9 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
 
     /**
      * One commit.
+     * <p>
+     * Setter methods are public only so that the objects can be constructed from Digester.
+     * So please consider this object read-only.
      */
     public static class LogEntry extends ChangeLogSet.Entry {
         private int revision;
@@ -62,6 +65,13 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
         private String msg;
         private List<Path> paths = new ArrayList<Path>();
 
+        /**
+         * Gets the revision of the commit.
+         *
+         * <p>
+         * If the commit made the repository revision 1532, this
+         * method returns 1532.
+         */
         public int getRevision() {
             return revision;
         }
@@ -70,10 +80,12 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             this.revision = revision;
         }
 
+        @Override
         public User getAuthor() {
             return author;
         }
 
+        @Override
         public Collection<String> getAffectedPaths() {
             return new AbstractList<String>() {
                 public String get(int index) {
@@ -101,6 +113,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             this.date = date;
         }
 
+        @Override
         public String getMsg() {
             return msg;
         }
@@ -114,6 +127,11 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             paths.add(p);
         }
 
+        /**
+         * Gets the files that are changed in this commit.
+         * @return
+         *      can be empty but never null.
+         */
         public List<Path> getPaths() {
             return paths;
         }
@@ -121,12 +139,18 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
 
     /**
      * A file in a commit.
+     * <p>
+     * Setter methods are public only so that the objects can be constructed from Digester.
+     * So please consider this object read-only.
      */
     public static class Path {
         private LogEntry entry;
         private char action;
         private String value;
 
+        /**
+         * Gets the {@link LogEntry} of which this path is a member.
+         */
         public LogEntry getLogEntry() {
             return entry;
         }
