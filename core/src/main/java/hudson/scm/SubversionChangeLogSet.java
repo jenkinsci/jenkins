@@ -66,6 +66,13 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
         private List<Path> paths = new ArrayList<Path>();
 
         /**
+         * Gets the {@link SubversionChangeLogSet} to which this change set belongs.
+         */
+        public SubversionChangeLogSet getParent() {
+            return (SubversionChangeLogSet)super.getParent();
+        }
+
+        /**
          * Gets the revision of the commit.
          *
          * <p>
