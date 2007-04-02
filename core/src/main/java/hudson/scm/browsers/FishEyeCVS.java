@@ -1,12 +1,3 @@
-/*
- * FishEyeCVS.java
- *
- * Created on Apr 2, 2007, 5:44:06 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package hudson.scm.browsers;
 
 import hudson.Util;
