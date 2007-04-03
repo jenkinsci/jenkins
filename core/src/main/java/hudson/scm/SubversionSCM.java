@@ -30,25 +30,18 @@ import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNInfo;
-import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
-import org.tmatesoft.svn.core.wc.xml.SVNXMLLogHandler;
-import org.xml.sax.helpers.LocatorImpl;
 
 import javax.servlet.ServletException;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -172,72 +165,12 @@ public class SubversionSCM extends SCM implements Serializable {
             return createEmptyChangeLog(changelogFile, listener, "log");
         }
 
-        Map<String,Long> previousRevisions = parseRevisionFile(build.getPreviousBuild());
-        Map<String,Long> thisRevisions     = parseRevisionFile(build);
-
-        boolean changelogFileCreated = false;
-
-        SVNLogClient svnlc = createSvnClientManager(getDescriptor().createAuthenticationProvider()).getLogClient();
-
-        TransformerHandler th = createTransformerHandler();
-        th.setResult(new StreamResult(changelogFile));
-        SVNXMLLogHandler logHandler = new SVNXMLLogHandler(th);
-        // work around for http://svnkit.com/tracker/view.php?id=175
-        th.setDocumentLocator(DUMMY_LOCATOR);
-        logHandler.startDocument();
-
-        for (ModuleLocation l : getLocations()) {
-            changelogFileCreated |= calcModuleChangeLog(l.remote, previousRevisions, thisRevisions, svnlc, logHandler, listener);
-        }
-        for(String path : externals) {
-            changelogFileCreated |= calcModuleChangeLog(
-                getUrlForPath(build.getProject().getWorkspace(), path), previousRevisions, thisRevisions, svnlc, logHandler, listener);
-        }
-
-        if(changelogFileCreated) {
-            logHandler.endDocument();
-        }
-
-        if(!changelogFileCreated)
+        if(!new SubversionChangeLogBuilder(build,listener,this).run(externals,new StreamResult(changelogFile)))
             createEmptyChangeLog(changelogFile, listener, "log");
 
         return true;
     }
 
-    private boolean calcModuleChangeLog(String url, Map<String, Long> previousRevisions, Map<String, Long> thisRevisions, SVNLogClient svnlc, SVNXMLLogHandler logHandler, BuildListener listener) {
-        PrintStream logger = listener.getLogger();
-        Long prevRev = previousRevisions.get(url);
-        if(prevRev==null) {
-            logger.println("no revision recorded for "+url+" in the previous build");
-            return false;
-        }
-        Long thisRev = thisRevisions.get(url);
-        if(thisRev.equals(prevRev)) {
-            logger.println("no change for "+url+" since the previous build");
-            return false;
-        }
-
-        try {
-            svnlc.doLog(SVNURL.parseURIEncoded(url),null,
-            SVNRevision.create(prevRev), SVNRevision.create(prevRev+1),
-                SVNRevision.create(thisRev),
-                false, true, Long.MAX_VALUE, logHandler);
-        } catch (SVNException e) {
-            e.printStackTrace(listener.error("revision check failed on "+url));
-        }
-        return true;
-    }
-
-    /**
-     * Creates an identity transformer.
-     */
-    private static TransformerHandler createTransformerHandler() {
-        try {
-            return ((SAXTransformerFactory) SAXTransformerFactory.newInstance()).newTransformerHandler();
-        } catch (TransformerConfigurationException e) {
-            throw new Error(e); // impossible
-        }
-    }
 
     /*package*/ static Map<String,Long> parseRevisionFile(AbstractBuild build) throws IOException {
         Map<String,Long> revisions = new HashMap<String,Long>(); // module -> revision
@@ -322,24 +255,6 @@ public class SubversionSCM extends SCM implements Serializable {
         return calcChangeLog(build, changelogFile, listener, externals);
     }
 
-    private String getUrlForPath(FilePath workspace, final String path) throws IOException, InterruptedException {
-    	final ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
-    	return workspace.act(new FileCallable<String>() {
-            public String invoke(File ws, VirtualChannel channel) throws IOException {
-                SVNWCClient svnwc = createSvnClientManager(authProvider).getWCClient();
-
-                SVNInfo info;
-				try {
-					info = svnwc.doInfo(new File(ws, path), SVNRevision.WORKING);
-	                return info.getURL().toDecodedString();
-				} catch (SVNException e) {
-					e.printStackTrace();
-					return null;
-				}
-            }
-        });
-    }
-    
     /**
      * Performs the checkout or update, depending on the configuration and workspace state.
      *
@@ -404,7 +319,7 @@ public class SubversionSCM extends SCM implements Serializable {
      *      If the operation runs on slaves,
      *      (and properly remoted, if the svn operations run on slaves.)
      */
-    private static SVNClientManager createSvnClientManager(ISVNAuthenticationProvider authProvider) {
+    /*package*/ static SVNClientManager createSvnClientManager(ISVNAuthenticationProvider authProvider) {
         ISVNAuthenticationManager sam = SVNWCUtil.createDefaultAuthenticationManager();
         sam.setAuthenticationProvider(authProvider);
         return SVNClientManager.newInstance(SVNWCUtil.createDefaultOptions(true),sam);
@@ -823,12 +738,8 @@ public class SubversionSCM extends SCM implements Serializable {
 
     private static final Logger logger = Logger.getLogger(SubversionSCM.class.getName());
 
-    private static final LocatorImpl DUMMY_LOCATOR = new LocatorImpl();
-
     static {
         new Initializer();
-        DUMMY_LOCATOR.setLineNumber(-1);
-        DUMMY_LOCATOR.setColumnNumber(-1);
     }
 
     private static final class Initializer {
