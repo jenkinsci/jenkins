@@ -131,7 +131,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public abstract ChangeLogParser createChangeLogParser();
 
-    public abstract SCMDescriptor getDescriptor();
+    public abstract SCMDescriptor<?> getDescriptor();
 
     protected final boolean createEmptyChangeLog(File changelogFile, BuildListener listener, String rootTag) {
         try {
