@@ -44,7 +44,7 @@ final class AutoBrowserHolder {
         for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) ) {
             SCM scm = p.getScm();
             if (scm.getClass()==owner.getClass()) {
-                if(scm.getBrowser()!=null && scm.getDescriptor().isBrowserReusable(scm,owner))
+                if(scm.getBrowser()!=null && ((SCMDescriptor)scm.getDescriptor()).isBrowserReusable(scm,owner))
                     return scm.getBrowser();
             }
         }
