@@ -53,6 +53,12 @@ public class JavadocArchiver extends Publisher {
         FilePath target = new FilePath(getJavadocDir(build.getParent()));
 
         try {
+            // if the build has failed, then there's not much point in reporting an error
+            // saying javadoc directory doesn't exist. We want the user to focus on the real error,
+            // which is the build failure.
+            if(build.getResult().isWorseOrEqualTo(Result.FAILURE) && !javadoc.exists())
+                return true;
+
             javadoc.copyRecursiveTo("**/*",target);
         } catch (IOException e) {
             Util.displayIOException(e,listener);
