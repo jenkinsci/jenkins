@@ -12,15 +12,14 @@
 package hudson.scm;
 
 import hudson.model.TaskListener;
-
-import java.io.PrintStream;
-import java.util.Set;
-
 import org.tmatesoft.svn.core.SVNCancelException;
 import org.tmatesoft.svn.core.wc.ISVNEventHandler;
 import org.tmatesoft.svn.core.wc.SVNEvent;
 import org.tmatesoft.svn.core.wc.SVNEventAction;
 import org.tmatesoft.svn.core.wc.SVNStatusType;
+
+import java.io.PrintStream;
+import java.util.List;
 
 /**
  * Just prints out the progress of svn update/checkout operation in a way similar to
@@ -33,10 +32,10 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
     /**
      * to record external urls
      */
-    private final Set<String> externals;
+    private final List<String> externals;
     private final String modulePath;
     
-    public SubversionUpdateEventHandler(TaskListener listener, Set<String> externals, String modulePath) {
+    public SubversionUpdateEventHandler(TaskListener listener, List<String> externals, String modulePath) {
         this.out = listener.getLogger();
         this.externals = externals;
         this.modulePath = modulePath;
