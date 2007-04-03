@@ -116,14 +116,6 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public abstract boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
 
     /**
-     * Checks out (or updates) the code into the workspace, but without computing changelog.
-     *
-     * TODO: This is an ugly abstraction.
-     * come back and check if this abstraction is really making much sense.
-     */
-    public abstract boolean checkout(Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException;
-
-    /**
      * Adds environmental variables for the builds to the given map.
      */
     public abstract void buildEnvVars(Map<String,String> env);
