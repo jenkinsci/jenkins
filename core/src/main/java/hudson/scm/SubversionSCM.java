@@ -184,8 +184,7 @@ public class SubversionSCM extends SCM implements Serializable {
         boolean changelogFileCreated = false;
 
         SVNLogClient svnlc = createSvnClientManager(getDescriptor().createAuthenticationProvider()).getLogClient();
-        SVNWCClient svnwc = createSvnClientManager(getDescriptor().createAuthenticationProvider()).getWCClient();
-        
+
         TransformerHandler th = createTransformerHandler();
         th.setResult(new StreamResult(changelogFile));
         SVNXMLLogHandler logHandler = new SVNXMLLogHandler(th);
