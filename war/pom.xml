@@ -182,7 +182,7 @@
           <systemProperties>
             <systemProperty>
               <name>HUDSON_HOME</name>
-              <value>${basedir}/work</value>
+              <value>${HUDSON_HOME}</value>
             </systemProperty>
             <systemProperty>
               <!-- always reload views during debugging -->
@@ -247,6 +247,10 @@
           <artifactId>xalan</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>jsp-api</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>xerces</groupId>
           <artifactId>xercesImpl</artifactId>
         </exclusion>
@@ -309,4 +313,8 @@
       </exclusions>
     </dependency>
   </dependencies>
+  
+  <properties>
+    <HUDSON_HOME>${basedir}/work</HUDSON_HOME>
+  </properties>
 </project>
