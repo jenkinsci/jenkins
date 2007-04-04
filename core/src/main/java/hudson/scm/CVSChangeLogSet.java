@@ -121,6 +121,8 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
 
         public void merge(CVSChangeLog that) {
             this.files.addAll(that.files);
+            for (File f : that.files)
+                f.parent = this;
         }
 
         public String getDate() {
