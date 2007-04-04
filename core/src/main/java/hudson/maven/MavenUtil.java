@@ -31,7 +31,10 @@ class MavenUtil {
         maven.setLogger( new EmbedderLoggerImpl(listener) );
 
         // make sure ~/.m2 exists to avoid http://www.nabble.com/BUG-Report-tf3401736.html
-        new File( MavenEmbedder.userHome, ".m2" ).mkdirs();
+        File m2Home = new File(MavenEmbedder.userHome, ".m2");
+        m2Home.mkdirs();
+        if(!m2Home.exists())
+            listener.getLogger().println("Failed to create "+m2Home);
 
         maven.start();
 
