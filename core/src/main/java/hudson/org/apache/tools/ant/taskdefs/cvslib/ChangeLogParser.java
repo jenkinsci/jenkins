@@ -193,7 +193,7 @@ class ChangeLogParser {
         if (line.startsWith("Working file:")) {
             m_file = line.substring(14, line.length());
 
-            File repo = new File(new File(owner.getDir(), m_file), "../CVS/Repository");
+            File repo = new File(new File(owner.getDir(), m_file).getParentFile(), "CVS/Repository");
             try {
                 String module = FileUtils.readFileToString(repo, null);// not sure what encoding CVS uses.
                 String simpleName = m_file.substring(m_file.lastIndexOf('/')+1);
