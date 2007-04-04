@@ -26,105 +26,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <!--
-          create uberjar for jdk14.
-        -->
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>uberjar</id>
-            <phase>package</phase>
-            <goals>
-              <!--
-                Work around for http://jira.codehaus.org/browse/MASSEMBLY-97 as the goal should be attached.
-              -->
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>remoting-${version}</finalName>
-              <descriptors>
-                <descriptor>assembly-uberjar-14.xml</descriptor>
-              </descriptors>
-              <archive>
-                <manifest>
-                  <mainClass>hudson.remoting.Launcher</mainClass>
-                </manifest>
-              </archive>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <!--
-        Generate retrotranslated 1.4 jar "on the side". I tried various approaches like
-        "profile" (like http://testng.googlecode.com/svn/trunk/pom.xml), but in the
-        end using Ant seems to be the easiest.
-      -->
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>create14jar</id>
-            <phase>process-classes</phase><!-- do this earlier than the package phase so that the assembly plugin can create uberjars for 14 classes -->
-            <configuration>
-              <tasks>
-                <taskdef name="retrotranslator" classpathref="maven.test.classpath" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" />
-                <mkdir dir="target/classes14" />
-                <retrotranslator srcdir="target/classes" destdir="target/classes14" /><!-- verify="true" detects false-positive errors against some references to remoting-->
-                <jar basedir="target/classes14" destfile="target/${artifactId}-${version}-jdk14.jar">
-                  <manifest>
-                    <attribute name="Main-Class" value="hudson.remoting.Launcher" />
-                  </manifest>
-                </jar>
-                <!-- see ../jnlp-agent/pom.xml for details -->
-                <signjar jar="target/${artifactId}-${version}-jdk14.jar" alias="${hudson.sign.alias}" keystore="${hudson.sign.keystore}" storepass="${hudson.sign.storepass}" />
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-          <!-- sign uberjar, which is used as slave.jar in the release profile -->
-          <execution>
-            <id>signUberjar</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <tasks>
-                <!-- see ../jnlp-agent/pom.xml for details -->
-                <signjar jar="target/${artifactId}-${version}-jdk14-jar-with-dependencies.jar" alias="${hudson.sign.alias}" keystore="${hudson.sign.keystore}" storepass="${hudson.sign.storepass}" />
-              </tasks>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <!--
-        Attach the generated 1.4 jar to the build so that it gets deployed to the repo.
-      -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>attach-artifacts</id>
-            <phase>package</phase>
-            <goals>
-              <goal>attach-artifact</goal>
-            </goals>
-            <configuration>
-              <artifacts>
-                <artifact>
-                  <file>target/${artifactId}-${version}-jdk14.jar</file>
-                  <type>jar</type>
-                  <classifier>jdk14</classifier>
-                </artifact>
-              </artifacts>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-jar-plugin</artifactId>
         <version>2.1</version>
         <configuration>
@@ -157,21 +58,6 @@
   </build>
 
   <dependencies>
-    <dependency>
-      <groupId>net.sf.retrotranslator</groupId>
-      <artifactId>retrotranslator-runtime</artifactId>
-      <version>1.2.1</version>
-    </dependency>
-    <dependency>
-      <!--
-        marked as test dependency so that I can still use it in the antrun plugin but
-        it won't show up as a public dependency
-      -->
-      <groupId>net.sf.retrotranslator</groupId>
-      <artifactId>retrotranslator-transformer</artifactId>
-      <version>1.2.1</version>
-      <scope>test</scope>
-    </dependency>
     <!-- test dependencies -->
     <dependency>
       <groupId>junit</groupId>

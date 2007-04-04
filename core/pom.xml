@@ -48,29 +48,6 @@
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
-            <id>create14jar</id>
-            <phase>package</phase>
-            <configuration>
-              <tasks>
-                <taskdef name="retrotranslator" classpathref="maven.test.classpath" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" />
-                <mkdir dir="target/classes14" />
-                
-                <!-- pick up the manfiest -->
-                <unjar src="target/${artifactId}-${version}.jar" dest="target">
-                  <patternset>
-                    <include name="META-INF/MANIFEST.MF" />
-                  </patternset>
-                </unjar>
-                
-                <retrotranslator srcdir="target/classes" destdir="target/classes14" /><!-- verify="true" detects false-positive errors against some references to remoting-->
-                <jar basedir="target/classes14" destfile="target/${artifactId}-${version}-jdk14.jar" manifest="target/META-INF/MANIFEST.MF" />
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-          <execution>
             <phase>generate-resources</phase>
             <configuration>
               <tasks>
@@ -83,39 +60,11 @@
                 <mkdir dir="target/classes/hudson" />
                 <echo file="target/classes/hudson/hudson-version.properties">version=${build.version}
                 </echo>
-                <mkdir dir="target/classes14/hudson" />
-                <echo file="target/classes14/hudson/hudson-version.properties">version=${build.version}
-                </echo>
               </tasks>
             </configuration>
             <goals>
               <goal>run</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <!--
-        Attach the generated 1.4 jar to the build so that it gets deployed to the repo.
-      -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>attach-artifacts</id>
-            <phase>package</phase>
-            <goals>
-              <goal>attach-artifact</goal>
-            </goals>
-            <configuration>
-              <artifacts>
-                <artifact>
-                  <file>target/${artifactId}-${version}-jdk14.jar</file>
-                  <type>jar</type>
-                  <classifier>jdk14</classifier>
-                </artifact>
-              </artifacts>
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -141,46 +90,9 @@
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-      <dependencies>
-        <dependency>
-          <groupId>org.jvnet.hudson.main</groupId>
-          <artifactId>remoting</artifactId>
-          <version>${version}</version>
-        </dependency>
-      </dependencies>
     </profile>
     <profile>
       <id>release</id>
-      <build>
-        <plugins>
-          <!--
-            To build the remoting and core modules both retrotranslated
-            (and still while writing the core code with generics),
-            it is necessary to build both in one compilation. So in
-            the release mode, we add the remoting source tree as a part
-            of the core.
-            
-            Instead, in the debug profile we depends on the separately built remoting module,
-            so that IDEs won't get confused with "duplicate code"
-          -->
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <configuration>
-              <sources>
-                <source>../remoting/src/main/java</source>
-              </sources>
-            </configuration>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>add-source</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
       <properties>
         <!-- for releases, just use the POM version. See above ant-run plugin for how this gets used. -->
         <build.version>${version}</build.version>
@@ -189,6 +101,11 @@
   </profiles>
 
   <dependencies>
+    <dependency>
+      <groupId>org.jvnet.hudson.main</groupId>
+      <artifactId>remoting</artifactId>
+      <version>${version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-embedder</artifactId>
@@ -203,21 +120,6 @@
       <groupId>${groupId}</groupId>
       <artifactId>maven-agent</artifactId>
       <version>${version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.sf.retrotranslator</groupId>
-      <artifactId>retrotranslator-runtime</artifactId>
-      <version>1.2.1</version>
-    </dependency>
-    <dependency>
-      <!--
-        marked as test dependency so that I can still use it in the antrun plugin but
-        it won't show up as a public dependency
-      -->
-      <groupId>net.sf.retrotranslator</groupId>
-      <artifactId>retrotranslator-transformer</artifactId>
-      <version>1.2.1</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
