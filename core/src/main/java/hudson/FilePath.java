@@ -674,7 +674,7 @@ public final class FilePath implements Serializable {
                     return writeToTar(f,fileMask,excludes,pipe);
                 }
             });
-            readFromTar(new File(remote),pipe.getIn());
+            readFromTar(new File(target.remote),pipe.getIn());
             try {
                 return future.get();
             } catch (ExecutionException e) {
