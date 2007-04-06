@@ -642,7 +642,15 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                     task.setDir(ws);
                     if(cvspassFile.length()!=0)
                         task.setPassfile(new File(cvspassFile));
-                    task.setCvsRoot(cvsroot);
+                    if (canUseUpdate && cvsroot.startsWith("/")) {
+                        // cvs log of built source trees unreliable in local access method:
+                        // https://savannah.nongnu.org/bugs/index.php?15223
+                        task.setCvsRoot(":fork:" + cvsroot);
+                    } else if (canUseUpdate && cvsroot.startsWith(":local:")) {
+                        task.setCvsRoot(":fork:" + cvsroot.substring(7));
+                    } else {
+                        task.setCvsRoot(cvsroot);
+                    }
                     task.setCvsRsh(cvsRsh);
                     task.setFailOnError(true);
                     task.setDeststream(new BufferedOutputStream(out));
