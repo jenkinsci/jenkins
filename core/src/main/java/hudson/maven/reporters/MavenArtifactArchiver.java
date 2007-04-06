@@ -54,7 +54,7 @@ public class MavenArtifactArchiver extends MavenReporter {
         if(!file.exists() || file.isDirectory())
             return; // during a build maven sets a class folder instead of a jar file as artifact. ignore.
 
-        listener.getLogger().println("Archiving "+ file);
+        listener.getLogger().println("[HUDSON] Archiving "+ file);
 
         FilePath target = build.getArtifactsDir()
             .child(a.getGroupId())

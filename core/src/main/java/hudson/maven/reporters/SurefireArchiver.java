@@ -40,6 +40,8 @@ public class SurefireArchiver extends MavenReporter {
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, final BuildListener listener, Throwable error) throws InterruptedException, IOException {
         if (!isSurefireTest(mojo)) return true;
 
+        listener.getLogger().println("[HUDSON] Recording test results");
+
         File reportsDir;
         try {
             reportsDir = mojo.getConfigurationValue("reportsDirectory", File.class);
