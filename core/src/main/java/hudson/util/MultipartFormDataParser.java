@@ -39,4 +39,13 @@ public class MultipartFormDataParser {
     public FileItem getFileItem(String key) {
         return byName.get(key);
     }
+
+    /**
+     * If any file is created on the disk, delete them all.
+     * Even if this method is not called, the resource will be still cleaned up later by GC.
+     */
+    public void cleanUp() {
+        for (FileItem item : byName.values())
+            item.delete();
+    }
 }
