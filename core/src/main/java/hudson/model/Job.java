@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.Functions;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
@@ -28,6 +29,7 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Header;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -360,6 +362,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * Gets all the runs.
      *
      * The resulting map must be immutable (by employing copy-on-write semantics.)
+     * The map is descending order, with newest builds at the top.
      */
     protected abstract SortedMap<Integer,? extends RunT> _getRuns();
 
@@ -654,6 +657,33 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
         renameTo(newName);
         rsp.sendRedirect2(req.getContextPath()+'/'+getUrl()); // send to the new job page
+    }
+
+    /**
+     * Handles AJAX requests from browsers to update build history.
+     *
+     * @param n
+     *      The build number to fetch
+     */
+    public void doAjaxBuildHistoryUpdate( StaplerRequest req, StaplerResponse rsp,
+                  @Header("n") int n ) throws IOException, ServletException {
+
+        rsp.setContentType("text/html;charset=UTF-8");
+
+        // pick up builds to send back
+        Collection<? extends RunT> builds = _getRuns().headMap(n-1).values();
+
+        req.setAttribute("builds",builds);
+
+        int next = getNextBuildNumber();
+        if(!builds.isEmpty()) {
+            RunT b = builds.iterator().next();
+            next = b.getNumber();
+            if(!b.isBuilding())  next++;
+        }
+        rsp.setHeader("n",String.valueOf(next));
+
+        req.getView(this,"ajaxBuildHistory.jelly").forward(req,rsp);
     }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {

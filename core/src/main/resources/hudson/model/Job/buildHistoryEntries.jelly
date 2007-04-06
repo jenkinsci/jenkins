@@ -1,0 +1,73 @@
+<!--
+  Used by buildHistory.jelly to render one build record.
+
+  @builds : builds to be displayed
+
+  upon return, export "nBuild" to the parent scope indicating the build number
+  that needs to be checked for new status in the next run.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
+  <j:set var="nBuild" value="${it.nextBuildNumber}"/>
+
+  <!-- pending build -->
+  <j:set var="pending" value="${it.queueItem}" />
+  <j:if test="${pending!=null}">
+    <j:set var="id" value="${h.generateId()}"/>
+    <tr class="build-row transitive" id="${id}">
+      <td nowrap="nowrap">
+        <img width="16" height="16" src="${rootURL}/images/16x16/grey.gif" /><st:nbsp/>
+        #${it.nextBuildNumber}
+      </td>
+      <td nowrap="nowrap">
+        (pending)
+        <t:tooltip id="${id}">${pending.why}</t:tooltip>
+      </td>
+    </tr>
+  </j:if>
+
+  <!-- build history -->
+  <j:forEach var="build" items="${builds}">
+    <j:set var="link" value="${url}/${build.number}/" />
+    <tr class="build-row ${h.ifThenElse(build.building,'transitive',null)}">
+      <td nowrap="nowrap">
+        <img width="16" height="16" src="${rootURL}/images/16x16/${build.buildStatusUrl}" /><st:nbsp/>
+        #${build.number}
+      </td>
+      <td nowrap="nowrap">
+        <a class="tip" href="${link}">
+          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+        </a>
+        <j:if test="${build.keepLog}">
+          <st:nbsp/>
+          <img width="16" height="16"
+            title="${build.whyKeepLog}"
+            src="${rootURL}/images/16x16/lock.gif"/>
+        </j:if>
+      </td>
+    </tr>
+    <j:if test="${build.building}">
+      <j:set var="nBuild" value="${build.number}"/>
+      <tr class="transitive"><td></td><td style="padding:0">
+        <table class="middle-align">
+          <tr><td>
+            <t:buildProgressBar build="${build}"/>
+          </td><td style="padding:0">
+            <l:isAdmin>
+              <a href="${link}stop"><img src="${rootURL}/images/16x16/stop.gif" alt="[cancel]"/></a>
+            </l:isAdmin>
+          </td></tr>
+        </table>
+      </td></tr>
+    </j:if>
+    <j:if test="${!empty build.description}">
+      <tr>
+        <td></td>
+        <td style="padding:0;white-space:normal">
+          ${build.truncatedDescription}
+        </td>
+      </tr>
+    </j:if>
+  </j:forEach>
+  <j:set var="nBuild" value="${nBuild}" scope="parent" /><!-- export -->
+</j:jelly>

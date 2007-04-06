@@ -11,21 +11,6 @@
   <l:pane width="2" title="
     &lt;div style='float:right'>(&lt;a href='${url}/buildTimeTrend'>trend&lt;/a>)&lt;/div>Build History
   " id="buildHistory">
-    <!-- pending build -->
-    <j:set var="pending" value="${it.queueItem}" />
-    <j:if test="${pending!=null}">
-      <j:set var="id" value="${h.generateId()}"/>
-      <tr class="build-row" id="${id}">
-        <td nowrap="nowrap">
-          <img width="16" height="16" src="${rootURL}/images/16x16/grey.gif" /><st:nbsp/>
-          #${it.nextBuildNumber}
-        </td>
-        <td nowrap="nowrap">
-          (pending)
-          <t:tooltip id="${id}">${pending.why}</t:tooltip>
-        </td>
-      </tr>
-    </j:if>
 
     <!-- decide if we want to display all or just top 50 -->
     <j:set var="builds" value="${it.builds}"/>
@@ -35,47 +20,8 @@
     </j:if>
 
     <!-- build history -->
-    <j:forEach var="build" items="${builds}">
-      <j:set var="link" value="${url}/${build.number}/" />
-      <tr class="build-row">
-        <td nowrap="nowrap">
-          <img width="16" height="16" src="${rootURL}/images/16x16/${build.buildStatusUrl}" /><st:nbsp/>
-          #${build.number}
-        </td>
-        <td nowrap="nowrap">
-          <a class="tip" href="${link}">
-            <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
-          </a>
-          <j:if test="${build.keepLog}">
-            <st:nbsp/>
-            <img width="16" height="16"
-              title="${build.whyKeepLog}"
-              src="${rootURL}/images/16x16/lock.gif"/>
-          </j:if>
-        </td>
-      </tr>
-      <j:if test="${build.building}">
-        <tr><td></td><td style="padding:0">
-          <table class="middle-align">
-            <tr><td>
-              <t:buildProgressBar build="${build}"/>
-            </td><td style="padding:0">
-              <l:isAdmin>
-                <a href="${link}stop"><img src="${rootURL}/images/16x16/stop.gif" alt="[cancel]"/></a>
-              </l:isAdmin>
-            </td></tr>
-          </table>
-        </td></tr>
-      </j:if>
-      <j:if test="${!empty build.description}">
-        <tr>
-          <td></td>
-          <td style="padding:0;white-space:normal">
-            ${build.truncatedDescription}
-          </td>
-        </tr>
-      </j:if>
-    </j:forEach>
+    <st:include page="buildHistoryEntries.jelly" />
+
     <!--
       If we are trimming the build history because it's too long,
       show the link to fetch all the records by using AJAX.
@@ -125,4 +71,7 @@
       </td>
     </tr>
   </l:pane>
+  <script defer="true">
+    updateBuildHistory(${nBuild});
+  </script>
 </j:jelly>

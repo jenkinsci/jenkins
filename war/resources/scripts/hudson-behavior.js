@@ -497,3 +497,37 @@ var repetableSupport = {
         n.tag.expand();
     }
 };
+
+
+function updateBuildHistory(nBuild) {
+    $('buildHistory').headers = ["n",nBuild];
+
+    function updateBuilds() {
+        var bh = $('buildHistory');
+        new Ajax.Request("./ajaxBuildHistoryUpdate", {
+            requestHeaders: bh.headers,
+            onSuccess: function(rsp, _) {
+                var rows = bh.rows;
+
+                //delete rows with transitive data
+                while (rows.length > 2 && Element.hasClassName(rows[1], "transitive"))
+                    Element.remove(rows[1]);
+
+                // insert new rows
+                var div = document.createElement('div');
+                div.innerHTML = rsp.responseText;
+
+                var pivot = rows[0];
+                var newRows = div.firstChild.rows;
+                for (var i = newRows.length - 1; i >= 0; i--) {
+                    pivot.parentNode.insertBefore(newRows[i], pivot.nextSibling);
+                }
+
+                // next update
+                bh.headers = ["n",rsp.getResponseHeader("n")];
+                window.setTimeout(updateBuilds, 5000);
+            }
+        });
+    }
+    window.setTimeout(updateBuilds, 5000);
+}
