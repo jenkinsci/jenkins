@@ -37,13 +37,6 @@
         </configuration>
         <executions>
           <execution>
-            <id>create-test-jar</id>
-            <goals>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>sign</id>
             <goals>
               <goal>sign</goal>
             </goals>
