@@ -38,7 +38,7 @@ import hudson.triggers.Triggers;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.FormFieldValidator;
-import hudson.util.XStream2;
+import hudson.util.XStream2;import hudson.util.MultipartFormDataParser;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -1183,22 +1183,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Do a finger-print check.
      */
     public void doDoFingerprintCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        // Parse the request
+        MultipartFormDataParser p = new MultipartFormDataParser(req);
         try {
-            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
-
-            // Parse the request
-            @SuppressWarnings("unchecked") // pre-generics lib
-            List<FileItem> items = upload.parseRequest(req);
-
             rsp.sendRedirect2(req.getContextPath()+"/fingerprint/"+
-                Util.getDigestOf(items.get(0).getInputStream())+'/');
-
-            // if an error occur and we fail to do this, it will still be cleaned up
-            // when GC-ed.
-            for (FileItem item : items)
-                item.delete();
-        } catch (FileUploadException e) {
-            throw new ServletException(e);  // I'm not sure what the implication of this
+                Util.getDigestOf(p.getFileItem("name").getInputStream())+'/');
+        } finally {
+            p.cleanUp();
         }
     }
 
