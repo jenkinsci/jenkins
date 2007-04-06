@@ -213,6 +213,9 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                     reporters.add(auto);
             }
 
+            if(debug)
+                listener.getLogger().println("Reporters="+reporters);
+
             ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener, this);
 
             ArgumentListBuilder margs = new ArgumentListBuilder();
@@ -256,14 +259,15 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
             // find classworlds.jar
             File bootDir = new File(mvn.getHomeDir(), "core/boot");
-            File[] classworlds = bootDir.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.startsWith("classworlds") && name.endsWith(".jar");
-                }
-            });
+            File[] classworlds = bootDir.listFiles(CLASSWORLDS_FILTER);
             if(classworlds==null || classworlds.length==0) {
-                listener.error("No classworlds*.jar found in "+bootDir+" -- Is this a valid maven2 directory?");
-                throw new RunnerAbortedException();
+                // Maven 2.0.6 puts it to a different place
+                bootDir = new File(mvn.getHomeDir(), "boot");
+                classworlds = bootDir.listFiles(CLASSWORLDS_FILTER);
+                if(classworlds==null || classworlds.length==0) {
+                    listener.error("No classworlds*.jar found in "+mvn.getHomeDir()+" -- Is this a valid maven2 directory?");
+                    throw new RunnerAbortedException();
+                }
             }
 
             boolean isMaster = getCurrentNode()==Hudson.getInstance();
@@ -403,18 +407,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
      */
     public static int debugPort;
 
-    private static int MAX_PROCESS_CACHE;
+    private static final int MAX_PROCESS_CACHE = 5;
 
     static {
         String port = System.getProperty(MavenBuild.class.getName() + ".debugPort");
         if(port!=null)
             debugPort = Integer.parseInt(port);
-
-        String m = System.getProperty(MavenBuild.class.getName() + ".maxProcessCache");
-        if(m!=null)
-            MAX_PROCESS_CACHE = Integer.parseInt(m);
-        else
-            MAX_PROCESS_CACHE = 0;
     }
 
     private static final ProcessCache mavenProcessCache = new ProcessCache(MAX_PROCESS_CACHE);
@@ -438,4 +436,15 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
      * for {@link SurefireArchiver}. Subject to change without notice.
      */
     public static boolean markAsSuccess;
+
+    private static final FilenameFilter CLASSWORLDS_FILTER = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            return name.startsWith("classworlds") && name.endsWith(".jar");
+        }
+    };
+
+    /**
+     * Set true to produce debug output.
+     */
+    public static boolean debug = false;
 }
