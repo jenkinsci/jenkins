@@ -12,9 +12,15 @@ import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormFieldValidator;
+import hudson.util.MultipartFormDataParser;
 import hudson.util.Scrambler;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.io.FileUtils;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Chmod;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
@@ -22,6 +28,7 @@ import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
 import org.tmatesoft.svn.core.auth.SVNAuthentication;
 import org.tmatesoft.svn.core.auth.SVNPasswordAuthentication;
+import org.tmatesoft.svn.core.auth.SVNSSHAuthentication;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
@@ -51,6 +58,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -524,11 +532,24 @@ public class SubversionSCM extends SCM implements Serializable {
 
         /**
          * Stores {@link SVNAuthentication} for a single realm.
+         *
+         * <p>
+         * {@link Credential} holds data in a persistence-friendly way,
+         * and it's capable of creating {@link SVNAuthentication} object,
+         * to be passed to SVNKit.
          */
         private static abstract class Credential implements Serializable {
-            abstract SVNAuthentication createSVNAuthentication();
+            /**
+             * @param kind
+             *      One of the constants defined in {@link ISVNAuthenticationManager},
+             *      indicating what subype of {@link SVNAuthentication} is expected.
+             */
+            abstract SVNAuthentication createSVNAuthentication(String kind);
         }
 
+        /**
+         * Username/password based authentication.
+         */
         private static final class PasswordCredential extends Credential {
             private final String userName;
             private final String password; // scrambled by base64
@@ -539,8 +560,70 @@ public class SubversionSCM extends SCM implements Serializable {
             }
 
             @Override
-            SVNPasswordAuthentication createSVNAuthentication() {
-                return new SVNPasswordAuthentication(userName,Scrambler.descramble(password),false);
+            SVNAuthentication createSVNAuthentication(String kind) {
+                if(kind.equals(ISVNAuthenticationManager.SSH))
+                    return new SVNSSHAuthentication(userName,password,-1,false);
+                else
+                    return new SVNPasswordAuthentication(userName,Scrambler.descramble(password),false);
+            }
+        }
+
+        /**
+         * Publickey authentication for Subversion over SSH.
+         */
+        private static final class SshPublicKeyCredential extends Credential {
+            private final String userName;
+            private final String passphrase; // scrambled by base64
+            private final String id;
+
+            /**
+             * @param keyFile
+             *      stores SSH private key. The file will be copied.
+             */
+            public SshPublicKeyCredential(String userName, String passphrase, File keyFile) throws SVNException {
+                this.userName = userName;
+                this.passphrase = Scrambler.scramble(passphrase);
+
+                Random r = new Random();
+                StringBuilder buf = new StringBuilder();
+                for(int i=0;i<16;i++)
+                    buf.append(Integer.toHexString(r.nextInt(16)));
+                this.id = buf.toString();
+
+                try {
+                    FileUtils.copyFile(keyFile,getKeyFile());
+                } catch (IOException e) {
+                    throw new SVNException(SVNErrorMessage.create(SVNErrorCode.AUTHN_CREDS_UNAVAILABLE,"Unable to save private key"),e);
+                }
+            }
+
+            /**
+             * Gets the location where the private key will be permanently stored.
+             */
+            private File getKeyFile() {
+                File dir = new File(Hudson.getInstance().getRootDir(),"subversion-credentials");
+                if(dir.mkdirs()) {
+                    // make sure the directory exists. if we created it, try to set the permission to 600
+                    // since this is sensitive information
+                    try {
+                        Chmod chmod = new Chmod();
+                        chmod.setProject(new Project());
+                        chmod.setFile(dir);
+                        chmod.setPerm("600");
+                        chmod.execute();
+                    } catch (Throwable e) {
+                        // if we failed to set the permission, that's fine.
+                        LOGGER.log(Level.WARNING, "Failed to set directory permission of "+dir,e);
+                    }
+                }
+                return new File(dir,id);
+            }
+
+            @Override
+            SVNSSHAuthentication createSVNAuthentication(String kind) {
+                return new SVNSSHAuthentication(userName,
+                    getKeyFile(),
+                    Scrambler.descramble(passphrase),-1,false);
             }
         }
 
@@ -578,7 +661,7 @@ public class SubversionSCM extends SCM implements Serializable {
             public SVNAuthentication requestClientAuthentication(String kind, SVNURL url, String realm, SVNErrorMessage errorMessage, SVNAuthentication previousAuth, boolean authMayBeStored) {
                 Credential cred = source.getCredential(realm);
                 if(cred==null)  return null;
-                return cred.createSVNAuthentication();
+                return cred.createSVNAuthentication(kind);
             }
 
             public int acceptServerAuthentication(SVNURL url, String realm, Object certificate, boolean resultMayBeStored) {
@@ -616,11 +699,32 @@ public class SubversionSCM extends SCM implements Serializable {
 
         /**
          * Submits the authentication info.
+         *
+         * This code is fairly ugly because of the way SVNKit handles credentials.
          */
-        public void doPostCredential(final StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            final String url = req.getParameter("url");
-            final String username = req.getParameter("username");
-            final String password = req.getParameter("password");
+        public void doPostCredential(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            if(!Hudson.adminCheck(req,rsp)) return;
+
+            MultipartFormDataParser parser = new MultipartFormDataParser(req);
+
+            String url = parser.get("url");
+
+            boolean passwordKind = parser.get("kind").equals("password");
+
+            final String username = parser.get(passwordKind?"username1":"username2");
+            final String password = parser.get(passwordKind?"password1":"password2");
+
+
+            // SVNKit wants a key in a file
+            FileItem item = parser.getFileItem("privateKey");
+            final File keyFile = File.createTempFile("hudson","key");
+            if(item!=null)
+                try {
+                    item.write(keyFile);
+                } catch (Exception e) {
+                    throw new IOException(e);
+                }
+
 
             try {
                 // the way it works with SVNKit is that
@@ -630,10 +734,19 @@ public class SubversionSCM extends SCM implements Serializable {
                 // 3) if the authentication is successful, svnkit calls back acknowledgeAuthentication
                 //    (so we store the password info here)
                 SVNRepository repository = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(url));
-                repository.setAuthenticationManager(new DefaultSVNAuthenticationManager(SVNWCUtil.getDefaultConfigurationDirectory(),true,username,password) {
+                repository.setAuthenticationManager(new DefaultSVNAuthenticationManager(SVNWCUtil.getDefaultConfigurationDirectory(),true,username,password,keyFile,password) {
+                    @Override
                     public void acknowledgeAuthentication(boolean accepted, String kind, String realm, SVNErrorMessage errorMessage, SVNAuthentication authentication) throws SVNException {
                         if(accepted) {
-                            credentials.put(realm,new PasswordCredential(username,password));
+                            if(authentication.getKind().equals(ISVNAuthenticationManager.PASSWORD))
+                                credentials.put(realm,new PasswordCredential(username,password));
+                            if(authentication.getKind().equals(ISVNAuthenticationManager.SSH)) {
+                                if(keyFile==null)
+                                    credentials.put(realm,new PasswordCredential(username,password));
+                                else {
+                                    credentials.put(realm,new SshPublicKeyCredential(username,password,keyFile));
+                                }
+                            }
                             save();
                         }
                         super.acknowledgeAuthentication(accepted, kind, realm, errorMessage, authentication);
@@ -644,6 +757,10 @@ public class SubversionSCM extends SCM implements Serializable {
             } catch (SVNException e) {
                 req.setAttribute("message",e.getErrorMessage());
                 rsp.forward(Hudson.getInstance(),"error",req);
+            } finally {
+                keyFile.delete();
+                if(item!=null)
+                    item.delete();
             }
         }
 
@@ -770,4 +887,5 @@ public class SubversionSCM extends SCM implements Serializable {
         private static final long serialVersionUID = 1L;
     }
     
+    private static final Logger LOGGER = Logger.getLogger(SubversionSCM.class.getName());
 }
