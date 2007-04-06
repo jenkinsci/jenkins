@@ -53,12 +53,11 @@ public final class FishEyeCVS extends CVSRepositoryBrowser {
         return null;
     }
 
-    @Override
-    public Descriptor<RepositoryBrowser<?>> getDescriptor() {
+    public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new DescriptorImpl();
+    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
 
