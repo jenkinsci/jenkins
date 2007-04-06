@@ -7,16 +7,24 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
+import hudson.remoting.Future;
 import hudson.remoting.Pipe;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
+import hudson.util.StreamResource;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.taskdefs.Untar;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.tar.TarEntry;
+import org.apache.tools.tar.TarOutputStream;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -32,8 +40,11 @@ import java.io.Writer;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.GZIPInputStream;
 
 /**
  * {@link File} like object with remoting support.
@@ -212,17 +223,7 @@ public final class FilePath implements Serializable {
         if(channel!=null) {
             // run this on a remote system
             try {
-                return channel.call(new DelegatingCallable<T,IOException>() {
-                    public T call() throws IOException {
-                        return callable.invoke(new File(remote), Channel.current());
-                    }
-
-                    public ClassLoader getClassLoader() {
-                        return callable.getClass().getClassLoader();
-                    }
-
-                    private static final long serialVersionUID = 1L;
-                });
+                return channel.call(new FileCallableWrapper<T>(callable));
             } catch (IOException e) {
                 // wrap it into a new IOException so that we get the caller's stack trace as well.
                 throw new IOException2("remote file operation failed",e);
@@ -230,6 +231,20 @@ public final class FilePath implements Serializable {
         } else {
             // the file is on the local machine.
             return callable.invoke(new File(remote), Hudson.MasterComputer.localChannel);
+        }
+    }
+
+    /**
+     * Executes some program on the machine that this {@link FilePath} exists,
+     * so that one can perform local file operations.
+     */
+    public <T> Future<T> actAsync(final FileCallable<T> callable) throws IOException, InterruptedException {
+        try {
+            return (channel!=null ? channel : Hudson.MasterComputer.localChannel)
+                .callAsync(new FileCallableWrapper<T>(callable));
+        } catch (IOException e) {
+            // wrap it into a new IOException so that we get the caller's stack trace as well.
+            throw new IOException2("remote file operation failed",e);
         }
     }
 
@@ -632,69 +647,99 @@ public final class FilePath implements Serializable {
                     }
                 }
             });
-        } else {
-            // remote copy
-            final FilePath src = this;
+        } else
+        if(this.channel==null) {
+            // local -> remote copy
+            final Pipe pipe = Pipe.createLocalToRemote();
 
-            return target.act(new FileCallable<Integer>() {
-                // this code is executed on the node that receives files.
-                public Integer invoke(final File dest, VirtualChannel channel) throws IOException {
-                    final RemoteCopier copier = src.getChannel().export(
-                        RemoteCopier.class,
-                        new RemoteCopier() {
-                            private OutputStream os;
-                            public void open(String fileName) throws IOException {
-                                File file = new File(dest, fileName);
-                                file.getParentFile().mkdirs();
-                                os = new FileOutputStream(file);
-                            }
-
-                            public void write(byte[] buf, int len) throws IOException {
-                                os.write(buf,0,len);
-                            }
-
-                            public void close() throws IOException {
-                                os.close();
-                                os = null;
-                            }
-                        });
-
-                    try {
-                        return src.act(new FileCallable<Integer>() {
-                            public Integer invoke(File base, VirtualChannel channel) throws IOException {
-                                // copy to a remote node
-                                FileSet fs = new FileSet();
-                                fs.setDir(base);
-                                fs.setIncludes(fileMask);
-
-                                byte[] buf = new byte[8192];
-
-                                DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
-                                String[] files = ds.getIncludedFiles();
-                                for( String f : files) {
-                                    File file = new File(base, f);
-
-                                    if(Functions.isWindows())
-                                        f = f.replace('\\','/');
-                                    copier.open(f);
-
-                                    FileInputStream in = new FileInputStream(file);
-                                    int len;
-                                    while((len=in.read(buf))>=0)
-                                        copier.write(buf,len);
-                                    in.close();
-
-                                    copier.close();
-                                }
-                                return files.length;
-                            }
-                        });
-                    } catch (InterruptedException e) {
-                        throw new IOException2("Copy operation interrupted",e);
-                    }
+            Future<Void> future = target.actAsync(new FileCallable<Void>() {
+                public Void invoke(File f, VirtualChannel channel) throws IOException {
+                    readFromTar(f,pipe.getIn());
+                    return null;
                 }
             });
+            int r = writeToTar(new File(remote),fileMask,excludes,pipe);
+            try {
+                future.get();
+            } catch (ExecutionException e) {
+                throw new IOException2(e);
+            }
+            return r;
+        } else {
+            // remote -> local copy
+            final Pipe pipe = Pipe.createRemoteToLocal();
+
+            Future<Integer> future = actAsync(new FileCallable<Integer>() {
+                public Integer invoke(File f, VirtualChannel channel) throws IOException {
+                    return writeToTar(f,fileMask,excludes,pipe);
+                }
+            });
+            readFromTar(new File(remote),pipe.getIn());
+            try {
+                return future.get();
+            } catch (ExecutionException e) {
+                throw new IOException2(e);
+            }
         }
+    }
+
+    /**
+     * Writes to a tar stream and stores obtained files to the base dir.
+     *
+     * @return
+     *      number of files/directories that are written.
+     */
+    private Integer writeToTar(File baseDir, String fileMask, String excludes, Pipe pipe) throws IOException {
+        FileSet fs = new FileSet();
+        fs.setDir(baseDir);
+        fs.setIncludes(fileMask);
+        if(excludes!=null)
+            fs.setExcludes(excludes);
+
+        byte[] buf = new byte[8192];
+
+        TarOutputStream tar = new TarOutputStream(new GZIPOutputStream(new BufferedOutputStream(pipe.getOut())));
+
+        DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+        String[] files = ds.getIncludedFiles();
+        for( String f : files) {
+            if(Functions.isWindows())
+                f = f.replace('\\','/');
+
+            File file = new File(baseDir, f);
+
+            TarEntry te = new TarEntry(f);
+            te.setModTime(file.lastModified());
+            if(!file.isDirectory())
+                te.setSize(file.length());
+
+            tar.putNextEntry(te);
+
+            if (!file.isDirectory()) {
+                FileInputStream in = new FileInputStream(file);
+                int len;
+                while((len=in.read(buf))>=0)
+                    tar.write(buf,0,len);
+                in.close();
+            }
+
+            tar.closeEntry();
+        }
+
+        tar.close();
+
+        return files.length;
+    }
+
+    /**
+     * Reads from a tar stream and stores obtained files to the base dir.
+     */
+    private static void readFromTar(File baseDir, InputStream in) throws IOException {
+        Untar untar = new Untar();
+        untar.setProject(new Project());
+        untar.add(new StreamResource(new BufferedInputStream(new GZIPInputStream(in))));
+        untar.setDest(baseDir);
+        untar.execute();
     }
 
     /**
@@ -797,4 +842,25 @@ public final class FilePath implements Serializable {
     }
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Adapts {@link FileCallable} to {@link Callable}.
+     */
+    private class FileCallableWrapper<T> implements DelegatingCallable<T,IOException> {
+        private final FileCallable<T> callable;
+
+        public FileCallableWrapper(FileCallable<T> callable) {
+            this.callable = callable;
+        }
+
+        public T call() throws IOException {
+            return callable.invoke(new File(remote), Channel.current());
+        }
+
+        public ClassLoader getClassLoader() {
+            return callable.getClass().getClassLoader();
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
 }
