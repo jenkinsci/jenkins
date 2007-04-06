@@ -57,7 +57,7 @@ final class ProxyOutputStream extends OutputStream {
             tmp = null;
         }
         if(closed)  // already marked closed?
-            close();
+            doClose();
     }
 
     public void write(int b) throws IOException {
@@ -96,11 +96,14 @@ final class ProxyOutputStream extends OutputStream {
 
     public synchronized void close() throws IOException {
         closed = true;
-        if(channel!=null) {
-            channel.send(new EOF(oid));
-            channel = null;
-            oid = -1;
-        }
+        if(channel!=null)
+            doClose();
+    }
+
+    private void doClose() throws IOException {
+        channel.send(new EOF(oid));
+        channel = null;
+        oid = -1;
     }
 
     protected void finalize() throws Throwable {
