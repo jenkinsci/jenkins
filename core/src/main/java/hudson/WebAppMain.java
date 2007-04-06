@@ -32,6 +32,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class WebAppMain implements ServletContextListener {
+    private final RingBufferLogHandler handler = new RingBufferLogHandler();
 
     /**
      * Creates the sole instance of {@link Hudson} and register it to the {@link ServletContext}.
@@ -116,7 +117,6 @@ public class WebAppMain implements ServletContextListener {
      * Installs log handler to monitor all Hudson logs.
      */
     private void installLogger() {
-        RingBufferLogHandler handler = new RingBufferLogHandler();
         Hudson.logRecords = handler.getView();
         Logger.getLogger("hudson").addHandler(handler);
     }
@@ -168,5 +168,9 @@ public class WebAppMain implements ServletContextListener {
         Hudson instance = Hudson.getInstance();
         if(instance!=null)
             instance.cleanUp();
+
+        // Logger is in the system classloader, so if we don't do this
+        // the whole web app will never be undepoyed.
+        Logger.getLogger("hudson").removeHandler(handler);
     }
 }

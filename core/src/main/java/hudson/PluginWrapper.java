@@ -5,6 +5,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.commons.logging.LogFactory;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -356,6 +357,9 @@ public final class PluginWrapper {
             System.err.println("Failed to shut down "+shortName);
             System.err.println(t);
         }
+        // Work around a bug in commons-logging.
+        // See http://www.szegedi.org/articles/memleak.html
+        LogFactory.release(classLoader);
     }
 
     /**

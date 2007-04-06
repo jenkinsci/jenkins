@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Manages {@link PluginWrapper}s.
  *
@@ -129,6 +131,9 @@ public final class PluginManager {
         for (PluginWrapper p : activePlugins) {
             p.stop();
         }
+        // Work around a bug in commons-logging.
+        // See http://www.szegedi.org/articles/memleak.html
+        LogFactory.release(uberClassLoader);
     }
 
     private final class UberClassLoader extends ClassLoader {
