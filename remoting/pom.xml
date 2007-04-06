@@ -38,6 +38,11 @@
         <executions>
           <execution>
             <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+          <execution>
+            <goals>
               <goal>sign</goal>
             </goals>
             <configuration>
