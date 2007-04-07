@@ -124,7 +124,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Gets the top directory of the checked out module.
      * @param workspace
      */
-    public abstract FilePath getModuleRoot(FilePath workspace);
+    public FilePath getModuleRoot(FilePath workspace) {
+        return workspace;
+    }
 
     /**
      * The returned object will be used to parse <tt>changelog.xml</tt>.

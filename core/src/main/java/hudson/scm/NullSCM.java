@@ -39,10 +39,6 @@ public class NullSCM extends SCM {
         // noop
     }
 
-    public FilePath getModuleRoot(FilePath workspace) {
-        return workspace;
-    }
-
     public ChangeLogParser createChangeLogParser() {
         return new NullChangeLogParser();
     }
