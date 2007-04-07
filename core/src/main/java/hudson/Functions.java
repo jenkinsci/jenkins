@@ -331,8 +331,8 @@ public class Functions {
         return Util.encode(s);
     }
 
-    public static void adminCheck(StaplerRequest req, StaplerResponse rsp,boolean required) throws IOException, ServletException {
-        if(required && !Hudson.adminCheck(req,rsp)) {
+    public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required) throws IOException, ServletException {
+        if(required!=null && !Hudson.adminCheck(req,rsp)) {
             // check failed
             throw new ServletException("Unauthorized access");
         }
