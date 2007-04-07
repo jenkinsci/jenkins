@@ -663,7 +663,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                         // the system call limit to the command line length (see issue #389)
                         // the choice of the number is arbitrary, but normally we don't really
                         // expect continuous builds to have too many changes, so this should be OK.
-                        if(changedFiles.size()<100) {
+                        if(changedFiles.size()<100 && Hudson.isWindows()) {
                             // if the directory doesn't exist, cvs changelog will die, so filter them out.
                             // this means we'll lose the log of those changes
                             for (String filePath : changedFiles) {
