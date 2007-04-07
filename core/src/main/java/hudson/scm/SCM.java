@@ -3,6 +3,7 @@ package hudson.scm;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.tasks.Builder;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -122,7 +123,44 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     /**
      * Gets the top directory of the checked out module.
+     *
+     * <p>
+     * Often SCMs have to create a directory inside a workspace, which
+     * creates directory layout like this:
+     *
+     * <pre>
+     * workspace  <- workspace root
+     *  +- xyz    <- directory checked out by SCM
+     *      +- CVS
+     *      +- build.xml  <- user file
+     * </pre>
+     *
+     * <p>
+     * Many builders, like Ant or Maven, works off the specific user file
+     * at the top of the checked out module (in the above case, that would
+     * be <tt>xyz/build.xml</tt>), yet the builder doesn't know the "xyz"
+     * part; that comes from SCM.
+     *
+     * <p>
+     * Collaboration between {@link Builder} and {@link SCM} allows
+     * Hudson to find build.xml wihout asking the user to enter "xyz" again.
+     *
+     * <p>
+     * This method is for this purpose. It takes the workspace
+     * root as a parameter, and expected to return the directory
+     * that was checked out from SCM.
+     *
+     * <p>
+     * If this SCM is configured to create a directory, try to
+     * return that directory so that builders can work seamlessly.
+     *  
+     * <p>
+     * If SCM doesn't need to create any directory inside workspace,
+     * or in any other tricky cases, it should revert to the default
+     * implementation, which is to just return the parameter.
+     *
      * @param workspace
+     *      The workspace root directory.
      */
     public FilePath getModuleRoot(FilePath workspace) {
         return workspace;
