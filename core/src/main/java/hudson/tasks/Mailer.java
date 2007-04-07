@@ -1,6 +1,7 @@
 package hudson.tasks;
 
 import hudson.Launcher;
+import hudson.util.FormFieldValidator;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
@@ -9,11 +10,17 @@ import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerResponse;
 
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.AddressException;
+import javax.servlet.ServletException;
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -238,6 +245,20 @@ public class Mailer extends Publisher {
             Mailer m = new Mailer();
             req.bindParameters(m,"mailer_");
             return m;
+        }
+
+        public void doAddressCheck(StaplerRequest req, StaplerResponse rsp,
+                                   @QueryParameter("value") final String value) throws IOException, ServletException {
+            new FormFieldValidator(req,rsp,false) {
+                protected void check() throws IOException, ServletException {
+                    try {
+                        new InternetAddress(value);
+                        ok();
+                    } catch (AddressException e) {
+                        error(e.getMessage());
+                    }
+                }
+            }.process();
         }
     }
 

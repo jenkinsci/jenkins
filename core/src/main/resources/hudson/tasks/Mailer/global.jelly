@@ -12,8 +12,8 @@
     </f:entry>
     <f:entry title="System Admin E-mail Address"
              help="/help/tasks/mailer/admin-address.html">
-      <input class="setting-input" name="mailer_admin_address"
-        type="text" value="${descriptor.adminAddress}"/>
+      <f:textbox name="mailer_admin_address" value="${descriptor.adminAddress}"
+          checkUrl="'${rootURL}/publisher/Mailer/addressCheck?value='+encode(this.value)"/>
     </f:entry>
     <f:entry title="Hudson URL"
              help="/help/tasks/mailer/url.html">
