@@ -19,9 +19,9 @@ javanettasks uploadFile hudson /releases/jnlp/hudson.jar "version $id" Stable ta
 # replace the jar file link accordingly
 WWW=../../../www
 jarUrl=$(cat target/upload.log | grep "^Posted" | sed -e "s/Posted //g")
-perl -p -i -e "s|https://.+hudson\.jar|$jarUrl|" $WWW/hudson.jnlp
+perl -p -i.bak -e "s|https://.+hudson\.jar|$jarUrl|" $WWW/hudson.jnlp
 cp $WWW/hudson.jnlp $WWW/$id.jnlp
 
 # update changelog.html
-perl -n -i -e "print unless /=END=.+/" $WWW/changelog.html
-perl -n -i -e 'print; print "<h3>What'\''s new in 1.$id</h3>\n<ul>\n  <li>\n</ul>\n=END=-->\n" if /=BEGIN=/' $WWW/changelog.html
+perl -n -i.bak -e "print unless /=END=.+/" $WWW/changelog.html
+perl -n -i.bak -e 'print; print "<h3>What'\''s new in 1.$id</h3>\n<ul>\n  <li>\n</ul>\n=END=-->\n" if /=BEGIN=/' $WWW/changelog.html
