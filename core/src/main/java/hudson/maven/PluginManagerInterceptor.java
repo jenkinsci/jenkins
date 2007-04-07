@@ -12,6 +12,8 @@ import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 
 import hudson.model.BuildListener;
 import hudson.maven.agent.PluginManagerListener;
@@ -33,6 +35,13 @@ public class PluginManagerInterceptor implements PluginManagerListener, Lifecycl
      * Used to detect when to fire {@link MavenReporter#enterModule}
      */
     private MavenProject lastModule;
+
+    /**
+     * Records of what was executed.
+     */
+    private final List<ExecutedMojo> executedMojos = new ArrayList<ExecutedMojo>();
+
+    private long startTime;
 
     /**
      * Called by {@link MavenBuild} to connect this object to the rest of Hudson objects,
@@ -66,6 +75,7 @@ public class PluginManagerInterceptor implements PluginManagerListener, Lifecycl
     public void postBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException {
         try {
             fireLeaveModule();
+            buildProxy.setExecutedMojos(executedMojos);
             for (MavenReporter r : reporters)
                 r.postBuild(buildProxy,rm.getTopLevelProject(),listener);
         } catch (InterruptedException e) {
@@ -88,10 +98,14 @@ public class PluginManagerInterceptor implements PluginManagerListener, Lifecycl
         for (MavenReporter r : reporters)
             if(!r.preExecute(buildProxy,project,info,listener))
                 throw new AbortException(r+" failed");
+
+        startTime = System.currentTimeMillis();
     }
 
     public void postExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException, AbortException {
         MojoInfo info = new MojoInfo(exec, mergedConfig, eval);
+
+        executedMojos.add(new ExecutedMojo(info,System.currentTimeMillis()-startTime));
 
         for (MavenReporter r : reporters)
             if(!r.postExecute(buildProxy,project,info,listener,exception))

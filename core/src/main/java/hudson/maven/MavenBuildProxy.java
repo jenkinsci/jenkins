@@ -5,6 +5,7 @@ import hudson.model.Result;
 
 import java.io.Serializable;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Remoting proxy interface for {@link MavenReporter}s to talk to {@link MavenBuild}
@@ -63,6 +64,11 @@ public interface MavenBuildProxy {
      * and will become a persisted part of the {@link MavenBuild}. 
      */
     void registerAsProjectAction(MavenReporter reporter);
+
+    /**
+     * Called at the end of the build to record what mojos are executed.
+     */
+    void setExecutedMojos(List<ExecutedMojo> executedMojos);
 
     public interface BuildCallable<V,T extends Throwable> extends Serializable {
         /**

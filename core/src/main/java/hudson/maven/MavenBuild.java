@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
+import java.util.Collections;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -47,6 +48,14 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
      * Can be null if there's none.
      */
     /*package*/ List<MavenReporter> projectActionReporters;
+
+    /**
+     * {@link ExecutedMojo}s that record what was run.
+     * Null until some time before the build completes,
+     * or if this build is performed in earlier versions of Hudson.
+     * @since 1.98.
+     */
+    private List<ExecutedMojo> executedMojos;
 
     public MavenBuild(MavenModule job) throws IOException {
         super(job);
@@ -93,6 +102,13 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         if(projectActionReporters==null)
             projectActionReporters = new ArrayList<MavenReporter>();
         projectActionReporters.add(reporter);
+    }
+
+    public List<ExecutedMojo> getExecutedMojos() {
+        if(executedMojos==null)
+            return Collections.emptyList();
+        else
+            return Collections.unmodifiableList(executedMojos);
     }
     
     @Override
@@ -178,6 +194,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
         public void registerAsProjectAction(MavenReporter reporter) {
             MavenBuild.this.registerAsProjectAction(reporter);
+        }
+
+        public void setExecutedMojos(List<ExecutedMojo> executedMojos) {
+            MavenBuild.this.executedMojos = executedMojos;
         }
 
         private Object writeReplace() {
