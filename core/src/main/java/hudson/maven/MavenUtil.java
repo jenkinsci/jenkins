@@ -80,7 +80,7 @@ class MavenUtil {
 
     /**
      * When we run in Jetty during development, embedded Maven will end up
-     * seeing some of the Maven class visibel through Jetty, and this confuses it.
+     * seeing some of the Maven class visible through Jetty, and this confuses it.
      *
      * <p>
      * Specifically, embedded Maven will find all the component descriptors
