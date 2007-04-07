@@ -40,6 +40,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -755,7 +756,7 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Validates the ant file mask (like "foo/bar/*.txt")
+     * Validates the ant file mask (like "foo/bar/*.txt, zot/*.jar")
      * against this directory, and try to point out the problem.
      *
      * <p>
@@ -766,44 +767,52 @@ public final class FilePath implements Serializable {
      * @since 1.90
      * @see FormFieldValidator.WorkspaceFileMask
      */
-    public String validateAntFileMask(final String fileMask) throws IOException, InterruptedException {
+    public String validateAntFileMask(final String fileMasks) throws IOException, InterruptedException {
         return act(new FileCallable<String>() {
             public String invoke(File dir, VirtualChannel channel) throws IOException {
-                String previous = null;
-                String pattern = fileMask;
+                StringTokenizer tokens = new StringTokenizer(fileMasks);
 
-                while(true) {
-                    FileSet fs = new FileSet();
-                    fs.setDir(dir);
-                    fs.setIncludes(pattern);
+                OUTER:
+                while(tokens.hasMoreTokens()) {
+                    final String fileMask = tokens.nextToken().trim();
+                    String previous = null;
+                    String pattern = fileMask;
 
-                    DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+                    while(true) {
+                        FileSet fs = new FileSet();
+                        fs.setDir(dir);
+                        fs.setIncludes(pattern);
 
-                    if(ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0) {
-                        // found a match
-                        if(pattern.equals(fileMask))
-                            return null;    // no error
-                        if(previous==null)
-                            return String.format("'%s' doesn't match anything, although '%s' exists",
-                                fileMask, pattern );
-                        else
-                            return String.format("'%s' doesn't match anything: '%s' exists but not '%s'",
-                                fileMask, pattern, previous );
+                        DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+
+                        if(ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0) {
+                            // found a match
+                            if(pattern.equals(fileMask))
+                                continue OUTER;    // no error
+                            if(previous==null)
+                                return String.format("'%s' doesn't match anything, although '%s' exists",
+                                    fileMask, pattern );
+                            else
+                                return String.format("'%s' doesn't match anything: '%s' exists but not '%s'",
+                                    fileMask, pattern, previous );
+                        }
+
+                        int idx = Math.max(pattern.lastIndexOf('\\'),pattern.lastIndexOf('/'));
+                        if(idx<0) {
+                            if(pattern.equals(fileMask))
+                                return String.format("'%s' doesn't match anything", fileMask );
+                            else
+                                return String.format("'%s' doesn't match anything: even '%s' doesn't exist",
+                                    fileMask, pattern );
+                        }
+
+                        // cut off the trailing component and try again
+                        previous = pattern;
+                        pattern = pattern.substring(0,idx);
                     }
-
-                    int idx = Math.max(pattern.lastIndexOf('\\'),pattern.lastIndexOf('/'));
-                    if(idx<0) {
-                        if(pattern.equals(fileMask))
-                            return String.format("'%s' doesn't match anything", fileMask );
-                        else
-                            return String.format("'%s' doesn't match anything: even '%s' doesn't exist",
-                                fileMask, pattern );
-                    }
-
-                    // cut off the trailing component and try again
-                    previous = pattern;
-                    pattern = pattern.substring(0,idx);
                 }
+
+                return null; // no error
             }
         });
     }
