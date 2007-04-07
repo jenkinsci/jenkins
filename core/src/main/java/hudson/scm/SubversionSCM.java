@@ -499,10 +499,6 @@ public class SubversionSCM extends SCM implements Serializable {
         return DescriptorImpl.DESCRIPTOR;
     }
 
-    public void buildEnvVars(Map<String,String> env) {
-        // no environment variable
-    }
-
     public FilePath getModuleRoot(FilePath workspace) {
         if (getLocations().length > 0)
             return workspace.child(getLocations()[0].local);

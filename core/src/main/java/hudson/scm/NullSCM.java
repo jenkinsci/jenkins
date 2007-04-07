@@ -35,10 +35,6 @@ public class NullSCM extends SCM {
         return DESCRIPTOR;
     }
 
-    public void buildEnvVars(Map<String,String> env) {
-        // noop
-    }
-
     public ChangeLogParser createChangeLogParser() {
         return new NullChangeLogParser();
     }
