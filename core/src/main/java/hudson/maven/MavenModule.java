@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.HashSet;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -226,21 +227,32 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         synchronized(transientActions) {
             transientActions.clear();
 
-            MavenBuild lb = getLastBuild();
-            if(lb==null)    return;
-            
-            List<MavenReporter> list = lb.projectActionReporters;
-            if(list!=null)
-                for (MavenReporter step : list) {
-                    Action a = step.getProjectAction(this);
-                    if(a!=null)
-                        transientActions.add(a);
-                }
+            // if we just pick up the project actions from the last build,
+            // and if the last build failed very early, then the reports that
+            // kick in later (like test results) won't be displayed.
+            // so pick up last successful build, too.
+            Set<Class> added = new HashSet<Class>();
+            addTransientActionsFromBuild(getLastBuild(),added);
+            addTransientActionsFromBuild(getLastSuccessfulBuild(),added);
+
             for (Trigger trigger : triggers) {
                 Action a = trigger.getProjectAction();
                 if(a!=null)
                     transientActions.add(a);
             }
+        }
+    }
+
+    private void addTransientActionsFromBuild(MavenBuild build, Set<Class> added) {
+        if(build==null)    return;
+        List<MavenReporter> list = build.projectActionReporters;
+        if(list==null)   return;
+
+        for (MavenReporter step : list) {
+            if(!added.add(step.getClass()))     continue;   // already added
+            Action a = step.getProjectAction(this);
+            if(a!=null)
+                transientActions.add(a);
         }
     }
 
