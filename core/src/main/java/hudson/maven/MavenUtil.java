@@ -34,7 +34,8 @@ class MavenUtil {
         File m2Home = new File(MavenEmbedder.userHome, ".m2");
         m2Home.mkdirs();
         if(!m2Home.exists()) {
-            listener.getLogger().println("Failed to create "+m2Home);
+            listener.getLogger().println("Failed to create "+m2Home+
+                "\nSee https://hudson.dev.java.net/cannot-create-.m2.html");
             throw new AbortException();
         }
 
