@@ -7,11 +7,11 @@ import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
-import java.util.Enumeration;
-import java.net.URL;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -23,7 +23,7 @@ class MavenUtil {
      * @param listener
      *      This is where the log messages from Maven will be recorded.
      */
-    public static MavenEmbedder createEmbedder(TaskListener listener) throws MavenEmbedderException {
+    public static MavenEmbedder createEmbedder(TaskListener listener) throws MavenEmbedderException, IOException {
         MavenEmbedder maven = new MavenEmbedder();
 
         ClassLoader cl = MavenUtil.class.getClassLoader();
@@ -33,8 +33,10 @@ class MavenUtil {
         // make sure ~/.m2 exists to avoid http://www.nabble.com/BUG-Report-tf3401736.html
         File m2Home = new File(MavenEmbedder.userHome, ".m2");
         m2Home.mkdirs();
-        if(!m2Home.exists())
+        if(!m2Home.exists()) {
             listener.getLogger().println("Failed to create "+m2Home);
+            throw new AbortException();
+        }
 
         maven.start();
 

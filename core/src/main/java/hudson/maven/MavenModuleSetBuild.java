@@ -233,7 +233,4 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         private static final long serialVersionUID = 1L;
     }
 
-    private static class AbortException extends IOException {
-        private static final long serialVersionUID = 1L;
-    }
 }
