@@ -118,8 +118,14 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     /**
      * Adds environmental variables for the builds to the given map.
+     *
+     * <p>
+     * This can be used to propagate information from SCM to builds
+     * (for example, SVN revision number.)
      */
-    public abstract void buildEnvVars(Map<String,String> env);
+    public void buildEnvVars(Map<String,String> env) {
+        // default implementation is noop.
+    }
 
     /**
      * Gets the top directory of the checked out module.
