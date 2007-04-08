@@ -2,7 +2,6 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
-import hudson.Functions;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
@@ -27,9 +26,9 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
+import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Header;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -325,15 +324,27 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     /**
-     * Gets the youngest (newest) build #m that satisfies <tt>n&lt;=m</tt>.
+     * Gets the youngest build #m that satisfies <tt>n&lt;=m</tt>.
      *
      * This is useful when you'd like to fetch a build but the exact build might be already
      * gone (deleted, rotated, etc.)
      */
-    public RunT getNearestBuild(int n) {
+    public final RunT getNearestBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n);
         if(m.isEmpty()) return null;
         return m.get(m.lastKey());
+    }
+
+    /**
+     * Gets the latest build #m that satisfies <tt>m&lt;=n</tt>.
+     *
+     * This is useful when you'd like to fetch a build but the exact build might be already
+     * gone (deleted, rotated, etc.)
+     */
+    public final RunT getNearestOldBuild(int n) {
+        SortedMap<Integer, ? extends RunT> m = _getRuns().tailMap(n);
+        if(m.isEmpty()) return null;
+        return m.get(m.firstKey());
     }
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
