@@ -5,6 +5,13 @@
       <h1>Project ${it.name}</h1>
       <t:editableDescription adminOnly="true"/>
 
+      <!-- floating box -->
+      <div style="float:right">
+        <j:forEach var="a" items="${it.actions}">
+          <st:include page="floatingBox.jelly" from="${a}" optional="true" />
+        </j:forEach>
+      </div>
+      
       <j:choose>
         <j:when test="${empty(it.modules)}">
           <j:choose>
