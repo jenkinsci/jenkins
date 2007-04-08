@@ -91,7 +91,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
     /**
      * Module names.
      *
-     * This could be a whitespace-separate list of multiple modules.
+     * This could be a whitespace-separated list of multiple modules.
      * Modules could be either directories or files. 
      */
     private String module;
