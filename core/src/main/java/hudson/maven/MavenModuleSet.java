@@ -17,7 +17,10 @@ import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.Queue;
 import hudson.model.Descriptor;
+import hudson.model.Action;
 import hudson.tasks.Maven;
+import hudson.tasks.test.AbstractTestResultAction;
+import hudson.tasks.test.TestResultProjectAction;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
@@ -34,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -111,6 +115,21 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
 
     public MavenModule getModule(String name) {
         return getItem(name);
+    }
+
+    @Override
+    public List<Action> getActions() {
+        // TODO: we need a generalized scheme
+        MavenModuleSetBuild lb = getLastBuild();
+        if(lb!=null) {
+            AbstractTestResultAction tra = lb.getTestResultAction();
+            if(tra!=null) {
+                List<Action> actions = new Vector<Action>(super.getActions());
+                actions.add(new TestResultProjectAction(this));
+                return actions;
+            }
+        }
+        return super.getActions();
     }
 
     /**

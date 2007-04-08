@@ -7,8 +7,9 @@ import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
-import hudson.util.IOException2;
 import hudson.tasks.test.AbstractTestResultAction;
+import hudson.tasks.test.AggregatedTestResultAction;
+import hudson.util.IOException2;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
@@ -16,11 +17,11 @@ import org.apache.maven.project.ProjectBuildingException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 
 /**
  * {@link Build} for {@link MavenModuleSet}.
@@ -40,6 +41,10 @@ import java.util.LinkedHashMap;
  * @author Kohsuke Kawaguchi
  */
 public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,MavenModuleSetBuild> {
+    // TODO: implement a better caching/persistence scheme.
+    // what we really need is when a module build is done, notify the corresponding
+    // maven module set. that can trigger some actions, including updating test result.
+    private transient AggregatedTestResultAction<MavenBuild> testResult;
 
     public MavenModuleSetBuild(MavenModuleSet job) throws IOException {
         super(job);
@@ -53,6 +58,23 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
     public AbstractTestResultAction getTestResultAction() {
         // TODO
         return null;
+    }
+
+    private AbstractTestResultAction createTestResultAction() {
+        List<MavenBuild> children = new ArrayList<MavenBuild>();
+
+        for (List<MavenBuild> builds : getModuleBuilds().values()) {
+            // find the module that has the test result
+            for(int i=builds.size()-1; i>=0; i--) {
+                MavenBuild b = builds.get(i);
+                if(b.getTestResultAction()!=null) {
+                    children.add(b);
+                    break;
+                }
+            }
+        }
+        if(children.isEmpty())  return null;
+        return new AggregatedTestResultAction<MavenBuild>(this,children);
     }
 
     /**
@@ -105,6 +127,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
     public void run() {
         run(new RunnerImpl());
+    }
+
+    /**
+     * Called when a module build that corresponds to this module set build
+     * has completed.
+     */
+    /*package*/ synchronized void notifyModuleBuild(MavenBuild moduleBuild) {
+        // TODO
+
     }
 
     /**

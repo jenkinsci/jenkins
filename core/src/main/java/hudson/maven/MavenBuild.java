@@ -75,9 +75,23 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
      * @return
      *      null if no such build exists, which happens when the module build
      *      is manually triggered.
+     * @see #getModuleSetBuild()
      */
     public MavenModuleSetBuild getParentBuild() {
         return getParent().getParent().getBuildByNumber(getNumber());
+    }
+
+    /**
+     * Gets the "governing" {@link MavenModuleSet} that has set
+     * the workspace for this build.
+     *
+     * @return
+     *      null if no such build exists, which happens if the build
+     *      is manually removed.
+     * @see #getParentBuild()
+     */
+    public MavenModuleSetBuild getModuleSetBuild() {
+        return getParent().getParent().getNearestOldBuild(getNumber());
     }
 
     @Override
@@ -114,7 +128,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     @Override
     public void run() {
         run(new RunnerImpl());
+
         getProject().updateTransientActions();
+
+        MavenModuleSetBuild parentBuild = getModuleSetBuild();
+        if(parentBuild!=null)
+            parentBuild.notifyModuleBuild(this);
     }
 
     /**
