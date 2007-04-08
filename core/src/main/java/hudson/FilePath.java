@@ -828,6 +828,13 @@ public final class FilePath implements Serializable {
         else                return Hudson.MasterComputer.localChannel;
     }
 
+    /**
+     * Returns true if this {@link FilePath} represents a remote file. 
+     */
+    public boolean isRemote() {
+        return channel;
+    }
+
     private void writeObject(ObjectOutputStream oos) throws IOException {
         Channel target = Channel.current();
 
