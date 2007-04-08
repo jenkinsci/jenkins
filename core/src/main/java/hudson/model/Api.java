@@ -12,12 +12,14 @@ import java.beans.Introspector;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Calendar;
 
 /**
  * Used to expose remote access API for ".../api/"
@@ -101,7 +103,11 @@ public class Api extends AbstractModelObject {
             String.class,
             URL.class,
             Boolean.class,
-            Integer.class
+            Integer.class,
+            Short.class,
+            Long.class,
+            Float.class,
+            Double.class
         ));
 
         public static void write(Object bean, JSONBuilder builder) {
@@ -138,6 +144,10 @@ public class Api extends AbstractModelObject {
                 }
                 return;
             }
+            if(bean instanceof Calendar) {
+                builder.value(((Calendar)bean).getTimeInMillis());
+                return;
+            }
             if(bean instanceof Enum) {
                 builder.value(bean);
                 return;
@@ -152,6 +162,8 @@ public class Api extends AbstractModelObject {
 
             for( Field f : bean.getClass().getFields() ) {
                 try {
+                    if(Modifier.isStatic(f.getModifiers()))
+                        continue;
                     f.setAccessible(true);
                     Object value = f.get(bean);
                     if(value!=null) {
