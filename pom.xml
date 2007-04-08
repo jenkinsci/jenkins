@@ -41,7 +41,7 @@
             also run assembly during the release.
             http://www.nabble.com/Release-Plugin%3A-Include-assemblies-for-deploying-tf2642295s177.html#a7377938
            -->
-          <goals>install assembly:attached deploy</goals>
+          <goals>install javadoc:javadoc assembly:attached deploy</goals>
         </configuration>
       </plugin>
       <plugin>
