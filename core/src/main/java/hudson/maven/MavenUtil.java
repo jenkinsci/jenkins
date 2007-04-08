@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * @author Kohsuke Kawaguchi
  */
-class MavenUtil {
+public class MavenUtil {
     /**
      * Creates a fresh {@link MavenEmbedder} instance.
      *
