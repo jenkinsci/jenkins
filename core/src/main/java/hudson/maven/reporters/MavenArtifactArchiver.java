@@ -68,6 +68,7 @@ public class MavenArtifactArchiver extends MavenReporter {
             record(build,(Artifact)a,listener,archivedFiles,false);
 
         final boolean installed = this.installed;
+        final boolean builtOnSlave = archivedPom.isRemote();
 
         if(!archivedFiles.isEmpty()) {
             build.execute(new BuildCallable<Void,IOException>() {
@@ -78,7 +79,7 @@ public class MavenArtifactArchiver extends MavenReporter {
                         map.getOrCreate(build, a.path.getName(), a.path.digest());
 
                     // install files on the master
-                    if(installed) {
+                    if(installed && builtOnSlave) {
                         try {
                             MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
                             ArtifactInstaller installer = (ArtifactInstaller) embedder.getContainer().lookup(ArtifactInstaller.class.getName());
