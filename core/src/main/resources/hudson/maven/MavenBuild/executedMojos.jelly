@@ -1,0 +1,44 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.project.displayName} #${it.number} Execution Record">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>Executed Mojos</h1>
+
+      <j:choose>
+        <j:when test="${empty(it.executedMojos}">
+          <div>
+            No mojos executed.
+          </div>
+        </j:when>
+        <j:otherwise>
+          <table class="middle-align">
+            <tr>
+              <th>Plugin</th>
+              <th>Version</th>
+              <th>Goal</th>
+              <th>Execution</th>
+              <th>Duration</th>
+              <th>Fingerprint</th>
+            </tr>
+
+            <j:forEach var="m" items="${it.executedMojos}">
+              <tr>
+                <td>
+                  <img src="${rootURL}/images/24x24/gear.gif"/>
+                  ${m.groupId}:${m.artifactId}
+                </td>
+                <td align="center">${m.version}</td>
+                <td>${m.goal}</td>
+                <td align="center">${m.readableExecutionId}</td>
+                <td>${m.durationString}</td>
+                <td align="center">
+                  <a href="${rootURL}/fingerprint/${m.digest}/"><img src="${rootURL}/images/16x16/fingerprint.gif" alt="fingerprint" /></a>
+                </td>
+              </tr>
+            </j:forEach>
+          </table>
+        </j:otherwise>
+      </j:choose>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

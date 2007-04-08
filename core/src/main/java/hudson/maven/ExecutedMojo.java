@@ -68,4 +68,16 @@ public final class ExecutedMojo implements Serializable {
         }
         this.digest = digest;
     }
+
+    /**
+     * Returns duration in a human readable text.
+     */
+    public String getDurationString() {
+        return Util.getTimeSpanString(duration);
+    }
+
+    public String getReadableExecutionId() {
+        if(executionId==null)   return "-";
+        else                    return executionId;
+    }
 }
