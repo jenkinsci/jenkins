@@ -325,7 +325,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     /**
-     * Gets the youngest build #m that satisfies <tt>n&lt;=m</tt>.
+     * Gets the youngest (newest) build #m that satisfies <tt>n&lt;=m</tt>.
      *
      * This is useful when you'd like to fetch a build but the exact build might be already
      * gone (deleted, rotated, etc.)
