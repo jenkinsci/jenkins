@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Calendar;
+
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * A build of a {@link Project}.
@@ -87,6 +90,17 @@ public final class Build extends AbstractBuild<Project,Build> {
         }
 
         return env;
+    }
+
+    public Api getApi(final StaplerRequest req) {
+        class build {
+            public int number = getNumber();
+            public Calendar timestamp = getTimestamp();
+            public String builtOn = getBuiltOnStr();
+            public Result result = getResult();
+            public long duration = getDuration();
+        }
+        return new Api(new build());
     }
 
 //
