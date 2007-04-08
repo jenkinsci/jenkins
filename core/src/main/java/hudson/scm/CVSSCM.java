@@ -91,7 +91,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
     /**
      * Module names.
      *
-     * This could be a whitespace-separated list of multiple modules.
+     * This could be a whitespace/NL-separated list of multiple modules.
      * Modules could be either directories or files. 
      */
     private String module;
@@ -122,7 +122,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         this.branch = nullify(branch);
         this.cvsRsh = nullify(cvsRsh);
         this.canUseUpdate = canUseUpdate;
-        this.flatten = !legacy && module.indexOf(' ')==-1;
+        this.flatten = !legacy && new StringTokenizer(module).countTokens()==1;
     }
 
     @Override
@@ -153,9 +153,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         if(flatten)
             return workspace;
 
-        int idx = module.indexOf(' ');
-        if(idx>=0)  return workspace.child(module.substring(0,idx));
-        else        return workspace.child(module);
+        return workspace.child(new StringTokenizer(module).nextToken());
     }
 
     public ChangeLogParser createChangeLogParser() {
@@ -164,6 +162,16 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
 
     public String getAllModules() {
         return module;
+    }
+
+    private String getAllModulesNormalized() {
+        StringBuilder buf = new StringBuilder();
+        StringTokenizer tokens = new StringTokenizer(module);
+        while(tokens.hasMoreTokens()) {
+            if(buf.length()>0)  buf.append(' ');
+            buf.append(tokens.nextToken());
+        }
+        return buf.toString();
     }
 
     /**
@@ -272,7 +280,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         if(flatten)
             cmd.add("-d",dir.getName());
         configureDate(cmd,dt);
-        cmd.addTokenized(module);
+        cmd.addTokenized(getAllModulesNormalized());
 
         return run(launcher,cmd,listener, flatten ? dir.getParent() : dir);
     }
