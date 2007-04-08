@@ -93,6 +93,8 @@ public final class Build extends AbstractBuild<Project,Build> {
     }
 
     public Api getApi(final StaplerRequest req) {
+        // TODO: think of a way to compose this to push some of this up
+        // the inheritance tree.
         class build {
             public int number = getNumber();
             public Calendar timestamp = getTimestamp();
