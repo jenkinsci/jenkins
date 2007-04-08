@@ -1,13 +1,17 @@
 package hudson.maven;
 
 import hudson.Util;
+import hudson.model.Hudson;
 import hudson.remoting.Which;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.kohsuke.stapler.Stapler;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Persisted record of mojo execution.
@@ -79,5 +83,43 @@ public final class ExecutedMojo implements Serializable {
     public String getReadableExecutionId() {
         if(executionId==null)   return "-";
         else                    return executionId;
+    }
+
+    /**
+     * Returns a hyperlink for the plugin name if there's one.
+     * Otherwise null.
+     */
+    public String getPluginLink(Cache c) {
+        MavenModule m = c.get(this);
+        if(m!=null)
+            return Stapler.getCurrentRequest().getContextPath()+m.getUrl();
+        if(groupId.equals("org.apache.maven.plugins"))
+            return "http://maven.apache.org/plugins/"+artifactId+'/';
+        return null;
+    }
+
+    public String getGoalLink(Cache c) {
+        if(groupId.equals("org.apache.maven.plugins"))
+            return "http://maven.apache.org/plugins/"+artifactId+'/'+goal+"-mojo.html";
+        return null;
+    }
+
+    /**
+     * Used during the HTML rendering to cache the index.
+     */
+    public static final class Cache {
+        /**
+         * All maven modules in this Hudson by their names.
+         */
+        public final Map<ModuleName,MavenModule> modules = new HashMap<ModuleName,MavenModule>();
+
+        public Cache() {
+            for( MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class))
+                modules.put(m.getModuleName(),m);
+        }
+
+        public MavenModule get(ExecutedMojo mojo) {
+            return modules.get(new ModuleName(mojo.groupId,mojo.artifactId));
+        }
     }
 }

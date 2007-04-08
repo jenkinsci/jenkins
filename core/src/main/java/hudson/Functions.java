@@ -9,6 +9,7 @@ import hudson.model.Items;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.Job;
 import hudson.model.Action;
+import hudson.maven.ExecutedMojo;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -374,5 +375,9 @@ public class Functions {
     public static int size2(Object o) throws Exception {
         if(o==null) return 0;
         return ASTSizeFunction.sizeOf(o);
+    }
+
+    public static ExecutedMojo.Cache createExecutedMojoCache() {
+        return new ExecutedMojo.Cache();
     }
 }
