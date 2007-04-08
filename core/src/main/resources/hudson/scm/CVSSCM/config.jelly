@@ -6,7 +6,7 @@
         checkUrl="'${rootURL}/scm/CVSSCM/cvsrootCheck?value='+escape(this.value)" />
 	</f:entry>
 	<f:entry title="Module(s)" help="/help/_cvs/modules.html">
-	  <f:textbox name="cvs.module" value="${scm.allModules}"/>
+	  <f:expandableTextbox name="cvs.module" value="${scm.allModules}"/>
 	</f:entry>
 	<f:entry title="Branch" help="/help/_cvs/branch.html">
 	  <f:textbox name="cvs.branch" value="${scm.branch}"
