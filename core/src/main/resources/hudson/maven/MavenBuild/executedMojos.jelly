@@ -5,12 +5,14 @@
       <h1>Executed Mojos</h1>
 
       <j:choose>
-        <j:when test="${empty(it.executedMojos}">
+        <j:when test="${empty(it.executedMojos)}">
           <div>
             No mojos executed.
           </div>
         </j:when>
         <j:otherwise>
+          <j:set var="cache" value="${h.createExecutedMojoCache()}"/>
+          
           <table class="middle-align">
             <tr>
               <th>Plugin</th>
@@ -24,11 +26,17 @@
             <j:forEach var="m" items="${it.executedMojos}">
               <tr>
                 <td>
-                  <img src="${rootURL}/images/24x24/gear.gif"/>
-                  ${m.groupId}:${m.artifactId}
+                  <a href="${m.getPluginLink(cache)}">
+                    <img src="${rootURL}/images/24x24/gear.gif"/>
+                    ${m.groupId}:${m.artifactId}
+                  </a>
                 </td>
                 <td align="center">${m.version}</td>
-                <td>${m.goal}</td>
+                <td>
+                  <a href="${m.getGoalLink(cache)}">
+                    ${m.goal}
+                  </a>
+                </td>
                 <td align="center">${m.readableExecutionId}</td>
                 <td>${m.durationString}</td>
                 <td align="center">
