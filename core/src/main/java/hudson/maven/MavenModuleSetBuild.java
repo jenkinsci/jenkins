@@ -245,6 +245,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 for (PomInfo pi : infos)
                     pi.cutCycle();
 
+                embedder.stop();
                 return infos;
             } catch (MavenEmbedderException e) {
                 // TODO: better error handling needed
