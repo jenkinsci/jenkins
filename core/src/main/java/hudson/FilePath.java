@@ -832,7 +832,7 @@ public final class FilePath implements Serializable {
      * Returns true if this {@link FilePath} represents a remote file. 
      */
     public boolean isRemote() {
-        return channel;
+        return channel!=null;
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
