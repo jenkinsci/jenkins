@@ -117,7 +117,7 @@ final class SubversionChangeLogBuilder {
 
         try {
             svnlc.doLog(SVNURL.parseURIEncoded(url),null,
-            SVNRevision.create(prevRev), SVNRevision.create(prevRev+1),
+            SVNRevision.UNDEFINED, SVNRevision.create(prevRev+1),
                 SVNRevision.create(thisRev),
                 false, true, Long.MAX_VALUE, logHandler);
         } catch (SVNException e) {
