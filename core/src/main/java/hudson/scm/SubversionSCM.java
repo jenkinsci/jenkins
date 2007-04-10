@@ -14,6 +14,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.FormFieldValidator;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.Scrambler;
+import hudson.util.IOException2;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
@@ -718,7 +719,7 @@ public class SubversionSCM extends SCM implements Serializable {
                 try {
                     item.write(keyFile);
                 } catch (Exception e) {
-                    throw new IOException(e);
+                    throw new IOException2(e);
                 }
 
 
