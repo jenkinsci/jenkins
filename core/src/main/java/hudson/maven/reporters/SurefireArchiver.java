@@ -11,7 +11,6 @@ import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.junit.TestResult;
-import hudson.tasks.junit.TestResultAction;
 import hudson.tasks.test.TestResultProjectAction;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -69,8 +68,7 @@ public class SurefireArchiver extends MavenReporter {
 
             int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                 public Integer call(MavenBuild build) throws IOException, InterruptedException {
-                    TestResultAction action = new TestResultAction(build, tr, listener);
-                    build.getActions().add(action);
+                    build.getActions().add(new SurefireReport(build, tr, listener));
                     if(tr.getFailCount()>0)
                         build.setResult(Result.UNSTABLE);
                     build.registerAsProjectAction(SurefireArchiver.this);

@@ -46,6 +46,19 @@ import java.io.Serializable;
  * When an error happens, the call sequence could be terminated at any point
  * and no further callback methods might not be invoked.
  *
+ *
+ * <h2>Action</h2>
+ * <p>
+ * {@link MavenReporter} can {@link MavenBuild#addAction(Action) contribute}
+ * {@link Action} to {@link MavenBuild} so that the report can be displayed
+ * in the web UI.
+ *
+ * <p>
+ * Such action can also implement {@link AggregatableAction} if it further
+ * wishes to contribute a separate action to {@link MavenModuleSetBuild}.
+ * This mechanism is usually used to provide aggregated report for all the
+ * module builds.
+ *
  * @author Kohsuke Kawaguchi
  * @see MavenReporters
  */

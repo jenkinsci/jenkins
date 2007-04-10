@@ -2,13 +2,13 @@ package hudson.maven;
 
 import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
+import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.test.AbstractTestResultAction;
-import hudson.tasks.test.AggregatedTestResultAction;
 import hudson.util.IOException2;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.MavenProject;
@@ -19,9 +19,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * {@link Build} for {@link MavenModuleSet}.
@@ -41,11 +45,6 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,MavenModuleSetBuild> {
-    // TODO: implement a better caching/persistence scheme.
-    // what we really need is when a module build is done, notify the corresponding
-    // maven module set. that can trigger some actions, including updating test result.
-    private transient AggregatedTestResultAction<MavenBuild> testResult;
-
     public MavenModuleSetBuild(MavenModuleSet job) throws IOException {
         super(job);
     }
@@ -58,23 +57,6 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
     public AbstractTestResultAction getTestResultAction() {
         // TODO
         return null;
-    }
-
-    private AbstractTestResultAction createTestResultAction() {
-        List<MavenBuild> children = new ArrayList<MavenBuild>();
-
-        for (List<MavenBuild> builds : getModuleBuilds().values()) {
-            // find the module that has the test result
-            for(int i=builds.size()-1; i>=0; i--) {
-                MavenBuild b = builds.get(i);
-                if(b.getTestResultAction()!=null) {
-                    children.add(b);
-                    break;
-                }
-            }
-        }
-        if(children.isEmpty())  return null;
-        return new AggregatedTestResultAction<MavenBuild>(this,children);
     }
 
     /**
@@ -104,22 +86,48 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         Collection<MavenModule> mods = getParent().getModules();
 
         // identify the build number range. [start,end)
-        int start = getNumber();
-        int end;
         MavenModuleSetBuild nb = getNextBuild();
-        end = nb!=null ? nb.getNumber() : Integer.MAX_VALUE;
+        int end = nb!=null ? nb.getNumber() : Integer.MAX_VALUE;
 
         // preserve the order by using LinkedHashMap
         Map<MavenModule,List<MavenBuild>> r = new LinkedHashMap<MavenModule,List<MavenBuild>>(mods.size());
 
         for (MavenModule m : mods) {
             List<MavenBuild> builds = new ArrayList<MavenBuild>();
-            MavenBuild b = m.getNearestBuild(start);
+            MavenBuild b = m.getNearestBuild(number);
             while(b!=null && b.getNumber()<end) {
                 builds.add(b);
                 b = b.getNextBuild();
             }
             r.put(m,builds);
+        }
+
+        return r;
+    }
+
+    /**
+     * Finds {@link Action}s from all the module builds that belong to this
+     * {@link MavenModuleSetBuild}. One action per one {@link MavenModule},
+     * and newer ones take precedence over older ones.
+     */
+    public <T extends Action> List<T> findModuleBuildActions(Class<T> action) {
+        Collection<MavenModule> mods = getParent().getModules();
+        List<T> r = new ArrayList<T>(mods.size());
+
+        // identify the build number range. [start,end)
+        MavenModuleSetBuild nb = getNextBuild();
+        int end = nb!=null ? nb.getNumber()-1 : Integer.MAX_VALUE;
+
+        for (MavenModule m : mods) {
+            MavenBuild b = m.getNearestOldBuild(end);
+            while(b!=null && b.getNumber()>=number) {
+                T a = b.getAction(action);
+                if(a!=null) {
+                    r.add(a);
+                    break;
+                }
+                b = b.getPreviousBuild();
+            }
         }
 
         return r;
@@ -133,9 +141,44 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
      * Called when a module build that corresponds to this module set build
      * has completed.
      */
-    /*package*/ synchronized void notifyModuleBuild(MavenBuild moduleBuild) {
-        // TODO
+    /*package*/ void notifyModuleBuild(MavenBuild newBuild) {
+        Map<MavenModule, List<MavenBuild>> moduleBuilds = getModuleBuilds();
 
+        // actions need to be replaced atomically especially
+        // given that two builds might complete simultaneously.
+        synchronized(this) {
+            boolean modified = false;
+
+            List<Action> actions = getActions();
+            Set<Class<? extends AggregatableAction>> individuals = new HashSet<Class<? extends AggregatableAction>>();
+            for (Action a : actions) {
+                if(a instanceof MavenAggregatedReport) {
+                    MavenAggregatedReport mar = (MavenAggregatedReport) a;
+                    mar.update(moduleBuilds,newBuild);
+                    individuals.add(mar.getIndividualActionType());
+                    modified = true;
+                }
+            }
+
+            // see if the new build has any new aggregatable action that we haven't seen.
+            for (Action a : newBuild.getActions()) {
+                if (a instanceof AggregatableAction) {
+                    AggregatableAction aa = (AggregatableAction) a;
+                    if(individuals.add(aa.getClass())) {
+                        // new AggregatableAction
+                        actions.add(aa.createAggregatedAction(this,moduleBuilds));
+                        modified = true;
+                    }
+                }
+            }
+
+            try {
+                if(modified)
+                    save();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING,"Failed to update "+this,e);
+            }
+        }
     }
 
     /**
@@ -265,4 +308,5 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         private static final long serialVersionUID = 1L;
     }
 
+    private static final Logger LOGGER = Logger.getLogger(MavenModuleSetBuild.class.getName());
 }

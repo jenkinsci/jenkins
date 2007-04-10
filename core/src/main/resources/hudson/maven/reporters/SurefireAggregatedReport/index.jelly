@@ -1,0 +1,38 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:test="/lib/test">
+  <l:layout>
+    <st:include it="${it.owner}" page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>Test Result</h1>
+
+      <j:set var="prev" value="${it.previousResult}" />
+      <test:bar />
+
+      <table class="pane sortable" id="testresult">
+        <tr>
+          <td class="pane-header">Module</td>
+          <td class="pane-header" style="width:5em">Fail</td>
+          <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(diff)</td>
+          <td class="pane-header" style="width:5em">Total</td>
+          <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(diff)</td>
+        </tr>
+        <tbody>
+          <j:forEach var="c" items="${it.children}">
+            <j:set var="p" value="${it.getChildReport(c)}"/>
+            <j:set var="prev" value="${p.previousResult}" />
+            <tr>
+              <td class="pane">${c.name}</td> <!-- TODO: hyperlink -->
+              <td class="pane" style="text-align:right">${p.failCount}</td>
+              <td class="pane" style="text-align:right">
+                ${h.getDiffString2(p.failCount-prev.failCount)}
+              </td>
+              <td class="pane" style="text-align:right">${p.totalCount}</td>
+              <td class="pane" style="text-align:right">
+                ${h.getDiffString2(p.totalCount-prev.totalCount)}
+              </td>
+            </tr>
+          </j:forEach>
+        </tbody>
+      </table>
+      </l:main-panel>
+  </l:layout>
+</j:jelly>

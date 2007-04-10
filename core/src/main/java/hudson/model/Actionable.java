@@ -32,6 +32,15 @@ public abstract class Actionable extends AbstractModelObject {
         return actions;
     }
 
+    /**
+     * Adds a new action.
+     *
+     * Short for <tt>getActions().add(a)</tt>
+     */
+    public void addAction(Action a) {
+        getActions().add(a);
+    }
+
     public Action getAction(int index) {
         if(actions==null)   return null;
         return actions.get(index);
