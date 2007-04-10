@@ -3,7 +3,9 @@ package hudson.maven;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.DependencyGraph;
+import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Executor;
 import hudson.model.Hudson;
@@ -12,16 +14,14 @@ import hudson.model.ItemGroup;
 import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.Node;
+import hudson.model.Queue;
 import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.model.Queue;
-import hudson.model.Descriptor;
-import hudson.model.Action;
 import hudson.tasks.Maven;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.TestResultProjectAction;
-import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import org.kohsuke.stapler.StaplerRequest;
@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -269,16 +268,11 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
         return super.assignBuildNumber();
     }
 
-    public synchronized int getNextBuildNumber() {
-        try {
-            updateNextBuildNumber();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE,"Failed to save the next build number",e);
-        }
-        return nextBuildNumber;
-    }
-
-    private void updateNextBuildNumber() throws IOException {
+    /**
+     * The next build of {@link MavenModuleSet} must have
+     * the build number newer than any of the current module build.
+     */
+    /*package*/ void updateNextBuildNumber() throws IOException {
         int next = this.nextBuildNumber;
         for (MavenModule m : modules.values())
             next = Math.max(next,m.getNextBuildNumber());
@@ -287,9 +281,6 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
             this.nextBuildNumber=next;
             this.saveNextBuildNumber();
         }
-
-        for (MavenModule m : modules.values())
-            m.updateNextBuildNumber(next);
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {

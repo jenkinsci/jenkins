@@ -142,42 +142,46 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
      * has completed.
      */
     /*package*/ void notifyModuleBuild(MavenBuild newBuild) {
-        Map<MavenModule, List<MavenBuild>> moduleBuilds = getModuleBuilds();
+        try {
+            // update module set build number
+            getParent().updateNextBuildNumber();
 
-        // actions need to be replaced atomically especially
-        // given that two builds might complete simultaneously.
-        synchronized(this) {
-            boolean modified = false;
+            // update actions
+            Map<MavenModule, List<MavenBuild>> moduleBuilds = getModuleBuilds();
 
-            List<Action> actions = getActions();
-            Set<Class<? extends AggregatableAction>> individuals = new HashSet<Class<? extends AggregatableAction>>();
-            for (Action a : actions) {
-                if(a instanceof MavenAggregatedReport) {
-                    MavenAggregatedReport mar = (MavenAggregatedReport) a;
-                    mar.update(moduleBuilds,newBuild);
-                    individuals.add(mar.getIndividualActionType());
-                    modified = true;
-                }
-            }
+            // actions need to be replaced atomically especially
+            // given that two builds might complete simultaneously.
+            synchronized(this) {
+                boolean modified = false;
 
-            // see if the new build has any new aggregatable action that we haven't seen.
-            for (Action a : newBuild.getActions()) {
-                if (a instanceof AggregatableAction) {
-                    AggregatableAction aa = (AggregatableAction) a;
-                    if(individuals.add(aa.getClass())) {
-                        // new AggregatableAction
-                        actions.add(aa.createAggregatedAction(this,moduleBuilds));
+                List<Action> actions = getActions();
+                Set<Class<? extends AggregatableAction>> individuals = new HashSet<Class<? extends AggregatableAction>>();
+                for (Action a : actions) {
+                    if(a instanceof MavenAggregatedReport) {
+                        MavenAggregatedReport mar = (MavenAggregatedReport) a;
+                        mar.update(moduleBuilds,newBuild);
+                        individuals.add(mar.getIndividualActionType());
                         modified = true;
                     }
                 }
-            }
 
-            try {
+                // see if the new build has any new aggregatable action that we haven't seen.
+                for (Action a : newBuild.getActions()) {
+                    if (a instanceof AggregatableAction) {
+                        AggregatableAction aa = (AggregatableAction) a;
+                        if(individuals.add(aa.getClass())) {
+                            // new AggregatableAction
+                            actions.add(aa.createAggregatedAction(this,moduleBuilds));
+                            modified = true;
+                        }
+                    }
+                }
+
                 if(modified)
                     save();
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING,"Failed to update "+this,e);
             }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING,"Failed to update "+this,e);
         }
     }
 
@@ -220,6 +224,10 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
                 // we might have added new modules
                 Hudson.getInstance().rebuildDependencyGraph();
+
+                // module builds must start with this build's number
+                for (MavenModule m : modules.values())
+                    m.updateNextBuildNumber(getNumber());
 
                 // start the build
                 listener.getLogger().println("Triggering "+project.getRootModule().getModuleName());
