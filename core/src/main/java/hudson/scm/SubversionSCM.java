@@ -65,10 +65,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- * Subversion.
- *
- * Check http://svn.collab.net/repos/svn/trunk/subversion/svn/schema/ for
- * various output formats.
+ * Subversion SCM.
  *
  * @author Kohsuke Kawaguchi
  */
