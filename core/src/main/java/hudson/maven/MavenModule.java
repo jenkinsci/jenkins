@@ -202,10 +202,14 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
+        if(isDisabled())        return;
+
         Map<ModuleName,MavenModule> modules = new HashMap<ModuleName,MavenModule>();
 
-        for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class))
+        for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
+            if(m.isDisabled())  continue;
             modules.put(m.getModuleName(),m);
+        }
 
         for (ModuleName d : dependencies) {
             MavenModule src = modules.get(d);
