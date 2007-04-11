@@ -81,21 +81,7 @@ final class SubversionChangeLogBuilder {
     }
 
     private String getUrlForPath(FilePath path) throws IOException, InterruptedException {
-    	final ISVNAuthenticationProvider authProvider = createAuthenticationProvider();
-    	return path.act(new FileCallable<String>() {
-            public String invoke(File p, VirtualChannel channel) throws IOException {
-                SVNWCClient svnwc = SubversionSCM.createSvnClientManager(authProvider).getWCClient();
-
-                SVNInfo info;
-				try {
-					info = svnwc.doInfo(p, SVNRevision.WORKING);
-	                return info.getURL().toDecodedString();
-				} catch (SVNException e) {
-					e.printStackTrace();
-					return null;
-				}
-            }
-        });
+        return path.act(new GetUrlForPath(createAuthenticationProvider()));
     }
 
     private ISVNAuthenticationProvider createAuthenticationProvider() {
@@ -144,4 +130,26 @@ final class SubversionChangeLogBuilder {
         DUMMY_LOCATOR.setColumnNumber(-1);
     }
 
+    private static class GetUrlForPath implements FileCallable<String> {
+        private final ISVNAuthenticationProvider authProvider;
+
+        public GetUrlForPath(ISVNAuthenticationProvider authProvider) {
+            this.authProvider = authProvider;
+        }
+
+        public String invoke(File p, VirtualChannel channel) throws IOException {
+            SVNWCClient svnwc = SubversionSCM.createSvnClientManager(authProvider).getWCClient();
+
+            SVNInfo info;
+            try {
+                info = svnwc.doInfo(p, SVNRevision.WORKING);
+                return info.getURL().toDecodedString();
+            } catch (SVNException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
 }
