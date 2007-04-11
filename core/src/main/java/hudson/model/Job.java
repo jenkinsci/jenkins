@@ -330,7 +330,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * gone (deleted, rotated, etc.)
      */
     public final RunT getNearestBuild(int n) {
-        SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n);
+        SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n-1); // the map should include n, so n-1
         if(m.isEmpty()) return null;
         return m.get(m.lastKey());
     }
