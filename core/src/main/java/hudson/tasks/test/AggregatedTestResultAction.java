@@ -42,7 +42,7 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
 
     protected void update(List<? extends AbstractTestResultAction> children) {
         failCount = totalCount = 0;
-        children.clear();
+        this.children.clear();
         for (AbstractTestResultAction tr : children) {
             failCount += tr.getFailCount();
             totalCount += tr.getTotalCount();
