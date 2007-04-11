@@ -1,29 +1,35 @@
 package hudson;
 
+import hudson.maven.ExecutedMojo;
+import hudson.model.Action;
 import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.Items;
+import hudson.model.Job;
+import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.Project;
 import hudson.model.Run;
-import hudson.model.Items;
-import hudson.model.JobPropertyDescriptor;
-import hudson.model.Job;
-import hudson.model.Action;
-import hudson.maven.ExecutedMojo;
+import hudson.model.TopLevelItem;
+import hudson.model.View;
+import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.apache.commons.jexl.parser.ASTSizeFunction;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -379,5 +385,47 @@ public class Functions {
 
     public static ExecutedMojo.Cache createExecutedMojoCache() {
         return new ExecutedMojo.Cache();
+    }
+
+    /**
+     * Computes the relative path from the current page to the given item.
+     */
+    public static String getRelativeLinkTo(Item p) {
+        Map<Object,String> ancestors = new HashMap<Object,String>();
+        View view=null;
+
+        StaplerRequest request = Stapler.getCurrentRequest();
+        for( Ancestor a : request.getAncestors() ) {
+            ancestors.put(a.getObject(),a.getRelativePath());
+            if(a.getObject() instanceof View)
+                view = (View) a.getObject();
+        }
+
+        String path = ancestors.get(p);
+        if(path!=null)  return path;
+
+        Item i=p;
+        String url = "";
+        while(true) {
+            ItemGroup ig = i.getParent();
+            url = i.getShortUrl()+url;
+
+            if(ig==Hudson.getInstance()) {
+                assert i instanceof TopLevelItem;
+                if(view!=null && view.contains((TopLevelItem)i)) {
+                    // if p and the current page belongs to the same view, then return a relative path
+                    return ancestors.get(view)+'/'+url;
+                } else {
+                    // otherwise return a path from the root Hudson
+                    return request.getContextPath()+'/'+p.getUrl();
+                }
+            }
+
+            path = ancestors.get(ig);
+            if(path!=null)  return path+'/'+url;
+
+            assert ig instanceof Item; // if not, ig must have been the Hudson instance
+            i = (Item) ig;
+        }
     }
 }

@@ -62,7 +62,7 @@
       <j:forEach var="item" items="${upstream}">
         <li>
           <img src="${rootURL}/images/16x16/${item.buildStatusUrl}"/>
-          <a href="../${item.name}/">${item.displayName}</a>
+          <a href="${h.getRelativeLinkTo(item)}">${item.displayName}</a>
           <local:relationship lhs="${item}" rhs="${it}"/>
         </li>
       </j:forEach>
@@ -75,7 +75,7 @@
       <j:forEach var="item" items="${downstream}">
         <li>
           <img src="${rootURL}/images/16x16/${item.buildStatusUrl}"/>
-          <a href="../${item.name}/">${item.displayName}</a>
+          <a href="${h.getRelativeLinkTo(item)}">${item.displayName}</a>
           <local:relationship lhs="${it}" rhs="${item}"/>
         </li>
       </j:forEach>
