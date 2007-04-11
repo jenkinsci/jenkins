@@ -53,12 +53,6 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         super(project, buildDir);
     }
 
-    @Override
-    public AbstractTestResultAction getTestResultAction() {
-        // TODO
-        return null;
-    }
-
     /**
      * Displays the combined status of all modules. 
      */

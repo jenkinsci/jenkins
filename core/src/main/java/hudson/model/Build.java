@@ -37,11 +37,6 @@ public final class Build extends AbstractBuild<Project,Build> {
     Build(Project project, File buildDir) throws IOException {
         super(project,buildDir);
     }
-
-    @Override
-    public AbstractTestResultAction getTestResultAction() {
-        return getAction(AbstractTestResultAction.class);
-    }
     
     /**
      * During the build this field remembers {@link Environment}s created by

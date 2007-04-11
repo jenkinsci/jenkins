@@ -227,9 +227,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * Gets {@link AbstractTestResultAction} associated with this build if any.
-     * <p>
      */
-    public abstract AbstractTestResultAction getTestResultAction();
+    public AbstractTestResultAction getTestResultAction() {
+        return getAction(AbstractTestResultAction.class);
+    }
 
     /**
      * Invoked by {@link Executor} to performs a build.

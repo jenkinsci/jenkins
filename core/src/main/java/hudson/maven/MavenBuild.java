@@ -107,11 +107,6 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         return true;
     }
 
-    @Override
-    public AbstractTestResultAction getTestResultAction() {
-        return getAction(AbstractTestResultAction.class);
-    }
-
     public void registerAsProjectAction(MavenReporter reporter) {
         if(projectActionReporters==null)
             projectActionReporters = new ArrayList<MavenReporter>();
