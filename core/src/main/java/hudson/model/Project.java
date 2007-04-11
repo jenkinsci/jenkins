@@ -47,15 +47,6 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
     private List<BuildWrapper> buildWrappers = new Vector<BuildWrapper>();
 
     /**
-     * {@link Action}s contributed from {@link #triggers}, {@link #builders},
-     * and {@link #publishers}.
-     *
-     * We don't want to persist them separately, and these actions
-     * come and go as configuration change, so it's kept separate.
-     */
-    private transient /*final*/ List<Action> transientActions = new Vector<Action>();
-
-    /**
      * Creates a new project.
      */
     public Project(Hudson parent,String name) {
@@ -230,13 +221,6 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
                     transientActions.add(a);
             }
         }
-    }
-
-    public synchronized List<Action> getActions() {
-        // add all the transient actions, too
-        List<Action> actions = new Vector<Action>(super.getActions());
-        actions.addAll(transientActions);
-        return actions;
     }
 
     public List<ProminentProjectAction> getProminentActions() {

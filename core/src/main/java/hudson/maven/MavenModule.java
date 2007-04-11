@@ -3,7 +3,6 @@ package hudson.maven;
 import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Util;
-import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
@@ -13,7 +12,6 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Node;
-import hudson.triggers.Trigger;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -24,18 +22,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 /**
  * {@link Job} that builds projects based on Maven2.
  * 
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> implements DescribableList.Owner {
+public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> implements DescribableList.Owner {
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
         new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
 
@@ -59,15 +55,6 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
      */
     @CopyOnWrite
     private Set<ModuleName> dependencies;
-
-    /**
-     * {@link Action}s contributed from {@link #triggers} and {@link MavenBuild#projectActionReporters}
-     * from the last build.
-     *
-     * We don't want to persist them separately, and these actions
-     * come and go as configuration change, so it's kept separate.
-     */
-    private transient /*final*/ List<Action> transientActions = new Vector<Action>();
 
     /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom, int firstBuildNumber) throws IOException {
         super(parent, pom.name.toFileSystemName());
@@ -218,36 +205,8 @@ public final class MavenModule extends AbstractProject<MavenModule,MavenBuild> i
         }
     }
 
-    public synchronized List<Action> getActions() {
-        // add all the transient actions, too
-        List<Action> actions = new Vector<Action>(super.getActions());
-        actions.addAll(transientActions);
-        return actions;
-    }
-
-    /*package*/ void updateTransientActions() {
-        if(transientActions==null)
-            transientActions = new Vector<Action>();    // happens when loaded from disk
-        synchronized(transientActions) {
-            transientActions.clear();
-
-            // if we just pick up the project actions from the last build,
-            // and if the last build failed very early, then the reports that
-            // kick in later (like test results) won't be displayed.
-            // so pick up last successful build, too.
-            Set<Class> added = new HashSet<Class>();
-            addTransientActionsFromBuild(getLastBuild(),added);
-            addTransientActionsFromBuild(getLastSuccessfulBuild(),added);
-
-            for (Trigger trigger : triggers) {
-                Action a = trigger.getProjectAction();
-                if(a!=null)
-                    transientActions.add(a);
-            }
-        }
-    }
-
-    private void addTransientActionsFromBuild(MavenBuild build, Set<Class> added) {
+    @Override
+    protected void addTransientActionsFromBuild(MavenBuild build, Set<Class> added) {
         if(build==null)    return;
         List<MavenReporter> list = build.projectActionReporters;
         if(list==null)   return;

@@ -7,6 +7,8 @@ import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
+import hudson.tasks.test.TestResultProjectAction;
+import hudson.model.Action;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,10 @@ public class SurefireAggregatedReport extends AggregatedTestResultAction impleme
 
     public Class<SurefireReport> getIndividualActionType() {
         return SurefireReport.class;
+    }
+
+    public Action getProjectAction(MavenModuleSet moduleSet) {
+        return new TestResultProjectAction(moduleSet);
     }
 
     @Override

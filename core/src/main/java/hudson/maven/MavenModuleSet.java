@@ -20,8 +20,6 @@ import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
-import hudson.tasks.test.AbstractTestResultAction;
-import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import org.kohsuke.stapler.StaplerRequest;
@@ -37,7 +35,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Logger;
 
 /**
@@ -50,7 +47,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, DescribableList.Owner {
+public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, DescribableList.Owner {
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
@@ -116,19 +113,13 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
         return getItem(name);
     }
 
-    @Override
-    public List<Action> getActions() {
-        // TODO: we need a generalized scheme
-        MavenModuleSetBuild lb = getLastBuild();
-        if(lb!=null) {
-            AbstractTestResultAction tra = lb.getTestResultAction();
-            if(tra!=null) {
-                List<Action> actions = new Vector<Action>(super.getActions());
-                actions.add(new TestResultProjectAction(this));
-                return actions;
-            }
-        }
-        return super.getActions();
+    protected void addTransientActionsFromBuild(MavenModuleSetBuild build, Set<Class> added) {
+        if(build==null)    return;
+
+        for (Action a : build.getActions())
+            if(a instanceof MavenAggregatedReport)
+                if(added.add(a.getClass()))
+                    transientActions.add(((MavenAggregatedReport)a).getProjectAction(this));
     }
 
     /**
@@ -249,6 +240,8 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
 
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
+
+        updateTransientActions();
     }
 
     /**
@@ -409,6 +402,4 @@ public final class MavenModuleSet extends AbstractProject<MavenModuleSet,MavenMo
             return Maven.DESCRIPTOR;
         }
     }
-
-    private static final Logger LOGGER = Logger.getLogger(MavenModuleSet.class.getName());
 }

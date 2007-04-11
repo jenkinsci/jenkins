@@ -96,6 +96,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     protected List<Trigger<?>> triggers = new Vector<Trigger<?>>();
 
+    /**
+     * {@link Action}s contributed from subsidiary objects associated with
+     * {@link AbstractProject}, such as from triggers, builders, publishers, etc.
+     *
+     * We don't want to persist them separately, and these actions
+     * come and go as configuration change, so it's kept separate.
+     */
+    protected transient /*final*/ List<Action> transientActions = new Vector<Action>();
+
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
 
@@ -245,6 +254,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Loads an existing build record from disk.
      */
     protected abstract R loadBuild(File dir) throws IOException;
+
+    public synchronized List<Action> getActions() {
+        // add all the transient actions, too
+        List<Action> actions = new Vector<Action>(super.getActions());
+        actions.addAll(transientActions);
+        return actions;
+    }
 
     /**
      * Gets the {@link Node} where this project was last built on.

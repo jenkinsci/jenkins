@@ -177,8 +177,10 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     }
                 }
 
-                if(modified)
+                if(modified) {
                     save();
+                    getProject().updateTransientActions();
+                }
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,"Failed to update "+this,e);

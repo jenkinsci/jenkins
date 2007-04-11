@@ -1,6 +1,8 @@
 package hudson.maven;
 
 import hudson.model.Action;
+import hudson.model.Project;
+import hudson.tasks.BuildStep;
 
 import java.util.List;
 import java.util.Map;
@@ -45,4 +47,10 @@ public interface MavenAggregatedReport extends Action {
      * which {@link MavenAggregatedReport}.
      */
     Class<? extends AggregatableAction> getIndividualActionType();
+
+    /**
+     * Equivalent of {@link BuildStep#getProjectAction(Project)}
+     * for {@link MavenAggregatedReport}.
+     */
+    Action getProjectAction(MavenModuleSet moduleSet);
 }
