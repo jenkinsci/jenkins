@@ -2,15 +2,15 @@ package hudson.scm;
 
 import hudson.MarkupText;
 import hudson.Util;
-import hudson.api.ExposedBean;
 import hudson.api.Exposed;
+import hudson.api.ExposedBean;
 import hudson.model.AbstractBuild;
 import hudson.model.User;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Represents SCM change list.
