@@ -1,11 +1,13 @@
 package hudson.scm;
 
+import hudson.api.CustomExposureBean;
+
 /**
  * Designates the SCM operation.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class EditType {
+public final class EditType implements CustomExposureBean {
     private String name;
     private String description;
 
@@ -20,6 +22,10 @@ public final class EditType {
 
     public String getDescription() {
         return description;
+    }
+
+    public Object toExposedObject() {
+        return name;
     }
 
     public static final EditType ADD = new EditType("add","The file was added");

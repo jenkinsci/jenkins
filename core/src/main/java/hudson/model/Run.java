@@ -197,6 +197,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns true if the build is not completed yet.
      */
+    @Exposed
     public boolean isBuilding() {
         return state!=State.COMPLETED;
     }
@@ -220,6 +221,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      * This is used as a signal to the {@link LogRotator}.
      */
+    @Exposed
     public final boolean isKeepLog() {
         return getWhyKeepLog()!=null;
     }
@@ -249,6 +251,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return timestamp;
     }
 
+    @Exposed
     public String getDescription() {
         return description;
     }

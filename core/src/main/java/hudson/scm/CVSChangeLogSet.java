@@ -4,6 +4,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.scm.CVSChangeLogSet.CVSChangeLog;
 import hudson.util.IOException2;
+import hudson.api.Exposed;
 import org.apache.commons.digester.Digester;
 import org.xml.sax.SAXException;
 
@@ -125,6 +126,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
                 f.parent = this;
         }
 
+        @Exposed
         public String getDate() {
             return date;
         }
@@ -133,6 +135,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.date = date;
         }
 
+        @Exposed
         public String getTime() {
             return time;
         }
@@ -141,6 +144,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.time = time;
         }
 
+        @Exposed
         public User getAuthor() {
             return author;
         }
@@ -161,10 +165,12 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.author = User.get(author);
         }
 
+        @Exposed
         public String getUser() {// digester wants read/write property, even though it never reads. Duh.
             return author.getDisplayName();
         }
 
+        @Exposed
         public String getMsg() {
             return msg;
         }
@@ -178,6 +184,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             files.add(f);
         }
 
+        @Exposed
         public List<File> getFiles() {
             return files;
         }
@@ -198,6 +205,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
          * <p>
          * The path is relative to the workspace root.
          */
+        @Exposed
         public String getName() {
             return name;
         }
@@ -210,6 +218,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
          * Unlike {@link #getName()}, this method returns
          * a full name from the root of the CVS repository.
          */
+        @Exposed
         public String getFullName() {
             if(fullName==null) {
                 // Hudson < 1.91 doesn't record full path name for CVS,
@@ -250,6 +259,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.name = name;
         }
 
+        @Exposed
         public String getRevision() {
             return revision;
         }
@@ -258,6 +268,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.revision = revision;
         }
 
+        @Exposed
         public String getPrevrevision() {
             return prevrevision;
         }
@@ -266,6 +277,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.prevrevision = prevrevision;
         }
 
+        @Exposed
         public boolean isDead() {
             return dead;
         }
@@ -274,6 +286,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.dead = true;
         }
 
+        @Exposed
         public EditType getEditType() {
             // see issue #73. Can't do much better right now
             if(dead)

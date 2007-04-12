@@ -179,6 +179,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * @return never null.
      */
+    @Exposed
     public ChangeLogSet<? extends Entry> getChangeSet() {
         if(scm==null)
             scm = new CVSChangeLogParser();

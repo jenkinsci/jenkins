@@ -2,11 +2,15 @@ package hudson.scm;
 
 import hudson.MarkupText;
 import hudson.Util;
+import hudson.api.ExposedBean;
+import hudson.api.Exposed;
 import hudson.model.AbstractBuild;
 import hudson.model.User;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Represents SCM change list.
@@ -16,6 +20,7 @@ import java.util.Collections;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExposedBean
 public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iterable<T> {
 
     /**
@@ -33,12 +38,25 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     public abstract boolean isEmptySet();
 
     /**
+     * All changes in the change set.
+     */
+    // method for the remote API.
+    @Exposed
+    public final Object[] getItems() {
+        List<T> r = new ArrayList<T>();
+        for (T t : this)
+            r.add(t);
+        return r.toArray();
+    }
+
+    /**
      * Constant instance that represents no changes.
      */
     public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(AbstractBuild build) {
         return new CVSChangeLogSet(build,Collections.<CVSChangeLogSet.CVSChangeLog>emptyList());
     }
 
+    @ExposedBean
     public static abstract class Entry {
         private ChangeLogSet parent;
 

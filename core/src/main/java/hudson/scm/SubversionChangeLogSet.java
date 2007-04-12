@@ -3,6 +3,7 @@ package hudson.scm;
 import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
+import hudson.api.Exposed;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -79,6 +80,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
          * If the commit made the repository revision 1532, this
          * method returns 1532.
          */
+        @Exposed
         public int getRevision() {
             return revision;
         }
@@ -108,10 +110,12 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             this.author = User.get(author);
         }
 
+        @Exposed
         public String getUser() {// digester wants read/write property, even though it never reads. Duh.
             return author.getDisplayName();
         }
 
+        @Exposed
         public String getDate() {
             return date;
         }
@@ -120,7 +124,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             this.date = date;
         }
 
-        @Override
+        @Override @Exposed
         public String getMsg() {
             return msg;
         }
@@ -139,6 +143,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
          * @return
          *      can be empty but never null.
          */
+        @Exposed
         public List<Path> getPaths() {
             return paths;
         }
@@ -169,6 +174,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
         /**
          * Path in the repository. Such as <tt>/test/trunk/foo.c</tt>
          */
+        @Exposed(name="path")
         public String getValue() {
             return value;
         }
@@ -177,6 +183,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             this.value = value;
         }
 
+        @Exposed
         public EditType getEditType() {
             if( action=='A' )
                 return EditType.ADD;
