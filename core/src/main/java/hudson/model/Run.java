@@ -17,6 +17,7 @@ import hudson.util.IOException2;
 import hudson.util.XStream2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -385,6 +386,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     // it shouldn't have trailing '/', and instead it should have leading '/'
     public String getUrl() {
         return project.getUrl()+getNumber()+'/';
+    }
+
+    @Exposed(visibility=2,name="url")
+    public final String getAbsoluteUrl() {
+        return project.getAbsoluteUrl()+getNumber()+'/';
     }
 
     /**
