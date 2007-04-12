@@ -439,7 +439,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             Set<AbstractProject> tups = graph.getTransitiveUpstream(project);
             tups.add(project);
             for (AbstractProject tup : tups) {
-                if(tup.isBuilding() || tup.isInQueue())
+                if(tup!=getProject() && (tup.isBuilding() || tup.isInQueue()))
                     return tup;
             }
             return null;
