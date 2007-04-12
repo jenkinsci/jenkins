@@ -655,7 +655,7 @@ public final class FilePath implements Serializable {
 
             Future<Void> future = target.actAsync(new FileCallable<Void>() {
                 public Void invoke(File f, VirtualChannel channel) throws IOException {
-                    readFromTar(f,pipe.getIn());
+                    readFromTar(remote+'/'+fileMask, f,pipe.getIn());
                     return null;
                 }
             });
@@ -675,7 +675,7 @@ public final class FilePath implements Serializable {
                     return writeToTar(f,fileMask,excludes,pipe);
                 }
             });
-            readFromTar(new File(target.remote),pipe.getIn());
+            readFromTar(remote+'/'+fileMask,new File(target.remote),pipe.getIn());
             try {
                 return future.get();
             } catch (ExecutionException e) {
@@ -735,10 +735,10 @@ public final class FilePath implements Serializable {
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
      */
-    private static void readFromTar(File baseDir, InputStream in) throws IOException {
+    private static void readFromTar(String name, File baseDir, InputStream in) throws IOException {
         Untar untar = new Untar();
         untar.setProject(new Project());
-        untar.add(new StreamResource(new BufferedInputStream(new GZIPInputStream(in))));
+        untar.add(new StreamResource(name,new BufferedInputStream(new GZIPInputStream(in))));
         untar.setDest(baseDir);
         untar.execute();
     }
