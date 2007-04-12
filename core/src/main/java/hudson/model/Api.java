@@ -1,34 +1,27 @@
 package hudson.model;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.mapper.MapperWrapper;
-import hudson.util.XStream2;
-import net.sf.json.JSONObject;
-import net.sf.json.util.JSONBuilder;
+import hudson.api.DataWriter;
+import hudson.api.Exposed;
+import hudson.api.Parser;
+import hudson.api.ParserBuilder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import java.beans.Introspector;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Calendar;
+import java.io.Writer;
+import java.util.Stack;
+import java.beans.Introspector;
 
 /**
  * Used to expose remote access API for ".../api/"
  *
  * @author Kohsuke Kawaguchi
+ * @see Exposed
  */
 public class Api extends AbstractModelObject {
     /**
-     * Value bean to be exposed as XML/JSON/etc.
+     * Model object to be exposed as XML/JSON/etc.
      */
     private final Object bean;
 
@@ -43,140 +36,143 @@ public class Api extends AbstractModelObject {
     /**
      * Exposes the bean as XML.
      */
-    public void doXml(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doXml(StaplerRequest req, final StaplerResponse rsp) throws IOException {
         rsp.setContentType("application/xml;charset=UTF-8");
-        RestXStream.INSTANCE.toXML(bean, rsp.getWriter());
+
+        write(new DataWriter() {
+            private String name = Introspector.decapitalize(bean.getClass().getSimpleName());
+            private final Stack<String> objectNames = new Stack<String>();
+            private final Stack<Boolean> arrayState = new Stack<Boolean>();
+            private final Writer out = rsp.getWriter();
+            public boolean isArray;
+
+            public void name(String name) {
+                this.name = name;
+            }
+
+            public void valuePrimitive(Object v) throws IOException {
+                value(v.toString());
+            }
+
+            public void value(String v) throws IOException {
+                String n = adjustName();
+                out.write('<'+n+'>');
+                out.write(v);
+                out.write("</"+n+'>');
+            }
+
+            public void valueNull() {
+                // use absence to indicate null.
+            }
+
+            public void startArray() {
+                // use repeated element to display array
+                // this means nested arrays are not supported
+                isArray = true;
+            }
+
+            public void endArray() {
+                isArray = false;
+            }
+
+            public void startObject() throws IOException {
+                objectNames.push(name);
+                arrayState.push(isArray);
+                out.write('<'+adjustName()+'>');
+            }
+
+            public void endObject() throws IOException {
+                name = objectNames.pop();
+                out.write("</"+adjustName()+'>');
+                isArray = arrayState.pop();
+            }
+
+            /**
+             * Returns the name to be used as an element name
+             * by considering {@link #isArray}
+             */
+            private String adjustName() {
+                if(isArray) {
+                    if(name.endsWith("s"))
+                        return name.substring(0,name.length()-1);
+                }
+                return name;
+            }
+        });
     }
 
     /**
      * Exposes the bean as JSON.
      */
-    public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doJson(StaplerRequest req, final StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/javascript;charset=UTF-8");
 
         String pad = req.getParameter("jsonp");
         PrintWriter w = rsp.getWriter();
         if(pad!=null) w.print(pad+'(');
-        JSONSerializer.write(bean,new JSONBuilder(w));
+
+        write(new DataWriter() {
+            private boolean needComma;
+            private final Writer out = rsp.getWriter();
+
+            public void name(String name) throws IOException {
+                comma();
+                out.write(name+':');
+                needComma = false;
+            }
+
+            private void data(String v) throws IOException {
+                comma();
+                out.write(v);
+            }
+
+            private void comma() throws IOException {
+                if(needComma) out.write(',');
+                needComma = true;
+            }
+
+            public void valuePrimitive(Object v) throws IOException {
+                data(v.toString());
+            }
+
+            public void value(String v) throws IOException {
+                data('\"'+v+'\"');
+            }
+
+            public void valueNull() throws IOException {
+                data("null");
+            }
+
+            public void startArray() throws IOException {
+                comma();
+                out.write('[');
+                needComma = false;
+            }
+
+            public void endArray() throws IOException {
+                out.write(']');
+                needComma = true;
+            }
+
+            public void startObject() throws IOException {
+                comma();
+                out.write('{');
+                needComma=false;
+            }
+
+            public void endObject() throws IOException {
+                out.write('}');
+                needComma=true;
+            }
+        });
+
         if(pad!=null) w.print(')');
     }
 
-    /**
-     * {@link XStream} customized for writing XML for the REST API.
-     *
-     * @author Kohsuke Kawaguchi
-     */
-    private static class RestXStream extends XStream2 {
-        private RestXStream() {
-            setMode(NO_REFERENCES);
-            registerConverter(Result.conv);
-        }
-
-        @Override
-        protected MapperWrapper wrapMapper(MapperWrapper next) {
-            return new MapperWrapper(next) {
-                // always use the short name
-                public String serializedClass(Class type) {
-                    return Introspector.decapitalize(type.getSimpleName());
-                }
-
-                // don't serialize the outer class
-                public boolean shouldSerializeMember(Class definedIn, String fieldName) {
-                    return !fieldName.startsWith("this$") && !fieldName.startsWith("val$")
-                        && super.shouldSerializeMember(definedIn, fieldName);
-                }
-            };
-        }
-
-        static final RestXStream INSTANCE = new RestXStream();
+    private void write(DataWriter writer) throws IOException {
+        Parser p = parserBuilder.get(bean.getClass());
+        p.writeTo(bean,writer);
     }
 
-    /**
-     * Works like {@link JSONObject#fromBean(Object)} except
-     * this uses fields instead of properties.
-     *
-     * @author Kohsuke Kawaguchi
-     */
-    private static class JSONSerializer {
-
-        private static final Set<Class> LEAF_TYPES = new HashSet<Class>(Arrays.asList(
-            String.class,
-            URL.class,
-            Boolean.class,
-            Integer.class,
-            Short.class,
-            Long.class,
-            Float.class,
-            Double.class
-        ));
-
-        public static void write(Object bean, JSONBuilder builder) {
-            if(bean==null) {
-                builder.value(null);
-                return;
-            }
-
-            Class c = bean.getClass();
-
-            if(LEAF_TYPES.contains(c)) {
-                builder.value(bean);
-                return;
-            }
-            if(c.getComponentType()!=null) { // array
-                builder.array();
-                for (Object item : (Object[])bean)
-                    write(item,builder);
-                builder.endArray();
-                return;
-            }
-            if(bean instanceof Collection) {
-                builder.array();
-                for (Object item : (Collection) bean)
-                    write(item,builder);
-                builder.endArray();
-                return;
-            }
-            if(bean instanceof Map) {
-                builder.object();
-                for (Map.Entry e : ((Map<?,?>) bean).entrySet()) {
-                    builder.key(e.getKey().toString());
-                    write(e.getValue(),builder);
-                }
-                return;
-            }
-            if(bean instanceof Calendar) {
-                builder.value(((Calendar)bean).getTimeInMillis());
-                return;
-            }
-            if(bean instanceof Enum) {
-                builder.value(bean);
-                return;
-            }
-
-            // otherwise handle it as a bean
-            writeBean(builder, bean);
-        }
-
-        private static void writeBean(JSONBuilder builder, Object bean) {
-            builder.object();
-
-            for( Field f : bean.getClass().getFields() ) {
-                try {
-                    if(Modifier.isStatic(f.getModifiers()))
-                        continue;
-                    f.setAccessible(true);
-                    Object value = f.get(bean);
-                    if(value!=null) {
-                        builder.key(f.getName());
-                        write(value,builder);
-                    }
-                } catch (IllegalAccessException e) {
-                    // impossible given that this is a public field
-                    throw new Error(e);
-                }
-            }
-
-            builder.endObject();
-        }
-    }
+    private static final ParserBuilder parserBuilder = new ParserBuilder();
 }

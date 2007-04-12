@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.api.ExposedBean;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.RunList;
 import org.kohsuke.stapler.StaplerRequest;
@@ -24,6 +25,7 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExposedBean
 public abstract class View extends AbstractModelObject {
 
     /**

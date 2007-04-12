@@ -2,6 +2,8 @@ package hudson.model;
 
 import hudson.XmlFile;
 import hudson.Util;
+import hudson.api.Exposed;
+import hudson.api.ExposedBean;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.util.Collection;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.ServletException;
 
@@ -19,6 +22,7 @@ import javax.servlet.ServletException;
  */
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
+@ExposedBean
 public abstract class AbstractItem extends Actionable implements Item {
     /**
      * Project name.
@@ -37,10 +41,12 @@ public abstract class AbstractItem extends Actionable implements Item {
         doSetName(name);
     }
 
+    @Exposed(visibility=2)
     public String getName() {
         return name;
     }
 
+    @Exposed
     public String getDisplayName() {
         return getName();
     }
@@ -57,6 +63,7 @@ public abstract class AbstractItem extends Actionable implements Item {
     /**
      * Gets the project description HTML.
      */
+    @Exposed
     public String getDescription() {
         return description;
     }
@@ -112,6 +119,14 @@ public abstract class AbstractItem extends Actionable implements Item {
 
     public String getShortUrl() {
         return getParent().getUrlChildPrefix()+'/'+getName()+'/';
+    }
+
+    @Exposed(visibility=2,name="url")
+    public final String getAbsoluteUrl() {
+        StaplerRequest request = Stapler.getCurrentRequest();
+        if(request==null)
+            throw new IllegalStateException("Not processing a HTTP request");
+        return request.getRootPath()+'/'+getUrl();
     }
 
     /**

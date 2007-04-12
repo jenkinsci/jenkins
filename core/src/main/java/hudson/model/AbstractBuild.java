@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.Launcher;
 import hudson.Proc.LocalProc;
 import hudson.Util;
+import hudson.api.Exposed;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.maven.MavenBuild;
@@ -86,6 +87,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Returns the name of the slave it was built on, or null if it was the master.
      */
+    @Exposed(name="builtOn")
     public String getBuiltOnStr() {
         return builtOn;
     }

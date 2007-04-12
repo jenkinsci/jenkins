@@ -13,6 +13,7 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
+import hudson.api.Exposed;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -38,9 +39,9 @@ import hudson.triggers.Triggers;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.FormFieldValidator;
-import hudson.util.XStream2;import hudson.util.MultipartFormDataParser;
+import hudson.util.MultipartFormDataParser;
+import hudson.util.XStream2;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.kohsuke.stapler.StaplerRequest;
@@ -404,6 +405,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      *
      * @see #getAllItems(Class) 
      */
+    @Exposed(name="jobs")
     public List<TopLevelItem> getItems() {
         return new ArrayList<TopLevelItem>(items.values());
     }
@@ -1366,33 +1368,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     public Api getApi(final StaplerRequest req) {
-        class hudson {
-            public List<job> jobs = new ArrayList<job>();
-
-            class job {
-                public String name;
-                public String url;
-                public BallColor color;
-                public Integer lastBuild;
-
-                public job(TopLevelItem item) {
-                    this.name = item.getName();
-                    this.url = req.getRootPath()+'/'+item.getUrl();
-                    if (item instanceof Job) {
-                        Job job = (Job) item;
-                        color = job.getIconColor();
-                        lastBuild =job.getLastBuild()!=null ? job.getLastBuild().getNumber() : null;
-                    }
-                }
-            }
-
-            hudson() {
-                for (TopLevelItem item : getItems())
-                    jobs.add(new job(item));
-            }
-        }
-
-        return new Api(new hudson());
+        return new Api(this);
     }
 
 

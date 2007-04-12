@@ -8,6 +8,8 @@ import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
+import hudson.api.Exposed;
+import hudson.api.ExposedBean;
 import hudson.tasks.BuildStep;
 import hudson.tasks.LogRotator;
 import hudson.tasks.test.AbstractTestResultAction;
@@ -45,6 +47,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExposedBean
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
         extends Actionable implements ExtensionPoint, Comparable<RunT> {
 
@@ -158,6 +161,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * When a build is {@link #isBuilding() in progress}, this method
      * may return null or a temporary intermediate result.
      */
+    @Exposed
     public Result getResult() {
         return result;
     }
@@ -240,6 +244,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * When the build is scheduled.
      */
+    @Exposed
     public Calendar getTimestamp() {
         return timestamp;
     }
@@ -301,6 +306,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Gets the millisecond it took to build.
      */
+    @Exposed
     public long getDuration() {
         return duration;
     }
@@ -339,6 +345,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return "#"+number;
     }
 
+    @Exposed(visibility=2)
     public int getNumber() {
         return number;
     }

@@ -1,5 +1,7 @@
 package hudson.model;
 
+import org.kohsuke.stapler.StaplerRequest;
+
 import java.io.IOException;
 import java.util.Collection;
 
@@ -86,6 +88,18 @@ public interface Item extends PersistenceRoot {
      *      URL that ends with '/'.
      */
     String getShortUrl();
+
+    /**
+     * Returns the absolute URL of this item. This relies on the current
+     * {@link StaplerRequest} to figure out what the host name is,
+     * so can be used only during processing client requests.
+     *
+     * @return
+     *      absolute URL.
+     * @throws IllegalStateException
+     *      if the method is invoked outside the HTTP request processing.
+     */
+    String getAbsoluteUrl();
 
     /**
      * Called right after when a {@link Item} is loaded from disk.
