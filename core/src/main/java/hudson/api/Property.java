@@ -58,6 +58,11 @@ abstract class Property implements Comparable<Property> {
             return;
         }
 
+        if(value instanceof CustomExposureBean) {
+            writeValue(((CustomExposureBean)value).toExposedObject(),depth,writer);
+            return;
+        }
+
         Class c = value.getClass();
 
         if(STRING_TYPES.contains(c)) {

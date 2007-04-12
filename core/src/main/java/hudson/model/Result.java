@@ -5,12 +5,14 @@ import com.thoughtworks.xstream.converters.basic.AbstractBasicConverter;
 
 import java.io.Serializable;
 
+import hudson.api.CustomExposureBean;
+
 /**
  * The build outcome.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Result implements Serializable {
+public final class Result implements Serializable, CustomExposureBean {
     /**
      * The build didn't have any fatal errors not errors.
      */
@@ -73,6 +75,10 @@ public final class Result implements Serializable {
             if (ordinal==r.ordinal)
                 return r;
         return FAILURE;
+    }
+
+    public Object toExposedObject() {
+        return name;
     }
 
     private static final long serialVersionUID = 1L;
