@@ -174,4 +174,8 @@ public abstract class AbstractItem extends Actionable implements Item {
     protected void performDelete() throws IOException {
         Util.deleteRecursive(getRootDir());
     }
+
+    public String toString() {
+        return super.toString()+'['+getFullName()+']';
+    }
 }
