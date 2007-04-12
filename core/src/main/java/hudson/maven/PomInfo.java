@@ -78,6 +78,10 @@ final class PomInfo implements Serializable {
         if(extensions!=null)
             for (Extension ext : extensions)
                 dependencies.add(new ModuleName(ext));
+
+        // when the parent POM uses a plugin and builds a plugin at the same time,
+        // the plugin module ends up depending on itself
+        dependencies.remove(name);
     }
 
     private void addPluginsAsDependencies(List<Plugin> plugins, Set<ModuleName> dependencies) {
