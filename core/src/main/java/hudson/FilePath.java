@@ -698,7 +698,7 @@ public final class FilePath implements Serializable {
                     StringWriter sw = new StringWriter();
                     e.printStackTrace(new PrintWriter(sw));
                     throw new IOException2(sw.toString(),x);
-                } catch (TimeoutException x) {
+                } catch (TimeoutException _) {
                     // remote is hanging
                     throw e;
                 }
