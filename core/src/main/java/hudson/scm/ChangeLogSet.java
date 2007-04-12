@@ -20,7 +20,7 @@ import java.util.ArrayList;
  *
  * @author Kohsuke Kawaguchi
  */
-@ExposedBean
+@ExposedBean(defaultVisibility=999)
 public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iterable<T> {
 
     /**
@@ -56,7 +56,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         return new CVSChangeLogSet(build,Collections.<CVSChangeLogSet.CVSChangeLog>emptyList());
     }
 
-    @ExposedBean
+    @ExposedBean(defaultVisibility=999)
     public static abstract class Entry {
         private ChangeLogSet parent;
 

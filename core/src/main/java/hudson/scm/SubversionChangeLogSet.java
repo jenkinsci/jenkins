@@ -4,6 +4,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
 import hudson.api.Exposed;
+import hudson.api.ExposedBean;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -155,6 +156,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
      * Setter methods are public only so that the objects can be constructed from Digester.
      * So please consider this object read-only.
      */
+    @ExposedBean(defaultVisibility=999)
     public static class Path {
         private LogEntry entry;
         private char action;
