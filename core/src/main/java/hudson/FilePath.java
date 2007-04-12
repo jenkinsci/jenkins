@@ -37,11 +37,15 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.Writer;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.GZIPOutputStream;
@@ -655,8 +659,12 @@ public final class FilePath implements Serializable {
 
             Future<Void> future = target.actAsync(new FileCallable<Void>() {
                 public Void invoke(File f, VirtualChannel channel) throws IOException {
-                    readFromTar(remote+'/'+fileMask, f,pipe.getIn());
-                    return null;
+                    try {
+                        readFromTar(remote+'/'+fileMask, f,pipe.getIn());
+                        return null;
+                    } finally {
+                        pipe.getIn().close();
+                    }
                 }
             });
             int r = writeToTar(new File(remote),fileMask,excludes,pipe);
@@ -672,10 +680,29 @@ public final class FilePath implements Serializable {
 
             Future<Integer> future = actAsync(new FileCallable<Integer>() {
                 public Integer invoke(File f, VirtualChannel channel) throws IOException {
-                    return writeToTar(f,fileMask,excludes,pipe);
+                    try {
+                        return writeToTar(f,fileMask,excludes,pipe);
+                    } finally {
+                        pipe.getOut().close();
+                    }
                 }
             });
-            readFromTar(remote+'/'+fileMask,new File(target.remote),pipe.getIn());
+            try {
+                readFromTar(remote+'/'+fileMask,new File(target.remote),pipe.getIn());
+            } catch (IOException e) {// BuildException or IOException
+                try {
+                    future.get(3,TimeUnit.SECONDS);
+                    throw e;    // the remote side completed successfully, so the error must be local
+                } catch (ExecutionException x) {
+                    // report both errors
+                    StringWriter sw = new StringWriter();
+                    e.printStackTrace(new PrintWriter(sw));
+                    throw new IOException2(sw.toString(),x);
+                } catch (TimeoutException x) {
+                    // remote is hanging
+                    throw e;
+                }
+            }
             try {
                 return future.get();
             } catch (ExecutionException e) {
@@ -700,7 +727,7 @@ public final class FilePath implements Serializable {
         byte[] buf = new byte[8192];
 
         TarOutputStream tar = new TarOutputStream(new GZIPOutputStream(new BufferedOutputStream(pipe.getOut())));
-
+        tar.setLongFileMode(TarOutputStream.LONGFILE_GNU);
         DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
         String[] files = ds.getIncludedFiles();
         for( String f : files) {
@@ -740,7 +767,11 @@ public final class FilePath implements Serializable {
         untar.setProject(new Project());
         untar.add(new StreamResource(name,new BufferedInputStream(new GZIPInputStream(in))));
         untar.setDest(baseDir);
-        untar.execute();
+        try {
+            untar.execute();
+        } catch (BuildException e) {
+            throw new IOException2("Failed to read the remote stream "+name,e);
+        }
     }
 
     /**
