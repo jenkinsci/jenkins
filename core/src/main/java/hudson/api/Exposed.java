@@ -22,7 +22,7 @@ public @interface Exposed {
      * Controls how visible this property is.
      *
      * <p>
-     * If the value is 1, which is the default, the property will be
+     * If the value is 1, the property will be
      * visible only when the current model object is exposed as the
      * top-level object.
      * <p>
@@ -34,9 +34,13 @@ public @interface Exposed {
      * is exposed as the Nth level object.
      *
      * <p>
+     * The default value of this property is determined by
+     * {@link ExposedBean#defaultVisibility()}.
+     *
+     * <p>
      * So bigger the number, more important the property is.  
      */
-    int visibility() default 1;
+    int visibility() default 0;
 
     /**
      * Name of the exposed property.

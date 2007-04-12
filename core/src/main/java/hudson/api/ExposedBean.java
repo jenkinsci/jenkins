@@ -23,4 +23,14 @@ import java.lang.annotation.Target;
 @Inherited
 @Target(ElementType.TYPE)
 public @interface ExposedBean {
+    /**
+     * Controls the default visibility of all {@link Exposed} properties
+     * of this class (and its descendants.)
+     *
+     * <p>
+     * A big default visibility value usually indicates that the bean
+     * is always exposed as a descendant of another bean. In such case,
+     * unless the default visibility is set no property will be exposed.
+     */
+    int defaultVisibility() default 1;
 }

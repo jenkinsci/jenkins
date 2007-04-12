@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
  */
 public class MethodProperty extends Property {
     private final Method method;
-    MethodProperty(ParserBuilder owner, Method m, Exposed exposed) {
+    MethodProperty(Parser owner, Method m, Exposed exposed) {
         super(owner,buildName(m.getName()),exposed);
         this.method = m;
     }

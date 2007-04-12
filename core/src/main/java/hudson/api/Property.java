@@ -23,10 +23,13 @@ abstract class Property implements Comparable<Property> {
     final ParserBuilder owner;
     final int visibility;
 
-    Property(ParserBuilder owner, String name, Exposed exposed) {
-        this.owner = owner;
+    Property(Parser parent, String name, Exposed exposed) {
+        this.owner = parent.parent;
         this.name = exposed.name().length()>1 ? exposed.name() : name;
-        this.visibility = exposed.visibility();
+        int v = exposed.visibility();
+        if(v==0)
+            v = parent.defaultVisibility;
+        this.visibility = v;
     }
 
     public int compareTo(Property that) {

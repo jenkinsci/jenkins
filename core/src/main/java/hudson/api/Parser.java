@@ -22,10 +22,16 @@ public class Parser<T> {
 
     private final Property[] properties;
 
+    /*package*/ final ParserBuilder parent;
+    /*package*/ final int defaultVisibility;
+
     /*package*/ Parser(ParserBuilder parent, Class<T> type) {
+        this.parent = parent;
         this.type = type;
-        if(type.getAnnotation(ExposedBean.class)==null)
+        ExposedBean eb = type.getAnnotation(ExposedBean.class);
+        if(eb ==null)
             throw new IllegalArgumentException(type+" doesn't have @ExposedBean");
+        this.defaultVisibility = eb.defaultVisibility();
         
         parent.parsers.put(type,this);
 
@@ -42,14 +48,14 @@ public class Parser<T> {
             if(f.getDeclaringClass()!=type) continue;
             Exposed exposed = f.getAnnotation(Exposed.class);
             if(exposed !=null)
-                properties.add(new FieldProperty(parent,f,exposed));
+                properties.add(new FieldProperty(this,f,exposed));
         }
 
         for( Method m : type.getMethods() ) {
             if(m.getDeclaringClass()!=type) continue;
             Exposed exposed = m.getAnnotation(Exposed.class);
             if(exposed !=null)
-                properties.add(new MethodProperty(parent,m,exposed));
+                properties.add(new MethodProperty(this,m,exposed));
         }
 
         this.properties = properties.toArray(new Property[properties.size()]);
