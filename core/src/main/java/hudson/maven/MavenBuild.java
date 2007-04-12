@@ -362,7 +362,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                     if(debug)
                         listener.getLogger().println("Considering whether to trigger "+down+" or not");
 
-                    if(graph.hasIndirectDependencies(getParent(),down)) {
+                    if(graph.hasIndirectDependencies(getProject(),down)) {
                         // if there's a longer dependency path to this project,
                         // then scheduling the build now is going to be a waste,
                         // so don't do that.
