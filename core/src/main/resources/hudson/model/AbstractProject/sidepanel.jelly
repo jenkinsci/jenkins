@@ -4,6 +4,8 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:header title="${it.name}">
     <st:include page="rssHeader.jelly" />
+    <link rel="alternate" title="Hudson:${it.name} (changelog)" href="rssChangelog" type="application/rss+xml" />
+    <link rel="alternate" title="Hudson:${it.name} (changelog) (RSS 2.0)" href="rssChangelog?flavor=rss20" type="application/rss+xml" />
   </l:header>
   <l:side-panel>
     <l:tasks>

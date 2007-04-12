@@ -2,13 +2,16 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.FeedAdapter;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
+import hudson.scm.ChangeLogSet;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
+import hudson.scm.ChangeLogSet.Entry;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
@@ -19,6 +22,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -26,6 +30,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.Calendar;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -540,6 +545,55 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } else {
             new DirectoryBrowserSupport(this).serveFile(req, rsp, ws, "folder.gif", true);
         }
+    }
+
+    /**
+     * RSS feed for changes in this project.
+     */
+    public void doRssChangelog(  StaplerRequest req, StaplerResponse rsp  ) throws IOException, ServletException {
+        class FeedItem {
+            ChangeLogSet.Entry e;
+            int idx;
+
+            public FeedItem(Entry e, int idx) {
+                this.e = e;
+                this.idx = idx;
+            }
+
+            AbstractBuild<?,?> getBuild() {
+                return e.getParent().build;
+            }
+        }
+
+        List<FeedItem> entries = new ArrayList<FeedItem>();
+
+        for(R r=getLastBuild(); r!=null; r=r.getPreviousBuild()) {
+            int idx=0;
+            for( ChangeLogSet.Entry e : r.getChangeSet())
+                entries.add(new FeedItem(e,idx++));
+        }
+
+        RSS.forwardToRss(
+            getDisplayName()+' '+scm.getDescriptor().getDisplayName()+" changes",
+            getUrl()+"changes",
+            entries, new FeedAdapter<FeedItem>() {
+                public String getEntryTitle(FeedItem item) {
+                    return '#'+item.getBuild().number+' '+item.e.getMsg()+" ("+item.e.getAuthor()+")";
+                }
+
+                public String getEntryUrl(FeedItem item) {
+                    return item.getBuild().getUrl()+"changes#detail"+item.idx;
+                }
+
+                public String getEntryID(FeedItem item) {
+                    return getEntryUrl(item);
+                }
+
+                public Calendar getEntryTimestamp(FeedItem item) {
+                    return item.getBuild().getTimestamp();
+                }
+            },
+            req, rsp );
     }
 
     /**
