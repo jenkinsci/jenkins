@@ -82,9 +82,9 @@ public class Api extends AbstractModelObject {
             }
 
             public void endObject() throws IOException {
-                name = objectNames.pop();
-                out.write("</"+adjustName()+'>');
+                name = objectNames.pop();   
                 isArray = arrayState.pop();
+                out.write("</"+adjustName()+'>');
             }
 
             /**
