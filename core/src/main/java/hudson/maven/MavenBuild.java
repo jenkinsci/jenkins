@@ -2,7 +2,7 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.maven.agent.*;
+import hudson.maven.agent.Main;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -19,23 +19,22 @@ import hudson.remoting.Which;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.Maven.MavenInstallation;
-import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOException2;
-import org.codehaus.classworlds.NoSuchRealmException;
 import org.apache.maven.lifecycle.LifecycleExecutorInterceptor;
+import org.codehaus.classworlds.NoSuchRealmException;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.Collections;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -360,12 +359,18 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 // trigger dependency builds
                 DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
                 for( AbstractProject<?,?> down : getParent().getDownstreamProjects()) {
-                    if(graph.hasIndirectDependencies(getParent(),down))
+                    if(debug)
+                        listener.getLogger().println("Considering whether to trigger "+down+" or not");
+
+                    if(graph.hasIndirectDependencies(getParent(),down)) {
                         // if there's a longer dependency path to this project,
                         // then scheduling the build now is going to be a waste,
                         // so don't do that.
                         // let the longer path eventually trigger this build
+                        if(debug)
+                            listener.getLogger().println(" -> No, because there's a longer dependency path");
                         continue;
+                    }
 
                     // if the downstream module depends on multiple modules,
                     // only trigger them when all the upstream dependencies are updated.
@@ -386,6 +391,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                         if(ulb==null) {
                             // if no usable build is available from the upstream,
                             // then we have to wait at least until this build is ready
+                            if(debug)
+                                listener.getLogger().println(" -> No, because another upstream "+up+" for "+down+" has no successful build");
                             trigger = false;
                             break;
                         }
@@ -403,7 +410,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                             // there's no new build of this upstream since the last build
                             // of the downstream, and the upstream build is in progress.
                             // The new downstream build should wait until this build is started
-                            if(isUpstreamBuilding(graph,up)) {
+                            AbstractProject bup = getBuildingUpstream(graph, up);
+                            if(bup!=null) {
+                                if(debug)
+                                    listener.getLogger().println(" -> No, because another upstream "+bup+" for "+down+" is building");
                                 trigger = false;
                                 break;
                             }
@@ -419,20 +429,20 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
 
         /**
-         * Returns true if any of the upstream project (or itself) is either
+         * Returns the project if any of the upstream project (or itself) is either
          * building or is in the queue.
          * <p>
          * This means eventually there will be an automatic triggering of
          * the given project (provided that all builds went smoothly.)
          */
-        private boolean isUpstreamBuilding(DependencyGraph graph, AbstractProject project) {
+        private AbstractProject getBuildingUpstream(DependencyGraph graph, AbstractProject project) {
             Set<AbstractProject> tups = graph.getTransitiveUpstream(project);
             tups.add(project);
             for (AbstractProject tup : tups) {
                 if(tup.isBuilding() || tup.isInQueue())
-                    return true;
+                    return tup;
             }
-            return false;
+            return null;
         }
     }
 
