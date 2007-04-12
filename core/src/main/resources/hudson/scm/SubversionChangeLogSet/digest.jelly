@@ -18,7 +18,7 @@
       Revisions
       <ul>
         <j:forEach var="r" items="${rev}">
-          ${r.key} : ${r.value}
+          <li>${r.key} : ${r.value}</li>
         </j:forEach>
       </ul>
     </j:otherwise>
