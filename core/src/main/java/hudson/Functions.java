@@ -434,17 +434,17 @@ public class Functions {
         }
     }
 
-    public Map<Thread,StackTraceElement[]> dumpAllThreads() {
+    public static Map<Thread,StackTraceElement[]> dumpAllThreads() {
         return Thread.getAllStackTraces();
     }
 
-    public ThreadInfo[] getThreadInfos() {
+    public static ThreadInfo[] getThreadInfos() {
         ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
         return mbean.getThreadInfo(mbean.getAllThreadIds(),mbean.isObjectMonitorUsageSupported(),mbean.isSynchronizerUsageSupported());
     }
 
     // ThreadInfo.toString() truncates the stack trace by first 8, so needed my own version
-    public String dumpThreadInfo(ThreadInfo ti) {
+    public static String dumpThreadInfo(ThreadInfo ti) {
         StringBuilder sb = new StringBuilder("\"" + ti.getThreadName() + "\"" +
                                              " Id=" + ti.getThreadId() + " " +
                                              ti.getThreadState());

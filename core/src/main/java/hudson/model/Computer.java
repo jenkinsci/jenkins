@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.Functions;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DaemonThreadFactory;
@@ -15,8 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.lang.management.ThreadInfo;
 
 /**
  * Represents a set of {@link Executor}s on the same computer.
@@ -264,6 +267,28 @@ public abstract class Computer implements ModelObject {
         private static final long serialVersionUID = 1L;
     }
 
+    /**
+     * Gets the thread dump of the slave JVM.
+     * @return
+     *      key is the thread name, and the value is the pre-formatted dump.
+     */
+    public Map<String,String> getThreadDump() throws IOException, InterruptedException {
+        VirtualChannel channel = getChannel();
+        if(channel==null)
+            return Collections.singletonMap("N/A","N/A");
+        return channel.call(new GetThreadDump());
+    }
+
+    private static final class GetThreadDump implements Callable<Map<String,String>,RuntimeException> {
+        public Map<String,String> call() {
+            Map<String,String> r = new LinkedHashMap<String,String>();
+            for (ThreadInfo ti : Functions.getThreadInfos())
+                r.put(ti.getThreadName(),Functions.dumpThreadInfo(ti));
+            return r;
+        }
+        private static final long serialVersionUID = 1L;
+    }
+    
 
     public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new DaemonThreadFactory());
 

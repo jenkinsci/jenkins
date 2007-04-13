@@ -13,6 +13,11 @@
         <t:propertyTable items="${it.systemProperties}" />
         <h1>Environment Variables</h1>
         <t:propertyTable items="${it.envVars}" />
+        <h1>Thread Dump</h1>
+        <j:forEach var="t" items="${it.getThreadDump().entrySet()}">
+          <h2>${t.key}</h2>
+          <pre>${t.value}</pre>
+        </j:forEach>
       </l:isAdmin>
     </l:main-panel>
   </l:layout>
