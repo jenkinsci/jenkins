@@ -36,6 +36,11 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+import java.lang.management.ThreadInfo;
+import java.lang.management.MonitorInfo;
+import java.lang.management.LockInfo;
 
 /**
  * Utility functions used in views.
@@ -431,5 +436,74 @@ public class Functions {
 
     public Map<Thread,StackTraceElement[]> dumpAllThreads() {
         return Thread.getAllStackTraces();
+    }
+
+    public ThreadInfo[] getThreadInfos() {
+        ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
+        return mbean.getThreadInfo(mbean.getAllThreadIds(),mbean.isObjectMonitorUsageSupported(),mbean.isSynchronizerUsageSupported());
+    }
+
+    // ThreadInfo.toString() truncates the stack trace by first 8, so needed my own version
+    public String dumpThreadInfo(ThreadInfo ti) {
+        StringBuilder sb = new StringBuilder("\"" + ti.getThreadName() + "\"" +
+                                             " Id=" + ti.getThreadId() + " " +
+                                             ti.getThreadState());
+        if (ti.getLockName() != null) {
+            sb.append(" on " + ti.getLockName());
+        }
+        if (ti.getLockOwnerName() != null) {
+            sb.append(" owned by \"" + ti.getLockOwnerName() +
+                      "\" Id=" + ti.getLockOwnerId());
+        }
+        if (ti.isSuspended()) {
+            sb.append(" (suspended)");
+        }
+        if (ti.isInNative()) {
+            sb.append(" (in native)");
+        }
+        sb.append('\n');
+        StackTraceElement[] stackTrace = ti.getStackTrace();
+        for (int i=0; i < stackTrace.length; i++) {
+            StackTraceElement ste = stackTrace[i];
+            sb.append("\tat " + ste.toString());
+            sb.append('\n');
+            if (i == 0 && ti.getLockInfo() != null) {
+                Thread.State ts = ti.getThreadState();
+                switch (ts) {
+                    case BLOCKED:
+                        sb.append("\t-  blocked on " + ti.getLockInfo());
+                        sb.append('\n');
+                        break;
+                    case WAITING:
+                        sb.append("\t-  waiting on " + ti.getLockInfo());
+                        sb.append('\n');
+                        break;
+                    case TIMED_WAITING:
+                        sb.append("\t-  waiting on " + ti.getLockInfo());
+                        sb.append('\n');
+                        break;
+                    default:
+                }
+            }
+
+            for (MonitorInfo mi : ti.getLockedMonitors()) {
+                if (mi.getLockedStackDepth() == i) {
+                    sb.append("\t-  locked " + mi);
+                    sb.append('\n');
+                }
+            }
+       }
+
+       LockInfo[] locks = ti.getLockedSynchronizers();
+       if (locks.length > 0) {
+           sb.append("\n\tNumber of locked synchronizers = " + locks.length);
+           sb.append('\n');
+           for (LockInfo li : locks) {
+               sb.append("\t- " + li);
+               sb.append('\n');
+           }
+       }
+       sb.append('\n');
+       return sb.toString();
     }
 }
