@@ -224,8 +224,9 @@ pre.console {
 .main-table {
 }
 
-table.dashboard {
+div.dashboard {
   width: 100%;
+  clear:both;
 }
 
 .pane  {
