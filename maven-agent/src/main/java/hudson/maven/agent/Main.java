@@ -35,10 +35,13 @@ public class Main {
         System.setProperty("maven.home",m2Home.getPath());
         System.setProperty("maven.interceptor",interceptorJar.getPath());
 
+        boolean is206OrLater = !new File(m2Home,"core").exists();
+
         // load the default realms
         launcher = new Launcher();
         launcher.setSystemClassLoader(Main.class.getClassLoader());
-        launcher.configure(Main.class.getResourceAsStream("classworlds.conf"));
+        launcher.configure(Main.class.getResourceAsStream(
+            is206OrLater?"classworlds-2.0.6.conf":"classworlds.conf"));
 
         // have it eventually delegate to this class so that this can be visible
 
