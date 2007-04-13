@@ -1,6 +1,8 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.api.ExposedBean;
+import hudson.api.Exposed;
 import hudson.model.Node.Mode;
 import hudson.util.OneShotEvent;
 
@@ -467,10 +469,12 @@ public class Queue {
     /**
      * Item in a queue.
      */
+    @ExposedBean(defaultVisibility=999)
     public class Item implements Comparable<Item> {
         /**
          * This item can be run after this time.
          */
+        @Exposed
         public final Calendar timestamp;
 
         /**
@@ -489,6 +493,7 @@ public class Queue {
          * This flag is only used in {@link Queue#getItems()} for
          * 'pseudo' items that are actually not really in the queue.
          */
+        @Exposed
         public final boolean isBlocked;
 
         /**
@@ -496,6 +501,7 @@ public class Queue {
          * This flag is only used in {@link Queue#getItems()} for
          * 'pseudo' items that are actually not really in the queue.
          */
+        @Exposed
         public final boolean isBuildable;
 
         public Item(Calendar timestamp, AbstractProject project) {
@@ -515,6 +521,7 @@ public class Queue {
         /**
          * Gets a human-readable status message describing why it's in the queu.
          */
+        @Exposed
         public String getWhy() {
             if(isBuildable) {
                 Node node = project.getAssignedNode();
