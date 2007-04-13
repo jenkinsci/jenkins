@@ -178,7 +178,16 @@
       <artifactId>commons-digester</artifactId>
       <version>1.7</version>
     </dependency>
-    <dependency><!-- is this Java 1.4 compatible? -->
+    <dependency>
+      <!--
+        The version included in the transitive dependency doesn't have the source zip,
+        so explicitly using the newer version.
+      -->
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>1.7.0</version>
+    </dependency>
+    <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
       <version>1.4</version>
