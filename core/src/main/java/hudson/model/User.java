@@ -86,7 +86,7 @@ public class User extends AbstractModelObject {
     /**
      * The URL of the user page.
      */
-    @Exposed
+    @Exposed(visibility=999)
     public String getAbsoluteUrl() {
         return Stapler.getCurrentRequest().getRootPath()+'/'+getUrl();
     }
