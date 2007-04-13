@@ -4,12 +4,15 @@ import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
 import hudson.XmlFile;
+import hudson.api.ExposedBean;
+import hudson.api.Exposed;
 import hudson.model.Descriptor.FormException;
 import hudson.scm.ChangeLogSet;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -28,6 +31,7 @@ import java.util.logging.Logger;
  * 
  * @author Kohsuke Kawaguchi
  */
+@ExposedBean
 public class User extends AbstractModelObject {
 
     private transient final String id;
@@ -70,6 +74,7 @@ public class User extends AbstractModelObject {
             p.setUser(this);
     }
 
+    @Exposed
     public String getId() {
         return id;
     }
@@ -79,16 +84,26 @@ public class User extends AbstractModelObject {
     }
 
     /**
+     * The URL of the user page.
+     */
+    @Exposed
+    public String getAbsoluteUrl() {
+        return Stapler.getCurrentRequest().getRootPath()+'/'+getUrl();
+    }
+
+    /**
      * Gets the human readable name of this user.
      * This is configurable by the user.
      *
      * @return
      *      never null.
      */
+    @Exposed(visibility=999)
     public String getFullName() {
         return fullName;
     }
 
+    @Exposed
     public String getDescription() {
         return description;
     }
@@ -187,6 +202,13 @@ public class User extends AbstractModelObject {
         XmlFile config = getConfigFile();
         config.mkdirs();
         config.write(this);
+    }
+
+    /**
+     * Exposed remote API.
+     */
+    public Api getApi() {
+        return new Api(this);
     }
 
     /**
