@@ -130,6 +130,13 @@ public abstract class AbstractItem extends Actionable implements Item {
     }
 
     /**
+     * Remote API access.
+     */
+    public final Api getApi() {
+        return new Api(this);
+    }
+
+    /**
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
