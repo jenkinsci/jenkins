@@ -1,0 +1,21 @@
+<!--
+  Produces stack dump of all threads by using java.lang.Thread.
+
+  This only offers limited information but I feel more confidence in the
+  simple implementation, so left as-is.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout secure="true">
+    <st:include page="sidepanel.jelly" />
+
+    <l:main-panel>
+      <h1>Thread Dump</h1>
+      <j:forEach var="e" items="${h.dumpAllThreads().entrySet()}">
+        <h2>${e.key} (${e.key.state})</h2>
+        <j:forEach var="f" items="${e.value}">
+          <div>${f}</div>
+        </j:forEach>
+      </j:forEach>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

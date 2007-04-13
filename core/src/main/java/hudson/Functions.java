@@ -428,4 +428,8 @@ public class Functions {
             i = (Item) ig;
         }
     }
+
+    public Map<Thread,StackTraceElement[]> dumpAllThreads() {
+        return Thread.getAllStackTraces();
+    }
 }
