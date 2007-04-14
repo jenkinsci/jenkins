@@ -171,6 +171,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     private transient final CopyOnWriteList<SCMListener> scmListeners = new CopyOnWriteList<SCMListener>();
 
+    /**
+     * TCP slave agent port.
+     * 0 for random, -1 to disable. 
+     */
+    private int slaveAgentPort =0;
+
     public static Hudson getInstance() {
         return theInstance;
     }
@@ -185,7 +191,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         // load plugins.
         pluginManager = new PluginManager(context);
 
-        tcpSlaveAgentListener = new TcpSlaveAgentListener();
+        if(slaveAgentPort!=-1)
+            tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+        else
+            tcpSlaveAgentListener = null;
 
         // work around to have MavenModule register itself until we either move it to a plugin
         // or make it a part of the core.
@@ -203,6 +212,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
         return tcpSlaveAgentListener;
+    }
+
+    @Exposed
+    public int getSlaveAgentPort() {
+        return slaveAgentPort;
     }
 
     /**
@@ -866,7 +880,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         }
         ExternalJob.reloadThread.interrupt();
         Trigger.timer.cancel();
-        tcpSlaveAgentListener.shutdown();
+        if(tcpSlaveAgentListener!=null)
+            tcpSlaveAgentListener.shutdown();
 
         if(pluginManager!=null) // be defensive. there could be some ugly timing related issues
             pluginManager.stop();
@@ -892,6 +907,22 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             req.setCharacterEncoding("UTF-8");
 
             useSecurity = req.getParameter("use_security")!=null;
+
+            {
+                String v = req.getParameter("slaveAgentPortType");
+                if(v==null || v.equals("random"))
+                    slaveAgentPort = 0;
+                else
+                if(v.equals("disable"))
+                    slaveAgentPort = -1;
+                else {
+                    try {
+                        slaveAgentPort = Integer.parseInt(req.getParameter("slaveAgentPort"));
+                    } catch (NumberFormatException e) {
+                        throw new FormException("Bad port number "+req.getParameter("slaveAgentPort"),"slaveAgentPort");
+                    }
+                }
+            }
 
             numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
             quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));

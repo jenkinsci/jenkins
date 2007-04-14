@@ -21,9 +21,30 @@
         <input class="setting-input number" name="quiet_period"
           type="text" value="${it.quietPeriod}"/>
       </s:entry>
-      <s:entry title="Enable security" help="/help/system-config/enableSecurity.html">
-        <s:checkbox name="use_security" checked="${it.useSecurity}" />
-      </s:entry>
+      <s:optionalBlock name="use_security" title="Enable security"
+                       checked="${it.useSecurity}" help="/help/system-config/enableSecurity.html">
+        <s:entry title="TCP port for JNLP slave agents"
+            help="/help/system-config/master-slave/slave-agent-port.html">
+          <s:radio name="slaveAgentPortType" value="fixed" id="sat.fixed"
+                   checked="${it.slaveAgentPort &gt; 0}" onclick="$('sat.port').disabled=false"/>
+          <label for="sat.fixed">Fixed</label> :
+          <input type="text" class="number" name="slaveAgentPort" id="sat.port"
+             value="${h.ifThenElse(it.slaveAgentPort &gt; 0, it.slaveAgentPort, null)}"
+             disabled="${h.ifThenElse(it.slaveAgentPort &gt; 0, null, 'true')}"/>
+
+          <st:nbsp />
+
+          <s:radio name="slaveAgentPortType" value="random" id="sat.random"
+                   checked="${it.slaveAgentPort==0}" onclick="$('sat.port').disabled=true" />
+          <label for="sat.random">Random</label>
+
+          <st:nbsp />
+          
+          <s:radio name="slaveAgentPortType" value="disable" id="sat.disabled"
+                   checked="${it.slaveAgentPort==-1}" onclick="$('sat.port').disabled=true" />
+          <label for="sat.disabled">Disable</label>
+        </s:entry>
+      </s:optionalBlock>
 
 
       <s:section title="Master/Slave Support">

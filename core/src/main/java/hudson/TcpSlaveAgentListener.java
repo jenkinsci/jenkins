@@ -1,6 +1,5 @@
 package hudson;
 
-import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.Slave.ComputerImpl;
 import hudson.remoting.Channel;
@@ -8,15 +7,15 @@ import hudson.remoting.Channel.Listener;
 import hudson.util.TextFile;
 
 import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.security.SecureRandom;
 
 /**
  * Listens to incoming TCP connections from JNLP slave agents.
@@ -51,8 +50,12 @@ public class TcpSlaveAgentListener extends Thread {
     private volatile boolean shuttingDown;
     private final String secretKey;
 
-    public TcpSlaveAgentListener() throws IOException {
-        serverSocket = new ServerSocket(0);
+    /**
+     * @param port
+     *      Use 0 to choose a random port.
+     */
+    public TcpSlaveAgentListener(int port) throws IOException {
+        serverSocket = new ServerSocket(port);
 
         LOGGER.info("JNLP slave agent listener started on TCP port "+getPort());
 
@@ -84,7 +87,6 @@ public class TcpSlaveAgentListener extends Thread {
 
     public void run() {
         try {
-
             // the loop eventually terminates when the socket is closed.
             while (true) {
                 Socket s = serverSocket.accept();
