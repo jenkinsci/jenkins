@@ -190,6 +190,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         }
     }
 
+    @ExposedBean
     public static class File {
         private String name;
         private String fullName;
