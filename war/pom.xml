@@ -157,7 +157,7 @@
       <plugin>
         <groupId>org.mortbay.jetty</groupId> 
         <artifactId>maven-jetty-plugin</artifactId>
-        <version>6.1.1</version>
+        <version>6.1.2rc2</version>
         <configuration>
           <contextPath>/</contextPath>
           <!--
@@ -170,13 +170,12 @@
           -->
           <!--scanIntervalSeconds>1</scanIntervalSeconds-->
           <webAppSourceDirectory>${basedir}/resources</webAppSourceDirectory>
-          <!--realm for debug
           <userRealms>
             <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
-              <name>hudsonRealm</name>
+              <name>default</name>
               <config>src/realm.properties</config>
             </userRealm>
-          </userRealms>-->
+          </userRealms>
           <systemProperties>
             <systemProperty>
               <name>HUDSON_HOME</name>
