@@ -5,6 +5,7 @@ import hudson.model.User;
 import hudson.scm.CVSChangeLogSet.CVSChangeLog;
 import hudson.util.IOException2;
 import hudson.api.Exposed;
+import hudson.api.ExposedBean;
 import org.apache.commons.digester.Digester;
 import org.xml.sax.SAXException;
 
