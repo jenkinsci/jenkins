@@ -8,7 +8,7 @@
           <table>
             <tr>
               <td>User:</td>
-              <td><input type="text" name="j_username" /></td>
+              <td><input type="text" name="j_username" id="j_username" /></td>
             </tr>
             <tr>
               <td>Password</td>
@@ -16,6 +16,9 @@
             </tr>
           </table>
           <input type="submit" value="login" />
+          <script>
+            $('j_username').focus();
+          </script>
         </form>
       </div>
     </l:main-panel>
