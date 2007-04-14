@@ -50,12 +50,15 @@ public class TcpSlaveAgentListener extends Thread {
     private volatile boolean shuttingDown;
     private final String secretKey;
 
+    public final int configuredPort;
+
     /**
      * @param port
      *      Use 0 to choose a random port.
      */
     public TcpSlaveAgentListener(int port) throws IOException {
         serverSocket = new ServerSocket(port);
+        this.configuredPort = port;
 
         LOGGER.info("JNLP slave agent listener started on TCP port "+getPort());
 

@@ -159,7 +159,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public transient final PluginManager pluginManager;
 
-    public transient final TcpSlaveAgentListener tcpSlaveAgentListener;
+    public transient volatile TcpSlaveAgentListener tcpSlaveAgentListener;
 
     /**
      * List of registered {@link JobListener}s.
@@ -920,6 +920,19 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                         slaveAgentPort = Integer.parseInt(req.getParameter("slaveAgentPort"));
                     } catch (NumberFormatException e) {
                         throw new FormException("Bad port number "+req.getParameter("slaveAgentPort"),"slaveAgentPort");
+                    }
+                }
+
+                // relaunch the agent
+                if(tcpSlaveAgentListener==null) {
+                    if(slaveAgentPort!=-1)
+                        tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+                } else {
+                    if(tcpSlaveAgentListener.configuredPort!=slaveAgentPort) {
+                        tcpSlaveAgentListener.shutdown();
+                        tcpSlaveAgentListener = null;
+                        if(slaveAgentPort!=-1)
+                            tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
                     }
                 }
             }
