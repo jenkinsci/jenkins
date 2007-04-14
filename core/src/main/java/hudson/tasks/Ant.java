@@ -32,9 +32,18 @@ public class Ant extends Builder {
      */
     private final String antName;
 
-    public Ant(String targets,String antName) {
+    /**
+     * ANT_OPTS if not null.
+     */
+    private final String antOpts;
+
+    /**
+     * @stapler-constructor
+     */
+    public Ant(String targets,String antName, String antOpts) {
         this.targets = targets;
         this.antName = antName;
+        this.antOpts = Util.fixEmpty(antOpts.trim());
     }
 
     public String getTargets() {
@@ -82,6 +91,8 @@ public class Ant extends Builder {
         Map<String,String> env = build.getEnvVars();
         if(ai!=null)
             env.put("ANT_HOME",ai.getAntHome());
+        if(antOpts!=null)
+            env.put("ANT_OPTS",antOpts);
 
         if(!launcher.isUnix()) {
             // on Windows, executing batch file can't return the correct error code,
@@ -160,7 +171,7 @@ public class Ant extends Builder {
         }
 
         public Builder newInstance(StaplerRequest req) {
-            return new Ant(req.getParameter("ant_targets"),req.getParameter("ant_version"));
+            return req.bindParameters(Ant.class,"ant.");
         }
 
     //

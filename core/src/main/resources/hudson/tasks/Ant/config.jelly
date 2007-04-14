@@ -1,6 +1,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:entry title="Ant Version">
-    <select class="setting-input" name="ant_version">
+    <select class="setting-input" name="ant.antName">
       <option>(Default)</option>
       <j:forEach var="inst" items="${descriptor.installations}">
         <f:option selected="${inst.name==instance.ant.name}">${inst.name}</f:option>
@@ -12,6 +12,11 @@
     such as '-Dprop=value'. Also, &lt;a href='${rootURL}/env-vars.html' target=_new>some
     environment variables are available to the build script&lt;/a>
     ">
-    <f:expandableTextbox name="ant_targets" value="${instance.targets}" />
+    <f:expandableTextbox name="ant.targets" value="${instance.targets}" />
   </f:entry>
+  <f:advanced>
+    <f:entry title="ANT_OPTS" help="/help/ant/ant-opts.html">
+      <f:textbox name="ant.antOpts" value="${instance.antOpts}"/>
+    </f:entry>
+  </f:advanced>
 </j:jelly>
