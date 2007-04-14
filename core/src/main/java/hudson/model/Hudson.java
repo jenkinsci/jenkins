@@ -1379,7 +1379,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                 }
 
                 File toolsJar = new File(f,"lib/tools.jar");
-                if(!toolsJar.exists()) {
+                File mac = new File(f,"Classes/classes.jar");
+                if(!toolsJar.exists() && !mac.exists()) {
                     error(f+" doesn't look like a JDK directory");
                     return;
                 }
