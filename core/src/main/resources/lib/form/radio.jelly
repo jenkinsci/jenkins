@@ -1,0 +1,7 @@
+<!--
+	<input type="radio"> tag that takes true/false for @checked.
+
+	Note that safari doesn't support onchange.
+-->
+<input type="radio" name="${attrs.name}" onclick="${attrs.onclick}" id="${attrs.id}"
+        checked="${h.ifThenElse(attrs.checked,'true',null)}"/>
