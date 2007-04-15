@@ -37,4 +37,15 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
      * {@inheritDoc}
      */
     public abstract JobPropertyDescriptor getDescriptor();
+
+    /**
+     * {@link Action} to be displayed in the job page.
+     *
+     * @return
+     *      null if there's no such action.
+     * @since 1.102
+     */
+    public Action getJobAction(J job) {
+        return null;
+    }
 }

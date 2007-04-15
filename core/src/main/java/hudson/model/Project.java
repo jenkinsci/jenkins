@@ -205,6 +205,11 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
             transientActions = new Vector<Action>();    // happens when loaded from disk
         synchronized(transientActions) {
             transientActions.clear();
+            for (JobProperty<? super Project> p : properties) {
+                Action a = p.getJobAction(this);
+                if(a!=null)
+                    transientActions.add(a);
+            }
             for (BuildStep step : builders) {
                 Action a = step.getProjectAction(this);
                 if(a!=null)
