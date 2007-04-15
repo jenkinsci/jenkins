@@ -8,7 +8,6 @@ import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
-import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.MavenProject;
@@ -24,8 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link Build} for {@link MavenModuleSet}.
@@ -284,7 +283,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
-                MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath);
+                MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener);
 
                 List<PomInfo> infos = new ArrayList<PomInfo>();
                 toPomInfo(mp,null,relPath,infos);

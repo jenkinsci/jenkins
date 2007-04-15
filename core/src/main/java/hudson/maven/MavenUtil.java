@@ -1,6 +1,7 @@
 package hudson.maven;
 
 import hudson.model.TaskListener;
+import hudson.model.BuildListener;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
@@ -55,8 +56,11 @@ public class MavenUtil {
      *      Upon the completion of this method, this variable stores the relative path
      *      from the root directory of the given {@link MavenProject} to the root directory
      *      of each of the newly parsed {@link MavenProject}.
+     *
+     * @throws AbortException
+     *      errors will be reported to the listener and the exception thrown.
      */
-    public static void resolveModules(MavenEmbedder embedder, MavenProject project, String rel, Map<MavenProject,String> relativePathInfo) throws ProjectBuildingException {
+    public static void resolveModules(MavenEmbedder embedder, MavenProject project, String rel, Map<MavenProject,String> relativePathInfo, BuildListener listener) throws ProjectBuildingException, AbortException {
 
         File basedir = project.getFile().getParentFile();
         relativePathInfo.put(project,rel);
@@ -65,13 +69,17 @@ public class MavenUtil {
 
         for (String modulePath : (List<String>) project.getModules()) {
             File moduleFile = new File(new File(basedir, modulePath),"pom.xml");
+            if(!moduleFile.exists()) {
+                listener.getLogger().println(moduleFile+" is referenced from "+project.getFile()+" but it doesn't exist");
+                throw new AbortException();
+            }
 
             String relativePath = rel;
             if(relativePath.length()>0) relativePath+='/';
             relativePath+=modulePath;
 
             MavenProject child = embedder.readProject(moduleFile);
-            resolveModules(embedder,child,relativePath,relativePathInfo);
+            resolveModules(embedder,child,relativePath,relativePathInfo,listener);
             modules.add(child);
         }
 
