@@ -44,6 +44,7 @@ public abstract class View extends AbstractModelObject {
     /**
      * Gets the name of all this collection.
      */
+    @Exported(visibility=2,name="name")
     public abstract String getViewName();
 
     /**
@@ -63,6 +64,10 @@ public abstract class View extends AbstractModelObject {
     @Exported(visibility=2,name="url")
     public String getAbsoluteUrl() {
         return Stapler.getCurrentRequest().getRootPath()+'/'+getUrl();
+    }
+
+    public Api getApi(final StaplerRequest req) {
+        return new Api(this);
     }
 
     public static final class UserInfo implements Comparable<UserInfo> {

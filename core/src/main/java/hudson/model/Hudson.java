@@ -13,8 +13,6 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -47,6 +45,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -1411,10 +1410,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                     error("Job named "+job+" already exists");
             }
         }.process();
-    }
-
-    public Api getApi(final StaplerRequest req) {
-        return new Api(this);
     }
 
 
