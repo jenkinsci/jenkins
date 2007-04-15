@@ -8,8 +8,8 @@ import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
-import hudson.api.Exposed;
-import hudson.api.ExposedBean;
+import org.kohsuke.stapler.export.Exposed;
+import org.kohsuke.stapler.export.ExposedBean;
 import hudson.tasks.BuildStep;
 import hudson.tasks.LogRotator;
 import hudson.tasks.test.AbstractTestResultAction;
@@ -17,7 +17,6 @@ import hudson.util.IOException2;
 import hudson.util.XStream2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;

@@ -2,8 +2,7 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
-import hudson.api.Exposed;
-import hudson.api.ExposedBean;
+import org.kohsuke.stapler.export.Exposed;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;

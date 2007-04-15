@@ -1,7 +1,7 @@
 package hudson.model;
 
 import hudson.Util;
-import hudson.api.ExposedBean;
+import org.kohsuke.stapler.export.ExposedBean;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.RunList;
 import org.kohsuke.stapler.StaplerRequest;

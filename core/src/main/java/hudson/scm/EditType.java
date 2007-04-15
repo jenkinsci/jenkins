@@ -1,6 +1,6 @@
 package hudson.scm;
 
-import hudson.api.CustomExposureBean;
+import org.kohsuke.stapler.export.CustomExposureBean;
 
 /**
  * Designates the SCM operation.

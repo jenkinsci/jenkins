@@ -5,7 +5,7 @@ import com.thoughtworks.xstream.converters.basic.AbstractBasicConverter;
 
 import java.io.Serializable;
 
-import hudson.api.CustomExposureBean;
+import org.kohsuke.stapler.export.CustomExposureBean;
 
 /**
  * The build outcome.

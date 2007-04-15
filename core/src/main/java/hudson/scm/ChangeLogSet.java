@@ -2,8 +2,8 @@ package hudson.scm;
 
 import hudson.MarkupText;
 import hudson.Util;
-import hudson.api.Exposed;
-import hudson.api.ExposedBean;
+import org.kohsuke.stapler.export.Exposed;
+import org.kohsuke.stapler.export.ExposedBean;
 import hudson.model.AbstractBuild;
 import hudson.model.User;
 

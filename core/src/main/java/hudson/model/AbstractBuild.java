@@ -3,7 +3,7 @@ package hudson.model;
 import hudson.Launcher;
 import hudson.Proc.LocalProc;
 import hudson.Util;
-import hudson.api.Exposed;
+import org.kohsuke.stapler.export.Exposed;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.maven.MavenBuild;

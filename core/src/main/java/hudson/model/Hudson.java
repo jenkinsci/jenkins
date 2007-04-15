@@ -13,7 +13,7 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
-import hudson.api.Exposed;
+import org.kohsuke.stapler.export.Exposed;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;

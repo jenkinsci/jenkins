@@ -11,6 +11,7 @@ import hudson.util.FormFieldValidator;
 import hudson.util.ArgumentListBuilder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -37,9 +38,7 @@ public class Ant extends Builder {
      */
     private final String antOpts;
 
-    /**
-     * @stapler-constructor
-     */
+    @DataBoundConstructor
     public Ant(String targets,String antName, String antOpts) {
         this.targets = targets;
         this.antName = antName;

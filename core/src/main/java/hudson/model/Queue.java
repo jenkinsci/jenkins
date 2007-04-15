@@ -1,8 +1,8 @@
 package hudson.model;
 
 import hudson.Util;
-import hudson.api.ExposedBean;
-import hudson.api.Exposed;
+import org.kohsuke.stapler.export.ExposedBean;
+import org.kohsuke.stapler.export.Exposed;
 import hudson.model.Node.Mode;
 import hudson.util.OneShotEvent;
 

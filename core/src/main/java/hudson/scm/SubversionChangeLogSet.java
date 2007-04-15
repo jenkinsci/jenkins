@@ -3,8 +3,8 @@ package hudson.scm;
 import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
-import hudson.api.Exposed;
-import hudson.api.ExposedBean;
+import org.kohsuke.stapler.export.Exposed;
+import org.kohsuke.stapler.export.ExposedBean;
 
 import java.io.IOException;
 import java.util.ArrayList;

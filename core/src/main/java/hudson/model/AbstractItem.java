@@ -2,8 +2,8 @@ package hudson.model;
 
 import hudson.XmlFile;
 import hudson.Util;
-import hudson.api.Exposed;
-import hudson.api.ExposedBean;
+import org.kohsuke.stapler.export.Exposed;
+import org.kohsuke.stapler.export.ExposedBean;
 
 import java.io.File;
 import java.io.IOException;
