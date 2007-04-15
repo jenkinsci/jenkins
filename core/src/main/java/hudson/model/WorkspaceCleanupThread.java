@@ -78,8 +78,8 @@ public class WorkspaceCleanupThread extends PeriodicWork {
         if(!dir.exists())
             return false;
 
-        if (item instanceof Project) {
-            Project p = (Project) item;
+        if (item instanceof AbstractProject) {
+            AbstractProject p = (AbstractProject) item;
             Node lb = p.getLastBuiltOn();
             if(lb!=null && lb.equals(n))
                 // this is the active workspace. keep it.
