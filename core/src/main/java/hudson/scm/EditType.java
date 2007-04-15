@@ -24,7 +24,7 @@ public final class EditType implements CustomExposureBean {
         return description;
     }
 
-    public Object toExposedObject() {
+    public String toExposedObject() {
         return name;
     }
 

@@ -77,7 +77,7 @@ public final class Result implements Serializable, CustomExposureBean {
         return FAILURE;
     }
 
-    public Object toExposedObject() {
+    public String toExposedObject() {
         return name;
     }
 
