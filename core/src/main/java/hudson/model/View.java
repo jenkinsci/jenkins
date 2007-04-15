@@ -2,10 +2,12 @@ package hudson.model;
 
 import hudson.Util;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.RunList;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -31,6 +33,7 @@ public abstract class View extends AbstractModelObject {
     /**
      * Gets all the items in this collection in a read-only view.
      */
+    @Exported(name="jobs")
     public abstract Collection<TopLevelItem> getItems();
 
     /**
@@ -46,12 +49,21 @@ public abstract class View extends AbstractModelObject {
     /**
      * Message displayed in the top page. Can be null. Includes HTML.
      */
+    @Exported
     public abstract String getDescription();
 
     /**
      * Returns the path relative to the context root.
      */
     public abstract String getUrl();
+
+    /**
+     * Gets the absolute URL of this view.
+     */
+    @Exported(visibility=2,name="url")
+    public String getAbsoluteUrl() {
+        return Stapler.getCurrentRequest().getRootPath()+'/'+getUrl();
+    }
 
     public static final class UserInfo implements Comparable<UserInfo> {
         private final User user;

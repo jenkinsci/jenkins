@@ -14,6 +14,7 @@ import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -419,7 +420,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      *
      * @see #getAllItems(Class) 
      */
-    @Exported(name="jobs")
     public List<TopLevelItem> getItems() {
         return new ArrayList<TopLevelItem>(items.values());
     }
@@ -505,6 +505,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * Gets the read-only list of all {@link View}s.
      */
+    @Exported
     public synchronized View[] getViews() {
         if(views==null)
             views = new ArrayList<ListView>();
