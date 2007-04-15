@@ -2,8 +2,8 @@ package hudson.scm;
 
 import hudson.MarkupText;
 import hudson.Util;
-import org.kohsuke.stapler.export.Exposed;
-import org.kohsuke.stapler.export.ExposedBean;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 import hudson.model.AbstractBuild;
 import hudson.model.User;
 
@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-@ExposedBean(defaultVisibility=999)
+@ExportedBean(defaultVisibility=999)
 public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iterable<T> {
 
     /**
@@ -41,7 +41,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
      * All changes in the change set.
      */
     // method for the remote API.
-    @Exposed
+    @Exported
     public final Object[] getItems() {
         List<T> r = new ArrayList<T>();
         for (T t : this)
@@ -56,7 +56,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         return new CVSChangeLogSet(build,Collections.<CVSChangeLogSet.CVSChangeLog>emptyList());
     }
 
-    @ExposedBean(defaultVisibility=999)
+    @ExportedBean(defaultVisibility=999)
     public static abstract class Entry {
         private ChangeLogSet parent;
 

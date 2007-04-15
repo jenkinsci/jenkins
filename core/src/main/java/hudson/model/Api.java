@@ -2,7 +2,7 @@ package hudson.model;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exposed;
+import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.Flavor;
 
 import javax.servlet.ServletException;
@@ -12,7 +12,7 @@ import java.io.IOException;
  * Used to expose remote access API for ".../api/"
  *
  * @author Kohsuke Kawaguchi
- * @see Exposed
+ * @see Exported
  */
 public class Api extends AbstractModelObject {
     /**

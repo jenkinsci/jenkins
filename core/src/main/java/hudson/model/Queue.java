@@ -1,8 +1,8 @@
 package hudson.model;
 
 import hudson.Util;
-import org.kohsuke.stapler.export.ExposedBean;
-import org.kohsuke.stapler.export.Exposed;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 import hudson.model.Node.Mode;
 import hudson.util.OneShotEvent;
 
@@ -469,12 +469,12 @@ public class Queue {
     /**
      * Item in a queue.
      */
-    @ExposedBean(defaultVisibility=999)
+    @ExportedBean(defaultVisibility=999)
     public class Item implements Comparable<Item> {
         /**
          * This item can be run after this time.
          */
-        @Exposed
+        @Exported
         public final Calendar timestamp;
 
         /**
@@ -493,7 +493,7 @@ public class Queue {
          * This flag is only used in {@link Queue#getItems()} for
          * 'pseudo' items that are actually not really in the queue.
          */
-        @Exposed
+        @Exported
         public final boolean isBlocked;
 
         /**
@@ -501,7 +501,7 @@ public class Queue {
          * This flag is only used in {@link Queue#getItems()} for
          * 'pseudo' items that are actually not really in the queue.
          */
-        @Exposed
+        @Exported
         public final boolean isBuildable;
 
         public Item(Calendar timestamp, AbstractProject project) {
@@ -521,7 +521,7 @@ public class Queue {
         /**
          * Gets a human-readable status message describing why it's in the queu.
          */
-        @Exposed
+        @Exported
         public String getWhy() {
             if(isBuildable) {
                 Node node = project.getAssignedNode();

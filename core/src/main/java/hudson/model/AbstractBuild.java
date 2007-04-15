@@ -3,7 +3,7 @@ package hudson.model;
 import hudson.Launcher;
 import hudson.Proc.LocalProc;
 import hudson.Util;
-import org.kohsuke.stapler.export.Exposed;
+import org.kohsuke.stapler.export.Exported;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.maven.MavenBuild;
@@ -87,7 +87,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Returns the name of the slave it was built on, or null if it was the master.
      */
-    @Exposed(name="builtOn")
+    @Exported(name="builtOn")
     public String getBuiltOnStr() {
         return builtOn;
     }
@@ -179,7 +179,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * @return never null.
      */
-    @Exposed
+    @Exported
     public ChangeLogSet<? extends Entry> getChangeSet() {
         if(scm==null)
             scm = new CVSChangeLogParser();

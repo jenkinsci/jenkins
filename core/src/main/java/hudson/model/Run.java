@@ -8,8 +8,8 @@ import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
-import org.kohsuke.stapler.export.Exposed;
-import org.kohsuke.stapler.export.ExposedBean;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 import hudson.tasks.BuildStep;
 import hudson.tasks.LogRotator;
 import hudson.tasks.test.AbstractTestResultAction;
@@ -47,7 +47,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-@ExposedBean
+@ExportedBean
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
         extends Actionable implements ExtensionPoint, Comparable<RunT> {
 
@@ -161,7 +161,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * When a build is {@link #isBuilding() in progress}, this method
      * may return null or a temporary intermediate result.
      */
-    @Exposed
+    @Exported
     public Result getResult() {
         return result;
     }
@@ -197,7 +197,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns true if the build is not completed yet.
      */
-    @Exposed
+    @Exported
     public boolean isBuilding() {
         return state!=State.COMPLETED;
     }
@@ -221,7 +221,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      * This is used as a signal to the {@link LogRotator}.
      */
-    @Exposed
+    @Exported
     public final boolean isKeepLog() {
         return getWhyKeepLog()!=null;
     }
@@ -246,12 +246,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * When the build is scheduled.
      */
-    @Exposed
+    @Exported
     public Calendar getTimestamp() {
         return timestamp;
     }
 
-    @Exposed
+    @Exported
     public String getDescription() {
         return description;
     }
@@ -309,7 +309,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Gets the millisecond it took to build.
      */
-    @Exposed
+    @Exported
     public long getDuration() {
         return duration;
     }
@@ -348,7 +348,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return "#"+number;
     }
 
-    @Exposed(visibility=2)
+    @Exported(visibility=2)
     public int getNumber() {
         return number;
     }
@@ -387,7 +387,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return project.getUrl()+getNumber()+'/';
     }
 
-    @Exposed(visibility=2,name="url")
+    @Exported(visibility=2,name="url")
     public final String getAbsoluteUrl() {
         return project.getAbsoluteUrl()+getNumber()+'/';
     }

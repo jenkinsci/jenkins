@@ -3,8 +3,8 @@ package hudson.scm;
 import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
-import org.kohsuke.stapler.export.Exposed;
-import org.kohsuke.stapler.export.ExposedBean;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
          * If the commit made the repository revision 1532, this
          * method returns 1532.
          */
-        @Exposed
+        @Exported
         public int getRevision() {
             return revision;
         }
@@ -111,12 +111,12 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             this.author = User.get(author);
         }
 
-        @Exposed
+        @Exported
         public String getUser() {// digester wants read/write property, even though it never reads. Duh.
             return author.getDisplayName();
         }
 
-        @Exposed
+        @Exported
         public String getDate() {
             return date;
         }
@@ -125,7 +125,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             this.date = date;
         }
 
-        @Override @Exposed
+        @Override @Exported
         public String getMsg() {
             return msg;
         }
@@ -144,7 +144,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
          * @return
          *      can be empty but never null.
          */
-        @Exposed
+        @Exported
         public List<Path> getPaths() {
             return paths;
         }
@@ -156,7 +156,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
      * Setter methods are public only so that the objects can be constructed from Digester.
      * So please consider this object read-only.
      */
-    @ExposedBean(defaultVisibility=999)
+    @ExportedBean(defaultVisibility=999)
     public static class Path {
         private LogEntry entry;
         private char action;
@@ -176,7 +176,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
         /**
          * Path in the repository. Such as <tt>/test/trunk/foo.c</tt>
          */
-        @Exposed(name="file")
+        @Exported(name="file")
         public String getValue() {
             return value;
         }
@@ -185,7 +185,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             this.value = value;
         }
 
-        @Exposed
+        @Exported
         public EditType getEditType() {
             if( action=='A' )
                 return EditType.ADD;

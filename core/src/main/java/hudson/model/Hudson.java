@@ -13,7 +13,7 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
-import org.kohsuke.stapler.export.Exposed;
+import org.kohsuke.stapler.export.Exported;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -214,7 +214,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return tcpSlaveAgentListener;
     }
 
-    @Exposed
+    @Exported
     public int getSlaveAgentPort() {
         return slaveAgentPort;
     }
@@ -419,7 +419,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      *
      * @see #getAllItems(Class) 
      */
-    @Exposed(name="jobs")
+    @Exported(name="jobs")
     public List<TopLevelItem> getItems() {
         return new ArrayList<TopLevelItem>(items.values());
     }

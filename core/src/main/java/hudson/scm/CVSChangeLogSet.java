@@ -4,8 +4,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.scm.CVSChangeLogSet.CVSChangeLog;
 import hudson.util.IOException2;
-import org.kohsuke.stapler.export.Exposed;
-import org.kohsuke.stapler.export.ExposedBean;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.digester.Digester;
 import org.xml.sax.SAXException;
 
@@ -127,7 +127,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
                 f.parent = this;
         }
 
-        @Exposed
+        @Exported
         public String getDate() {
             return date;
         }
@@ -136,7 +136,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.date = date;
         }
 
-        @Exposed
+        @Exported
         public String getTime() {
             return time;
         }
@@ -145,7 +145,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.time = time;
         }
 
-        @Exposed
+        @Exported
         public User getAuthor() {
             return author;
         }
@@ -166,12 +166,12 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.author = User.get(author);
         }
 
-        @Exposed
+        @Exported
         public String getUser() {// digester wants read/write property, even though it never reads. Duh.
             return author.getDisplayName();
         }
 
-        @Exposed
+        @Exported
         public String getMsg() {
             return msg;
         }
@@ -185,13 +185,13 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             files.add(f);
         }
 
-        @Exposed
+        @Exported
         public List<File> getFiles() {
             return files;
         }
     }
 
-    @ExposedBean
+    @ExportedBean
     public static class File {
         private String name;
         private String fullName;
@@ -207,7 +207,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
          * <p>
          * The path is relative to the workspace root.
          */
-        @Exposed
+        @Exported
         public String getName() {
             return name;
         }
@@ -220,7 +220,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
          * Unlike {@link #getName()}, this method returns
          * a full name from the root of the CVS repository.
          */
-        @Exposed
+        @Exported
         public String getFullName() {
             if(fullName==null) {
                 // Hudson < 1.91 doesn't record full path name for CVS,
@@ -261,7 +261,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.name = name;
         }
 
-        @Exposed
+        @Exported
         public String getRevision() {
             return revision;
         }
@@ -270,7 +270,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.revision = revision;
         }
 
-        @Exposed
+        @Exported
         public String getPrevrevision() {
             return prevrevision;
         }
@@ -279,7 +279,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.prevrevision = prevrevision;
         }
 
-        @Exposed
+        @Exported
         public boolean isDead() {
             return dead;
         }
@@ -288,7 +288,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             this.dead = true;
         }
 
-        @Exposed
+        @Exported
         public EditType getEditType() {
             // see issue #73. Can't do much better right now
             if(dead)

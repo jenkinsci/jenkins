@@ -1,13 +1,13 @@
 package hudson.scm;
 
-import org.kohsuke.stapler.export.CustomExposureBean;
+import org.kohsuke.stapler.export.CustomExportedBean;
 
 /**
  * Designates the SCM operation.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class EditType implements CustomExposureBean {
+public final class EditType implements CustomExportedBean {
     private String name;
     private String description;
 
@@ -24,7 +24,7 @@ public final class EditType implements CustomExposureBean {
         return description;
     }
 
-    public String toExposedObject() {
+    public String toExportedObject() {
         return name;
     }
 

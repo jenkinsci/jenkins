@@ -2,7 +2,7 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
-import org.kohsuke.stapler.export.Exposed;
+import org.kohsuke.stapler.export.Exported;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
@@ -117,7 +117,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         getNextBuildNumberFile().write(String.valueOf(nextBuildNumber)+'\n');
     }
 
-    @Exposed
+    @Exported
     public boolean isInQueue() {
         return false;
     }
@@ -125,7 +125,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * If this job is in the build queue, return its item.
      */
-    @Exposed
+    @Exported
     public Queue.Item getQueueItem() {
         return null;
     }
@@ -133,7 +133,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * If true, it will keep all the build logs of dependency components.
      */
-    @Exposed
+    @Exported
     public boolean isKeepDependencies() {
         return keepDependencies;
     }
@@ -150,7 +150,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Peeks the next build number.
      */
-    @Exposed
+    @Exported
     public int getNextBuildNumber() {
         return nextBuildNumber;
     }
@@ -286,7 +286,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Returns true if we should display "build now" icon
      */
-    @Exposed
+    @Exported
     public abstract boolean isBuildable();
 
     /**
@@ -394,7 +394,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Returns the last build.
      */
-    @Exposed
+    @Exported
     public RunT getLastBuild() {
         SortedMap<Integer,? extends RunT> runs = _getRuns();
 
@@ -405,7 +405,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Returns the oldest build in the record.
      */
-    @Exposed
+    @Exported
     public RunT getFirstBuild() {
         SortedMap<Integer,? extends RunT> runs = _getRuns();
 
@@ -418,7 +418,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * A stable build would include either {@link Result#SUCCESS} or {@link Result#UNSTABLE}.
      * @see #getLastStableBuild() 
      */
-    @Exposed
+    @Exported
     public RunT getLastSuccessfulBuild() {
         RunT r = getLastBuild();
         // temporary hack till we figure out what's causing this bug
@@ -430,7 +430,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Returns the last stable build, if any. Otherwise null.
      */
-    @Exposed
+    @Exported
     public RunT getLastStableBuild() {
         RunT r = getLastBuild();
         while(r!=null && (r.isBuilding() || r.getResult().isWorseThan(Result.SUCCESS)))
@@ -441,7 +441,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Returns the last failed build, if any. Otherwise null.
      */
-    @Exposed
+    @Exported
     public RunT getLastFailedBuild() {
         RunT r = getLastBuild();
         while(r!=null && (r.isBuilding() || r.getResult()!=Result.FAILURE))
@@ -452,7 +452,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Used as the color of the status ball for the project.
      */
-    @Exposed(visibility=2,name="color")
+    @Exported(visibility=2,name="color")
     public BallColor getIconColor() {
         RunT lastBuild = getLastBuild();
         while(lastBuild!=null && lastBuild.hasntStartedYet())

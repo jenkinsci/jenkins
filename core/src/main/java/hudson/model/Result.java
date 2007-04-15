@@ -2,17 +2,16 @@ package hudson.model;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.basic.AbstractBasicConverter;
+import org.kohsuke.stapler.export.CustomExportedBean;
 
 import java.io.Serializable;
-
-import org.kohsuke.stapler.export.CustomExposureBean;
 
 /**
  * The build outcome.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Result implements Serializable, CustomExposureBean {
+public final class Result implements Serializable, CustomExportedBean {
     /**
      * The build didn't have any fatal errors not errors.
      */
@@ -77,7 +76,7 @@ public final class Result implements Serializable, CustomExposureBean {
         return FAILURE;
     }
 
-    public String toExposedObject() {
+    public String toExportedObject() {
         return name;
     }
 

@@ -4,8 +4,8 @@ import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
 import hudson.XmlFile;
-import org.kohsuke.stapler.export.ExposedBean;
-import org.kohsuke.stapler.export.Exposed;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 import hudson.model.Descriptor.FormException;
 import hudson.scm.ChangeLogSet;
 import hudson.util.RunList;
@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  * 
  * @author Kohsuke Kawaguchi
  */
-@ExposedBean
+@ExportedBean
 public class User extends AbstractModelObject {
 
     private transient final String id;
@@ -74,7 +74,7 @@ public class User extends AbstractModelObject {
             p.setUser(this);
     }
 
-    @Exposed
+    @Exported
     public String getId() {
         return id;
     }
@@ -86,7 +86,7 @@ public class User extends AbstractModelObject {
     /**
      * The URL of the user page.
      */
-    @Exposed(visibility=999)
+    @Exported(visibility=999)
     public String getAbsoluteUrl() {
         return Stapler.getCurrentRequest().getRootPath()+'/'+getUrl();
     }
@@ -98,12 +98,12 @@ public class User extends AbstractModelObject {
      * @return
      *      never null.
      */
-    @Exposed(visibility=999)
+    @Exported(visibility=999)
     public String getFullName() {
         return fullName;
     }
 
-    @Exposed
+    @Exported
     public String getDescription() {
         return description;
     }
