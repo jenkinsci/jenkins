@@ -9,12 +9,13 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormFieldValidator;
+import hudson.util.IOException2;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.Scrambler;
-import hudson.util.IOException2;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
@@ -538,7 +539,7 @@ public class SubversionSCM extends SCM implements Serializable {
              *      One of the constants defined in {@link ISVNAuthenticationManager},
              *      indicating what subype of {@link SVNAuthentication} is expected.
              */
-            abstract SVNAuthentication createSVNAuthentication(String kind);
+            abstract SVNAuthentication createSVNAuthentication(String kind) throws SVNException;
         }
 
         /**
@@ -614,12 +615,28 @@ public class SubversionSCM extends SCM implements Serializable {
             }
 
             @Override
-            SVNSSHAuthentication createSVNAuthentication(String kind) {
-                if(kind.equals(ISVNAuthenticationManager.SSH))
-                    return new SVNSSHAuthentication(userName,
-                        getKeyFile(),
-                        Scrambler.descramble(passphrase),-1,false);
-                else
+            SVNSSHAuthentication createSVNAuthentication(String kind) throws SVNException {
+                if(kind.equals(ISVNAuthenticationManager.SSH)) {
+                    try {
+                        Channel channel = Channel.current();
+                        String privateKey;
+                        if(channel!=null) {
+                            // remote
+                            privateKey = channel.call(new Callable<String,IOException>() {
+                                public String call() throws IOException {
+                                    return FileUtils.readFileToString(getKeyFile(),"iso-8859-1");
+                                }
+                            });
+                        } else {
+                            privateKey = FileUtils.readFileToString(getKeyFile(),"iso-8859-1");
+                        }
+                        return new SVNSSHAuthentication(userName, privateKey, Scrambler.descramble(passphrase),-1,false);
+                    } catch (IOException e) {
+                        throw new SVNException(SVNErrorMessage.create(SVNErrorCode.AUTHN_CREDS_UNAVAILABLE,"Unable to load private key"),e);
+                    } catch (InterruptedException e) {
+                        throw new SVNException(SVNErrorMessage.create(SVNErrorCode.AUTHN_CREDS_UNAVAILABLE,"Unable to load private key"),e);
+                    }
+                } else
                     return null; // unknown
             }
         }
@@ -658,7 +675,12 @@ public class SubversionSCM extends SCM implements Serializable {
             public SVNAuthentication requestClientAuthentication(String kind, SVNURL url, String realm, SVNErrorMessage errorMessage, SVNAuthentication previousAuth, boolean authMayBeStored) {
                 Credential cred = source.getCredential(realm);
                 if(cred==null)  return null;
-                return cred.createSVNAuthentication(kind);
+                try {
+                    return cred.createSVNAuthentication(kind);
+                } catch (SVNException e) {
+                    logger.log(Level.SEVERE, "Failed to authorize",e);
+                    return null;
+                }
             }
 
             public int acceptServerAuthentication(SVNURL url, String realm, Object certificate, boolean resultMayBeStored) {
