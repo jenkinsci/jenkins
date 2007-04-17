@@ -27,6 +27,12 @@ public interface FeedAdapter<E> {
     String getEntryID(E entry);
 
     /**
+     * (Potentially lengthy) plain text to be attached to the feed.
+     * Can be null.
+     */
+    String getEntryDescription(E entry);
+
+    /**
      * Timestamp of the last change in this entry.
      */
     Calendar getEntryTimestamp(E entry);

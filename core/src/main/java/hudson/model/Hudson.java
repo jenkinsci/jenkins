@@ -13,6 +13,7 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
+import hudson.Functions;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -1178,6 +1179,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
             public String getEntryID(LogRecord entry) {
                 return String.valueOf(entry.getSequenceNumber());
+            }
+
+            public String getEntryDescription(LogRecord entry) {
+                return Functions.printLogRecord(entry);
             }
 
             public Calendar getEntryTimestamp(LogRecord entry) {

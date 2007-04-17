@@ -871,6 +871,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 + entry.getParent().getName()+':'+entry.getId();
         }
 
+        public String getEntryDescription(Run entry) {
+            // TODO: this could provide some useful details
+            return null;
+        }
+
         public Calendar getEntryTimestamp(Run entry) {
             return entry.getTimestamp();
         }

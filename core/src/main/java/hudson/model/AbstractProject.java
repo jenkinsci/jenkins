@@ -589,6 +589,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     return getEntryUrl(item);
                 }
 
+                public String getEntryDescription(FeedItem item) {
+                    StringBuilder buf = new StringBuilder();
+                    for(String path : item.e.getAffectedPaths())
+                        buf.append(path).append('\n');
+                    return buf.toString();
+                }
+
                 public Calendar getEntryTimestamp(FeedItem item) {
                     return item.getBuild().getTimestamp();
                 }

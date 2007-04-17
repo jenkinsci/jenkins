@@ -4,6 +4,7 @@
   <j:set var="rootURL"
          value="${request.scheme}://${request.serverName}:${request.serverPort}${request.contextPath}" />
 
+  <!-- ATOM. See http://atompub.org/rfc4287.html for the format -->
   <feed xmlns="http://www.w3.org/2005/Atom">
     <title>${title}</title>
     <link rel="alternate" type="text/html" href="${rootURL}/${url}"/>

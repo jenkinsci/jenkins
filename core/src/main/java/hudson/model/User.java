@@ -283,6 +283,11 @@ public class User extends AbstractModelObject {
             return "tag:"+entry.getParent().getName()+':'+entry.getId();
         }
 
+        public String getEntryDescription(Run entry) {
+            // TODO: provide useful details
+            return null;
+        }
+
         public Calendar getEntryTimestamp(Run entry) {
             return entry.getTimestamp();
         }

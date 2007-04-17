@@ -4,6 +4,7 @@
   <j:set var="rootURL"
          value="${request.scheme}://${request.serverName}:${request.serverPort}${request.contextPath}" />
 
+  <!-- RSS 2.0 feed. See http://cyber.law.harvard.edu/rss/rss.html for the format -->  
   <rss version="2.0">
     <channel>
       <title>${title}</title>
@@ -17,6 +18,9 @@
           <guid isPermaLink="false">${adapter.getEntryID(e)}</guid>
           <pubDate>${h.rfc822Date(adapter.getEntryTimestamp(e))}</pubDate>
           <author>users@hudson.dev.java.net (Hudson Server)</author>
+          <description>
+            
+          </description>
         </item>
       </j:forEach>
     </channel>
