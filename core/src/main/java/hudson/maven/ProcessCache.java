@@ -126,7 +126,7 @@ final class ProcessCache {
         MavenInstallation installation = factory.getMavenInstallation();
 
         PerChannel list = get(owner);
-        synchronized(list) {
+        synchronized(list.processes) {
             for (Iterator<MavenProcess> itr = list.processes.iterator(); itr.hasNext();) {
                 MavenProcess p =  itr.next();
                 if(p.matches(mavenOpts, installation)) {
