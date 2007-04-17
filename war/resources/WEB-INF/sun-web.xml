@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sun One Java Application Server and Glassfish (as of 2007/4) makes
+  old Ant classes visible to the web application classloader, and
+  that causes https://hudson.dev.java.net/issues/show_bug.cgi?id=458
+
+  So change the delegation order to make sure we pick up Ant from
+  Hudson. See http://docs.sun.com/app/docs/doc/819-2634/6n4tl5kp3?a=view#abxhy
+-->
+<sun-web-app>
+  <class-loader delegate="false"/>
+</sun-web-app>
