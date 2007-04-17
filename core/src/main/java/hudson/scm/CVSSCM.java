@@ -1017,6 +1017,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
 
         /**
          * If non-null, that means the build is already tagged.
+         * If multiple tags are created, those are whitespace-separated.
          */
         private volatile String tagName;
 
@@ -1047,8 +1048,9 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             return "tagBuild";
         }
 
-        public String getTagName() {
-            return tagName;
+        public String[] getTagNames() {
+            if(tagName==null)   return new String[0];
+            return tagName.split(" ");
         }
 
         public TagWorkerThread getWorkerThread() {
@@ -1065,8 +1067,6 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         }
 
         private synchronized String chooseAction() {
-            if(tagName!=null)
-                return "alreadyTagged.jelly";
             if(workerThread!=null)
                 return "inProgress.jelly";
             return "tagForm.jelly";
@@ -1207,7 +1207,10 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
          * Atomically set the tag name and then be done with {@link TagWorkerThread}.
          */
         private synchronized void onTagCompleted(String tagName) {
-            this.tagName = tagName;
+            if(this.tagName!=null)
+                this.tagName += ' '+tagName;
+            else
+                this.tagName = tagName;
             this.workerThread = null;
         }
     }
