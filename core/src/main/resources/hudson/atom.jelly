@@ -23,8 +23,8 @@
 
     <j:forEach var="e" items="${entries}" >
       <entry>
-        <title>${adapter.getEntryTitle(e)}</title>
-        <link rel="alternate" type="text/html" href="${rootURL}/${adapter.getEntryUrl(e)}"/>
+        <title>${h.xmlEscape(adapter.getEntryTitle(e))}</title>
+        <link rel="alternate" type="text/html" href="${rootURL}/${h.encode(adapter.getEntryUrl(e))}"/>
         <id>${adapter.getEntryID(e)}</id>
         <published>${h.xsDate(adapter.getEntryTimestamp(e))}</published>
         <updated>${h.xsDate(adapter.getEntryTimestamp(e))}</updated>

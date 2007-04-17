@@ -12,8 +12,8 @@
 
       <j:forEach var="e" items="${entries}" >
         <item>
-          <title>${adapter.getEntryTitle(e)}</title>
-          <link>${rootURL}/${adapter.getEntryUrl(e)}</link>
+          <title>${h.xmlEscape(adapter.getEntryTitle(e))}</title>
+          <link>${rootURL}/${h.encode(adapter.getEntryUrl(e))}</link>
           <guid isPermaLink="false">${adapter.getEntryID(e)}</guid>
           <pubDate>${h.rfc822Date(adapter.getEntryTimestamp(e))}</pubDate>
           <author>users@hudson.dev.java.net (Hudson Server)</author>

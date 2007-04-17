@@ -578,7 +578,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             getUrl()+"changes",
             entries, new FeedAdapter<FeedItem>() {
                 public String getEntryTitle(FeedItem item) {
-                    return '#'+item.getBuild().number+' '+item.e.getMsg()+" ("+item.e.getAuthor()+")";
+                    return "#"+item.getBuild().number+' '+item.e.getMsg()+" ("+item.e.getAuthor()+")";
                 }
 
                 public String getEntryUrl(FeedItem item) {
