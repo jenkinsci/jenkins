@@ -343,6 +343,10 @@ public class Functions {
         return Util.encode(s);
     }
 
+    public static String escape(String s) {
+        return Util.escape(s);
+    }
+
     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required) throws IOException, ServletException {
         if(required!=null && !Hudson.adminCheck(req,rsp)) {
             // check failed
