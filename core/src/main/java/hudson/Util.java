@@ -333,7 +333,7 @@ public class Util {
     }
 
     /**
-     * Escapes non-ASCII characters.
+     * Escapes non-ASCII characters in URL.
      */
     public static String encode(String s) {
         try {
