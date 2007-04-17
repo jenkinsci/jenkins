@@ -854,6 +854,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             try {
                 TopLevelItem item = (TopLevelItem)Items.load(this,subdir);
                 items.put(item.getName(), item);
+            } catch (Error e) {
+                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace(); // TODO: logging
             }
