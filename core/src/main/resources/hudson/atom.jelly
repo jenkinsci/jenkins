@@ -29,6 +29,10 @@
         <id>${adapter.getEntryID(e)}</id>
         <published>${h.xsDate(adapter.getEntryTimestamp(e))}</published>
         <updated>${h.xsDate(adapter.getEntryTimestamp(e))}</updated>
+        <j:set var="desc" value="${adapter.getEntryDescription(e)}"/>
+        <j:if test="${desc!=null}">
+          <content>${h.xmlEscape(desc)}</content>
+        </j:if>
       </entry>
     </j:forEach>
   </feed>
