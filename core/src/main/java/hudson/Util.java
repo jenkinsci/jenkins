@@ -392,6 +392,21 @@ public class Util {
         return buf.toString();
     }
 
+    public static String xmlEscape(String text) {
+        StringBuffer buf = new StringBuffer(text.length()+64);
+        for( int i=0; i<text.length(); i++ ) {
+            char ch = text.charAt(i);
+            if(ch=='<')
+                buf.append("&lt;");
+            else
+            if(ch=='&')
+                buf.append("&amp;");
+            else
+                buf.append(ch);
+        }
+        return buf.toString();
+    }
+
     private static char toDigit(int n) {
         char ch = Character.forDigit(n,16);
         if(ch>='a')     ch = (char)(ch-'a'+'A');

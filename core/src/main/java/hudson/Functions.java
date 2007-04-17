@@ -347,6 +347,10 @@ public class Functions {
         return Util.escape(s);
     }
 
+    public static String xmlEscape(String s) {
+        return Util.xmlEscape(s);
+    }
+
     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required) throws IOException, ServletException {
         if(required!=null && !Hudson.adminCheck(req,rsp)) {
             // check failed
