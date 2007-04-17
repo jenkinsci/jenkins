@@ -45,6 +45,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletContext;
@@ -1484,14 +1485,27 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         public static final LocalChannel localChannel = new LocalChannel(threadPoolForRemoting);
     }
 
+    public static boolean adminCheck() throws IOException {
+        return adminCheck(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
+    }
+
     public static boolean adminCheck(StaplerRequest req,StaplerResponse rsp) throws IOException {
+        if (isAdmin(req)) return true;
+
+        rsp.sendError(StaplerResponse.SC_FORBIDDEN);
+        return false;
+    }
+
+    public static boolean isAdmin() {
+        return isAdmin(Stapler.getCurrentRequest());
+    }
+
+    public static boolean isAdmin(StaplerRequest req) {
         if(!getInstance().isUseSecurity())
             return true;
 
         if(req.isUserInRole("admin"))
             return true;
-
-        rsp.sendError(StaplerResponse.SC_FORBIDDEN);
         return false;
     }
 
