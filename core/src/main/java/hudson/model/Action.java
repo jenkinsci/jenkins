@@ -40,7 +40,9 @@ public interface Action extends Serializable, ModelObject {
      *      <p>
      *      Finally, return null to hide it from the task list. This is normally not very useful,
      *      but this can be used for actions that only contribute <tt>floatBox.jelly</tt>
-     *      and no task list item.
+     *      and no task list item. The other case where this is useful is
+     *      to avoid showing links that require a privilege when the user is anonymous.
+     * @see Hudson#isAdmin()
      */
     String getIconFileName();
 
