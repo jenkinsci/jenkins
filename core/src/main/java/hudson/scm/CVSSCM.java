@@ -1037,11 +1037,18 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         }
 
         public String getIconFileName() {
+            if(tagName==null && !Hudson.isAdmin())
+                return null;
             return "save.gif";
         }
 
         public String getDisplayName() {
-            return "Tag this build";
+            if(tagName==null)
+                return "Tag this build";
+            if(tagName.indexOf(' ')>=0)
+                return "CVS tags";
+            else
+                return "CVS tag";
         }
 
         public String getUrlName() {
@@ -1076,6 +1083,9 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
          * Invoked to actually tag the workspace.
          */
         public synchronized void doSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            if(!Hudson.adminCheck(req,rsp))
+                return;
+
             Map<AbstractBuild,String> tagSet = new HashMap<AbstractBuild,String>();
 
             String name = req.getParameter("name");
@@ -1123,6 +1133,9 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
          * Clears the error status.
          */
         public synchronized void doClearError(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            if(!Hudson.adminCheck(req,rsp))
+                return;
+
             if(workerThread!=null && !workerThread.isAlive())
                 workerThread = null;
             doIndex(req,rsp);
