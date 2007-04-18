@@ -61,6 +61,13 @@ public class Ant extends Builder {
         return null;
     }
 
+    /**
+     * Gets the ANT_OPTS parameter, or null.
+     */
+    public String getAntOpts() {
+        return antOpts;
+    }
+
     public boolean perform(Build build, Launcher launcher, BuildListener listener) {
         Project proj = build.getProject();
 
