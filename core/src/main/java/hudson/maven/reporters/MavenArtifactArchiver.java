@@ -57,10 +57,12 @@ public class MavenArtifactArchiver extends MavenReporter {
         final Set<ArtifactInfo> archivedFiles = new HashSet<ArtifactInfo>();
 
         // record POM
-        listener.getLogger().println("[HUDSON] Archiving "+ pom.getFile());
-        final FilePath archivedPom = getArtifactArchivePath(build, pom.getGroupId(), pom.getArtifactId(), pom.getVersion())
-            .child(pom.getArtifactId() + '-' + pom.getVersion() + ".pom");
-        new FilePath(pom.getFile()).copyTo(archivedPom);
+        if(pom.getFile()!=null) {// goals like 'clean' runs without loading POM, apparently.
+            listener.getLogger().println("[HUDSON] Archiving "+ pom.getFile());
+            final FilePath archivedPom = getArtifactArchivePath(build, pom.getGroupId(), pom.getArtifactId(), pom.getVersion())
+                .child(pom.getArtifactId() + '-' + pom.getVersion() + ".pom");
+            new FilePath(pom.getFile()).copyTo(archivedPom);
+        }
 
         // record artifacts
         record(build,pom.getArtifact(),listener,archivedFiles,true);
