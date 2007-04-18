@@ -60,7 +60,7 @@
                     <a style="color:white" href="${rootURL}/logout"><b>logout</b></a>
                   </j:when>
                   <j:otherwise>
-                    <a style="color:white" href="${rootURL}/loginEntry"><b>login</b></a>
+                    <a style="color:white" href="${rootURL}/loginEntry?from=${request.requestURI}"><b>login</b></a>
                   </j:otherwise>
                 </j:choose>
               </j:if>
