@@ -1,15 +1,17 @@
 package hudson.maven;
 
 import hudson.FilePath.FileCallable;
+import hudson.maven.reporters.MavenMailer;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
 import org.apache.maven.embedder.MavenEmbedderException;
+import org.apache.maven.model.CiManagement;
+import org.apache.maven.model.Notifier;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 
@@ -249,7 +251,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         }
     }
 
-    private static final class PomParser implements FileCallable<List<PomInfo>> {
+    private final class PomParser implements FileCallable<List<PomInfo>> {
         private final BuildListener listener;
         private final String rootPOM;
 
@@ -290,7 +292,29 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
                 for (PomInfo pi : infos)
                     pi.cutCycle();
-
+                
+                CiManagement ciMgmt = mp.getCiManagement();
+                if ((ciMgmt != null) && (ciMgmt.getSystem().equals("hudson"))) {
+                    Notifier mailNotifier = null;
+                    for (Object n : ciMgmt.getNotifiers()) {
+                        Notifier notifier = (Notifier) n;
+                        if (notifier.getType().equals("mail")) {
+                            mailNotifier = notifier;
+                        }
+                    }
+                    if (mailNotifier != null) {
+                        MavenReporter reporter = project.getRootModule().getParent().getReporters().get(MavenMailer.DescriptorImpl.DESCRIPTOR);
+                        if (reporter != null) {
+                            MavenMailer mailer = (MavenMailer) reporter;
+                            mailer.dontNotifyEveryUnstableBuild = !mailNotifier.isSendOnFailure();
+                            String recipients = mailNotifier.getConfiguration().getProperty("recipients");
+                            if (recipients != null) {
+                                mailer.recipients = recipients;
+                            }
+                        }
+                    }
+                }
+                
                 embedder.stop();
                 return infos;
             } catch (MavenEmbedderException e) {
