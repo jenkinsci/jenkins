@@ -56,58 +56,59 @@ public class MavenArtifactArchiver extends MavenReporter {
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, final BuildListener listener) throws InterruptedException, IOException {
         final Set<ArtifactInfo> archivedFiles = new HashSet<ArtifactInfo>();
 
-        // record POM
         if(pom.getFile()!=null) {// goals like 'clean' runs without loading POM, apparently.
+
+            // record POM
             listener.getLogger().println("[HUDSON] Archiving "+ pom.getFile());
             final FilePath archivedPom = getArtifactArchivePath(build, pom.getGroupId(), pom.getArtifactId(), pom.getVersion())
                 .child(pom.getArtifactId() + '-' + pom.getVersion() + ".pom");
             new FilePath(pom.getFile()).copyTo(archivedPom);
-        }
 
-        // record artifacts
-        record(build,pom.getArtifact(),listener,archivedFiles,true);
-        for( Object a : pom.getAttachedArtifacts() )
-            record(build,(Artifact)a,listener,archivedFiles,false);
+            // record artifacts
+            record(build,pom.getArtifact(),listener,archivedFiles,true);
+            for( Object a : pom.getAttachedArtifacts() )
+                record(build,(Artifact)a,listener,archivedFiles,false);
 
-        final boolean installed = this.installed;
-        final boolean builtOnSlave = archivedPom.isRemote();
+            final boolean installed = this.installed;
+            final boolean builtOnSlave = archivedPom.isRemote();
 
-        if(!archivedFiles.isEmpty()) {
-            build.execute(new BuildCallable<Void,IOException>() {
-                public Void call(MavenBuild build) throws IOException, InterruptedException {
-                    // record fingerprints
-                    FingerprintMap map = Hudson.getInstance().getFingerprintMap();
-                    for (ArtifactInfo a : archivedFiles)
-                        map.getOrCreate(build, a.path.getName(), a.path.digest());
+            if(!archivedFiles.isEmpty()) {
+                build.execute(new BuildCallable<Void,IOException>() {
+                    public Void call(MavenBuild build) throws IOException, InterruptedException {
+                        // record fingerprints
+                        FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+                        for (ArtifactInfo a : archivedFiles)
+                            map.getOrCreate(build, a.path.getName(), a.path.digest());
 
-                    // install files on the master
-                    if(installed && builtOnSlave) {
-                        try {
-                            MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
-                            ArtifactInstaller installer = (ArtifactInstaller) embedder.getContainer().lookup(ArtifactInstaller.class.getName());
-                            ArtifactFactory factory = (ArtifactFactory) embedder.getContainer().lookup(ArtifactFactory.class.getName());
-                            for (ArtifactInfo a : archivedFiles) {
-                                Artifact artifact = a.toArtifact(factory);
-                                if(a.isPrimary)
-                                    artifact.addMetadata( new ProjectArtifactMetadata( artifact, new File(archivedPom.getRemote()) ) );
-                                installer.install(new File(a.path.getRemote()), artifact,embedder.getLocalRepository());
+                        // install files on the master
+                        if(installed && builtOnSlave) {
+                            try {
+                                MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
+                                ArtifactInstaller installer = (ArtifactInstaller) embedder.getContainer().lookup(ArtifactInstaller.class.getName());
+                                ArtifactFactory factory = (ArtifactFactory) embedder.getContainer().lookup(ArtifactFactory.class.getName());
+                                for (ArtifactInfo a : archivedFiles) {
+                                    Artifact artifact = a.toArtifact(factory);
+                                    if(a.isPrimary)
+                                        artifact.addMetadata( new ProjectArtifactMetadata( artifact, new File(archivedPom.getRemote()) ) );
+                                    installer.install(new File(a.path.getRemote()), artifact,embedder.getLocalRepository());
+                                }
+                                embedder.stop();
+                            } catch (MavenEmbedderException e) {
+                                e.printStackTrace(listener.error("Failed to install artifact to the master"));
+                                build.setResult(Result.FAILURE);
+                            } catch (ComponentLookupException e) {
+                                e.printStackTrace(listener.error("Failed to install artifact to the master"));
+                                build.setResult(Result.FAILURE);
+                            } catch (ArtifactInstallationException e) {
+                                e.printStackTrace(listener.error("Failed to install artifact to the master"));
+                                build.setResult(Result.FAILURE);
                             }
-                            embedder.stop();
-                        } catch (MavenEmbedderException e) {
-                            e.printStackTrace(listener.error("Failed to install artifact to the master"));
-                            build.setResult(Result.FAILURE);
-                        } catch (ComponentLookupException e) {
-                            e.printStackTrace(listener.error("Failed to install artifact to the master"));
-                            build.setResult(Result.FAILURE);
-                        } catch (ArtifactInstallationException e) {
-                            e.printStackTrace(listener.error("Failed to install artifact to the master"));
-                            build.setResult(Result.FAILURE);
                         }
-                    }
 
-                    return null;
-                }
-            });
+                        return null;
+                    }
+                });
+            }
         }
 
         return true;
