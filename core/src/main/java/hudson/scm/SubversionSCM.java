@@ -679,7 +679,7 @@ public class SubversionSCM extends SCM implements Serializable {
                     return cred.createSVNAuthentication(kind);
                 } catch (SVNException e) {
                     logger.log(Level.SEVERE, "Failed to authorize",e);
-                    return null;
+                    throw new RuntimeException("Failed to authorize",e);
                 }
             }
 
