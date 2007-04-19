@@ -9,19 +9,19 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.PluginConfigurationException;
 import org.apache.maven.plugin.PluginManagerException;
-import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
-import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.InvalidDependencyVersionException;
+import org.codehaus.classworlds.ClassRealm;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
+import org.codehaus.plexus.component.configurator.ComponentConfigurator;
+import org.codehaus.plexus.component.configurator.ConfigurationListener;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.component.repository.exception.ComponentLifecycleException;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
-import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Description in META-INF/plexus/components.xml makes it possible to use this instead of the default
@@ -30,9 +30,6 @@ import java.lang.reflect.Method;
  * @author Kohsuke Kawaguchi
  */
 public class PluginManagerInterceptor extends DefaultPluginManager {
-
-    private final Method mergeMojoConfiguration;
-
     /**
      * {@link PluginManagerListener} that receives events.
      * There's no way external code can connect to a running instance of
@@ -40,70 +37,103 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
      */
     private static PluginManagerListener listener;
 
-    public PluginManagerInterceptor() {
-        try {
-            this.mergeMojoConfiguration = DefaultPluginManager.class.getDeclaredMethod(
-                "mergeMojoConfiguration", XmlPlexusConfiguration.class, MojoDescriptor.class);
-            mergeMojoConfiguration.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            NoSuchMethodError x = new NoSuchMethodError("Unable to find DefaultPluginManager.mergeMojoConfiguration()");
-            x.initCause(e);
-            throw x;
-        }
-    }
+    /**
+     * {@link ComponentConfigurator} filter to intercept the mojo configuration.
+     */
+    private ComponentConfiguratorFilter configuratorFilter;
 
     public static void setListener(PluginManagerListener _listener) {
         listener = _listener;
     }
 
-    public void executeMojo(MavenProject project, MojoExecution mojoExecution, MavenSession session) throws ArtifactResolutionException, MojoExecutionException, MojoFailureException, ArtifactNotFoundException, InvalidDependencyVersionException, PluginManagerException, PluginConfigurationException {
-        Xpp3Dom dom = getConfigDom(mojoExecution, project);
+    @Override
+    public void initialize() {
+        super.initialize();
+        container = new ContainerFilter(container) {
+            /**
+             * {@link DefaultPluginManager} uses it to load plugins and their configurators.
+             *
+             * @param name
+             *      groupId+':'+artifactId of the plugin.
+             */
+            public PlexusContainer getChildContainer(String name) {
+                PlexusContainer child = super.getChildContainer(name);
+                if(child==null) return null;
+                return new ContainerFilter(child) {
+                    public Object lookup(String componentKey) throws ComponentLookupException {
+                        return wrap(super.lookup(componentKey), componentKey);
+                    }
 
-        XmlPlexusConfiguration pomConfiguration;
-        if ( dom == null )
-        {
-            pomConfiguration = new XmlPlexusConfiguration( "configuration" );
-        }
-        else
-        {
-            pomConfiguration = new XmlPlexusConfiguration( dom );
+                    public Object lookup(String role, String roleHint) throws ComponentLookupException {
+                        return wrap(super.lookup(role,roleHint), role);
+                    }
+
+                    public void release(Object component) throws ComponentLifecycleException {
+                        if(component==configuratorFilter)
+                            super.release(configuratorFilter.core);
+                        else
+                            super.release(component);
+                    }
+
+                    private Object wrap(Object c, String componentKey) {
+                        if(c!=null && componentKey.equals(ComponentConfigurator.ROLE)) {
+                            if(configuratorFilter.core!=null)
+                                throw new IllegalStateException("ComponentConfigurationFilter being reused. " +
+                                    "This is a bug in Hudson. Please report that to the development team.");
+                            configuratorFilter.core = (ComponentConfigurator)c;
+                            c = configuratorFilter;
+                        }
+                        return c;
+                    }
+                };
+            }
+        };
+    }
+
+    public void executeMojo(final MavenProject project, final MojoExecution mojoExecution, MavenSession session) throws ArtifactResolutionException, MojoExecutionException, MojoFailureException, ArtifactNotFoundException, InvalidDependencyVersionException, PluginManagerException, PluginConfigurationException {
+        class MojoConfig {
+            PlexusConfiguration config;
+            ExpressionEvaluator eval;
+
+            void callPost(Exception exception) throws IOException, InterruptedException {
+                if(listener!=null)
+                    listener.postExecute(project,mojoExecution,config,eval,exception);
+            }
         }
 
-        MojoDescriptor mojoDescriptor = mojoExecution.getMojoDescriptor();
-        PlexusConfiguration mergedConfiguration;
+        final MojoConfig config = new MojoConfig();
+
+        // prepare interception of ComponentConfigurator, so that we can get the final PlexusConfiguration object
+        // representing the configuration before Mojo object is filled with that.
+        configuratorFilter = new ComponentConfiguratorFilter(null) {
+            @Override
+            public void configureComponent(Object component, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator, ClassRealm containerRealm, ConfigurationListener configListener) throws ComponentConfigurationException {
+                try {
+                    config.config = configuration;
+                    config.eval = expressionEvaluator;
+                    if(listener!=null)
+                        listener.preExecute(project,mojoExecution,configuration,expressionEvaluator);
+                    super.configureComponent(component, configuration, expressionEvaluator, containerRealm, configListener);
+                } catch (IOException e) {
+                    throw new ComponentConfigurationException(e);
+                } catch (InterruptedException e) {
+                    // orderly abort
+                    throw new AbortException("Execution aborted",e);
+                }
+            }
+        };
 
         try {
-            mergedConfiguration = (PlexusConfiguration) mergeMojoConfiguration.invoke(this, pomConfiguration, mojoDescriptor );
-        } catch (IllegalAccessException e) {
-            IllegalAccessError x = new IllegalAccessError();
-            x.initCause(e);
-            throw x;
-        } catch (InvocationTargetException e) {
-            throw new MojoExecutionException("Failed to check configuration",e);
-        }
-        // this just seems like an error check
-        //PlexusConfiguration extractedMojoConfiguration =
-        //    extractMojoConfiguration( mergedConfiguration, mojoDescriptor ); // what does this do?
-
-        ExpressionEvaluator eval = new PluginParameterExpressionEvaluator( session, mojoExecution,
-                                                                                          pathTranslator, getLogger(),
-                                                                                          project,
-                                                                                          session.getExecutionProperties() );
-
-        try {
-            if(listener!=null)
-                listener.preExecute(project,mojoExecution,mergedConfiguration,eval);
             try {
+                // inside the executeMojo but before the mojo actually gets executed,
+                // we should be able to trap the mojo configuration.
                 super.executeMojo(project, mojoExecution, session);
-                if(listener!=null)
-                    listener.postExecute(project,mojoExecution,mergedConfiguration,eval,null);
+                config.callPost(null);
             } catch (MojoExecutionException e) {
-                if(listener!=null)
-                    listener.postExecute(project,mojoExecution,mergedConfiguration,eval,e);
+                config.callPost(e);
                 throw e;
             } catch (MojoFailureException e) {
-                if(listener!=null)
-                    listener.postExecute(project,mojoExecution,mergedConfiguration,eval,e);
+                config.callPost(e);
                 throw e;
             }
         } catch (InterruptedException e) {
@@ -113,22 +143,4 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
             throw new PluginManagerException(e.getMessage(),e);
         }
     }
-
-    private Xpp3Dom getConfigDom(MojoExecution mojoExecution, MavenProject project) {
-        MojoDescriptor mojoDescriptor = mojoExecution.getMojoDescriptor();
-        PluginDescriptor pluginDescriptor = mojoDescriptor.getPluginDescriptor();
-        String goalId = mojoDescriptor.getGoal();
-        String groupId = pluginDescriptor.getGroupId();
-        String artifactId = pluginDescriptor.getArtifactId();
-        String executionId = mojoExecution.getExecutionId();
-        Xpp3Dom dom = project.getGoalConfiguration( groupId, artifactId, executionId, goalId );
-        Xpp3Dom reportDom = project.getReportConfiguration( groupId, artifactId, executionId );
-        dom = Xpp3Dom.mergeXpp3Dom( dom, reportDom );
-        if ( mojoExecution.getConfiguration() != null )
-        {
-            dom = Xpp3Dom.mergeXpp3Dom( dom, mojoExecution.getConfiguration() );
-        }
-        return dom;
-    }
-
 }
