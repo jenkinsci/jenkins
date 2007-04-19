@@ -1,19 +1,17 @@
 package hudson.maven;
 
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.Extension;
-import org.apache.maven.model.ReportPlugin;
-import org.apache.maven.model.Notifier;
 import org.apache.maven.model.CiManagement;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Extension;
+import org.apache.maven.model.Notifier;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.project.MavenProject;
 
 import java.io.Serializable;
-import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
-
-import hudson.maven.reporters.MavenMailer;
+import java.util.Set;
 
 /**
  * Serializable representation of the key information obtained from Maven POM.
@@ -76,6 +74,8 @@ final class PomInfo implements Serializable {
         MavenProject parentProject = project.getParent();
         if(parentProject!=null)
             dependencies.add(new ModuleName(parentProject));
+        if(parent!=null)
+            dependencies.add(parent.name);
 
         addPluginsAsDependencies(project.getBuildPlugins(),dependencies);
         addReportPluginsAsDependencies(project.getReportPlugins(),dependencies);
