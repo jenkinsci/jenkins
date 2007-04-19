@@ -266,6 +266,12 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
                 return false;
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
+                throw e;
+            } catch (Error e) {
+                LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
+                throw e;
             }
         }
 
