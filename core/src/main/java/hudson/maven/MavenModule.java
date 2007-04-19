@@ -3,6 +3,7 @@ package hudson.maven;
 import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.maven.reporters.MavenMailer;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
@@ -72,6 +73,18 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         this.displayName = pom.displayName;
         this.relativePath = pom.relativePath;
         this.dependencies = pom.dependencies;
+
+        if (pom.mailNotifier != null) {
+            MavenReporter reporter = getReporters().get(MavenMailer.DescriptorImpl.DESCRIPTOR);
+            if (reporter != null) {
+                MavenMailer mailer = (MavenMailer) reporter;
+                mailer.dontNotifyEveryUnstableBuild = !pom.mailNotifier.isSendOnFailure();
+                String recipients = pom.mailNotifier.getConfiguration().getProperty("recipients");
+                if (recipients != null) {
+                    mailer.recipients = recipients;
+                }
+            }
+        }
     }
 
     protected void doSetName(String name) {

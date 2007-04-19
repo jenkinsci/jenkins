@@ -5,11 +5,15 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Extension;
 import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.model.Notifier;
+import org.apache.maven.model.CiManagement;
 
 import java.io.Serializable;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
+
+import hudson.maven.reporters.MavenMailer;
 
 /**
  * Serializable representation of the key information obtained from Maven POM.
@@ -57,6 +61,8 @@ final class PomInfo implements Serializable {
      */
     public final PomInfo parent;
 
+    public final Notifier mailNotifier;
+
     public PomInfo(MavenProject project, PomInfo parent, String relPath) {
         this.name = new ModuleName(project);
         this.displayName = project.getName();
@@ -82,6 +88,19 @@ final class PomInfo implements Serializable {
         // when the parent POM uses a plugin and builds a plugin at the same time,
         // the plugin module ends up depending on itself
         dependencies.remove(name);
+
+        CiManagement ciMgmt = project.getCiManagement();
+        if ((ciMgmt != null) && (ciMgmt.getSystem().equals("hudson"))) {
+            Notifier mailNotifier = null;
+            for (Notifier n : (List<Notifier>)ciMgmt.getNotifiers()) {
+                if (n.getType().equals("mail")) {
+                    mailNotifier = n;
+                    break;
+                }
+            }
+            this.mailNotifier = mailNotifier;
+        } else
+            this.mailNotifier = null;
     }
 
     private void addPluginsAsDependencies(List<Plugin> plugins, Set<ModuleName> dependencies) {

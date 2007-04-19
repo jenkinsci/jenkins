@@ -251,7 +251,11 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         }
     }
 
-    private final class PomParser implements FileCallable<List<PomInfo>> {
+    /**
+     * Executed on the slave to parse POM and extract information into {@link PomInfo},
+     * which will be then brought back to the master.
+     */
+    private static final class PomParser implements FileCallable<List<PomInfo>> {
         private final BuildListener listener;
         private final String rootPOM;
 
@@ -292,28 +296,6 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
                 for (PomInfo pi : infos)
                     pi.cutCycle();
-                
-                CiManagement ciMgmt = mp.getCiManagement();
-                if ((ciMgmt != null) && (ciMgmt.getSystem().equals("hudson"))) {
-                    Notifier mailNotifier = null;
-                    for (Object n : ciMgmt.getNotifiers()) {
-                        Notifier notifier = (Notifier) n;
-                        if (notifier.getType().equals("mail")) {
-                            mailNotifier = notifier;
-                        }
-                    }
-                    if (mailNotifier != null) {
-                        MavenReporter reporter = project.getRootModule().getParent().getReporters().get(MavenMailer.DescriptorImpl.DESCRIPTOR);
-                        if (reporter != null) {
-                            MavenMailer mailer = (MavenMailer) reporter;
-                            mailer.dontNotifyEveryUnstableBuild = !mailNotifier.isSendOnFailure();
-                            String recipients = mailNotifier.getConfiguration().getProperty("recipients");
-                            if (recipients != null) {
-                                mailer.recipients = recipients;
-                            }
-                        }
-                    }
-                }
                 
                 embedder.stop();
                 return infos;
