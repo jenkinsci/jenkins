@@ -11,15 +11,16 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.lang.management.ThreadInfo;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.lang.management.ThreadInfo;
 
 /**
  * Represents a set of {@link Executor}s on the same computer.
@@ -45,7 +46,7 @@ import java.lang.management.ThreadInfo;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Computer implements ModelObject {
-    private final List<Executor> executors = new ArrayList<Executor>();
+    private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
 
     private int numExecutors;
 
@@ -200,7 +201,7 @@ public abstract class Computer implements ModelObject {
     /**
      * Returns the number of idle {@link Executor}s that can start working immediately.
      */
-    public synchronized int countIdle() {
+    public int countIdle() {
         int n = 0;
         for (Executor e : executors) {
             if(e.isIdle())
@@ -210,9 +211,9 @@ public abstract class Computer implements ModelObject {
     }
 
     /**
-     * Gets the read-only view of all {@link Executor}s.
+     * Gets the read-only snapshot view of all {@link Executor}s.
      */
-    public synchronized List<Executor> getExecutors() {
+    public List<Executor> getExecutors() {
         return new ArrayList<Executor>(executors);
     }
 
@@ -228,7 +229,7 @@ public abstract class Computer implements ModelObject {
     /**
      * Interrupt all {@link Executor}s.
      */
-    public synchronized void interrupt() {
+    public void interrupt() {
         for (Executor e : executors) {
             e.interrupt();
         }
