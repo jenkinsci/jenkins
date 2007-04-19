@@ -172,7 +172,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     }
 
     @Override
-    protected boolean isBuildBlocked() {
+    public boolean isBuildBlocked() {
         if(super.isBuildBlocked())
             return true;
 

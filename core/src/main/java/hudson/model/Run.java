@@ -209,7 +209,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public Executor getExecutor() {
         for( Computer c : Hudson.getInstance().getComputers() ) {
             for (Executor e : c.getExecutors()) {
-                if(e.getCurrentBuild()==(Object)this)
+                if(e.getCurrentTask()==getParent())
                     return e;
             }
         }

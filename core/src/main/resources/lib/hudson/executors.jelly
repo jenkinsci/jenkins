@@ -44,7 +44,7 @@
               </td>
               <td class="pane"></td>
             </j:when>
-            <j:when test="${e.currentBuild==null}">
+            <j:when test="${e.idle}">
 	            <td class="pane" width="70%">
 	              Idle
 	            </td>
@@ -52,8 +52,8 @@
 	          </j:when>
 	          <j:otherwise>
 	            <td class="pane" width="70%">
-	              <div nowrap="true">Building <a href="${rootURL}/${e.currentBuild.url}">${e.currentBuild}</a></div>
-                <t:buildProgressBar build="${e.currentBuild}"/>
+	              <div nowrap="true">Building <a href="${rootURL}/${e.currentTask.url}">${e.currentTask}</a></div>
+                <t:buildProgressBar build="${e.currentTask}"/>
 	            </td>
 	            <td class="pane" width="16" align="center" valign="middle">
                 <l:isAdmin>

@@ -1,5 +1,7 @@
 package hudson.model;
 
+import hudson.model.Queue.Task;
+
 /**
  * {@link Item} that can be "built", for
  * whatever meaning of "build".
@@ -10,6 +12,6 @@ package hudson.model;
  * @author Kohsuke Kawaguchi
  * @see BuildAuthorizationToken
  */
-public interface BuildableItem extends Item {
+public interface BuildableItem extends Item, Task {
     boolean scheduleBuild();
 }

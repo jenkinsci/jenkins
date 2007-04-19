@@ -284,15 +284,38 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Returns true if this project's build execution should be blocked
-     * for temporary reasons. This method is used by {@link Queue}.
+     * {@inheritDoc}
      *
      * <p>
      * A project must be blocked if its own previous build is in progress,
      * but derived classes can also check other conditions.
      */
-    protected boolean isBuildBlocked() {
+    public boolean isBuildBlocked() {
         return isBuilding();
+    }
+
+    public String getWhyBlocked() {
+        AbstractBuild<?, ?> build = getLastBuild();
+        Executor e = build.getExecutor();
+        String eta="";
+        if(e!=null)
+            eta = " (ETA:"+e.getEstimatedRemainingTime()+")";
+        int lbn = build.getNumber();
+        return "Build #"+lbn+" is already in progress"+eta;
+    }
+
+    public final long getEstimatedDuration() {
+        AbstractBuild b = getLastSuccessfulBuild();
+        if(b==null)     return -1;
+
+        long duration = b.getDuration();
+        if(duration==0) return -1;
+
+        return duration;
+    }
+
+    public void execute() throws IOException {
+        newBuild().run();
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {

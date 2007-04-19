@@ -17,7 +17,7 @@ public class Executor extends Thread {
     private final Computer owner;
     private final Queue queue;
 
-    private AbstractBuild<?,?> build;
+    private Queue.Task task;
 
     private long startTime;
 
@@ -48,35 +48,32 @@ public class Executor extends Thread {
             }
 
             try {
-                AbstractProject p = queue.pop();
-                build = p.newBuild();
+                task = queue.pop();
             } catch (InterruptedException e) {
                 continue;
-            } catch (IOException e) {
-                e.printStackTrace();
-                continue;
             }
-            startTime = System.currentTimeMillis();
+
             try {
-                build.run();
+                startTime = System.currentTimeMillis();
+                task.execute();
             } catch (Throwable e) {
                 // for some reason the executor died. this is really
                 // a bug in the code, but we don't want the executor to die,
                 // so just leave some info and go on to build other things
                 e.printStackTrace();
             }
-            build = null;
+            task = null;
         }
     }
 
     /**
-     * Returns the current {@link Build} this executor is running.
+     * Returns the current {@link Queue.Task} this executor is running.
      *
      * @return
      *      null if the executor is idle.
      */
-    public AbstractBuild getCurrentBuild() {
-        return build;
+    public Queue.Task getCurrentTask() {
+        return task;
     }
 
     /**
@@ -94,7 +91,7 @@ public class Executor extends Thread {
      * Returns true if this {@link Executor} is ready for action.
      */
     public boolean isIdle() {
-        return build==null;
+        return task==null;
     }
 
     /**
@@ -104,13 +101,10 @@ public class Executor extends Thread {
      *      if it's impossible to estimate the progress.
      */
     public int getProgress() {
-        AbstractBuild b = build.getProject().getLastSuccessfulBuild();
-        if(b==null)     return -1;
+        long d = task.getEstimatedDuration();
+        if(d<0)         return -1;
 
-        long duration = b.getDuration();
-        if(duration==0) return -1;
-
-        int num = (int)((System.currentTimeMillis()-startTime)*100/duration);
+        int num = (int)((System.currentTimeMillis()-startTime)*100/d);
         if(num>=100)    num=99;
         return num;
     }
@@ -120,13 +114,10 @@ public class Executor extends Thread {
      * until the build completes.
      */
     public String getEstimatedRemainingTime() {
-        AbstractBuild b = build.getProject().getLastSuccessfulBuild();
-        if(b==null)     return "N/A";
+        long d = task.getEstimatedDuration();
+        if(d<0)         return "N/A";
 
-        long duration = b.getDuration();
-        if(duration==0) return "N/A";
-
-        long eta = duration-(System.currentTimeMillis()-startTime);
+        long eta = d-(System.currentTimeMillis()-startTime);
         if(eta<=0)      return "N/A";
 
         return Util.getTimeSpanString(eta);

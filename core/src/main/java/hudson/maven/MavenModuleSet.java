@@ -18,6 +18,7 @@ import hudson.model.Queue;
 import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.model.Queue.Task;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.CopyOnWriteMap;
@@ -35,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Group of {@link MavenModule}s.
@@ -179,7 +179,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     @Override
-    protected boolean isBuildBlocked() {
+    public boolean isBuildBlocked() {
         if(super.isBuildBlocked())
             return true;
         // updating the workspace (=our build) cannot be done
@@ -333,7 +333,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     public List<Queue.Item> getQueueItems() {
         List<Queue.Item> r = new ArrayList<hudson.model.Queue.Item>();
         for( Queue.Item item : Hudson.getInstance().getQueue().getItems() ) {
-            if(item.project.getParent()==this || (Object)item.project==this)
+            Task t = item.task;
+            if((t instanceof MavenModule && ((MavenModule)t).getParent()==this) || t ==this)
                 r.add(item);
         }
         return r;

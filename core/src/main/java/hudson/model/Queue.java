@@ -31,7 +31,9 @@ import java.util.logging.Logger;
  * Build queue.
  *
  * <p>
- * This class implements the core scheduling logic.
+ * This class implements the core scheduling logic. {@link Task} represents the executable
+ * task that are placed in the queue. While in the queue, it's wrapped into {@link Item}
+ * so that we can keep track of additional data used for deciding what to exeucte when. 
  *
  * @author Kohsuke Kawaguchi
  */
@@ -49,20 +51,20 @@ public class Queue {
      * {@link Project}s that can be built immediately
      * but blocked because another build is in progress.
      */
-    private final Set<AbstractProject> blockedProjects = new HashSet<AbstractProject>();
+    private final Set<Task> blockedProjects = new HashSet<Task>();
 
     /**
      * {@link Project}s that can be built immediately
      * that are waiting for available {@link Executor}.
      */
-    private final List<AbstractProject> buildables = new LinkedList<AbstractProject>();
+    private final List<Task> buildables = new LinkedList<Task>();
 
     /**
      * Data structure created for each idle {@link Executor}.
      * This is an offer from the queue to an executor.
      *
      * <p>
-     * It eventually receives a {@link #project} to build.
+     * It eventually receives a {@link #task} to build.
      */
     private static class JobOffer {
         final Executor executor;
@@ -76,20 +78,20 @@ public class Queue {
          * The project that this {@link Executor} is going to build.
          * (Or null, in which case event is used to trigger a queue maintenance.)
          */
-        AbstractProject project;
+        Task task;
 
         public JobOffer(Executor executor) {
             this.executor = executor;
         }
 
-        public void set(AbstractProject p) {
-            assert this.project==null;
-            this.project = p;
+        public void set(Task p) {
+            assert this.task ==null;
+            this.task = p;
             event.signal();
         }
 
         public boolean isAvailable() {
-            return project==null && !executor.getOwner().isOffline();
+            return task ==null && !executor.getOwner().isOffline();
         }
 
         public Node getNode() {
@@ -137,7 +139,7 @@ public class Queue {
             PrintWriter w = new PrintWriter(new FileOutputStream(
                 getQueueFile()));
             for (Item i : getItems())
-                w.println(i.project.getName());
+                w.println(i.task.getName());
             w.close();
         } catch(IOException e) {
             LOGGER.log(Level.WARNING, "Failed to write out the queue file "+getQueueFile(),e);
@@ -175,7 +177,7 @@ public class Queue {
         LOGGER.fine("Cancelling "+p.getName());
         for (Iterator itr = queue.iterator(); itr.hasNext();) {
             Item item = (Item) itr.next();
-            if(item.project==p) {
+            if(item.task ==p) {
                 itr.remove();
                 return;
             }
@@ -200,10 +202,10 @@ public class Queue {
         queue.toArray(r);
         int idx=queue.size();
         Calendar now = new GregorianCalendar();
-        for (AbstractProject p : blockedProjects) {
+        for (Task p : blockedProjects) {
             r[idx++] = new Item(now, p, true, false);
         }
-        for (AbstractProject p : buildables) {
+        for (Task p : buildables) {
             r[idx++] = new Item(now, p, false, true);
         }
         return r;
@@ -220,7 +222,7 @@ public class Queue {
         if(buildables.contains(p))
             return new Item(new GregorianCalendar(),p,false,true); 
         for (Item item : queue) {
-            if (item.project == p)
+            if (item.task == p)
                 return item;
         }
         return null;
@@ -229,11 +231,11 @@ public class Queue {
     /**
      * Returns true if this queue contains the said project.
      */
-    public synchronized boolean contains(AbstractProject p) {
+    public synchronized boolean contains(Task p) {
         if(blockedProjects.contains(p) || buildables.contains(p))
             return true;
         for (Item item : queue) {
-            if (item.project == p)
+            if (item.task == p)
                 return true;
         }
         return false;
@@ -244,12 +246,8 @@ public class Queue {
      *
      * This method blocks until a next project becomes buildable.
      */
-    public AbstractProject pop() throws InterruptedException {
+    public Task pop() throws InterruptedException {
         final Executor exec = Executor.currentExecutor();
-
-        // used in the finally block to check if we are returning from this method normally
-        // or abnormally via an exception
-        boolean successfulReturn = false;
 
         try {
             while(true) {
@@ -267,9 +265,9 @@ public class Queue {
                     maintain();
 
                     // allocate buildable jobs to executors
-                    Iterator<AbstractProject> itr = buildables.iterator();
+                    Iterator<Task> itr = buildables.iterator();
                     while(itr.hasNext()) {
-                        AbstractProject p = itr.next();
+                        Task p = itr.next();
 
                         // one last check to make sure this build is not blocked.
                         if(p.isBuildBlocked()) {
@@ -315,10 +313,10 @@ public class Queue {
                     parked.remove(exec);
 
                     // am I woken up because I have a project to build?
-                    if(offer.project!=null) {
-                        LOGGER.fine("Pop returning "+offer.project+" for "+exec.getName());
+                    if(offer.task !=null) {
+                        LOGGER.fine("Pop returning "+offer.task +" for "+exec.getName());
                         // if so, just build it
-                        return offer.project;
+                        return offer.task;
                     }
                     // otherwise run a queue maintenance
                 }
@@ -327,14 +325,14 @@ public class Queue {
             synchronized(this) {
                 // remove myself from the parked list
                 JobOffer offer = parked.remove(exec);
-                if(offer!=null && offer.project!=null) {
+                if(offer!=null && offer.task !=null) {
                     // we are already assigned a project,
                     // ask for someone else to build it.
                     // note that while this thread is waiting for CPU
                     // someone else can schedule this build again,
                     // so check the contains method first.
-                    if(!contains(offer.project))
-                        buildables.add(offer.project);
+                    if(!contains(offer.task))
+                        buildables.add(offer.task);
                 }
 
                 // since this executor might have been chosen for
@@ -352,7 +350,7 @@ public class Queue {
      * @return
      *      null if no {@link Executor} can run it.
      */
-    private JobOffer choose(AbstractProject<?,?> p) {
+    private JobOffer choose(Task p) {
         if(Hudson.getInstance().isQuietingDown()) {
             // if we are quieting down, don't run anything so that
             // all executors will be free.
@@ -383,8 +381,7 @@ public class Queue {
         // duration of a build on a slave tends not to have an impact on
         // the master/slave communication, so that means we should favor
         // running long jobs on slaves.
-        AbstractBuild succ = p.getLastSuccessfulBuild();
-        if(succ!=null && succ.getDuration()>15*60*1000) {
+        if(p.getEstimatedDuration()>15*60*1000) {
             // consider a long job to be > 15 mins
             for (JobOffer offer : parked.values()) {
                 if(offer.isAvailable() && offer.getNode() instanceof Slave && offer.isNotExclusive())
@@ -415,7 +412,7 @@ public class Queue {
         // no more executors will be offered job except by
         // the pop() code.
         for (Entry<Executor, JobOffer> av : parked.entrySet()) {
-            if(av.getValue().project==null) {
+            if(av.getValue().task ==null) {
                 av.getValue().event.signal();
                 return;
             }
@@ -433,9 +430,9 @@ public class Queue {
         if(LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Queue maintenance started "+this);
 
-        Iterator<AbstractProject> itr = blockedProjects.iterator();
+        Iterator<Task> itr = blockedProjects.iterator();
         while(itr.hasNext()) {
-            AbstractProject p = itr.next();
+            Task p = itr.next();
             if(!p.isBuildBlocked()) {
                 // ready to be executed
                 LOGGER.fine(p.getName()+" no longer blocked");
@@ -450,7 +447,7 @@ public class Queue {
             if(!top.timestamp.before(new GregorianCalendar()))
                 return; // finished moving all ready items from queue
 
-            AbstractProject p = top.project;
+            Task p = top.task;
             if(!p.isBuildBlocked()) {
                 // ready to be executed immediately
                 queue.remove(top);
@@ -466,11 +463,57 @@ public class Queue {
         }
     }
 
+    public interface Task {
+        /**
+         * If this task needs to be run on a particular node,
+         * return that {@link Node}. Otherwise null, indicating
+         * it can run on any node.
+         */
+        Node getAssignedNode();
+
+        /**
+         * If the previous execution of this task run on a certain node
+         * and this task prefers to run on the same node, return that.
+         * Otherwise null.
+         */
+        Node getLastBuiltOn();
+
+        /**
+         * Returns true if the execution should be blocked
+         * for temporary reasons.
+         */
+        boolean isBuildBlocked();
+
+        /**
+         * When {@link #isBuildBlocked()} is true, this method returns
+         * human readable description of why the build is blocked.
+         * Used for HTML rendering.
+         */
+        String getWhyBlocked();
+
+        /**
+         * Human readable name of this task.
+         * Used for display purpose.
+         */
+        String getName();
+
+        /**
+         * Estimate of how long will it take to execute this task.
+         * Measured in milliseconds.
+         *
+         * @return
+         *      -1 if it's impossible to estimate.
+         */
+        long getEstimatedDuration();
+
+        void execute() throws IOException;
+    }
+
     /**
      * Item in a queue.
      */
     @ExportedBean(defaultVisibility=999)
-    public class Item implements Comparable<Item> {
+    public final class Item implements Comparable<Item> {
         /**
          * This item can be run after this time.
          */
@@ -480,7 +523,7 @@ public class Queue {
         /**
          * Project to be built.
          */
-        public final AbstractProject<?,?> project;
+        public final Task task;
 
         /**
          * Unique number of this {@link Item}.
@@ -504,13 +547,13 @@ public class Queue {
         @Exported
         public final boolean isBuildable;
 
-        public Item(Calendar timestamp, AbstractProject project) {
+        public Item(Calendar timestamp, Task project) {
             this(timestamp,project,false,false);
         }
 
-        public Item(Calendar timestamp, AbstractProject project, boolean isBlocked, boolean isBuildable) {
+        public Item(Calendar timestamp, Task project, boolean isBlocked, boolean isBuildable) {
             this.timestamp = timestamp;
-            this.project = project;
+            this.task = project;
             this.isBlocked = isBlocked;
             this.isBuildable = isBuildable;
             synchronized(Queue.this) {
@@ -524,7 +567,7 @@ public class Queue {
         @Exported
         public String getWhy() {
             if(isBuildable) {
-                Node node = project.getAssignedNode();
+                Node node = task.getAssignedNode();
                 Hudson hudson = Hudson.getInstance();
                 if(node==hudson && hudson.getSlaves().isEmpty())
                     node = null;    // no master/slave. pointless to talk about nodes
@@ -541,13 +584,7 @@ public class Queue {
             }
 
             if(isBlocked) {
-                AbstractBuild<?, ?> build = project.getLastBuild();
-                Executor e = build.getExecutor();
-                String eta="";
-                if(e!=null)
-                    eta = " (ETA:"+e.getEstimatedRemainingTime()+")";
-                int lbn = build.getNumber();
-                return "Build #"+lbn+" is already in progress"+eta;
+                return task.getWhyBlocked();
             }
 
             long diff = timestamp.getTimeInMillis() - System.currentTimeMillis();

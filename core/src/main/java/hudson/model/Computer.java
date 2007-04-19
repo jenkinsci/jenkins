@@ -190,7 +190,7 @@ public abstract class Computer implements ModelObject {
 
         // send signal to all idle executors to potentially kill them off
         for( Executor e : executors )
-            if(e.getCurrentBuild()==null)
+            if(e.isIdle())
                 e.interrupt();
 
         // if the number is increased, add new ones
