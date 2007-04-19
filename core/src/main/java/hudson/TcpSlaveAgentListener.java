@@ -57,6 +57,7 @@ public class TcpSlaveAgentListener extends Thread {
      *      Use 0 to choose a random port.
      */
     public TcpSlaveAgentListener(int port) throws IOException {
+        super("TCP slave agent listener port="+port);
         serverSocket = new ServerSocket(port);
         this.configuredPort = port;
 
