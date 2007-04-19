@@ -191,7 +191,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         }
     }
 
-    @ExportedBean
+    @ExportedBean(defaultVisibility=999)
     public static class File {
         private String name;
         private String fullName;
