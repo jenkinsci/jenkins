@@ -35,6 +35,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -138,12 +140,18 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         private final MavenBuildProxy buildProxy;
         private final MavenReporter[] reporters;
         private final List<String> goals;
+        /**
+         * Hudson-defined system properties. These will be made available to Maven,
+         * and accessible as if they are specified as -Dkey=value
+         */
+        private final Map<String,String> systemProps;
 
-        public Builder(BuildListener listener,MavenBuildProxy buildProxy,MavenReporter[] reporters, List<String> goals) {
+        public Builder(BuildListener listener,MavenBuildProxy buildProxy,MavenReporter[] reporters, List<String> goals, Map<String,String> systemProps) {
             this.listener = listener;
             this.buildProxy = buildProxy;
             this.reporters = reporters;
             this.goals = goals;
+            this.systemProps = systemProps;
         }
 
         /**
@@ -156,6 +164,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 LifecycleExecutorInterceptor.setListener(pmi);
 
                 markAsSuccess = false;
+
+                System.getProperties().putAll(systemProps);
 
                 int r = Main.launch(goals.toArray(new String[goals.size()]));
 
@@ -256,11 +266,14 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             margs.add("-f",getParent().getModuleRoot().child("pom.xml").getRemote());
             margs.addTokenized(getProject().getGoals());
 
+            Map<String,String> systemProps = new HashMap<String, String>();
+            systemProps.put("hudson.build.number",String.valueOf(getNumber()));
+
             boolean normalExit = false;
             try {
                 Result r = process.channel.call(new Builder(
                     listener,new ProxyImpl(),
-                    reporters.toArray(new MavenReporter[0]), margs.toList()));
+                    reporters.toArray(new MavenReporter[0]), margs.toList(), systemProps));
                 normalExit = true;
                 return r;
             } finally {
