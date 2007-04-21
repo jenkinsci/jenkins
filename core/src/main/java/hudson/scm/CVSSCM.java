@@ -685,7 +685,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                     } else {
                         // fallback
                         if(!flatten)
-                            task.setPackage(module);
+                            task.setPackage(getAllModulesNormalized());
                     }
 
                     try {
