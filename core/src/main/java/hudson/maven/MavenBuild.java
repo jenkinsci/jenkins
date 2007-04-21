@@ -12,6 +12,7 @@ import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Slave;
+import hudson.model.JDK;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
@@ -288,7 +289,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
          */
         public Channel newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
             return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
-                out, getProject().getParent().getModuleRoot());
+                out, getProject().getParent().getModuleRoot(), getEnvVars());
         }
 
         /**
@@ -322,7 +323,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 slaveRoot = ((Slave)getCurrentNode()).getFilePath();
 
             ArgumentListBuilder args = new ArgumentListBuilder();
-            args.add(launcher.getChannel().call(new GetJavaExe()));
+            args.add("java");
 
             if(debugPort!=0)
                 args.add("-Xrunjdwp:transport=dt_socket,server=y,address="+debugPort);
@@ -354,6 +355,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
         public MavenInstallation getMavenInstallation() {
             return getParent().getParent().getMaven();
+        }
+
+        public JDK getJava() {
+            return getParent().getParent().getJDK();
         }
 
         public void post(BuildListener listener) {

@@ -13,6 +13,7 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Node;
+import hudson.model.JDK;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -137,6 +138,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     @Override
     public FilePath getWorkspace() {
         return getParent().getModuleRoot().child(relativePath);
+    }
+
+    @Override
+    public JDK getJDK() {
+        return getParent().getJDK();
     }
 
     public ModuleName getModuleName() {

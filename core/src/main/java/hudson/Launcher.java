@@ -107,8 +107,12 @@ public abstract class Launcher {
      *
      * @param out
      *      Where the stderr from the launched process will be sent.
+     * @param envVars
+     *      Environment variable overrides. In adition to what the current process
+     *      is inherited (if this is going to be launched from a slave agent, that
+     *      becomes the "current" process), these variables will be also set.
      */
-    public abstract Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir) throws IOException, InterruptedException;
+    public abstract Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String,String> envVars) throws IOException, InterruptedException;
 
     /**
      * Returns true if this {@link Launcher} is going to launch on Unix.
@@ -165,10 +169,10 @@ public abstract class Launcher {
             return f==null ? null : new File(f.getRemote());
         }
 
-        public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir) throws IOException {
+        public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String,String> envVars) throws IOException {
             printCommandLine(cmd, workDir);
 
-            final Process proc = Runtime.getRuntime().exec(cmd, null, toFile(workDir));
+            final Process proc = Runtime.getRuntime().exec(cmd, Util.mapToEnv(Launcher.inherit(envVars)), toFile(workDir));
 
             Thread t2 = new StreamCopyThread(cmd+": stderr copier", proc.getErrorStream(), out);
             t2.start();
@@ -225,13 +229,13 @@ public abstract class Launcher {
             return new RemoteProc(getChannel().callAsync(new RemoteLaunchCallable(cmd, env, in, out, workDir)));
         }
 
-        public Channel launchChannel(String[] cmd, OutputStream err, FilePath _workDir) throws IOException, InterruptedException {
+        public Channel launchChannel(String[] cmd, OutputStream err, FilePath _workDir, Map<String,String> envOverrides) throws IOException, InterruptedException {
             printCommandLine(cmd, _workDir);
 
             Pipe out = Pipe.createRemoteToLocal();
             final String workDir = _workDir==null ? null : _workDir.getRemote();
 
-            OutputStream os = getChannel().call(new RemoteChannelLaunchCallable(cmd, out, err, workDir));
+            OutputStream os = getChannel().call(new RemoteChannelLaunchCallable(cmd, out, err, workDir, envOverrides));
 
             return new Channel("remotely launched channel on "+channel,
                 Computer.threadPoolForRemoting, out.getIn(), new BufferedOutputStream(os));
@@ -272,16 +276,20 @@ public abstract class Launcher {
         private final Pipe out;
         private final String workDir;
         private final OutputStream err;
+        private final Map<String,String> envOverrides;
 
-        public RemoteChannelLaunchCallable(String[] cmd, Pipe out, OutputStream err, String workDir) {
+        public RemoteChannelLaunchCallable(String[] cmd, Pipe out, OutputStream err, String workDir, Map<String,String> envOverrides) {
             this.cmd = cmd;
             this.out = out;
             this.err = new RemoteOutputStream(err);
             this.workDir = workDir;
+            this.envOverrides = envOverrides;
         }
 
         public OutputStream call() throws IOException {
-            Process p = Runtime.getRuntime().exec(cmd, null, workDir == null ? null : new File(workDir));
+            Process p = Runtime.getRuntime().exec(cmd,
+                Util.mapToEnv(inherit(envOverrides)),
+                workDir == null ? null : new File(workDir));
 
             new StreamCopyThread("stdin copier for remote agent on "+cmd,
                 p.getInputStream(), out.getOut()).start();
@@ -296,6 +304,14 @@ public abstract class Launcher {
         private static final long serialVersionUID = 1L;
     }
 
+    /**
+     * Expands the list of environment variables by inheriting current env variables.
+     */
+    private static Map<String,String> inherit(Map<String,String> overrides) {
+        Map<String,String> m = new HashMap<String,String>(EnvVars.masterEnvVars);
+        m.putAll(overrides);
+        return m;
+    }
 
     /**
      * Debug option to display full current path instead of just the last token.

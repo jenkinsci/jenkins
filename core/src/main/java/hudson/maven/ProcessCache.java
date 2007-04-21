@@ -2,6 +2,7 @@ package hudson.maven;
 
 import hudson.Util;
 import hudson.model.BuildListener;
+import hudson.model.JDK;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -39,6 +40,7 @@ final class ProcessCache {
         Channel newProcess(BuildListener listener,OutputStream out) throws IOException, InterruptedException;
         String getMavenOpts();
         MavenInstallation getMavenInstallation();
+        JDK getJava();
     }
 
     class MavenProcess {
@@ -52,6 +54,7 @@ final class ProcessCache {
         private final String mavenOpts;
         private final PerChannel parent;
         private final MavenInstallation installation;
+        private final JDK jdk;
         private final RedirectableOutputStream output;
         /**
          * System properties captured right after the process is created.
@@ -62,17 +65,20 @@ final class ProcessCache {
 
         private int age = 0;
 
-        MavenProcess(PerChannel parent, String mavenOpts, MavenInstallation installation, Channel channel, RedirectableOutputStream output) throws IOException, InterruptedException {
+        MavenProcess(PerChannel parent, String mavenOpts, MavenInstallation installation, JDK jdk, Channel channel, RedirectableOutputStream output) throws IOException, InterruptedException {
             this.parent = parent;
             this.mavenOpts = mavenOpts;
             this.channel = channel;
             this.installation = installation;
+            this.jdk = jdk;
             this.output = output;
             this.systemProperties = channel.call(new GetSystemProperties());
         }
 
-        boolean matches(String mavenOpts,MavenInstallation installation) {
-            return Util.fixNull(this.mavenOpts).equals(Util.fixNull(mavenOpts)) && this.installation==installation;
+        boolean matches(String mavenOpts,MavenInstallation installation, JDK jdk) {
+            return Util.fixNull(this.mavenOpts).equals(Util.fixNull(mavenOpts))
+                && this.installation==installation
+                && this.jdk==jdk;
         }
 
         public void recycle() throws IOException {
@@ -130,12 +136,13 @@ final class ProcessCache {
     public MavenProcess get(VirtualChannel owner, BuildListener listener, Factory factory) throws InterruptedException, IOException {
         String mavenOpts = factory.getMavenOpts();
         MavenInstallation installation = factory.getMavenInstallation();
+        JDK jdk = factory.getJava();
 
         PerChannel list = get(owner);
         synchronized(list.processes) {
             for (Iterator<MavenProcess> itr = list.processes.iterator(); itr.hasNext();) {
                 MavenProcess p =  itr.next();
-                if(p.matches(mavenOpts, installation)) {
+                if(p.matches(mavenOpts,installation,jdk)) {
                     // reset the system property.
                     // this also serves as the sanity check.
                     try {
@@ -156,7 +163,7 @@ final class ProcessCache {
         }
 
         RedirectableOutputStream out = new RedirectableOutputStream(listener.getLogger());
-        return new MavenProcess(list,mavenOpts,installation,factory.newProcess(listener,out),out);
+        return new MavenProcess(list,mavenOpts,installation,jdk,factory.newProcess(listener,out),out);
     }
 
 
