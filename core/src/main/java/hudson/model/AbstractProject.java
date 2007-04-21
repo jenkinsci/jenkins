@@ -152,6 +152,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
+     * Get the term used in the UI to represent this kind of {@link AbstractProject}.
+     * Must start with a capital letter.
+     */
+    @Override
+    public String getPronoun() {
+        return "Project";
+    }
+
+    /**
      * Gets the directory where the module is checked out.
      */
     public abstract FilePath getWorkspace();

@@ -160,6 +160,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return displayName;
     }
 
+    @Override
+    public String getPronoun() {
+        return "Module";
+    }
+
     public MavenModuleSet getParent() {
         return (MavenModuleSet)super.getParent();
     }

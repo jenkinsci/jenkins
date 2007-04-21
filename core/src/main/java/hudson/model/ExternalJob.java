@@ -73,6 +73,11 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
 
     public static final TopLevelItemDescriptor DESCRIPTOR = new DescriptorImpl();
 
+    @Override
+    public String getPronoun() {
+        return "Job";
+    }
+
     public static final class DescriptorImpl extends TopLevelItemDescriptor {
         private DescriptorImpl() {
             super(ExternalJob.class);

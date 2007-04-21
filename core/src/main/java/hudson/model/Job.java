@@ -131,6 +131,14 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     /**
+     * Get the term used in the UI to represent this kind of {@link AbstractProject}.
+     * Must start with a capital letter.
+     */
+    public String getPronoun() {
+        return "Project";
+    }
+
+    /**
      * If true, it will keep all the build logs of dependency components.
      */
     @Exported

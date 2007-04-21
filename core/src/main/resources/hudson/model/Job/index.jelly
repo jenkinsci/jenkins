@@ -2,7 +2,7 @@
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>Project ${it.displayName}</h1>
+      <h1>${it.pronoun} ${it.displayName}</h1>
       <t:editableDescription adminOnly="true"/>
 
       <!-- inject main part here -->
