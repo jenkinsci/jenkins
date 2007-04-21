@@ -142,6 +142,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
     @Override
     public JDK getJDK() {
+        // share one setting for the whole module set.
         return getParent().getJDK();
     }
 
