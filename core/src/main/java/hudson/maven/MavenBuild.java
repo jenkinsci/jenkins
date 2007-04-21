@@ -283,7 +283,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
          */
         public Channel newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
             return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
-                out, getProject().getParent().getModuleRoot(), getEnvVars());
+                out, null, getEnvVars());
         }
 
         /**
