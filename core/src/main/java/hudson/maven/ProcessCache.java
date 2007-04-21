@@ -17,6 +17,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Hold on to launched Maven processes so that multiple builds
@@ -87,8 +89,12 @@ final class ProcessCache {
             }
         }
 
-        public void discard() throws IOException {
-            channel.close();
+        public void discard() {
+            try {
+                channel.close();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING,"Failed to discard the maven process orderly",e);
+            }
         }
     }
 
@@ -190,4 +196,6 @@ final class ProcessCache {
             super.out = os;
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(ProcessCache.class.getName());
 }
