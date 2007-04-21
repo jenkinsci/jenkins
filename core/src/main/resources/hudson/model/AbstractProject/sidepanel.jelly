@@ -17,7 +17,7 @@
       <l:isAdmin>
         <j:if test="${!it.disabled}">
           <l:task icon="images/24x24/clock.gif" href="${url}/build" title="Build Now" />
-        </j:if> 
+        </j:if>
         <l:task icon="images/24x24/edit-delete.gif" href="${url}/delete" title="Delete Project" />
         <l:task icon="images/24x24/setting.gif" href="${url}/configure" title="Configure" />
       </l:isAdmin>
