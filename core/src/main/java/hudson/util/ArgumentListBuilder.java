@@ -14,7 +14,8 @@ public class ArgumentListBuilder {
     private final List<String> args = new ArrayList<String>();
 
     public ArgumentListBuilder add(String a) {
-        args.add(a);
+        if(a!=null)
+            args.add(a);
         return this;
     }
 
