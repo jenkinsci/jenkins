@@ -102,6 +102,9 @@ public abstract class Launcher {
      * Launches a specified process and connects its input/output to a {@link Channel}, then
      * return it.
      *
+     * <p>
+     * When the returned channel is terminated, the process will be killed.
+     *
      * @param out
      *      Where the stderr from the launched process will be sent.
      */
@@ -165,15 +168,22 @@ public abstract class Launcher {
         public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir) throws IOException {
             printCommandLine(cmd, workDir);
 
-            Process proc = Runtime.getRuntime().exec(cmd, null, toFile(workDir));
-
-            // TODO: don't we need the equivalent of 'Proc' here? to abort it 
+            final Process proc = Runtime.getRuntime().exec(cmd, null, toFile(workDir));
 
             Thread t2 = new StreamCopyThread(cmd+": stderr copier", proc.getErrorStream(), out);
             t2.start();
 
             return new Channel("locally launched channel on "+cmd,
-                Computer.threadPoolForRemoting, proc.getInputStream(), proc.getOutputStream(), out);
+                Computer.threadPoolForRemoting, proc.getInputStream(), proc.getOutputStream(), out) {
+
+                /**
+                 * Kill the process when the channel is severed.
+                 */
+                protected synchronized void terminate(IOException e) {
+                    super.terminate(e);
+                    proc.destroy();
+                }
+            };
         }
 
         /**
