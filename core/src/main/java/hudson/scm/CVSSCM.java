@@ -131,6 +131,9 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
     }
 
     private String compression() {
+        if(getDescriptor().isNoCompression())
+            return null;
+
         // CVS 1.11.22 manual:
         // If the access method is omitted, then if the repository starts with
         // `/', then `:local:' is assumed.  If it does not start with `/' then
@@ -745,6 +748,11 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
          */
         private String cvsExe;
 
+        /**
+         * Disable CVS compression support.
+         */
+        private boolean noCompression;
+
         // compatibility only
         private transient Map<String,RepositoryBrowser> browsers;
 
@@ -790,10 +798,14 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             save();
         }
 
+        public boolean isNoCompression() {
+            return noCompression;
+        }
+
         public boolean configure( StaplerRequest req ) {
             cvsPassFile = fixEmpty(req.getParameter("cvs_cvspass").trim());
             cvsExe = fixEmpty(req.getParameter("cvs_exe").trim());
-
+            noCompression = req.getParameter("cvs_noCompression")!=null;
             save();
 
             return true;

@@ -9,14 +9,17 @@
 	    <f:textbox name="cvs_exe" value="${descriptor.cvsExe}"
         checkUrl="'${rootURL}/scm/CVSSCM/cvsExeCheck?value='+escape(this.value)" />
 	  </f:entry>
-    <f:entry title=".cvspass file"
-	    description=".cvspass file to load passwords from. Leave it empty to read from $HOME/.cvspass"
-      help="/help/_cvs/cvspass.jelly">
+    <f:entry title=".cvspass file" help="/help/_cvs/cvspass.jelly">
 	    <input class="setting-input validated" name="cvs_cvspass"
 	      type="text" value="${descriptor.cvspassFile}"
         checkUrl="'${rootURL}/scm/CVSSCM/cvsPassCheck?value='+escape(this.value)" />
 	  </f:entry>
-
+    <f:advanced>
+      <f:block>
+        <f:checkbox name="cvs_noCompression" id="cvs_noCompression" checked="${descriptor.noCompression}" />
+        <label for="cvs_noCompression">Disable CVS compression</label>
+      </f:block>
+    </f:advanced>
     <!--
       if we ever support "advanced" option for CVS, support
       https://hudson.dev.java.net/issues/show_bug.cgi?id=385
