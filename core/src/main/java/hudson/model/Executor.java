@@ -17,14 +17,13 @@ public class Executor extends Thread {
     private final Computer owner;
     private final Queue queue;
 
-    private Queue.Task task;
-
     private long startTime;
 
     /**
      * Executor number that identifies it among other executors for the same {@link Computer}.
      */
     private int number;
+    private Queue.Executable executable;
 
     public Executor(Computer owner) {
         super("Executor #"+owner.getExecutors().size()+" for "+owner.getDisplayName());
@@ -47,6 +46,7 @@ public class Executor extends Thread {
                 }
             }
 
+            Queue.Task task;
             try {
                 task = queue.pop();
             } catch (InterruptedException e) {
@@ -55,14 +55,15 @@ public class Executor extends Thread {
 
             try {
                 startTime = System.currentTimeMillis();
-                task.execute();
+                executable = task.createExecutable();
+                executable.run();
             } catch (Throwable e) {
                 // for some reason the executor died. this is really
                 // a bug in the code, but we don't want the executor to die,
                 // so just leave some info and go on to build other things
                 e.printStackTrace();
             }
-            task = null;
+            executable = null;
         }
     }
 
@@ -72,8 +73,8 @@ public class Executor extends Thread {
      * @return
      *      null if the executor is idle.
      */
-    public Queue.Task getCurrentTask() {
-        return task;
+    public Queue.Executable getCurrentExecutable() {
+        return executable;
     }
 
     /**
@@ -91,7 +92,7 @@ public class Executor extends Thread {
      * Returns true if this {@link Executor} is ready for action.
      */
     public boolean isIdle() {
-        return task==null;
+        return executable==null;
     }
 
     /**
@@ -101,7 +102,7 @@ public class Executor extends Thread {
      *      if it's impossible to estimate the progress.
      */
     public int getProgress() {
-        long d = task.getEstimatedDuration();
+        long d = executable.getParent().getEstimatedDuration();
         if(d<0)         return -1;
 
         int num = (int)((System.currentTimeMillis()-startTime)*100/d);
@@ -114,7 +115,7 @@ public class Executor extends Thread {
      * until the build completes.
      */
     public String getEstimatedRemainingTime() {
-        long d = task.getEstimatedDuration();
+        long d = executable.getParent().getEstimatedDuration();
         if(d<0)         return "N/A";
 
         long eta = d-(System.currentTimeMillis()-startTime);

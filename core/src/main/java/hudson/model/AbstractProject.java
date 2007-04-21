@@ -314,8 +314,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return duration;
     }
 
-    public void execute() throws IOException {
-        newBuild().run();
+    public R createExecutable() throws IOException {
+        return newBuild();
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {

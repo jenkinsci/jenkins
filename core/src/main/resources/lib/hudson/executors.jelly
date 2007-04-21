@@ -52,8 +52,8 @@
 	          </j:when>
 	          <j:otherwise>
 	            <td class="pane" width="70%">
-	              <div nowrap="true">Building <a href="${rootURL}/${e.currentTask.url}">${e.currentTask}</a></div>
-                <t:buildProgressBar build="${e.currentTask}"/>
+	              <div nowrap="true">Building <a href="${rootURL}/${e.currentExecutable.url}">${e.currentExecutable}</a></div>
+                <t:buildProgressBar build="${e.currentExecutable}"/>
 	            </td>
 	            <td class="pane" width="16" align="center" valign="middle">
                 <l:isAdmin>

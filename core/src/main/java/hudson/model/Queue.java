@@ -506,7 +506,19 @@ public class Queue {
          */
         long getEstimatedDuration();
 
-        void execute() throws IOException;
+        Executable createExecutable() throws IOException;
+    }
+
+    public interface Executable extends Runnable {
+        /**
+         * Task from which this executable was created.
+         */
+        Task getParent();
+
+        /**
+         * Called by {@link Executor} to perform the task
+         */
+        void run();
     }
 
     /**
