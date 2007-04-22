@@ -6,7 +6,7 @@
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <f:form method="post" action="configSubmit">
-        <f:entry title="Project name">
+        <f:entry title="${it.pronoun} name">
           <f:textbox name="name" value="${it.name}" />
         </f:entry>
         <f:entry title="Description" help="/help/project-config/description.html">
