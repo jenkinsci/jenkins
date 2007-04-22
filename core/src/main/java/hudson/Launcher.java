@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.BufferedOutputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -192,23 +191,6 @@ public abstract class Launcher {
                 }
             };
         }
-
-        /**
-         * Expands the list of environment variables by inheriting current env variables.
-         */
-        private Map<String,String> inherit(String[] env) {
-            Map<String,String> m = new HashMap<String,String>(EnvVars.masterEnvVars);
-            for (String e : env) {
-                int index = e.indexOf('=');
-                String key = e.substring(0,index);
-                String value = e.substring(index+1);
-                if(value.length()==0)
-                    m.remove(key);
-                else
-                    m.put(key,value);
-            }
-            return m;
-        }
     }
 
     /**
@@ -310,9 +292,21 @@ public abstract class Launcher {
     /**
      * Expands the list of environment variables by inheriting current env variables.
      */
+    private static Map<String,String> inherit(String[] env) {
+        EnvVars m = new EnvVars(EnvVars.masterEnvVars);
+        for (String e : env) {
+            int index = e.indexOf('=');
+            m.override(e.substring(0,index), e.substring(index+1));
+        }
+        return m;
+    }
+
+    /**
+     * Expands the list of environment variables by inheriting current env variables.
+     */
     private static Map<String,String> inherit(Map<String,String> overrides) {
-        Map<String,String> m = new HashMap<String,String>(EnvVars.masterEnvVars);
-        m.putAll(overrides);
+        EnvVars m = new EnvVars(EnvVars.masterEnvVars);
+        m.overrideAll(overrides);
         return m;
     }
 

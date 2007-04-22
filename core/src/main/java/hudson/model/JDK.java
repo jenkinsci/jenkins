@@ -1,7 +1,5 @@
 package hudson.model;
 
-import hudson.EnvVars;
-
 import java.io.File;
 import java.util.Map;
 
@@ -63,15 +61,9 @@ public final class JDK {
      * Sets PATH and JAVA_HOME from this JDK.
      */
     public void buildEnvVars(Map<String,String> env) {
-        String path = env.get("PATH");
-        if(path==null)
-            path = EnvVars.masterEnvVars.get("PATH");
-        
-        if(path==null)
-            path = getBinDir().getPath();
-        else
-            path = getBinDir().getPath()+File.pathSeparator+path;
-        env.put("PATH",path);
+        // see EnvVars javadoc for why this adss PATH.
+        env.put("PATH+JDK",getBinDir().getPath());
+
         env.put("JAVA_HOME",javaHome);
         if(!env.containsKey("HUDSON_HOME"))
             env.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath() );
