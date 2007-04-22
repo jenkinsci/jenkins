@@ -3,6 +3,8 @@ package hudson;
 import java.util.Map;
 
 /**
+ * Environment variables.
+ * 
  * @author Kohsuke Kawaguchi
  */
 public class EnvVars {
