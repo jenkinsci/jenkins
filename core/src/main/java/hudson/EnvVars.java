@@ -1,9 +1,8 @@
 package hudson;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Map.Entry;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Environment variables.
@@ -45,7 +44,7 @@ public class EnvVars extends HashMap<String,String> {
             String v = get(realKey);
             if(v==null) v=value;
             else        v=value+File.pathSeparatorChar+v;
-            put(realKey,value);
+            put(realKey,v);
             return;
         }
 
