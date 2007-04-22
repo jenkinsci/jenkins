@@ -8,7 +8,7 @@
   </f:entry>
 
 
-  <j:set var="jdks" value="${it.parent.JDKs}" />
+  <j:set var="jdks" value="${app.JDKs}" />
   <j:if test="${!empty(jdks)}">
     <f:entry title="JDK"
              description="JDK to be used for this project">
@@ -22,7 +22,7 @@
   </j:if>
 
   <!-- master/slave -->
-  <j:set var="slaves" value="${it.parent.slaves}" />
+  <j:set var="slaves" value="${app.slaves}" />
   <j:if test="${!empty(slaves)}">
     <f:optionalBlock name="hasSlaveAffinity" title="Tie this project to a node" checked="${it.assignedNode!=null}"
         help="/help/project-config/slave.html">
