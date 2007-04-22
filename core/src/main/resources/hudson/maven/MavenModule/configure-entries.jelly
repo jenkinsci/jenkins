@@ -2,9 +2,6 @@
   Config page
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:include page="configure-common.jelly" />
-
-
   <!-- build triggers config pane -->
   <f:triggerDescriptorList>
     <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
