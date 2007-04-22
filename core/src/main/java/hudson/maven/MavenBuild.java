@@ -282,8 +282,11 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
          * Starts maven process.
          */
         public Channel newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
+            Map<String, String> vars = getEnvVars();
+            if(debug)
+                listener.getLogger().println("Using env variables: "+vars);
             return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
-                out, null, getEnvVars());
+                out, null, vars);
         }
 
         /**
