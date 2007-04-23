@@ -80,7 +80,11 @@ public final class TestResult extends MetaTabulatedResult {
         try {
             suites.add(new SuiteResult(reportFile));
         } catch (DocumentException e) {
-            throw new IOException2("Failed to read "+reportFile,e);
+            if(!reportFile.getPath().endsWith(".xml"))
+                throw new IOException2("Failed to read "+reportFile+"\n"+
+                    "Is this really a JUnit report file? Your configuration must be matching too many files",e);
+            else
+                throw new IOException2("Failed to read "+reportFile,e);
         }
     }
 
