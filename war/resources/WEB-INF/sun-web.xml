@@ -10,10 +10,4 @@
 <sun-web-app>
   <!-- without this, we end up loading Ant from Glassfish -->
   <class-loader delegate="false"/>
-
-  <!-- this is to convince Glassfish that we are mapping to the 'admin' group -->
-  <security-role-mapping>
-      <role-name>admin</role-name>
-      <group-name>admin</group-name>
-  </security-role-mapping>
 </sun-web-app>
