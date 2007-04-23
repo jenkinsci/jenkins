@@ -8,5 +8,6 @@
   Hudson. See http://docs.sun.com/app/docs/doc/819-2634/6n4tl5kp3?a=view#abxhy
 -->
 <sun-web-app>
+  <!-- without this, we end up loading Ant from Glassfish -->
   <class-loader delegate="false"/>
 </sun-web-app>
