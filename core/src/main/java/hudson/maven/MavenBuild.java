@@ -320,7 +320,11 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 slaveRoot = ((Slave)getCurrentNode()).getFilePath();
 
             ArgumentListBuilder args = new ArgumentListBuilder();
-            args.add("java");
+            JDK jdk = getParent().getParent().getJDK();
+            if(jdk==null)
+                args.add("java");
+            else
+                args.add(jdk.getJavaHome()+"/bin/java");
 
             if(debugPort!=0)
                 args.add("-Xrunjdwp:transport=dt_socket,server=y,address="+debugPort);
