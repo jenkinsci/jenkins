@@ -235,6 +235,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return b!=null && b.isBuilding();
     }
 
+    /**
+     * Gets the JDK that this project is configured with, or null.
+     */
     public JDK getJDK() {
         return Hudson.getInstance().getJDK(jdk);
     }
