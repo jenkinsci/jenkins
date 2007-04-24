@@ -45,7 +45,7 @@ public final class FishEyeCVS extends CVSRepositoryBrowser {
 
     @Override
     public URL getFileLink(File file) throws IOException {
-        return new URL(url, trimHeadSlash(file.getFullName()) + new QueryBuilder(url.getQuery()).add("r=" + file.getRevision()));
+        return new URL(url, trimHeadSlash(file.getFullName()) + new QueryBuilder(url.getQuery()));
     }
 
     @Override
