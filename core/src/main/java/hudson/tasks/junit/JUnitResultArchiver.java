@@ -2,20 +2,15 @@ package hudson.tasks.junit;
 
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
-import hudson.FilePath;
-import static hudson.Util.fixEmpty;
-import hudson.util.FormFieldValidator;
-import hudson.util.FormFieldValidator.WorkspaceFileMask;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
-import hudson.model.Hudson;
-import hudson.model.AbstractProject;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.Publisher;
 import hudson.tasks.test.TestResultProjectAction;
+import hudson.util.FormFieldValidator;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -115,6 +110,10 @@ public class JUnitResultArchiver extends Publisher implements Serializable {
 
         public String getDisplayName() {
             return "Publish JUnit test result report";
+        }
+
+        public String getHelpFile() {
+            return "/help/tasks/junit/report.html";
         }
 
         /**
