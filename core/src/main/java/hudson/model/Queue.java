@@ -158,7 +158,16 @@ public class Queue {
      *      false if the queue contained it and therefore the add()
      *      was noop
      */
-    public synchronized boolean add( AbstractProject p ) {
+    public boolean add( AbstractProject p ) {
+        return add(p,p.getQuietPeriod());
+    }
+
+    /**
+     * Schedules a new build with a custom quiet period.
+     *
+     * @since 1.105
+     */
+    public synchronized boolean add( AbstractProject p, int quietPeriod ) {
         if(contains(p))
             return false; // no double queueing
 
@@ -166,7 +175,7 @@ public class Queue {
 
         // put the item in the queue
         Calendar due = new GregorianCalendar();
-        due.add(Calendar.SECOND, p.getQuietPeriod());
+        due.add(Calendar.SECOND, quietPeriod);
         queue.add(new Item(due,p));
 
         scheduleMaintenance();   // let an executor know that a new item is in the queue.
