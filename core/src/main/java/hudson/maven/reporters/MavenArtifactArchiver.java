@@ -126,8 +126,14 @@ public class MavenArtifactArchiver extends MavenReporter {
 
         listener.getLogger().println("[HUDSON] Archiving "+ file);
 
+        String extension;
+        if(a.getArtifactHandler()!=null) // don't know if this can be null, but just to be defensive.
+            extension = a.getArtifactHandler().getExtension();
+        else
+            extension = a.getType();
+
         FilePath target = getArtifactArchivePath(build, a.getGroupId(), a.getArtifactId(), a.getVersion())
-            .child(a.getArtifactId() + '-' + a.getVersion() + (a.getClassifier() != null ? '-' + a.getClassifier() : "") + '.' + a.getType());
+            .child(a.getArtifactId() + '-' + a.getVersion() + (a.getClassifier() != null ? '-' + a.getClassifier() : "") + '.' + extension);
 
         new FilePath(file).copyTo(target);
 
