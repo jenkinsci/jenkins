@@ -1,26 +1,38 @@
 package hudson.util;
 
+import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.reflection.ReflectionConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.converters.reflection.SerializationMethodInvoker;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.ConversionException;
-import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.alias.CannotResolveClassException;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.Collection;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
+/**
+ * Custom {@link ReflectionConverter} that handle errors more gracefully.
+ *
+ * <ul>
+ * <li>If the field is missing, the value is ignored instead of causing an error.
+ *     This makes evolution easy.
+ * <li>If the type found in XML is no longer available, the element is skipped
+ *     instead of causing an error.
+ * </ul>
+ *
+ */
 public class RobustReflectionConverter implements Converter {
-
     private final Mapper mapper;
     private final ReflectionProvider reflectionProvider;
     private final SerializationMethodInvoker serializationMethodInvoker;
@@ -51,8 +63,7 @@ public class RobustReflectionConverter implements Converter {
                     if (mapping != null) {
                         if (mapping.getItemFieldName() != null) {
                             ArrayList list = (ArrayList) newObj;
-                            for (Iterator iter = list.iterator(); iter.hasNext();) {
-                                Object obj = iter.next();
+                            for (Object obj : list) {
                                 writeField(mapping.getItemFieldName(), mapping.getItemType(), definedIn, obj);
                             }
                         } else {
@@ -102,14 +113,18 @@ public class RobustReflectionConverter implements Converter {
             Class classDefiningField = determineWhichClassDefinesField(reader);
             boolean fieldExistsInClass = reflectionProvider.fieldDefinedInClass(fieldName, result.getClass());
 
-            Class type = determineType(reader, fieldExistsInClass, result, fieldName, classDefiningField);
-            Object value = context.convertAnother(result, type);
+            try {
+                Class type = determineType(reader, fieldExistsInClass, result, fieldName, classDefiningField);
+                Object value = context.convertAnother(result, type);
 
-            if (fieldExistsInClass) {
-                reflectionProvider.writeField(result, fieldName, value, classDefiningField);
-                seenFields.add(classDefiningField, fieldName);
-            } else {
-                implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
+                if (fieldExistsInClass) {
+                    reflectionProvider.writeField(result, fieldName, value, classDefiningField);
+                    seenFields.add(classDefiningField, fieldName);
+                } else {
+                    implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
+                }
+            } catch (CannotResolveClassException e) {
+                LOGGER.log(Level.WARNING,"Skipping a non-existend type",e);
             }
 
             reader.moveUp();
@@ -191,4 +206,6 @@ public class RobustReflectionConverter implements Converter {
             super(msg);
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(RobustReflectionConverter.class.getName());
 }
