@@ -90,8 +90,6 @@ public class SubversionSCM extends SCM implements Serializable {
 
     // No longer in use but left for serialization compatibility.
     @Deprecated
-    private transient String otherOptions;
-    @Deprecated
     private String modules;
 
     SubversionSCM(String[] remoteLocations, String[] localLocations,
@@ -511,14 +509,6 @@ public class SubversionSCM extends SCM implements Serializable {
 
     public static final class DescriptorImpl extends SCMDescriptor<SubversionSCM> {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
-        /**
-         * Path to <tt>svn.exe</tt>. Null to default.
-         *
-         * @deprecated
-         *      No longer in use.
-         */
-        private volatile String svnExe;
 
         /**
          * SVN authentication realm to its associated credentials.
