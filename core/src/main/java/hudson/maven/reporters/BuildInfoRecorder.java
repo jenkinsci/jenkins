@@ -49,6 +49,8 @@ public class BuildInfoRecorder extends MavenReporter {
             PlexusConfiguration archive = mojo.configuration.getChild("archive");
             PlexusConfiguration manifestEntries = archive.getChild("manifestEntries",true);
             for (Entry<String,String> e : props.entrySet()) {
+                if(manifestEntries.getChild(e.getKey(),false)!=null)
+                    continue; // if the configuration is already given, use that. 
                 XmlPlexusConfiguration configuration = new XmlPlexusConfiguration(e.getKey());
                 configuration.setValue(e.getValue());
                 manifestEntries.addChild(configuration);
