@@ -22,9 +22,17 @@ import java.io.Serializable;
  * in {@link MavenBuild} later.
  *
  * <p>
- * TODO: talk about two nodes involved
- * Because builds may happen on a remote slave node, {@link MavenReporter}
- * implementation needs  ...
+ * {@link MavenReporter} is first instanciated on the master.
+ * Then during the build, it is serialized and sent over into
+ * the maven process by serialization. Reporters will then receive
+ * event callbacks as mojo execution progresses. Those event callbacks
+ * are the ones that take {@link MavenBuildProxy}.
+ *
+ * <p>
+ * Once the maven build completes normally or abnormally, the reporters
+ * will be sent back to the master by serialization again, then
+ * have its {@link #end(MavenBuild, Launcher, BuildListener)} method invoked.
+ * This is a good opportunity to perform the post-build action.
  *
  * <p>
  * This is the {@link MavenBuild} equivalent of {@link BuildStep}. Instances
