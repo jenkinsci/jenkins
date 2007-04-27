@@ -223,7 +223,12 @@ public class ChangeLogTask extends AbstractCvsTask {
 
             setCommand("log");
 
-            if (getTag() != null) {
+            if (m_filesets.isEmpty() || m_filesets.size()>10) {
+                // if we are going to get logs on large number of files,
+                // (or if m_files is not specified at all, in which case all the files in the directory is subjec,
+                // then it's worth spending little time to figure out if we can use
+                // -S for speed up
+
                 CvsVersion myCvsVersion = new CvsVersion();
                 myCvsVersion.setProject(getProject());
                 myCvsVersion.setTaskName("cvsversion");
