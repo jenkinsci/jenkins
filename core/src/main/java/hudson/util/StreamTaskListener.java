@@ -55,7 +55,7 @@ public final class StreamTaskListener implements TaskListener, Serializable {
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        out = (PrintStream) in.readObject();
+        out = new PrintStream((OutputStream)in.readObject(),true);
     }
 
     private static final long serialVersionUID = 1L;
