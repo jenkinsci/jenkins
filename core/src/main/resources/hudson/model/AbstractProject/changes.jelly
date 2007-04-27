@@ -15,46 +15,7 @@
         <j:if test="${to!=null}"> to #${to}</j:if>
       </h1>
       <j:set var="builds" value="${h.filter(it.buildsAsMap,from,to).values()}" />
-      <j:choose>
-        <j:when test="${empty(builds)}">
-          No builds.
-        </j:when>
-        <j:otherwise>
-          <j:set var="hadChanges" value="${false}"/>
-          <j:forEach var="b" items="${builds}">
-            <j:if test="${b.changeSet.iterator().hasNext()}">
-              <j:set var="hadChanges" value="${true}"/>
-              <h2><a href="${b.number}/changes">${b.displayName}
-                (<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</a></h2>
-
-              <ol>
-                <j:forEach var="c" items="${b.changeSet.iterator()}" varStatus="loop">
-                  <li>
-                    ${c.msgAnnotated}
-
-                    &#8212;
-
-                    <a href="${rootURL}/${c.author.url}/">${c.author}</a> /
-
-                    <j:set var="cslink" value="${browser.getChangeSetLink(c)}"/>
-                    <j:choose>
-                      <j:when test="${cslink!=null}">
-                        <a href="${cslink}">${browser.descriptor.displayName}</a>
-                      </j:when>
-                      <j:otherwise>
-                        <a href="${b.number}/changes#detail${loop.index}">detail</a>
-                      </j:otherwise>
-                    </j:choose>
-                  </li>
-                </j:forEach>
-              </ol>
-            </j:if>
-          </j:forEach>
-          <j:if test="${!hadChanges}">
-            No changes in any of the builds.
-          </j:if>
-        </j:otherwise>
-      </j:choose>
+      <st:include it="${it.scm}" page="project-changes.jelly" />
     </l:main-panel>
   </l:layout>
 </j:jelly>
