@@ -17,6 +17,7 @@ import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
 import hudson.remoting.Which;
+import hudson.remoting.DelegatingCallable;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.Maven.MavenInstallation;
@@ -136,7 +137,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     /**
      * Runs Maven and builds the project.
      */
-    private static final class Builder implements Callable<Result,IOException> {
+    private static final class Builder implements DelegatingCallable<Result,IOException> {
         private final BuildListener listener;
         private final MavenBuildProxy buildProxy;
         private final MavenReporter[] reporters;
@@ -189,6 +190,11 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             } catch (ClassNotFoundException e) {
                 throw new IOException2(e);
             }
+        }
+
+        // since reporters might be from plugins, use the uberjar to resolve them. 
+        public ClassLoader getClassLoader() {
+            return Hudson.getInstance().getPluginManager().uberClassLoader;
         }
     }
 
