@@ -641,6 +641,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
         private final class RemotableSVNAuthenticationProviderImpl implements RemotableSVNAuthenticationProvider, Serializable {
             public Credential getCredential(String realm) {
+                LOGGER.fine(String.format("getCredential(%s)=>%s",realm,credentials.get(realm)));
                 return credentials.get(realm);
             }
 
