@@ -2,11 +2,10 @@ package hudson.tasks.test;
 
 import hudson.Functions;
 import hudson.Util;
+import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.Project;
-import hudson.model.Result;
-import hudson.model.AbstractBuild;
 import hudson.util.ChartUtil;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.ColorPalette;
@@ -90,8 +89,6 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
             b = b.getPreviousBuild();
             if(b==null)
                 return null;
-            if(b.getResult()== Result.FAILURE)
-                continue;
             U r = b.getAction(type);
             if(r!=null)
                 return r;

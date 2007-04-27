@@ -71,14 +71,14 @@ public class JUnitResultArchiver extends Publisher implements Serializable {
 
 
         TestResultAction action = new TestResultAction(build, result, listener);
-        build.getActions().add(action);
-
         TestResult r = action.getResult();
 
         if(r.getPassCount()==0 && r.getFailCount()==0) {
             listener.getLogger().println("Test reports were found but none of them are new. Did tests run?");
             // no test result. Most likely a configuration error or fatal problem
             build.setResult(Result.FAILURE);
+        } else {
+            build.getActions().add(action);
         }
 
         if(r.getFailCount()>0)
