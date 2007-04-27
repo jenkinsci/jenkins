@@ -438,7 +438,7 @@ public class SubversionSCM extends SCM implements Serializable {
                 for (ModuleLocation l : getLocations()) {
                     String url = l.remote;
                     String moduleName = l.local;
-                    File module = new File(ws,moduleName);
+                    File module = new File(ws,moduleName).getCanonicalFile(); // canonicalize to remove ".." and ".". See #474
 
                     if(!module.exists()) {
                         listener.getLogger().println("Checking out a fresh workspace because "+module+" doesn't exist");
