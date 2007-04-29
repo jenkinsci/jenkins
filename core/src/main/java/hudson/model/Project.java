@@ -105,6 +105,14 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         removeFromList(descriptor, publishers);
     }
 
+    public Publisher getPublisher(Descriptor<Publisher> descriptor) {
+        for (Publisher p : publishers) {
+            if(p.getDescriptor()==descriptor)
+                return p;
+        }
+        return null;
+    }
+
     @Override
     public Build newBuild() throws IOException {
         Build lastBuild = new Build(this);
@@ -188,6 +196,7 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
                 if(newChildProjects.isEmpty()) {
                     p.removePublisher(BuildTrigger.DESCRIPTOR);
                 } else {
+                    p.getPublisher(BuildTrigger.DESCRIPTOR);
                     p.addPublisher(new BuildTrigger(newChildProjects));
                 }
             }
