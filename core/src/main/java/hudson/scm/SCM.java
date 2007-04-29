@@ -63,6 +63,16 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     /**
+     * Returns true if this SCM supports
+     * {@link #pollChanges(AbstractProject, Launcher, FilePath, TaskListener) polling}.
+     *
+     * @since 1.105
+     */
+    public boolean supportsPolling() {
+        return true;
+    }
+
+    /**
      * Checks if there has been any changes to this module in the repository.
      *
      * TODO: we need to figure out a better way to communicate an error back,
@@ -83,6 +93,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the computation.
      *      this exception should be simply propagated all the way up.
+     *
+     * @see #supportsPolling()
      */
     public abstract boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException;
 
