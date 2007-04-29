@@ -91,6 +91,9 @@ public abstract class FormFieldValidator {
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
             URLConnection con = url.openConnection();
+            if (con == null) { // XXX is this even permitted by URL.openConnection?
+                throw new IOException(url.toExternalForm());
+            }
             return new BufferedReader(
                 new InputStreamReader(con.getInputStream(),getCharset(con)));
         }
