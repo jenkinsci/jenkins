@@ -78,6 +78,10 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * TODO: we need to figure out a better way to communicate an error back,
      * so that we won't keep retrying the same node (for example a slave might be down.)
      *
+     * <p>
+     * If the SCM doesn't implement polling, have the {@link #supportsPolling()} method
+     * return false.
+     *
      * @param project
      *      The project to check for updates
      * @param launcher
