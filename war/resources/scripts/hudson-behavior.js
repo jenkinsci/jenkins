@@ -120,7 +120,7 @@ var hudsonRules = {
   "input.number" : function(e) {
     e.targetElement = findFollowingTR(e,"validation-error-area").firstChild.nextSibling;
     e.onchange = function() {
-      if(this.value.match(/^\d+$/)) {
+      if(this.value.match(/^(\d+|)$/)) {
         this.targetElement.innerHTML="";
       } else {
         this.targetElement.innerHTML="<div class=error>Not a number</div>";
