@@ -39,6 +39,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -541,6 +542,34 @@ public final class FilePath implements Serializable {
                 f.getParentFile().mkdirs();
                 FileOutputStream fos = new FileOutputStream(f);
                 return new RemoteOutputStream(fos);
+            }
+        });
+    }
+
+    /**
+     * Overwrites this file by placing the given String as the content.
+     *
+     * @param encoding
+     *      Null to use the platform default encoding.
+     * @since 1.105
+     */
+    public void write(final String content, final String encoding) throws IOException, InterruptedException {
+        channel.call(new Callable<Void,IOException>() {
+            public Void call() throws IOException {
+                File f = new File(remote);
+                f.getParentFile().mkdirs();
+                FileOutputStream fos = new FileOutputStream(f);
+                try {
+                    Writer w;
+                    if(encoding!=null)
+                    w = new OutputStreamWriter(fos, encoding);
+                    else
+                        w = new OutputStreamWriter(fos);
+                    w.write(content);
+                } finally {
+                    fos.close();
+                }
+                return null;
             }
         });
     }
