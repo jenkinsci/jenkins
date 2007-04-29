@@ -50,7 +50,10 @@ public class ExternalRun extends Run<ExternalJob,ExternalRun> {
 
     /**
      * Instead of performing a build, accept the log and the return code
-     * from a remote machine in an XML format of:
+     * from a remote machine.
+     *
+     * <p>
+     * The format of the XML is:
      *
      * <pre><xmp>
      * <run>
