@@ -196,8 +196,9 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
                 if(newChildProjects.isEmpty()) {
                     p.removePublisher(BuildTrigger.DESCRIPTOR);
                 } else {
-                    p.getPublisher(BuildTrigger.DESCRIPTOR);
-                    p.addPublisher(new BuildTrigger(newChildProjects));
+                    BuildTrigger existing = (BuildTrigger)p.getPublisher(BuildTrigger.DESCRIPTOR);
+                    p.addPublisher(new BuildTrigger(newChildProjects,
+                        existing==null?Result.SUCCESS:existing.getThreshold()));
                 }
             }
         }

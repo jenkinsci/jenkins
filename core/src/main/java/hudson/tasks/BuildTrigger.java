@@ -13,6 +13,7 @@ import hudson.model.Result;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -32,16 +33,37 @@ public class BuildTrigger extends Publisher {
      */
     private String childProjects;
 
-    public BuildTrigger(String childProjects) {
-        this.childProjects = childProjects;
+    /**
+     * Threshold status to trigger other builds.
+     *
+     * For compatibility reasons, this field could be null, in which case
+     * it should read as "SUCCESS".
+     */
+    private final Result threshold;
+
+    @DataBoundConstructor
+    public BuildTrigger(String childProjects, boolean evenIfUnstable) {
+        this(childProjects,evenIfUnstable ? Result.UNSTABLE : Result.SUCCESS);
     }
 
-    public BuildTrigger(List<AbstractProject> childProjects) {
-        this(Items.toNameList(childProjects));
+    public BuildTrigger(String childProjects, Result threshold) {
+        this.childProjects = childProjects;
+        this.threshold = threshold;
+    }
+
+    public BuildTrigger(List<AbstractProject> childProjects, Result threshold) {
+        this(Items.toNameList(childProjects),threshold);
     }
 
     public String getChildProjectsValue() {
         return childProjects;
+    }
+
+    public Result getThreshold() {
+        if(threshold==null)
+            return Result.SUCCESS;
+        else
+            return threshold;
     }
 
     public List<AbstractProject> getChildProjects() {
@@ -49,7 +71,7 @@ public class BuildTrigger extends Publisher {
     }
 
     public boolean perform(Build build, Launcher launcher, BuildListener listener) {
-        if(build.getResult()== Result.SUCCESS) {
+        if(!build.getResult().isWorseThan(getThreshold())) {
             PrintStream logger = listener.getLogger();
             for (AbstractProject p : getChildProjects()) {
                 if(p.isDisabled()) {
@@ -121,8 +143,15 @@ public class BuildTrigger extends Publisher {
             return "Build other projects";
         }
 
+        public String getHelpFile() {
+            return "/help/project-config/downstream.html";
+        }
+
         public Publisher newInstance(StaplerRequest req) {
-            return new BuildTrigger(req.getParameter("childProjects"));
+            return new BuildTrigger(
+                req.getParameter("buildTrigger.childProjects"),
+                req.getParameter("buildTrigger.evenIfUnstable")!=null
+                );
         }
 
         /**
