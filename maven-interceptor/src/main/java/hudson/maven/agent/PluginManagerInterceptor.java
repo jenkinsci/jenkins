@@ -76,6 +76,8 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
                     }
 
                     private Object wrap(Object c, String componentKey) {
+                        if(configuratorFilter==null)
+                            return c; // not activated
                         if(c!=null && componentKey.equals(ComponentConfigurator.ROLE)) {
                             if(configuratorFilter.core!=null)
                                 throw new IllegalStateException("ComponentConfigurationFilter being reused. " +
@@ -141,6 +143,8 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
             throw new AbortException("Execution aborted",e);
         } catch (IOException e) {
             throw new PluginManagerException(e.getMessage(),e);
+        } finally {
+            configuratorFilter = null;
         }
     }
 }
