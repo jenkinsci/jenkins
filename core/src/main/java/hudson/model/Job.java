@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.text.ParseException;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -680,11 +681,17 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Renames this job.
      */
-    public /*not synchronized. see renameTo()*/ void doDoRename( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public /*not synchronized. see renameTo()*/ void doDoRename( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         if(!Hudson.adminCheck(req,rsp))
             return;
 
         String newName = req.getParameter("newName");
+        try {
+            Hudson.checkGoodName(newName);
+        } catch (ParseException e) {
+            sendError(e,req,rsp);
+            return;
+        }
 
         renameTo(newName);
         rsp.sendRedirect2(req.getContextPath()+'/'+getUrl()); // send to the new job page
