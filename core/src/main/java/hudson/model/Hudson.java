@@ -1123,7 +1123,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             char ch = name.charAt(i);
             if(Character.isISOControl(ch))
                 throw new ParseException("No control code is allowed",i);
-            if("?*()/\\%!@#$^&|<>".indexOf(ch)!=-1)
+            if("?*()/\\%!@#$^&|<>[]".indexOf(ch)!=-1)
                 throw new ParseException("'"+ch+"' is an unsafe character",i);
         }
 
