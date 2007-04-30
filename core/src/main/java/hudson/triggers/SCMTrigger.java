@@ -287,9 +287,9 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                 
                 if(pollingScheduled) {
                     // schedule a next run
+                    pollingScheduled = false;
                     polling = DESCRIPTOR.getExecutor().submit(new Runner());
                 }
-                pollingScheduled = false;
             }
         }
     }
