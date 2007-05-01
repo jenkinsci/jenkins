@@ -196,6 +196,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         public ClassLoader getClassLoader() {
             return Hudson.getInstance().getPluginManager().uberClassLoader;
         }
+
+        private static final long serialVersionUID = 1L;
     }
 
     /**
