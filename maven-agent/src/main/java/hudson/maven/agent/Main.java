@@ -32,6 +32,8 @@ public class Main {
     }
 
     public static void main(File m2Home, File remotingJar, File interceptorJar) throws Exception {
+        versionCHeck();
+
         System.setProperty("maven.home",m2Home.getPath());
         System.setProperty("maven.interceptor",interceptorJar.getPath());
 
@@ -61,6 +63,23 @@ public class Main {
         Class remotingLauncher = remoting.loadClass("hudson.remoting.Launcher");
         remotingLauncher.getMethod("main",new Class[]{InputStream.class,OutputStream.class}).invoke(null,new Object[]{is,os});
         System.exit(0);
+    }
+
+    /**
+     * Makes sure that this is Java5 or later.
+     */
+    private static void versionCHeck() {
+        String v = System.getProperty("java.class.version");
+        if(v!=null) {
+            try {
+                if(Float.parseFloat(v)<49.0) {
+                    System.err.println("Native maven support requires Java 1.5 or later");
+                    System.exit(1);
+                }
+            } catch (NumberFormatException e) {
+                // couldn't check.
+            }
+        }
     }
 
     /**
