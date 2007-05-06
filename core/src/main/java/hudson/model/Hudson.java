@@ -890,7 +890,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         if(pluginManager!=null) // be defensive. there could be some ugly timing related issues
             pluginManager.stop();
 
-        getQueue().save();
+        if(getRootDir().exists())
+            // if we are aborting because we failed to create HUDSON_HOME,
+            // don't try to save. Issue #536
+            getQueue().save();
     }
 
 
