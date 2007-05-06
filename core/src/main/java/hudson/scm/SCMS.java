@@ -27,7 +27,10 @@ public class SCMS {
      * Parses {@link SCM} configuration from the submitted form.
      */
     public static SCM parseSCM(StaplerRequest req) throws FormException {
-        int scmidx = Integer.parseInt(req.getParameter("scm"));
+        String scm = req.getParameter("scm");
+        if(scm==null)   return null;
+
+        int scmidx = Integer.parseInt(scm);
         SCMDescriptor<?> d = SCMS.get(scmidx);
         d.generation++;
         return d.newInstance(req);
