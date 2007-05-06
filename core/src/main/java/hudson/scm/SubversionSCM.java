@@ -726,14 +726,20 @@ public class SubversionSCM extends SCM implements Serializable {
 
 
             // SVNKit wants a key in a file
-            FileItem item = parser.getFileItem("privateKey");
-            final File keyFile = File.createTempFile("hudson","key");
-            if(item!=null)
-                try {
-                    item.write(keyFile);
-                } catch (Exception e) {
-                    throw new IOException2(e);
-                }
+            final File keyFile;
+            FileItem item=null;
+            if(!passwordKind) {
+                item = parser.getFileItem("privateKey");
+                keyFile = File.createTempFile("hudson","key");
+                if(item!=null)
+                    try {
+                        item.write(keyFile);
+                    } catch (Exception e) {
+                        throw new IOException2(e);
+                    }
+            } else {
+                keyFile = null;
+            }
 
 
             try {
