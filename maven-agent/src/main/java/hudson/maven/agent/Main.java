@@ -32,7 +32,7 @@ public class Main {
     }
 
     public static void main(File m2Home, File remotingJar, File interceptorJar) throws Exception {
-        versionCHeck();
+        versionCheck();
 
         System.setProperty("maven.home",m2Home.getPath());
         System.setProperty("maven.interceptor",interceptorJar.getPath());
@@ -68,7 +68,7 @@ public class Main {
     /**
      * Makes sure that this is Java5 or later.
      */
-    private static void versionCHeck() {
+    private static void versionCheck() {
         String v = System.getProperty("java.class.version");
         if(v!=null) {
             try {
