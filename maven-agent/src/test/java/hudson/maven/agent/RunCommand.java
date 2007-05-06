@@ -16,7 +16,7 @@ import java.io.IOException;
 public class RunCommand implements Callable {
     private final String[] args;
 
-    public RunCommand(String... args) {
+    public RunCommand(String[] args) {
         this.args = args;
     }
 
@@ -33,6 +33,6 @@ public class RunCommand implements Callable {
             }
         });
 
-        return Main.launch(args);
+        return new Integer(Main.launch(args));
     }
 }

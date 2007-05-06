@@ -59,7 +59,7 @@ public class Main {
         System.setIn(new ByteArrayInputStream(new byte[0]));
 
         Class remotingLauncher = remoting.loadClass("hudson.remoting.Launcher");
-        remotingLauncher.getMethod("main",InputStream.class,OutputStream.class).invoke(null,is,os);
+        remotingLauncher.getMethod("main",new Class[]{InputStream.class,OutputStream.class}).invoke(null,new Object[]{is,os});
         System.exit(0);
     }
 

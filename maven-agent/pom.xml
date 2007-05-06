@@ -24,6 +24,14 @@
         </configuration>
       </plugin>
       <plugin>
+        <!-- compile with 1.2 so that we can report JDK version errors nicely -->
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.2</source>
+          <target>1.2</target>
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <forkMode>never</forkMode>
