@@ -100,7 +100,10 @@ public class JavadocArchiver extends Publisher {
         }
 
         public String getDisplayName() {
-            return "Javadoc";
+            if(new File(getJavadocDir(project),"help-doc.html").exists())
+                return "Javadoc";
+            else
+                return "Document";
         }
 
         public String getIconFileName() {
