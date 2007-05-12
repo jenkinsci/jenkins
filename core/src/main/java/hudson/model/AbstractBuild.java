@@ -215,6 +215,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Override
     public Map<String,String> getEnvVars() {
         Map<String,String> env = super.getEnvVars();
+        env.put("WORKSPACE", getProject().getWorkspace().getRemote());
 
         JDK jdk = project.getJDK();
         if(jdk !=null)
