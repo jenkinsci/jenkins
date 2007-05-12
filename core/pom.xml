@@ -133,7 +133,7 @@
       <version>2.7.6</version>
     </dependency>
     <dependency>
-      <groupId>xstream</groupId>
+      <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
       <version>1.2.1</version>
     </dependency>
