@@ -135,7 +135,7 @@
     <dependency>
       <groupId>xstream</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.1.3</version>
+      <version>1.2.1</version>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>
