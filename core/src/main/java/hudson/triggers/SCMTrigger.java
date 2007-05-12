@@ -284,7 +284,11 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             synchronized(SCMTrigger.this) {
                 if(abortNow)
                     return; // terminate now without queueing the next one.
-                
+
+                AbstractBuild b = job.asProject().getLastBuild();
+                if(b!=null && b.isBuilding())
+                    return; // build in progress
+
                 if(pollingScheduled) {
                     // schedule a next run
                     pollingScheduled = false;
