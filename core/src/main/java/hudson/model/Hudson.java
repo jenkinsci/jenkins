@@ -1531,6 +1531,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     private static final XStream XSTREAM = new XStream2();
 
+    /**
+     * Version number of this Hudson.
+     */
+    public static String VERSION;
+
     static {
         XSTREAM.alias("hudson",Hudson.class);
         XSTREAM.alias("slave",Slave.class);

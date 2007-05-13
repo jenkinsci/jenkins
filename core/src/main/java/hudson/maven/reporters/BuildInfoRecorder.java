@@ -8,6 +8,7 @@ import hudson.maven.MojoInfo;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.model.BuildListener;
+import hudson.model.Hudson;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
@@ -42,6 +43,7 @@ public class BuildInfoRecorder extends MavenReporter {
                     Map<String,String> r = new HashMap<String, String>();
                     r.put("Hudson-Build-Number",String.valueOf(build.getNumber()));
                     r.put("Hudson-Project",build.getParent().getParent().getName());
+                    r.put("Hudson-Version",Hudson.VERSION);
                     return r;
                 }
             });

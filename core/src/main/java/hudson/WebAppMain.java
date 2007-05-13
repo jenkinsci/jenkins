@@ -96,8 +96,9 @@ public class WebAppMain implements ServletContextListener {
         } catch (IOException e) {
             e.printStackTrace(); // if the version properties is missing, that's OK.
         }
-        Object ver = props.get("version");
+        String ver = props.getProperty("version");
         if(ver==null)   ver="?";
+        Hudson.VERSION = ver;
         context.setAttribute("version",ver);
 
         Trigger.init(); // start running trigger
