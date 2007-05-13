@@ -620,7 +620,7 @@ public class SubversionSCM extends SCM implements Serializable {
                         } else {
                             privateKey = FileUtils.readFileToString(getKeyFile(),"iso-8859-1");
                         }
-                        return new SVNSSHAuthentication(userName, privateKey, Scrambler.descramble(passphrase),-1,false);
+                        return new SVNSSHAuthentication(userName, privateKey.toCharArray(), Scrambler.descramble(passphrase),-1,false);
                     } catch (IOException e) {
                         throw new SVNException(SVNErrorMessage.create(SVNErrorCode.AUTHN_CREDS_UNAVAILABLE,"Unable to load private key"),e);
                     } catch (InterruptedException e) {
