@@ -15,6 +15,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper;
 import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
@@ -23,6 +24,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
@@ -176,35 +178,39 @@ public class RobustReflectionConverter implements Converter {
         while (reader.hasMoreChildren()) {
             reader.moveDown();
 
-            String fieldName = mapper.realMember(result.getClass(), reader.getNodeName());
-            boolean implicitCollectionHasSameName = mapper.getImplicitCollectionDefForFieldName(result.getClass(), reader.getNodeName()) != null;
+            try {
+                String fieldName = mapper.realMember(result.getClass(), reader.getNodeName());
+                boolean implicitCollectionHasSameName = mapper.getImplicitCollectionDefForFieldName(result.getClass(), reader.getNodeName()) != null;
 
-            Class classDefiningField = determineWhichClassDefinesField(reader);
-            boolean fieldExistsInClass = !implicitCollectionHasSameName && reflectionProvider.fieldDefinedInClass(fieldName, result.getClass());
+                Class classDefiningField = determineWhichClassDefinesField(reader);
+                boolean fieldExistsInClass = !implicitCollectionHasSameName && reflectionProvider.fieldDefinedInClass(fieldName, result.getClass());
 
-            Class type = determineType(reader, fieldExistsInClass, result, fieldName, classDefiningField);
-            final Object value;
-            if (fieldExistsInClass) {
-                Field field = reflectionProvider.getField(result.getClass(),fieldName);
-                value = unmarshallField(context, result, type, field);
-                // TODO the reflection provider should have returned the proper field in first place ....
-                Class definedType = reflectionProvider.getFieldType(result, fieldName, classDefiningField);
-                if (!definedType.isPrimitive()) {
-                    type = definedType;
+                Class type = determineType(reader, fieldExistsInClass, result, fieldName, classDefiningField);
+                final Object value;
+                if (fieldExistsInClass) {
+                    Field field = reflectionProvider.getField(result.getClass(),fieldName);
+                    value = unmarshallField(context, result, type, field);
+                    // TODO the reflection provider should have returned the proper field in first place ....
+                    Class definedType = reflectionProvider.getFieldType(result, fieldName, classDefiningField);
+                    if (!definedType.isPrimitive()) {
+                        type = definedType;
+                    }
+                } else {
+                    value = context.convertAnother(result, type);
                 }
-            } else {
-                value = context.convertAnother(result, type);
-            }
 
-            if (value != null && !type.isAssignableFrom(value.getClass())) {
-                throw new ConversionException("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
-            }
+                if (value != null && !type.isAssignableFrom(value.getClass())) {
+                    throw new ConversionException("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
+                }
 
-            if (fieldExistsInClass) {
-                reflectionProvider.writeField(result, fieldName, value, classDefiningField);
-                seenFields.add(classDefiningField, fieldName);
-            } else {
-                implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
+                if (fieldExistsInClass) {
+                    reflectionProvider.writeField(result, fieldName, value, classDefiningField);
+                    seenFields.add(classDefiningField, fieldName);
+                } else {
+                    implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
+                }
+            } catch (CannotResolveClassException e) {
+                LOGGER.log(Level.WARNING,"Skipping a non-existend type",e);
             }
 
             reader.moveUp();
@@ -304,4 +310,6 @@ public class RobustReflectionConverter implements Converter {
             add("duplicate-field", msg);
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(RobustReflectionConverter.class.getName());
 }
