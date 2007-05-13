@@ -48,6 +48,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     private String builtOn;
 
     /**
+     * Version of Hudson that built this.
+     */
+    private String hudsonVersion;
+
+    /**
      * SCM used for this build.
      * Maybe null, for historical reason, in which case CVS is assumed.
      */
@@ -110,6 +115,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             Node node = Executor.currentExecutor().getOwner().getNode();
             assert builtOn==null;
             builtOn = node.getNodeName();
+            hudsonVersion = Hudson.VERSION;
 
             launcher = node.createLauncher(listener);
             if(node instanceof Slave)
