@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
@@ -153,7 +154,7 @@ public class RobustReflectionConverter implements Converter {
             String attrAlias = (String) it.next();
             String attrName = mapper.attributeForAlias(attrAlias);
             Class classDefiningField = determineWhichClassDefinesField(reader);
-            boolean fieldExistsInClass = reflectionProvider.fieldDefinedInClass(attrName, result.getClass());
+            boolean fieldExistsInClass = fieldDefinedInClass(result, attrName);
             if (fieldExistsInClass) {
                 SingleValueConverter converter = mapper.getConverterFromAttribute(attrName);
                 Class type = reflectionProvider.getFieldType(result, attrName, classDefiningField);
@@ -183,7 +184,7 @@ public class RobustReflectionConverter implements Converter {
                 boolean implicitCollectionHasSameName = mapper.getImplicitCollectionDefForFieldName(result.getClass(), reader.getNodeName()) != null;
 
                 Class classDefiningField = determineWhichClassDefinesField(reader);
-                boolean fieldExistsInClass = !implicitCollectionHasSameName && reflectionProvider.fieldDefinedInClass(fieldName, result.getClass());
+                boolean fieldExistsInClass = !implicitCollectionHasSameName && fieldDefinedInClass(result,fieldName);
 
                 Class type = determineType(reader, fieldExistsInClass, result, fieldName, classDefiningField);
                 final Object value;
@@ -217,6 +218,16 @@ public class RobustReflectionConverter implements Converter {
         }
 
         return result;
+    }
+
+    private boolean fieldDefinedInClass(Object result, String attrName) {
+        // during unmarshalling, unmarshal into transient fields like XStream 1.1.3
+        //boolean fieldExistsInClass = reflectionProvider.fieldDefinedInClass(attrName, result.getClass());
+        try {
+            return reflectionProvider.getField(result.getClass(),attrName)!=null;
+        } catch (ObjectAccessException e) {
+            return false;
+        }
     }
 
     protected Object unmarshallField(final UnmarshallingContext context, final Object result, Class type, Field field) {
