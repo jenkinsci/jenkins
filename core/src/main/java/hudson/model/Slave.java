@@ -15,6 +15,7 @@ import hudson.remoting.Which;
 import hudson.util.NullStream;
 import hudson.util.StreamCopyThread;
 import hudson.util.StreamTaskListener;
+import hudson.util.RingBufferLogHandler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -32,6 +33,10 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
 
 /**
  * Information about a Hudson slave node.
@@ -309,6 +314,18 @@ public final class Slave implements Node, Serializable {
                     log.println("Copied maven-interceptor.jar");
                 }
 
+                // install log handler
+                channel.call(new Callable<Void,RuntimeException>() {
+                    public Void call() {
+                        // avoid double installation of the handler
+                        Logger logger = Logger.getLogger("hudson");
+                        logger.removeHandler(SLAVE_LOG_HANDLER);
+                        logger.addHandler(SLAVE_LOG_HANDLER);
+                        return null;
+                    }
+                });
+
+
                 // prevent others from seeing a channel that's not properly initialized yet
                 this.channel = channel;
             }
@@ -318,6 +335,17 @@ public final class Slave implements Node, Serializable {
         @Override
         public VirtualChannel getChannel() {
             return channel;
+        }
+
+        public List<LogRecord> getLogRecords() throws IOException, InterruptedException {
+            if(channel==null)
+                return Collections.emptyList();
+            else
+                return channel.call(new Callable<List<LogRecord>,RuntimeException>() {
+                    public List<LogRecord> call() {
+                        return new ArrayList<LogRecord>(SLAVE_LOG_HANDLER.getView());
+                    }
+                });
         }
 
         public void doDoDisconnect(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -473,4 +501,9 @@ public final class Slave implements Node, Serializable {
      * @deprecated
      */
     private transient String command;
+
+    /**
+     * This field is used on each slave node to record log records on the slave.
+     */
+    private static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
 }

@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.LogRecord;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -73,6 +74,11 @@ public abstract class Computer implements ModelObject {
      *      never null when {@link #isOffline()}==false.
      */
     public abstract VirtualChannel getChannel();
+
+    /**
+     * Gets the logs recorded by this slave.
+     */
+    public abstract List<LogRecord> getLogRecords() throws IOException, InterruptedException;
 
     /**
      * If {@link #getChannel()}==null, attempts to relaunch the slave agent.

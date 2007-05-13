@@ -1485,6 +1485,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             return localChannel;
         }
 
+        public List<LogRecord> getLogRecords() throws IOException, InterruptedException {
+            return logRecords;
+        }
+
         public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             // this computer never returns null from channel, so
             // this method shall never be invoked.
