@@ -315,15 +315,7 @@ public final class Slave implements Node, Serializable {
                 }
 
                 // install log handler
-                channel.call(new Callable<Void,RuntimeException>() {
-                    public Void call() {
-                        // avoid double installation of the handler
-                        Logger logger = Logger.getLogger("hudson");
-                        logger.removeHandler(SLAVE_LOG_HANDLER);
-                        logger.addHandler(SLAVE_LOG_HANDLER);
-                        return null;
-                    }
-                });
+                channel.call(new LogInstaller());
 
 
                 // prevent others from seeing a channel that's not properly initialized yet
@@ -482,6 +474,22 @@ public final class Slave implements Node, Serializable {
         return this;
     }
 
+    /**
+     * This field is used on each slave node to record log records on the slave.
+     */
+    private static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
+
+    private static class LogInstaller implements Callable<Void,RuntimeException> {
+        public Void call() {
+            // avoid double installation of the handler
+            Logger logger = Logger.getLogger("hudson");
+            logger.removeHandler(SLAVE_LOG_HANDLER);
+            logger.addHandler(SLAVE_LOG_HANDLER);
+            return null;
+        }
+        private static final long serialVersionUID = 1L;
+    }
+
 //
 // backwrad compatibility
 //
@@ -501,9 +509,4 @@ public final class Slave implements Node, Serializable {
      * @deprecated
      */
     private transient String command;
-
-    /**
-     * This field is used on each slave node to record log records on the slave.
-     */
-    private static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
 }
