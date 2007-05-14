@@ -99,7 +99,7 @@
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>remoting</artifactId>
-      <version>${version}</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -114,7 +114,7 @@
     <dependency>
       <groupId>${groupId}</groupId>
       <artifactId>maven-agent</artifactId>
-      <version>${version}</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
