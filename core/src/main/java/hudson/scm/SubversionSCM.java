@@ -56,6 +56,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -638,7 +639,7 @@ public class SubversionSCM extends SCM implements Serializable {
         private static final class SslClientCertificateCredential extends Credential {
             private final String password; // scrambled by base64
 
-            public SslClientCertificateCredential(String password) {
+            public SslClientCertificateCredential(File certificate, String password) {
                 this.password = Scrambler.scramble(password);
             }
 
@@ -740,17 +741,20 @@ public class SubversionSCM extends SCM implements Serializable {
 
             String url = parser.get("url");
 
-            boolean passwordKind = parser.get("kind").equals("password");
+            String kind = parser.get("kind");
+            int idx = Arrays.asList("","password","publickey","certificate").indexOf(kind);
 
-            final String username = parser.get(passwordKind?"username1":"username2");
-            final String password = parser.get(passwordKind?"password1":"password2");
+            final String username = parser.get("username"+idx);
+            final String password = parser.get("password"+idx);
 
 
             // SVNKit wants a key in a file
             final File keyFile;
             FileItem item=null;
-            if(!passwordKind) {
-                item = parser.getFileItem("privateKey");
+            if(kind.equals("password")) {
+                keyFile = null;
+            } else {
+                item = parser.getFileItem(kind.equals("publickey")?"privateKey":"certificate");
                 keyFile = File.createTempFile("hudson","key");
                 if(item!=null)
                     try {
@@ -758,8 +762,6 @@ public class SubversionSCM extends SCM implements Serializable {
                     } catch (Exception e) {
                         throw new IOException2(e);
                     }
-            } else {
-                keyFile = null;
             }
 
 
@@ -772,18 +774,30 @@ public class SubversionSCM extends SCM implements Serializable {
                 //    (so we store the password info here)
                 SVNRepository repository = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(url));
                 repository.setAuthenticationManager(new DefaultSVNAuthenticationManager(SVNWCUtil.getDefaultConfigurationDirectory(),true,username,password,keyFile,password) {
+                    Credential cred = null;
+
+                    @Override
+                    public SVNAuthentication getFirstAuthentication(String kind, String realm, SVNURL url) throws SVNException {
+                        if(kind.equals(ISVNAuthenticationManager.PASSWORD))
+                            cred = new PasswordCredential(username,password);
+                        if(kind.equals(ISVNAuthenticationManager.SSH)) {
+                            if(keyFile==null)
+                                cred = new PasswordCredential(username,password);
+                            else
+                                cred = new SshPublicKeyCredential(username,password,keyFile);
+                        }
+                        if(kind.equals(ISVNAuthenticationManager.SSL))
+                            cred = new SslClientCertificateCredential(keyFile,password);
+
+                        if(cred==null)  return null;
+                        return cred.createSVNAuthentication(kind);
+                    }
+
                     @Override
                     public void acknowledgeAuthentication(boolean accepted, String kind, String realm, SVNErrorMessage errorMessage, SVNAuthentication authentication) throws SVNException {
                         if(accepted) {
-                            if(authentication.getKind().equals(ISVNAuthenticationManager.PASSWORD))
-                                credentials.put(realm,new PasswordCredential(username,password));
-                            if(authentication.getKind().equals(ISVNAuthenticationManager.SSH)) {
-                                if(keyFile==null)
-                                    credentials.put(realm,new PasswordCredential(username,password));
-                                else {
-                                    credentials.put(realm,new SshPublicKeyCredential(username,password,keyFile));
-                                }
-                            }
+                            assert cred!=null;
+                            credentials.put(realm,cred);
                             save();
                         }
                         super.acknowledgeAuthentication(accepted, kind, realm, errorMessage, authentication);
