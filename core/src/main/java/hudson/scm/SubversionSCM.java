@@ -809,7 +809,8 @@ public class SubversionSCM extends SCM implements Serializable {
                 req.setAttribute("message",e.getErrorMessage());
                 rsp.forward(Hudson.getInstance(),"error",req);
             } finally {
-                keyFile.delete();
+                if(keyFile!=null)
+                    keyFile.delete();
                 if(item!=null)
                     item.delete();
             }
