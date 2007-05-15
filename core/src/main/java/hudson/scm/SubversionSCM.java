@@ -31,6 +31,7 @@ import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
 import org.tmatesoft.svn.core.auth.SVNAuthentication;
 import org.tmatesoft.svn.core.auth.SVNPasswordAuthentication;
 import org.tmatesoft.svn.core.auth.SVNSSHAuthentication;
+import org.tmatesoft.svn.core.auth.SVNSSLAuthentication;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
@@ -628,6 +629,25 @@ public class SubversionSCM extends SCM implements Serializable {
                     }
                 } else
                     return null; // unknown
+            }
+        }
+
+        /**
+         * SSL client certificate based authentication.
+         */
+        private static final class SslClientCertificateCredential extends Credential {
+            private final String password; // scrambled by base64
+
+            public SslClientCertificateCredential(String password) {
+                this.password = Scrambler.scramble(password);
+            }
+
+            @Override
+            SVNAuthentication createSVNAuthentication(String kind) {
+                if(kind.equals(ISVNAuthenticationManager.SSL))
+                    return new SVNSSLAuthentication(null,Scrambler.descramble(password),false);
+                else
+                    return null; // unexpected authentication type
             }
         }
 
