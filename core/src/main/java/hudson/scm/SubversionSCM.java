@@ -665,6 +665,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
             public SVNAuthentication requestClientAuthentication(String kind, SVNURL url, String realm, SVNErrorMessage errorMessage, SVNAuthentication previousAuth, boolean authMayBeStored) {
                 Credential cred = source.getCredential(realm);
+                LOGGER.fine(String.format("requestClientAuthentication(%s,%s,%s)=>%s",kind,url,realm,cred));
                 if(cred==null)  return null;
                 try {
                     return cred.createSVNAuthentication(kind);
