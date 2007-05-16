@@ -86,7 +86,13 @@
 
               <j:if test="${s!=null}">
                 <s:entry title="clock" help="/help/system-config/master-slave/clock.html">
-                  ${s.clockDifferenceString}
+                  <j:set var="id" value="${h.generateId()}"/>
+                  <div id="${id}">
+                    <img src="${rootURL}/images/spinner.gif"/> checking clock
+                  </div>
+                  <script>
+                    FormChecker.delayedCheck("./checkClock?node=${s.nodeName}", "post", $$('${id}') );
+                  </script>
                 </s:entry>
               </j:if>
 

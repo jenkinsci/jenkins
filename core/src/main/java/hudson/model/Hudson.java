@@ -4,6 +4,7 @@ import com.thoughtworks.xstream.XStream;
 import groovy.lang.GroovyShell;
 import hudson.FeedAdapter;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Plugin;
@@ -13,7 +14,6 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
-import hudson.Functions;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -44,9 +44,9 @@ import hudson.util.XStream2;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletContext;
@@ -1376,6 +1376,18 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                         error("No such directory: "+f);
                     }
                 }
+            }
+        }.process();
+    }
+
+    /**
+     * Check the clock difference between slave and this node.
+     */
+    public void doCheckClock( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        new FormFieldValidator(req,rsp,false) {
+            public void check() throws IOException, ServletException {
+                response.setContentType("text/html");
+                response.getWriter().print(getSlave(request.getParameter("node")).getClockDifferenceString());
             }
         }.process();
     }
