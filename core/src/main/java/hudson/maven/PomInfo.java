@@ -90,7 +90,7 @@ final class PomInfo implements Serializable {
         dependencies.remove(name);
 
         CiManagement ciMgmt = project.getCiManagement();
-        if ((ciMgmt != null) && (ciMgmt.getSystem().equals("hudson"))) {
+        if ((ciMgmt != null) && (ciMgmt.getSystem()==null || ciMgmt.getSystem().equals("hudson"))) {
             Notifier mailNotifier = null;
             for (Notifier n : (List<Notifier>)ciMgmt.getNotifiers()) {
                 if (n.getType().equals("mail")) {
