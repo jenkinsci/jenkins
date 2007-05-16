@@ -109,41 +109,57 @@ public class Maven extends Builder {
     public boolean perform(Build build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         Project proj = build.getProject();
 
-        String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
+        int startIndex = 0;
+        int endIndex;
+        do {
+            // split targets into multiple invokations of maven separated by |
+            endIndex = targets.indexOf('|', startIndex);
+            if (-1 == endIndex) {
+                endIndex = targets.length();
+            }
 
-        ArgumentListBuilder args = new ArgumentListBuilder();
-        MavenInstallation ai = getMaven();
-        if(ai==null) {
-            String execName = proj.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
-            args.add(execName).addTokenized(normalizedTarget);
-        } else {
-            File exec = ai.getExecutable();
-            if(exec==null) {
-                listener.fatalError("Couldn't find any executable in "+ai.getMavenHome());
+            String normalizedTarget = targets
+                    .substring(startIndex, endIndex)
+                    .replaceAll("[\t\r\n]+"," ");
+
+            ArgumentListBuilder args = new ArgumentListBuilder();
+            MavenInstallation ai = getMaven();
+            if(ai==null) {
+                String execName = proj.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
+                args.add(execName).addTokenized(normalizedTarget);
+            } else {
+                File exec = ai.getExecutable();
+                if(exec==null) {
+                    listener.fatalError("Couldn't find any executable in "+ai.getMavenHome());
+                    return false;
+                }
+                if(!exec.exists()) {
+                    listener.fatalError(exec+" doesn't exist");
+                    return false;
+                }
+                args.add(exec.getPath()).addTokenized(normalizedTarget);
+            }
+
+            Map<String,String> env = build.getEnvVars();
+            if(ai!=null)
+                env.put("MAVEN_HOME",ai.getMavenHome());
+            // just as a precaution
+            // see http://maven.apache.org/continuum/faqs.html#how-does-continuum-detect-a-successful-build
+            env.put("MAVEN_TERMINATE_CMD","on");
+
+            try {
+                int r = launcher.launch(args.toCommandArray(),env,listener.getLogger(),proj.getModuleRoot()).join();
+                if (0 != r) {
+                    return false;
+                }
+            } catch (IOException e) {
+                Util.displayIOException(e,listener);
+                e.printStackTrace( listener.fatalError("command execution failed") );
                 return false;
             }
-            if(!exec.exists()) {
-                listener.fatalError(exec+" doesn't exist");
-                return false;
-            }
-            args.add(exec.getPath()).addTokenized(normalizedTarget);
-        }
-
-        Map<String,String> env = build.getEnvVars();
-        if(ai!=null)
-            env.put("MAVEN_HOME",ai.getMavenHome());
-        // just as a precaution
-        // see http://maven.apache.org/continuum/faqs.html#how-does-continuum-detect-a-successful-build
-        env.put("MAVEN_TERMINATE_CMD","on");
-
-        try {
-            int r = launcher.launch(args.toCommandArray(),env,listener.getLogger(),proj.getModuleRoot()).join();
-            return r==0;
-        } catch (IOException e) {
-            Util.displayIOException(e,listener);
-            e.printStackTrace( listener.fatalError("command execution failed") );
-            return false;
-        }
+            startIndex = endIndex + 1;
+        } while (startIndex < targets.length());
+        return true;
     }
 
     public Descriptor<Builder> getDescriptor() {
