@@ -143,6 +143,8 @@ public class TcpSlaveAgentListener extends Thread {
                     if(protocol.equals("JNLP-connect"))
                         runJnlpConnect(in, out);
                 }
+
+                error(out, "Unrecognized protocol: "+s);
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING,"Connection #"+id+" aborted",e);
                 try {
