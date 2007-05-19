@@ -22,16 +22,14 @@
   </j:if>
 
   <!-- master/slave -->
-  <j:set var="slaves" value="${app.slaves}" />
-  <j:if test="${!empty(slaves)}">
-    <f:optionalBlock name="hasSlaveAffinity" title="Tie this project to a node" checked="${it.assignedNode!=null}"
+  <j:if test="${!empty(app.slaves)}">
+    <f:optionalBlock name="hasSlaveAffinity" title="Tie this project to node" checked="${it.assignedLabel!=null}"
         help="/help/project-config/slave.html">
       <f:entry title="Node">
         <select class="setting-input" name="slave">
-          <option>(This machine)</option>
-          <j:forEach var="s" items="${slaves}">
-            <f:option selected="${s==it.assignedNode}" value="${s.nodeName}"
-              >${s.nodeName} <j:if test="${!empty(s.nodeDescription)}">(${s.nodeDescription})</j:if></f:option>
+          <j:forEach var="s" items="${app.labels}">
+            <f:option selected="${s==it.assignedLabel}" value="${s.name}"
+              >${s.name} <j:if test="${!empty(s.description)}">(${s.description})</j:if></f:option>
           </j:forEach>
         </select>
       </f:entry>
