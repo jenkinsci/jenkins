@@ -136,40 +136,13 @@ public class TcpSlaveAgentListener extends Thread {
                 DataInputStream in = new DataInputStream(s.getInputStream());
                 PrintWriter out = new PrintWriter(s.getOutputStream(),true);
 
-                if(!secretKey.equals(in.readUTF())) {
-                    error(out, "Unauthorized access");
-                    return;
+                String s = in.readUTF();
+
+                if(s.startsWith("Protocol:")) {
+                    String protocol = s.substring(9);
+                    if(protocol.equals("JNLP-connect"))
+                        runJnlpConnect(in, out);
                 }
-
-                String nodeName = in.readUTF();
-                ComputerImpl computer = (ComputerImpl) Hudson.getInstance().getComputer(nodeName);
-                if(computer==null) {
-                    error(out, "No such slave: "+nodeName);
-                    return;
-                }
-
-                if(computer.getChannel()!=null) {
-                    error(out, "Already connected");
-                    return;
-                }
-
-                out.println("Welcome");
-
-                OutputStream log = computer.openLogFile();
-                new PrintWriter(log).println("JNLP agent connected from "+s.getInetAddress());
-                
-                computer.setChannel(s.getInputStream(),s.getOutputStream(),log,
-                    new Listener() {
-                        public void onClosed(Channel channel, IOException cause) {
-                            if(cause!=null)
-                                LOGGER.log(Level.WARNING, "Connection #"+id+" terminated",cause);
-                            try {
-                                s.close();
-                            } catch (IOException e) {
-                                // ignore
-                            }
-                        }
-                    });
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING,"Connection #"+id+" aborted",e);
                 try {
@@ -185,6 +158,46 @@ public class TcpSlaveAgentListener extends Thread {
                     // try to clean up the socket
                 }
             }
+        }
+
+        /**
+         * Handles JNLP slave agent connection request.
+         */
+        private void runJnlpConnect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
+            if(!secretKey.equals(in.readUTF())) {
+                error(out, "Unauthorized access");
+                return;
+            }
+
+            String nodeName = in.readUTF();
+            ComputerImpl computer = (ComputerImpl) Hudson.getInstance().getComputer(nodeName);
+            if(computer==null) {
+                error(out, "No such slave: "+nodeName);
+                return;
+            }
+
+            if(computer.getChannel()!=null) {
+                error(out, "Already connected");
+                return;
+            }
+
+            out.println("Welcome");
+
+            OutputStream log = computer.openLogFile();
+            new PrintWriter(log).println("JNLP agent connected from "+ this.s.getInetAddress());
+
+            computer.setChannel(this.s.getInputStream(), this.s.getOutputStream(),log,
+                new Listener() {
+                    public void onClosed(Channel channel, IOException cause) {
+                        if(cause!=null)
+                            LOGGER.log(Level.WARNING, "Connection #"+id+" terminated",cause);
+                        try {
+                            ConnectionHandler.this.s.close();
+                        } catch (IOException e) {
+                            // ignore
+                        }
+                    }
+                });
         }
 
         private void error(PrintWriter out, String msg) throws IOException {

@@ -49,6 +49,7 @@ public class Engine extends Thread {
                 listener.status("Handshaking");
 
                 DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+                dos.writeUTF("Protocol:JNLP-connect");
                 dos.writeUTF(secretKey);
                 dos.writeUTF(slaveName);
 
