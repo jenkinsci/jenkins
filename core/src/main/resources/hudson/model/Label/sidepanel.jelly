@@ -1,0 +1,11 @@
+<!--
+  Side panel for a label.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:header title="Label ${it.displayName}" />
+  <l:side-panel>
+    <l:tasks>
+      <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="Back to Dashboard" />
+    </l:tasks>
+  </l:side-panel>
+</j:jelly>

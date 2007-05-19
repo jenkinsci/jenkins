@@ -1,17 +1,17 @@
 package hudson.model;
 
+import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.FeedAdapter;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
 import hudson.scm.ChangeLogSet;
+import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -30,7 +31,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
-import java.util.Calendar;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -55,11 +55,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private Integer quietPeriod = null;
 
     /**
-     * If this project is configured to be only built on a certain node,
-     * this value will be set to that node. Null to indicate the affinity
+     * If this project is configured to be only built on a certain label,
+     * this value will be set to that label.
+     *
+     * For historical reasons, this is called 'assignedNode'. Also for
+     * a historical reason, null to indicate the affinity
      * with the master node.
      *
-     * see #canRoam
+     * @see #canRoam
      */
     private String assignedNode;
 
@@ -142,13 +145,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * If this project is configured to be always built on this node,
      * return that {@link Node}. Otherwise null.
      */
-    public Node getAssignedNode() {
+    public Label getAssignedLabel() {
         if(canRoam)
             return null;
 
-        if(assignedNode ==null)
-            return Hudson.getInstance();
-        return Hudson.getInstance().getSlave(assignedNode);
+        if(assignedNode==null)
+            return Hudson.getInstance().getSelfLabel();
+        return Hudson.getInstance().getLabel(assignedNode);
     }
 
     /**
@@ -537,8 +540,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             canRoam = false;
             assignedNode = req.getParameter("slave");
             if(assignedNode !=null) {
-                if(Hudson.getInstance().getSlave(assignedNode)==null) {
-                    assignedNode = null;   // no such slave
+                if(Hudson.getInstance().getLabel(assignedNode)==null) {
+                    assignedNode = null;   // no such label
                 }
             }
         } else {

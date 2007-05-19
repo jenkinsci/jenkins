@@ -5,6 +5,8 @@ import hudson.FilePath;
 import hudson.util.EnumConverter;
 import org.apache.commons.beanutils.ConvertUtils;
 
+import java.util.Set;
+
 /**
  * Commonality between {@link Slave} and master {@link Hudson}.
  *
@@ -38,13 +40,24 @@ public interface Node {
     int getNumExecutors();
 
     /**
-     * Returns true if this node is only available
+     * Returns {@link Mode#EXCLUSIVE} if this node is only available
      * for those jobs that exclusively specifies this node
      * as the assigned node.
      */
     Mode getMode();
 
     Computer createComputer();
+
+    /**
+     * Returns the possibly empty set of labels that are assigned to this node,
+     * including the automatic {@link #getSelfLabel() self label}.
+     */
+    Set<Label> getAssignedLabels();
+
+    /**
+     * Gets the special label that represents this node itself.
+     */
+    Label getSelfLabel();
 
     /**
      * Returns a "workspace" directory for the given {@link TopLevelItem}.

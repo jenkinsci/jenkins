@@ -13,9 +13,9 @@ import hudson.remoting.Channel.Listener;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.util.NullStream;
+import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamCopyThread;
 import hudson.util.StreamTaskListener;
-import hudson.util.RingBufferLogHandler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -31,12 +31,14 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.LogRecord;
-import java.util.List;
-import java.util.Collections;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * Information about a Hudson slave node.
@@ -77,15 +79,27 @@ public final class Slave implements Node, Serializable {
     private String agentCommand;
 
     /**
+     * Whitespace-separated labels.
+     */
+    private String label="";
+
+    /**
+     * Lazily computed set of labels from {@link #label}.
+     */
+    private transient volatile Set<Label> labels;
+
+    /**
      * @stapler-constructor
      */
-    public Slave(String name, String description, String command, String remoteFS, int numExecutors, Mode mode) throws FormException {
+    public Slave(String name, String description, String command, String remoteFS, int numExecutors, Mode mode, String label) throws FormException {
         this.name = name;
         this.description = description;
         this.numExecutors = numExecutors;
         this.mode = mode;
         this.agentCommand = command;
         this.remoteFS = remoteFS;
+        this.label = Util.fixNull(label).trim();
+        getAssignedLabels();    // compute labels now
 
         if (name.equals(""))
             throw new FormException("Invalid slave configuration. PluginName is empty", null);
@@ -128,6 +142,29 @@ public final class Slave implements Node, Serializable {
 
     public Mode getMode() {
         return mode;
+    }
+
+    public String getLabelString() {
+        return Util.fixNull(label).trim();
+    }
+    public Set<Label> getAssignedLabels() {
+        if(labels==null) {
+            Set<Label> r = new HashSet<Label>();
+            String ls = getLabelString();
+            if(ls.length()>0) {
+                for( String l : ls.split(" +")) {
+                    r.add(Hudson.getInstance().getLabel(l));
+                }
+            }
+            r.add(getSelfLabel());
+            this.labels = Collections.unmodifiableSet(r);
+        }
+        return labels;
+    }
+
+
+    public Label getSelfLabel() {
+        return Hudson.getInstance().getLabel(name);
     }
 
     /**

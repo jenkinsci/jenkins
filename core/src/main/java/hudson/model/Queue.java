@@ -366,11 +366,11 @@ public class Queue {
             return null;
         }
 
-        Node n = p.getAssignedNode();
-        if(n!=null) {
-            // if a project has assigned node, it can be only built on it
+        Label l = p.getAssignedLabel();
+        if(l!=null) {
+            // if a project has assigned label, it can be only built on it
             for (JobOffer offer : parked.values()) {
-                if(offer.isAvailable() && offer.getNode()==n)
+                if(offer.isAvailable() && l.contains(offer.getNode()))
                     return offer;
             }
             return null;
@@ -379,7 +379,7 @@ public class Queue {
         // otherwise let's see if the last node where this project was built is available
         // it has up-to-date workspace, so that's usually preferable.
         // (but we can't use an exclusive node)
-        n = p.getLastBuiltOn();
+        Node n = p.getLastBuiltOn();
         if(n!=null && n.getMode()==Mode.NORMAL) {
             for (JobOffer offer : parked.values()) {
                 if(offer.isAvailable() && offer.getNode()==n)
@@ -474,11 +474,11 @@ public class Queue {
 
     public interface Task {
         /**
-         * If this task needs to be run on a particular node,
-         * return that {@link Node}. Otherwise null, indicating
-         * it can run on any node.
+         * If this task needs to be run on a node with a particular label,
+         * return that {@link Label}. Otherwise null, indicating
+         * it can run on anywhere.
          */
-        Node getAssignedNode();
+        Label getAssignedLabel();
 
         /**
          * If the previous execution of this task run on a certain node
@@ -588,17 +588,14 @@ public class Queue {
         @Exported
         public String getWhy() {
             if(isBuildable) {
-                Node node = task.getAssignedNode();
+                Label node = task.getAssignedLabel();
                 Hudson hudson = Hudson.getInstance();
-                if(node==hudson && hudson.getSlaves().isEmpty())
+                if(hudson.getSlaves().isEmpty())
                     node = null;    // no master/slave. pointless to talk about nodes
 
                 String name = null;
                 if(node!=null) {
-                    if(node==hudson)
-                        name = "master";
-                    else
-                        name = node.getNodeName();
+                    name = node.getName();
                 }
 
                 return "Waiting for next available executor"+(name==null?"":" on "+name);

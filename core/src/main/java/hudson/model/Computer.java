@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Functions;
+import hudson.Util;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DaemonThreadFactory;
@@ -161,13 +162,8 @@ public abstract class Computer implements ModelObject {
     /**
      * Returns projects that are tied on this node.
      */
-    public List<Project> getTiedJobs() {
-        List<Project> r = new ArrayList<Project>();
-        for( Project p : Hudson.getInstance().getProjects() ) {
-            if(p.getAssignedNode()==getNode())
-                r.add(p);
-        }
-        return r;
+    public List<AbstractProject> getTiedJobs() {
+        return getNode().getSelfLabel().getTiedJobs();
     }
 
     /**

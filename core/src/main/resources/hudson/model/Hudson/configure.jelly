@@ -84,6 +84,10 @@
                 </select>
               </s:entry>
 
+              <s:entry title="labels" help="/help/system-config/master-slave/label.html">
+                <s:textbox name="slave.label" value="${s.labelString}" />
+              </s:entry>
+
               <j:if test="${s!=null}">
                 <s:entry title="clock" help="/help/system-config/master-slave/clock.html">
                   <j:set var="id" value="${h.generateId()}"/>

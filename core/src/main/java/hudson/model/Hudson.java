@@ -79,6 +79,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -178,6 +179,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * 0 for random, -1 to disable. 
      */
     private int slaveAgentPort =0;
+
+    /**
+     * All labels known to Hudson. This allows us to reuse the same label instances
+     * as much as possible, even though that's not a strict requirement.
+     */
+    private transient final ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<String,Label>();
 
     public static Hudson getInstance() {
         return theInstance;
@@ -556,6 +563,34 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return null;
     }
 
+    /**
+     * Gets the label that exists on this system by the name.
+     *
+     * @return null if no such label exists.
+     */
+    public Label getLabel(String name) {
+        while(true) {
+            Label l = labels.get(name);
+            if(l!=null)
+                return l;
+
+            // non-existent
+            labels.putIfAbsent(name,new Label(name));
+        }
+    }
+
+    /**
+     * Gets all the active labels in the current system. 
+     */
+    public Set<Label> getLabels() {
+        Set<Label> r = new TreeSet<Label>();
+        for (Label l : labels.values()) {
+            if(!l.getNodes().isEmpty())
+                r.add(l);
+        }
+        return r;
+    }
+
     public Queue getQueue() {
         return queue;
     }
@@ -831,6 +866,15 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return Mode.NORMAL;
     }
 
+    public Set<Label> getAssignedLabels() {
+        // TODO
+        return Collections.singleton(getSelfLabel());
+    }
+
+    public Label getSelfLabel() {
+        return getLabel("master");
+    }
+
     public Computer createComputer() {
         return new MasterComputer();
     }
@@ -863,6 +907,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             }
         }
         rebuildDependencyGraph();
+
+        // recompute label objects
+        for (Slave slave : slaves)
+            slave.getAssignedLabels();
     }
 
     /**
@@ -959,6 +1007,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                 }
                 this.slaves = newSlaves;
                 updateComputerList();
+
+                // label trim off
+                for (Label l : labels.values()) {
+                    l.reset();
+                    if(l.getNodes().isEmpty())
+                        labels.remove(l);
+                }
             }
 
             {// update JDK installations

@@ -57,6 +57,19 @@
         </j:otherwise>
       </j:choose>
 
+      <j:if test="${it.node.assignedLabels.size() gt 1}">
+        <div>
+          Labels:
+          <j:forEach var="l" items="${it.node.assignedLabels}">
+            <j:if test="${l!=it.node.selfLabel}">
+              <a href="${rootURL}/label/${l.name}">${l.name}</a>
+              <st:nbsp/>
+            </j:if>
+          </j:forEach>
+        </div>
+      </j:if>
+
+
       <h2>Projects tied on ${it.displayName}</h2>
       <j:set var="jobs" value="${it.tiedJobs}" />
       <j:choose>
