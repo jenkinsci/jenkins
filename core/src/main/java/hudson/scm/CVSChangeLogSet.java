@@ -147,6 +147,8 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
 
         @Exported
         public User getAuthor() {
+            if(author==null)
+                return User.getUnknown();
             return author;
         }
 

@@ -92,6 +92,8 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
 
         @Override
         public User getAuthor() {
+            if(author==null)
+                return User.getUnknown();
             return author;
         }
 

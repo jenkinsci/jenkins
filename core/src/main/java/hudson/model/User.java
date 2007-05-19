@@ -139,6 +139,9 @@ public class User extends AbstractModelObject {
     }
 
 
+    public static User getUnknown() {
+        return get("unknown");
+    }
 
     public static User get(String name) {
         if(name==null)
