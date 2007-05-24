@@ -176,7 +176,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
     /**
      * TCP slave agent port.
-     * 0 for random, -1 to disable. 
+     * 0 for random, -1 to disable.
      */
     private int slaveAgentPort =0;
 
@@ -426,7 +426,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * Gets just the immediate children of {@link Hudson}.
      *
-     * @see #getAllItems(Class) 
+     * @see #getAllItems(Class)
      */
     public List<TopLevelItem> getItems() {
         return new ArrayList<TopLevelItem>(items.values());
@@ -580,7 +580,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
-     * Gets all the active labels in the current system. 
+     * Gets all the active labels in the current system.
      */
     public Set<Label> getLabels() {
         Set<Label> r = new TreeSet<Label>();
@@ -909,8 +909,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         rebuildDependencyGraph();
 
         // recompute label objects
-        for (Slave slave : slaves)
-            slave.getAssignedLabels();
+        if (null != slaves) { // only if we have slaves
+            for (Slave slave : slaves)
+                slave.getAssignedLabels();
+        }
     }
 
     /**
@@ -1544,7 +1546,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
         @Override
         public String getCaption() {
-            return "Master"; 
+            return "Master";
         }
 
         @Override
