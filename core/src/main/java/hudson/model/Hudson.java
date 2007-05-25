@@ -27,12 +27,7 @@ import hudson.scm.RepositoryBrowsers;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
-import hudson.tasks.BuildStep;
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.BuildWrappers;
-import hudson.tasks.Builder;
-import hudson.tasks.Mailer;
-import hudson.tasks.Publisher;
+import hudson.tasks.*;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
@@ -185,6 +180,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * as much as possible, even though that's not a strict requirement.
      */
     private transient final ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<String,Label>();
+    private transient Set<Label> labelSet;
+    private transient Set<Label> dynamicLabels = null;
 
     public static Hudson getInstance() {
         return theInstance;
@@ -867,8 +864,40 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     public Set<Label> getAssignedLabels() {
-        // TODO
-        return Collections.singleton(getSelfLabel());
+        if (labelSet == null) {
+            Set<Label> r = new HashSet<Label>();
+            r.addAll(getDynamicLabels());
+            r.add(getSelfLabel());
+            this.labelSet = Collections.unmodifiableSet(r);
+        }
+        return labelSet;
+    }
+
+    /**
+     * Returns the possibly empty set of labels that it has been determined as supported by this node.
+     *
+     * @see hudson.tasks.LabelFinder
+     */
+    public Set<Label> getDynamicLabels() {
+        if (dynamicLabels == null) {
+            synchronized (this) {
+                Computer comp = getComputer("");
+                if (dynamicLabels == null) {
+                    dynamicLabels = new HashSet<Label>();
+                    if (comp != null) {
+                        VirtualChannel channel = comp.getChannel();
+                        if (channel != null) {
+                            for (DynamicLabeler labeler : LabelFinder.LABELERS) {
+                                for (String label : labeler.findLabels(channel)) {
+                                    dynamicLabels.add(getLabel(label));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return dynamicLabels;
     }
 
     public Label getSelfLabel() {

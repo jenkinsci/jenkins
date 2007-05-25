@@ -55,6 +55,12 @@ public interface Node {
     Set<Label> getAssignedLabels();
 
     /**
+     * Returns the possibly empty set of labels that it has been determined as supported by this node.
+     * @see hudson.tasks.LabelFinder
+     */
+    Set<Label> getDynamicLabels();
+
+    /**
      * Gets the special label that represents this node itself.
      */
     Label getSelfLabel();
@@ -104,7 +110,7 @@ public interface Node {
         private final String description;
         private final boolean enforceSecurity;
         private final boolean publicLaunch;
-        private final boolean dynammicPool;
+        private final boolean dynamicPool;
 
         public String getDescription() {
             return description;
@@ -122,15 +128,15 @@ public interface Node {
             return publicLaunch;
         }
 
-        public boolean isDynammicPool() {
-            return dynammicPool;
+        public boolean isDynamicPool() {
+            return dynamicPool;
         }
 
         JNLPSecurityMode(String description, boolean enforceSecurity, boolean publicLaunch, boolean dynammicPool) {
             this.description = description;
             this.enforceSecurity = enforceSecurity;
             this.publicLaunch = publicLaunch;
-            this.dynammicPool = dynammicPool;
+            this.dynamicPool = dynammicPool;
         }
 
         static {
