@@ -8,6 +8,7 @@ import hudson.triggers.Trigger;
 import hudson.util.IncompatibleServletVersionDetected;
 import hudson.util.IncompatibleVMDetected;
 import hudson.util.RingBufferLogHandler;
+import hudson.util.NoHomeDir;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -40,11 +41,17 @@ public class WebAppMain implements ServletContextListener {
     public void contextInitialized(ServletContextEvent event) {
         installLogger();
 
+        ServletContext context = event.getServletContext();
+
         File home = getHomeDir(event);
         home.mkdirs();
         System.out.println("hudson home directory: "+home);
 
-        ServletContext context = event.getServletContext();
+        // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
+        if (! home.exists()) {
+            context.setAttribute("app",new NoHomeDir(home));
+            return;
+        }
 
         // make sure that we are using XStream in the "enhanced" (JVM-specific) mode
         if(new JVM().bestReflectionProvider().getClass()==PureJavaReflectionProvider.class) {
