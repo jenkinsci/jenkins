@@ -104,7 +104,7 @@ public class TcpSlaveAgentListener extends Thread {
     }
 
     /**
-     * Initiates the shuts down of the listener. 
+     * Initiates the shuts down of the listener.
      */
     public void shutdown() {
         shuttingDown = true;
@@ -140,11 +140,14 @@ public class TcpSlaveAgentListener extends Thread {
 
                 if(s.startsWith("Protocol:")) {
                     String protocol = s.substring(9);
-                    if(protocol.equals("JNLP-connect"))
+                    if(protocol.equals("JNLP-connect")) {
                         runJnlpConnect(in, out);
+                    } else {
+                        error(out, "Unknown protocol:" + s);
+                    }
+                } else {
+                    error(out, "Unrecognized protocol: "+s);
                 }
-
-                error(out, "Unrecognized protocol: "+s);
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING,"Connection #"+id+" aborted",e);
                 try {
