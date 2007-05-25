@@ -26,8 +26,18 @@
 	        <tr>
 	          <th class="pane" colspan="3">
 	            <a href="${rootURL}/computer/${c.displayName}">${c.displayName}</a>
-	            <j:if test="${c.offline}">(offline)</j:if>
-	          </th>
+	            <j:if test="${c.offline}">(offline) </j:if>
+                <j:if test="${c.jnlpAgent}">
+                  <j:if test="${c.jnlpAgentLaunchVisible &amp;&amp; c.jnlpAgentLaunchPublic}">
+                    <l:isAdminOrTest test="${!c.jnlpAgentLaunchAdminOnly}">
+                      <a href="${rootURL}/computer/${c.displayName}/slave-agent.jnlp">
+                        <img src="${rootURL}/images/webstart.gif" alt="Launch" title="Launch slave agent" />
+
+                      </a>
+                    </l:isAdminOrTest>
+                  </j:if>
+                </j:if>
+              </th>
 	        </tr>
 	      </j:otherwise>
 	    </j:choose>

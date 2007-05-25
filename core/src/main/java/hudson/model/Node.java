@@ -90,4 +90,51 @@ public interface Node {
             ConvertUtils.register(new EnumConverter(),Mode.class);
         }
     }
+
+    enum JNLPSecurityMode {
+        NORMAL("Launch only from Computer detail. Require Login if security enabled.", true, false, false),
+        SECURE_PUBLIC("Launch from front page. Require Login if security enabled.", true, false, false),
+        BYPASS("Launch only from Computer detail. Login never required.", false, false, false),
+        PUBLIC("Launch from front page. Login never required.", false, true, false)/*,
+
+        // stephenconnolly: holding off on these next changes until they are closer to ready
+        DYNAMIC("Dynamic secure slave (experimental)", true, true, true),
+        DYNAMIC("Dynamic public slave (experimental)", false, true, true)*/;
+
+        private final String description;
+        private final boolean enforceSecurity;
+        private final boolean publicLaunch;
+        private final boolean dynammicPool;
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getName() {
+            return name();
+        }
+
+        public boolean isEnforceSecurity() {
+            return enforceSecurity;
+        }
+
+        public boolean isPublicLaunch() {
+            return publicLaunch;
+        }
+
+        public boolean isDynammicPool() {
+            return dynammicPool;
+        }
+
+        JNLPSecurityMode(String description, boolean enforceSecurity, boolean publicLaunch, boolean dynammicPool) {
+            this.description = description;
+            this.enforceSecurity = enforceSecurity;
+            this.publicLaunch = publicLaunch;
+            this.dynammicPool = dynammicPool;
+        }
+
+        static {
+            ConvertUtils.register(new EnumConverter(), JNLPSecurityMode.class);
+        }
+    }
 }

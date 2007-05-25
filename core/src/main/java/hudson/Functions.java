@@ -189,6 +189,10 @@ public class Functions {
         return Node.Mode.values();
     }
 
+    public static Node.JNLPSecurityMode[] getJNLPSecurityModes() {
+        return Node.JNLPSecurityMode.values();
+    }
+
     public static String getProjectListString(List<Project> projects) {
         return Items.toNameList(projects);
     }
@@ -196,7 +200,7 @@ public class Functions {
     public static Object ifThenElse(boolean cond, Object thenValue, Object elseValue) {
         return cond ? thenValue : elseValue;
     }
-    
+
     public static String appendIfNotNull(String text, String suffix, String nullText) {
         return text == null ? nullText : text + suffix;
     }
@@ -271,7 +275,7 @@ public class Functions {
      *
      * @param noAutoRefresh
      *      On certain pages, like a page with forms, will have annoying interference
-     *      with auto refresh. On those pages, disable auto-refresh.  
+     *      with auto refresh. On those pages, disable auto-refresh.
      */
     public static void configureAutoRefresh(HttpServletRequest request, HttpServletResponse response, boolean noAutoRefresh) {
         if(noAutoRefresh)

@@ -119,6 +119,30 @@ public abstract class Computer implements ModelObject {
     }
 
     /**
+     * Returns true if this computer is needs to be launched via JNLP. That is if the Launch slave agent link should be
+     * visible.
+     * @return true if and only if the JNLP link should be shown.
+     */
+    public boolean isJnlpAgentLaunchVisible() {
+        return isJnlpAgent() && isOffline() && !isTemporarilyOffline();
+    }
+
+    /**
+     * Returns true if the JNLP link should be restricted to authenticated in users.
+     * @return true if and only if the JNLP link should be restricted to authenticated users.
+     */
+    public boolean isJnlpAgentLaunchAdminOnly() {
+        return true;
+    }
+
+    /**
+     * Returns true if the JNLP link should be visible from the main page.
+     * @return true if and only if the JNLP link should be availible from the main page.
+     */
+    public boolean isJnlpAgentLaunchPublic() {
+        return false;
+    }
+    /**
      * Returns true if this node is marked temporarily offline by the user.
      *
      * <p>
@@ -291,7 +315,7 @@ public abstract class Computer implements ModelObject {
         }
         private static final long serialVersionUID = 1L;
     }
-    
+
 
     public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new DaemonThreadFactory());
 
@@ -309,7 +333,7 @@ public abstract class Computer implements ModelObject {
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
         RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
             runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
-    }        
+    }
 
     public void doToggleOffline( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         if(!Hudson.adminCheck(req,rsp))

@@ -1,0 +1,16 @@
+<!--
+<%@ attribute name="test" required="true" type="java.lang.Boolean" %>
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:s="jelly:stapler">
+    <j:choose>
+        <j:when test="${!test &amp;&amp; app.useSecurity}">
+            <s:isUserInRole role="admin">
+                <d:invokeBody />
+            </s:isUserInRole>
+        </j:when>
+        <!-- if the security is disabled or the test passes -->
+        <j:otherwise>
+            <d:invokeBody />
+        </j:otherwise>
+    </j:choose>
+</j:jelly>
