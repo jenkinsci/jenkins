@@ -28,7 +28,7 @@ public class SCMS {
      */
     public static SCM parseSCM(StaplerRequest req) throws FormException {
         String scm = req.getParameter("scm");
-        if(scm==null)   return null;
+        if(scm==null)   return new NullSCM();
 
         int scmidx = Integer.parseInt(scm);
         SCMDescriptor<?> d = SCMS.get(scmidx);
