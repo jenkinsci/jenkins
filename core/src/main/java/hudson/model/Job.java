@@ -502,7 +502,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
         try {
             properties.clear();
-            for (JobPropertyDescriptor d : JobPropertyDescriptor.getPropertyDescriptors(getClass())) {
+            for (JobPropertyDescriptor d : JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass())) {
                 JobProperty prop = d.newInstance(req);
                 if (prop != null)
                     properties.add(prop);
