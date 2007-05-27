@@ -100,8 +100,9 @@ public interface Node {
     enum JNLPSecurityMode {
         NORMAL("Launch only from Computer detail. Require Login if security enabled.", true, false, false),
         SECURE_PUBLIC("Launch from front page. Require Login if security enabled.", true, false, false),
-        BYPASS("Launch only from Computer detail. Login never required.", false, false, false),
-        PUBLIC("Launch from front page. Login never required.", false, true, false)/*,
+        BYPASS("Launch only from Computer detail. Login never required. (!See WARNING in help --> !)", false, false, false)/*,
+        // stephenconnolly: backing these next changes until a better model is available
+        PUBLIC("Launch from front page. Login never required.", false, true, false),
 
         // stephenconnolly: holding off on these next changes until they are closer to ready
         DYNAMIC("Dynamic secure slave (experimental)", true, true, true),

@@ -26,16 +26,20 @@
         <dd>
             In this mode, Hudson provides the JNLP launch link on the computer view.
             The link will always be available whenever the slave is offline.
+            <br />
+            <b>WARNING!</b> In this mode security is disabled.  Thus slaves can be started by <em>anyone
+            that can access this server</em>.  Slaves have the ability to execute arbitrary code on the 
+            master.  <b>Do not select this option unless you are fully aware of the risks</b>
         </dd>
 
-        <dt><b>
+        <!--dt><b>
             Launch from front page. Login never required.
         </b></dt>
         <dd>
             In this mode, Hudson provides the JNLP launch link on both the computer view and the Build Executor Status
             sidepanel.
             The link will always be available whenever the slave is offline.
-        </dd>
+        </dd-->
 
     </dl>
 </div>
