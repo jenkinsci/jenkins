@@ -17,11 +17,12 @@ import java.util.ArrayList;
  */
 public interface LabelFinder {
 
-    public static final List<DynamicLabeler> LABELERS = new ArrayList<DynamicLabeler>(){
+    public static final List<DynamicLabeler> LABELERS = new ArrayList<DynamicLabeler>()/*{
+        // Taking adding default DynamicLabelers out of main trunk
         {
             add(OSLabeler.INSTANCE);
         }
-    };
+    }*/;
 
     /**
      * Find the labels that the node supports.
