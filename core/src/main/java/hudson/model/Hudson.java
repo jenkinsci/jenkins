@@ -269,6 +269,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
+     * Gets the build wrapper descriptor by name. Primarily used for making them web-visible.
+     */
+    public Descriptor<BuildWrapper> getBuildWrapper(String shortClassName) {
+        return findDescriptor(shortClassName, BuildWrappers.WRAPPERS);
+    }
+
+    /**
      * Gets the publisher descriptor by name. Primarily used for making them web-visible.
      */
     public Descriptor<Publisher> getPublisher(String shortClassName) {
