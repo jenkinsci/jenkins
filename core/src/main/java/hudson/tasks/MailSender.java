@@ -135,7 +135,7 @@ public class MailSender<P extends AbstractProject<P,B>,B extends AbstractBuild<P
     private void appendBuildUrl(B build, StringBuffer buf) {
         String baseUrl = Mailer.DESCRIPTOR.getUrl();
         if(baseUrl!=null) {
-            buf.append("See ").append(baseUrl).append(Util.encode(build.getUrl())).append("\n\n");
+            buf.append("See ").append(baseUrl).append(Util.encode(build.getUrl())).append("changes\n\n");
         }
     }
 
