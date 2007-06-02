@@ -14,6 +14,7 @@ import hudson.model.ItemGroup;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
+import hudson.model.Node;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -182,7 +183,9 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * so it always needs to be built on the same slave as the parent.
      */
     public Label getAssignedLabel() {
-        return getParent().getLastBuiltOn().getSelfLabel();
+        Node n = getParent().getLastBuiltOn();
+        if(n==null) return null;
+        return n.getSelfLabel();
     }
 
     @Override
