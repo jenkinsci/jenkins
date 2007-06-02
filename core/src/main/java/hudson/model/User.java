@@ -255,7 +255,8 @@ public class User extends AbstractModelObject {
 
 
     /**
-     * Keyed by {@link User#id}.
+     * Keyed by {@link User#id}. This map is used to ensure
+     * singleton-per-id semantics of {@link User} objects.
      */
     private static final Map<String,User> byName = new HashMap<String,User>();
 
