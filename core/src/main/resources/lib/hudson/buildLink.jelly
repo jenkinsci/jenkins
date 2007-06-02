@@ -15,7 +15,8 @@
 	    <j:set var="r" value="${job.getBuildByNumber(number)}" />
 	    <j:choose>
 	      <j:when test="${r==null}">
-	        ${jobName_}#<!-- -->${number}
+	        <a href="${rootURL}/${job.url}">${jobName}</a>
+          #<!-- -->${number}
 	      </j:when>
 	      <j:otherwise>
 	        <a href="${rootURL}/${r.url}">
