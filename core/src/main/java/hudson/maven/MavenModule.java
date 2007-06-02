@@ -11,9 +11,8 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
-import hudson.model.Job;
-import hudson.model.Node;
 import hudson.model.JDK;
+import hudson.model.Job;
 import hudson.model.Label;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
@@ -75,6 +74,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         this.displayName = pom.displayName;
         this.relativePath = pom.relativePath;
         this.dependencies = pom.dependencies;
+        disabled = false;
 
         if (pom.mailNotifier != null) {
             MavenReporter reporter = getReporters().get(MavenMailer.DescriptorImpl.DESCRIPTOR);
