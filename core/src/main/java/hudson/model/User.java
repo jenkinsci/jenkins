@@ -50,8 +50,13 @@ public class User extends AbstractModelObject {
     private User(String id) {
         this.id = id;
         this.fullName = id;   // fullName defaults to name
+        load();
+    }
 
-        // load the other data from disk if it's available
+    /**
+     * Loads the other data from disk if it's available.
+     */
+    private synchronized void load() {
         XmlFile config = getConfigFile();
         try {
             if(config.exists())
@@ -60,6 +65,7 @@ public class User extends AbstractModelObject {
             LOGGER.log(Level.SEVERE, "Failed to load "+config,e);
         }
 
+        properties.clear();
         // allocate default instances if needed.
         // doing so after load makes sure that newly added user properties do get reflected
         for (UserPropertyDescriptor d : UserProperties.LIST) {
@@ -138,21 +144,28 @@ public class User extends AbstractModelObject {
         rsp.sendRedirect(".");  // go to the top page
     }
 
-
+    /**
+     * Gets the fallback "unknown" user instance.
+     * <p>
+     * This is used to avoid null {@link User} instance.
+     */
     public static User getUnknown() {
         return get("unknown");
     }
 
-    public static User get(String name) {
-        if(name==null)
+    /**
+     * Gets the {@link User} object by its id.
+     */
+    public static User get(String id) {
+        if(id==null)
             return null;
-        name = name.replace('\\', '_').replace('/', '_');
+        id = id.replace('\\', '_').replace('/', '_');
         
         synchronized(byName) {
-            User u = byName.get(name);
+            User u = byName.get(id);
             if(u==null) {
-                u = new User(name);
-                byName.put(name,u);
+                u = new User(id);
+                byName.put(id,u);
             }
             return u;
         }
