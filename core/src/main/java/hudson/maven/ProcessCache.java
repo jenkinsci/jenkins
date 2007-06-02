@@ -27,7 +27,7 @@ import java.util.logging.Level;
  *
  * @author Kohsuke Kawaguchi
  */
-final class ProcessCache {
+public final class ProcessCache {
     /**
      * Implemented by the caller to create a new process
      * (when a new one is needed.)
