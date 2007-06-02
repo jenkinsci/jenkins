@@ -7,8 +7,9 @@
 		<l:main-panel>
 		  <s:form method="post" action="createItem">
 		    <s:entry title="Job name">
-		      <s:textbox name="name" checkUrl="'${rootURL}/itemExistsCheck?value='+escape(this.value)" />
-		    </s:entry>
+		      <s:textbox id="name" name="name" checkUrl="'${rootURL}/itemExistsCheck?value='+escape(this.value)" />
+          <script>$('name').focus();</script>
+        </s:entry>
 
         <j:getStatic var="jobs" className="hudson.model.Items" field="LIST" />
         <j:forEach var="d" items="${jobs}">
