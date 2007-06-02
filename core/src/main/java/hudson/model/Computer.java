@@ -2,7 +2,6 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Functions;
-import hudson.Util;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DaemonThreadFactory;
@@ -19,10 +18,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.LogRecord;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.LogRecord;
 
 /**
  * Represents a set of {@link Executor}s on the same computer.
@@ -118,30 +117,6 @@ public abstract class Computer implements ModelObject {
         return false;
     }
 
-    /**
-     * Returns true if this computer is needs to be launched via JNLP. That is if the Launch slave agent link should be
-     * visible.
-     * @return true if and only if the JNLP link should be shown.
-     */
-    public boolean isJnlpAgentLaunchVisible() {
-        return isJnlpAgent() && isOffline() && !isTemporarilyOffline();
-    }
-
-    /**
-     * Returns true if the JNLP link should be restricted to authenticated in users.
-     * @return true if and only if the JNLP link should be restricted to authenticated users.
-     */
-    public boolean isJnlpAgentLaunchAdminOnly() {
-        return true;
-    }
-
-    /**
-     * Returns true if the JNLP link should be visible from the main page.
-     * @return true if and only if the JNLP link should be availible from the main page.
-     */
-    public boolean isJnlpAgentLaunchPublic() {
-        return false;
-    }
     /**
      * Returns true if this node is marked temporarily offline by the user.
      *

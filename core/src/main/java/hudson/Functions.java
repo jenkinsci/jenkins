@@ -189,10 +189,6 @@ public class Functions {
         return Node.Mode.values();
     }
 
-    public static Node.JNLPSecurityMode[] getJNLPSecurityModes() {
-        return Node.JNLPSecurityMode.values();
-    }
-
     public static String getProjectListString(List<Project> projects) {
         return Items.toNameList(projects);
     }

@@ -22,8 +22,8 @@
       <j:choose>
         <j:when test="${it.jnlpAgent}">
           <j:choose>
-            <j:when test="${it.jnlpAgentLaunchVisible}">
-              <l:isAdminOrTest test="${!it.jnlpAgentLaunchAdminOnly}">
+            <j:when test="${it.offline &amp;&amp; !it.temporarilyOffline}">
+              <l:isAdmin>
                 <p>
                   <a href="slave-agent.jnlp">
                     <img src="${rootURL}/images/webstart.gif" alt="launch agent" />
@@ -33,7 +33,7 @@
                 <p>
                   (Click the above link from this slave computer to launch the slave agent via JNLP)
                 </p>
-              </l:isAdminOrTest>
+              </l:isAdmin>
             </j:when>
             <j:otherwise>
               <p>

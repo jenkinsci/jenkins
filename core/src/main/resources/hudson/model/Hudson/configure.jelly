@@ -88,15 +88,7 @@
                 <s:textbox name="slave.label" value="${s.labelString}" />
               </s:entry>
 
-                <s:entry title="jnlp mode" help="/help/system-config/master-slave/jnlpSecurity.html">
-                    <select class="setting-input" name="slave.jnlpSecurity">
-                        <j:forEach var="m" items="${h.getJNLPSecurityModes()}">
-                            <s:option value="${m.name}" selected="${m==s.jnlpSecurity}">${m.description}</s:option>
-                        </j:forEach>
-                    </select>
-                </s:entry>
-
-                <j:if test="${s!=null}">
+              <j:if test="${s!=null}">
                 <s:entry title="clock" help="/help/system-config/master-slave/clock.html">
                   <j:set var="id" value="${h.generateId()}"/>
                   <div id="${id}">

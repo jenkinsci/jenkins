@@ -75,11 +75,6 @@ public final class Slave implements Node, Serializable {
     private Mode mode;
 
     /**
-     * JNLP Security mode
-     */
-    private JNLPSecurityMode jnlpSecurity;
-
-    /**
      * Command line to launch the agent, like
      * "ssh myslave java -jar /path/to/hudson-remoting.jar"
      */
@@ -102,14 +97,13 @@ public final class Slave implements Node, Serializable {
      * @stapler-constructor
      */
     public Slave(String name, String description, String command, String remoteFS, int numExecutors, Mode mode,
-                 String label, JNLPSecurityMode jnlpSecurity) throws FormException {
+                 String label) throws FormException {
         this.name = name;
         this.description = description;
         this.numExecutors = numExecutors;
         this.mode = mode;
         this.agentCommand = command;
         this.remoteFS = remoteFS;
-        this.jnlpSecurity = jnlpSecurity;
         this.label = Util.fixNull(label).trim();
         getAssignedLabels();    // compute labels now
 
@@ -154,10 +148,6 @@ public final class Slave implements Node, Serializable {
 
     public Mode getMode() {
         return mode;
-    }
-
-    public JNLPSecurityMode getJnlpSecurity() {
-        return jnlpSecurity;
     }
 
     public String getLabelString() {
@@ -322,44 +312,6 @@ public final class Slave implements Node, Serializable {
         @Override
         public boolean isJnlpAgent() {
             return getNode().getCommand().length()==0;
-        }
-
-
-        /**
-         * Returns true if this computer is needs to be launched via JNLP. That is if the Launch slave agent link should be
-         * visible.
-         *
-         * @return true if and only if the JNLP link should be shown.
-         */
-        @Override
-        public boolean isJnlpAgentLaunchVisible() {
-            if (getNode().getJnlpSecurity().isDynamicPool()) {
-                return isJnlpAgent();
-            }
-            return super.isJnlpAgentLaunchVisible();
-        }
-
-        /**
-         * Returns true if the JNLP link should be restricted to authenticated in users.
-         *
-         * @return true if and only if the JNLP link should be restricted to authenticated users.
-         */
-        @Override
-        public boolean isJnlpAgentLaunchAdminOnly() {
-            return getNode().getJnlpSecurity().isEnforceSecurity();
-        }
-
-        /**
-         * Returns true if the JNLP link should be visible from the main page.
-         *
-         * @return true if and only if the JNLP link should be availible from the main page.
-         */
-        @Override
-        public boolean isJnlpAgentLaunchPublic() {
-            if (getNode().getJnlpSecurity().isPublicLaunch()) {
-                return isJnlpAgent();
-            }
-            return super.isJnlpAgentLaunchPublic();    //To change body of overridden methods use File | Settings | File Templates.
         }
 
         /**
