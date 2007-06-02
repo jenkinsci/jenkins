@@ -1301,6 +1301,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             return;
 
         load();
+        User.reload();
         rsp.sendRedirect2(req.getContextPath()+"/");
     }
 

@@ -172,6 +172,15 @@ public class User extends AbstractModelObject {
     }
 
     /**
+     * Reloads the configuration from disk.
+     */
+    public static void reload() {
+        // iterate over an array to be concurrency-safe
+        for( User u : byName.values().toArray(new User[0]) )
+            u.load();
+    }
+
+    /**
      * Returns the user name.
      */
     public String getDisplayName() {
