@@ -14,7 +14,7 @@ public enum BallColor {
     RED_ANIME("In progress"),
     YELLOW("Unstable"),
     YELLOW_ANIME("In progress"),
-    BLUE("Blue"),
+    BLUE("Success"),
     BLUE_ANIME("In progress"),
     GREY("Pending"),
     GREY_ANIME("In progress");
