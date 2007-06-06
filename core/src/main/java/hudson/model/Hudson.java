@@ -27,12 +27,20 @@ import hudson.scm.RepositoryBrowsers;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
-import hudson.tasks.*;
+import hudson.tasks.BuildStep;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrappers;
+import hudson.tasks.Builder;
+import hudson.tasks.DynamicLabeler;
+import hudson.tasks.LabelFinder;
+import hudson.tasks.Mailer;
+import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.FormFieldValidator;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.XStream2;
@@ -75,8 +83,17 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * Root object of the system.
@@ -916,6 +933,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     private synchronized void load() throws IOException {
+        long startTime = System.currentTimeMillis();
+
         XmlFile cfg = getConfigFile();
         if(cfg.exists())
             cfg.unmarshal(this);
@@ -931,15 +950,26 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                 return child.isDirectory();
             }
         });
+
+        // load jobs in parallel for
         items.clear();
-        for (File subdir : subdirs) {
+        List<Future<TopLevelItem>> loaders = new ArrayList<Future<TopLevelItem>>();
+        for (final File subdir : subdirs) {
+            loaders.add(threadPoolForLoad.submit(new Callable<TopLevelItem>() {
+                public TopLevelItem call() throws Exception {
+                    return (TopLevelItem)Items.load(Hudson.this,subdir);
+                }
+            }));
+        }
+
+        for (Future<TopLevelItem> loader : loaders) {
             try {
-                TopLevelItem item = (TopLevelItem)Items.load(this,subdir);
+                TopLevelItem item = loader.get();
                 items.put(item.getName(), item);
-            } catch (Error e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace(); // TODO: logging
+            } catch (ExecutionException e) {
+                e.getCause().printStackTrace(); // TODO: logging
+            } catch (InterruptedException e) {
+                e.printStackTrace(); // this is probably not the right thing to do
             }
         }
         rebuildDependencyGraph();
@@ -949,6 +979,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             for (Slave slave : slaves)
                 slave.getAssignedLabels();
         }
+        
+        LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
     }
 
     /**
@@ -1640,6 +1672,18 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Thread-safe reusable {@link XStream}.
      */
     private static final XStream XSTREAM = new XStream2();
+
+    private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
+
+    /**
+     * Thread pool used to load configuration in parallel, to improve the start up time.
+     *
+     * The idea here is to overlap the CPU and I/O, so we want more threads than CPU numbers.
+     */
+    /*package*/ static final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
+        0, Runtime.getRuntime().availableProcessors()*2,
+        5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
+
 
     /**
      * Version number of this Hudson.
