@@ -11,56 +11,15 @@
 
 	<tr id="rb_s${rb_id}"><!-- this ID marks the beginning -->
 	  <td colspan="3">
-	    <script>
-	        <!-- this is way too clumsy. there must be a better way to do it. -->
-	        <![CDATA[
-	        function showRb${rb_id}(show) {
-	          var tbl = document.getElementById('rb_s${rb_id}').parentNode;
-	          var i = false;
-	          var o = false;
-
-	          for( j=0; tbl.rows[j]; j++ ) {
-	            n = tbl.rows[j];
-
-	            if(n.id=="rb_e${rb_id}")
-	              o = true;
-
-	            if( i && !o ) {
-	              if( show )
-	                n.style.display = "";
-	              else
-	                n.style.display = "none";
-	            }
-
-	            if(n.id=="rb_s${rb_id}")
-	              i = true;
-	          }
-	        }
-
-	        function updateRb${rb_id}() {
-	          // update other radios
-	          var x = document.getElementById('Rb${rb_id}');
-	          col = x.form.${name};
-	          for(c=0;c<col.length;c++) {
-	            var item = col.item(c);
-	            eval("show"+item.id+"("+(item==x)+")");
-	          }
-	        }
-	    ]]></script>
 	    <input type="radio" name="${name}" value="${value}"
-             onclick="javascript:updateRb${rb_id}()" onchange="javascript:updateRb${rb_id}()"
              id="Rb${rb_id}" checked="${h.ifThenElse(checked,'true',null)}" />
       <st:nbsp/>
       <label for="Rb${rb_id}">${title}</label>
-	  </td>
+    </td>
 	</tr>
 	<d:invokeBody />
 	<!-- end marker -->
 	<tr id="rb_e${rb_id}" style="display:none">
-	  <j:if test="${!checked}">
-	    <script>
-	      showRb${rb_id}(false);
-	    </script>
-	  </j:if>
+    <script>addRadioBlock("${rb_id}");</script>
 	</tr>
 </j:jelly>

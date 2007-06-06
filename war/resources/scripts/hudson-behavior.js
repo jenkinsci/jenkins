@@ -498,6 +498,69 @@ var repetableSupport = {
     }
 };
 
+var radioBlockSupport = {
+    buttons : null,
+
+    updateButtons : function() {
+        for( var i=0; i<this.buttons.length; i++ )
+            this.buttons[i]();
+    },
+
+    // update one block based on the status of the given radio button
+    updateSingleButton : function(radio,blockStart,blockEnd) {
+        var tbl = blockStart.parentNode;
+        var i = false;
+        var o = false;
+        var show = radio.checked;
+
+        for( j=0; tbl.rows[j]; j++ ) {
+          var n = tbl.rows[j];
+
+          if(n==blockEnd)
+            o = true;
+
+          if( i && !o ) {
+            if( show )
+              n.style.display = "";
+            else
+              n.style.display = "none";
+          }
+
+          if(n==blockStart)
+            i = true;
+        }
+    }
+};
+
+function addRadioBlock(id) {
+    var r = document.getElementById('Rb' + id);
+    var f = r.form;
+    var radios = f.radios;
+    if (radios == null)
+        f.radios = radios = {};
+
+    var g = radios[r.name];
+    if (g == null) {
+        radios[r.name] = g = object(radioBlockSupport);
+        g.buttons = [];
+    }
+
+    var u = function() {
+        g.updateSingleButton(r,
+            document.getElementById("rb_s"+id),
+            document.getElementById("rb_e"+id));
+    };
+
+    g.buttons.push(u);
+
+    // apply the initial visibility
+    u();
+
+    // install event handlers to update visibility.
+    // needs to use onclick and onchange for Safari compatibility
+    r.onclick = r.onchange = function() { g.updateButtons(); };
+}
+
 
 function updateBuildHistory(nBuild) {
     $('buildHistory').headers = ["n",nBuild];
