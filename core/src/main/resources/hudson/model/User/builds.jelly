@@ -21,7 +21,8 @@
           <tr>
             <td data="${b.iconColor.ordinal()}">
               <a href="${rootURL}/${b.url}">
-                <img src="${rootURL}/images/${iconSize}/${b.buildStatusUrl}" />
+                <img src="${rootURL}/images/${iconSize}/${b.buildStatusUrl}"
+                     alt="${b.iconColor.description}"/>
               </a>
             </td>
             <td>
