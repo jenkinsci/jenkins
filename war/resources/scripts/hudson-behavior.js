@@ -498,41 +498,46 @@ var repetableSupport = {
     }
 };
 
-var radioBlockSupport = {
-    buttons : null,
-
-    updateButtons : function() {
-        for( var i=0; i<this.buttons.length; i++ )
-            this.buttons[i]();
-    },
-
-    // update one block based on the status of the given radio button
-    updateSingleButton : function(radio,blockStart,blockEnd) {
-        var tbl = blockStart.parentNode;
-        var i = false;
-        var o = false;
-        var show = radio.checked;
-
-        for( j=0; tbl.rows[j]; j++ ) {
-          var n = tbl.rows[j];
-
-          if(n==blockEnd)
-            o = true;
-
-          if( i && !o ) {
-            if( show )
-              n.style.display = "";
-            else
-              n.style.display = "none";
-          }
-
-          if(n==blockStart)
-            i = true;
-        }
-    }
-};
-
+// Used by radioBlock.jelly to wire up expandable radio block
 function addRadioBlock(id) {
+    // prototype object to be duplicated for each radio button group
+    var radioBlockSupport = {
+        buttons : null,
+
+        updateButtons : function() {
+            for( var i=0; i<this.buttons.length; i++ )
+                this.buttons[i]();
+        },
+
+        // update one block based on the status of the given radio button
+        updateSingleButton : function(radio,blockStart,blockEnd) {
+            var tbl = blockStart.parentNode;
+            var i = false;
+            var o = false;
+            var show = radio.checked;
+
+            for( j=0; tbl.rows[j]; j++ ) {
+              var n = tbl.rows[j];
+
+              if(n==blockEnd)
+                o = true;
+
+              if( i && !o ) {
+                if( show )
+                  n.style.display = "";
+                else
+                  n.style.display = "none";
+              }
+
+              if(n==blockStart)
+                i = true;
+            }
+        }
+    };
+
+    // when one radio button is clicked, we need to update foldable block for
+    // other radio buttons with the same name. To do this, group all the
+    // radio buttons with the same name together and hang it under the form object
     var r = document.getElementById('Rb' + id);
     var f = r.form;
     var radios = f.radios;
