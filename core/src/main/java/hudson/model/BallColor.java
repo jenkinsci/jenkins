@@ -10,7 +10,27 @@ package hudson.model;
  * @author Kohsuke Kawaguchi
  */
 public enum BallColor {
-    RED, RED_ANIME, YELLOW, YELLOW_ANIME, BLUE, BLUE_ANIME, GREY, GREY_ANIME;
+    RED("Failed"),
+    RED_ANIME("In progress"),
+    YELLOW("Unstable"),
+    YELLOW_ANIME("In progress"),
+    BLUE("Blue"),
+    BLUE_ANIME("In progress"),
+    GREY("Pending"),
+    GREY_ANIME("In progress");
+
+    private final String description;
+
+    BallColor(String description) {
+        this.description = description;
+    }
+
+    /**
+     * Gets the human-readable description used as img/@alt.
+     */
+    public String getDescription() {
+        return description;
+    }
 
     /**
      * Also used as a final name.

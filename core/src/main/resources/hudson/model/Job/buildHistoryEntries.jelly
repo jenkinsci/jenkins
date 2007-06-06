@@ -16,7 +16,7 @@
     <j:set var="id" value="${h.generateId()}"/>
     <tr class="build-row transitive" id="${id}">
       <td nowrap="nowrap">
-        <img width="16" height="16" src="${rootURL}/images/16x16/grey.gif" /><st:nbsp/>
+        <img width="16" height="16" src="${rootURL}/images/16x16/grey.gif" alt="pending" /><st:nbsp/>
         #${it.nextBuildNumber}
       </td>
       <td nowrap="nowrap">
@@ -31,7 +31,7 @@
     <j:set var="link" value="${url}/${build.number}/" />
     <tr class="build-row ${h.ifThenElse(build.building,'transitive',null)}">
       <td nowrap="nowrap">
-        <img width="16" height="16" src="${rootURL}/images/16x16/${build.buildStatusUrl}" /><st:nbsp/>
+        <img width="16" height="16" src="${rootURL}/images/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description}" /><st:nbsp/>
         #${build.number}
       </td>
       <td nowrap="nowrap">

@@ -35,7 +35,7 @@
           <j:set var="lfBuild" value="${job.lastFailedBuild}" />
           <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
             <td data="${job.iconColor.ordinal()}">
-              <img src="${rootURL}/images/${iconSize}/${job.buildStatusUrl}" />
+              <img src="${rootURL}/images/${iconSize}/${job.buildStatusUrl}" alt="${job.iconColor.description}" />
             </td>
             <td>
               <a href="${jobBaseUrl}${job.shortUrl}">
