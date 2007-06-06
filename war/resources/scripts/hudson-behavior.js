@@ -516,7 +516,7 @@ function addRadioBlock(id) {
             var o = false;
             var show = radio.checked;
 
-            for( j=0; tbl.rows[j]; j++ ) {
+            for( var j=0; tbl.rows[j]; j++ ) {
               var n = tbl.rows[j];
 
               if(n==blockEnd)
