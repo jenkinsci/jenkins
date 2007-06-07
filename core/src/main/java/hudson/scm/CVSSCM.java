@@ -1105,18 +1105,6 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         }
 
         /**
-         * Clears the error status.
-         */
-        public synchronized void doClearError(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            if(!Hudson.adminCheck(req,rsp))
-                return;
-
-            if(workerThread!=null && !workerThread.isAlive())
-                workerThread = null;
-            doIndex(req,rsp);
-        }
-
-        /**
          * Performs tagging.
          */
         public void perform(String tagName, TaskListener listener) {

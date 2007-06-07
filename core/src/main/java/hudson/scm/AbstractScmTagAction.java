@@ -5,6 +5,7 @@ import hudson.model.TaskListener;
 import hudson.model.AbstractModelObject;
 import hudson.model.Action;
 import hudson.model.AbstractBuild;
+import hudson.model.Hudson;
 import hudson.util.ByteBuffer;
 import hudson.util.StreamTaskListener;
 
@@ -82,6 +83,18 @@ public abstract class AbstractScmTagAction extends AbstractModelObject implement
             else
                 rsp.setStatus(HttpServletResponse.SC_OK);
         }
+    }
+
+    /**
+     * Clears the error status.
+     */
+    public synchronized void doClearError(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
+
+        if(workerThread!=null && !workerThread.isAlive())
+            workerThread = null;
+        rsp.sendRedirect(".");
     }
 
 

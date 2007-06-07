@@ -4,6 +4,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
+import hudson.model.LargeText;
 import hudson.scm.SubversionSCM.SvnInfo;
 import hudson.util.CopyOnWriteMap;
 import org.kohsuke.stapler.StaplerRequest;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.Map.Entry;
+import java.lang.ref.WeakReference;
 
 /**
  * {@link Action} that lets people create tag for the given build.
@@ -103,7 +105,7 @@ public class SubversionTagAction extends AbstractScmTagAction {
 
         Map<SvnInfo,String> newTags = new HashMap<SvnInfo,String>();
 
-        int i=0;
+        int i=-1;
         for (Entry<SvnInfo, String> e : tags.entrySet()) {
             i++;
             if(req.getParameter("tag"+i)==null)
@@ -111,7 +113,7 @@ public class SubversionTagAction extends AbstractScmTagAction {
             newTags.put(e.getKey(),req.getParameter("name" + i));
         }
 
-        new TagWorkerThread(build,newTags).start();
+        new TagWorkerThread(newTags).start();
 
         rsp.sendRedirect(".");
     }
@@ -119,17 +121,17 @@ public class SubversionTagAction extends AbstractScmTagAction {
     /**
      * The thread that performs tagging operation asynchronously.
      */
-    public static final class TagWorkerThread extends AbstractTagWorkerThread {
-        /**
-         * Build that has triggered the tagging operation.
-         */
-        private final AbstractBuild build;
+    public final class TagWorkerThread extends AbstractTagWorkerThread {
         private final Map<SvnInfo,String> tagSet;
 
-
-        public TagWorkerThread(AbstractBuild build, Map<SvnInfo, String> tagSet) {
-            this.build = build;
+        public TagWorkerThread(Map<SvnInfo, String> tagSet) {
             this.tagSet = tagSet;
+        }
+
+        public synchronized void start() {
+            SubversionTagAction.this.workerThread = this;
+            SubversionTagAction.this.log = new WeakReference<LargeText>(text);
+            super.start();
         }
 
         @Override
