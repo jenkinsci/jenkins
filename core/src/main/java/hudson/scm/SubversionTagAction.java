@@ -108,8 +108,8 @@ public class SubversionTagAction extends AbstractScmTagAction {
         int i=-1;
         for (Entry<SvnInfo, String> e : tags.entrySet()) {
             i++;
-            if(req.getParameter("tag"+i)==null)
-                continue;
+            if(tags.size()>1 && req.getParameter("tag"+i)==null)
+                continue; // when tags.size()==1, UI won't show the checkbox.
             newTags.put(e.getKey(),req.getParameter("name" + i));
         }
 
