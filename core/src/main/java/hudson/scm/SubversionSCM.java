@@ -32,6 +32,7 @@ import org.tmatesoft.svn.core.auth.SVNAuthentication;
 import org.tmatesoft.svn.core.auth.SVNPasswordAuthentication;
 import org.tmatesoft.svn.core.auth.SVNSSHAuthentication;
 import org.tmatesoft.svn.core.auth.SVNSSLAuthentication;
+import org.tmatesoft.svn.core.auth.SVNUserNameAuthentication;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
@@ -721,7 +722,13 @@ public class SubversionSCM extends SCM implements Serializable {
             public SVNAuthentication requestClientAuthentication(String kind, SVNURL url, String realm, SVNErrorMessage errorMessage, SVNAuthentication previousAuth, boolean authMayBeStored) {
                 Credential cred = source.getCredential(realm);
                 LOGGER.fine(String.format("requestClientAuthentication(%s,%s,%s)=>%s",kind,url,realm,cred));
-                if(cred==null)  return null;
+                if(cred==null) {
+                    // this happens with file:// URL. The base class does this, too.
+                    if (ISVNAuthenticationManager.USERNAME.equals(kind))
+                        // user auth shouldn't be null.
+                        return new SVNUserNameAuthentication("",false);
+                }
+                
                 try {
                     return cred.createSVNAuthentication(kind);
                 } catch (SVNException e) {
