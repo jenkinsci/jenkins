@@ -22,7 +22,10 @@
               <td style="white-space:nowrap;"><label for="tag${loop.index}">
                 ${m.key.url} (rev.${m.key.revision})
               </label></td>
-              <td width="100%"><input type="text" name="name${loop.index}" value="xxx" style="width:100%" id="name${loop.index}" /></td>
+              <td width="100%">
+                <input type="text" name="name${loop.index}"
+                       value="${it.makeTagURL(m.key)}" style="width:100%" id="name${loop.index}" />
+              </td>
             </tr>
           </j:forEach>
         </table>

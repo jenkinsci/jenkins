@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.util.Map.Entry;
 
 /**
@@ -73,6 +75,23 @@ public class SubversionTagAction extends AbstractScmTagAction {
      */
     public Map<SvnInfo,String> getTags() {
         return Collections.unmodifiableMap(tags);
+    }
+
+    private static final Pattern TRUNK_BRANCH_MARKER = Pattern.compile("/(trunk|branches)(/|$)");
+
+    /**
+     * Creates a URL, to be used as the default value of the module tag URL.
+     *
+     * @return
+     *      null if failed to guess.
+     */
+    public String makeTagURL(SvnInfo si) {
+        // assume the standard trunk/branches/tags repository layout
+        Matcher m = TRUNK_BRANCH_MARKER.matcher(si.url);
+        if(!m.find())
+            return null;    // doesn't have 'trunk' nor 'branches'
+
+        return si.url.substring(0,m.start())+"/tags/"+build.getProject().getName()+"-"+build.getNumber();
     }
 
     /**
