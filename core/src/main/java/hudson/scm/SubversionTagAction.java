@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.Map.Entry;
@@ -35,17 +37,16 @@ import java.lang.ref.WeakReference;
 public class SubversionTagAction extends AbstractScmTagAction {
 
     /**
-     * If non-null, that means the build is already tagged.
-     * Map is from the repository URL to the URL of the tag.
-     * If a module is not tagged, the value will be null.
+     * Map is from the repository URL to the URLs of tags.
+     * If a module is not tagged, the value will be empty set.
      */
-    private final Map<SvnInfo,String> tags = new CopyOnWriteMap.Tree<SvnInfo,String>();
+    private final Map<SvnInfo,List<String>> tags = new CopyOnWriteMap.Tree<SvnInfo, List<String>>();
 
     /*package*/ SubversionTagAction(AbstractBuild build,Collection<SvnInfo> svnInfos) {
         super(build);
-        Map<SvnInfo,String> m = new HashMap<SvnInfo, String>();
+        Map<SvnInfo,List<String>> m = new HashMap<SvnInfo,List<String>>();
         for (SvnInfo si : svnInfos)
-            m.put(si,null);
+            m.put(si,new ArrayList<String>());
         tags.putAll(m);
     }
 
@@ -57,8 +58,8 @@ public class SubversionTagAction extends AbstractScmTagAction {
 
     public String getDisplayName() {
         int nonNullTag = 0;
-        for (String v : tags.values()) {
-            if(v!=null) {
+        for (List<String> v : tags.values()) {
+            if(!v.isEmpty()) {
                 nonNullTag++;
                 if(nonNullTag>1)
                     break;
@@ -75,8 +76,18 @@ public class SubversionTagAction extends AbstractScmTagAction {
     /**
      * @see #tags
      */
-    public Map<SvnInfo,String> getTags() {
+    public Map<SvnInfo,List<String>> getTags() {
         return Collections.unmodifiableMap(tags);
+    }
+
+    /**
+     * Returns true if this build has already been tagged at least once.
+     */
+    public boolean isTagged() {
+        for (List<String> t : tags.values()) {
+            if(!t.isEmpty())    return true;
+        }
+        return false;
     }
 
     private static final Pattern TRUNK_BRANCH_MARKER = Pattern.compile("/(trunk|branches)(/|$)");
@@ -106,11 +117,11 @@ public class SubversionTagAction extends AbstractScmTagAction {
         Map<SvnInfo,String> newTags = new HashMap<SvnInfo,String>();
 
         int i=-1;
-        for (Entry<SvnInfo, String> e : tags.entrySet()) {
+        for (SvnInfo e : tags.keySet()) {
             i++;
             if(tags.size()>1 && req.getParameter("tag"+i)==null)
                 continue; // when tags.size()==1, UI won't show the checkbox.
-            newTags.put(e.getKey(),req.getParameter("name" + i));
+            newTags.put(e,req.getParameter("name" + i));
         }
 
         new TagWorkerThread(newTags).start();
@@ -156,8 +167,10 @@ public class SubversionTagAction extends AbstractScmTagAction {
                 }
 
                 // completed successfully
-                SubversionTagAction.this.tags.putAll(tagSet);
+                for (Entry<SvnInfo,String> e : tagSet.entrySet())
+                    SubversionTagAction.this.tags.get(e.getKey()).add(e.getValue());
                 build.save();
+                workerThread = null;
            } catch (Throwable e) {
                e.printStackTrace(listener.fatalError(e.getMessage()));
            }

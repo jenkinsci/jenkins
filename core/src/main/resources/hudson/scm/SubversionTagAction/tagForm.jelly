@@ -4,12 +4,44 @@
   This belongs to a build view.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout norefresh="true">
+  <d:taglib uri="local">
+    <d:tag name="listTags">
+      <ul>
+        <j:forEach var="t" items="${tags}">
+          <li>${t}</li>
+        </j:forEach>
+      </ul>
+    </d:tag>
+  </d:taglib>
+
+  <l:layout norefresh="true" xmlns:local="local">
     <st:include it="${it.build}" page="sidepanel.jelly" />
     <l:main-panel>
       <h1>Build #${it.build.number}</h1>
 
       <j:set var="tags" value="${it.tags}" />
+      <j:if test="${it.isTagged()}">
+        <p>
+          This build is already tagged:
+        </p>
+        <j:choose>
+          <j:when test="${tags.size()==1}">
+            <local:listTags tags="${tags.values().iterator().next()}"/>
+          </j:when>
+          <j:otherwise>
+            <ul>
+              <j:forEach var="m" items="${tags.entrySet}">
+                <li>
+                  ${m.key.url}
+                  <local:listTags tags="${m.value}"/>
+                </li>
+              </j:forEach>
+            </ul>
+          </j:otherwise>
+        </j:choose>
+
+        <h2>Create more tags</h2>
+      </j:if>
       <form action="submit" method="get">
         <table class="middle-align">
           <tr>
@@ -19,17 +51,17 @@
             <th>Module URL</th>
             <th>Tag URL</th>
           </tr>
-          <j:forEach var="m" items="${tags.entrySet()}" varStatus="loop">
+          <j:forEach var="m" items="${tags.keySet()}" varStatus="loop">
             <tr>
               <j:if test="${tags.size()!=1}">
                 <td><input type="checkbox" name="tag${loop.index}" checked="true" id="tag${loop.index}" onchange="updateRow(this,${loop.index})" /></td>
               </j:if>
               <td style="white-space:nowrap;"><label for="tag${loop.index}">
-                ${m.key.url} (rev.${m.key.revision})
+                ${m.url} (rev.${m.revision})
               </label></td>
               <td width="100%">
                 <input type="text" name="name${loop.index}"
-                       value="${it.makeTagURL(m.key)}" style="width:100%" id="name${loop.index}" />
+                       value="${it.makeTagURL(m)}" style="width:100%" id="name${loop.index}" />
               </td>
             </tr>
           </j:forEach>
