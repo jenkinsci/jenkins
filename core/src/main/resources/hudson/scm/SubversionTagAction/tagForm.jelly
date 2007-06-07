@@ -9,18 +9,32 @@
     <l:main-panel>
       <h1>Build #${it.build.number}</h1>
 
-      <j:set var="tags" value="${it.tags}" statusVar="loop"/>
+      <j:set var="tags" value="${it.tags}"/>
       <form action="submit" method="get">
-        <table>
-          <j:forEach var="m" items="${tags.entrySet()}">
+        <table class="middle-align">
+          <tr>
+            <th></th>
+            <th>Module URL</th>
+            <th>Tag URL</th>
+          </tr>
+          <j:forEach var="m" items="${tags.entrySet()}" varStatus="loop">
             <tr>
-              <td><input type="checkbox" name="tag${loop.index}" checked="true" /></td>
-              <td>${m.key.url} (${m.key.revision})</td>
-              <td><input type="text" name="name${loop.index}" value="xxx" /></td>
+              <td><input type="checkbox" name="tag${loop.index}" checked="true" id="tag${loop.index}" onchange="updateRow(this,${loop.index})" /></td>
+              <td style="white-space:nowrap;"><label for="tag${loop.index}">
+                ${m.key.url} (rev.${m.key.revision})
+              </label></td>
+              <td width="100%"><input type="text" name="name${loop.index}" value="xxx" style="width:100%" id="name${loop.index}" /></td>
             </tr>
           </j:forEach>
         </table>
         <input type="submit" />
+        <script>
+          <!-- update the visual feedback depending on the checkbox state -->
+          function updateRow(e,i) {
+            e.parentNode.parentNode.style.color = e.checked ? "inherit" : "grey";
+            $("name"+i).disabled = !e.checked;
+          }
+        </script>
       </form>
     </l:main-panel>
   </l:layout>
