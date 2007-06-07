@@ -1,0 +1,27 @@
+<!--
+  Displays the form to choose the tag name.
+
+  This belongs to a build view.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout norefresh="true">
+    <st:include it="${it.build}" page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>Build #${it.build.number}</h1>
+
+      <j:set var="tags" value="${it.tags}" statusVar="loop"/>
+      <form action="submit" method="get">
+        <table>
+          <j:forEach var="m" items="${tags.entrySet()}">
+            <tr>
+              <td><input type="checkbox" name="tag${loop.index}" checked="true" /></td>
+              <td>${m.key.url} (${m.key.revision})</td>
+              <td><input type="text" name="name${loop.index}" value="xxx" /></td>
+            </tr>
+          </j:forEach>
+        </table>
+        <input type="submit" />
+      </form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

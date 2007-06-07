@@ -245,6 +245,8 @@ public class SubversionSCM extends SCM implements Serializable {
             for (Entry<String,SvnInfo> e : revMap.entrySet()) {
                 w.println( e.getKey() +'/'+ e.getValue().revision );
             }
+            if(tagEnabled)
+                build.addAction(new SubversionTagAction(build,revMap.values()));
         } finally {
             w.close();
         }
@@ -332,12 +334,12 @@ public class SubversionSCM extends SCM implements Serializable {
         return SVNClientManager.newInstance(SVNWCUtil.createDefaultOptions(true),sam);
     }
 
-    public static final class SvnInfo implements Serializable {
+    public static final class SvnInfo implements Serializable, Comparable<SvnInfo> {
         /**
          * Decoded repository URL.
          */
-        final String url;
-        final long revision;
+        public final String url;
+        public final long revision;
 
         public SvnInfo(String url, long revision) {
             this.url = url;
@@ -350,6 +352,38 @@ public class SubversionSCM extends SCM implements Serializable {
 
         public SVNURL getSVNURL() throws SVNException {
             return SVNURL.parseURIDecoded(url);
+        }
+
+        public int compareTo(SvnInfo that) {
+            int r = this.url.compareTo(that.url);
+            if(r!=0)    return r;
+
+            if(this.revision<that.revision) return -1;
+            if(this.revision>that.revision) return +1;
+            return 0;
+        }
+
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SvnInfo svnInfo = (SvnInfo) o;
+
+            if (revision != svnInfo.revision) return false;
+            if (!url.equals(svnInfo.url)) return false;
+
+            return true;
+        }
+
+        public int hashCode() {
+            int result;
+            result = url.hashCode();
+            result = 31 * result + (int) (revision ^ (revision >>> 32));
+            return result;
+        }
+
+        public String toString() {
+            return String.format("%s (rev.%s)",url,revision);
         }
 
         private static final long serialVersionUID = 1L;
@@ -940,4 +974,10 @@ public class SubversionSCM extends SCM implements Serializable {
     }
     
     private static final Logger LOGGER = Logger.getLogger(SubversionSCM.class.getName());
+
+    /**
+     * Optionally enable tagging support, so that this feature can be hidden
+     * until it becomes stable.
+     */
+    public static boolean tagEnabled = Boolean.getBoolean(SubversionSCM.class.getName()+".tag");
 }

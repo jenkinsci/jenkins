@@ -1,16 +1,14 @@
 package hudson.scm;
 
-import static hudson.Util.fixNull;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
+import static hudson.Util.fixNull;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Job;
@@ -21,11 +19,11 @@ import hudson.model.TaskListener;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
+import hudson.scm.AbstractScmTagAction.AbstractTagWorkerThread;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ByteBuffer;
 import hudson.util.ForkOutputStream;
 import hudson.util.FormFieldValidator;
-import hudson.util.StreamTaskListener;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.zip.ZipEntry;
@@ -1024,8 +1022,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
     /**
      * Action for a build that performs the tagging.
      */
-    public final class TagAction extends AbstractModelObject implements Action {
-        private final AbstractBuild build;
+    public final class TagAction extends AbstractScmTagAction {
 
         /**
          * If non-null, that means the build is already tagged.
@@ -1033,19 +1030,8 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
          */
         private volatile String tagName;
 
-        /**
-         * If non-null, that means the tagging is in progress
-         * (asynchronously.)
-         */
-        private transient volatile TagWorkerThread workerThread;
-
-        /**
-         * Hold the log of "cvs tag" operation.
-         */
-        private transient WeakReference<LargeText> log;
-
         public TagAction(AbstractBuild build) {
-            this.build = build;
+            super(build);
         }
 
         public String getIconFileName() {
@@ -1063,21 +1049,9 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                 return "CVS tag";
         }
 
-        public String getUrlName() {
-            return "tagBuild";
-        }
-
         public String[] getTagNames() {
             if(tagName==null)   return new String[0];
             return tagName.split(" ");
-        }
-
-        public TagWorkerThread getWorkerThread() {
-            return workerThread;
-        }
-
-        public AbstractBuild getBuild() {
-            return build;
         }
 
         public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -1154,21 +1128,6 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         }
 
         /**
-         * Handles incremental log output.
-         */
-        public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-            if(log==null) {
-                rsp.setStatus(HttpServletResponse.SC_OK);
-            } else {
-                LargeText text = log.get();
-                if(text!=null)
-                    text.doProgressText(req,rsp);
-                else
-                    rsp.setStatus(HttpServletResponse.SC_OK);
-            }
-        }
-
-        /**
          * Performs tagging.
          */
         public void perform(String tagName, TaskListener listener) {
@@ -1240,19 +1199,11 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         }
     }
 
-    public static final class TagWorkerThread extends Thread {
-        // StringWriter is synchronized
-        private final ByteBuffer log = new ByteBuffer();
-        private final LargeText text = new LargeText(log,false);
+    public static final class TagWorkerThread extends AbstractTagWorkerThread {
         private final Map<AbstractBuild,String> tagSet;
 
         public TagWorkerThread(Map<AbstractBuild,String> tagSet) {
             this.tagSet = tagSet;
-        }
-
-        public String getLog() {
-            // this method can be invoked from another thread.
-            return log.toString();
         }
 
         public synchronized void start() {
@@ -1267,9 +1218,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             super.start();
         }
 
-        public void run() {
-            TaskListener listener = new StreamTaskListener(log);
-
+        protected void perform(TaskListener listener) {
             for (Entry<AbstractBuild, String> e : tagSet.entrySet()) {
                 TagAction ta = e.getKey().getAction(TagAction.class);
                 if(ta==null) {
@@ -1285,9 +1234,6 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
                 ta.perform(e.getValue(), listener);
                 listener.getLogger().println();
             }
-
-            listener.getLogger().println("Completed");
-            text.markAsComplete();
         }
     }
 
