@@ -136,22 +136,31 @@ public class SubversionTagAction extends AbstractScmTagAction {
 
         @Override
         protected void perform(TaskListener listener) {
-            SVNClientManager cm = SubversionSCM.createSvnClientManager(SubversionSCM.DescriptorImpl.DESCRIPTOR.createAuthenticationProvider());
+            try {
+                SVNClientManager cm = SubversionSCM.createSvnClientManager(SubversionSCM.DescriptorImpl.DESCRIPTOR.createAuthenticationProvider());
 
-            for (Entry<SvnInfo, String> e : tagSet.entrySet()) {
-                PrintStream logger = listener.getLogger();
-                logger.println("Tagging "+e.getKey()+" to "+e.getValue());
+                for (Entry<SvnInfo, String> e : tagSet.entrySet()) {
+                    PrintStream logger = listener.getLogger();
+                    logger.println("Tagging "+e.getKey()+" to "+e.getValue());
 
-                try {
-                    SVNURL src = SVNURL.parseURIDecoded(e.getKey().url);
-                    SVNURL dst = SVNURL.parseURIDecoded(e.getValue());
+                    try {
+                        SVNURL src = SVNURL.parseURIDecoded(e.getKey().url);
+                        SVNURL dst = SVNURL.parseURIDecoded(e.getValue());
 
-                    SVNCopyClient svncc = cm.getCopyClient();
-                    svncc.doCopy(src, SVNRevision.create(e.getKey().revision), dst, false, true, "Tagged from "+build );
-                } catch (SVNException x) {
-                    x.printStackTrace(listener.error("Failed to tag"));
+                        SVNCopyClient svncc = cm.getCopyClient();
+                        svncc.doCopy(src, SVNRevision.create(e.getKey().revision), dst, false, true, "Tagged from "+build );
+                    } catch (SVNException x) {
+                        x.printStackTrace(listener.error("Failed to tag"));
+                        return;
+                    }
                 }
-            }
+
+                // completed successfully
+                SubversionTagAction.this.tags.putAll(tagSet);
+                build.save();
+           } catch (Throwable e) {
+               e.printStackTrace(listener.fatalError(e.getMessage()));
+           }
         }
     }
 }
