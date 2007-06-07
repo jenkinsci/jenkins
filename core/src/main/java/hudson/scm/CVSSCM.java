@@ -1054,17 +1054,6 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
             return tagName.split(" ");
         }
 
-        public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            req.setAttribute("build",build);
-            req.getView(this,chooseAction()).forward(req,rsp);
-        }
-
-        private synchronized String chooseAction() {
-            if(workerThread!=null)
-                return "inProgress.jelly";
-            return "tagForm.jelly";
-        }
-
         /**
          * Invoked to actually tag the workspace.
          */

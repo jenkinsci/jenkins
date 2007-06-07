@@ -15,12 +15,19 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
 
 /**
  * Common part of {@link CVSSCM.TagAction} and {@link SubversionTagAction}.
+ *
+ * <p>
+ * This class implements the action that tags the modules. Derived classes
+ * need to provide <tt>tagForm.jelly</tt> view that displays a form for
+ * letting user start tagging.
+ *
  * @author Kohsuke Kawaguchi
  */
-abstract class AbstractScmTagAction extends AbstractModelObject implements Action {
+public abstract class AbstractScmTagAction extends AbstractModelObject implements Action {
     protected final AbstractBuild build;
 
     /**
@@ -49,6 +56,17 @@ abstract class AbstractScmTagAction extends AbstractModelObject implements Actio
 
     public AbstractTagWorkerThread getWorkerThread() {
         return workerThread;
+    }
+
+    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        req.setAttribute("build",build);
+        req.getView(this,chooseAction()).forward(req,rsp);
+    }
+
+    private synchronized String chooseAction() {
+        if(workerThread!=null)
+            return "inProgress.jelly";
+        return "tagForm.jelly";
     }
 
     /**
