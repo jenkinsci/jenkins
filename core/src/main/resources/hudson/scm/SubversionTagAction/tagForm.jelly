@@ -9,7 +9,6 @@
     <l:main-panel>
       <h1>Build #${it.build.number}</h1>
 
-      <j:set var="tags" value="${it.tags}"/>
       <form action="submit" method="get">
         <table class="middle-align">
           <tr>
@@ -17,7 +16,7 @@
             <th>Module URL</th>
             <th>Tag URL</th>
           </tr>
-          <j:forEach var="m" items="${tags.entrySet()}" varStatus="loop">
+          <j:forEach var="m" items="${it.tags.entrySet()}" varStatus="loop">
             <tr>
               <td><input type="checkbox" name="tag${loop.index}" checked="true" id="tag${loop.index}" onchange="updateRow(this,${loop.index})" /></td>
               <td style="white-space:nowrap;"><label for="tag${loop.index}">
