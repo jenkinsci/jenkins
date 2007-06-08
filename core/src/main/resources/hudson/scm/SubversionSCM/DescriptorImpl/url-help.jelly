@@ -1,0 +1,9 @@
+<div>
+  Specify the subversion repository URL to check out, such as "http://svn.apache.org/repos/asf/ant/".
+  <br/>
+  When you enter URL, Hudson automatically checks if Hudson can connect to it. If access requires
+  authentication, it will ask you the necessary credential. If you already have a working
+  credential but would like to change it for other reasons,
+  click <a href="${rootURL}/scm/SubversionSCM/enterCredential">this link</a>
+  and specify different credential.
+</div>

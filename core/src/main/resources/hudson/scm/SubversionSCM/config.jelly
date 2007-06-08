@@ -2,7 +2,7 @@
   <f:entry title="Modules">
     <f:repeatable var="loc" items="${scm.locations}" noAddButton="true" minimum="1">
       <table width="100%">
-        <f:entry title="Repository URL" help="/help/subversion/url.html">
+        <f:entry title="Repository URL" help="${rootURL}/scm/SubversionSCM/url-help">
           <f:textbox name="svn.location_remote" value="${loc.remote}"
             checkUrl="'${rootURL}/scm/SubversionSCM/svnRemoteLocationCheck?value='+encode(this.value)"/>
         </f:entry>
