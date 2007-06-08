@@ -46,6 +46,7 @@ public class XStream2 extends XStream {
         registerConverter(new RobustCollectionConverter(getMapper()),10);
         registerConverter(new CopyOnWriteList.ConverterImpl(getMapper()),10);
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10);
+        registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.

@@ -1,5 +1,13 @@
 package hudson.util;
 
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.collections.TreeMapConverter;
+import com.thoughtworks.xstream.converters.collections.MapConverter;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.mapper.Mapper;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -120,6 +128,27 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         protected Map<K,V> copy() {
             return new HashMap<K,V>(core);
         }
+
+        public static class ConverterImpl extends MapConverter {
+            public ConverterImpl(Mapper mapper) {
+                super(mapper);
+            }
+
+            @Override
+            public boolean canConvert(Class type) {
+                return type==Hash.class;
+            }
+
+            @Override
+            public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+                return new Hash((Map) super.unmarshal(reader,context));
+            }
+
+            @Override
+            public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+                super.marshal(((Hash)source).core,writer,context);
+            }
+        }
     }
 
     /**
@@ -145,6 +174,28 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
             TreeMap<K, V> m = new TreeMap<K, V>(comparator);
             m.putAll(core);
             return m;
+        }
+
+        public static class ConverterImpl extends TreeMapConverter {
+            public ConverterImpl(Mapper mapper) {
+                super(mapper);
+            }
+
+            @Override
+            public boolean canConvert(Class type) {
+                return type==Tree.class;
+            }
+
+            @Override
+            public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+                TreeMap tm = (TreeMap) super.unmarshal(reader,context);
+                return new Tree(tm,tm.comparator());
+            }
+
+            @Override
+            public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+                super.marshal(((Tree)source).core,writer,context);
+            }
         }
     }
 }
