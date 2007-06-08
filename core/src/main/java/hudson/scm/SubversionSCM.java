@@ -246,8 +246,7 @@ public class SubversionSCM extends SCM implements Serializable {
             for (Entry<String,SvnInfo> e : revMap.entrySet()) {
                 w.println( e.getKey() +'/'+ e.getValue().revision );
             }
-            if(tagEnabled)
-                build.addAction(new SubversionTagAction(build,revMap.values()));
+            build.addAction(new SubversionTagAction(build,revMap.values()));
         } finally {
             w.close();
         }
@@ -981,10 +980,4 @@ public class SubversionSCM extends SCM implements Serializable {
     }
     
     private static final Logger LOGGER = Logger.getLogger(SubversionSCM.class.getName());
-
-    /**
-     * Optionally enable tagging support, so that this feature can be hidden
-     * until it becomes stable.
-     */
-    public static boolean tagEnabled = Boolean.getBoolean(SubversionSCM.class.getName()+".tag");
 }
