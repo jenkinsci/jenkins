@@ -5,6 +5,11 @@
       <h1>Executed Mojos</h1>
 
       <j:choose>
+        <j:when test="${it.building}">
+          <div>
+            Build in progress.
+          </div>
+        </j:when>
         <j:when test="${empty(it.executedMojos)}">
           <div>
             No mojos executed.
