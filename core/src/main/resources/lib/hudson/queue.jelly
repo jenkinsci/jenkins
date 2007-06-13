@@ -29,12 +29,10 @@
         </j:if>
         <j:forEach var="item" items="${items}">
           <tr>
-            <j:set var="id" value="${h.generateId()}"/>
-            <td class="pane" width="100%" id="${id}">
+            <td class="pane" width="100%" tooltip="${item.why}">
               <a href="${rootURL}/${item.task.url}">
                 ${item.task.name}
               </a>
-              <t:tooltip id="${id}">${item.why}</t:tooltip>
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <l:isAdmin>

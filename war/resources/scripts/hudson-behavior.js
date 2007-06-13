@@ -63,6 +63,8 @@ function findFollowingTR(input,className) {
   return tr;
 }
 
+// shared tooltip object
+var tooltip;
 
 
 
@@ -70,6 +72,10 @@ function findFollowingTR(input,className) {
 //========================================================
 
 var hudsonRules = {
+  "BODY" : function(e) {
+      tooltip = new YAHOO.widget.Tooltip("tt",{context:[]});
+  },
+
   ".advancedButton" : function(e) {
     e.onclick = function() {
       var link = this.parentNode;
@@ -193,6 +199,16 @@ var hudsonRules = {
             ip = ip.previousSibling;
         // set up the logic
         object(repetableSupport).init( e, e.firstChild, ip);
+    },
+
+    // hook up tooltip
+    "[tooltip]" : function(e) {
+        // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
+        var event = YAHOO.util.Event;
+        event.addListener(e, "mouseover", tooltip.onContextMouseOver, tooltip);
+        event.addListener(e, "mousemove", tooltip.onContextMouseMove, tooltip);
+        event.addListener(e, "mouseout", tooltip.onContextMouseOut, tooltip);
+        e.title = e.getAttribute("tooltip");
     }
 };
 
@@ -338,7 +354,9 @@ function refreshPart(id,url) {
                 var div = document.createElement('div');
                 div.innerHTML = rsp.responseText;
 
-                p.insertBefore(div.firstChild, next);
+                var node = div.firstChild;
+                p.insertBefore(node, next);
+                Behaviour.applySubtree(node);
             }
         });
     }, 5000);
@@ -384,16 +402,6 @@ function encode(str){
         }
     }
     return s0;
-}
-
-// create a tooltip that applies to the element of the specified ID.
-// @param text
-//    HTML text of the tooltip
-function makeTooltip(id,text) {
-    new YAHOO.widget.Tooltip("tooltip-"+id, {
-      context:id,
-      text:text,
-      showDelay:500 } );
 }
 
 // when there are multiple form elements of the same name,

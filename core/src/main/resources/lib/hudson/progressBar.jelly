@@ -10,6 +10,9 @@
     <j:if test="${attrs.id!=null}">
       <x:attribute name="id">${id}</x:attribute>
     </j:if>
+    <j:if test="${attrs.tooltip!=null}">
+      <x:attribute name="tooltip">${tooltip}</x:attribute>
+    </j:if>
     <j:if test="${href!=null}">
 	  	<x:attribute name="style">cursor:pointer</x:attribute>
 	    <x:attribute name="onclick">window.location='${href}'</x:attribute>

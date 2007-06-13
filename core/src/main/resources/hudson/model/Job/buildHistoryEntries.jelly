@@ -19,9 +19,8 @@
         <img width="16" height="16" src="${rootURL}/images/16x16/grey.gif" alt="pending" /><st:nbsp/>
         #${it.nextBuildNumber}
       </td>
-      <td nowrap="nowrap">
+      <td nowrap="nowrap" tooltip="${pending.why}">
         (pending)
-        <t:tooltip id="${id}">${pending.why}</t:tooltip>
       </td>
     </tr>
   </j:if>
