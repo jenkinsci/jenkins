@@ -51,7 +51,7 @@ public class ViewSVN extends SubversionRepositoryBrowser {
 
     @Override
     public URL getChangeSetLink(SubversionChangeLogSet.LogEntry changeSet) throws IOException {
-        return new URL(url,"."+param().add("view=rev").add("revision="+changeSet.getRevision()));
+        return new URL(url,"."+param().add("view=rev").add("rev="+changeSet.getRevision()));
     }
 
     private QueryBuilder param() {
