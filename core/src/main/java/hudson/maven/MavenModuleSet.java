@@ -371,7 +371,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         super.submit(req,rsp);
 
         rootPOM = Util.fixEmpty(req.getParameter("rootPOM").trim());
-        if(rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
+        if(rootPOM!=null && rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
