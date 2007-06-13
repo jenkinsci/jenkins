@@ -1,12 +1,11 @@
 package hudson.scm.browsers;
 
 import hudson.model.Descriptor;
-import hudson.scm.ChangeLogSet.Entry;
+import hudson.scm.EditType;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SubversionChangeLogSet;
 import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.scm.SubversionRepositoryBrowser;
-import hudson.scm.EditType;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
