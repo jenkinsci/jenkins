@@ -16,6 +16,7 @@ import java.net.URL;
  * {@link RepositoryBrowser} for CVS.
  * @author Kohsuke Kawaguchi
  */
+// See http://viewvc.tigris.org/source/browse/*checkout*/viewvc/trunk/docs/url-reference.html
 public final class ViewCVS extends CVSRepositoryBrowser {
     /**
      * The URL of the top of the site.

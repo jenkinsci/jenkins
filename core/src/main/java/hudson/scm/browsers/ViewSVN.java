@@ -19,6 +19,7 @@ import java.net.URL;
  * @author Kohsuke Kawaguchi
  * @since 1.90
  */
+// See http://viewvc.tigris.org/source/browse/*checkout*/viewvc/trunk/docs/url-reference.html
 public class ViewSVN extends SubversionRepositoryBrowser {
     /**
      * The URL of the top of the site.
