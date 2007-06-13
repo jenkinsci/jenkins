@@ -184,6 +184,15 @@ var hudsonRules = {
         e.onclick = function() {
             repetableSupport.onDelete(this);
         };
+    },
+
+    "DIV.repeated-container" : function(e) {
+        // compute the insertion point
+        var ip = e.lastChild;
+        while(!Element.hasClassName(ip,"repeatable-insertion-point"))
+            ip = ip.previousSibling;
+        // set up the logic
+        object(repetableSupport).init( e, e.firstChild, ip);
     }
 };
 

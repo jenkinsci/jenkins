@@ -53,9 +53,9 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set var="id" value="${h.generateId()}"/>
 
-  <div class="repeated-container" id="block${id}-container">
-    <!-- this is the master copy -->
-    <div id="block${id}-master" class="repeated-chunk" style="display:none">
+  <div class="repeated-container">
+    <!-- The first DIV is the master copy. -->
+    <div class="repeated-chunk" style="display:none">
       <d:invokeBody />
     </div>
     <!-- then populate them for each item -->
@@ -75,15 +75,9 @@
       </j:forEach>
     </j:if>
 
-    <div id="block${id}-insertion-point" />
+    <div class="repeatable-insertion-point" />
     <j:if test="${!attrs.noAddButton}">
       <input type="button" value="Add" class="repeatable-add" />
     </j:if>
   </div>
-  <script>
-    object(repetableSupport).init(
-      'block${id}-container',
-      'block${id}-master',
-      'block${id}-insertion-point');
-  </script>
 </j:jelly>
