@@ -1,17 +1,15 @@
 package hudson.maven;
 
 import hudson.FilePath.FileCallable;
-import hudson.maven.reporters.MavenMailer;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
+import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
 import org.apache.maven.embedder.MavenEmbedderException;
-import org.apache.maven.model.CiManagement;
-import org.apache.maven.model.Notifier;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 
