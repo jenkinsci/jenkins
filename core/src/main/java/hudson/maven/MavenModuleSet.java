@@ -54,7 +54,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     transient /*final*/ Map<ModuleName,MavenModule> modules = new CopyOnWriteMap.Tree<ModuleName,MavenModule>();
 
     /**
-     * Name of the top-level module.
+     * Name of the top-level module. Null until the root module is determined.
      */
     private ModuleName rootModule;
 
@@ -281,6 +281,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     public MavenModule getRootModule() {
+        if(rootModule==null)    return null;
         return modules.get(rootModule);
     }
 
