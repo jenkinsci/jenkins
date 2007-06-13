@@ -61,7 +61,6 @@
     <!-- then populate them for each item -->
     <j:forEach var="loop" varStatus="loopStatus" items="${items}">
       <div class="repeated-chunk">
-        <!-- how do I do this without using Java code? -->
         <j:set var="${var}" value="${loop}" />
         <d:invokeBody />
       </div>
