@@ -189,17 +189,21 @@ public class SubversionSCM extends SCM implements Serializable {
                 return revisions;
 
             BufferedReader br = new BufferedReader(new FileReader(file));
-            String line;
-            while((line=br.readLine())!=null) {
-                int index = line.lastIndexOf('/');
-                if(index<0) {
-                    continue;   // invalid line?
+            try {
+                String line;
+                while((line=br.readLine())!=null) {
+                    int index = line.lastIndexOf('/');
+                    if(index<0) {
+                        continue;   // invalid line?
+                    }
+                    try {
+                        revisions.put(line.substring(0,index), Long.parseLong(line.substring(index+1)));
+                    } catch (NumberFormatException e) {
+                        // perhaps a corrupted line. ignore
+                    }
                 }
-                try {
-                    revisions.put(line.substring(0,index), Long.parseLong(line.substring(index+1)));
-                } catch (NumberFormatException e) {
-                    // perhaps a corrupted line. ignore
-                }
+            } finally {
+                br.close();
             }
         }
 
