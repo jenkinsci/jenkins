@@ -56,6 +56,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.io.BufferedOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -173,7 +175,15 @@ public class SubversionSCM extends SCM implements Serializable {
             return createEmptyChangeLog(changelogFile, listener, "log");
         }
 
-        if(!new SubversionChangeLogBuilder(build,listener,this).run(externals,new StreamResult(changelogFile)))
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(changelogFile));
+        boolean r;
+        try {
+            r = new SubversionChangeLogBuilder(build, listener, this).run(externals, new StreamResult(changelogFile));
+        } finally {
+            os.close();
+        }
+
+        if(!r)
             createEmptyChangeLog(changelogFile, listener, "log");
 
         return true;
