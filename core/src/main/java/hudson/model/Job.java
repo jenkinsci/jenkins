@@ -514,6 +514,13 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
             String newName = req.getParameter("name");
             if(newName!=null && !newName.equals(name)) {
+                // check this error early to avoid HTTP response splitting.
+                try {
+                    Hudson.checkGoodName(newName);
+                } catch (ParseException e) {
+                    sendError(e,req,rsp);
+                    return;
+                }
                 rsp.sendRedirect("rename?newName="+newName);
             } else {
                 rsp.sendRedirect(".");

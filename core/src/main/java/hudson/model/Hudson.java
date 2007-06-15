@@ -74,6 +74,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.regex.Pattern;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -1436,8 +1437,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * Changes the icon size by changing the cookie
      */
-    public void doIconSize( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        rsp.addCookie(new Cookie("iconSize",req.getQueryString()));
+    public void doIconSize( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        String qs = req.getQueryString();
+        if(!ICON_SIZE.matcher(qs).matches())
+            throw new ServletException();
+        rsp.addCookie(new Cookie("iconSize", qs));
         String ref = req.getHeader("Referer");
         if(ref==null)   ref=".";
         rsp.sendRedirect2(ref);
@@ -1651,6 +1655,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     public static String VERSION;
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
+
+    private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
 
     static {
         XSTREAM.alias("hudson",Hudson.class);
