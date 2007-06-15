@@ -83,7 +83,7 @@ public final class FishEyeCVS extends CVSRepositoryBrowser {
                         value += '/';
                     }
                     if (!URL_PATTERN.matcher(value).matches()) {
-                        error("The URL should end like <tt>.../browse/foobar/</tt>");
+                        errorWithMarkup("The URL should end like <tt>.../browse/foobar/</tt>");
                         return;
                     }
                     try {

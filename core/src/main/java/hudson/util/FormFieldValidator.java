@@ -58,13 +58,28 @@ public abstract class FormFieldValidator {
     }
 
     /**
-     * Sends out an HTML fragment that indicates an error.
+     * Sends out a string error message that indicates an error.
      *
      * @param message
      *      Human readable message to be sent. <tt>error(null)</tt>
      *      can be used as <tt>ok()</tt>.
      */
     public void error(String message) throws IOException, ServletException {
+        errorWithMarkup(Util.escape(message));
+    }
+
+    /**
+     * Sends out an HTML fragment that indicates an error.
+     *
+     * <p>
+     * This method must be used with care to avoid cross-site scripting
+     * attack.
+     *
+     * @param message
+     *      Human readable message to be sent. <tt>error(null)</tt>
+     *      can be used as <tt>ok()</tt>.
+     */
+    public void errorWithMarkup(String message) throws IOException, ServletException {
         if(message==null) {
             ok();
         } else {

@@ -887,7 +887,7 @@ public class SubversionSCM extends SCM implements Serializable {
                     // remove unneeded whitespaces
                     url = url.trim();
                     if(!URL_PATTERN.matcher(url).matches()) {
-                        error("Invalid URL syntax. See "
+                        errorWithMarkup("Invalid URL syntax. See "
                             + "<a href=\"http://svnbook.red-bean.com/en/1.2/svn-book.html#svn.basic.in-action.wc.tbl-1\">this</a> "
                             + "for information about valid URLs.");
                         return;
@@ -908,13 +908,13 @@ public class SubversionSCM extends SCM implements Serializable {
                         e.printStackTrace(new PrintWriter(sw));
 
                         String message="";
-                        message += "Unable to access "+url+" : "+Util.escape( e.getErrorMessage().getFullMessage());
+                        message += "Unable to access "+Util.escape(url)+" : "+Util.escape( e.getErrorMessage().getFullMessage());
                         message += " <a href='#' id=svnerrorlink onclick='javascript:" +
                             "document.getElementById(\"svnerror\").style.display=\"block\";" +
                             "document.getElementById(\"svnerrorlink\").style.display=\"none\";" +
                             "return false;'>(show details)</a>";
                         message += "<pre id=svnerror style='display:none'>"+sw+"</pre>";
-                        message += " (Maybe you need to <a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>?)";
+                        message += " (Maybe you need to <a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+Util.escape(url)+"'>enter credential</a>?)";
                         message += "<br>";
                         logger.log(Level.INFO, "Failed to access subversion repository "+url,e);
                         error(message);
