@@ -31,14 +31,14 @@ public class Api extends AbstractModelObject {
     /**
      * Exposes the bean as XML.
      */
-    public void doXml(StaplerRequest req, final StaplerResponse rsp) throws IOException, ServletException {
+    public void doXml(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         rsp.serveExposedBean(req,bean, Flavor.XML);
     }
 
     /**
      * Exposes the bean as JSON.
      */
-    public void doJson(StaplerRequest req, final StaplerResponse rsp) throws IOException, ServletException {
+    public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         rsp.serveExposedBean(req,bean, Flavor.JSON);
     }
 }
