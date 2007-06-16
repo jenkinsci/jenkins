@@ -740,6 +740,7 @@ public class SubversionSCM extends SCM implements Serializable {
                     if (ISVNAuthenticationManager.USERNAME.equals(kind))
                         // user auth shouldn't be null.
                         return new SVNUserNameAuthentication("",false);
+                    return null;
                 }
                 
                 try {
