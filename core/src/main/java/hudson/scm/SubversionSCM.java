@@ -441,8 +441,9 @@ public class SubversionSCM extends SCM implements Serializable {
                 SVNWCClient svnWc = createSvnClientManager(authProvider).getWCClient();
                 // invoke the "svn info"
                 for( ModuleLocation module : getLocations() ) {
+                    File moduleFile = new File(ws,module.local).getCanonicalFile(); // canonicalize to remove ".." and ".". See #474
                     try {
-                        SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws,module.local),SVNRevision.WORKING));
+                        SvnInfo info = new SvnInfo(svnWc.doInfo(moduleFile,SVNRevision.WORKING));
                         revisions.put(info.url,info);
                     } catch (SVNException e) {
                         e.printStackTrace(listener.error("Failed to parse svn info for "+module));
