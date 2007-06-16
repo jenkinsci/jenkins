@@ -36,7 +36,7 @@ import java.io.PrintWriter;
  * @author Jesse Glick
  * @author Kohsuke Kawaguchi
  */
-public class MailSender<P extends AbstractProject<P,B>,B extends AbstractBuild<P,B>> {
+public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild<P, B>> {
     /**
      * Whitespace-separated list of e-mail addresses that represent recipients.
      */
@@ -62,47 +62,47 @@ public class MailSender<P extends AbstractProject<P,B>,B extends AbstractBuild<P
     public boolean execute(B build, BuildListener listener) throws InterruptedException {
         try {
             MimeMessage mail = getMail(build, listener);
-            if(mail!=null) {
+            if (mail != null) {
                 Address[] allRecipients = mail.getAllRecipients();
-                if(allRecipients!=null) {
-                StringBuffer buf = new StringBuffer("Sending e-mails to:");
+                if (allRecipients != null) {
+                    StringBuffer buf = new StringBuffer("Sending e-mails to:");
                     for (Address a : allRecipients)
-                    buf.append(' ').append(a);
-                listener.getLogger().println(buf);
-                Transport.send(mail);
+                        buf.append(' ').append(a);
+                    listener.getLogger().println(buf);
+                    Transport.send(mail);
                 } else {
                     listener.getLogger().println("An attempt to send an e-mail"
-                            + " to empty list of recipients, ignored.");
+                        + " to empty list of recipients, ignored.");
                 }
             }
         } catch (MessagingException e) {
-            e.printStackTrace( listener.error(e.getMessage()) );
+            e.printStackTrace(listener.error(e.getMessage()));
         }
 
         return true;
     }
 
     private MimeMessage getMail(B build, BuildListener listener) throws MessagingException, InterruptedException {
-        if(build.getResult()== Result.FAILURE) {
+        if (build.getResult() == Result.FAILURE) {
             return createFailureMail(build, listener);
         }
 
-        if(build.getResult()==Result.UNSTABLE) {
+        if (build.getResult() == Result.UNSTABLE) {
             B prev = build.getPreviousBuild();
-            if(!dontNotifyEveryUnstableBuild)
+            if (!dontNotifyEveryUnstableBuild)
                 return createUnstableMail(build, listener);
-            if(prev!=null) {
-                if(prev.getResult()==Result.SUCCESS)
+            if (prev != null) {
+                if (prev.getResult() == Result.SUCCESS)
                     return createUnstableMail(build, listener);
             }
         }
 
-        if(build.getResult()==Result.SUCCESS) {
+        if (build.getResult() == Result.SUCCESS) {
             B prev = build.getPreviousBuild();
-            if(prev!=null) {
-                if(prev.getResult()==Result.FAILURE)
+            if (prev != null) {
+                if (prev.getResult() == Result.FAILURE)
                     return createBackToNormalMail(build, "normal", listener);
-                if(prev.getResult()==Result.UNSTABLE)
+                if (prev.getResult() == Result.UNSTABLE)
                     return createBackToNormalMail(build, "stable", listener);
             }
         }
@@ -113,9 +113,9 @@ public class MailSender<P extends AbstractProject<P,B>,B extends AbstractBuild<P
     private MimeMessage createBackToNormalMail(B build, String subject, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build,"Hudson build is back to "+subject +": "));
+        msg.setSubject(getSubject(build, "Hudson build is back to " + subject + ": "));
         StringBuffer buf = new StringBuffer();
-        appendBuildUrl(build,buf);
+        appendBuildUrl(build, buf);
         msg.setText(buf.toString());
 
         return msg;
@@ -124,9 +124,9 @@ public class MailSender<P extends AbstractProject<P,B>,B extends AbstractBuild<P
     private MimeMessage createUnstableMail(B build, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build,"Hudson build became unstable: "));
+        msg.setSubject(getSubject(build, "Hudson build became unstable: "));
         StringBuffer buf = new StringBuffer();
-        appendBuildUrl(build,buf);
+        appendBuildUrl(build, buf);
         msg.setText(buf.toString());
 
         return msg;
@@ -134,7 +134,7 @@ public class MailSender<P extends AbstractProject<P,B>,B extends AbstractBuild<P
 
     private void appendBuildUrl(B build, StringBuffer buf) {
         String baseUrl = Mailer.DESCRIPTOR.getUrl();
-        if(baseUrl!=null) {
+        if (baseUrl != null) {
             buf.append("See ").append(baseUrl).append(Util.encode(build.getUrl())).append("changes\n\n");
         }
     }
@@ -145,7 +145,7 @@ public class MailSender<P extends AbstractProject<P,B>,B extends AbstractBuild<P
         msg.setSubject(getSubject(build, "Build failed in Hudson: "));
 
         StringBuffer buf = new StringBuffer();
-        appendBuildUrl(build,buf);
+        appendBuildUrl(build, buf);
 
         boolean firstChange = true;
         for (ChangeLogSet.Entry entry : build.getChangeSet()) {
@@ -234,24 +234,24 @@ public class MailSender<P extends AbstractProject<P,B>,B extends AbstractBuild<P
         MimeMessage msg = new MimeMessage(Mailer.DESCRIPTOR.createSession());
         // TODO: I'd like to put the URL to the page in here,
         // but how do I obtain that?
-        msg.setContent("","text/plain");
+        msg.setContent("", "text/plain");
         msg.setFrom(new InternetAddress(Mailer.DESCRIPTOR.getAdminAddress()));
         msg.setSentDate(new Date());
 
         List<InternetAddress> rcp = new ArrayList<InternetAddress>();
         StringTokenizer tokens = new StringTokenizer(recipients);
-        while(tokens.hasMoreTokens())
+        while (tokens.hasMoreTokens())
             rcp.add(new InternetAddress(tokens.nextToken()));
-        if(sendToIndividuals) {
+        if (sendToIndividuals) {
             Set<User> users = new HashSet<User>();
             for (Entry change : build.getChangeSet()) {
                 User a = change.getAuthor();
-                if(users.add(a)) {
+                if (users.add(a)) {
                     String adrs = a.getProperty(Mailer.UserProperty.class).getAddress();
-                    if(adrs!=null)
+                    if (adrs != null)
                         rcp.add(new InternetAddress(adrs));
                     else {
-                        listener.getLogger().println("Failed to send e-mail to "+a.getFullName()+" because no e-mail address is known, and no default e-mail domain is configured");
+                        listener.getLogger().println("Failed to send e-mail to " + a.getFullName() + " because no e-mail address is known, and no default e-mail domain is configured");
                     }
                 }
             }
@@ -261,7 +261,7 @@ public class MailSender<P extends AbstractProject<P,B>,B extends AbstractBuild<P
     }
 
     private String getSubject(B build, String caption) {
-        return caption +build.getProject().getName()+" #"+build.getNumber();
+        return caption + build.getProject().getName() + " #" + build.getNumber();
     }
 
     /**
@@ -285,7 +285,9 @@ public class MailSender<P extends AbstractProject<P,B>,B extends AbstractBuild<P
         return sb.toString();
     }
 
-    /** Check whether a path (/-separated) will be archived. */
+    /**
+     * Check whether a path (/-separated) will be archived.
+     */
     protected boolean artifactMatches(String path, B build) {
         return false;
     }
