@@ -57,6 +57,8 @@ public class User extends AbstractModelObject {
      * Loads the other data from disk if it's available.
      */
     private synchronized void load() {
+        properties.clear();
+
         XmlFile config = getConfigFile();
         try {
             if(config.exists())
@@ -65,7 +67,6 @@ public class User extends AbstractModelObject {
             LOGGER.log(Level.SEVERE, "Failed to load "+config,e);
         }
 
-        properties.clear();
         // allocate default instances if needed.
         // doing so after load makes sure that newly added user properties do get reflected
         for (UserPropertyDescriptor d : UserProperties.LIST) {
