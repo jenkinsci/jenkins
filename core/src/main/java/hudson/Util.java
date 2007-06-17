@@ -167,7 +167,7 @@ public class Util {
      * Checks if the given file represents a symlink.
      */
     //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
-    public boolean isSymlink(File file) throws IOException {
+    public static boolean isSymlink(File file) throws IOException {
         File parent = file.getParentFile();
         File canonicalFile = file.getCanonicalFile();
 
