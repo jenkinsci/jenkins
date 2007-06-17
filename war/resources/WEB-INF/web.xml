@@ -26,6 +26,15 @@
     <url-pattern>*.jelly</url-pattern>
   </servlet-mapping>
 
+  <filter>
+    <filter-name>authentication-filter</filter-name>
+    <filter-class>hudson.BasicAuthenticationFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>authentication-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
 
   <listener>
     <listener-class>hudson.WebAppMain</listener-class>

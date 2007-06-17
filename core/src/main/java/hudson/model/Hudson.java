@@ -2,6 +2,7 @@ package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
 import groovy.lang.GroovyShell;
+import hudson.BasicAuthenticationFilter;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Functions;
@@ -42,7 +43,6 @@ import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.FormFieldValidator;
 import hudson.util.MultipartFormDataParser;
-import hudson.util.Scrambler;
 import hudson.util.XStream2;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -52,7 +52,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -65,7 +64,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1242,44 +1240,24 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
-     * Authenticate the user by using the HTTP BASIC auth protocol.
-     * <p>
-     * This is useful for scripted clients, and complements the default
-     * form-based authentication.
+     * Checks if the user was successfully authenticated.
+     *
+     * @see BasicAuthenticationFilter
      */
     public void doSecured( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        String authorization = req.getHeader("Authorization");
-        String username = null;
-        String password = null;
-        if(authorization!=null) {
-            String uidpassword = Scrambler.descramble(authorization.substring(6));
-            int idx = uidpassword.indexOf(':');
-            if (idx >= 0) {
-                username = uidpassword.substring(0, idx);
-                password = uidpassword.substring(idx+1);
-            }
-        }
-
-        if(authorization==null || username==null) {
+        if(req.getUserPrincipal()==null) {
+            // authentication must have failed
             rsp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            rsp.setHeader("WWW-Authenticate","Basic realm=\"Hudson administrator\"");
             return;
         }
 
+        // the user is now authenticated, so send him back to the target
         String path = req.getContextPath()+req.getRestOfPath();
         String q = req.getQueryString();
         if(q!=null)
-            path += q;
+            path += '?'+q;
 
-        // prepare a redirect
-        rsp.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-        rsp.setHeader("Location",path);
-
-
-        // ... but first let the container authenticate this request
-        RequestDispatcher d = req.getServletContext().getRequestDispatcher("/j_security_check?j_username="+
-            URLEncoder.encode(username,"UTF-8")+"&j_password="+URLEncoder.encode(password,"UTF-8"));
-        d.include(req,rsp);
+        rsp.sendRedirect2(path);
     }
 
     /**
