@@ -1101,7 +1101,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
             save();
             if(result)
-                rsp.sendRedirect(".");  // go to the top page
+                rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
             else
                 rsp.sendRedirect("configure"); // back to config
         } catch (FormException e) {
