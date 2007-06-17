@@ -83,7 +83,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
      */
     public synchronized void abort() throws InterruptedException {
         if(polling!=null && !polling.isDone()) {
-            System.out.println("killing polling");
+            LOGGER.log(Level.INFO,"killing polling for "+job);
 
             abortNow = true;
             polling.cancel(true);
