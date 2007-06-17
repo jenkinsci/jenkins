@@ -139,7 +139,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * This can be used to propagate information from SCM to builds
      * (for example, SVN revision number.)
      */
-    public void buildEnvVars(Map<String,String> env) {
+    public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
         // default implementation is noop.
     }
 

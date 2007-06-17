@@ -226,7 +226,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         JDK jdk = project.getJDK();
         if(jdk !=null)
             jdk.buildEnvVars(env);
-        project.getScm().buildEnvVars(env);
+        project.getScm().buildEnvVars(this,env);
 
         return env;
     }

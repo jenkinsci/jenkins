@@ -163,8 +163,15 @@ public class SubversionSCM extends SCM implements Serializable {
         return username;
     }
 
+    @Override
     public SubversionRepositoryBrowser getBrowser() {
         return browser;
+    }
+
+    @Override
+    public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
+        super.buildEnvVars(build, env);
+
     }
 
     /**

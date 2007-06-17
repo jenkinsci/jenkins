@@ -4,12 +4,9 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Proc;
-import hudson.model.BuildListener;
 import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -56,7 +53,7 @@ abstract class AbstractCVSFamilySCM extends SCM {
         Map<String,String> env = new HashMap<String,String>();
         if(!overrideOnly)
             env.putAll(EnvVars.masterEnvVars);
-        buildEnvVars(env);
+        buildEnvVars(null/*TODO*/,env);
         return env;
     }
 }

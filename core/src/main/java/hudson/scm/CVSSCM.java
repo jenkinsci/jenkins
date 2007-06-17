@@ -725,7 +725,7 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         return DescriptorImpl.DESCRIPTOR;
     }
 
-    public void buildEnvVars(Map<String,String> env) {
+    public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
         if(cvsRsh!=null)
             env.put("CVS_RSH",cvsRsh);
         String cvspass = getDescriptor().getCvspassFile();
