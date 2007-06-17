@@ -13,6 +13,7 @@
         <dt><a href="xml">XML API</a></dt>
         <dd>
           Access data exposed in <a href="..">HTML</a> as XML for machine consumption.
+          <a href="schema">Schema</a> is also available.
         </dd>
 
         <dt><a href="json">JSON API</a></dt>

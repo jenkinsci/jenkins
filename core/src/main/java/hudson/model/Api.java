@@ -4,8 +4,11 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.Flavor;
+import org.kohsuke.stapler.export.SchemaGenerator;
+import org.kohsuke.stapler.export.ModelBuilder;
 
 import javax.servlet.ServletException;
+import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 
 /**
@@ -33,6 +36,16 @@ public class Api extends AbstractModelObject {
      */
     public void doXml(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         rsp.serveExposedBean(req,bean, Flavor.XML);
+    }
+
+    /**
+     * Generate schema.
+     */
+    public void doSchema(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        rsp.setContentType("application/xml");
+        StreamResult r = new StreamResult(rsp.getOutputStream());
+        new SchemaGenerator(new ModelBuilder().get(bean.getClass())).generateSchema(r);
+        r.getOutputStream().close();
     }
 
     /**
