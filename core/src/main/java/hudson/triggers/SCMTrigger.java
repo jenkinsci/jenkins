@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Date;
+import java.util.Set;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -119,7 +122,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         return new File(job.getRootDir(),"scm-polling.log");
     }
 
-    public TriggerDescriptor getDescriptor() {
+    public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
 
@@ -130,6 +133,11 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          * Used to control the execution of the polling tasks.
          */
         transient volatile ExecutorService executor;
+
+        /**
+         * Jobs that are being polled. The value is useful for trouble-shooting.
+         */
+        final transient Set<SCMedItem> items = Collections.synchronizedSet(new HashSet<SCMedItem>());
 
         /**
          * Max number of threads for SCM polling.
@@ -150,6 +158,14 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         public ExecutorService getExecutor() {
             return executor;
+        }
+
+        /**
+         * Gets the snapshot of {@link SCMedItem}s that are being polled at this very moment.
+         * Designed for trouble-shooting probe.
+         */
+        public SCMedItem[] getItemsBeingPolled() {
+            return items.toArray(new SCMedItem[0]);
         }
 
         public String getDisplayName() {
@@ -276,7 +292,14 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public void run() {
-            if(runPolling()) {
+            boolean foundChanges;
+            try {
+                getDescriptor().items.add(job);
+                foundChanges = runPolling();
+            } finally {
+                getDescriptor().items.remove(job);
+            }
+            if(foundChanges) {
                 LOGGER.info("SCM changes detected in "+ job.getName());
                 job.scheduleBuild();
             }
