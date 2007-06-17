@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.Set;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -164,8 +166,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          * Gets the snapshot of {@link SCMedItem}s that are being polled at this very moment.
          * Designed for trouble-shooting probe.
          */
-        public SCMedItem[] getItemsBeingPolled() {
-            return items.toArray(new SCMedItem[0]);
+        public List<SCMedItem> getItemsBeingPolled() {
+            return Arrays.asList(items.toArray(new SCMedItem[0]));
         }
 
         public String getDisplayName() {

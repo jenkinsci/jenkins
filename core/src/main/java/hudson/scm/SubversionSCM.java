@@ -4,11 +4,13 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.triggers.SCMTrigger;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
+import hudson.model.SCMedItem;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -306,6 +308,10 @@ public class SubversionSCM extends SCM implements Serializable {
 
                         } catch (SVNException e) {
                             e.printStackTrace(listener.error("Failed to update "+l.remote));
+                            // trouble-shooting probe for #591
+                            if(e.getErrorMessage().getErrorCode()==SVNErrorCode.WC_NOT_LOCKED) {
+                                listener.getLogger().println("Polled jobs are "+SCMTrigger.DESCRIPTOR.getItemsBeingPolled());
+                            }
                             return null;
                         }
                     }
