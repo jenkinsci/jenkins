@@ -5,6 +5,7 @@ import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
+import hudson.EnvVars;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
 import hudson.model.AbstractBuild;
@@ -80,7 +81,7 @@ import java.util.regex.Pattern;
  *
  * @author Kohsuke Kawaguchi
  */
-public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
+public class CVSSCM extends SCM implements Serializable {
     /**
      * CVSSCM connection string.
      */
@@ -731,6 +732,44 @@ public class CVSSCM extends AbstractCVSFamilySCM implements Serializable {
         String cvspass = getDescriptor().getCvspassFile();
         if(cvspass.length()!=0)
             env.put("CVS_PASSFILE",cvspass);
+    }
+
+    /**
+     * Invokes the command with the specified command line option and wait for its completion.
+     *
+     * @param dir
+     *      if launching locally this is a local path, otherwise a remote path.
+     * @param out
+     *      Receives output from the executed program.
+     */
+    protected final boolean run(Launcher launcher, ArgumentListBuilder cmd, TaskListener listener, FilePath dir, OutputStream out) throws IOException {
+        Map<String,String> env = createEnvVarMap(true);
+
+        int r = launcher.launch(cmd.toCommandArray(),env,out,dir).join();
+        if(r!=0)
+            listener.fatalError(getDescriptor().getDisplayName()+" failed. exit code="+r);
+
+        return r==0;
+    }
+
+    protected final boolean run(Launcher launcher, ArgumentListBuilder cmd, TaskListener listener, FilePath dir) throws IOException {
+        return run(launcher,cmd,listener,dir,listener.getLogger());
+    }
+
+    /**
+     *
+     * @param overrideOnly
+     *      true to indicate that the returned map shall only contain
+     *      properties that need to be overridden. This is for use with {@link Launcher}.
+     *      false to indicate that the map should contain complete map.
+     *      This is to invoke {@link Proc} directly.
+     */
+    protected final Map<String,String> createEnvVarMap(boolean overrideOnly) {
+        Map<String,String> env = new HashMap<String,String>();
+        if(!overrideOnly)
+            env.putAll(EnvVars.masterEnvVars);
+        buildEnvVars(null/*TODO*/,env);
+        return env;
     }
 
     public static final class DescriptorImpl extends SCMDescriptor<CVSSCM> implements ModelObject {

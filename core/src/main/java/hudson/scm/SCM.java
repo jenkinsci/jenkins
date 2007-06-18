@@ -121,7 +121,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @param changelogFile
      *      Upon a successful return, this file should capture the changelog.
      *      When there's no change, this file should contain an empty entry.
-     *      See {@link AbstractCVSFamilySCM#createEmptyChangeLog(File, BuildListener, String)}.
+     *      See {@link #createEmptyChangeLog(File, BuildListener, String)}.
      * @return
      *      false if the operation fails. The error should be reported to the listener.
      *      Otherwise return the changes included in this update (if this was an update.)
