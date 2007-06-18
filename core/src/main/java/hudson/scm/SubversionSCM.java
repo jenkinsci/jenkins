@@ -168,10 +168,28 @@ public class SubversionSCM extends SCM implements Serializable {
         return browser;
     }
 
+    /**
+     * Sets the <tt>SVN_REVISION</tt> environment variable during the build.
+     */
     @Override
     public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
         super.buildEnvVars(build, env);
 
+        try {
+            Map<String,Long> revisions = parseRevisionFile(build);
+            if(locations.length==1) {
+                Long rev = revisions.get(locations[0].remote);
+                if(rev!=null)
+                    env.put("SVN_REVISION",rev.toString());
+            }
+            // it's not clear what to do if there are more than one modules.
+            // if we always return locations[0].remote, it'll be difficult
+            // to change this later (to something more sensible, such as
+            // choosing the "root module" or whatever), so let's not set
+            // anything for now.
+        } catch (IOException e) {
+            // ignore this error
+        }
     }
 
     /**
@@ -197,32 +215,36 @@ public class SubversionSCM extends SCM implements Serializable {
         return true;
     }
 
-
+    /**
+     * Reads the revision file of the specified build.
+     *
+     * @return
+     *      map from {@link SvnInfo#url Subversion URL} to its revision.
+     */
     /*package*/ static Map<String,Long> parseRevisionFile(AbstractBuild build) throws IOException {
         Map<String,Long> revisions = new HashMap<String,Long>(); // module -> revision
-        {// read the revision file of the last build
-            File file = getRevisionFile(build);
-            if(!file.exists())
-                // nothing to compare against
-                return revisions;
 
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            try {
-                String line;
-                while((line=br.readLine())!=null) {
-                    int index = line.lastIndexOf('/');
-                    if(index<0) {
-                        continue;   // invalid line?
-                    }
-                    try {
-                        revisions.put(line.substring(0,index), Long.parseLong(line.substring(index+1)));
-                    } catch (NumberFormatException e) {
-                        // perhaps a corrupted line. ignore
-                    }
+        File file = getRevisionFile(build);
+        if(!file.exists())
+            // nothing to compare against
+            return revisions;
+
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        try {
+            String line;
+            while((line=br.readLine())!=null) {
+                int index = line.lastIndexOf('/');
+                if(index<0) {
+                    continue;   // invalid line?
                 }
-            } finally {
-                br.close();
+                try {
+                    revisions.put(line.substring(0,index), Long.parseLong(line.substring(index+1)));
+                } catch (NumberFormatException e) {
+                    // perhaps a corrupted line. ignore
+                }
             }
+        } finally {
+            br.close();
         }
 
         return revisions;

@@ -6,4 +6,7 @@
   credential but would like to change it for other reasons,
   click <a href="${rootURL}/scm/SubversionSCM/enterCredential">this link</a>
   and specify different credential.
+  <br />
+  During the build, revision number of the module that was checked out is available
+  through the environment variable <tt>SVN_REVISION</tt>
 </div>
