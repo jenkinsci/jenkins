@@ -632,7 +632,7 @@ public class SubversionSCM extends SCM implements Serializable {
             @Override
             SVNAuthentication createSVNAuthentication(String kind) {
                 if(kind.equals(ISVNAuthenticationManager.SSH))
-                    return new SVNSSHAuthentication(userName,password,-1,false);
+                    return new SVNSSHAuthentication(userName,Scrambler.descramble(password),-1,false);
                 else
                     return new SVNPasswordAuthentication(userName,Scrambler.descramble(password),false);
             }
