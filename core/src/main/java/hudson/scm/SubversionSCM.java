@@ -953,7 +953,7 @@ public class SubversionSCM extends SCM implements Serializable {
                         message += " (Maybe you need to <a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+Util.escape(url)+"'>enter credential</a>?)";
                         message += "<br>";
                         logger.log(Level.INFO, "Failed to access subversion repository "+url,e);
-                        error(message);
+                        errorWithMarkup(message);
                     }
                 }
             }.process();
