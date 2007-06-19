@@ -65,7 +65,7 @@ public abstract class FormFieldValidator {
      *      can be used as <tt>ok()</tt>.
      */
     public void error(String message) throws IOException, ServletException {
-        errorWithMarkup(Util.escape(message));
+        errorWithMarkup(message==null?null:Util.escape(message));
     }
 
     /**
