@@ -1,30 +1,32 @@
 package hudson.tasks;
 
 import hudson.Launcher;
-import hudson.util.FormFieldValidator;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
-import org.apache.tools.ant.types.selectors.SelectorUtils;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerResponse;
+import hudson.util.FormFieldValidator;
 
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.AddressException;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.mail.Authenticator;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.servlet.ServletException;
+
+import org.apache.tools.ant.types.selectors.SelectorUtils;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * {@link Publisher} that sends the build result in e-mail.
@@ -33,6 +35,11 @@ import java.util.logging.Logger;
  */
 public class Mailer extends Publisher {
     private static final Logger LOGGER = Logger.getLogger(Mailer.class.getName());
+
+    /**
+     * @see #extractAddressFromId(String)
+     */
+    public static final String EMAIL_ADDRESS_REGEXP = "^.*<([^>]+)>.*$";
 
     /**
      * Whitespace-separated list of e-mail addresses that represent recipients.
@@ -263,6 +270,15 @@ public class Mailer extends Publisher {
     }
 
     /**
+     * Tries to extract an email address from the user id, or returns null
+     */
+    public static String extractAddressFromId(String id) {
+    	if (id.matches(EMAIL_ADDRESS_REGEXP))
+    		return id.replaceFirst(EMAIL_ADDRESS_REGEXP, "$1");
+    	return null;
+    }
+
+    /**
      * Per user property that is e-mail address.
      */
     public static class UserProperty extends hudson.model.UserProperty {
@@ -282,6 +298,10 @@ public class Mailer extends Publisher {
             if(emailAddress!=null)
                 return emailAddress;
 
+        	String extractedAddress = extractAddressFromId(user.getId());
+        	if (extractedAddress != null)
+        		return extractedAddress;
+            
             String ds = Mailer.DESCRIPTOR.getDefaultSuffix();
             if(ds!=null)
                 return user.getId()+ds;
