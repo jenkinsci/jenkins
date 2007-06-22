@@ -201,16 +201,23 @@ public class Util {
             listener.getLogger().println(msg);
     }
 
+    public static String getWin32ErrorMessage(IOException e) {
+        return getWin32ErrorMessage((Throwable)e);
+    }
+
     /**
-     * Extracts the Win32 error message from {@link IOException} if possible.
+     * Extracts the Win32 error message from {@link Throwable} if possible.
      *
      * @return
      *      null if there seems to be no error code or if the platform is not Win32.
      */
-    public static String getWin32ErrorMessage(IOException e) {
+    public static String getWin32ErrorMessage(Throwable e) {
         String msg = e.getMessage();
-        if(msg==null)
+        if(msg==null) {
+            if(e.getCause()!=null)
+                return getWin32ErrorMessage(e.getCause());
             return null; // no message
+        }
         Matcher m = errorCodeParser.matcher(msg);
         if(!m.matches())
             return null; // failed to parse
