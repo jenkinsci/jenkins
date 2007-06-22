@@ -742,7 +742,7 @@ public class CVSSCM extends SCM implements Serializable {
      * @param out
      *      Receives output from the executed program.
      */
-    protected final boolean run(Launcher launcher, ArgumentListBuilder cmd, TaskListener listener, FilePath dir, OutputStream out) throws IOException {
+    protected final boolean run(Launcher launcher, ArgumentListBuilder cmd, TaskListener listener, FilePath dir, OutputStream out) throws IOException, InterruptedException {
         Map<String,String> env = createEnvVarMap(true);
 
         int r = launcher.launch(cmd.toCommandArray(),env,out,dir).join();
@@ -752,7 +752,7 @@ public class CVSSCM extends SCM implements Serializable {
         return r==0;
     }
 
-    protected final boolean run(Launcher launcher, ArgumentListBuilder cmd, TaskListener listener, FilePath dir) throws IOException {
+    protected final boolean run(Launcher launcher, ArgumentListBuilder cmd, TaskListener listener, FilePath dir) throws IOException, InterruptedException {
         return run(launcher,cmd,listener,dir,listener.getLogger());
     }
 
@@ -912,7 +912,7 @@ public class CVSSCM extends SCM implements Serializable {
         /**
          * Displays "cvs --version" for trouble shooting.
          */
-        public void doVersion(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public void doVersion(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
             ByteBuffer baos = new ByteBuffer();
             try {
                 Proc proc = Hudson.getInstance().createLauncher(TaskListener.NULL).launch(
@@ -1037,7 +1037,7 @@ public class CVSSCM extends SCM implements Serializable {
          * TODO: this apparently doesn't work. Probably related to the fact that
          * cvs does some tty magic to disable echo back or whatever.
          */
-        public void doPostPassword(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        public void doPostPassword(StaplerRequest req, StaplerResponse rsp) throws IOException, InterruptedException {
             if(!Hudson.adminCheck(req,rsp))
                 return;
 

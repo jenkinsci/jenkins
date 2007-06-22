@@ -134,7 +134,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return Result.SUCCESS;
         }
 
-        private void createLastSuccessfulLink(BuildListener listener) {
+        private void createLastSuccessfulLink(BuildListener listener) throws InterruptedException {
             if(!isWindows()) {
                 try {
                     // ignore a failure.

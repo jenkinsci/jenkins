@@ -250,7 +250,11 @@ public abstract class Launcher {
         public Integer call() throws IOException {
             Proc p = new LocalLauncher(TaskListener.NULL).launch(cmd, env, in, out,
                 workDir ==null ? null : new FilePath(new File(workDir)));
-            return p.join();
+            try {
+                return p.join();
+            } catch (InterruptedException e) {
+                return -1;
+            }
         }
 
         private static final long serialVersionUID = 1L;

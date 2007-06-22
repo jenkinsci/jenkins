@@ -79,7 +79,7 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
          *      terminates the build abnormally. Hudson will handle the exception
          *      and reports a nice error message.
          */
-        public abstract boolean tearDown( Build build, BuildListener listener ) throws IOException;
+        public abstract boolean tearDown( Build build, BuildListener listener ) throws IOException, InterruptedException;
     }
 
     /**
@@ -101,5 +101,5 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
      *      terminates the build abnormally. Hudson will handle the exception
      *      and reports a nice error message.
      */
-    public abstract Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException;
+    public abstract Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException;
 }

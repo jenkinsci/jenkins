@@ -68,7 +68,7 @@ public class Ant extends Builder {
         return antOpts;
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) {
+    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
         Project proj = build.getProject();
 
         ArgumentListBuilder args = new ArgumentListBuilder();

@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * A particular execution of {@link Job}.
@@ -563,6 +564,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     throw t;
                 } catch( RunnerAbortedException e ) {
                     result = Result.FAILURE;
+                } catch( InterruptedException e) {
+                    // aborted
+                    result = Result.ABORTED;
+                    listener.getLogger().println("Build was aborted");
+                    LOGGER.log(Level.INFO,toString()+" aborted",e);
                 } catch( Throwable e ) {
                     handleFatalBuildProblem(listener,e);
                     result = Result.FAILURE;

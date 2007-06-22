@@ -32,7 +32,7 @@ public abstract class Proc {
      *      if there's an error killing a process
      *      and a stack trace could help the trouble-shooting.
      */
-    public abstract void kill() throws IOException;
+    public abstract void kill() throws IOException, InterruptedException;
 
     /**
      * Waits for the completion of the process.
@@ -46,7 +46,7 @@ public abstract class Proc {
      *      if there's an error launching/joining a process
      *      and a stack trace could help the trouble-shooting.
      */
-    public abstract int join() throws IOException;
+    public abstract int join() throws IOException, InterruptedException;
 
     /**
      * Locally launched process.
@@ -96,7 +96,7 @@ public abstract class Proc {
          * Waits for the completion of the process.
          */
         @Override
-        public int join() {
+        public int join() throws InterruptedException {
             try {
                 t1.join();
                 t2.join();
@@ -104,12 +104,12 @@ public abstract class Proc {
             } catch (InterruptedException e) {
                 // aborting. kill the process
                 proc.destroy();
-                return -1;
+                throw e;
             }
         }
 
         @Override
-        public void kill() {
+        public void kill() throws InterruptedException {
             proc.destroy();
             join();
         }
@@ -160,19 +160,19 @@ public abstract class Proc {
         }
 
         @Override
-        public void kill() throws IOException {
+        public void kill() throws IOException, InterruptedException {
             process.cancel(true);
             join();
         }
 
         @Override
-        public int join() throws IOException {
+        public int join() throws IOException, InterruptedException {
             try {
                 return process.get();
             } catch (InterruptedException e) {
                 // aborting. kill the process
                 process.cancel(true);
-                return -1;
+                throw e;
             } catch (ExecutionException e) {
                 if(e.getCause() instanceof IOException)
                     throw (IOException)e.getCause();
