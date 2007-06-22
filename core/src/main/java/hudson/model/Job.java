@@ -175,6 +175,13 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         this.logRotator = logRotator;
     }
 
+    /**
+     * True if this instance supports log rotation configuration.
+     */
+    public boolean supportsLogRotator() {
+        return true;
+    }
+
     public Collection<? extends Job> getAllJobs() {
         return Collections.<Job>singleton(this);
     }

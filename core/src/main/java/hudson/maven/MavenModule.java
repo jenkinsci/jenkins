@@ -3,6 +3,7 @@ package hudson.maven;
 import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.tasks.LogRotator;
 import hudson.maven.reporters.MavenMailer;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
@@ -63,6 +64,28 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         super(parent, pom.name.toFileSystemName());
         reconfigure(pom);
         updateNextBuildNumber(firstBuildNumber);
+    }
+
+    /**
+     * {@link MavenModule} follows the same log rotation schedule as its parent. 
+     */
+    @Override
+    public LogRotator getLogRotator() {
+        return getParent().getLogRotator();
+    }
+
+    /**
+     * @deprecated
+     *      Not allowed to configure log rotation per module.
+     */
+    @Override
+    public void setLogRotator(LogRotator logRotator) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean supportsLogRotator() {
+        return false;
     }
 
     /**

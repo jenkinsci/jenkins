@@ -14,12 +14,14 @@
             rows="5" style="width:100%">${it.description}</textarea>
         </f:entry>
 
-        <!-- log rotator -->
-        <f:optionalBlock name="logrotate"
-          help="/help/project-config/log-rotation.html"
-          title="Discard Old Builds" checked="${it.logRotator!=null}">
-          <st:include page="/hudson/tasks/LogRotator/config.jelly"/>
-        </f:optionalBlock>
+        <j:if test="${it.supportsLogRotator()}">
+          <!-- log rotator -->
+          <f:optionalBlock name="logrotate"
+            help="/help/project-config/log-rotation.html"
+            title="Discard Old Builds" checked="${it.logRotator!=null}">
+            <st:include page="/hudson/tasks/LogRotator/config.jelly"/>
+          </f:optionalBlock>
+        </j:if>
 
         <!-- job property configurations -->
         <j:set var="instances" value="${it.properties}" />

@@ -12,7 +12,6 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
-import hudson.triggers.SCMTrigger;
 import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
 import hudson.util.MultipartFormDataParser;
@@ -33,7 +32,6 @@ import org.tmatesoft.svn.core.auth.SVNAuthentication;
 import org.tmatesoft.svn.core.auth.SVNPasswordAuthentication;
 import org.tmatesoft.svn.core.auth.SVNSSHAuthentication;
 import org.tmatesoft.svn.core.auth.SVNSSLAuthentication;
-import org.tmatesoft.svn.core.auth.SVNUserNameAuthentication;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
@@ -49,13 +47,11 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
 import javax.servlet.ServletException;
 import javax.xml.transform.stream.StreamResult;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -85,7 +81,7 @@ public class SubversionSCM extends SCM implements Serializable {
      * needed to make importing of old hudson-configurations possible as
      * getLocations() will check if the modules field has been set and import
      * the data.
-     * 
+     *
      * @since 1.91
      */
     private ModuleLocation[] locations = new ModuleLocation[0];
@@ -132,7 +128,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
     /**
      * list of all configured svn locations
-     * 
+     *
      * @since 1.91
      */
     public ModuleLocation[] getLocations() {
@@ -163,33 +159,8 @@ public class SubversionSCM extends SCM implements Serializable {
         return username;
     }
 
-    @Override
     public SubversionRepositoryBrowser getBrowser() {
         return browser;
-    }
-
-    /**
-     * Sets the <tt>SVN_REVISION</tt> environment variable during the build.
-     */
-    @Override
-    public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
-        super.buildEnvVars(build, env);
-
-        try {
-            Map<String,Long> revisions = parseRevisionFile(build);
-            if(locations.length==1) {
-                Long rev = revisions.get(locations[0].remote);
-                if(rev!=null)
-                    env.put("SVN_REVISION",rev.toString());
-            }
-            // it's not clear what to do if there are more than one modules.
-            // if we always return locations[0].remote, it'll be difficult
-            // to change this later (to something more sensible, such as
-            // choosing the "root module" or whatever), so let's not set
-            // anything for now.
-        } catch (IOException e) {
-            // ignore this error
-        }
     }
 
     /**
@@ -201,36 +172,22 @@ public class SubversionSCM extends SCM implements Serializable {
             return createEmptyChangeLog(changelogFile, listener, "log");
         }
 
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(changelogFile));
-        boolean r;
-        try {
-            r = new SubversionChangeLogBuilder(build, listener, this).run(externals, new StreamResult(changelogFile));
-        } finally {
-            os.close();
-        }
-
-        if(!r)
+        if(!new SubversionChangeLogBuilder(build,listener,this).run(externals,new StreamResult(changelogFile)))
             createEmptyChangeLog(changelogFile, listener, "log");
 
         return true;
     }
 
-    /**
-     * Reads the revision file of the specified build.
-     *
-     * @return
-     *      map from {@link SvnInfo#url Subversion URL} to its revision.
-     */
+
     /*package*/ static Map<String,Long> parseRevisionFile(AbstractBuild build) throws IOException {
         Map<String,Long> revisions = new HashMap<String,Long>(); // module -> revision
+        {// read the revision file of the last build
+            File file = getRevisionFile(build);
+            if(!file.exists())
+                // nothing to compare against
+                return revisions;
 
-        File file = getRevisionFile(build);
-        if(!file.exists())
-            // nothing to compare against
-            return revisions;
-
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
             while((line=br.readLine())!=null) {
                 int index = line.lastIndexOf('/');
@@ -243,8 +200,6 @@ public class SubversionSCM extends SCM implements Serializable {
                     // perhaps a corrupted line. ignore
                 }
             }
-        } finally {
-            br.close();
         }
 
         return revisions;
@@ -290,7 +245,6 @@ public class SubversionSCM extends SCM implements Serializable {
             for (Entry<String,SvnInfo> e : revMap.entrySet()) {
                 w.println( e.getKey() +'/'+ e.getValue().revision );
             }
-            build.addAction(new SubversionTagAction(build,revMap.values()));
         } finally {
             w.close();
         }
@@ -304,7 +258,7 @@ public class SubversionSCM extends SCM implements Serializable {
         } finally {
             w.close();
         }
-        
+
         return calcChangeLog(build, changelogFile, listener, externals);
     }
 
@@ -336,10 +290,6 @@ public class SubversionSCM extends SCM implements Serializable {
 
                         } catch (SVNException e) {
                             e.printStackTrace(listener.error("Failed to update "+l.remote));
-                            // trouble-shooting probe for #591
-                            if(e.getErrorMessage().getErrorCode()==SVNErrorCode.WC_NOT_LOCKED) {
-                                listener.getLogger().println("Polled jobs are "+SCMTrigger.DESCRIPTOR.getItemsBeingPolled());
-                            }
                             return null;
                         }
                     }
@@ -382,12 +332,12 @@ public class SubversionSCM extends SCM implements Serializable {
         return SVNClientManager.newInstance(SVNWCUtil.createDefaultOptions(true),sam);
     }
 
-    public static final class SvnInfo implements Serializable, Comparable<SvnInfo> {
+    public static final class SvnInfo implements Serializable {
         /**
          * Decoded repository URL.
          */
-        public final String url;
-        public final long revision;
+        final String url;
+        final long revision;
 
         public SvnInfo(String url, long revision) {
             this.url = url;
@@ -400,38 +350,6 @@ public class SubversionSCM extends SCM implements Serializable {
 
         public SVNURL getSVNURL() throws SVNException {
             return SVNURL.parseURIDecoded(url);
-        }
-
-        public int compareTo(SvnInfo that) {
-            int r = this.url.compareTo(that.url);
-            if(r!=0)    return r;
-
-            if(this.revision<that.revision) return -1;
-            if(this.revision>that.revision) return +1;
-            return 0;
-        }
-
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            SvnInfo svnInfo = (SvnInfo) o;
-
-            if (revision != svnInfo.revision) return false;
-            if (!url.equals(svnInfo.url)) return false;
-
-            return true;
-        }
-
-        public int hashCode() {
-            int result;
-            result = url.hashCode();
-            result = 31 * result + (int) (revision ^ (revision >>> 32));
-            return result;
-        }
-
-        public String toString() {
-            return String.format("%s (rev.%s)",url,revision);
         }
 
         private static final long serialVersionUID = 1L;
@@ -475,9 +393,8 @@ public class SubversionSCM extends SCM implements Serializable {
                 SVNWCClient svnWc = createSvnClientManager(authProvider).getWCClient();
                 // invoke the "svn info"
                 for( ModuleLocation module : getLocations() ) {
-                    File moduleFile = new File(ws,module.local).getCanonicalFile(); // canonicalize to remove ".." and ".". See #474
                     try {
-                        SvnInfo info = new SvnInfo(svnWc.doInfo(moduleFile,SVNRevision.WORKING));
+                        SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws,module.local),SVNRevision.WORKING));
                         revisions.put(info.url,info);
                     } catch (SVNException e) {
                         e.printStackTrace(listener.error("Failed to parse svn info for "+module));
@@ -490,7 +407,7 @@ public class SubversionSCM extends SCM implements Serializable {
                     } catch (SVNException e) {
                         e.printStackTrace(listener.error("Failed to parse svn info for external "+local));
                     }
-                	
+
                 }
 
                 return revisions;
@@ -548,10 +465,10 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
-    	
+
     	// we need to load the externals info, if any
     	List<String> externals = parseExternalsFile(project);
-    	
+
         // current workspace revision
         Map<String,SvnInfo> wsRev = buildRevisionMap(workspace,listener,externals);
 
@@ -770,14 +687,7 @@ public class SubversionSCM extends SCM implements Serializable {
             public SVNAuthentication requestClientAuthentication(String kind, SVNURL url, String realm, SVNErrorMessage errorMessage, SVNAuthentication previousAuth, boolean authMayBeStored) {
                 Credential cred = source.getCredential(realm);
                 LOGGER.fine(String.format("requestClientAuthentication(%s,%s,%s)=>%s",kind,url,realm,cred));
-                if(cred==null) {
-                    // this happens with file:// URL. The base class does this, too.
-                    if (ISVNAuthenticationManager.USERNAME.equals(kind))
-                        // user auth shouldn't be null.
-                        return new SVNUserNameAuthentication("",false);
-                    return null;
-                }
-                
+                if(cred==null)  return null;
                 try {
                     return cred.createSVNAuthentication(kind);
                 } catch (SVNException e) {
@@ -923,7 +833,7 @@ public class SubversionSCM extends SCM implements Serializable {
                     // remove unneeded whitespaces
                     url = url.trim();
                     if(!URL_PATTERN.matcher(url).matches()) {
-                        errorWithMarkup("Invalid URL syntax. See "
+                        error("Invalid URL syntax. See "
                             + "<a href=\"http://svnbook.red-bean.com/en/1.2/svn-book.html#svn.basic.in-action.wc.tbl-1\">this</a> "
                             + "for information about valid URLs.");
                         return;
@@ -944,16 +854,16 @@ public class SubversionSCM extends SCM implements Serializable {
                         e.printStackTrace(new PrintWriter(sw));
 
                         String message="";
-                        message += "Unable to access "+Util.escape(url)+" : "+Util.escape( e.getErrorMessage().getFullMessage());
+                        message += "Unable to access "+url+" : "+Util.escape( e.getErrorMessage().getFullMessage());
                         message += " <a href='#' id=svnerrorlink onclick='javascript:" +
                             "document.getElementById(\"svnerror\").style.display=\"block\";" +
                             "document.getElementById(\"svnerrorlink\").style.display=\"none\";" +
                             "return false;'>(show details)</a>";
                         message += "<pre id=svnerror style='display:none'>"+sw+"</pre>";
-                        message += " (Maybe you need to <a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+Util.escape(url)+"'>enter credential</a>?)";
+                        message += " (Maybe you need to <a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>?)";
                         message += "<br>";
                         logger.log(Level.INFO, "Failed to access subversion repository "+url,e);
-                        errorWithMarkup(message);
+                        error(message);
                     }
                 }
             }.process();
@@ -1028,6 +938,6 @@ public class SubversionSCM extends SCM implements Serializable {
 
         private static final long serialVersionUID = 1L;
     }
-    
+
     private static final Logger LOGGER = Logger.getLogger(SubversionSCM.class.getName());
 }
