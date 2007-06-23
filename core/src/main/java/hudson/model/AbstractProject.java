@@ -575,9 +575,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             canRoam = false;
             assignedNode = req.getParameter("slave");
             if(assignedNode !=null) {
-                if(Hudson.getInstance().getLabel(assignedNode)==null) {
+                if(Hudson.getInstance().getLabel(assignedNode).isEmpty())
                     assignedNode = null;   // no such label
-                }
             }
         } else {
             canRoam = true;
