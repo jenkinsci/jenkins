@@ -555,3 +555,12 @@ TABLE.fingerprint-in-build TD {
 
 .repeated-chunk .show-if-not-only      { display: inline; }
 .repeated-chunk.only .show-if-not-only { display: none; }
+
+/* ========================= Yahoo UI style adjustments ========================= */
+.ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
+	color: inherit;
+}
+
+DIV.yahooTree td {
+  vertical-align: middle;
+}
