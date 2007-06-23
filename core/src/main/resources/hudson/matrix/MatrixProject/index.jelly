@@ -1,0 +1,10 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+  <l:layout title="${it.name}">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>Project ${it.name}</h1>
+      <t:editableDescription adminOnly="true"/>
+      <p:projectActionFloatingBox/>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

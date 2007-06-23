@@ -2,6 +2,7 @@ package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
+import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.util.XStream2;
@@ -25,7 +26,6 @@ public class Items {
     public static final List<TopLevelItemDescriptor> LIST = Descriptor.toList(
         Project.DESCRIPTOR,
         MavenModuleSet.DESCRIPTOR,
-        //MatrixProject.DESCRIPTOR,
         ExternalJob.DESCRIPTOR
     );
 
@@ -105,5 +105,10 @@ public class Items {
         XSTREAM.alias("project",Project.class);
         XSTREAM.alias("maven2", MavenModule.class);
         XSTREAM.alias("maven2-module-set", MavenModule.class);
+
+        // this feature is not publicly exposed yet
+        if(System.getProperty("Matrix")!=null)
+             LIST.add(MatrixProject.DESCRIPTOR);
+        XSTREAM.alias("matrix-project",MatrixProject.class);
     }
 }

@@ -1,0 +1,61 @@
+<!--
+  Config page.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+  <p:config-disableBuild/>
+  <f:section title="Advanced Project Options">
+    <f:advanced>
+      <p:config-quietPeriod />
+    </f:advanced>
+  </f:section>
+  <p:config-scm/>
+  <p:config-trigger/>
+
+  <f:section title="Configuration Matrix">
+    <!-- JDK config -->
+    <j:set var="jdks" value="${app.JDKs}" />
+    <j:if test="${!empty(jdks)}">
+      <f:entry title="JDK" help="/help/matrix/jdk.html">
+        <j:forEach var="jdk" items="${jdks}">
+          <f:checkbox name="jdk.${jdk.name}" id="jdk.${jdk.name}" checked="${it.JDKs.contains(jdk)}" />
+          <label for="jdk.${jdk.name}">${jdk.name}</label>
+          <st:nbsp/>
+        </j:forEach>
+      </f:entry>
+    </j:if>
+
+    <!-- master slave -->
+    <j:if test="${!empty(app.slaves)}">
+      <j:set var="labels" value="${it.labels}" />
+      <f:optionalBlock name="multipleNodes" title="Build on multiple nodes" checked="${!empty(labels)}"
+          help="/help/matrix/slave.html">
+        <f:entry title="Node">
+          <div id="nodeTree" class="yahooTree" style="border: 1px solid grey; height: 10em; overflow:auto;"></div>
+          <script src="${rootURL}/scripts/yui/treeview-${yuiSuffix}.js"></script>
+          <link rel="stylesheet" href="${rootURL}/scripts/yui/treeview-assets/tree.css" type="text/css" />
+          <script>
+            (function(){
+              var tree = new YAHOO.widget.TreeView("nodeTree");
+
+              var machines = new YAHOO.widget.TextNode("Individual nodes", tree.getRoot(), false);
+              var labels = new YAHOO.widget.TextNode("Labels", tree.getRoot(), false);
+
+              <j:forEach var="l" items="${app.labels}">
+                new YAHOO.widget.TextNode('&lt;input type="checkbox" name="label.${l.name}" id="label.${l.name}" <j:if test="${labels.contains(l)}">checked</j:if>&gt;<label for="label.${l.name}">${l.name} (${l.description})</label>', ${h.ifThenElse(l.isSelfLabel(),'machines','labels')}, false);
+              </j:forEach>
+
+              tree.draw();
+              <!--
+                force the rendering of HTML, so that input fields are there
+                even when the form is submitted without this tree expanded.
+               -->
+              tree.expandAll();
+              tree.collapseAll();
+            })();
+          </script>
+        </f:entry>
+      </f:optionalBlock>
+    </j:if>
+
+  </f:section>
+</j:jelly>

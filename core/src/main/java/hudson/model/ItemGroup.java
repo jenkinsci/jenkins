@@ -7,6 +7,7 @@ import java.io.File;
  * Represents a grouping inherent to a kind of {@link Item}s.
  *
  * @author Kohsuke Kawaguchi
+ * @see ItemGroupMixIn
  */
 public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject {
     /**

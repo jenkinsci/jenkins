@@ -11,24 +11,24 @@ import hudson.model.Executor;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
-import hudson.model.Items;
+import static hudson.model.ItemGroupMixIn.loadChildren;
 import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.Queue;
+import hudson.model.Queue.Task;
 import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.model.Queue.Task;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
+import hudson.util.Function1;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -169,7 +169,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     public File getRootDirFor(MavenModule child) {
-        return new File(new File(getRootDir(),"modules"),child.getModuleName().toFileSystemName());
+        return new File(getModulesDir(),child.getModuleName().toFileSystemName());
     }
 
     public Collection<Job> getAllJobs() {
@@ -213,28 +213,20 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
-        File modulesDir = new File(getRootDir(),"modules");
-        modulesDir.mkdirs(); // make sure it exists
-
-        File[] subdirs = modulesDir.listFiles(new FileFilter() {
-            public boolean accept(File child) {
-                return child.isDirectory();
+        modules = loadChildren(this, getModulesDir(),new Function1<ModuleName,MavenModule>() {
+            public ModuleName call(MavenModule module) {
+                return module.getModuleName();
             }
         });
-        modules = new CopyOnWriteMap.Tree<ModuleName,MavenModule>();
-        for (File subdir : subdirs) {
-            try {
-                MavenModule item = (MavenModule) Items.load(this,subdir);
-                modules.put(item.getModuleName(), item);
-            } catch (IOException e) {
-                e.printStackTrace(); // TODO: logging
-            }
-        }
 
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
 
         updateTransientActions();
+    }
+
+    private File getModulesDir() {
+        return new File(getRootDir(),"modules");
     }
 
     /**
