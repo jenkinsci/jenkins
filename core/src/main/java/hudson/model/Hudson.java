@@ -583,6 +583,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * @return null if no such label exists.
      */
     public Label getLabel(String name) {
+        if(name==null)  return null;
         while(true) {
             Label l = labels.get(name);
             if(l!=null)
