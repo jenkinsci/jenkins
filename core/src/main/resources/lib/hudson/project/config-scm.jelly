@@ -1,0 +1,13 @@
+<!-- SCM config pane -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:section title="Source Code Management">
+    <j:getStatic var="scms" className="hudson.scm.SCMS" field="SCMS" />
+    <j:forEach var="idx" begin="0" end="${size(scms)-1}">
+      <j:set var="scmd" value="${scms[idx]}" />
+      <f:radioBlock name="scm" value="${idx}" title="${scmd.displayName}" checked="${it.scm.descriptor==scmd}">
+        <j:set var="scm" value="${h.ifThenElse(it.scm.descriptor==scmd, it.scm, null)}"/>
+        <st:include from="${scmd}" page="${scmd.configPage}"/>
+      </f:radioBlock>
+    </j:forEach>
+  </f:section>
+</j:jelly>

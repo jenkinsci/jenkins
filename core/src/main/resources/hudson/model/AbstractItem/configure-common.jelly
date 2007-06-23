@@ -1,12 +1,8 @@
 <!--
   Parts of the configuration that applies to Project and MavenModuleSet.
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="Disable Build" help="/help/project-config/disable.html">
-    <f:checkbox name="disable" checked="${it.disabled}" />
-    (No new builds will be executed until the project is re-enabled.)
-  </f:entry>
-
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
+  <p:config-disableBuild/>
 
   <j:set var="jdks" value="${app.JDKs}" />
   <j:if test="${!empty(jdks)}">
@@ -38,28 +34,9 @@
 
   <f:section title="Advanced Project Options">
     <f:advanced>
-      <!-- custom quiet period -->
-      <f:optionalBlock name="hasCustomQuietPeriod" title="Quiet period" checked="${it.hasCustomQuietPeriod}"
-          help="/help/project-config/quietPeriod.html">
-        <f:entry title="Quiet period"
-          description="Number of seconds">
-          <input class="setting-input" name="quiet_period"
-            type="text" value="${it.quietPeriod}"/>
-        </f:entry>
-      </f:optionalBlock>
+      <p:config-quietPeriod />
     </f:advanced>
   </f:section>
 
-
-  <!-- SCM config pane -->
-  <f:section title="Source Code Management">
-    <j:getStatic var="scms" className="hudson.scm.SCMS" field="SCMS" />
-    <j:forEach var="idx" begin="0" end="${size(scms)-1}">
-      <j:set var="scmd" value="${scms[idx]}" />
-      <f:radioBlock name="scm" value="${idx}" title="${scmd.displayName}" checked="${it.scm.descriptor==scmd}">
-        <j:set var="scm" value="${h.ifThenElse(it.scm.descriptor==scmd, it.scm, null)}"/>
-        <st:include from="${scmd}" page="${scmd.configPage}"/>
-      </f:radioBlock>
-    </j:forEach>
-  </f:section>
+  <p:config-scm/>
 </j:jelly>

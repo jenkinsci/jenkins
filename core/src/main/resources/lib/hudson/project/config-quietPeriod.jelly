@@ -1,0 +1,11 @@
+<!-- custom quiet period -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:optionalBlock name="hasCustomQuietPeriod" title="Quiet period" checked="${it.hasCustomQuietPeriod}"
+      help="/help/project-config/quietPeriod.html">
+    <f:entry title="Quiet period"
+      description="Number of seconds">
+      <input class="setting-input" name="quiet_period"
+        type="text" value="${it.quietPeriod}"/>
+    </f:entry>
+  </f:optionalBlock>
+</j:jelly>

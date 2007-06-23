@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.XmlFile;
+import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModule;
 import hudson.util.XStream2;
@@ -26,6 +27,7 @@ public class Items {
     public static final List<TopLevelItemDescriptor> LIST = Descriptor.toList(
         Project.DESCRIPTOR,
         MavenModuleSet.DESCRIPTOR,
+        MatrixProject.DESCRIPTOR,
         ExternalJob.DESCRIPTOR
     );
 
