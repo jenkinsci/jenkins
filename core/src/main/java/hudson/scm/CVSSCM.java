@@ -207,15 +207,15 @@ public class CVSSCM extends SCM implements Serializable {
         cmd.add("-D", df.format(date));
     }
 
-    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath dir, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
+    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath ws, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
         List<String> changedFiles = null; // files that were affected by update. null this is a check out
 
-        if(canUseUpdate && isUpdatable(dir)) {
-            changedFiles = update(false, launcher, dir, listener, build.getTimestamp().getTime());
+        if(canUseUpdate && isUpdatable(ws)) {
+            changedFiles = update(false, launcher, ws, listener, build.getTimestamp().getTime());
             if(changedFiles==null)
                 return false;   // failed
         } else {
-            if(!checkout(launcher,dir,listener,build.getTimestamp().getTime()))
+            if(!checkout(launcher,ws,listener,build.getTimestamp().getTime()))
                 return false;
         }
 
@@ -223,7 +223,7 @@ public class CVSSCM extends SCM implements Serializable {
         File archiveFile = getArchiveFile(build);
         final OutputStream os = new RemoteOutputStream(new FileOutputStream(archiveFile));
         
-        build.getProject().getWorkspace().act(new FileCallable<Void>() {
+        ws.act(new FileCallable<Void>() {
             public Void invoke(File ws, VirtualChannel channel) throws IOException {
                 ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(os));
 
@@ -260,7 +260,7 @@ public class CVSSCM extends SCM implements Serializable {
         // contribute the tag action
         build.getActions().add(new TagAction(build));
 
-        return calcChangeLog(build, changedFiles, changelogFile, listener);
+        return calcChangeLog(build, ws, changedFiles, changelogFile, listener);
     }
 
     public boolean checkout(Launcher launcher, FilePath dir, TaskListener listener) throws IOException, InterruptedException {
@@ -607,7 +607,7 @@ public class CVSSCM extends SCM implements Serializable {
      *      This is provided if the previous operation is update, otherwise null,
      *      which means we have to fall back to the default slow computation.
      */
-    private boolean calcChangeLog(AbstractBuild build, final List<String> changedFiles, File changelogFile, final BuildListener listener) throws InterruptedException {
+    private boolean calcChangeLog(AbstractBuild build, FilePath ws, final List<String> changedFiles, File changelogFile, final BuildListener listener) throws InterruptedException {
         if(build.getPreviousBuild()==null || (changedFiles!=null && changedFiles.isEmpty())) {
             // nothing to compare against, or no changes
             // (note that changedFiles==null means fallback, so we have to run cvs log.
@@ -617,7 +617,6 @@ public class CVSSCM extends SCM implements Serializable {
 
         listener.getLogger().println("$ computing changelog");
 
-        FilePath baseDir = build.getProject().getWorkspace();
         final String cvspassFile = getDescriptor().getCvspassFile();
         final String cvsExe = getDescriptor().getCvsExe();
 
@@ -627,7 +626,7 @@ public class CVSSCM extends SCM implements Serializable {
             final Date endTime = build.getTimestamp().getTime();
             final OutputStream out = new RemoteOutputStream(new FileOutputStream(changelogFile));
 
-            ChangeLogResult result = baseDir.act(new FileCallable<ChangeLogResult>() {
+            ChangeLogResult result = ws.act(new FileCallable<ChangeLogResult>() {
                 public ChangeLogResult invoke(File ws, VirtualChannel channel) throws IOException {
                     final StringWriter errorOutput = new StringWriter();
                     final boolean[] hadError = new boolean[1];
@@ -708,7 +707,7 @@ public class CVSSCM extends SCM implements Serializable {
             // then report an error
             BuildException x = (BuildException) e.getCause();
             PrintWriter w = listener.error(x.getMessage());
-            w.println("Working directory is "+baseDir);
+            w.println("Working directory is "+ ws);
             x.printStackTrace(w);
             return false;
         } catch( RuntimeException e ) {
