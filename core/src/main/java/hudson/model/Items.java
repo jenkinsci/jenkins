@@ -1,19 +1,17 @@
 package hudson.model;
 
+import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
-import hudson.matrix.MatrixProject;
-import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModule;
+import hudson.maven.MavenModuleSet;
 import hudson.util.XStream2;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
 import java.io.File;
 import java.io.IOException;
-
-import com.thoughtworks.xstream.XStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Convenience methods related to {@link Item}.
@@ -27,6 +25,7 @@ public class Items {
     public static final List<TopLevelItemDescriptor> LIST = Descriptor.toList(
         Project.DESCRIPTOR,
         MavenModuleSet.DESCRIPTOR,
+        //MatrixProject.DESCRIPTOR,
         ExternalJob.DESCRIPTOR
     );
 
