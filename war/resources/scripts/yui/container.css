@@ -1,24 +1,23 @@
 /*
-Copyright (c) 2006, Yahoo! Inc. All rights reserved.
+Copyright (c) 2007, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
 http://developer.yahoo.net/yui/license.txt
-Version 0.11.0
+version: 2.2.2
 */
-
-.overlay {
+.yui-overlay {
 	position:absolute;
 	display:block;
 }
 
-.tt {
+.yui-tt {
 	visibility:hidden;
 	position:absolute;
-
-  border: 1px solid black;
-  background-color: #FFFFFF;
-  padding: 2px;
-  z-index: 999;
-
+	color:#333;
+	background-color:#FDFFB4;
+	font-family:arial,helvetica,verdana,sans-serif;
+	padding:2px;
+	border:1px solid #FCC90D;
+	font:100% sans-serif;
 	width:auto;
 }
 
@@ -26,7 +25,7 @@ Version 0.11.0
 	visibility:hidden;
 }
 
-* html div.panel-container select {
+* html div.yui-panel-container select {
 	visibility:inherit;
 }
 
@@ -39,7 +38,7 @@ Version 0.11.0
 }
 
 .mask {
-    z-index:0;   
+    z-index:0;
     display:none;
     position:absolute;
     top:0;
@@ -63,7 +62,7 @@ Version 0.11.0
 	overflow:visible;
 }
 
-.panel-container {
+.yui-panel-container {
 	position:absolute;
 	background-color:transparent;
 	z-index:6;
@@ -72,35 +71,39 @@ Version 0.11.0
 	width:auto;
 }
 
-.panel-container.matte {
+.yui-panel-container.focused {
+}
+
+
+.yui-panel-container.matte {
 	padding:3px;
 	background-color:#FFF;
 }
 
-.panel-container.matte .underlay {
+.yui-panel-container.matte .underlay {
 	display:none;
 }
 
-.panel-container.shadow {
+.yui-panel-container.shadow {
 	padding:0px;
 	background-color:transparent;
 }
 
-.panel-container.shadow .underlay {
+.yui-panel-container.shadow .underlay {
 	visibility:inherit;
 	position:absolute;
-	background-color:#CCC;
+	background-color:#000;
 	top:3px;left:3px;
 	z-index:0;
 	width:100%;
 	height:100%;
-    -moz-opacity: 0.7;
-    opacity:.70;
-    filter:alpha(opacity=70);
+    -moz-opacity: 0.12;
+    opacity:.12;
+    filter:alpha(opacity=12);
 	zoom:1;
 }
 
-.panel {
+.yui-panel {
 	visibility:hidden;
 	border-collapse:separate;
 	position:relative;
@@ -112,7 +115,7 @@ Version 0.11.0
 	overflow:hidden;
 }
 
-.panel .hd {
+.yui-panel .hd {
 	background-color:#3d77cb;
 	color:#FFF;
 	font-size:100%;
@@ -124,16 +127,16 @@ Version 0.11.0
 	padding:4px;
 }
 
-.panel .bd {
+.yui-panel .bd {
 	overflow:hidden;
 	padding:4px;
 }
 
-.panel .bd p {
+.yui-panel .bd p {
 	margin:0 0 1em;
 }
 
-.panel .close {
+.yui-panel .container-close {
 	position:absolute;
 	top:5px;
 	right:4px;
@@ -142,25 +145,17 @@ Version 0.11.0
 	width:12px;
 	margin:0px;
 	padding:0px;
-	background-repeat:no-repeat;
+	background:url(close12_1.gif) no-repeat;
 	cursor:pointer;
 	visibility:inherit;
 }
 
-.panel .close.nonsecure {
-	background-image:url(http://us.i1.yimg.com/us.yimg.com/i/nt/ic/ut/alt3/close12_1.gif);
-}
-
-.panel .close.secure {
-	background-image:url(https://a248.e.akamai.net/sec.yimg.com/i/nt/ic/ut/alt3/close12_1.gif);
-}
-
-.panel .ft {
+.yui-panel .ft {
 	padding:4px;
 	overflow:hidden;
 }
 
-.simple-dialog .bd .icon {
+.yui-simple-dialog .bd .yui-icon {
 	background-repeat:no-repeat;
 	width:16px;
 	height:16px;
@@ -168,13 +163,39 @@ Version 0.11.0
 	float:left;
 }
 
-.dialog .ft, .simple-dialog .ft {
+.yui-simple-dialog .bd span.blckicon {
+	background: url("blck16_1.gif") no-repeat;
+}
+
+.yui-simple-dialog .bd span.alrticon {
+	background: url("alrt16_1.gif") no-repeat;
+}
+
+.yui-simple-dialog .bd span.hlpicon {
+	background: url("hlp16_1.gif") no-repeat;
+}
+
+.yui-simple-dialog .bd span.infoicon {
+	background: url("info16_1.gif") no-repeat;
+}
+
+.yui-simple-dialog .bd span.warnicon {
+	background: url("warn16_1.gif") no-repeat;
+}
+
+.yui-simple-dialog .bd span.tipicon {
+	background: url("tip16_1.gif") no-repeat;
+}
+
+.yui-dialog .ft, 
+.yui-simple-dialog .ft {
 	padding-bottom:5px;
 	padding-right:5px;
 	text-align:right;
 }
 
-.dialog form, .simple-dialog form {
+.yui-dialog form, 
+.yui-simple-dialog form {
 	margin:0;
 }
 
@@ -196,14 +217,15 @@ Version 0.11.0
 	font-weight:bold;
 }
 
-.button-group button:hover, .button-group button.hover { 
+.button-group button:hover, 
+.button-group button.hover {
 	border:2px solid #90A029;
 	background-color:#EBF09E;
 	border-top-color:#FFF;
 	border-left-color:#FFF;
 }
 
-.button-group button:active { 
+.button-group button:active {
 	border:2px solid #E4E4E4;
 	background-color:#BBB;
 	border-top-color:#333;
