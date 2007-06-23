@@ -3,7 +3,6 @@ package hudson.maven;
 import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Util;
-import hudson.tasks.LogRotator;
 import hudson.maven.reporters.MavenMailer;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
@@ -16,13 +15,13 @@ import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
 import hudson.model.Node;
+import hudson.tasks.LogRotator;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -171,6 +170,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return getParent().getJDK();
     }
 
+    @Override
+    protected Class<MavenBuild> getBuildClass() {
+        return MavenBuild.class;
+    }
+
     public ModuleName getModuleName() {
         return moduleName;
     }
@@ -209,18 +213,6 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         Node n = getParent().getLastBuiltOn();
         if(n==null) return null;
         return n.getSelfLabel();
-    }
-
-    @Override
-    public MavenBuild newBuild() throws IOException {
-        MavenBuild lastBuild = new MavenBuild(this);
-        builds.put(lastBuild);
-        return lastBuild;
-    }
-
-    @Override
-    protected MavenBuild loadBuild(File dir) throws IOException {
-        return new MavenBuild(this,dir);
     }
 
     @Override

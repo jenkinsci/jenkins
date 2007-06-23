@@ -14,7 +14,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,6 +78,11 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         return node.getWorkspaceFor(this);
     }
 
+    @Override
+    protected Class<Build> getBuildClass() {
+        return Build.class;
+    }
+
     public synchronized Map<Descriptor<Builder>,Builder> getBuilders() {
         return Descriptor.toMap(builders);
     }
@@ -111,18 +115,6 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
                 return p;
         }
         return null;
-    }
-
-    @Override
-    public Build newBuild() throws IOException {
-        Build lastBuild = new Build(this);
-        builds.put(lastBuild);
-        return lastBuild;
-    }
-
-    @Override
-    protected Build loadBuild(File dir) throws IOException {
-        return new Build(this,dir);
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {

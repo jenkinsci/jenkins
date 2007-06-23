@@ -4,6 +4,7 @@ import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.maven.MavenModule;
+import hudson.maven.MavenBuild;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -266,14 +268,45 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
+     * Determines Class&lt;R>.
+     */
+    protected abstract Class<R> getBuildClass();
+
+    /**
      * Creates a new build of this project for immediate execution.
      */
-    protected abstract R newBuild() throws IOException;
+    protected R newBuild() throws IOException {
+        try {
+            R lastBuild = getBuildClass().getConstructor(getClass()).newInstance(this);
+            builds.put(lastBuild);
+            return lastBuild;
+        } catch (InstantiationException e) {
+            throw new Error(e);
+        } catch (IllegalAccessException e) {
+            throw new Error(e);
+        } catch (InvocationTargetException e) {
+            throw new Error(e);
+        } catch (NoSuchMethodException e) {
+            throw new Error(e);
+        }
+    }
 
     /**
      * Loads an existing build record from disk.
      */
-    protected abstract R loadBuild(File dir) throws IOException;
+    protected R loadBuild(File dir) throws IOException {
+        try {
+            return getBuildClass().getConstructor(getClass(),File.class).newInstance(this,dir);
+        } catch (InstantiationException e) {
+            throw new Error(e);
+        } catch (IllegalAccessException e) {
+            throw new Error(e);
+        } catch (InvocationTargetException e) {
+            throw new Error(e);
+        } catch (NoSuchMethodException e) {
+            throw new Error(e);
+        }
+    }
 
     public synchronized List<Action> getActions() {
         // add all the transient actions, too

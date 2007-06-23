@@ -201,15 +201,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     @Override
-    public MavenModuleSetBuild newBuild() throws IOException {
-        MavenModuleSetBuild lastBuild = new MavenModuleSetBuild(this);
-        builds.put(lastBuild);
-        return lastBuild;
-    }
-
-    @Override
-    protected MavenModuleSetBuild loadBuild(File dir) throws IOException {
-        return new MavenModuleSetBuild(this,dir);
+    protected Class<MavenModuleSetBuild> getBuildClass() {
+        return MavenModuleSetBuild.class;
     }
 
     @Override
