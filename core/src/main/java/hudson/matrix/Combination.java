@@ -1,12 +1,12 @@
 package hudson.matrix;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.StringTokenizer;
-import java.util.HashMap;
-import java.util.Collections;
+import java.util.TreeMap;
 
 /**
  * A particular combination of {@link Axis} values.
@@ -28,7 +28,8 @@ public final class Combination extends TreeMap<String,String> {
     }
 
     public Combination(Map<String,String> keyValuePairs) {
-        super.putAll(keyValuePairs);
+        for (Map.Entry<String, String> e : keyValuePairs.entrySet())
+            super.put(e.getKey(),e.getValue());
     }
 
     /**
