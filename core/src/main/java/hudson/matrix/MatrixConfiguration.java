@@ -43,6 +43,13 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return (MatrixProject)super.getParent();
     }
 
+    /**
+     * Get the actual combination of the axes values for this {@link MatrixConfiguration}
+     */
+    public Combination getCombination() {
+        return combination;
+    }
+
     @Override
     public FilePath getWorkspace() {
         Node node = getLastBuiltOn();

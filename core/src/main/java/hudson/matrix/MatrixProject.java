@@ -1,6 +1,7 @@
 package hudson.matrix;
 
 import hudson.FilePath;
+import hudson.maven.ModuleName;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.BuildWrapper;
@@ -75,6 +76,14 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     public MatrixProject(String name) {
         super(Hudson.getInstance(), name);
+    }
+
+    public AxisList getAxes() {
+        return axes;
+    }
+
+    public Layouter getLayouter() {
+        return new Layouter(axes);
     }
 
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
@@ -219,6 +228,12 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return this;
     }
 
+    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        MatrixConfiguration item = getItem(token);
+        if(item!=null)
+            return item;
+        return super.getDynamic(token,req,rsp);
+    }
 
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
