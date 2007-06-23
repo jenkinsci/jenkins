@@ -1,4 +1,4 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:local="local">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:local="local" xmlns:p="/lib/hudson/project">
 
   <d:taglib uri="local">
     <d:tag name="showItem">
@@ -15,12 +15,7 @@
     </d:tag>
   </d:taglib>
 
-  <!-- floating box -->
-  <div style="float:right">
-    <j:forEach var="a" items="${it.actions}">
-      <st:include page="floatingBox.jelly" from="${a}" optional="true" />
-    </j:forEach>
-  </div>
+  <p:projectActionFloatingBox />
 
   <table style="margin-top: 1em; margin-left:1em;">
 

@@ -1,0 +1,10 @@
+<!--
+  Used in the index page to show floating boxes contributed from project actions.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div style="float:right">
+    <j:forEach var="a" items="${it.actions}">
+      <st:include page="floatingBox.jelly" from="${a}" optional="true" />
+    </j:forEach>
+  </div>
+</j:jelly>
