@@ -498,6 +498,21 @@ public class Util {
         return filePath;
     }
 
+    /**
+     * Concatenate multiple strings by inserting a separator.
+     */
+    public static String join(Collection<String> strings, String seprator) {
+        StringBuilder buf = new StringBuilder();
+        boolean first=true;
+        for (String s : strings) {
+            if(first)   first=false;
+            else        buf.append(seprator);
+            buf.append(s);
+        }
+        return buf.toString();
+    }
+
+
     public static final SimpleDateFormat XS_DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
     // Note: RFC822 dates must not be localized!
@@ -511,5 +526,4 @@ public class Util {
 
 
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
-
 }
