@@ -4,7 +4,6 @@ import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.maven.MavenModule;
-import hudson.maven.MavenBuild;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
@@ -23,6 +22,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Base implementation of {@link Job}s that build software.
