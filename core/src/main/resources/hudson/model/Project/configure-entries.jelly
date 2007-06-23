@@ -1,12 +1,10 @@
 <!--
   Config page
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
   <st:include page="configure-common.jelly" />
 
-
-  <!-- build triggers config pane -->
-  <f:triggerDescriptorList>
+  <p:config-trigger>
     <!-- pseudo-trigger to list upstream projects. -->
     <j:set var="up" value="${it.upstreamProjects}" />
     <f:optionalBlock name="pseudoUpstreamTrigger"
@@ -20,9 +18,7 @@
           type="text" value="${h.getProjectListString(up)}"/>
       </f:entry>
     </f:optionalBlock>
-    <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
-    <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />
-  </f:triggerDescriptorList>
+  </p:config-trigger>
 
 
   <!-- build wrapper config pane -->
