@@ -1,14 +1,9 @@
 package hudson.matrix;
 
 import hudson.FilePath;
-import hudson.maven.ModuleName;
-import hudson.tasks.Builder;
-import hudson.tasks.Publisher;
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.BuildWrappers;
-import hudson.tasks.BuildStep;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
+import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -21,7 +16,11 @@ import hudson.model.Node;
 import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.model.Descriptor;
+import hudson.tasks.BuildStep;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrappers;
+import hudson.tasks.Builder;
+import hudson.tasks.Publisher;
 import hudson.util.CopyOnWriteMap;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -33,10 +32,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
 import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -80,6 +81,17 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     public AxisList getAxes() {
         return axes;
+    }
+
+    /**
+     * Gets the subset of {@link AxisList} that are not system axes.
+     */
+    public List<Axis> getUserAxes() {
+        List<Axis> r = new ArrayList<Axis>();
+        for (Axis a : axes)
+            if(!a.isSystem())
+                r.add(a);
+        return r;
     }
 
     public Layouter getLayouter() {
@@ -239,8 +251,19 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         super.submit(req, rsp);
 
         AxisList newAxes = new AxisList();
+
+        // parse user axes
+        newAxes.addAll(req.bindParametersToList(Axis.class,"axis."));
+        // get rid of empty values
+        for (Iterator<Axis> itr = newAxes.iterator(); itr.hasNext();) {
+            Axis a = itr.next();
+            if(a.values.isEmpty())  itr.remove();
+        }
+
+        // parse system axes
         newAxes.add(Axis.parsePrefixed(req,"jdk"));
-        newAxes.add(Axis.parsePrefixed(req,"label"));
+        if(req.getParameter("multipleNodes")!=null)
+            newAxes.add(Axis.parsePrefixed(req,"label"));
         this.axes = newAxes;
 
         buildWrappers = buildDescribable(req, BuildWrappers.WRAPPERS, "wrapper");

@@ -67,6 +67,7 @@
 
     <j:if test="${minimum}">
       <j:forEach begin="${h.size2(items)}" end="${minimum-1}" var="i">
+        <j:set var="${var}" value="${null}" />
         <div class="repeated-chunk">
           <d:invokeBody />
         </div>

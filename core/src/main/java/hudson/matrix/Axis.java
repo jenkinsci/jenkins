@@ -2,11 +2,14 @@ package hudson.matrix;
 
 import hudson.Util;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
+import java.util.Arrays;
 
 /**
  * Configuration axis.
@@ -38,6 +41,25 @@ public final class Axis implements Comparable<Axis>, Iterable<String> {
             throw new IllegalArgumentException(); // bug in the code
     }
 
+    /**
+     * Used to build {@link Axis} from form.
+     *
+     * Axis with empty values need to be removed later.
+     */
+    @DataBoundConstructor
+    public Axis(String name, String value) {
+        this.name = name;
+        this.values = new ArrayList<String>(Arrays.asList(Util.tokenize(value)));
+    }
+
+    /**
+     * Returns ture if this axis is a system-reserved axis
+     * that has special treatment.
+     */
+    public boolean isSystem() {
+        return name.equals("jdk") || name.equals("label");
+    }
+
     public Iterator<String> iterator() {
         return values.iterator();
     }
@@ -60,6 +82,18 @@ public final class Axis implements Comparable<Axis>, Iterable<String> {
 
     public String toString() {
         return new StringBuilder().append(name).append("={").append(Util.join(values,",")).append('}').toString();
+    }
+
+    /**
+     * Used for generating the config UI.
+     * If the axis is big and occupies a lot of space, use NL for separator
+     * to display multi-line text
+     */
+    public String getValueString() {
+        int len=0;
+        for (String value : values)
+            len += value.length();
+        return Util.join(values, len>30 ?"\n":" ");
     }
 
     /**

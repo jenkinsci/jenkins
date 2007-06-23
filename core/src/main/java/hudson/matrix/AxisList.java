@@ -25,7 +25,6 @@ public class AxisList extends ArrayList<Axis> {
         return null;
     }
 
-
     public boolean add(Axis axis) {
         return axis!=null && super.add(axis);
     }
