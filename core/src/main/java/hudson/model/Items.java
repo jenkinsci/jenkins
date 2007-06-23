@@ -27,7 +27,6 @@ public class Items {
     public static final List<TopLevelItemDescriptor> LIST = Descriptor.toList(
         Project.DESCRIPTOR,
         MavenModuleSet.DESCRIPTOR,
-        MatrixProject.DESCRIPTOR,
         ExternalJob.DESCRIPTOR
     );
 
