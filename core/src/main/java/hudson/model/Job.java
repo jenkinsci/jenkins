@@ -582,19 +582,19 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     private JFreeChart createBuildTimeTrendChart() {
-        class Label implements Comparable<Label> {
+        class ChartLabel implements Comparable<ChartLabel> {
             final Run run;
 
-            public Label(Run r) {
+            public ChartLabel(Run r) {
                 this.run = r;
             }
 
-            public int compareTo(Label that) {
+            public int compareTo(ChartLabel that) {
                 return this.run.number-that.run.number;
             }
 
             public boolean equals(Object o) {
-                Label that = (Label) o;
+                ChartLabel that = (ChartLabel) o;
                 return run ==that.run;
             }
 
@@ -623,10 +623,10 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
         }
 
-        DataSetBuilder<String,Label> data = new DataSetBuilder<String, Label>();
+        DataSetBuilder<String,ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
         for( Run r : getBuilds() ) {
             if(r.isBuilding())  continue;
-            data.add( ((double)r.getDuration())/(1000*60), "mins", new Label(r));
+            data.add( ((double)r.getDuration())/(1000*60), "mins", new ChartLabel(r));
         }
 
         final CategoryDataset dataset = data.build();
@@ -668,19 +668,19 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         StackedAreaRenderer ar = new StackedAreaRenderer2() {
             @Override
             public Paint getItemPaint(int row, int column) {
-                Label key = (Label) dataset.getColumnKey(column);
+                ChartLabel key = (ChartLabel) dataset.getColumnKey(column);
                 return key.getColor();
             }
 
             @Override
             public String generateURL(CategoryDataset dataset, int row, int column) {
-                Label label = (Label) dataset.getColumnKey(column);
+                ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
                 return String.valueOf(label.run.number);
             }
 
             @Override
             public String generateToolTip(CategoryDataset dataset, int row, int column) {
-                Label label = (Label) dataset.getColumnKey(column);
+                ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
                 return label.run.getDisplayName() + " : " + label.run.getDurationString();
             }
         };
