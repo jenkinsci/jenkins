@@ -2,6 +2,7 @@ package hudson.matrix;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.AbstractList;
 
 /**
  * Used to assist thegeneration of config table.
@@ -48,23 +49,12 @@ public final class Layouter {
         case 2:
             x.add(nonTrivialAxes.get(0));
             y.add(nonTrivialAxes.get(1));
-            break;
+            return;
         }
 
-        // for size > 3,
-        int i;
-        for( i=0; i<nonTrivialAxes.size(); i+=3 ) {
-            x.add(nonTrivialAxes.get(0));
-            y.add(nonTrivialAxes.get(1));
-            z.add(nonTrivialAxes.get(2));
-        }
-        switch(i-nonTrivialAxes.size()) {
-        case 1:
-            y.add(nonTrivialAxes.get(i-2));
-            // fall through
-        case 2:
-            x.add(nonTrivialAxes.get(i-3));
-        }
+        // for size > 3, use x and y, and try to pack y more
+        for( int i=0; i<nonTrivialAxes.size(); i++ )
+            (i%3==1?x:y).add(nonTrivialAxes.get(i));
     }
 
     /**
@@ -86,5 +76,39 @@ public final class Layouter {
         for( n++ ; n<l.size(); n++ )
             w *= l.get(n).size();
         return w;
+    }
+
+    /**
+     * Gets list of {@link Row}s to be displayed.
+     *
+     * The {@link Row} object is reused, so every value
+     * in collection returns the same object (but with different values.)
+     */
+    public List<Row> getRows() {
+        return new AbstractList<Row>() {
+            final int size = calc(y,-1);
+            final Row row = new Row();
+            public Row get(int index) {
+                row.index = index;
+                return row;
+            }
+
+            public int size() {
+                return size;
+            }
+        };
+    }
+
+    public final class Row {
+        private int index;
+
+        public String drawYHeader(int n) {
+            int base = calc(y,n);
+            if(index/base==(index-1)/base && index!=0)  return null;    // no need to draw a new value
+
+            Axis axis = y.get(n);
+            return axis.value((index/base)%axis.values.size());
+        }
+
     }
 }

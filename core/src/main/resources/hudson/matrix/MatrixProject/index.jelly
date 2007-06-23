@@ -26,6 +26,33 @@
           </ul>
         </j:when>
         <j:otherwise>
+          <h2>Configuration Matrix</h2>
+          <table border="1">
+            <!-- X-axis -->
+            <j:forEach var="x" items="${o.x}">
+              <tr>
+                <!-- space for Y-axis -->
+                <j:if test="${!empty(o.y)}">
+                  <td colspan="${size(o.y)}" />
+                </j:if>
+                <j:forEach var="v" items="${x.values}" varStatus="loop">
+                  <td colspan="${o.width(loop.index)}">${v}</td>
+                </j:forEach>
+              </tr>
+            </j:forEach>
+
+            <!-- Y-axis -->
+            <j:forEach var="r" items="${o.rows}">
+              <tr>
+                <j:forEach var="y" items="${o.y}" varStatus="loop">
+                  <j:if test="${r.drawYHeader(loop.index)!=null}">
+                    <td rowspan="${o.height(loop.index)}">${r.drawYHeader(loop.index)}</td>
+                  </j:if>
+                </j:forEach>
+              </tr>
+            </j:forEach>
+
+          </table>
 
         </j:otherwise>
       </j:choose>
