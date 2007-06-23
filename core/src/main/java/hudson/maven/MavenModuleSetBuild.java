@@ -48,7 +48,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         super(job);
     }
 
-    MavenModuleSetBuild(MavenModuleSet project, File buildDir) throws IOException {
+    public MavenModuleSetBuild(MavenModuleSet project, File buildDir) throws IOException {
         super(project, buildDir);
     }
 

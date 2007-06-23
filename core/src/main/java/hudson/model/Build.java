@@ -5,36 +5,34 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapper.Environment;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
-import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.SCMTrigger;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Calendar;
-
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * A build of a {@link Project}.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Build extends AbstractBuild<Project,Build> {
+public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
+    extends AbstractBuild<P,B> {
 
     /**
      * Creates a new build.
      */
-    Build(Project project) throws IOException {
+    protected Build(P project) throws IOException {
         super(project);
     }
 
     /**
      * Loads a build from a log file.
      */
-    Build(Project project, File buildDir) throws IOException {
+    protected Build(P project, File buildDir) throws IOException {
         super(project,buildDir);
     }
     

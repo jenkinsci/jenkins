@@ -7,11 +7,11 @@ import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
-import hudson.util.FormFieldValidator;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.FormFieldValidator;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -68,7 +68,7 @@ public class Ant extends Builder {
         return antOpts;
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         Project proj = build.getProject();
 
         ArgumentListBuilder args = new ArgumentListBuilder();

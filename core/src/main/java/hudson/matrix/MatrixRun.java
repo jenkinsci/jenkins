@@ -1,31 +1,26 @@
 package hudson.matrix;
 
-import hudson.model.AbstractBuild;
+import hudson.model.Build;
 
-import java.io.IOException;
 import java.io.File;
-import java.util.Calendar;
+import java.io.IOException;
 
 /**
  * Execution of {@link MatrixConfiguration}.
  *
  * @author Kohsuke Kawaguchi
  */
-public class MatrixRun extends AbstractBuild<MatrixConfiguration,MatrixRun> {
+public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
     public MatrixRun(MatrixConfiguration job) throws IOException {
         super(job);
-    }
-
-    public MatrixRun(MatrixConfiguration job, Calendar timestamp) {
-        super(job, timestamp);
     }
 
     public MatrixRun(MatrixConfiguration project, File buildDir) throws IOException {
         super(project, buildDir);
     }
 
-    public void run() {
-        // TODO
-        throw new UnsupportedOperationException();
+    @Override
+    public MatrixConfiguration getParent() {// don't know why, but javac wants this
+        return super.getParent();
     }
 }

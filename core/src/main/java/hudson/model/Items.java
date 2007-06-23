@@ -3,6 +3,7 @@ package hudson.model;
 import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
 import hudson.matrix.MatrixProject;
+import hudson.matrix.MatrixConfiguration;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.util.XStream2;
@@ -24,7 +25,7 @@ public class Items {
      * List of all installed {@link TopLevelItem} types.
      */
     public static final List<TopLevelItemDescriptor> LIST = Descriptor.toList(
-        Project.DESCRIPTOR,
+        FreeStyleProject.DESCRIPTOR,
         MavenModuleSet.DESCRIPTOR,
         ExternalJob.DESCRIPTOR
     );
@@ -102,7 +103,7 @@ public class Items {
     public static final XStream XSTREAM = new XStream2();
 
     static {
-        XSTREAM.alias("project",Project.class);
+        XSTREAM.alias("project",FreeStyleProject.class);
         XSTREAM.alias("maven2", MavenModule.class);
         XSTREAM.alias("maven2-module-set", MavenModule.class);
 
@@ -110,5 +111,6 @@ public class Items {
         if(System.getProperty("Matrix")!=null)
              LIST.add(MatrixProject.DESCRIPTOR);
         XSTREAM.alias("matrix-project",MatrixProject.class);
+        XSTREAM.alias("matrix-config",MatrixConfiguration.class);
     }
 }

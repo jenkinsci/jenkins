@@ -8,6 +8,8 @@ import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixRun;
 import hudson.tasks.BuildStep;
 import hudson.tasks.LogRotator;
 import hudson.tasks.test.AbstractTestResultAction;
@@ -839,7 +841,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private static final XStream XSTREAM = new XStream2();
     static {
-        XSTREAM.alias("build",Build.class);
+        XSTREAM.alias("build",FreeStyleBuild.class);
+        XSTREAM.alias("matrix-build",MatrixBuild.class);
+        XSTREAM.alias("matrix-run",MatrixRun.class);
         XSTREAM.registerConverter(Result.conv);
     }
 

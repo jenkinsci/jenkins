@@ -57,5 +57,12 @@
       </f:optionalBlock>
     </j:if>
 
+    <!-- build config pane -->
+    <j:getStatic var="builders" className="hudson.tasks.BuildStep" field="BUILDERS" />
+    <f:descriptorList title="Build"
+                      descriptors="${builders}"
+                      instances="${it.builders}"
+                      varName="builder" />
+    
   </f:section>
 </j:jelly>

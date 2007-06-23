@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.StringTokenizer;
 import java.util.HashMap;
+import java.util.Collections;
 
 /**
  * A particular combination of {@link Axis} values.
@@ -19,7 +20,7 @@ public final class Combination extends TreeMap<String,String> {
 
     public Combination(AxisList axisList, List<String> values) {
         for(int i=0; i<axisList.size(); i++)
-            put(axisList.get(i).name,values.get(i));
+            super.put(axisList.get(i).name,values.get(i));
     }
 
     public Combination(AxisList axisList,String... values) {
@@ -27,7 +28,7 @@ public final class Combination extends TreeMap<String,String> {
     }
 
     public Combination(Map<String,String> keyValuePairs) {
-        super(keyValuePairs);
+        super.putAll(keyValuePairs);
     }
 
     /**
@@ -40,6 +41,7 @@ public final class Combination extends TreeMap<String,String> {
             if(buf.length()>0) buf.append(',');
             buf.append(e.getKey()).append('=').append(e.getValue());
         }
+        if(buf.length()==0) buf.append("default"); // special case to avoid 0-length name.
         return buf.toString();
     }
 
@@ -47,6 +49,9 @@ public final class Combination extends TreeMap<String,String> {
      * Reverse operation of {@link #toString()}.
      */
     public static Combination fromString(String id) {
+        if(id.equals("default"))
+            return new Combination(Collections.<String,String>emptyMap());
+
         Map<String,String> m = new HashMap<String,String>();
         StringTokenizer tokens = new StringTokenizer(id, ",");
         while(tokens.hasMoreTokens()) {

@@ -68,7 +68,7 @@ public class Fingerprinter extends Publisher implements Serializable {
         return recordBuildArtifacts;
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         try {
             listener.getLogger().println("Recording fingerprints");
 
@@ -100,7 +100,7 @@ public class Fingerprinter extends Publisher implements Serializable {
         return true;
     }
 
-    private void record(Build build, BuildListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
+    private void record(Build<?,?> build, BuildListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
         final class Record implements Serializable {
             final boolean produced;
             final String relativePath;

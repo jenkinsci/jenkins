@@ -106,7 +106,7 @@ public class Maven extends Builder {
         }
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         Project proj = build.getProject();
 
         int startIndex = 0;

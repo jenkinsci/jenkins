@@ -63,12 +63,16 @@ public class Mailer extends Publisher {
     private transient boolean failureOnly;
 
     public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
+        return _perform(build,launcher,listener);
+    }
+
+    public <P extends Project<P,B>,B extends Build<P,B>> boolean _perform(B build, Launcher launcher, BuildListener listener) throws InterruptedException {
         if(debug)
             listener.getLogger().println("Running mailer");
-        return new MailSender<Project,Build>(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals) {
+        return new MailSender<P,B>(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals) {
             /** Check whether a path (/-separated) will be archived. */
             @Override
-            public boolean artifactMatches(String path, Build build) {
+            public boolean artifactMatches(String path, B build) {
                 ArtifactArchiver aa = (ArtifactArchiver) build.getProject().getPublishers().get(ArtifactArchiver.DESCRIPTOR);
                 if (aa == null) {
                     LOGGER.finer("No ArtifactArchiver found");

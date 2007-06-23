@@ -46,7 +46,7 @@ public class JavadocArchiver extends Publisher {
         return new File(project.getRootDir(),"javadoc");
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         listener.getLogger().println("Publishing Javadoc");
 
         FilePath javadoc = build.getParent().getWorkspace().child(javadocDir);

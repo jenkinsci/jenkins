@@ -1,6 +1,11 @@
 package hudson.matrix;
 
 import hudson.FilePath;
+import hudson.tasks.Builder;
+import hudson.tasks.Publisher;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrappers;
+import hudson.tasks.BuildStep;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor.FormException;
@@ -15,6 +20,7 @@ import hudson.model.Node;
 import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.model.Descriptor;
 import hudson.util.CopyOnWriteMap;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -28,6 +34,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -39,6 +47,21 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * This also includes special axis "label" and "jdk" if they are configured.
      */
     private volatile AxisList axes = new AxisList();
+
+    /**
+     * List of active {@link Builder}s configured for this project.
+     */
+    private volatile List<Builder> builders = new Vector<Builder>();
+
+    /**
+     * List of active {@link Publisher}s configured for this project.
+     */
+    private volatile List<Publisher> publishers = new Vector<Publisher>();
+
+    /**
+     * List of active {@link BuildWrapper}s configured for this project.
+     */
+    private volatile List<BuildWrapper> buildWrappers = new Vector<BuildWrapper>();
 
     /**
      * All {@link MatrixConfiguration}s, keyed by their {@link MatrixConfiguration#getName() names}.
@@ -58,7 +81,14 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         super.onLoad(parent,name);
         Collections.sort(axes); // perhaps the file was edited on disk and the sort order might have been broken
 
-        configurations = ItemGroupMixIn.<String,MatrixConfiguration>loadChildren(this,getConfigurationsDir(), KEYED_BY_NAME);
+        rebuildConfigurations();
+    }
+
+    /**
+     * Rebuilds the {@link #configurations} list and {@link #activeConfigurations}.
+     */
+    private void rebuildConfigurations() {
+        configurations = ItemGroupMixIn.<String, MatrixConfiguration>loadChildren(this,getConfigurationsDir(), KEYED_BY_NAME);
 
         // find all active configurations
         Set<MatrixConfiguration> active = new LinkedHashSet<MatrixConfiguration>();
@@ -145,6 +175,26 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return r;
     }
 
+    public Map<Descriptor<Builder>,Builder> getBuilders() {
+        return Descriptor.toMap(builders);
+    }
+
+    public Map<Descriptor<Publisher>,Publisher> getPublishers() {
+        return Descriptor.toMap(publishers);
+    }
+
+    public Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
+        return Descriptor.toMap(buildWrappers);
+    }
+
+    public Publisher getPublisher(Descriptor<Publisher> descriptor) {
+        for (Publisher p : publishers) {
+            if(p.getDescriptor()==descriptor)
+                return p;
+        }
+        return null;
+    }
+
     @Override
     public FilePath getWorkspace() {
         Node node = getLastBuiltOn();
@@ -176,6 +226,12 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         newAxes.add(Axis.parsePrefixed(req,"jdk"));
         newAxes.add(Axis.parsePrefixed(req,"label"));
         this.axes = newAxes;
+
+        buildWrappers = buildDescribable(req, BuildWrappers.WRAPPERS, "wrapper");
+        builders = buildDescribable(req, BuildStep.BUILDERS, "builder");
+        publishers = buildDescribable(req, BuildStep.PUBLISHERS, "publisher");
+
+        rebuildConfigurations();
     }
 
     public DescriptorImpl getDescriptor() {

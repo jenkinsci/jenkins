@@ -1,14 +1,12 @@
 package hudson.matrix;
 
 import hudson.Util;
+import org.kohsuke.stapler.StaplerRequest;
 
-import java.util.List;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Enumeration;
-
-import org.kohsuke.stapler.StaplerRequest;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Configuration axis.
@@ -35,7 +33,9 @@ public final class Axis implements Comparable<Axis>, Iterable<String> {
 
     public Axis(String name, List<String> values) {
         this.name = name;
-        this.values = Collections.unmodifiableList(values);
+        this.values = new ArrayList<String>(values);
+        if(values.isEmpty())
+            throw new IllegalArgumentException(); // bug in the code
     }
 
     public Iterator<String> iterator() {
@@ -76,6 +76,8 @@ public final class Axis implements Comparable<Axis>, Iterable<String> {
             if(paramName.startsWith(prefix))
                 values.add(paramName.substring(prefix.length()));
         }
+        if(values.isEmpty())
+            return null;
         return new Axis(name,values);
     }
 }

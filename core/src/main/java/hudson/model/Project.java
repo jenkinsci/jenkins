@@ -1,6 +1,5 @@
 package hudson.model;
 
-import hudson.FilePath;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
@@ -28,27 +27,28 @@ import java.util.Vector;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Project extends AbstractProject<Project,Build> implements TopLevelItem, SCMedItem {
+public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
+    extends AbstractProject<P,B> implements SCMedItem {
 
     /**
      * List of active {@link Builder}s configured for this project.
      */
-    private List<Builder> builders = new Vector<Builder>();
+    private volatile List<Builder> builders = new Vector<Builder>();
 
     /**
      * List of active {@link Publisher}s configured for this project.
      */
-    private List<Publisher> publishers = new Vector<Publisher>();
+    private volatile List<Publisher> publishers = new Vector<Publisher>();
 
     /**
      * List of active {@link BuildWrapper}s configured for this project.
      */
-    private List<BuildWrapper> buildWrappers = new Vector<BuildWrapper>();
+    private volatile List<BuildWrapper> buildWrappers = new Vector<BuildWrapper>();
 
     /**
      * Creates a new project.
      */
-    public Project(Hudson parent,String name) {
+    public Project(ItemGroup parent,String name) {
         super(parent,name);
     }
 
@@ -66,32 +66,15 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
         return this;
     }
 
-    @Override
-    public Hudson getParent() {
-        return Hudson.getInstance();
-    }
-
-    @Override
-    public FilePath getWorkspace() {
-        Node node = getLastBuiltOn();
-        if(node==null)  node = getParent();
-        return node.getWorkspaceFor(this);
-    }
-
-    @Override
-    protected Class<Build> getBuildClass() {
-        return Build.class;
-    }
-
-    public synchronized Map<Descriptor<Builder>,Builder> getBuilders() {
+    public Map<Descriptor<Builder>,Builder> getBuilders() {
         return Descriptor.toMap(builders);
     }
 
-    public synchronized Map<Descriptor<Publisher>,Publisher> getPublishers() {
+    public Map<Descriptor<Publisher>,Publisher> getPublishers() {
         return Descriptor.toMap(publishers);
     }
 
-    public synchronized Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
+    public Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
         return Descriptor.toMap(buildWrappers);
     }
 
@@ -150,9 +133,9 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
 
         req.setCharacterEncoding("UTF-8");
 
-        buildDescribable(req, BuildWrappers.WRAPPERS, buildWrappers, "wrapper");
-        buildDescribable(req, BuildStep.BUILDERS, builders, "builder");
-        buildDescribable(req, BuildStep.PUBLISHERS, publishers, "publisher");
+        buildWrappers = buildDescribable(req, BuildWrappers.WRAPPERS, "wrapper");
+        builders = buildDescribable(req, BuildStep.BUILDERS, "builder");
+        publishers = buildDescribable(req, BuildStep.PUBLISHERS, "publisher");
 
         updateTransientActions();
     }
@@ -205,8 +188,8 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
     private void updateTransientActions() {
         synchronized(transientActions) {
             transientActions.clear();
-            for (JobProperty<? super Project> p : properties) {
-                Action a = p.getJobAction(this);
+            for (JobProperty<? super P> p : properties) {
+                Action a = p.getJobAction((P)this);
                 if(a!=null)
                     transientActions.add(a);
             }
@@ -244,24 +227,4 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
      */
     @Deprecated
     private transient String slave;
-
-    public DescriptorImpl getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
-    public static final class DescriptorImpl extends TopLevelItemDescriptor {
-        private DescriptorImpl() {
-            super(Project.class);
-        }
-
-        public String getDisplayName() {
-            return "Build a free-style software project";
-        }
-
-        public Project newInstance(String name) {
-            return new Project(Hudson.getInstance(),name);
-        }
-    }
 }

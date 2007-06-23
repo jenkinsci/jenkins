@@ -24,7 +24,12 @@ public class AxisList extends ArrayList<Axis> {
         }
         return null;
     }
-    
+
+
+    public boolean add(Axis axis) {
+        return axis!=null && super.add(axis);
+    }
+
     /**
      * List up all the possible combinations of this list.
      */
@@ -50,7 +55,7 @@ public class AxisList extends ArrayList<Axis> {
 
                     public Combination next() {
                         String[] data = new String[size()];
-                        int x = counter;
+                        int x = counter++;
                         for( int i=0; i<data.length; i++) {
                             data[i] = get(i).value(x/base[i]);
                             x %= base[i];

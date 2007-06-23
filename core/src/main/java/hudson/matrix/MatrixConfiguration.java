@@ -1,24 +1,29 @@
 package hudson.matrix;
 
 import hudson.FilePath;
-import hudson.model.AbstractProject;
+import hudson.tasks.Builder;
+import hudson.tasks.Publisher;
+import hudson.tasks.BuildWrapper;
 import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
-import hudson.model.Node;
-import hudson.model.SCMedItem;
-import hudson.model.JDK;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.JDK;
 import hudson.model.Label;
+import hudson.model.Node;
+import hudson.model.Project;
+import hudson.model.SCMedItem;
+import hudson.model.Descriptor;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * One configuration of {@link MatrixProject}.
  *
  * @author Kohsuke Kawaguchi
  */
-public class MatrixConfiguration extends AbstractProject<MatrixConfiguration,MatrixRun> implements SCMedItem {
+public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> implements SCMedItem {
     /**
      * The actual value combination.
      */
@@ -72,6 +77,29 @@ public class MatrixConfiguration extends AbstractProject<MatrixConfiguration,Mat
     @Override
     public JDK getJDK() {
         return Hudson.getInstance().getJDK(combination.get("jdk"));
+    }
+
+//
+// inherit build setting from the parent project
+//
+    @Override
+    public Map<Descriptor<Builder>, Builder> getBuilders() {
+        return getParent().getBuilders();
+    }
+
+    @Override
+    public Map<Descriptor<Publisher>, Publisher> getPublishers() {
+        return getParent().getPublishers();
+    }
+
+    @Override
+    public Map<Descriptor<BuildWrapper>, BuildWrapper> getBuildWrappers() {
+        return getParent().getBuildWrappers();
+    }
+
+    @Override
+    public Publisher getPublisher(Descriptor<Publisher> descriptor) {
+        return getParent().getPublisher(descriptor);
     }
 
     /**

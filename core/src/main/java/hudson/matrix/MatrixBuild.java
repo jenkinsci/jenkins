@@ -6,6 +6,8 @@ import hudson.model.Result;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.File;
+import java.util.Calendar;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -13,6 +15,14 @@ import java.io.PrintStream;
 public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public MatrixBuild(MatrixProject job) throws IOException {
         super(job);
+    }
+
+    public MatrixBuild(MatrixProject job, Calendar timestamp) {
+        super(job, timestamp);
+    }
+
+    public MatrixBuild(MatrixProject project, File buildDir) throws IOException {
+        super(project, buildDir);
     }
 
     @Override

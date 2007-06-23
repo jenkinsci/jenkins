@@ -28,7 +28,7 @@ public abstract class CommandInterpreter extends Builder {
         return command;
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         Project proj = build.getProject();
         FilePath ws = proj.getWorkspace();
         FilePath script=null;

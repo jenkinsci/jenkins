@@ -287,10 +287,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } catch (IllegalAccessException e) {
             throw new Error(e);
         } catch (InvocationTargetException e) {
-            throw new Error(e);
+            throw handleInvocationTargetException(e);
         } catch (NoSuchMethodException e) {
             throw new Error(e);
         }
+    }
+
+    private IOException handleInvocationTargetException(InvocationTargetException e) {
+        Throwable t = e.getTargetException();
+        if(t instanceof Error)  throw (Error)t;
+        if(t instanceof RuntimeException)   throw (RuntimeException)t;
+        if(t instanceof IOException)    return (IOException)t;
+        throw new Error(t);
     }
 
     /**
@@ -304,7 +312,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } catch (IllegalAccessException e) {
             throw new Error(e);
         } catch (InvocationTargetException e) {
-            throw new Error(e);
+            throw handleInvocationTargetException(e);
         } catch (NoSuchMethodException e) {
             throw new Error(e);
         }
@@ -589,21 +597,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         for (Trigger t : triggers)
             t.stop();
-        buildDescribable(req, Triggers.getApplicableTriggers(this), triggers, "trigger");
+        triggers = buildDescribable(req, Triggers.getApplicableTriggers(this), "trigger");
         for (Trigger t : triggers)
             t.start(this,true);
     }
 
-    protected final <T extends Describable<T>> void buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, List<T> result, String prefix)
+    protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix)
         throws FormException {
 
-        result.clear();
+        List<T> r = new Vector<T>();
         for( int i=0; i< descriptors.size(); i++ ) {
             if(req.getParameter(prefix +i)!=null) {
                 T instance = descriptors.get(i).newInstance(req);
-                result.add(instance);
+                r.add(instance);
             }
         }
+        return r;
     }
 
     /**

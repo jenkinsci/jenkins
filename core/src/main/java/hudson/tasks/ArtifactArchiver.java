@@ -55,8 +55,8 @@ public class ArtifactArchiver extends Publisher {
         return latestOnly;
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
-        Project p = build.getProject();
+    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+        Project<?,?> p = build.getProject();
 
         File dir = build.getArtifactsDir();
         dir.mkdirs();
@@ -70,7 +70,7 @@ public class ArtifactArchiver extends Publisher {
         }
 
         if(latestOnly) {
-            Build b = p.getLastSuccessfulBuild();
+            Build<?,?> b = p.getLastSuccessfulBuild();
             if(b!=null) {
                 while(true) {
                     b = b.getPreviousBuild();
