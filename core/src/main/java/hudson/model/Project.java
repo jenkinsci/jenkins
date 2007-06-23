@@ -247,11 +247,11 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
     @Deprecated
     private transient String slave;
 
-    public TopLevelItemDescriptor getDescriptor() {
+    public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
 
-    public static final TopLevelItemDescriptor DESCRIPTOR = new DescriptorImpl();
+    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {
         private DescriptorImpl() {
