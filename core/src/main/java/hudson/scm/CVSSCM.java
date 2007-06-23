@@ -566,7 +566,7 @@ public class CVSSCM extends SCM implements Serializable {
 
 
     /**
-     * Used to communicate the result of the detection in {@link CVSSCM#calcChangeLog(AbstractBuild, List, File, BuildListener)}
+     * Used to communicate the result of the detection in {@link CVSSCM#calcChangeLog(AbstractBuild, FilePath, List, File, BuildListener)}
      */
     class ChangeLogResult implements Serializable {
         boolean hadError;
