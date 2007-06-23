@@ -16,7 +16,7 @@
       <!-- no maven installation is configured. this will be an error, so warn the user now -->
       <f:entry title="Maven Version">
         <span class="error">
-          Hudson needs to konw where your Maven2 is installed.&lt;br>
+          Hudson needs to know where your Maven2 is installed.&lt;br>
           Please do so from <a href="${rootURL}/configure">the system configuration</a>.
         </span>
       </f:entry>
