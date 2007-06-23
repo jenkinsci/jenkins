@@ -87,7 +87,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     /**
      * Rebuilds the {@link #configurations} list and {@link #activeConfigurations}.
      */
-    private void rebuildConfigurations() {
+    private void rebuildConfigurations() throws IOException {
         configurations = ItemGroupMixIn.<String, MatrixConfiguration>loadChildren(this,getConfigurationsDir(), KEYED_BY_NAME);
 
         // find all active configurations
@@ -96,6 +96,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             MatrixConfiguration config = configurations.get(c.toString());
             if(config==null) {
                 config = new MatrixConfiguration(this,c);
+                config.save();
                 configurations.put(config.getName(), config);
             }
             active.add(config);
