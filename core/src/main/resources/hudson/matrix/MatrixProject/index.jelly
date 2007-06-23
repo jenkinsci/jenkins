@@ -27,7 +27,7 @@
         </j:when>
         <j:otherwise>
           <h2>Configuration Matrix</h2>
-          <table border="1">
+          <table border="1" class="middle-align">
             <!-- X-axis -->
             <j:forEach var="x" items="${o.x}">
               <tr>
