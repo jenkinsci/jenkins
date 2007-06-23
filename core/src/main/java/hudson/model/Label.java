@@ -92,6 +92,10 @@ public class Label implements Comparable<Label>, ModelObject {
     public boolean contains(Node node) {
         return getNodes().contains(node);
     }
+
+    public boolean isEmpty() {
+        return getNodes().isEmpty();
+    }
     
     /*package*/ void reset() {
         nodes = null;
