@@ -165,9 +165,25 @@ public class Queue {
     /**
      * Schedules a new build with a custom quiet period.
      *
+     * <p>
+     * Left for backward compatibility with &lt;1.114.
+     *
      * @since 1.105
      */
     public synchronized boolean add( AbstractProject p, int quietPeriod ) {
+        return add((Task)p,quietPeriod);
+    }
+
+    /**
+     * Schedules an execution of a task.
+     *
+     * @param quietPeriod
+     *      Number of seconds that the task will be placed in queue.
+     *      Useful when the same task is likely scheduled for multiple
+     *      times.
+     * @since 1.114
+     */
+    public synchronized boolean add( Task p, int quietPeriod ) {
         if(contains(p))
             return false; // no double queueing
 
@@ -472,6 +488,13 @@ public class Queue {
         }
     }
 
+    /**
+     * Task whose execution is controlled by the queue.
+     * <p>
+     * {@link #equals(Object) Value equality} of {@link Task}s is used
+     * to collapse two tasks into one. This is used to avoid infinite
+     * queue backlog.
+     */
     public interface Task {
         /**
          * If this task needs to be run on a node with a particular label,
