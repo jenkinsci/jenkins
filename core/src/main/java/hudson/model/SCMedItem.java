@@ -22,8 +22,9 @@ public interface SCMedItem extends BuildableItem {
      * {@link SCMedItem} needs to be an instance of
      * {@link AbstractProject}.
      *
-     * This method does {@code (AbstractProject)this} but emphasizes
-     * the fact that this cast must be doable.
+     * <p>
+     * This method must be always implemented as {@code (AbstractProject)this}, but
+     * defining this method emphasizes the fact that this cast must be doable.
      */
     AbstractProject<?,?> asProject();
 
