@@ -4,6 +4,7 @@ import hudson.FilePath;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.LogRotator;
 import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -109,6 +110,11 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return getParent().getPublisher(descriptor);
     }
 
+    @Override
+    public LogRotator getLogRotator() {
+        return getParent().getLogRotator();
+    }
+
     /**
      * JDK cannot be set on {@link MatrixConfiguration} because
      * it's controlled by {@link MatrixProject}.
@@ -116,6 +122,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      *      Not supported.
      */
     public void setJDK(JDK jdk) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated
+     *      Value is controlled by {@link MatrixProject}.
+     */
+    public void setLogRotator(LogRotator logRotator) {
         throw new UnsupportedOperationException();
     }
 }
