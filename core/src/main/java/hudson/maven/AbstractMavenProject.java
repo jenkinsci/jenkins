@@ -8,7 +8,6 @@ import hudson.triggers.Trigger;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Vector;
 
 /**
  * Common part between {@link MavenModule} and {@link MavenModuleSet}.
@@ -21,8 +20,6 @@ public abstract class AbstractMavenProject<P extends AbstractMavenProject<P,R>,R
     }
 
     /*package*/ void updateTransientActions() {
-        if(transientActions==null)
-            transientActions = new Vector<Action>();    // happens when loaded from disk
         synchronized(transientActions) {
             transientActions.clear();
 

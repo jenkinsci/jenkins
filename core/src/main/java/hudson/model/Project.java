@@ -203,8 +203,6 @@ public class Project extends AbstractProject<Project,Build> implements TopLevelI
     }
 
     private void updateTransientActions() {
-        if(transientActions==null)
-            transientActions = new Vector<Action>();    // happens when loaded from disk
         synchronized(transientActions) {
             transientActions.clear();
             for (JobProperty<? super Project> p : properties) {

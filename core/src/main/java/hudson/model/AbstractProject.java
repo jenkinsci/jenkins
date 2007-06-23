@@ -140,6 +140,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             triggers = new Vector<Trigger<?>>();
         for (Trigger t : triggers)
             t.start(this,false);
+
+        if(transientActions==null)
+            transientActions = new Vector<Action>();    // happens when loaded from disk
     }
 
     /**
