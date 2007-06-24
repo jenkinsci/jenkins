@@ -49,6 +49,10 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return lb!=null ? lb.getNumber() : 0;
     }
 
+    public int assignBuildNumber() throws IOException {
+        return getNextBuildNumber(); 
+    }
+
     public MatrixProject getParent() {
         return (MatrixProject)super.getParent();
     }
