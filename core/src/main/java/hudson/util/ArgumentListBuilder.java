@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Used to build up arguments for a process invocation.
@@ -51,6 +53,18 @@ public class ArgumentListBuilder {
         StringTokenizer tokens = new StringTokenizer(s);
         while(tokens.hasMoreTokens())
             add(tokens.nextToken());
+        return this;
+    }
+
+    /**
+     * Adds key value pairs as "-Dkey=value -Dkey=value"...
+     *
+     * <tt>-D</tt> portion is configurable.
+     * @since 1.114
+     */
+    public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props) {
+        for (Entry<String,String> e : props.entrySet())
+            add(prefix+e.getKey()+'='+e.getValue());
         return this;
     }
 
