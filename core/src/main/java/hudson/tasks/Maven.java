@@ -126,7 +126,7 @@ public class Maven extends Builder {
             MavenInstallation ai = getMaven();
             if(ai==null) {
                 String execName = proj.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
-                args.add(execName).addTokenized(normalizedTarget);
+                args.add(execName);
             } else {
                 File exec = ai.getExecutable();
                 if(exec==null) {
@@ -137,8 +137,10 @@ public class Maven extends Builder {
                     listener.fatalError(exec+" doesn't exist");
                     return false;
                 }
-                args.add(exec.getPath()).addTokenized(normalizedTarget);
+                args.add(exec.getPath());
             }
+            args.addKeyValuePairs("-D",build.getBuildVariables());
+            args.addTokenized(normalizedTarget);
 
             Map<String,String> env = build.getEnvVars();
             if(ai!=null) {

@@ -8,6 +8,7 @@ import hudson.FilePath;
 import hudson.Util;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Common part between {@link Shell} and {@link BatchFile}.
@@ -45,7 +46,9 @@ public abstract class CommandInterpreter extends Builder {
 
             int r;
             try {
-                r = launcher.launch(cmd,build.getEnvVars(),listener.getLogger(),ws).join();
+                Map<String,String> envVars = build.getEnvVars();
+                envVars.putAll(build.getBuildVariables());
+                r = launcher.launch(cmd,envVars,listener.getLogger(),ws).join();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
                 e.printStackTrace( listener.fatalError("command execution failed") );

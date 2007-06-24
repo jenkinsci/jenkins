@@ -92,6 +92,7 @@ public class Ant extends Builder {
             }
             args.add(exec.getPath());
         }
+        args.addKeyValuePairs("-D",build.getBuildVariables());
         args.addTokenized(normalizedTarget);
 
         Map<String,String> env = build.getEnvVars();
