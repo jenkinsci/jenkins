@@ -7,7 +7,7 @@
 
       <p:matrix>
         <a href="${p.shortUrl}">
-          <img src="${rootURL}/images/16x16/${p.buildStatusUrl}" title="${p.iconColor.description}"/>
+          <img src="${rootURL}/images/24x24/${p.buildStatusUrl}" title="${p.iconColor.description}"/>
           <j:if test="${empty(o.x) and empty(o.y)}">
             ${p.combination.toString(o.z)}
           </j:if>
