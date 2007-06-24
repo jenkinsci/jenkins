@@ -18,6 +18,10 @@ table.middle-align td {
   vertical-align: middle;
 }
 
+table.center-align td {
+  text-align: center;
+}
+
 #main-table {
   padding: 0;
   border-collapse: collapse;
