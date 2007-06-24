@@ -6,7 +6,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.Ancestor;
 
 /**
  * Execution of {@link MatrixConfiguration}.
@@ -20,6 +25,22 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
 
     public MatrixRun(MatrixConfiguration project, File buildDir) throws IOException {
         super(project, buildDir);
+    }
+
+
+    public String getDisplayName() {
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if(req!=null) {
+            List<Ancestor> ancs = req.getAncestors();
+            for( int i=1; i<ancs.size(); i++) {
+                if(ancs.get(i).getObject()==this) {
+                    if(ancs.get(i-1).getObject() instanceof MatrixBuild) {
+                        return getParent().getCombination().toString();
+                    }
+                }
+            }
+        }
+        return super.getDisplayName();
     }
 
     @Override
