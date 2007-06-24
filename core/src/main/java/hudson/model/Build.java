@@ -99,7 +99,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         run(new RunnerImpl());
     }
     
-    private class RunnerImpl extends AbstractRunner {
+    protected class RunnerImpl extends AbstractRunner {
         protected Result doRun(BuildListener listener) throws Exception {
             if(!preBuild(listener,project.getBuilders()))
                 return Result.FAILURE;
