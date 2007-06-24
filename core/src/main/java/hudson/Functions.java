@@ -117,7 +117,6 @@ public class Functions {
     }
 
     public static RunUrl decompose(StaplerRequest req) {
-        @SuppressWarnings("unchecked") // pre-JDK 5 API?
         List<Ancestor> ancestors = req.getAncestors();
         for (Ancestor anc : ancestors) {
             if(anc.getObject() instanceof Run) {
