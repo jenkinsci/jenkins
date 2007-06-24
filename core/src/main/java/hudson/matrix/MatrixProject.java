@@ -250,9 +250,13 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
-        MatrixConfiguration item = getItem(token);
-        if(item!=null)
+        try {
+            MatrixConfiguration item = getItem(token);
+            if(item!=null)
             return item;
+        } catch (IllegalArgumentException _) {
+            // failed to parse the token as Combination. Must be something else
+        }
         return super.getDynamic(token,req,rsp);
     }
 
