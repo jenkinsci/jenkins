@@ -3,6 +3,7 @@ package hudson.matrix;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -16,7 +17,7 @@ import java.util.TreeMap;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Combination extends TreeMap<String,String> {
+public final class Combination extends TreeMap<String,String> implements Comparable<Combination> {
 
     public Combination(AxisList axisList, List<String> values) {
         for(int i=0; i<axisList.size(); i++)
@@ -80,5 +81,23 @@ public final class Combination extends TreeMap<String,String> {
 
     public String remove(Object key) {
         throw new UnsupportedOperationException();
+    }
+
+    public int compareTo(Combination that) {
+        int d = this.size()-that.size();
+        if(d!=0)    return d;
+
+        Iterator<Map.Entry<String,String>> itr = this.entrySet().iterator();
+        Iterator<Map.Entry<String,String>> jtr = that.entrySet().iterator();
+        while(itr.hasNext()) {
+            Map.Entry<String,String> i = itr.next();
+            Map.Entry<String,String> j = jtr.next();
+
+            d = i.getKey().compareTo(j.getKey());
+            if(d!=0)    return d;
+            d = i.getValue().compareTo(j.getValue());
+            if(d!=0)    return d;
+        }
+        return 0;
     }
 }
