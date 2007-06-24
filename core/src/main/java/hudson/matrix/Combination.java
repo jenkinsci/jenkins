@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.Collection;
 
 /**
  * A particular combination of {@link Axis} values.
@@ -33,6 +34,37 @@ public final class Combination extends TreeMap<String,String> implements Compara
             super.put(e.getKey(),e.getValue());
     }
 
+    public int compareTo(Combination that) {
+        int d = this.size()-that.size();
+        if(d!=0)    return d;
+
+        Iterator<Map.Entry<String,String>> itr = this.entrySet().iterator();
+        Iterator<Map.Entry<String,String>> jtr = that.entrySet().iterator();
+        while(itr.hasNext()) {
+            Map.Entry<String,String> i = itr.next();
+            Map.Entry<String,String> j = jtr.next();
+
+            d = i.getKey().compareTo(j.getKey());
+            if(d!=0)    return d;
+            d = i.getValue().compareTo(j.getValue());
+            if(d!=0)    return d;
+        }
+        return 0;
+    }
+
+    /**
+     * Works like {@link #toString()} but only include the given axes.
+     */
+    public String toString(Collection<Axis> subset) {
+        StringBuilder buf = new StringBuilder();
+        for (Axis a : subset) {
+            if(buf.length()>0) buf.append(',');
+            buf.append(a.name).append('=').append(get(a.name));
+        }
+        if(buf.length()==0) buf.append("default"); // special case to avoid 0-length name.
+        return buf.toString();
+    }
+    
     /**
      * Converts to the ID string representation:
      * <tt>axisName=value,axisName=value,...</tt>
@@ -81,23 +113,5 @@ public final class Combination extends TreeMap<String,String> implements Compara
 
     public String remove(Object key) {
         throw new UnsupportedOperationException();
-    }
-
-    public int compareTo(Combination that) {
-        int d = this.size()-that.size();
-        if(d!=0)    return d;
-
-        Iterator<Map.Entry<String,String>> itr = this.entrySet().iterator();
-        Iterator<Map.Entry<String,String>> jtr = that.entrySet().iterator();
-        while(itr.hasNext()) {
-            Map.Entry<String,String> i = itr.next();
-            Map.Entry<String,String> j = jtr.next();
-
-            d = i.getKey().compareTo(j.getKey());
-            if(d!=0)    return d;
-            d = i.getValue().compareTo(j.getValue());
-            if(d!=0)    return d;
-        }
-        return 0;
     }
 }

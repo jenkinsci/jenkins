@@ -27,7 +27,7 @@
                     <local:itemLink item="${c}" />  <!-- zero dimension -->
                   </j:when>
                   <j:otherwise>
-                    <local:itemLink item="${c}" title="${c.name}"/> <!-- one dimension. use that value -->
+                    <local:itemLink item="${c}" title="${c.combination.toString(o.z)}"/> <!-- one dimension. use the value of the Z-axis -->
                   </j:otherwise>
                 </j:choose>
               </li>
