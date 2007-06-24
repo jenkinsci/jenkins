@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.lang.management.ManagementFactory;
@@ -513,5 +515,9 @@ public class Functions {
        }
        sb.append('\n');
        return sb.toString();
+    }
+
+    public static <T> Collection<T> emptyList() {
+        return Collections.emptyList();
     }
 }
