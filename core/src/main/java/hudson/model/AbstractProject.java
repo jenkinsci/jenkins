@@ -195,6 +195,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return !isDisabled();
     }
 
+    /**
+     * Used in <tt>sidepanel.jelly</tt> to decide whether to display
+     * the config/delete/build links.
+     */
+    public boolean isConfigurable() {
+        return true;
+    }
+
     public boolean isDisabled() {
         return disabled;
     }

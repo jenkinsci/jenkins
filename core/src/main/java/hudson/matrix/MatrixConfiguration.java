@@ -40,6 +40,15 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         combination = Combination.fromString(name);
     }
 
+    /**
+     * Build numbers are always synchronized with the parent.
+     */
+    @Override
+    public int getNextBuildNumber() {
+        MatrixBuild lb = getParent().getLastBuild();
+        return lb!=null ? lb.getNumber() : 0;
+    }
+
     public MatrixProject getParent() {
         return (MatrixProject)super.getParent();
     }
@@ -56,6 +65,11 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         Node node = getLastBuiltOn();
         if(node==null)  node = Hudson.getInstance();
         return node.getWorkspaceFor(getParent()).child(getName());
+    }
+
+    @Override
+    public boolean isConfigurable() {
+        return false;
     }
 
     @Override
