@@ -8,8 +8,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
-import hudson.model.ItemGroupMixIn;
-import static hudson.model.ItemGroupMixIn.KEYED_BY_NAME;
+import static hudson.model.ItemGroupMixIn.loadChildren;
 import hudson.model.JDK;
 import hudson.model.Label;
 import hudson.model.Node;
@@ -22,22 +21,23 @@ import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.util.CopyOnWriteMap;
+import hudson.util.Function1;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -68,7 +68,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     /**
      * All {@link MatrixConfiguration}s, keyed by their {@link MatrixConfiguration#getName() names}.
      */
-    private transient /*final*/ Map<String,MatrixConfiguration> configurations = new CopyOnWriteMap.Tree<String,MatrixConfiguration>();
+    private transient /*final*/ Map<Combination,MatrixConfiguration> configurations = new CopyOnWriteMap.Tree<Combination,MatrixConfiguration>();
 
     /**
      * @see #getActiveConfigurations()
@@ -94,8 +94,12 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return r;
     }
 
-    public Layouter getLayouter() {
-        return new Layouter(axes);
+    public Layouter<MatrixConfiguration> getLayouter() {
+        return new Layouter<MatrixConfiguration>(axes) {
+            protected MatrixConfiguration getT(Combination c) {
+                return getItem(c);
+            }
+        };
     }
 
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
@@ -109,16 +113,17 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * Rebuilds the {@link #configurations} list and {@link #activeConfigurations}.
      */
     private void rebuildConfigurations() throws IOException {
-        configurations = ItemGroupMixIn.<String, MatrixConfiguration>loadChildren(this,getConfigurationsDir(), KEYED_BY_NAME);
+        configurations = loadChildren(this,getConfigurationsDir(), new Function1<Combination, MatrixConfiguration>() {
+            public Combination call(MatrixConfiguration mc) { return mc.getCombination(); } });
 
         // find all active configurations
         Set<MatrixConfiguration> active = new LinkedHashSet<MatrixConfiguration>();
         for (Combination c : axes.list()) {
-            MatrixConfiguration config = configurations.get(c.toString());
+            MatrixConfiguration config = configurations.get(c);
             if(config==null) {
                 config = new MatrixConfiguration(this,c);
                 config.save();
-                configurations.put(config.getName(), config);
+                configurations.put(config.getCombination(), config);
             }
             active.add(config);
         }
@@ -148,7 +153,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     public MatrixConfiguration getItem(String name) {
-        return configurations.get(name);
+        return getItem(Combination.fromString(name));
+    }
+
+    public MatrixConfiguration getItem(Combination c) {
+        return configurations.get(c);
     }
 
     public File getRootDirFor(MatrixConfiguration child) {

@@ -3,6 +3,8 @@ package hudson.matrix;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.AbstractList;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Used to assist thegeneration of config table.
@@ -15,15 +17,23 @@ import java.util.AbstractList;
  * and those which only have one value, and therefore doesn't show up
  * in the table. 
  *
+ * <p>
+ * Because of object reuse inside {@link Layouter}, this class is not thread-safe.
+ *
  * @author Kohsuke Kawaguchi
  */
-public final class Layouter {
+public abstract class Layouter<T> {
     public final List<Axis> x,y,z;
+    /**
+     * Number of data columns and rows.
+     */
+    private int xSize, ySize, zSize;
 
     public Layouter(List<Axis> x, List<Axis> y, List<Axis> z) {
         this.x = x;
         this.y = y;
         this.z = z;
+        init();
     }
 
     /**
@@ -42,19 +52,26 @@ public final class Layouter {
 
         switch(nonTrivialAxes.size()) {
         case 0:
-            return;
+            break;
         case 1:
             z.add(nonTrivialAxes.get(0));
-            return;
+            break;
         case 2:
             x.add(nonTrivialAxes.get(0));
             y.add(nonTrivialAxes.get(1));
-            return;
+            break;
+        default:
+            // for size > 3, use x and y, and try to pack y more
+            for( int i=0; i<nonTrivialAxes.size(); i++ )
+                (i%3==1?x:y).add(nonTrivialAxes.get(i));
         }
+        init();
+    }
 
-        // for size > 3, use x and y, and try to pack y more
-        for( int i=0; i<nonTrivialAxes.size(); i++ )
-            (i%3==1?x:y).add(nonTrivialAxes.get(i));
+    private void init() {
+        xSize = calc(x,-1);
+        ySize = calc(y,-1);
+        zSize = calc(z,-1);
     }
 
     /**
@@ -86,7 +103,6 @@ public final class Layouter {
      */
     public List<Row> getRows() {
         return new AbstractList<Row>() {
-            final int size = calc(y,-1);
             final Row row = new Row();
             public Row get(int index) {
                 row.index = index;
@@ -94,13 +110,29 @@ public final class Layouter {
             }
 
             public int size() {
-                return size;
+                return ySize;
             }
         };
     }
 
-    public final class Row {
+    /**
+     * Represents a row, which is a collection of {@link Column}s.
+     */
+    public final class Row extends AbstractList<Column> {
         private int index;
+        final Column col = new Column();
+
+        @Override
+        public Column get(int index) {
+            col.xp = index;
+            col.yp = Row.this.index;
+            return col;
+        }
+
+        @Override
+        public int size() {
+            return xSize;
+        }
 
         public String drawYHeader(int n) {
             int base = calc(y,n);
@@ -109,6 +141,37 @@ public final class Layouter {
             Axis axis = y.get(n);
             return axis.value((index/base)%axis.values.size());
         }
+    }
 
+    protected abstract T getT(Combination c);
+
+    public final class Column extends AbstractList<T> {
+        /**
+         * Cell position.
+         */
+        private int xp,yp;
+
+        private final Map<String,String> m = new HashMap<String,String>();
+
+        public T get(int zp) {
+            m.clear();
+            buildMap(xp,x);
+            buildMap(yp,y);
+            buildMap(zp,z);
+            return getT(new Combination(m));
+        }
+
+        private void buildMap(int p, List<Axis> axes) {
+            int n = p;
+            for( int i= axes.size()-1; i>=0; i-- ) {
+                Axis a = axes.get(i);
+                m.put(a.name, a.value(n%a.size()));
+                n /= a.size();
+            }
+        }
+
+        public int size() {
+            return zSize;
+        }
     }
 }

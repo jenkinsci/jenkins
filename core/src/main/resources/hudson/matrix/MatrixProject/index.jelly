@@ -1,5 +1,14 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-  <l:layout title="${it.name}">
+  <d:taglib uri="local">
+    <!-- display link to a MatrixConfiguration (@item) -->
+    <d:tag name="itemLink">
+      <a href="${item.shortUrl}">
+        <img src="${rootURL}/images/16x16/${item.buildStatusUrl}" title="${item.iconColor.description}"/>
+        ${attrs.title}
+      </a>
+    </d:tag>
+  </d:taglib>
+  <l:layout title="${it.name}" xmlns:local="local">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>Project ${it.name}</h1>
@@ -12,16 +21,16 @@
           <h2>Configurations</h2>
           <ul>
             <j:forEach var="c" items="${it.activeConfigurations}">
-              <li><a href="${c.shortUrl}">
+              <li>
                 <j:choose>
                   <j:when test="${empty(o.z)}">
-                    ${c.name} <!-- zero dimension -->
+                    <local:itemLink item="${c}" />  <!-- zero dimension -->
                   </j:when>
                   <j:otherwise>
-                    ${c.combination.values().iterator().next()} <!-- one dimension. use that value -->
+                    <local:itemLink item="${c}" title="${c.name}"/> <!-- one dimension. use that value -->
                   </j:otherwise>
                 </j:choose>
-              </a></li>
+              </li>
             </j:forEach>
           </ul>
         </j:when>
@@ -48,6 +57,23 @@
                   <j:if test="${r.drawYHeader(loop.index)!=null}">
                     <td rowspan="${o.height(loop.index)}">${r.drawYHeader(loop.index)}</td>
                   </j:if>
+                </j:forEach>
+
+                <j:forEach var="c" items="${r}">
+                  <td>
+                    <j:choose>
+                      <j:when test="${empty(o.z)}">
+                        <local:itemLink item="${c.get(0)}"/>
+                      </j:when>
+                      <j:otherwise>
+                        <ul>
+                          <j:forEach var="p" items="${c}">
+                            <li><local:itemLink item="${p}"/></li>
+                          </j:forEach>
+                        </ul>
+                      </j:otherwise>
+                    </j:choose>
+                  </td>
                 </j:forEach>
               </tr>
             </j:forEach>
