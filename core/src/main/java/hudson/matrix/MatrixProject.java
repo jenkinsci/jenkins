@@ -15,6 +15,7 @@ import hudson.model.Node;
 import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.model.Job;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -40,6 +41,9 @@ import java.util.Set;
 import java.util.Vector;
 
 /**
+ * {@link Job} that allows you to run multiple different configurations
+ * from a single setting.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> implements TopLevelItem, SCMedItem, ItemGroup<MatrixConfiguration> {
