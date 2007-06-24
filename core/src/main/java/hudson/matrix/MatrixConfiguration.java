@@ -50,7 +50,11 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
 
     public int assignBuildNumber() throws IOException {
-        return getNextBuildNumber(); 
+        int nb = getNextBuildNumber();
+        MatrixRun r = getLastBuild();
+        if(r!=null && r.getNumber()>=nb) // make sure we don't schedule the same build twice
+            throw new IllegalStateException("Build #"+nb+" is already completed");
+        return nb;
     }
 
     public MatrixProject getParent() {
