@@ -43,6 +43,11 @@ import java.util.Vector;
  */
 public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem {
 
+    /**
+     * {@link SCM} associated with the project.
+     * To allow derived classes to link {@link SCM} config to elsewhere,
+     * access to this variable should always go through {@link #getScm()}.
+     */
     private SCM scm = new NullSCM();
 
     /**
@@ -385,6 +390,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {
+        SCM scm = getScm();
         if(scm==null)
             return true;    // no SCM
 
@@ -407,6 +413,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * a build and polling, as both touches the workspace.
      */
     public boolean pollSCMChanges( TaskListener listener ) {
+        SCM scm = getScm();
         if(scm==null) {
             listener.getLogger().println("No SCM");
             return false;
@@ -663,7 +670,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         RSS.forwardToRss(
-            getDisplayName()+' '+scm.getDescriptor().getDisplayName()+" changes",
+            getDisplayName()+' '+getScm().getDescriptor().getDisplayName()+" changes",
             getUrl()+"changes",
             entries, new FeedAdapter<FeedItem>() {
                 public String getEntryTitle(FeedItem item) {
