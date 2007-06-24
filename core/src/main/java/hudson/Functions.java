@@ -118,49 +118,77 @@ public class Functions {
 
     public static RunUrl decompose(StaplerRequest req) {
         List<Ancestor> ancestors = req.getAncestors();
+
+        // find the first and last Run instances
+        Ancestor f=null,l=null;
         for (Ancestor anc : ancestors) {
             if(anc.getObject() instanceof Run) {
-                // bingo
-                String ancUrl = anc.getUrl();
-
-                String reqUri = req.getOriginalRequestURI();
-                // despite the spec saying this string is not decoded,
-                // Tomcat apparently decodes this string. You see ' ' instead of '%20', which is what
-                // the browser has sent. So do some quick scan to see if it's ASCII safe, and if not
-                // re-encode it. Otherwise it won't match with ancUrl.
-                if(reqUri.indexOf(' ')>=0) {
-                    try {
-                        // 3 arg version accepts illegal character. 1-arg version doesn't
-                        reqUri = new URI(null,reqUri,null).toASCIIString();
-                    } catch (URISyntaxException e) {
-                        // try to use reqUri as is.
-                    }
-                }
-
-                return new RunUrl(
-                    (Run) anc.getObject(), ancUrl,
-                    reqUri.substring(ancUrl.length()),
-                    req.getContextPath() );
+                if(f==null) f=anc;
+                l=anc;
             }
         }
-        return null;
+        if(l==null) return null;    // there was no Run object
+
+        String head = f.getPrev().getUrl()+'/';
+        String base = l.getUrl();
+
+        String reqUri = req.getOriginalRequestURI();
+        // despite the spec saying this string is not decoded,
+        // Tomcat apparently decodes this string. You see ' ' instead of '%20', which is what
+        // the browser has sent. So do some quick scan to see if it's ASCII safe, and if not
+        // re-encode it. Otherwise it won't match with ancUrl.
+        if(reqUri.indexOf(' ')>=0) {
+            try {
+                // 3 arg version accepts illegal character. 1-arg version doesn't
+                reqUri = new URI(null,reqUri,null).toASCIIString();
+            } catch (URISyntaxException e) {
+                // try to use reqUri as is.
+            }
+        }
+
+        String rest = reqUri.substring(f.getUrl().length());
+
+        return new RunUrl( (Run) f.getObject(), head, base, rest);
     }
 
+    /**
+     * URL decomposed for easier computation of relevant URLs.
+     *
+     * <p>
+     * The decomposed URL will be of the form:
+     * <pre>
+     * aaaaaa/524/bbbbb/cccc
+     * -head-| N |---rest---
+     * ----- base -----|
+     * </pre>
+     *
+     * <p>
+     * The head portion is the part of the URL from the {@link Hudson}
+     * object to the first {@link Run} subtype. When "next/prev build"
+     * is chosen, this part remains intact.
+     *
+     * <p>
+     * The <tt>524</tt> is the path from {@link Job} to {@link Run}.
+     *
+     * <p>
+     * The <tt>bbb</tt> portion is the path after that till the last
+     * {@link Run} subtype. The <tt>ccc</tt> portion is the part
+     * after that.
+     */
     public static final class RunUrl {
-        private final String contextPath;
-        private final String basePortion;
-        private final String rest;
+        private final String head, base, rest;
         private final Run run;
 
-        public RunUrl(Run run, String basePortion, String rest, String contextPath) {
+
+        public RunUrl(Run run, String head, String base, String rest) {
             this.run = run;
-            this.basePortion = basePortion;
+            this.head = head;
+            this.base = base;
             this.rest = rest;
-            this.contextPath = contextPath;
         }
 
         public String getBaseUrl() {
-            return basePortion;
+            return base;
         }
 
         /**
@@ -181,7 +209,7 @@ public class Functions {
             if(n ==null)
                 return null;
             else {
-                return basePortion+"/../"+n.getNumber()+rest;
+                return head+n.getNumber()+rest;
             }
         }
     }
