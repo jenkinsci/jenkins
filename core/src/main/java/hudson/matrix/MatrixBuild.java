@@ -10,6 +10,8 @@ import java.io.File;
 import java.util.Calendar;
 
 /**
+ * Build of {@link MatrixProject}.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
