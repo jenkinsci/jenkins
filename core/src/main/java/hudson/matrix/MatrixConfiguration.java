@@ -1,6 +1,7 @@
 package hudson.matrix;
 
 import hudson.FilePath;
+import hudson.scm.SCM;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.BuildWrapper;
@@ -137,6 +138,11 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return getParent().getLogRotator();
     }
 
+    @Override
+    public SCM getScm() {
+        return getParent().getScm();
+    }
+    
     /**
      * JDK cannot be set on {@link MatrixConfiguration} because
      * it's controlled by {@link MatrixProject}.
