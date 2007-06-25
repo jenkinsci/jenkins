@@ -457,7 +457,7 @@ public class Fingerprint implements ModelObject {
      * without losing too much information.
      */
     public synchronized boolean isAlive() {
-        if(original.isAlive())
+        if(original!=null && original.isAlive())
             return true;
 
         for (Entry<String,RangeSet> e : usages.entrySet()) {
