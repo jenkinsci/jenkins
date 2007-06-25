@@ -80,10 +80,7 @@
     </f:optionalBlock>
   </f:section>
 
-  <!-- build config pane -->
-  <j:getStatic var="builders" className="hudson.tasks.BuildStep" field="BUILDERS" />
-  <f:descriptorList title="Build"
-                    descriptors="${builders}"
-                    instances="${it.builders}"
-                    varName="builder" />
+  <p:config-buildWrappers />
+  <p:config-builders />
+  <p:config-publishers />
 </j:jelly>

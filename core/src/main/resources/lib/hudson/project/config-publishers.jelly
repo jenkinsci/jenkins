@@ -1,0 +1,10 @@
+<!--
+  Publisher config pane
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
+  <j:getStatic var="publishers" className="hudson.tasks.BuildStep" field="PUBLISHERS" />
+  <f:descriptorList title="Post-build Actions"
+                    descriptors="${publishers}"
+                    instances="${it.publishers}"
+                    varName="publisher" />
+</j:jelly>

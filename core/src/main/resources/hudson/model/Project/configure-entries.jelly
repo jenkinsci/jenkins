@@ -20,29 +20,7 @@
     </f:optionalBlock>
   </p:config-trigger>
 
-
-  <!-- build wrapper config pane -->
-  <j:getStatic var="wrappers" className="hudson.tasks.BuildWrappers" field="WRAPPERS" />
-  <j:if test="${!empty(wrappers)}">
-    <f:descriptorList title="Build Environment"
-                      descriptors="${wrappers}"
-                      instances="${it.buildWrappers}"
-                      varName="wrapper" />
-  </j:if>
-
-
-  <!-- build config pane -->
-  <j:getStatic var="builders" className="hudson.tasks.BuildStep" field="BUILDERS" />
-  <f:descriptorList title="Build"
-                    descriptors="${builders}"
-                    instances="${it.builders}"
-                    varName="builder" />
-
-
-  <!-- publisher config pane -->
-  <j:getStatic var="publishers" className="hudson.tasks.BuildStep" field="PUBLISHERS" />
-  <f:descriptorList title="Post-build Actions"
-                    descriptors="${publishers}"
-                    instances="${it.publishers}"
-                    varName="publisher" />
+  <p:config-buildWrappers />
+  <p:config-builders />
+  <p:config-publishers />
 </j:jelly>
