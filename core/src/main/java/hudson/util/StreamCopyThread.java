@@ -23,8 +23,11 @@ public class StreamCopyThread extends Thread {
 
     public void run() {
         try {
-            Util.copyStream(in,out);
-            in.close();
+            try {
+                Util.copyStream(in,out);
+            } finally {
+                in.close();
+            }
         } catch (IOException e) {
             // TODO: what to do?
         }
