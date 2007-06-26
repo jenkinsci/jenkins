@@ -5,7 +5,7 @@
       <h1>Project ${it.name}</h1>
       <t:editableDescription adminOnly="true"/>
 
-      <p:matrix>
+      <p:matrix autoRefresh="true">
         <a href="${p.shortUrl}">
           <img src="${rootURL}/images/24x24/${p.buildStatusUrl}" title="${p.iconColor.description}"/>
           <j:if test="${empty(o.x) and empty(o.y)}">
