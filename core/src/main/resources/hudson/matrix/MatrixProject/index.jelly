@@ -5,14 +5,7 @@
       <h1>Project ${it.name}</h1>
       <t:editableDescription adminOnly="true"/>
 
-      <p:matrix autoRefresh="true">
-        <a href="${p.shortUrl}">
-          <img src="${rootURL}/images/24x24/${p.buildStatusUrl}" title="${p.iconColor.description}"/>
-          <j:if test="${empty(o.x) and empty(o.y)}">
-            ${p.combination.toString(o.z)}
-          </j:if>
-        </a>
-      </p:matrix>
+      <st:include page="ajaxMatrix.jelly" />
 
       <p:projectActionFloatingBox/>
     </l:main-panel>

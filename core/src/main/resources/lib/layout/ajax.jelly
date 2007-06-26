@@ -1,0 +1,19 @@
+<!--
+  Used to asynchronously update executor queue
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form" xmlns:p="/lib/hudson/project">
+  <j:choose>
+    <j:when test="${rootURL!=null}">
+      <!-- no envelope needed, since this is called during full HTML rendering. -->
+      <d:invokeBody/>
+    </j:when>
+    <j:otherwise>
+      <!-- called to generate partial HTML. set up HTML headers and etc -->
+      <st:contentType value="text/html;charset=UTF-8" />
+      <j:set var="rootURL" value="${request.contextPath}" />
+      <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+
+      <d:invokeBody/>
+    </j:otherwise>
+  </j:choose>
+</j:jelly>

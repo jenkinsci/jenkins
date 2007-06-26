@@ -2,18 +2,15 @@
   Used to asynchronously update executor queue
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form" xmlns:p="/lib/hudson/project">
-  <st:contentType value="text/html;charset=UTF-8" />
-  <j:set var="rootURL" value="${request.contextPath}" />
-  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
-
-  <p:matrix autoRefresh="${it.isBuilding()}">
-    <a href="${p.parent.combination}/">
-      ${p}
-      <img src="${rootURL}/images/24x24/${h.ifThenElse(p!=null,p.buildStatusUrl,'grey.gif')}"
-           title="${p.iconColor.description}"/>
-      <j:if test="${empty(o.x) and empty(o.y)}">
-        ${p.parent.combination.toString(o.z)}
-      </j:if>
-    </a>
-  </p:matrix>
+  <l:ajax>
+    <p:matrix autoRefresh="${it.isBuilding()}">
+      <a href="${p.parent.combination}/">
+        <img src="${rootURL}/images/24x24/${h.ifThenElse(p!=null,p.buildStatusUrl,'grey.gif')}"
+             title="${p.iconColor.description}"/>
+        <j:if test="${empty(o.x) and empty(o.y)}">
+          ${p.parent.combination.toString(o.z)}
+        </j:if>
+      </a>
+    </p:matrix>
+  </l:ajax>
 </j:jelly>
