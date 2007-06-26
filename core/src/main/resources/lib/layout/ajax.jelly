@@ -1,5 +1,12 @@
 <!--
-  Used to asynchronously update executor queue
+  If the tag is used during the full HTML page generation, <ajax> tag becomes
+  no-op and simply invokes its body.
+
+  If the page is used as a top-level tag, it sets up the environment
+  for generating partial HTML contents (which can be then injected into the existing
+  page via client-side script.)
+
+  See MatrixProject/index.jelly and ajaxMatrix.jelly for how to use this tag.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form" xmlns:p="/lib/hudson/project">
   <j:choose>
