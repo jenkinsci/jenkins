@@ -80,18 +80,21 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             // this occupies an executor unnecessarily.
             // it would be nice if this can be placed in a temproary executor.
 
+            Result r = Result.SUCCESS;
             int n = getNumber();
             for (MatrixConfiguration c : activeConfigurations) {
                 // wait for the completion
                 while(true) {
                     MatrixRun b = c.getBuildByNumber(n);
-                    if(b!=null && !b.isBuilding())
+                    if(b!=null && !b.isBuilding()) {
+                        r = r.combine(b.getResult());
                         break;
+                    }
                     Thread.sleep(1000);
                 }
             }
 
-            return Result.SUCCESS;
+            return r;
         }
 
         public void post(BuildListener listener) {
