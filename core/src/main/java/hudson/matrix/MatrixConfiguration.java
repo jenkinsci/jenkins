@@ -87,6 +87,17 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
 
     @Override
+    protected MatrixRun newBuild() throws IOException {
+        // for every MatrixRun there should be a parent MatrixBuild
+        MatrixBuild lb = getParent().getLastBuild();
+        MatrixRun lastBuild = new MatrixRun(this, lb.getTimestamp());
+        lastBuild.number = lb.getNumber();
+
+        builds.put(lastBuild);
+        return lastBuild;
+    }
+
+    @Override
     public boolean isFingerprintConfigured() {
         // TODO
         return false;

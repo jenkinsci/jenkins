@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
+import java.util.Calendar;
 
 /**
  * A build of a {@link Project}.
@@ -29,6 +30,10 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
      */
     protected Build(P project) throws IOException {
         super(project);
+    }
+
+    protected Build(P job, Calendar timestamp) {
+        super(job, timestamp);
     }
 
     /**

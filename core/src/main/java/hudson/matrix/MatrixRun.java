@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Calendar;
 import java.util.Map.Entry;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -21,6 +22,10 @@ import org.kohsuke.stapler.Ancestor;
 public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
     public MatrixRun(MatrixConfiguration job) throws IOException {
         super(job);
+    }
+
+    public MatrixRun(MatrixConfiguration job, Calendar timestamp) {
+        super(job, timestamp);
     }
 
     public MatrixRun(MatrixConfiguration project, File buildDir) throws IOException {
