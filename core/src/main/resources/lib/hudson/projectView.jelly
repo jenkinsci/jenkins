@@ -20,6 +20,7 @@
         </j:if>
         <tr style="border-top: 0px;">
           <th>S</th>
+          <th>W</th>
           <th initialSortDir="down">Job</th>
           <th>Last Success</th>
           <th>Last Failure</th>
@@ -33,9 +34,24 @@
         <j:forEach var="job" items="${jobs}">
           <j:set var="lsBuild" value="${job.lastSuccessfulBuild}" />
           <j:set var="lfBuild" value="${job.lastFailedBuild}" />
+          <j:set var="buildHealth" value="${job.buildHealth}" />
           <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
             <td data="${job.iconColor.ordinal()}">
               <img src="${rootURL}/images/${iconSize}/${job.buildStatusUrl}" alt="${job.iconColor.description}" />
+            </td>
+            <td data="${buildHealth.score}">
+              <x:element name="img">
+                <x:attribute name="alt">${buildHealth.score}%</x:attribute>
+                <x:attribute name="title">${buildHealth.description}</x:attribute>
+              <j:choose>                
+                <j:when test="${buildHealth.iconUrl.startsWith('/')}">
+                  <x:attribute name="src">${rootURL}${buildHealth.iconUrl}</x:attribute>
+                </j:when>
+                <j:otherwise>
+                  <x:attribute name="src">${rootURL}/images/${iconSize}/${buildHealth.iconUrl}</x:attribute>
+                </j:otherwise>
+              </j:choose>
+              </x:element>
             </td>
             <td>
               <a href="${jobBaseUrl}${job.shortUrl}">

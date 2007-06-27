@@ -441,7 +441,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Returns the last successful build, if any. Otherwise null.
      * A stable build would include either {@link Result#SUCCESS} or {@link Result#UNSTABLE}.
-     * @see #getLastStableBuild() 
+     * @see #getLastStableBuild()
      */
     @Exported
     public RunT getLastSuccessfulBuild() {
@@ -489,9 +489,18 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
             return BallColor.GREY;
     }
 
-
-
-
+    public HealthReport getBuildHealth() {
+        HealthReport result = null;
+        for (HealthReportingAction hra : getActions(HealthReportingAction.class)) {
+            HealthReport report = hra.getBuildHealth();
+            if (result == null || result.compareTo(report) > 0) {
+                report = result;
+            }
+        }
+        if (result == null)
+            result = new HealthReport(100, null, getPronoun() + " is not configured for health reports");
+        return result;
+    }
 
 //
 //

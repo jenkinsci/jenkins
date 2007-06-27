@@ -33,6 +33,22 @@ public abstract class Actionable extends AbstractModelObject {
     }
 
     /**
+     * Gets all actions of a specified type that contributed to this build.
+     *
+     * @param type The type of action to return.
+     * @return
+     *      may be empty but never null.
+     * @see getAction(Class<T>)
+     */
+    public <T extends Action> List<T> getActions(Class<T> type) {
+        List<T> result = new Vector<T>();
+        for (Action a : getActions())
+            if (type.isInstance(a))
+                result.add(type.cast(a));
+        return result;
+    }
+
+    /**
      * Adds a new action.
      *
      * Short for <tt>getActions().add(a)</tt>
@@ -46,6 +62,13 @@ public abstract class Actionable extends AbstractModelObject {
         return actions.get(index);
     }
 
+    /**
+     * Gets the action (first instance to be found) of a specified type that contributed to this build.
+     *
+     * @param type
+     * @return The action or <code>null</code> if no such actions exist.
+     * @see getActions(Class<T>)
+     */
     public <T extends Action> T getAction(Class<T> type) {
         for (Action a : getActions())
             if (type.isInstance(a))
