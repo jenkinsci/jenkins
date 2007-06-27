@@ -64,6 +64,26 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     }
 
     /**
+     * Create a new HealthReport.
+     *
+     * @param score       The percentage health score (from 0 to 100 inclusive).
+     * @param description The health icon's tool-tip.
+     */
+    public HealthReport(int score, String description) {
+        this(score, null, description);
+    }
+
+    /**
+     * Create a new HealthReport.
+     *
+     * @param score       The percentage health score (from 0 to 100 inclusive).
+     * @param description The health icon's tool-tip.
+     */
+    public HealthReport() {
+        this(100, HEALTH_40_TO_59, "");
+    }
+
+    /**
      * Getter for property 'score'.
      *
      * @return The percentage health score (from 0 to 100 inclusive).

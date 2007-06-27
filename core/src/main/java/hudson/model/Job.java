@@ -493,12 +493,12 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         HealthReport result = null;
         for (HealthReportingAction hra : getActions(HealthReportingAction.class)) {
             HealthReport report = hra.getBuildHealth();
-            if (result == null || result.compareTo(report) > 0) {
+            if (report != null && (result == null || result.compareTo(report) > 0)) {
                 report = result;
             }
         }
         if (result == null)
-            result = new HealthReport(100, null, getPronoun() + " is not configured for health reports");
+            result = new HealthReport();
         return result;
     }
 
