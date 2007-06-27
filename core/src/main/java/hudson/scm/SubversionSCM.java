@@ -64,6 +64,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -233,7 +234,7 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, final BuildListener listener, File changelogFile) throws IOException, InterruptedException {
-        List<String> externals = checkout(workspace,listener);
+        List<String> externals = checkout(build.getTimestamp().getTime(),workspace,listener);
 
         if(externals==null)
             return false;
@@ -269,7 +270,7 @@ public class SubversionSCM extends SCM implements Serializable {
      *      if the operation failed. Otherwise the set of local workspace paths
      *      (relative to the workspace root) that has loaded due to svn:external.
      */
-    private List<String> checkout(FilePath workspace, final TaskListener listener) throws IOException, InterruptedException {
+    private List<String> checkout(final Date timestamp, FilePath workspace, final TaskListener listener) throws IOException, InterruptedException {
         final ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
 
         // true to "svn update", false to "svn checkout".
@@ -279,6 +280,7 @@ public class SubversionSCM extends SCM implements Serializable {
             public List<String> invoke(File ws, VirtualChannel channel) throws IOException {
                 SVNUpdateClient svnuc = createSvnClientManager(authProvider).getUpdateClient();
                 List<String> externals = new ArrayList<String>(); // store discovered externals to here
+                SVNRevision revision = SVNRevision.create(timestamp);
                 if(update) {
 
                     for (ModuleLocation l : getLocations()) {
@@ -286,7 +288,7 @@ public class SubversionSCM extends SCM implements Serializable {
                             listener.getLogger().println("Updating "+ l.remote);
 
                             svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
-                            svnuc.doUpdate(new File(ws, l.local), SVNRevision.HEAD, true);
+                            svnuc.doUpdate(new File(ws, l.local), revision, true);
 
                         } catch (SVNException e) {
                             e.printStackTrace(listener.error("Failed to update "+l.remote));
@@ -302,7 +304,7 @@ public class SubversionSCM extends SCM implements Serializable {
                             listener.getLogger().println("Checking out "+url);
 
                             svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
-                            svnuc.doCheckout(url, new File(ws, l.local), SVNRevision.HEAD, SVNRevision.HEAD, true);
+                            svnuc.doCheckout(url, new File(ws, l.local), SVNRevision.HEAD, revision, true);
 
                         } catch (SVNException e) {
                             e.printStackTrace(listener.error("Failed to check out "+l.remote));
