@@ -1,6 +1,7 @@
 package hudson.matrix;
 
 import hudson.FilePath;
+import hudson.CopyOnWrite;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
@@ -77,6 +78,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     /**
      * @see #getActiveConfigurations()
      */
+    @CopyOnWrite
     private transient /*final*/ Set<MatrixConfiguration> activeConfigurations = new LinkedHashSet<MatrixConfiguration>();
 
     public MatrixProject(String name) {

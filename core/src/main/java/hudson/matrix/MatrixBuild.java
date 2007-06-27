@@ -3,14 +3,15 @@ package hudson.matrix;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Result;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.File;
-import java.util.Calendar;
-
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.logging.Logger;
 
 /**
  * Build of {@link MatrixProject}.
@@ -69,13 +70,27 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             MatrixProject p = getProject();
             PrintStream logger = listener.getLogger();
 
-            for(MatrixConfiguration c : p.getActiveConfigurations()) {
+            Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
+
+            for(MatrixConfiguration c : activeConfigurations) {
                 logger.println("Triggering "+c.getName());
                 c.scheduleBuild();
             }
 
-            // TODO: wait for completion
-            
+            // this occupies an executor unnecessarily.
+            // it would be nice if this can be placed in a temproary executor.
+
+            int n = getNumber();
+            for (MatrixConfiguration c : activeConfigurations) {
+                // wait for the completion
+                while(true) {
+                    MatrixRun b = c.getBuildByNumber(n);
+                    if(b!=null && !b.isBuilding())
+                        break;
+                    Thread.sleep(1000);
+                }
+            }
+
             return Result.SUCCESS;
         }
 
@@ -83,4 +98,6 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             // TODO: run aggregators
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(MatrixBuild.class.getName());
 }
