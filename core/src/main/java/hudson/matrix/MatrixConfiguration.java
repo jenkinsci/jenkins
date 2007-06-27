@@ -146,7 +146,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     public LogRotator getLogRotator() {
-        return getParent().getLogRotator();
+        return new LinkedLogRotator();
     }
 
     @Override
@@ -170,5 +170,16 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      */
     public void setLogRotator(LogRotator logRotator) {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns true if this configuration is a configuration
+     * currently in use today (as opposed to the ones that are
+     * there only to keep the past record.) 
+     *
+     * @see MatrixProject#getActiveConfigurations()
+     */
+    public boolean isActiveConfiguration() {
+        return getParent().getActiveConfigurations().contains(this);
     }
 }

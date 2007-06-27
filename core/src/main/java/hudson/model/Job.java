@@ -176,6 +176,15 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     /**
+     * Perform log rotation.
+     */
+    public void logRotate() throws IOException {
+        LogRotator lr = getLogRotator();
+        if(lr!=null)
+            lr.perform(this);
+    }
+
+    /**
      * True if this instance supports log rotation configuration.
      */
     public boolean supportsLogRotator() {

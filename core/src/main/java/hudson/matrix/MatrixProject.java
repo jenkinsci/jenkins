@@ -113,6 +113,16 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         rebuildConfigurations();
     }
 
+    public void logRotate() throws IOException {
+        super.logRotate();
+        // perform the log rotation of inactive configurations to make sure
+        // their logs get eventually discarded 
+        for (MatrixConfiguration config : configurations.values()) {
+            if(!config.isActiveConfiguration())
+                config.logRotate();
+        }
+    }
+
     /**
      * Rebuilds the {@link #configurations} list and {@link #activeConfigurations}.
      */
