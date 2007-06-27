@@ -19,7 +19,9 @@ public interface HealthReportingAction extends Action {
      * Get this {@link Action}'s {@link HealthReport}.
      *
      * @return
-     *     The health report for this instance of the Action.
+     *     The health report for this instance of the Action or 
+     *     <code>null</code> if the Action does not want to 
+     *     contribute a HealthReport.
      */
     HealthReport getBuildHealth();
 }

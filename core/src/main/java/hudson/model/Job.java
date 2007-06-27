@@ -491,10 +491,13 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
     public HealthReport getBuildHealth() {
         HealthReport result = null;
-        for (HealthReportingAction hra : getActions(HealthReportingAction.class)) {
-            HealthReport report = hra.getBuildHealth();
-            if (report != null && (result == null || result.compareTo(report) > 0)) {
-                report = result;
+        RunT r = getLastBuild();
+        if (r != null) {
+            for (HealthReportingAction hra : r.getActions(HealthReportingAction.class)) {
+                HealthReport report = hra.getBuildHealth();
+                if ((report != null) && (result == null || result.compareTo(report) > 0)) {
+                    report = result;
+                }
             }
         }
         if (result == null)
