@@ -247,7 +247,9 @@ public class Fingerprinter extends Publisher implements Serializable {
             Map<String,Fingerprint> m = new TreeMap<String,Fingerprint>();
             for (Entry<String, String> r : record.entrySet()) {
                 try {
-                    m.put(r.getKey(), h._getFingerprint(r.getValue()) );
+                    Fingerprint fp = h._getFingerprint(r.getValue());
+                    if(fp!=null)
+                        m.put(r.getKey(), fp);
                 } catch (IOException e) {
                     logger.log(Level.WARNING,e.getMessage(),e);
                 }
