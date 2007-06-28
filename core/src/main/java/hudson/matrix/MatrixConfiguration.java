@@ -1,12 +1,8 @@
 package hudson.matrix;
 
 import hudson.FilePath;
-import hudson.scm.SCM;
-import hudson.tasks.Builder;
-import hudson.tasks.Publisher;
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.LogRotator;
 import hudson.model.DependencyGraph;
+import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -15,12 +11,14 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
-import hudson.model.Descriptor;
+import hudson.scm.SCM;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.Builder;
+import hudson.tasks.LogRotator;
+import hudson.tasks.Publisher;
 
 import java.io.IOException;
 import java.util.Map;
-
-import org.kohsuke.stapler.export.Exported;
 
 /**
  * One configuration of {@link MatrixProject}.
