@@ -502,7 +502,7 @@ public class Queue {
      * to collapse two tasks into one. This is used to avoid infinite
      * queue backlog.
      */
-    public interface Task {
+    public interface Task extends ModelObject {
         /**
          * If this task needs to be run on a node with a particular label,
          * return that {@link Label}. Otherwise null, indicating
@@ -531,8 +531,8 @@ public class Queue {
         String getWhyBlocked();
 
         /**
-         * Human readable name of this task.
-         * Used for display purpose.
+         * Unique name of this task.
+         * @see hudson.model.Item#getName()
          */
         String getName();
 

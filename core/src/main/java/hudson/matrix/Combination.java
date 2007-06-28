@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Collection;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * A particular combination of {@link Axis} values.
@@ -96,6 +98,39 @@ public final class Combination extends TreeMap<String,String> implements Compara
             m.put(token.substring(0,idx),token.substring(idx+1));
         }
         return new Combination(m);
+    }
+
+    /**
+     * Creates compact string representataion suitable for display purpose.
+     *
+     * <p>
+     * The string is made compact by looking for {@link Axis} whose values
+     * are unique, and omit the axis name.
+     */
+    public String toCompactString(AxisList axes) {
+        Set<String> nonUniqueAxes = new HashSet<String>();
+        Map<String,Axis> axisByValue = new HashMap<String,Axis>();
+
+        for (Axis a : axes) {
+            for (String v : a.values) {
+                Axis old = axisByValue.put(v,a);
+                if(old!=null) {
+                    // these two axes have colliding values
+                    nonUniqueAxes.add(old.name);
+                    nonUniqueAxes.add(a.name);
+                }
+            }
+        }
+
+        StringBuilder buf = new StringBuilder();
+        for (Map.Entry<String,String> e : entrySet()) {
+            if(buf.length()>0) buf.append(',');
+            if(nonUniqueAxes.contains(e.getKey()))
+                buf.append(e.getKey()).append('=');
+            buf.append(e.getValue());
+        }
+        if(buf.length()==0) buf.append("default"); // special case to avoid 0-length name.
+        return buf.toString();
     }
 
     // read-only

@@ -33,7 +33,7 @@ import java.util.Collection;
  * @author Kohsuke Kawaguchi
  * @see Items
  */
-public interface Item extends PersistenceRoot {
+public interface Item extends PersistenceRoot, ModelObject {
     /**
      * Gets the parent that contains this item.
      */
@@ -69,6 +69,20 @@ public interface Item extends PersistenceRoot {
      * @see Hudson#getItemByFullName(String,Class)
      */
     String getFullName();
+
+    /**
+     * Gets the human readable short name of this item.
+     *
+     * <p>
+     * This method should try to return a short concise human
+     * readable string that describes this item.
+     * The string need not be unique.
+     *
+     * <p>
+     * The returned string should not include the display names
+     * of {@link #getParent() ancestor items}.
+     */
+    String getDisplayName();
 
     /**
      * Returns the URL of this item relative to the context root of the application.

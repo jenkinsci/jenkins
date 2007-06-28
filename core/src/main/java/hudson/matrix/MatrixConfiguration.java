@@ -20,6 +20,8 @@ import hudson.model.Descriptor;
 import java.io.IOException;
 import java.util.Map;
 
+import org.kohsuke.stapler.export.Exported;
+
 /**
  * One configuration of {@link MatrixProject}.
  *
@@ -56,6 +58,11 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         if(r!=null && r.getNumber()>=nb) // make sure we don't schedule the same build twice
             throw new IllegalStateException("Build #"+nb+" is already completed");
         return nb;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return combination.toCompactString(getParent().getAxes());
     }
 
     public MatrixProject getParent() {
@@ -114,6 +121,11 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     @Override
     public Label getAssignedLabel() {
         return Hudson.getInstance().getLabel(combination.get("label"));
+    }
+
+    @Override
+    public String getPronoun() {
+        return "Configuration";
     }
 
     @Override
