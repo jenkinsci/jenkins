@@ -37,6 +37,31 @@
           <img src="images/48x48/red_anime.gif"/>
           The last build fatally failed. A new build is in progress.
         </td></tr>
+        <tr><td>
+          <img src="images/48x48/health-80plus.gif" />
+          Project health is at least 80%. You can hover the mouse over the project's icon for a more detailed
+          explaination.
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/health-60to79.gif" />
+          Project health at least 60% but less than 80%. You can hover the mouse over the project's icon for a more
+          detailed explaination.
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/health-40to59.gif" />
+          Project health at least 40% but less than 60%. You can hover the mouse over the project's icon for a
+          more detailed explaination.
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/health-20to39.gif" />
+          Project health at least 20% but less than 40%. You can hover the mouse over the project's icon for a
+          more detailed explaination.
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/health-00to19.gif" />
+          Project health is less than 20%. You can hover the mouse over the project's icon for a more detailed
+          explaination.
+        </td></tr>
       </table>
     </l:main-panel>
   </l:layout>
