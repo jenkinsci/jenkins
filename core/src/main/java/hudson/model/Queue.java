@@ -198,17 +198,24 @@ public class Queue {
         return true;
     }
 
-    public synchronized void cancel( AbstractProject<?,?> p ) {
+    /**
+     * Cancels the item in the queue.
+     *
+     * @return
+     *      true if the project was indeed in the queue and was removed.
+     *      false if this was no-op.
+     */
+    public synchronized boolean cancel( AbstractProject<?,?> p ) {
         LOGGER.fine("Cancelling "+p.getName());
         for (Iterator itr = queue.iterator(); itr.hasNext();) {
             Item item = (Item) itr.next();
             if(item.task ==p) {
                 itr.remove();
-                return;
+                return true;
             }
         }
-        blockedProjects.remove(p);
-        buildables.remove(p);
+        // use bitwise-OR to make sure that both branches get evaluated all the time
+        return blockedProjects.remove(p)|buildables.remove(p);
     }
 
     public synchronized boolean isEmpty() {
