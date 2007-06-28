@@ -3,6 +3,9 @@ package hudson.matrix;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.model.Executor;
+import hudson.model.Hudson;
+import hudson.model.Queue;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -71,30 +74,51 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             PrintStream logger = listener.getLogger();
 
             Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
-
-            for(MatrixConfiguration c : activeConfigurations) {
-                logger.println("Triggering "+c.getName());
-                c.scheduleBuild();
-            }
-
-            // this occupies an executor unnecessarily.
-            // it would be nice if this can be placed in a temproary executor.
-
-            Result r = Result.SUCCESS;
             int n = getNumber();
-            for (MatrixConfiguration c : activeConfigurations) {
-                // wait for the completion
-                while(true) {
-                    MatrixRun b = c.getBuildByNumber(n);
-                    if(b!=null && !b.isBuilding()) {
-                        r = r.combine(b.getResult());
-                        break;
-                    }
-                    Thread.sleep(1000);
-                }
-            }
 
-            return r;
+            try {
+                for(MatrixConfiguration c : activeConfigurations) {
+                    logger.println("Triggering "+c.getName());
+                    c.scheduleBuild();
+                }
+
+                // this occupies an executor unnecessarily.
+                // it would be nice if this can be placed in a temproary executor.
+
+                Result r = Result.SUCCESS;
+                for (MatrixConfiguration c : activeConfigurations) {
+                    // wait for the completion
+                    while(true) {
+                        MatrixRun b = c.getBuildByNumber(n);
+                        if(b!=null && !b.isBuilding()) {
+                            r = r.combine(b.getResult());
+                            break;
+                        }
+                        Thread.sleep(1000);
+                    }
+                }
+
+                return r;
+            } catch (InterruptedException e) {
+                // build was aborted. Cancel all the configuration builds
+                Queue q = Hudson.getInstance().getQueue();
+                synchronized(q) {// avoid micro-locking in q.cancel.
+                    for (MatrixConfiguration c : activeConfigurations) {
+                        if(q.cancel(c))
+                            logger.println("Cancelled "+c.getDisplayName());
+                        MatrixRun b = c.getBuildByNumber(n);
+                        if(b!=null) {
+                            Executor exe = b.getExecutor();
+                            if(exe!=null) {
+                                logger.println("Interrupting "+b.getDisplayName());
+                                exe.interrupt();
+                            }
+                        }
+                    }
+                }
+
+                throw e;
+            }
         }
 
         public void post(BuildListener listener) {
