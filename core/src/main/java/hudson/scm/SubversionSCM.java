@@ -55,6 +55,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.io.OutputStream;
+import java.io.BufferedOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -173,8 +175,16 @@ public class SubversionSCM extends SCM implements Serializable {
             return createEmptyChangeLog(changelogFile, listener, "log");
         }
 
-        if(!new SubversionChangeLogBuilder(build,listener,this).run(externals,new StreamResult(changelogFile)))
-            createEmptyChangeLog(changelogFile, listener, "log");
+        // some users reported that the file gets created with size 0. I suspect
+        // maybe some XSLT engine doesn't close the stream properly.
+        // so let's do it by ourselves to be really sure that the stream gets closed.
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(changelogFile));
+        try {
+            if(!new SubversionChangeLogBuilder(build,listener,this).run(externals,new StreamResult(os)))
+                createEmptyChangeLog(changelogFile, listener, "log");
+        } finally {
+            os.close();
+        }
 
         return true;
     }
