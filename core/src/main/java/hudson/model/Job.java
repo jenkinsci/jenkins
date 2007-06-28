@@ -489,20 +489,86 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
             return BallColor.GREY;
     }
 
+    /**
+     * Get the current health report for a job.
+     * @return
+     *     the health report.  Never returns null
+     */
     public HealthReport getBuildHealth() {
-        HealthReport result = null;
-        RunT r = getLastBuild();
-        if (r != null) {
-            for (HealthReportingAction hra : r.getActions(HealthReportingAction.class)) {
-                HealthReport report = hra.getBuildHealth();
-                if ((report != null) && (result == null || result.compareTo(report) > 0)) {
-                    report = result;
+        HealthReport buildHealth = null;
+
+        RunT lastBuild = getLastBuild();
+        if (lastBuild != null) {
+
+            for (HealthReportingAction healthReportingAction : lastBuild.getActions(HealthReportingAction.class)) {
+                HealthReport actionHealthReport = healthReportingAction.getBuildHealth();
+                if ((actionHealthReport != null) &&
+                        (buildHealth == null || buildHealth.compareTo(actionHealthReport) > 0)) {
+                    buildHealth = actionHealthReport;
                 }
             }
+
+            // if all else fails, use the stability health report.
+            HealthReport sabilityHealthReport = getBuildStabilityHealthReport();
+            if ((sabilityHealthReport != null) &&
+                    (buildHealth == null || buildHealth.compareTo(sabilityHealthReport) > 0)) {
+                buildHealth = sabilityHealthReport;
+            }
         }
-        if (result == null)
-            result = new HealthReport();
-        return result;
+
+        if (buildHealth == null)
+            buildHealth = new HealthReport();
+        return buildHealth;
+    }
+
+    private HealthReport getBuildStabilityHealthReport() {
+        // we can give a simple view of build health from the last five builds
+        int failCount = 0;
+        int totalCount = 0;
+        RunT i = getLastBuild();
+        while (totalCount < 5 && i != null) {
+            switch (i.getIconColor()) {
+                case BLUE:
+                case YELLOW:
+                    //failCount stays the same
+                    totalCount++;
+                    break;
+                case RED:
+                    failCount++;
+                    totalCount++;
+                    break;
+
+                default:
+                    // do nothing as these are inconclusive statuses
+                    break;
+            }
+            i = i.getPreviousBuild();
+        }
+        if (totalCount > 0) {
+            int score = (int) ((100.0 * (totalCount - failCount)) / totalCount);
+            if (score < 100 && score > 0) {
+                // HACK
+                // force e.g. 4/5 to be in the 60-79 range
+                score--;
+            }
+
+            StringBuilder description = new StringBuilder("Build stability: ");
+            if (failCount == 0) {
+                description.append("No recent builds failed.");
+            } else if (totalCount == failCount) {
+                // this should catch the case where totalCount == 1
+                // as failCount must be between 0 and totalCount
+                // and we can't get here if failCount == 0
+                description.append("All recent builds failed.");
+            } else {
+                description.append(failCount);
+                description.append(" out of the last ");
+                description.append(totalCount);
+                description.append(" builds failed.");
+            }
+            return new HealthReport(score,  description.toString());
+        }
+        return null;
     }
 
 //

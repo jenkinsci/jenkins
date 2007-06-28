@@ -2,10 +2,7 @@ package hudson.tasks.test;
 
 import hudson.Functions;
 import hudson.Util;
-import hudson.model.AbstractBuild;
-import hudson.model.Action;
-import hudson.model.Build;
-import hudson.model.Project;
+import hudson.model.*;
 import hudson.util.ChartUtil;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.ColorPalette;
@@ -37,7 +34,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class AbstractTestResultAction<T extends AbstractTestResultAction> implements Action {
+public abstract class AbstractTestResultAction<T extends AbstractTestResultAction> implements HealthReportingAction {
     public final AbstractBuild<?,?> owner;
 
     protected AbstractTestResultAction(AbstractBuild owner) {
@@ -74,6 +71,23 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
 
     public String getIconFileName() {
         return "clipboard.gif";
+    }
+
+    public HealthReport getBuildHealth() {
+        final int totalCount = getTotalCount();
+        final int failCount = getFailCount();
+        int score = (totalCount == 0) ? 100 : (int) (100.0 * (1.0 - ((double)failCount) / totalCount));
+        StringBuilder description = new StringBuilder(getDisplayName());
+        description.append(": ");
+        if (totalCount == 0) {
+            description.append("0 tests in total.");
+        } else {
+            description.append(failCount);
+            description.append(" tests failing out of a total of ");
+            description.append(totalCount);
+            description.append(" tests.");
+        }
+        return new HealthReport(score, description.toString());
     }
 
     /**
