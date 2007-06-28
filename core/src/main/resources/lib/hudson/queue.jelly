@@ -31,7 +31,7 @@
           <tr>
             <td class="pane" width="100%" tooltip="${item.why}">
               <a href="${rootURL}/${item.task.url}">
-                ${item.task.displayName}
+                ${item.task.fullDisplayName}
               </a>
             </td>
             <td class="pane" width="16" align="center" valign="middle">

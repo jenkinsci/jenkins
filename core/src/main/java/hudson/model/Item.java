@@ -85,6 +85,13 @@ public interface Item extends PersistenceRoot, ModelObject {
     String getDisplayName();
 
     /**
+     * Works like {@link #getDisplayName()} but return
+     * the full path that includes all the display names
+     * of the ancestors.
+     */
+    String getFullDisplayName();
+
+    /**
      * Returns the URL of this item relative to the context root of the application.
      *
      * @see AbstractItem#getUrl() for how to implement this.

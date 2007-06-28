@@ -40,7 +40,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
             for( int i=1; i<ancs.size(); i++) {
                 if(ancs.get(i).getObject()==this) {
                     if(ancs.get(i-1).getObject() instanceof MatrixBuild) {
-                        return getParent().getCombination().toString();
+                        return getParent().getCombination().toCompactString(getParent().getParent().getAxes());
                     }
                 }
             }

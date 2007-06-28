@@ -95,6 +95,12 @@ public abstract class AbstractItem extends Actionable implements Item {
         else                return n+'/'+getName();
     }
 
+    public final String getFullDisplayName() {
+        String n = getParent().getFullDisplayName();
+        if(n.length()==0)   return getDisplayName();
+        else                return n+" \u00BB "+getDisplayName();
+    }
+
     /**
      * Called right after when a {@link Item} is loaded from disk.
      * This is an opporunity to do a post load processing.

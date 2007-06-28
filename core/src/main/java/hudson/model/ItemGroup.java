@@ -18,6 +18,11 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
     String getFullName();
 
     /**
+     * @see Item#getFullDisplayName() 
+     */
+    String getFullDisplayName();
+
+    /**
      * Gets all the items in this collection in a read-only view.
      */
     Collection<T> getItems();

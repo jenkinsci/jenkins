@@ -437,6 +437,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return "";
     }
 
+    public String getFullDisplayName() {
+        return "";
+    }
+
     /**
      * Gets just the immediate children of {@link Hudson}.
      *

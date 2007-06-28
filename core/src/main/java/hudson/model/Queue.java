@@ -537,6 +537,11 @@ public class Queue {
         String getName();
 
         /**
+         * @see hudson.model.Item#getFullDisplayName()
+         */
+        String getFullDisplayName();
+
+        /**
          * Estimate of how long will it take to execute this task.
          * Measured in milliseconds.
          *
