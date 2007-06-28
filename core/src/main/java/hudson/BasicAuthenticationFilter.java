@@ -73,8 +73,9 @@ public class BasicAuthenticationFilter implements Filter {
         String authorization = req.getHeader("Authorization");
 
         String path = req.getServletPath();
-        if(authorization==null || req.getUserPrincipal()!=null || path.startsWith("/secured/")) {
-            // normal requests
+        if(authorization==null || req.getUserPrincipal()!=null || path.startsWith("/secured/")
+        || !Hudson.getInstance().isUseSecurity()) {
+            // normal requests, or security not enabled
             chain.doFilter(request,response);
             return;
         }
