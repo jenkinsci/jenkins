@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * {@link AbstractTestResultAction} that aggregates all the test results
- * from the corresponding {@link MavenBuild}s.
+ * from the corresponding {@link AbstractBuild}s.
  * 
  * @author Kohsuke Kawaguchi
  */
@@ -43,11 +43,14 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
     protected void update(List<? extends AbstractTestResultAction> children) {
         failCount = totalCount = 0;
         this.children.clear();
-        for (AbstractTestResultAction tr : children) {
-            failCount += tr.getFailCount();
-            totalCount += tr.getTotalCount();
-            this.children.add(new Child(getChildName(tr),tr.owner.number));
-        }
+        for (AbstractTestResultAction tr : children)
+            add(tr);
+    }
+
+    protected void add(AbstractTestResultAction child) {
+        failCount += child.getFailCount();
+        totalCount += child.getTotalCount();
+        this.children.add(new Child(getChildName(child),child.owner.number));
     }
 
     public int getFailCount() {

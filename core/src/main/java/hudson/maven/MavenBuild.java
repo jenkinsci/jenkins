@@ -370,17 +370,9 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             return getParent().getParent().getJDK();
         }
 
-        public void post(BuildListener listener) {
-            try {
-                for (MavenReporter reporter : reporters)
-                    reporter.end(MavenBuild.this,launcher,listener);
-            } catch (InterruptedException e) {
-                e.printStackTrace(listener.fatalError("aborted"));
-                setResult(Result.FAILURE);
-            } catch (IOException e) {
-                e.printStackTrace(listener.fatalError("failed"));
-                setResult(Result.FAILURE);
-            }
+        public void post(BuildListener listener) throws IOException, InterruptedException {
+            for (MavenReporter reporter : reporters)
+                reporter.end(MavenBuild.this,launcher,listener);
 
             if(!getResult().isWorseThan(Result.UNSTABLE)) {
                 // trigger dependency builds

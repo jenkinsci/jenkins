@@ -150,18 +150,10 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             return null;
         }
 
-        public void post(BuildListener listener) {
+        public void post(BuildListener listener) throws IOException, InterruptedException {
             // run all of them even if one of them failed
-            try {
-                for( Publisher bs : project.getPublishers().values() )
-                    bs.perform(Build.this, launcher, listener);
-            } catch (InterruptedException e) {
-                e.printStackTrace(listener.fatalError("aborted"));
-                setResult(Result.FAILURE);
-            } catch (IOException e) {
-                e.printStackTrace(listener.fatalError("failed"));
-                setResult(Result.FAILURE);
-            }
+            for( Publisher bs : project.getPublishers().values() )
+                bs.perform(Build.this, launcher, listener);
         }
 
         private boolean build(BuildListener listener, Map<?, Builder> steps) throws IOException, InterruptedException {

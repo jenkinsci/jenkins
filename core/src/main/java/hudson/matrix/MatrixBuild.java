@@ -6,6 +6,7 @@ import hudson.model.Result;
 import hudson.model.Executor;
 import hudson.model.Hudson;
 import hudson.model.Queue;
+import hudson.tasks.Publisher;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
@@ -69,12 +72,28 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     }
 
     private class RunnerImpl extends AbstractRunner {
+        private final List<MatrixAggregator> aggregators = new ArrayList<MatrixAggregator>();
+
         protected Result doRun(BuildListener listener) throws Exception {
             MatrixProject p = getProject();
             PrintStream logger = listener.getLogger();
 
+            // list up aggregators
+            for (Publisher pub : p.getPublishers().values()) {
+                if (pub instanceof MatrixAggregatable) {
+                    MatrixAggregatable ma = (MatrixAggregatable) pub;
+                    MatrixAggregator a = ma.createAggregator(MatrixBuild.this, launcher, listener);
+                    if(a!=null)
+                        aggregators.add(a);
+                }
+            }
+
             Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
             int n = getNumber();
+
+            for (MatrixAggregator a : aggregators)
+                if(!a.startBuild())
+                    return Result.FAILURE;
 
             try {
                 for(MatrixConfiguration c : activeConfigurations) {
@@ -92,6 +111,9 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                         MatrixRun b = c.getBuildByNumber(n);
                         if(b!=null && !b.isBuilding()) {
                             r = r.combine(b.getResult());
+                            for (MatrixAggregator a : aggregators)
+                                if(!a.endRun(b))
+                                    return Result.FAILURE;
                             break;
                         }
                         Thread.sleep(1000);
@@ -99,8 +121,8 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 }
 
                 return r;
-            } catch (InterruptedException e) {
-                // build was aborted. Cancel all the configuration builds
+            } finally {
+                // if the build was aborted in the middle. Cancel all the configuration builds.
                 Queue q = Hudson.getInstance().getQueue();
                 synchronized(q) {// avoid micro-locking in q.cancel.
                     for (MatrixConfiguration c : activeConfigurations) {
@@ -116,15 +138,12 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                         }
                     }
                 }
-
-                throw e;
             }
         }
 
-        public void post(BuildListener listener) {
-            // TODO: run aggregators
+        public void post(BuildListener listener) throws IOException, InterruptedException {
+            for (MatrixAggregator a : aggregators)
+                a.endBuild();
         }
     }
-
-    private static final Logger LOGGER = Logger.getLogger(MatrixBuild.class.getName());
 }

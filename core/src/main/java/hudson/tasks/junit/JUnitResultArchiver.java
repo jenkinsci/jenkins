@@ -2,6 +2,9 @@ package hudson.tasks.junit;
 
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
+import hudson.matrix.MatrixAggregatable;
+import hudson.matrix.MatrixAggregator;
+import hudson.matrix.MatrixBuild;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -10,6 +13,7 @@ import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.Publisher;
 import hudson.tasks.test.TestResultProjectAction;
+import hudson.tasks.test.TestResultAggregator;
 import hudson.util.FormFieldValidator;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -27,7 +31,7 @@ import java.io.Serializable;
  *
  * @author Kohsuke Kawaguchi
  */
-public class JUnitResultArchiver extends Publisher implements Serializable {
+public class JUnitResultArchiver extends Publisher implements Serializable, MatrixAggregatable {
 
     /**
      * {@link FileSet} "includes" string, like "foo/bar/*.xml"
@@ -93,6 +97,11 @@ public class JUnitResultArchiver extends Publisher implements Serializable {
 
     public Action getProjectAction(hudson.model.Project project) {
         return new TestResultProjectAction(project);
+    }
+
+
+    public MatrixAggregator createAggregator(MatrixBuild build, Launcher launcher, BuildListener listener) {
+        return new TestResultAggregator(build,launcher,listener);
     }
 
     public Descriptor<Publisher> getDescriptor() {

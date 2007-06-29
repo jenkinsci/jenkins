@@ -529,7 +529,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         /**
          * Performs the post-build action.
          */
-        void post( BuildListener listener );
+        void post( BuildListener listener ) throws Exception;
     }
 
     /**
