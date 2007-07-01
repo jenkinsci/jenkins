@@ -57,12 +57,14 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     }
 
     public synchronized TestResult getResult() {
+        TestResult r;
         if(result==null) {
-            TestResult r = load();
+            r = load();
             result = new WeakReference<TestResult>(r);
-            return r;
+        } else {
+            r = result.get();
         }
-        TestResult r = result.get();
+        
         if(r==null) {
             r = load();
             result = new WeakReference<TestResult>(r);
