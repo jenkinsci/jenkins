@@ -7,13 +7,13 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Collection;
-import java.util.AbstractList;
 
 /**
  * {@link ChangeLogSet} for Subversion.
@@ -52,6 +52,24 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
         if(revisionMap==null)
             revisionMap = SubversionSCM.parseRevisionFile(build);
         return revisionMap;
+    }
+
+    @Exported
+    public List<RevisionInfo> getRevisions() throws IOException {
+        List<RevisionInfo> r = new ArrayList<RevisionInfo>();
+        for (Map.Entry<String, Long> e : getRevisionMap().entrySet())
+            r.add(new RevisionInfo(e.getKey(),e.getValue()));
+        return r;
+    }
+
+    @ExportedBean(defaultVisibility=999)
+    public static final class RevisionInfo {
+        @Exported public final String module;
+        @Exported public final long revision;
+        public RevisionInfo(String module, long revision) {
+            this.module = module;
+            this.revision = revision;
+        }
     }
 
     /**
