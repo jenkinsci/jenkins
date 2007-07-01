@@ -40,7 +40,7 @@
               <img src="${rootURL}/images/${iconSize}/${job.buildStatusUrl}" alt="${job.iconColor.description}" />
             </td>
             <td data="${buildHealth.score}">
-              <img src="${rootURL}${h.ifThenElse(buildHealth.iconUrl.startsWith('/'),'','/images/${iconSize}/')}${buildHealth.iconUrl}"
+              <img src="${rootURL}${h.ifThenElse(buildHealth.iconUrl.startsWith('/'),'','/images/'+iconSize+'/')}${buildHealth.iconUrl}"
                 alt="${buildHealth.score}%"
                 title="${buildHealth.description}" />
             </td>
