@@ -3,10 +3,11 @@ package hudson.model;
 import java.io.Serializable;
 
 /**
- * Created by IntelliJ IDEA.
+ * Represents health of something (typically project).
+ * A number between 0-100. 
  *
  * @author connollys
- * @since 27-Jun-2007 16:19:39
+ * @since 1.115
  */
 public class HealthReport implements Serializable, Comparable<HealthReport> {
     private static final String HEALTH_OVER_80 = "health-80plus.gif";
@@ -75,9 +76,6 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
 
     /**
      * Create a new HealthReport.
-     *
-     * @param score       The percentage health score (from 0 to 100 inclusive).
-     * @param description The health icon's tool-tip.
      */
     public HealthReport() {
         this(100, HEALTH_40_TO_59, "");
