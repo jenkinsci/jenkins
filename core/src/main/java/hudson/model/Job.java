@@ -501,19 +501,11 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         if (lastBuild != null) {
 
             for (HealthReportingAction healthReportingAction : lastBuild.getActions(HealthReportingAction.class)) {
-                HealthReport actionHealthReport = healthReportingAction.getBuildHealth();
-                if ((actionHealthReport != null) &&
-                        (buildHealth == null || buildHealth.compareTo(actionHealthReport) > 0)) {
-                    buildHealth = actionHealthReport;
-                }
+                buildHealth = HealthReport.min(buildHealth, healthReportingAction.getBuildHealth());
             }
 
             // if all else fails, use the stability health report.
-            HealthReport sabilityHealthReport = getBuildStabilityHealthReport();
-            if ((sabilityHealthReport != null) &&
-                    (buildHealth == null || buildHealth.compareTo(sabilityHealthReport) > 0)) {
-                buildHealth = sabilityHealthReport;
-            }
+            buildHealth = HealthReport.min(buildHealth, getBuildStabilityHealthReport());
         }
 
         if (buildHealth == null)
