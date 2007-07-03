@@ -847,7 +847,7 @@ public class SubversionSCM extends SCM implements Serializable {
                     // remove unneeded whitespaces
                     url = url.trim();
                     if(!URL_PATTERN.matcher(url).matches()) {
-                        error("Invalid URL syntax. See "
+                        errorWithMarkup("Invalid URL syntax. See "
                             + "<a href=\"http://svnbook.red-bean.com/en/1.2/svn-book.html#svn.basic.in-action.wc.tbl-1\">this</a> "
                             + "for information about valid URLs.");
                         return;
@@ -877,7 +877,7 @@ public class SubversionSCM extends SCM implements Serializable {
                         message += " (Maybe you need to <a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>?)";
                         message += "<br>";
                         logger.log(Level.INFO, "Failed to access subversion repository "+url,e);
-                        error(message);
+                        errorWithMarkup(message);
                     }
                 }
             }.process();
