@@ -547,4 +547,25 @@ public class Functions {
     public static <T> Collection<T> emptyList() {
         return Collections.emptyList();
     }
+
+    public static String jsStringEscape(String s) {
+        StringBuilder buf = new StringBuilder();
+        for( int i=0; i<s.length(); i++ ) {
+            char ch = s.charAt(i);
+            switch(ch) {
+            case '\'':
+                buf.append("\\'");
+                break;
+            case '\\':
+                buf.append("\\\\");
+                break;
+            case '"':
+                buf.append("\\\"");
+                break;
+            default:
+                buf.append(ch);
+            }
+        }
+        return buf.toString();
+    }
 }
