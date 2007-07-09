@@ -498,6 +498,12 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         HealthReport buildHealth = null;
 
         RunT lastBuild = getLastBuild();
+
+        if (lastBuild != null && lastBuild.isBuilding()) {
+            // show the previous build's report until the current one is finished building.            
+            lastBuild = lastBuild.getPreviousBuild();
+        }
+
         if (lastBuild != null) {
 
             for (HealthReportingAction healthReportingAction : lastBuild.getActions(HealthReportingAction.class)) {

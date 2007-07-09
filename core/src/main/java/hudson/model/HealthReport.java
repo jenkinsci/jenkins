@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * Represents health of something (typically project).
- * A number between 0-100. 
+ * A number between 0-100.
  *
  * @author connollys
  * @since 1.115
@@ -15,6 +15,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     private static final String HEALTH_40_TO_59 = "health-40to59.gif";
     private static final String HEALTH_20_TO_39 = "health-20to39.gif";
     private static final String HEALTH_0_TO_19 = "health-00to19.gif";
+    private static final String HEALTH_UNKNOWN = "empty.gif";
 
     /** The percentage health score (from 0 to 100 inclusive). */
     private int score;
@@ -78,7 +79,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * Create a new HealthReport.
      */
     public HealthReport() {
-        this(100, HEALTH_40_TO_59, "");
+        this(100, HEALTH_UNKNOWN, "");
     }
 
     /**
@@ -138,7 +139,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     public int compareTo(HealthReport o) {
         return (this.score < o.score ? -1 : (this.score == o.score ? 0 : 1));
     }
-    
+
     /**
      * Utility method to find the report with the lowest health.
      */
