@@ -66,7 +66,7 @@
               <f:textbox name="axis.name" value="${axis.name}" />
             </f:entry>
             <f:entry title="Values">
-              <f:expandableTextBox name="axis.value" value="${axis.valueString}" />
+              <f:expandableTextbox name="axis.value" value="${axis.valueString}" />
             </f:entry>
             <f:entry>
               <div align="right">
