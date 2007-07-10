@@ -213,22 +213,21 @@ public class Util {
      */
     public static String getWin32ErrorMessage(Throwable e) {
         String msg = e.getMessage();
-        if(msg==null) {
-            if(e.getCause()!=null)
-                return getWin32ErrorMessage(e.getCause());
-            return null; // no message
+        if(msg!=null) {
+            Matcher m = errorCodeParser.matcher(msg);
+            if(m.matches()) {
+                try {
+                    ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
+                    return rb.getString("error"+m.group(1));
+                } catch (Exception _) {
+                    // silently recover from resource related failures
+                }
+            }
         }
-        Matcher m = errorCodeParser.matcher(msg);
-        if(!m.matches())
-            return null; // failed to parse
 
-        try {
-            ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
-            return rb.getString("error"+m.group(1));
-        } catch (Exception _) {
-            // silently recover from resource related failures
-            return null;
-        }
+        if(e.getCause()!=null)
+            return getWin32ErrorMessage(e.getCause());
+        return null; // no message
     }
 
     /**
