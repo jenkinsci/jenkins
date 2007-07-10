@@ -25,9 +25,14 @@ import java.util.HashMap;
 public abstract class Layouter<T> {
     public final List<Axis> x,y,z;
     /**
+     * Axes that only have one value.
+     */
+    private final List<Axis> trivial = new ArrayList<Axis>();
+    /**
      * Number of data columns and rows.
      */
     private int xSize, ySize, zSize;
+
 
     public Layouter(List<Axis> x, List<Axis> y, List<Axis> z) {
         this.x = x;
@@ -48,6 +53,8 @@ public abstract class Layouter<T> {
         for (Axis a : axisList) {
             if(a.size()>1)
                 nonTrivialAxes.add(a);
+            else
+                trivial.add(a);
         }
 
         switch(nonTrivialAxes.size()) {
@@ -158,6 +165,8 @@ public abstract class Layouter<T> {
             buildMap(xp,x);
             buildMap(yp,y);
             buildMap(zp,z);
+            for (Axis a : trivial)
+                m.put(a.name,a.value(0));
             return getT(new Combination(m));
         }
 
