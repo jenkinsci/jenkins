@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -190,8 +191,9 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
      */
     private class RunnerImpl extends AbstractRunner {
         protected Result doRun(final BuildListener listener) throws Exception {
+            PrintStream logger = listener.getLogger();
             try {
-                listener.getLogger().println("Parsing POMs");
+                logger.println("Parsing POMs");
                 List<PomInfo> poms = project.getModuleRoot().act(new PomParser(listener,project.getRootPOM()));
 
                 // update the module list
@@ -200,14 +202,18 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     Map<ModuleName,MavenModule> old = new HashMap<ModuleName, MavenModule>(modules);
 
                     modules.clear();
+                    if(debug)
+                        logger.println("Root POM is "+poms.get(0).name);
                     project.reconfigure(poms.get(0));
                     for (PomInfo pom : poms) {
                         MavenModule mm = old.get(pom.name);
                         if(mm!=null) {// found an existing matching module
+                            if(debug)
+                                logger.println("Reconfiguring "+mm);
                             mm.reconfigure(pom);
                             modules.put(pom.name,mm);
                         } else {// this looks like a new module
-                            listener.getLogger().println("Discovered a new module "+pom.name+" "+pom.displayName);
+                            logger.println("Discovered a new module "+pom.name+" "+pom.displayName);
                             mm = new MavenModule(project,pom,getNumber());
                             modules.put(mm.getModuleName(),mm);
                         }
@@ -216,8 +222,11 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
                     // remaining modules are no longer active.
                     old.keySet().removeAll(modules.keySet());
-                    for (MavenModule om : old.values())
+                    for (MavenModule om : old.values()) {
+                        if(debug)
+                            logger.println("Disabling "+om);
                         om.disable();
+                    }
                     modules.putAll(old);
                 }
 
@@ -229,7 +238,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     m.updateNextBuildNumber(getNumber());
 
                 // start the build
-                listener.getLogger().println("Triggering "+project.getRootModule().getModuleName());
+                logger.println("Triggering "+project.getRootModule().getModuleName());
                 project.getRootModule().scheduleBuild();
                 
                 return null;
@@ -245,7 +254,6 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             } catch (RuntimeException e) {
                 // bug in the code.
                 e.printStackTrace(listener.error("Processing failed due to a bug in the code. Please report thus to users@hudson.dev.java.net"));
-                PrintStream logger = listener.getLogger();
                 logger.println("project="+project);
                 logger.println("project.getModules()="+project.getModules());
                 logger.println("project.getRootModule()="+project.getRootModule());
@@ -264,6 +272,11 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
     private static final class PomParser implements FileCallable<List<PomInfo>> {
         private final BuildListener listener;
         private final String rootPOM;
+        /**
+         * Capture the value of the static field so that the debug flag
+         * takes an effect even when {@link PomParser} runs in a slave.
+         */
+        private final boolean versbose = debug;
 
         public PomParser(BuildListener listener, String rootPOM) {
             this.listener = listener;
@@ -285,17 +298,27 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
             File pom = new File(ws,rootPOM);
 
+            PrintStream logger = listener.getLogger();
+
             if(!pom.exists()) {
-                listener.getLogger().println("No such file "+pom);
-                listener.getLogger().println("Perhaps you need to specify the correct POM file path in the project configuration?");
+                logger.println("No such file "+pom);
+                logger.println("Perhaps you need to specify the correct POM file path in the project configuration?");
                 throw new AbortException();
             }
+
+            if(versbose)
+                logger.println("Parsing "+pom);
 
             try {
                 MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
                 MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener);
+
+                if(versbose) {
+                    for (Entry<MavenProject, String> e : relPath.entrySet())
+                        logger.printf("Discovered %s at %s\n",e.getKey().getId(),e.getValue());
+                }
 
                 List<PomInfo> infos = new ArrayList<PomInfo>();
                 toPomInfo(mp,null,relPath,infos);
@@ -324,4 +347,9 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
     }
 
     private static final Logger LOGGER = Logger.getLogger(MavenModuleSetBuild.class.getName());
+
+    /**
+     * Extra versbose debug switch.
+     */
+    public static boolean debug = false;
 }
