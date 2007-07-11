@@ -172,6 +172,8 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
                     p.removePublisher(BuildTrigger.DESCRIPTOR);
                 } else {
                     BuildTrigger existing = (BuildTrigger)p.getPublisher(BuildTrigger.DESCRIPTOR);
+                    if(existing!=null && existing.hasSame(newChildProjects))
+                        continue;   // no need to touch
                     p.addPublisher(new BuildTrigger(newChildProjects,
                         existing==null?Result.SUCCESS:existing.getThreshold()));
                 }

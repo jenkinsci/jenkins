@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Collection;
 
 /**
  * Triggers builds of other projects.
@@ -68,6 +69,14 @@ public class BuildTrigger extends Publisher {
 
     public List<AbstractProject> getChildProjects() {
         return Items.fromNameList(childProjects,AbstractProject.class);
+    }
+
+    /**
+     * Checks if this trigger has the exact same set of children as the given list.
+     */
+    public boolean hasSame(Collection<? extends AbstractProject> projects) {
+        List<AbstractProject> children = getChildProjects();
+        return children.size()==projects.size() && children.containsAll(projects);
     }
 
     public boolean perform(Build build, Launcher launcher, BuildListener listener) {
