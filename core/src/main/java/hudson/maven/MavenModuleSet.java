@@ -340,7 +340,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     /*package*/ void reconfigure(PomInfo rootPom) throws IOException {
-        if(this.rootModule!=null && this.rootModule.equals(rootModule))
+        if(this.rootModule!=null && this.rootModule.equals(rootPom.name))
             return; // no change
         this.rootModule = rootPom.name;
         this.defaultGoals = rootPom.defaultGoal;
