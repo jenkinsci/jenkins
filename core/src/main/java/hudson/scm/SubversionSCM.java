@@ -346,7 +346,7 @@ public class SubversionSCM extends SCM implements Serializable {
         return SVNClientManager.newInstance(SVNWCUtil.createDefaultOptions(true),sam);
     }
 
-    public static final class SvnInfo implements Serializable {
+    public static final class SvnInfo implements Serializable, Comparable<SvnInfo> {
         /**
          * Decoded repository URL.
          */
@@ -364,6 +364,15 @@ public class SubversionSCM extends SCM implements Serializable {
 
         public SVNURL getSVNURL() throws SVNException {
             return SVNURL.parseURIDecoded(url);
+        }
+
+        public int compareTo(SvnInfo that) {
+            int d = this.url.compareTo(that.url);
+            if(d!=0)    return d;
+            long e = this.revision-that.revision;
+            if(e<0) return -1;
+            if(e>0) return 1;
+            return 0;
         }
 
         private static final long serialVersionUID = 1L;
