@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.BufferedOutputStream;
 import java.util.Map;
+import java.util.Arrays;
 
 /**
  * Starts a process.
@@ -179,7 +180,7 @@ public abstract class Launcher {
             Thread t2 = new StreamCopyThread(cmd+": stderr copier", proc.getErrorStream(), out);
             t2.start();
 
-            return new Channel("locally launched channel on "+cmd,
+            return new Channel("locally launched channel on "+ Arrays.toString(cmd),
                 Computer.threadPoolForRemoting, proc.getInputStream(), proc.getOutputStream(), out) {
 
                 /**
