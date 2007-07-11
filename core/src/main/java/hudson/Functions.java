@@ -315,6 +315,7 @@ public class Functions {
             // Using request.getContextPath() might work but it seems simpler to just use the hudson_ prefix
             // to avoid conflicts with any other web apps that might be on the same machine.
             c.setPath("/");
+            c.setMaxAge(60*60*24*30); // persist it roughly for a month
             response.addCookie(c);
         }
         if (refresh) {
