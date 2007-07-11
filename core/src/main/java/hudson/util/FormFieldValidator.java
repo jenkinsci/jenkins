@@ -193,4 +193,51 @@ public abstract class FormFieldValidator {
             }
         }
     }
+
+    /**
+     * Checks a valid directory name (specified in the 'value' query parameter) against
+     * the current workspace.
+     * @since 1.116.
+     */
+    public static class WorkspaceDirectory extends FormFieldValidator {
+
+        public WorkspaceDirectory(StaplerRequest request, StaplerResponse response) {
+            super(request, response, false);
+        }
+
+        protected void check() throws IOException, ServletException {
+            String value = fixEmpty(request.getParameter("value"));
+            AbstractProject<?,?> p = Hudson.getInstance().getItemByFullName(request.getParameter("job"),AbstractProject.class);
+
+            if(value==null || p==null) {
+                ok(); // none entered yet, or something is seriously wrong
+                return;
+            }
+
+            if(value.contains("*")) {
+                // a common mistake is to use wildcard
+                error("Wildcard is not allowed here");
+                return;
+            }
+
+            try {
+                FilePath ws = p.getWorkspace();
+
+                if(!ws.exists()) {// no workspace. can't check
+                    ok();
+                    return;
+                }
+
+                if(ws.child(value).exists()) {
+                    if(ws.child(value).isDirectory())
+                        ok();
+                    else
+                        error(value+" is not a directory");
+                } else
+                    error("No such directory: "+value);
+            } catch (InterruptedException e) {
+                ok(); // coundn't check
+            }
+        }
+    }
 }

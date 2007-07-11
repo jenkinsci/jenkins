@@ -3,6 +3,7 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.util.FormFieldValidator;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -78,15 +79,7 @@ public class JavadocArchiver extends Publisher {
     }
 
 
-    public static final Descriptor<Publisher> DESCRIPTOR = new Descriptor<Publisher>(JavadocArchiver.class) {
-        public String getDisplayName() {
-            return "Publish Javadoc";
-        }
-
-        public Publisher newInstance(StaplerRequest req) {
-            return new JavadocArchiver(req.getParameter("javadoc_dir"));
-        }
-    };
+    public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
     public static final class JavadocAction extends Actionable implements ProminentProjectAction {
         private final AbstractItem project;
@@ -116,6 +109,27 @@ public class JavadocArchiver extends Publisher {
 
         public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
             new DirectoryBrowserSupport(this).serveFile(req, rsp, new FilePath(getJavadocDir(project)), "help.gif", false);
+        }
+    }
+
+    public static class DescriptorImpl extends Descriptor<Publisher> {
+        private DescriptorImpl() {
+            super(JavadocArchiver.class);
+        }
+
+        public String getDisplayName() {
+            return "Publish Javadoc";
+        }
+
+        public Publisher newInstance(StaplerRequest req) {
+            return new JavadocArchiver(req.getParameter("javadoc_dir"));
+        }
+
+        /**
+         * Performs on-the-fly validation on the file mask wildcard.
+         */
+        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new FormFieldValidator.WorkspaceDirectory(req,rsp).process();
         }
     }
 }

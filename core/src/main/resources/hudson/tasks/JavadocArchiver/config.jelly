@@ -1,7 +1,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:entry title="Javadoc directory"
     description="Directory relative to the root of the javadoc, such as 'myproject/build/javadoc'">
-    <input class="setting-input" name="javadoc_dir"
-      type="text" value="${instance.javadocDir}"/>
+    <f:textbox name="javadoc_dir" value="${instance.javadocDir}"
+        checkUrl="'${rootURL}/publisher/JavadocArchiver/check?job=${it.fullName}&amp;value='+escape(this.value)"/>
   </f:entry>
 </j:jelly>
