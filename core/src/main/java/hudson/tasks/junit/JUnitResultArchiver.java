@@ -2,6 +2,7 @@ package hudson.tasks.junit;
 
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
@@ -12,8 +13,8 @@ import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.Publisher;
-import hudson.tasks.test.TestResultProjectAction;
 import hudson.tasks.test.TestResultAggregator;
+import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.FormFieldValidator;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -42,16 +43,29 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
         this.testResults = testResults;
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        TestResult result;
+    private static final class RecordResult implements Serializable {
+        final TestResult tr;
+        final String afile;
+        final long lastModified;
 
+        RecordResult(TestResult tr, String afile, long lastModified) {
+            this.tr = tr;
+            this.afile = afile;
+            this.lastModified = lastModified;
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        RecordResult result;
         listener.getLogger().println("Recording test results");
 
         try {
             final long buildTime = build.getTimestamp().getTimeInMillis();
 
-            result = build.getProject().getWorkspace().act(new FileCallable<TestResult>() {
-                public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
+            result = build.getProject().getWorkspace().act(new FileCallable<RecordResult>() {
+                public RecordResult invoke(File ws, VirtualChannel channel) throws IOException {
                     FileSet fs = new FileSet();
                     Project p = new Project();
                     fs.setProject(p);
@@ -59,14 +73,18 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
                     fs.setIncludes(testResults);
                     DirectoryScanner ds = fs.getDirectoryScanner(p);
 
-                    if(ds.getIncludedFiles().length==0) {
+                    String[] files = ds.getIncludedFiles();
+                    if(files.length==0) {
                         // no test result. Most likely a configuration error or fatal problem
                         throw new AbortException("No test report files were found. Configuration error?");
                     }
 
-                    return new TestResult(buildTime,ds);
+                    File oneFile = new File(ds.getBasedir(),files[0]);
+
+                    return new RecordResult(new TestResult(buildTime,ds),files[0],oneFile.lastModified());
                 }
             });
+
         } catch (AbortException e) {
             listener.getLogger().println(e.getMessage());
             build.setResult(Result.FAILURE);
@@ -74,11 +92,12 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
         }
 
 
-        TestResultAction action = new TestResultAction(build, result, listener);
+        TestResultAction action = new TestResultAction(build, result.tr, listener);
         TestResult r = action.getResult();
 
         if(r.getPassCount()==0 && r.getFailCount()==0) {
             listener.getLogger().println("Test reports were found but none of them are new. Did tests run?");
+            listener.getLogger().printf("For example, %s is %s old\n",result.afile, Util.getTimeSpanString(build.getTimestamp().getTimeInMillis()-result.lastModified));
             // no test result. Most likely a configuration error or fatal problem
             build.setResult(Result.FAILURE);
         } else {
