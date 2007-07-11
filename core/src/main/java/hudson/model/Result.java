@@ -65,6 +65,15 @@ public final class Result implements Serializable, CustomExportedBean {
         return this.ordinal >= that.ordinal;
     }
 
+    public boolean isBetterThan(Result that) {
+        return this.ordinal < that.ordinal;
+    }
+
+    public boolean isBetterOrEqualTo(Result that) {
+        return this.ordinal <= that.ordinal;
+    }
+
+
     public String toString() {
         return name;
     }
