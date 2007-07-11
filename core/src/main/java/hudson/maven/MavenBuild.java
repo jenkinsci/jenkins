@@ -374,7 +374,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             for (MavenReporter reporter : reporters)
                 reporter.end(MavenBuild.this,launcher,listener);
 
-            if(!getResult().isWorseThan(Result.UNSTABLE)) {
+            if(getResult().isBetterOrEqualTo(Result.SUCCESS)) {
                 // trigger dependency builds
                 DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
                 for( AbstractProject<?,?> down : getParent().getDownstreamProjects()) {
