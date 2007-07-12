@@ -366,6 +366,17 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         reporters.rebuild(req,MavenReporters.getConfigurableList(),"reporter");
     }
 
+    /**
+     * Delete all disabled modules.
+     */
+    public void doDoDeleteAllDisabledModules(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
+        for( MavenModule m : getDisabledModules(true))
+            m.delete();
+        rsp.sendRedirect2(".");
+    }
+
     public TopLevelItemDescriptor getDescriptor() {
         return DESCRIPTOR;
     }
