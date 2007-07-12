@@ -73,12 +73,15 @@ public class Channel implements VirtualChannel {
     /*package*/ final Executor executor;
 
     /**
-     * If true, this data channel is already closed and
-     * no further calls are accepted.
+     * If true, the incoming link is already shut down,
+     * and reader is already terminated.
      */
-    private volatile boolean closed = false;
-
-    private volatile boolean closing = false;
+    private volatile boolean inClosed = false;
+    /**
+     * If true, the outgoing link is already shut down,
+     * and no command can be sent.
+     */
+    private volatile boolean outClosed = false;
 
     /*package*/ final Map<Integer,Request<?,?>> pendingCalls = new Hashtable<Integer,Request<?,?>>();
 
@@ -178,7 +181,7 @@ public class Channel implements VirtualChannel {
      * {@link Command}s are executed on a remote system in the order they are sent.
      */
     /*package*/ synchronized void send(Command cmd) throws IOException {
-        if(closed)
+        if(outClosed)
             throw new IOException("already closed");
         if(logger.isLoggable(Level.FINE))
             logger.fine("Send "+cmd);
@@ -273,7 +276,7 @@ public class Channel implements VirtualChannel {
      * Aborts the connection in response to an error.
      */
     protected synchronized void terminate(IOException e) {
-        closed = true;
+        outClosed=inClosed=true;
         try {
             synchronized(pendingCalls) {
                 for (Request<?,?> req : pendingCalls.values())
@@ -316,7 +319,7 @@ public class Channel implements VirtualChannel {
      *      If the current thread is interrupted while waiting for the completion.
      */
     public synchronized void join() throws InterruptedException {
-        while(!closed)
+        while(!inClosed || !outClosed)
             wait();
     }
 
@@ -331,6 +334,7 @@ public class Channel implements VirtualChannel {
         protected void execute(Channel channel) {
             try {
                 channel.close();
+                channel.terminate(null);
             } catch (IOException e) {
                 logger.log(Level.SEVERE,"close command failed on "+channel.name,e);
                 logger.log(Level.INFO,"close command created at",createdAt);
@@ -346,16 +350,22 @@ public class Channel implements VirtualChannel {
      * {@inheritDoc}
      */
     public synchronized void close() throws IOException {
-        // make sure no other commands get executed in between.
-        if(closed)  return;
-        if(closing) return;
-        closing=true;
+        if(outClosed)  return;  // already closed
 
         send(new CloseCommand());
-        oos.close();
+        outClosed = true;   // last command sent. no further command allowed. lock guarantees that no command will slip inbetween
+        try {
+            oos.close();
+        } catch (IOException e) {
+            // there's a race condition here.
+            // the remote peer might have already responded to the close command
+            // and closed the connection, in which case our close invocation
+            // could fail with errors like
+            // "java.io.IOException: The pipe is being closed"
+            // so let's ignore this error.
+        }
 
-        // TODO: would be nice if we can wait for the completion of pending requests
-        terminate(null);
+        // termination is done by CloseCommand when we received it.
     }
 
     public String toString() {
@@ -368,10 +378,10 @@ public class Channel implements VirtualChannel {
         }
 
         public void run() {
+            Command cmd = null;
             try {
-                while(!closed) {
+                while(!inClosed) {
                     try {
-                        Command cmd = null;
                         Channel old = Channel.setCurrent(Channel.this);
                         try {
                             cmd = (Command)ois.readObject();
