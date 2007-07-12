@@ -242,6 +242,14 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
             modules.put(m.getModuleName(),m);
         }
 
+        // in case two modules with the same name is defined, modules in this MavenModuleSet
+        // takes precedence
+
+        for (MavenModule m : getParent().getModules()) {
+            if(m.isDisabled())  continue;
+            modules.put(m.getModuleName(),m);
+        }
+
         for (ModuleName d : dependencies) {
             MavenModule src = modules.get(d);
             if(src!=null)
