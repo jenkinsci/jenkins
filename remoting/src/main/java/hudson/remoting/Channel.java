@@ -99,6 +99,7 @@ public class Channel implements VirtualChannel {
      * Registered listeners. 
      */
     private final Vector<Listener> listeners = new Vector<Listener>();
+    private int gcCounter;
 
     public Channel(String name, Executor exec, InputStream is, OutputStream os) throws IOException {
         this(name,exec,is,os,null);
@@ -215,6 +216,17 @@ public class Channel implements VirtualChannel {
     /*package*/ <T> T export(Class<T> type, T instance, boolean userProxy) {
         if(instance==null)
             return null;
+
+        // every so often perform GC on the remote system so that
+        // unused RemoteInvocationHandler get released, which triggers
+        // unexport operation.
+        if((++gcCounter)%10000==0)
+            try {
+                send(new GCCommand());
+            } catch (IOException e) {
+                // for compatibility reason we can't change the export method signature
+                logger.log(Level.WARNING, "Unable to send GC command",e);
+            }
 
         // proxy will unexport this instance when it's GC-ed on the remote machine.
         final int id = export(instance);
