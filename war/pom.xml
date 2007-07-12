@@ -145,7 +145,7 @@
                 <artifactItem>
                   <groupId>winstone</groupId>
                   <artifactId>winstone</artifactId>
-                  <version>0.9.8</version>
+                  <version>0.9.9</version>
                   <destFileName>winstone.jar</destFileName>
                 </artifactItem>
               </artifactItems>
