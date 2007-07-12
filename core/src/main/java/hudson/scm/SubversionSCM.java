@@ -47,18 +47,19 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
 import javax.servlet.ServletException;
 import javax.xml.transform.stream.StreamResult;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.io.OutputStream;
-import java.io.BufferedOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -66,7 +67,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.StringTokenizer;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -683,6 +683,12 @@ public class SubversionSCM extends SCM implements Serializable {
             Credential getCredential(String realm);
         }
 
+        /**
+         * There's no point in exporting multiple {@link RemotableSVNAuthenticationProviderImpl} instances,
+         * so let's just use one instance.
+         */
+        private final RemotableSVNAuthenticationProviderImpl remotableProvider = new RemotableSVNAuthenticationProviderImpl();
+
         private final class RemotableSVNAuthenticationProviderImpl implements RemotableSVNAuthenticationProvider, Serializable {
             public Credential getCredential(String realm) {
                 LOGGER.fine(String.format("getCredential(%s)=>%s",realm,credentials.get(realm)));
@@ -749,7 +755,7 @@ public class SubversionSCM extends SCM implements Serializable {
          * This method must be invoked on the master, but the returned object is remotable.
          */
         public ISVNAuthenticationProvider createAuthenticationProvider() {
-            return new SVNAuthenticationProviderImpl(new RemotableSVNAuthenticationProviderImpl());
+            return new SVNAuthenticationProviderImpl(remotableProvider);
         }
 
         /**
