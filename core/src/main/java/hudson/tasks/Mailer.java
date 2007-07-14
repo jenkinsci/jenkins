@@ -37,6 +37,7 @@ public class Mailer extends Publisher {
     private static final Logger LOGGER = Logger.getLogger(Mailer.class.getName());
 
     /**
+     * Matches strings like "Kohsuke Kawaguchi &lt;kohsuke.kawaguchi@sun.com>"
      * @see #extractAddressFromId(String)
      */
     public static final String EMAIL_ADDRESS_REGEXP = "^.*<([^>]+)>.*$";
