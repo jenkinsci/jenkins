@@ -26,7 +26,7 @@ public class ListView extends View {
     /*package*/ final Set<String> jobNames = new TreeSet<String>();
 
     /**
-     * PluginName of this view.
+     * Name of this view.
      */
     private String name;
 
@@ -109,9 +109,11 @@ public class ListView extends View {
 
         description = Util.nullify(req.getParameter("description"));
 
+        name = req.getParameter("name");
+
         owner.save();
 
-        rsp.sendRedirect(".");
+        rsp.sendRedirect("../"+ req.getParameter("name"));
     }
 
     /**
