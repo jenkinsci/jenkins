@@ -110,7 +110,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         return spec;
     }
 
-    private Object readResolve() throws ObjectStreamException {
+    protected Object readResolve() throws ObjectStreamException {
         try {
             tabs = CronTabList.create(spec);
         } catch (ANTLRException e) {
