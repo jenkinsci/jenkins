@@ -49,7 +49,7 @@ import java.util.logging.Logger;
  */
 public final class Slave implements Node, Serializable {
     /**
-     * PluginName of this slave node.
+     * Name of this slave node.
      */
     protected final String name;
 
@@ -108,7 +108,7 @@ public final class Slave implements Node, Serializable {
         getAssignedLabels();    // compute labels now
 
         if (name.equals(""))
-            throw new FormException("Invalid slave configuration. PluginName is empty", null);
+            throw new FormException("Invalid slave configuration. Name is empty", null);
 
         // this prevents the config from being saved when slaves are offline.
         // on a large deployment with a lot of slaves, some slaves are bound to be offline,

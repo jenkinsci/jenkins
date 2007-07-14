@@ -55,7 +55,7 @@ import java.util.Vector;
  * <FONT color=#6a5acd>&lt;!ELEMENT</FONT> msg <FONT color=#ff00ff>(#PCDATA)</FONT><FONT color=#6a5acd>&gt;</FONT>
  * <FONT color=#0000ff>&lt;!-- File changed --&gt;</FONT>
  * <FONT color=#6a5acd>&lt;!ELEMENT</FONT> file <FONT color=#ff00ff>(name,revision,prevrevision</FONT><FONT color=#ff00ff>?</FONT><FONT color=#ff00ff>)</FONT><FONT color=#6a5acd>&gt;</FONT>
- * <FONT color=#0000ff>&lt;!-- PluginName of the file --&gt;</FONT>
+ * <FONT color=#0000ff>&lt;!-- Name of the file --&gt;</FONT>
  * <FONT color=#6a5acd>&lt;!ELEMENT</FONT> name <FONT color=#ff00ff>(#PCDATA)</FONT><FONT color=#6a5acd>&gt;</FONT>
  * <FONT color=#0000ff>&lt;!-- Revision number --&gt;</FONT>
  * <FONT color=#6a5acd>&lt;!ELEMENT</FONT> revision <FONT color=#ff00ff>(#PCDATA)</FONT><FONT color=#6a5acd>&gt;</FONT>

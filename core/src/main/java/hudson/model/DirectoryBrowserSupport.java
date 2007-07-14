@@ -168,7 +168,7 @@ public final class DirectoryBrowserSupport {
          */
         private final String href;
         /**
-         * PluginName of this path. Just the file name portion.
+         * Name of this path. Just the file name portion.
          */
         private final String title;
 

@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public interface Node {
     /**
-     * PluginName of this node.
+     * Name of this node.
      *
      * @return
      *      "" if this is master
