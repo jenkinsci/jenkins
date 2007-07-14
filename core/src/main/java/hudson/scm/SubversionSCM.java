@@ -687,7 +687,7 @@ public class SubversionSCM extends SCM implements Serializable {
          * There's no point in exporting multiple {@link RemotableSVNAuthenticationProviderImpl} instances,
          * so let's just use one instance.
          */
-        private final RemotableSVNAuthenticationProviderImpl remotableProvider = new RemotableSVNAuthenticationProviderImpl();
+        private transient final RemotableSVNAuthenticationProviderImpl remotableProvider = new RemotableSVNAuthenticationProviderImpl();
 
         private final class RemotableSVNAuthenticationProviderImpl implements RemotableSVNAuthenticationProvider, Serializable {
             public Credential getCredential(String realm) {
