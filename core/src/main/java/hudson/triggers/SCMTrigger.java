@@ -2,7 +2,6 @@ package hudson.triggers;
 
 import antlr.ANTLRException;
 import hudson.Util;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Item;
@@ -15,19 +14,18 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.Date;
-import java.util.Set;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Arrays;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,75 +44,41 @@ public class SCMTrigger extends Trigger<SCMedItem> {
      *
      * @guardedBy this
      */
-    private transient boolean pollingScheduled;
+    private transient volatile boolean pollingScheduled;
 
     /**
-     * Signal to the polling thread to abort now.
+     * This lock is used to control the mutual exclusion of the SCM activity,
+     * so that the build and polling don't happen at the same time.
      */
-    private transient boolean abortNow;
-
-    /**
-     * Pending polling activity in progress.
-     * There's at most one polling activity per project at any given point.
-     *
-     * @guardedBy this
-     */
-    private transient Future<?> polling;
+    private transient ReentrantLock lock;
 
     public SCMTrigger(String cronTabSpec) throws ANTLRException {
         super(cronTabSpec);
+        lock = new ReentrantLock();
     }
 
-    protected synchronized void run() {
+    public ReentrantLock getLock() {
+        return lock;
+    }
+
+    protected Object readResolve() throws ObjectStreamException {
+        lock = new ReentrantLock();
+        return super.readResolve();
+    }
+
+    protected void run() {
         if(pollingScheduled)
             return; // noop
         pollingScheduled = true;
 
-        // otherwise do it now
-        startPolling();
+        // schedule the polling.
+        // even if we end up submitting this too many times, that's OK.
+        // the real exclusion control happens inside Runner.
+        DESCRIPTOR.getExecutor().submit(new Runner());
     }
 
     public Action getProjectAction() {
         return new SCMAction();
-    }
-
-    /**
-     * Makes sure that the polling is aborted.
-     */
-    public synchronized void abort() throws InterruptedException {
-        if(polling!=null && !polling.isDone()) {
-            LOGGER.log(Level.INFO,"killing polling for "+job);
-
-            abortNow = true;
-            polling.cancel(true);
-            try {
-                polling.get();
-            } catch (ExecutionException e) {
-                LOGGER.log(Level.WARNING, "Failed to poll",e);
-            } catch (CancellationException e) {
-                // this is fine
-            }
-            abortNow = false;
-        }
-    }
-
-    /**
-     * Start polling if it's scheduled.
-     */
-    public synchronized void startPolling() {
-        AbstractBuild b = job.asProject().getLastBuild();
-
-        if(b!=null && b.isBuilding())
-            return; // build in progress
-
-        if(polling!=null && !polling.isDone())
-            return; // polling already in progress
-
-        if(!pollingScheduled)
-            return; // not scheduled
-
-        pollingScheduled = false;
-        polling = DESCRIPTOR.getExecutor().submit(new Runner());
     }
 
     /**
@@ -294,31 +258,27 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public void run() {
-            boolean foundChanges;
             try {
-                getDescriptor().items.add(job);
-                foundChanges = runPolling();
-            } finally {
-                getDescriptor().items.remove(job);
-            }
-            if(foundChanges) {
-                LOGGER.info("SCM changes detected in "+ job.getName());
-                job.scheduleBuild();
-            }
-
-            synchronized(SCMTrigger.this) {
-                if(abortNow)
-                    return; // terminate now without queueing the next one.
-
-                AbstractBuild b = job.asProject().getLastBuild();
-                if(b!=null && b.isBuilding())
-                    return; // build in progress
-
-                if(pollingScheduled) {
-                    // schedule a next run
-                    pollingScheduled = false;
-                    polling = DESCRIPTOR.getExecutor().submit(new Runner());
+                while(pollingScheduled) {
+                    getLock().lockInterruptibly();
+                    if(pollingScheduled) {
+                        pollingScheduled = false;
+                        boolean foundChanges;
+                        try {
+                            getDescriptor().items.add(job);
+                            foundChanges = runPolling();
+                        } finally {
+                            getDescriptor().items.remove(job);
+                            getLock().unlock();
+                        }
+                        if(foundChanges) {
+                            LOGGER.info("SCM changes detected in "+ job.getName());
+                            job.scheduleBuild();
+                        }
+                    }
                 }
+            } catch (InterruptedException e) {
+                LOGGER.info("Aborted");
             }
         }
     }

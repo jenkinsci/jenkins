@@ -1,21 +1,23 @@
 package hudson.model;
 
+import hudson.matrix.MatrixConfiguration;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapper.Environment;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.triggers.SCMTrigger;
-import hudson.matrix.MatrixConfiguration;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
-import java.util.Calendar;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Logger;
 
 /**
  * A build of a {@link Project}.
@@ -51,33 +53,33 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
     @Override
     protected void onStartBuilding() {
+        super.onStartBuilding();
         SCMTrigger t = (SCMTrigger)project.getTriggers().get(SCMTrigger.DESCRIPTOR);
-        if(t==null) {
-            super.onStartBuilding();
-        } else {
-            synchronized(t) {
+        if(t!=null) {
+            // acquire the lock
+            ReentrantLock lock = t.getLock();
+            synchronized(lock) {
                 try {
-                    t.abort();
+                    if(lock.isLocked()) {
+                        long time = System.currentTimeMillis();
+                        LOGGER.info("Waiting for the polling of "+getParent()+" to complete");
+                        lock.lockInterruptibly();
+                        LOGGER.info("Polling completed. Waited "+(System.currentTimeMillis()-time)+"ms");
+                    } else
+                        lock.lockInterruptibly();
                 } catch (InterruptedException e) {
                     // handle the interrupt later
                     Thread.currentThread().interrupt();
                 }
-                super.onStartBuilding();
             }
         }
     }
 
     @Override
     protected void onEndBuilding() {
+        super.onEndBuilding();
         SCMTrigger t = (SCMTrigger)project.getTriggers().get(SCMTrigger.DESCRIPTOR);
-        if(t==null) {
-            super.onEndBuilding();
-        } else {
-            synchronized(t) {
-                super.onEndBuilding();
-                t.startPolling();
-            }
-        }
+        t.getLock().unlock();
     }
 
     @Override
@@ -170,4 +172,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             return true;
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(Build.class.getName());
 }
