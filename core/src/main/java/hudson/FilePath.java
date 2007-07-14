@@ -158,6 +158,8 @@ public final class FilePath implements Serializable {
      * Checks if the remote path is Unix.
      */
     private boolean isUnix() {
+        // Windows absolute path always include ':', but this is not a valid char in Unix file systems.
+        if(remote.contains(":"))    return false;
         // Windows can handle '/' as a path separator but Unix can't,
         // so err on Unix side
         return remote.indexOf("\\")==-1;

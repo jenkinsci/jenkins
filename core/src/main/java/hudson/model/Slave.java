@@ -527,9 +527,10 @@ public final class Slave implements Node, Serializable {
     }
 
     public Launcher createLauncher(TaskListener listener) {
+        // Windows absolute path always include ':', but this is not a valid char in Unix file systems.
         // Windows can handle '/' as a path separator but Unix can't,
         // so err on Unix side
-        boolean isUnix = remoteFS.indexOf("\\") == -1;
+        boolean isUnix = !remoteFS.contains(":") && !remoteFS.contains("\\");
 
         return new RemoteLauncher(listener, getComputer().getChannel(),isUnix);
     }
