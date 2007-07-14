@@ -306,6 +306,10 @@ public class Mailer extends Publisher {
         	String extractedAddress = extractAddressFromId(user.getId());
         	if (extractedAddress != null)
         		return extractedAddress;
+
+            if(user.getId().contains("@"))
+                // this already looks like an e-mail ID
+                return user.getId();
             
             String ds = Mailer.DESCRIPTOR.getDefaultSuffix();
             if(ds!=null)
