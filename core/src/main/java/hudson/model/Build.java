@@ -79,7 +79,8 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
     protected void onEndBuilding() {
         super.onEndBuilding();
         SCMTrigger t = (SCMTrigger)project.getTriggers().get(SCMTrigger.DESCRIPTOR);
-        t.getLock().unlock();
+        if(t!=null)
+            t.getLock().unlock();
     }
 
     @Override
