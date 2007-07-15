@@ -101,6 +101,15 @@ public abstract class Descriptor<T extends Describable<T>> {
 
     /**
      * Returns the resource path to the help screen HTML, if any.
+     *
+     * <p>
+     * This value is relative to the context root of Hudson, so normally
+     * the values are something like <tt>"/plugin/emma/help.html"</tt> to
+     * refer to static resource files in a plugin, or <tt>"/publisher/EmmaPublisher/abc"</tt>
+     * to refer to Jelly script <tt>abc.jelly</tt> or a method <tt>EmmaPublisher.doAbc()</tt>.
+     *
+     * @return
+     *      "" to indicate that there's no help.
      */
     public String getHelpFile() {
         return "";
