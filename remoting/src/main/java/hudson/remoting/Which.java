@@ -12,22 +12,31 @@ import java.net.URL;
  * @author Kohsuke Kawaguchi
  */
 public class Which {
+    /**
+     * Locates the jar file that contains the given class.
+     *
+     * @throws IllegalArgumentException
+     *      if failed to determine.
+     */
     public static File jarFile(Class clazz) throws IOException {
         ClassLoader cl = clazz.getClassLoader();
         if(cl==null)
             cl = ClassLoader.getSystemClassLoader();
-        String res = cl.getResource(clazz.getName().replace('.', '/') + ".class").toExternalForm();
-        if(res.startsWith("jar:")) {
-            res = res.substring(4,res.lastIndexOf('!')); // cut off jar: and the file name portion
-            return new File(decode(new URL(res).getPath()));
+        URL res = cl.getResource(clazz.getName().replace('.', '/') + ".class");
+        if(res==null)
+            throw new IllegalArgumentException("Unable to locate class file for "+clazz);
+        String resURL = res.toExternalForm();
+        if(resURL.startsWith("jar:")) {
+            resURL = resURL.substring(4, resURL.lastIndexOf('!')); // cut off jar: and the file name portion
+            return new File(decode(new URL(resURL).getPath()));
         }
 
-        if(res.startsWith("file:")) {
+        if(resURL.startsWith("file:")) {
             // unpackaged classes
             int n = clazz.getName().split("\\.").length; // how many slashes do wo need to cut?
             for( ; n>0; n-- ) {
-                int idx = Math.max(res.lastIndexOf('/'), res.lastIndexOf('\\'));
-                res = res.substring(0,idx);
+                int idx = Math.max(resURL.lastIndexOf('/'), resURL.lastIndexOf('\\'));
+                resURL = resURL.substring(0,idx);
             }
 
             // won't work if res URL contains ' '
@@ -35,10 +44,10 @@ public class Which {
             // won't work if res URL contains '%20'
             // return new File(new URL(res).toURI());
 
-            return new File(decode(new URL(res).getPath()));
+            return new File(decode(new URL(resURL).getPath()));
         }
 
-        throw new IllegalArgumentException(res);
+        throw new IllegalArgumentException(resURL);
     }
 
     /**
