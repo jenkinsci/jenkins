@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Persisted record of mojo execution.
@@ -62,11 +64,13 @@ public final class ExecutedMojo implements Serializable {
         this.duration = duration;
 
         String digest = null;
+        MojoDescriptor md = mojo.mojoExecution.getMojoDescriptor();
+        PluginDescriptor pd = md.getPluginDescriptor();
         try {
-            MojoDescriptor md = mojo.mojoExecution.getMojoDescriptor();
-            PluginDescriptor pd = md.getPluginDescriptor();
             Class clazz = pd.getClassRealm().loadClass(md.getImplementation());
             digest = Util.getDigestOf(new FileInputStream(Which.jarFile(clazz)));
+        } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.WARNING, "Failed to locate jar for "+md.getImplementation(),e);
         } catch (ClassNotFoundException e) {
             // perhaps the plugin has failed to load.
         }
@@ -122,4 +126,6 @@ public final class ExecutedMojo implements Serializable {
             return modules.get(new ModuleName(mojo.groupId,mojo.artifactId));
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(ExecutedMojo.class.getName());
 }
