@@ -1274,7 +1274,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             rsp.sendRedirect2("noPrincipal");
 
         String from = req.getParameter("from");
-        if(from!=null && from.startsWith("/"))
+        if(from!=null && from.startsWith("/") && !from.equals("/loginError"))
             rsp.sendRedirect2(from);    // I'm bit uncomfortable letting users redircted to other sites, make sure the URL falls into this domain
         else
             rsp.sendRedirect2(".");
