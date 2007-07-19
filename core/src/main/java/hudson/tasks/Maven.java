@@ -140,7 +140,6 @@ public class Maven extends Builder {
                 args.add(exec.getPath());
             }
             args.addKeyValuePairs("-D",build.getBuildVariables());
-            args.add("-B");
             args.addTokenized(normalizedTarget);
 
             Map<String,String> env = build.getEnvVars();
