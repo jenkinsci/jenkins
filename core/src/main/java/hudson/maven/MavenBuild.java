@@ -265,7 +265,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener, this);
 
             ArgumentListBuilder margs = new ArgumentListBuilder();
-            margs.add("-N");
+            margs.add("-N").add("-B");
             margs.add("-f",getParent().getModuleRoot().child("pom.xml").getRemote());
             margs.addTokenized(getProject().getGoals());
 
