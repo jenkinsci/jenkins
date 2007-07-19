@@ -728,7 +728,8 @@ public class CVSSCM extends SCM implements Serializable {
     public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
         if(cvsRsh!=null)
             env.put("CVS_RSH",cvsRsh);
-        env.put("CVS_BRANCH",Util.fixNull(branch));
+        if(branch!=null)
+            env.put("CVS_BRANCH",branch);
         String cvspass = getDescriptor().getCvspassFile();
         if(cvspass.length()!=0)
             env.put("CVS_PASSFILE",cvspass);
