@@ -1,6 +1,7 @@
 package hudson;
 
 import hudson.util.IOException2;
+import hudson.model.Hudson;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
@@ -434,10 +435,14 @@ public final class PluginWrapper {
 //
 //
     public void doMakeEnabled(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
         enable();
         rsp.setStatus(200);
     }
     public void doMakeDisabled(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
         disable();
         rsp.setStatus(200);
     }
