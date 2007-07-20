@@ -1095,6 +1095,23 @@ public class CVSSCM extends SCM implements Serializable {
         }
 
         /**
+         * Checks if the value is a valid CVS tag name.
+         */
+        public synchronized void doCheckTag(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new FormFieldValidator(req,rsp,false) {
+                protected void check() throws IOException, ServletException {
+                    String tag = fixNull(request.getParameter("value")).trim();
+                    if(tag.length()==0) {// nothing entered yet
+                        ok();
+                        return;
+                    }
+
+                    error(isInvalidTag(tag));
+                }
+            }.check();
+        }
+
+        /**
          * Invoked to actually tag the workspace.
          */
         public synchronized void doSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -1103,9 +1120,10 @@ public class CVSSCM extends SCM implements Serializable {
 
             Map<AbstractBuild,String> tagSet = new HashMap<AbstractBuild,String>();
 
-            String name = req.getParameter("name");
-            if(isInvalidTag(name)) {
-                sendError("No valid tag name given",req,rsp);
+            String name = fixNull(req.getParameter("name")).trim();
+            String reason = isInvalidTag(name);
+            if(reason!=null) {
+                sendError(reason,req,rsp);
                 return;
             }
 
@@ -1121,9 +1139,10 @@ public class CVSSCM extends SCM implements Serializable {
                     if(!upName.startsWith("upstream."))
                         continue;
 
-                    String tag = req.getParameter(upName);
-                    if(isInvalidTag(tag)) {
-                        sendError("No valid tag name given for "+upName,req,rsp);
+                    String tag = fixNull(req.getParameter(upName)).trim();
+                    reason = isInvalidTag(tag);
+                    if(reason!=null) {
+                        sendError("No valid tag name given for "+upName+" : "+reason,req,rsp);
                         return;
                     }
 
@@ -1140,8 +1159,53 @@ public class CVSSCM extends SCM implements Serializable {
             doIndex(req,rsp);
         }
 
-        private boolean isInvalidTag(String name) {
-            return name==null || name.length()==0;
+        /**
+         * Checks if the given value is a valid CVS tag.
+         *
+         * If it's invalid, this method gives you the reason as string.
+         */
+        private String isInvalidTag(String name) {
+            // source code from CVS rcs.c
+            //void
+            //RCS_check_tag (tag)
+            //    const char *tag;
+            //{
+            //    char *invalid = "$,.:;@";		/* invalid RCS tag characters */
+            //    const char *cp;
+            //
+            //    /*
+            //     * The first character must be an alphabetic letter. The remaining
+            //     * characters cannot be non-visible graphic characters, and must not be
+            //     * in the set of "invalid" RCS identifier characters.
+            //     */
+            //    if (isalpha ((unsigned char) *tag))
+            //    {
+            //    for (cp = tag; *cp; cp++)
+            //    {
+            //        if (!isgraph ((unsigned char) *cp))
+            //        error (1, 0, "tag `%s' has non-visible graphic characters",
+            //               tag);
+            //        if (strchr (invalid, *cp))
+            //        error (1, 0, "tag `%s' must not contain the characters `%s'",
+            //               tag, invalid);
+            //    }
+            //    }
+            //    else
+            //    error (1, 0, "tag `%s' must start with a letter", tag);
+            //}
+            if(name==null || name.length()==0)
+                return "Tag is empty";
+
+            char ch = name.charAt(0);
+            if(!(('A'<=ch && ch<='Z') || ('a'<=ch && ch<='z')))
+                return "Tag needs to start with alphabet";
+
+            for( char invalid : "$,.:;@".toCharArray() ) {
+                if(name.indexOf(invalid)>=0)
+                    return "Tag contains illegal '"+invalid+"' character";
+            }
+
+            return null;
         }
 
         /**

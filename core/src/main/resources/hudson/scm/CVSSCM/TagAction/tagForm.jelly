@@ -11,7 +11,8 @@
         <table>
           <f:block>
             Choose the CVS tag name for this build:
-            <input type="text" name="name" value="hudson-${it.build.number}" />
+            <input type="text" name="name" value="hudson-${it.build.number}" class="validated"
+                   checkUrl="'checkTag?value='+escape(this.value)"/>
           </f:block>
 
           <j:set var="upstream" value="${it.build.upstreamBuilds}" />
@@ -19,7 +20,8 @@
             <f:optionalBlock name="upstream" title="Tag all upstream builds at once" help="/help/_cvs/tagAll.html">
               <j:forEach var="up" items="${upstream}">
                 <f:entry title="${up.key.name} #${up.value}">
-                  <input type="text" name="upstream.${up.key.name}" value="hudson-${up.value}" />
+                  <input type="text" name="upstream.${up.key.name}" value="hudson-${up.value}" class="validated"
+                         checkUrl="'checkTag?value='+escape(this.value)"/>
                 </f:entry>
               </j:forEach>
             </f:optionalBlock>
