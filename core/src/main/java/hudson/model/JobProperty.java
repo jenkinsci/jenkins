@@ -29,7 +29,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
      */
     protected transient J owner;
 
-    /*package*/ final void setOwner(J owner) {
+    /*package*/ void setOwner(J owner) {
         this.owner = owner;
     }
 
