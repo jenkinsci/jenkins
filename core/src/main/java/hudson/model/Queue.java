@@ -552,6 +552,9 @@ public class Queue {
          */
         long getEstimatedDuration();
 
+        /**
+         * Creates {@link Executable}, which performs the actual execution of the task. 
+         */
         Executable createExecutable() throws IOException;
     }
 
