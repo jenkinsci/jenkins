@@ -1,0 +1,10 @@
+<!--
+  Display the ball in <TD>:
+
+  @it : BallColor object
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <td data="${it.ordinal()}">
+    <img src="${rootURL}/images/${iconSize}/${it}.gif" alt="${it.description}" tooltip="${it.description}" />
+  </td>
+</j:jelly>

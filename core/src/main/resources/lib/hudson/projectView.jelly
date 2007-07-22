@@ -36,9 +36,7 @@
           <j:set var="lfBuild" value="${job.lastFailedBuild}" />
           <j:set var="buildHealth" value="${job.buildHealth}" />
           <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
-            <td data="${job.iconColor.ordinal()}">
-              <img src="${rootURL}/images/${iconSize}/${job.buildStatusUrl}" alt="${job.iconColor.description}" />
-            </td>
+            <t:ballColorTd it="${job.iconColor}" />
             <td data="${buildHealth.score}">
               <img src="${rootURL}${h.ifThenElse(buildHealth.iconUrl.startsWith('/'),'','/images/'+iconSize+'/')}${buildHealth.iconUrl}"
                 alt="${buildHealth.score}%"
