@@ -55,7 +55,13 @@ public final class Resource {
         if (o == null || getClass() != o.getClass()) return false;
         Resource that = (Resource) o;
 
-        return displayName.equals(that.displayName) && parent.equals(that.parent);
+        return displayName.equals(that.displayName) && eq(this.parent,that.parent);
+    }
+
+    private static boolean eq(Object lhs,Object rhs) {
+        if(lhs==rhs)    return true;
+        if(lhs==null || rhs==null)  return false;
+        return lhs.equals(rhs);
     }
 
     public int hashCode() {
