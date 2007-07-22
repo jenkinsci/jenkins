@@ -529,6 +529,10 @@ public class Queue extends ResourceController {
         /**
          * Returns true if the execution should be blocked
          * for temporary reasons.
+         *
+         * <p>
+         * This can be used to define mutual exclusion that goes beyond
+         * {@link #getResourceList()}.
          */
         boolean isBuildBlocked();
 
