@@ -37,7 +37,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Queue {
+public class Queue extends ResourceController {
     /**
      * Items in the queue ordered by {@link Item#timestamp}.
      *
@@ -49,7 +49,9 @@ public class Queue {
 
     /**
      * {@link Project}s that can be built immediately
-     * but blocked because another build is in progress.
+     * but blocked because another build is in progress,
+     * required {@link Resource}s are not available, or otherwise blocked
+     * by {@link Task#isBuildBlocked()}.
      */
     private final Set<Task> blockedProjects = new HashSet<Task>();
 
@@ -302,7 +304,7 @@ public class Queue {
                         Task p = itr.next();
 
                         // one last check to make sure this build is not blocked.
-                        if(p.isBuildBlocked()) {
+                        if(isBuildBlocked(p)) {
                             itr.remove();
                             blockedProjects.add(p);
                             continue;
@@ -451,6 +453,13 @@ public class Queue {
         }
     }
 
+    /**
+     * Checks if the given task is blocked.
+     */
+    private  boolean isBuildBlocked(Task t) {
+        return t.isBuildBlocked() || !canRun(t.getResourceList());
+    }
+
 
     /**
      * Queue maintenance.
@@ -465,7 +474,7 @@ public class Queue {
         Iterator<Task> itr = blockedProjects.iterator();
         while(itr.hasNext()) {
             Task p = itr.next();
-            if(!p.isBuildBlocked()) {
+            if(!isBuildBlocked(p)) {
                 // ready to be executed
                 LOGGER.fine(p.getName()+" no longer blocked");
                 itr.remove();
@@ -480,7 +489,7 @@ public class Queue {
                 return; // finished moving all ready items from queue
 
             Task p = top.task;
-            if(!p.isBuildBlocked()) {
+            if(!isBuildBlocked(p)) {
                 // ready to be executed immediately
                 queue.remove(top);
                 LOGGER.fine(p.getName()+" ready to build");
@@ -553,9 +562,18 @@ public class Queue {
         long getEstimatedDuration();
 
         /**
-         * Creates {@link Executable}, which performs the actual execution of the task. 
+         * Creates {@link Executable}, which performs the actual execution of the task.
          */
         Executable createExecutable() throws IOException;
+
+        /**
+         * Gets the list of {@link Resource}s that this task requires.
+         * Used to make sure no two conflicting tasks run concurrently.
+         * <p>
+         * This method must always return the {@link ResourceList}
+         * that contains the exact same set of {@link Resource}s.
+         */
+        ResourceList getResourceList();
     }
 
     public interface Executable extends Runnable {
@@ -593,7 +611,10 @@ public class Queue {
         public final int id;
 
         /**
-         * Build is blocked because another build is in progress.
+         * Build is blocked because another build is in progress,
+         * required {@link Resource}s are not available, or otherwise blocked
+         * by {@link Task#isBuildBlocked()}.
+         * 
          * This flag is only used in {@link Queue#getItems()} for
          * 'pseudo' items that are actually not really in the queue.
          */
@@ -642,6 +663,9 @@ public class Queue {
             }
 
             if(isBlocked) {
+                Resource r = getMissingResource(task.getResourceList());
+                if(r!=null)
+                    return "Waiting for "+r.displayName;
                 return task.getWhyBlocked();
             }
 

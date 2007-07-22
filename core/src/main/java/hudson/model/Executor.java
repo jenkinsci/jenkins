@@ -56,7 +56,7 @@ public class Executor extends Thread {
             try {
                 startTime = System.currentTimeMillis();
                 executable = task.createExecutable();
-                executable.run();
+                queue.execute(executable,task.getResourceList());
             } catch (Throwable e) {
                 // for some reason the executor died. this is really
                 // a bug in the code, but we don't want the executor to die,

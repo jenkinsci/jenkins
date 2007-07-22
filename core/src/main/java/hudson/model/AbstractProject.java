@@ -389,6 +389,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return newBuild();
     }
 
+    /**
+     * Gets the {@link Resource} that represents the workspace of this project.
+     */
+    public Resource getWorkspaceResource() {
+        return new Resource(getFullDisplayName()+" workspace");
+    }
+
+    /**
+     * List of necessary resources to perform the build of this project.
+     */
+    public ResourceList getResourceList() {
+        return new ResourceList().w(getWorkspaceResource());
+    }
+
     public boolean checkout(AbstractBuild build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {
         SCM scm = getScm();
         if(scm==null)

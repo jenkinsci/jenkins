@@ -15,6 +15,7 @@ import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
 import hudson.model.Node;
+import hudson.model.Resource;
 import hudson.tasks.LogRotator;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
@@ -225,6 +226,14 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         // MavenModuleSet will never get a chance to run.
         MavenModuleSet p = getParent();
         return p.isBuilding() || p.isInQueue();
+    }
+
+    /**
+     * Workspace of a {@link MavenModule} is a part of the parent's workspace.
+     */
+    @Override
+    public Resource getWorkspaceResource() {
+        return new Resource(getParent().getWorkspaceResource(),getDisplayName()+" workspace");
     }
 
     @Override
