@@ -3,9 +3,11 @@ package hudson.model;
 import hudson.Launcher;
 import hudson.Proc.LocalProc;
 import hudson.Util;
+import hudson.matrix.MatrixConfiguration;
 import org.kohsuke.stapler.export.Exported;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.test.AbstractTestResultAction;
+import hudson.tasks.Builder;
 import hudson.maven.MavenBuild;
 import static hudson.model.Hudson.isWindows;
 import hudson.model.listeners.SCMListener;
@@ -112,7 +114,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         public Result run(BuildListener listener) throws Exception {
-            Node node = Executor.currentExecutor().getOwner().getNode();
+            Node node = getCurrentNode();
             assert builtOn==null;
             builtOn = node.getNodeName();
             hudsonVersion = Hudson.VERSION;
@@ -235,6 +237,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return timestamp;
     }
 
+    /**
+     * Provides additional variables and their values to {@link Builder}s.
+     *
+     * <p>
+     * This mechanism is used by {@link MatrixConfiguration} to pass
+     * the configuration values to the current build. It is up to
+     * {@link Builder}s to decide whether it wants to recognize the values
+     * or how to use them.
+     *
+     * ugly ugly hack.
+     */
+    public Map<String,String> getBuildVariables() {
+        return Collections.emptyMap();
+    }
+    
     /**
      * Gets {@link AbstractTestResultAction} associated with this build if any.
      */

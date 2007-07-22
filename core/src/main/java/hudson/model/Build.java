@@ -1,6 +1,5 @@
 package hudson.model;
 
-import hudson.matrix.MatrixConfiguration;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapper.Environment;
@@ -13,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -93,21 +91,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         }
 
         return env;
-    }
-
-    /**
-     * Provides additional variables and their values to {@link Builder}s.
-     *
-     * <p>
-     * This mechanism is used by {@link MatrixConfiguration} to pass
-     * the configuration values to the current build. It is up to
-     * {@link Builder}s to decide whether it wants to recognize the values
-     * or how to use them.
-     *
-     * ugly ugly hack.
-     */
-    public Map<String,String> getBuildVariables() {
-        return Collections.emptyMap();
     }
 
     public Api getApi(final StaplerRequest req) {
