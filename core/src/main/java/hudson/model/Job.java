@@ -102,6 +102,9 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
         if(properties==null) // didn't exist < 1.72
             properties = new CopyOnWriteList<JobProperty<? super JobT>>();
+
+        for (JobProperty p : properties)
+            p.setOwner(this);
     }
 
     @Override
