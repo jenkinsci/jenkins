@@ -85,7 +85,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * Returns a {@link Slave} on which this build was done.
      */
     public Node getBuiltOn() {
-        if(builtOn==null)
+        if(builtOn==null || builtOn.equals(""))
             return Hudson.getInstance();
         else
             return Hudson.getInstance().getSlave(builtOn);
