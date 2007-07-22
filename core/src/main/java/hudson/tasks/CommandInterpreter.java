@@ -1,11 +1,13 @@
 package hudson.tasks;
 
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.Util;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Build;
 import hudson.model.BuildListener;
-import hudson.model.Project;
-import hudson.Launcher;
-import hudson.FilePath;
-import hudson.Util;
+import hudson.model.TaskListener;
 
 import java.io.IOException;
 import java.util.Map;
@@ -30,7 +32,11 @@ public abstract class CommandInterpreter extends Builder {
     }
 
     public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
-        Project proj = build.getProject();
+        return perform((AbstractBuild)build,launcher,(TaskListener)listener);
+    }
+
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
+        AbstractProject proj = build.getProject();
         FilePath ws = proj.getWorkspace();
         FilePath script=null;
         try {
