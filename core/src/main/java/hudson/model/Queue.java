@@ -533,6 +533,8 @@ public class Queue {
         /**
          * Unique name of this task.
          * @see hudson.model.Item#getName()
+         *
+         * TODO: this doesn't make sense anymore. remove it.
          */
         String getName();
 
