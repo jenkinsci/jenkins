@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.XmlFile;
 import hudson.Util;
+import hudson.Functions;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -120,6 +121,17 @@ public abstract class AbstractItem extends Actionable implements Item {
     }
 
     public final String getUrl() {
+        // try to stick to the current view if possible
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if (req != null) {
+            String seed = Functions.getNearestAncestorUrl(req,this);
+            if(seed!=null) {
+                // trim off the context path portion and leading '/', but add trailing '/'
+                return seed.substring(req.getServletContext().getContextPath().length()+1)+'/';
+            }
+        }
+
+        // otherwise compute the path normally
         return getParent().getUrl()+getShortUrl();
     }
 
