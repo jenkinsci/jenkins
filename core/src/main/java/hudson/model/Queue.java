@@ -511,7 +511,7 @@ public class Queue extends ResourceController {
      * to collapse two tasks into one. This is used to avoid infinite
      * queue backlog.
      */
-    public interface Task extends ModelObject {
+    public interface Task extends ModelObject, ResourceActivity {
         /**
          * If this task needs to be run on a node with a particular label,
          * return that {@link Label}. Otherwise null, indicating
@@ -569,15 +569,6 @@ public class Queue extends ResourceController {
          * Creates {@link Executable}, which performs the actual execution of the task.
          */
         Executable createExecutable() throws IOException;
-
-        /**
-         * Gets the list of {@link Resource}s that this task requires.
-         * Used to make sure no two conflicting tasks run concurrently.
-         * <p>
-         * This method must always return the {@link ResourceList}
-         * that contains the exact same set of {@link Resource}s.
-         */
-        ResourceList getResourceList();
     }
 
     public interface Executable extends Runnable {
@@ -667,9 +658,9 @@ public class Queue extends ResourceController {
             }
 
             if(isBlocked) {
-                Resource r = getMissingResource(task.getResourceList());
+                ResourceActivity r = getBlockingActivity(task);
                 if(r!=null)
-                    return "Waiting for "+r.displayName;
+                    return "Blocked by "+r.getDisplayName();
                 return task.getWhyBlocked();
             }
 
