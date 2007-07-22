@@ -216,20 +216,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return n.getSelfLabel();
     }
 
-    @Override
-    public boolean isBuildBlocked() {
-        if(super.isBuildBlocked())
-            return true;
-
-        // if the module set's new build is planned or in progress,
-        // don't start a new build. Otherwise on a busy maven project
-        // MavenModuleSet will never get a chance to run.
-        MavenModuleSet p = getParent();
-        return p.isBuilding() || p.isInQueue();
-    }
-
     /**
      * Workspace of a {@link MavenModule} is a part of the parent's workspace.
+     * <p>
+     * That is, {@Link MavenModuleSet} builds are incompatible with any {@link MavenModule}
+     * builds, whereas {@link MavenModule} builds are compatible with each other.
      */
     @Override
     public Resource getWorkspaceResource() {
