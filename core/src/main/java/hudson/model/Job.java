@@ -596,8 +596,10 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
             properties.clear();
             for (JobPropertyDescriptor d : JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass())) {
                 JobProperty prop = d.newInstance(req);
-                if (prop != null)
+                if (prop != null) {
+                    prop.setOwner(this);
                     properties.add(prop);
+                }
             }
 
             submit(req,rsp);
