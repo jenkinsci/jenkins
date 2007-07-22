@@ -10,10 +10,12 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link List}-like implementation that has copy-on-write semantics.
@@ -134,7 +136,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                     Object item = readItem(reader, context, items);
                     items.add(item);
                 } catch (CannotResolveClassException e) {
-                    System.err.println("failed to locate class: "+e);
+                    LOGGER.log(Level.WARNING,"Failed to resolve class",e);
                 }
                 reader.moveUp();
             }
@@ -142,4 +144,6 @@ public class CopyOnWriteList<E> implements Iterable<E> {
             return new CopyOnWriteList(items,true);
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(CopyOnWriteList.class.getName());
 }
