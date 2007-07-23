@@ -312,7 +312,7 @@ public class CVSSCM extends SCM implements Serializable {
         File[] files = dir.listFiles();
         if(files==null) {
             if(isRoot)
-                throw new IOException("No such directory exists. Did you specify the correct branch/tag?: "+dir);
+                throw new IOException("No such directory exists. Did you specify the correct branch? Perhaps you specified a tag: "+dir);
             else
                 throw new IOException("No such directory exists. Looks like someone is modifying the workspace concurrently: "+dir);
         }
