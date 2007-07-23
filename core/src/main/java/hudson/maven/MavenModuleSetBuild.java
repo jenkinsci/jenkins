@@ -120,7 +120,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
         for (MavenModule m : mods) {
             MavenBuild b = m.getNearestOldBuild(end - 1);
-            if(b.getNumber()>=getNumber())
+            if(b!=null && b.getNumber()>=getNumber())
                 r.put(m,b);
         }
 
