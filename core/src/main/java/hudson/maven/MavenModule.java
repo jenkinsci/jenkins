@@ -195,6 +195,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return "Module";
     }
 
+    @Override
+    public boolean isNameEditable() {
+        return false;
+    }
+
     public MavenModuleSet getParent() {
         return (MavenModuleSet)super.getParent();
     }

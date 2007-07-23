@@ -143,6 +143,13 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     /**
+     * Returns whether the name of this job can be changed by user.
+     */
+    public boolean isNameEditable() {
+        return true;
+    }
+
+    /**
      * If true, it will keep all the build logs of dependency components.
      */
     @Exported
