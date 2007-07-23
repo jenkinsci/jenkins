@@ -11,7 +11,7 @@
         </f:entry>
         <f:entry title="Description" help="/help/project-config/description.html">
           <textarea class="setting-input" name="description"
-            rows="5" style="width:100%">${it.description}</textarea>
+            rows="5" style="width:100%"><st:out value="${it.description}"/></textarea>
         </f:entry>
 
         <j:if test="${it.supportsLogRotator()}">
