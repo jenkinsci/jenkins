@@ -127,7 +127,7 @@ public abstract class AbstractItem extends Actionable implements Item {
             String seed = Functions.getNearestAncestorUrl(req,this);
             if(seed!=null) {
                 // trim off the context path portion and leading '/', but add trailing '/'
-                return seed.substring(req.getServletContext().getContextPath().length()+1)+'/';
+                return seed.substring(req.getContextPath().length()+1)+'/';
             }
         }
 
