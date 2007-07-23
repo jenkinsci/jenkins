@@ -258,6 +258,7 @@ public class SubversionSCM extends SCM implements Serializable {
             for (Entry<String,SvnInfo> e : revMap.entrySet()) {
                 w.println( e.getKey() +'/'+ e.getValue().revision );
             }
+            build.addAction(new SubversionTagAction(build,revMap.values()));
         } finally {
             w.close();
         }
