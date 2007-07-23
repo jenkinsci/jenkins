@@ -55,21 +55,23 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
     }
 
     /**
-     * Displays the combined status of all modules. 
+     * Displays the combined status of all modules.
+     * <p>
+     * More precisely, this picks up the status of this build itself,
+     * plus all the latest builds of the modules that belongs to this build. 
      */
     @Override
     public Result getResult() {
         Result r = super.getResult();
 
-        for (List<MavenBuild> list : getModuleBuilds().values())
-            for (MavenBuild build : list) {
-                Result br = build.getResult();
-                if(r==null)
-                    r = br;
-                else
-                if(br!=null)
-                    r = r.combine(br);
-            }
+        for (MavenBuild b : getModuleLastBuilds().values()) {
+            Result br = b.getResult();
+            if(r==null)
+                r = br;
+            else
+            if(br!=null)
+                r = r.combine(br);
+        }
 
         return r;
     }
@@ -98,6 +100,28 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 b = b.getNextBuild();
             }
             r.put(m,builds);
+        }
+
+        return r;
+    }
+
+    /**
+     * Computes the latest module builds that correspond to this build.
+     */
+    public Map<MavenModule,MavenBuild> getModuleLastBuilds() {
+        Collection<MavenModule> mods = getParent().getModules();
+
+        // identify the build number range. [start,end)
+        MavenModuleSetBuild nb = getNextBuild();
+        int end = nb!=null ? nb.getNumber() : Integer.MAX_VALUE;
+
+        // preserve the order by using LinkedHashMap
+        Map<MavenModule,MavenBuild> r = new LinkedHashMap<MavenModule,MavenBuild>(mods.size());
+
+        for (MavenModule m : mods) {
+            MavenBuild b = m.getNearestOldBuild(end - 1);
+            if(b.getNumber()>=getNumber())
+                r.put(m,b);
         }
 
         return r;
