@@ -243,11 +243,19 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         while (tokens.hasMoreTokens())
             rcp.add(new InternetAddress(tokens.nextToken()));
         if (sendToIndividuals) {
+            if(debug) {
+                int count = 0;
+                for (Entry cs : build.getChangeSet())   count++;
+                listener.getLogger().println("Trying to send e-mails to individuals who broke the build. sizeof(changeset)=="+count);
+            }
+
             Set<User> users = new HashSet<User>();
             for (Entry change : build.getChangeSet()) {
                 User a = change.getAuthor();
                 if (users.add(a)) {
                     String adrs = a.getProperty(Mailer.UserProperty.class).getAddress();
+                    if(debug)
+                        listener.getLogger().println("  User "+a.getId()+" -> "+adrs);
                     if (adrs != null)
                         rcp.add(new InternetAddress(adrs));
                     else {
@@ -294,6 +302,8 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
 
 
     private static final Logger LOGGER = Logger.getLogger(MailSender.class.getName());
+
+    public static boolean debug = false;
 
     private static final int MAX_LOG_LINES = 250;
 }
