@@ -9,7 +9,9 @@
     </f:advanced>
   </f:section>
   <p:config-scm/>
-  <p:config-trigger/>
+  <p:config-trigger>
+    <p:config-upstream-pseudo-trigger />
+  </p:config-trigger>
 
   <f:section title="Configuration Matrix">
     <!-- JDK config -->

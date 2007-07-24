@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.tasks.BuildTrigger;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
@@ -32,6 +33,9 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.Set;
+import java.util.Collections;
+import java.util.HashSet;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -220,7 +224,54 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         else
             return super.getIconColor();
     }
-    
+
+    @Override
+    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        super.doConfigSubmit(req,rsp);
+
+        Set<AbstractProject> upstream = Collections.emptySet();
+        if(req.getParameter("pseudoUpstreamTrigger")!=null) {
+            upstream = new HashSet<AbstractProject>(Items.fromNameList(req.getParameter("upstreamProjects"),AbstractProject.class));
+        }
+
+        // dependency setting might have been changed by the user, so rebuild.
+        Hudson.getInstance().rebuildDependencyGraph();
+
+        // reflect the submission of the pseudo 'upstream build trriger'.
+        // this needs to be done after we release the lock on 'this',
+        // or otherwise we could dead-lock
+
+        for (Project p : Hudson.getInstance().getProjects()) {
+            boolean isUpstream = upstream.contains(p);
+            synchronized(p) {
+                List<AbstractProject> newChildProjects = new ArrayList<AbstractProject>(p.getDownstreamProjects());
+
+                if(isUpstream) {
+                    if(!newChildProjects.contains(this))
+                        newChildProjects.add(this);
+                } else {
+                    newChildProjects.remove(this);
+                }
+
+                if(newChildProjects.isEmpty()) {
+                    p.removePublisher(BuildTrigger.DESCRIPTOR);
+                } else {
+                    BuildTrigger existing = (BuildTrigger)p.getPublisher(BuildTrigger.DESCRIPTOR);
+                    if(existing!=null && existing.hasSame(newChildProjects))
+                        continue;   // no need to touch
+                    p.addPublisher(new BuildTrigger(newChildProjects,
+                        existing==null?Result.SUCCESS:existing.getThreshold()));
+                }
+            }
+        }
+
+        // notify the queue as the project might be now tied to different node
+        Hudson.getInstance().getQueue().scheduleMaintenance();
+
+        // this is to reflect the upstream build adjustments done above
+        Hudson.getInstance().rebuildDependencyGraph();
+    }
+
     /**
      * Schedules a build of this project.
      *

@@ -5,19 +5,7 @@
   <st:include page="configure-common.jelly" />
 
   <p:config-trigger>
-    <!-- pseudo-trigger to list upstream projects. -->
-    <j:set var="up" value="${it.upstreamProjects}" />
-    <f:optionalBlock name="pseudoUpstreamTrigger"
-                     help="/help/project-config/upstream.html"
-                     title="Build after other projects are built"
-                     checked="${!empty(up)}">
-      <f:entry title="Projects names"
-               description="Multiple projects can be specified like 'abc, def'">
-        <input class="setting-input validated" name="upstreamProjects"
-          checkUrl="'${rootURL}/publisher/BuildTrigger/check?value='+escape(this.value)"
-          type="text" value="${h.getProjectListString(up)}"/>
-      </f:entry>
-    </f:optionalBlock>
+    <p:config-upstream-pseudo-trigger />
   </p:config-trigger>
 
   <p:config-buildWrappers />

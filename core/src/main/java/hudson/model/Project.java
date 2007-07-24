@@ -14,12 +14,8 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -81,14 +77,14 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     /**
      * Adds a new {@link BuildStep} to this {@link Project} and saves the configuration.
      */
-    private void addPublisher(Publisher buildStep) throws IOException {
+    public void addPublisher(Publisher buildStep) throws IOException {
         addToList(buildStep,publishers);
     }
 
     /**
      * Removes a publisher from this project, if it's active.
      */
-    private void removePublisher(Descriptor<Publisher> descriptor) throws IOException {
+    public void removePublisher(Descriptor<Publisher> descriptor) throws IOException {
         removeFromList(descriptor, publishers);
     }
 
@@ -138,53 +134,6 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         publishers = buildDescribable(req, BuildStep.PUBLISHERS, "publisher");
 
         updateTransientActions();
-    }
-
-    @Override
-    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        super.doConfigSubmit(req,rsp);
-
-        Set<AbstractProject> upstream = Collections.emptySet();
-        if(req.getParameter("pseudoUpstreamTrigger")!=null) {
-            upstream = new HashSet<AbstractProject>(Items.fromNameList(req.getParameter("upstreamProjects"),AbstractProject.class));
-        }
-
-        // dependency setting might have been changed by the user, so rebuild.
-        Hudson.getInstance().rebuildDependencyGraph();
-
-        // reflect the submission of the pseudo 'upstream build trriger'.
-        // this needs to be done after we release the lock on 'this',
-        // or otherwise we could dead-lock
-
-        for (Project p : Hudson.getInstance().getProjects()) {
-            boolean isUpstream = upstream.contains(p);
-            synchronized(p) {
-                List<AbstractProject> newChildProjects = new ArrayList<AbstractProject>(p.getDownstreamProjects());
-
-                if(isUpstream) {
-                    if(!newChildProjects.contains(this))
-                        newChildProjects.add(this);
-                } else {
-                    newChildProjects.remove(this);
-                }
-
-                if(newChildProjects.isEmpty()) {
-                    p.removePublisher(BuildTrigger.DESCRIPTOR);
-                } else {
-                    BuildTrigger existing = (BuildTrigger)p.getPublisher(BuildTrigger.DESCRIPTOR);
-                    if(existing!=null && existing.hasSame(newChildProjects))
-                        continue;   // no need to touch
-                    p.addPublisher(new BuildTrigger(newChildProjects,
-                        existing==null?Result.SUCCESS:existing.getThreshold()));
-                }
-            }
-        }
-
-        // notify the queue as the project might be now tied to different node
-        Hudson.getInstance().getQueue().scheduleMaintenance();
-
-        // this is to reflect the upstream build adjustments done above
-        Hudson.getInstance().rebuildDependencyGraph();
     }
 
     private void updateTransientActions() {
