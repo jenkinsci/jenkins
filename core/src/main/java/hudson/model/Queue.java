@@ -659,8 +659,11 @@ public class Queue extends ResourceController {
 
             if(isBlocked) {
                 ResourceActivity r = getBlockingActivity(task);
-                if(r!=null)
+                if(r!=null) {
+                    if(r==task) // blocked by itself, meaning another build is in progress
+                        return "A build is already in progress";
                     return "Blocked by "+r.getDisplayName();
+                }
                 return task.getWhyBlocked();
             }
 
