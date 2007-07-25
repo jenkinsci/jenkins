@@ -28,28 +28,6 @@
       <table style="margin-top: 1em; margin-left:1em;">
         <t:artifactList build="${it}" caption="Build Artifacts" />
 
-        <j:set var="tr" value="${it.testResultAction}" />
-        <j:if test="${tr!=null}">
-          <t:summary icon="clipboard.gif">
-            <a href="testReport/">Latest Test Result</a>
-            <j:choose>
-              <j:when test="${tr.totalCount==0}">
-                (no tests)
-              </j:when>
-              <j:when test="${tr.failCount==0}">
-                (no failures)
-              </j:when>
-              <j:when test="${tr.failCount==1}">
-                (1 failure ${tr.failureDiffString})
-              </j:when>
-              <j:otherwise>
-                (${tr.failCount} failures ${tr.failureDiffString})
-              </j:otherwise>
-            </j:choose>
-          </t:summary>
-        </j:if>
-
-
         <j:set var="set" value="${it.changeSet}" />
         <t:summary icon="notepad.gif">
           <j:choose>
