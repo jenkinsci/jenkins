@@ -20,7 +20,8 @@
             <input class="setting-input" name="${attrs.name}" id="textarea.${attrs.name}"
               type="text" value="${attrs.value}"/>
           </td><td width="1">
-            <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${attrs.name}')" />
+            <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${attrs.name}')"
+                tooltip="Click to expand to multiple lines&lt;br&gt;where you can use new lines instead of space.&lt;br&gt;To revert back to single line, write everything in one line then submit."/>
           </td>
         </tr>
       </table>
