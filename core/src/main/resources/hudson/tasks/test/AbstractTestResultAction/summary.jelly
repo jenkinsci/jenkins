@@ -1,19 +1,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <t:summary icon="clipboard.gif">
     <a href="testReport/">Latest Test Result</a>
-    <j:choose>
-      <j:when test="${it.totalCount==0}">
-        (no tests)
-      </j:when>
-      <j:when test="${it.failCount==0}">
-        (no failures)
-      </j:when>
-      <j:when test="${it.failCount==1}">
-        (1 failure ${it.failureDiffString})
-      </j:when>
-      <j:otherwise>
-        (${it.failCount} failures ${it.failureDiffString})
-      </j:otherwise>
-    </j:choose>
+    <t:test-result />
   </t:summary>
 </j:jelly>
