@@ -7,15 +7,15 @@
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="48px"
    height="48px"
    id="svg1306"
    sodipodi:version="0.32"
-   inkscape:version="0.43+devel"
-   sodipodi:docbase="/home/garrett/Source/tango-icon-theme/scalable/status"
-   sodipodi:docname="dialog-error.svg">
+   inkscape:version="0.44.1"
+   sodipodi:docbase="C:\kohsuke\My Projects\hudson\hudson\main\war\images"
+   sodipodi:docname="error.svg">
   <defs
      id="defs1308">
     <linearGradient
@@ -186,7 +186,7 @@
      inkscape:zoom="1"
      inkscape:cx="27.043297"
      inkscape:cy="20.463852"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer3"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
@@ -239,7 +239,8 @@
   <g
      inkscape:groupmode="layer"
      id="layer2"
-     inkscape:label="Shadow">
+     inkscape:label="Shadow"
+     style="opacity:1;display:inline">
     <path
        inkscape:r_cy="true"
        inkscape:r_cx="true"
@@ -250,13 +251,14 @@
        sodipodi:cy="40"
        sodipodi:cx="23.857143"
        id="path6548"
-       style="opacity:0.6;color:#000000;fill:url(#radialGradient3976);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:block;overflow:visible"
+       style="opacity:0.6;color:black;fill:url(#radialGradient3976);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:block;overflow:visible"
        sodipodi:type="arc" />
   </g>
   <g
      id="layer1"
      inkscape:label="Layer 1"
-     inkscape:groupmode="layer">
+     inkscape:groupmode="layer"
+     style="display:inline">
     <g
        id="g4006">
       <path
@@ -279,7 +281,7 @@
          sodipodi:cy="26.635273"
          sodipodi:cx="25.910412"
          id="path3560"
-         style="opacity:0.34659089;fill:#cc0000;fill-opacity:0;stroke:url(#linearGradient3980);stroke-width:1.16809607;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="opacity:0.34659089;fill:#c00;fill-opacity:0;stroke:url(#linearGradient3980);stroke-width:1.16809607;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          sodipodi:type="arc"
          inkscape:r_cx="true"
          inkscape:r_cy="true" />
@@ -288,7 +290,8 @@
   <g
      inkscape:groupmode="layer"
      id="layer3"
-     inkscape:label="Error Box">
+     inkscape:label="Error Box"
+     style="display:inline">
     <rect
        inkscape:r_cy="true"
        inkscape:r_cx="true"
@@ -303,7 +306,8 @@
   <g
      inkscape:groupmode="layer"
      id="layer4"
-     inkscape:label="Glossy Shine">
+     inkscape:label="Glossy Shine"
+     style="display:inline">
     <path
        transform="matrix(1.002994,0,0,1.002994,-7.185874e-2,1.968356e-2)"
        sodipodi:nodetypes="czssc"
