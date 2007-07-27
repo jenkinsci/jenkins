@@ -27,6 +27,7 @@ public class Items {
     public static final List<TopLevelItemDescriptor> LIST = Descriptor.toList(
         FreeStyleProject.DESCRIPTOR,
         MavenModuleSet.DESCRIPTOR,
+        MatrixProject.DESCRIPTOR,
         ExternalJob.DESCRIPTOR
     );
 
@@ -106,10 +107,6 @@ public class Items {
         XSTREAM.alias("project",FreeStyleProject.class);
         XSTREAM.alias("maven2", MavenModule.class);
         XSTREAM.alias("maven2-module-set", MavenModule.class);
-
-        // this feature is not publicly exposed yet
-        if(System.getProperty("Matrix")!=null)
-             LIST.add(MatrixProject.DESCRIPTOR);
         XSTREAM.alias("matrix-project",MatrixProject.class);
         XSTREAM.alias("matrix-config",MatrixConfiguration.class);
     }
