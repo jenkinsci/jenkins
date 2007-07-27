@@ -1,0 +1,23 @@
+<div>
+  Specify nodes where builds are performed.
+
+  <ul>
+    <li>
+      If none is selected, Hudson will choose
+      available node to perform a build (this is the same behavior to the free-style
+      project when "tie this project to node" is not selected.) This is useful
+      when the project doesn't have a dependency to any particular node, as
+      it allows Hudson to utilize nodes in optimal fashion.
+    <li>
+      If one is selected, Hudson will always run the build on the specified node
+      (if you select one from "specific nodes")
+      or one of the nodes that belong to the label (if you select one from "label".)
+      This is useful when the build is required to run on a specific computer,
+      or a subset of computers. For example, maybe your build requiers MacOS X.
+    <li>
+      If multiple values are selected, the build matrix will be expanded to include
+      them all, and builds will be performed on all the selected nodes/labels.
+      This is useful for example when you'd like to run tests on Windows, Linux,
+      and Solaris.
+  </ul>
+</div>

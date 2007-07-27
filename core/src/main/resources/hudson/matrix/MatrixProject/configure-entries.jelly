@@ -30,7 +30,7 @@
     <j:if test="${!empty(app.slaves)}">
       <j:set var="labels" value="${it.labels}" />
       <f:optionalBlock name="multipleNodes" title="Build on multiple nodes" checked="${!empty(labels)}"
-          help="/help/matrix/slave.html">
+          help="/help/matrix/label.html">
         <f:entry title="Node">
           <div id="nodeTree" class="yahooTree" style="border: 1px solid grey; height: 10em; overflow:auto;"></div>
           <script src="${rootURL}/scripts/yui/treeview-${yuiSuffix}.js"></script>
