@@ -293,4 +293,19 @@
   <properties>
     <HUDSON_HOME>${basedir}/work</HUDSON_HOME>
   </properties>
+  
+  <repositories>
+    <repository>
+      <id>hudson-libs</id>
+      <url>https://hudson.dev.java.net/source/browse/*checkout*/hudson/hudson/main/lib</url>
+      <layout>legacy</layout>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 </project>

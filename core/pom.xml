@@ -258,4 +258,35 @@
       <version>20070616</version>
     </dependency>
   </dependencies>
+
+  <repositories>
+    <repository>
+      <id>hudson-libs</id>
+      <url>https://hudson.dev.java.net/source/browse/*checkout*/hudson/hudson/main/lib</url>
+      <layout>legacy</layout>
+    </repository>
+    <repository>
+      <id>hudson-libs</id>
+      <url>https://hudson.dev.java.net/source/browse/*checkout*/hudson/hudson/main/lib</url>
+      <layout>legacy</layout>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>java.net2</id>
+      <url>http://download.java.net/maven/2/</url>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 </project>
