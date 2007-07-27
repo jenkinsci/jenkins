@@ -376,6 +376,10 @@ public class SubversionSCM extends SCM implements Serializable {
             return 0;
         }
 
+        public String toString() {
+            return url+" rev."+revision;
+        }
+
         private static final long serialVersionUID = 1L;
     }
 
