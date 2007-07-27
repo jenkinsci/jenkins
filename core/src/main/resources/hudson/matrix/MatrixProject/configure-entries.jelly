@@ -68,7 +68,7 @@
             <f:entry title="Name">
               <f:textbox name="axis.name" value="${axis.name}" />
             </f:entry>
-            <f:entry title="Values">
+            <f:entry title="Values" help="/help/matrix/axis-value.html">
               <f:expandableTextbox name="axis.value" value="${axis.valueString}" />
             </f:entry>
             <f:entry>
