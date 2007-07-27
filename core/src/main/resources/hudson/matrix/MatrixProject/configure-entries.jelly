@@ -60,7 +60,8 @@
     </j:if>
 
     <j:set var="userAxes" value="${it.userAxes}" />
-    <f:optionalBlock name="hasAxes" title="Variables" checked="${!empty(userAxes)}">
+    <f:optionalBlock name="hasAxes" title="Axes" checked="${!empty(userAxes)}"
+        help="/help/matrix/axes.html">
       <f:entry>
         <f:repeatable var="axis" items="${userAxes}" noAddButton="true" minimum="1">
           <table>
