@@ -97,7 +97,8 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
 
         if(r.getPassCount()==0 && r.getFailCount()==0) {
             listener.getLogger().println("Test reports were found but none of them are new. Did tests run?");
-            listener.getLogger().printf("For example, %s is %s old\n",result.afile, Util.getTimeSpanString(build.getTimestamp().getTimeInMillis()-result.lastModified));
+            listener.getLogger().printf("For example, %s is %s old\n",result.afile,
+                Util.getTimeSpanString(result.lastModified-build.getTimestamp().getTimeInMillis()));
             // no test result. Most likely a configuration error or fatal problem
             build.setResult(Result.FAILURE);
         } else {
