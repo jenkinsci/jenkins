@@ -14,4 +14,9 @@
   Variables specified here are made available as environment variables to the build.
   In addition, for Ant and Maven, variables are also exposed as properties, as if
   <tt>-D<i>variableName</i>=<i>value</i></tt> are specified on the command line.
+  <p>
+  When multiple axes are specified, all the possible combinations of axes are built
+  exhaustively. Multiple values in labels and JDKs are treated in the same way. So
+  if you specify jdk=[JDK5,JDK6], database=[mysql,postgresql,oracle], container=[jetty,tomcat],
+  then each build will consists of 2x3x2=12 different sub-builds.
 </div>
