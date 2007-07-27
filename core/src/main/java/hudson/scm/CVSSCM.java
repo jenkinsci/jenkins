@@ -65,6 +65,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -91,7 +92,8 @@ public class CVSSCM extends SCM implements Serializable {
      * Module names.
      *
      * This could be a whitespace/NL-separated list of multiple modules.
-     * Modules could be either directories or files. 
+     * Modules could be either directories or files. "\ " is used to escape
+     * " ", which is needed for modules with whitespace in it.
      */
     private String module;
 
@@ -155,7 +157,7 @@ public class CVSSCM extends SCM implements Serializable {
         if(flatten)
             return workspace;
 
-        return workspace.child(new StringTokenizer(module).nextToken());
+        return workspace.child(getAllModulesNormalized()[0]);
     }
 
     public ChangeLogParser createChangeLogParser() {
@@ -166,14 +168,13 @@ public class CVSSCM extends SCM implements Serializable {
         return module;
     }
 
-    private String getAllModulesNormalized() {
-        StringBuilder buf = new StringBuilder();
-        StringTokenizer tokens = new StringTokenizer(module);
-        while(tokens.hasMoreTokens()) {
-            if(buf.length()>0)  buf.append(' ');
-            buf.append(tokens.nextToken());
-        }
-        return buf.toString();
+    private String[] getAllModulesNormalized() {
+        // split by whitespace, except "\ "
+        String[] r = module.split("(?<!\\\\)[ \\r\\n]+");
+        // now replace "\ " to " ".
+        for (int i = 0; i < r.length; i++)
+            r[i] = r[i].replaceAll("\\\\ "," ");
+        return r;
     }
 
     /**
@@ -230,9 +231,7 @@ public class CVSSCM extends SCM implements Serializable {
                 if(flatten) {
                     archive(ws, module, zos,true);
                 } else {
-                    StringTokenizer tokens = new StringTokenizer(module);
-                    while(tokens.hasMoreTokens()) {
-                        String m = tokens.nextToken();
+                    for (String m : getAllModulesNormalized()) {
                         File mf = new File(ws, m);
 
                         if(!mf.exists())
@@ -282,7 +281,7 @@ public class CVSSCM extends SCM implements Serializable {
         if(flatten)
             cmd.add("-d",dir.getName());
         configureDate(cmd,dt);
-        cmd.addTokenized(getAllModulesNormalized());
+        cmd.add(getAllModulesNormalized());
 
         return run(launcher,cmd,listener, flatten ? dir.getParent() : dir);
     }
@@ -386,7 +385,7 @@ public class CVSSCM extends SCM implements Serializable {
             parseUpdateOutput("",baos, changedFileNames);
         } else {
             @SuppressWarnings("unchecked") // StringTokenizer oddly has the wrong type
-            final Set<String> moduleNames = new TreeSet(Collections.list(new StringTokenizer(module)));
+            final Set<String> moduleNames = new TreeSet(Arrays.asList(getAllModulesNormalized()));
 
             // Add in any existing CVS dirs, in case project checked out its own.
             moduleNames.addAll(workspace.act(new FileCallable<Set<String>>() {
@@ -497,9 +496,8 @@ public class CVSSCM extends SCM implements Serializable {
                 if(flatten) {
                     return isUpdatableModule(dir);
                 } else {
-                    StringTokenizer tokens = new StringTokenizer(module);
-                    while(tokens.hasMoreTokens()) {
-                        File module = new File(dir,tokens.nextToken());
+                    for (String m : getAllModulesNormalized()) {
+                        File module = new File(dir,m);
                         if(!isUpdatableModule(module))
                             return false;
                     }
@@ -1227,9 +1225,7 @@ public class CVSSCM extends SCM implements Serializable {
 
                 // run cvs tag command
                 listener.getLogger().println("tagging the workspace");
-                StringTokenizer tokens = new StringTokenizer(CVSSCM.this.module);
-                while(tokens.hasMoreTokens()) {
-                    String m = tokens.nextToken();
+                for (String m : getAllModulesNormalized()) {
                     FilePath path = new FilePath(destdir).child(m);
                     boolean isDir = path.isDirectory();
 

@@ -70,7 +70,7 @@ public abstract class AbstractCvsTask extends Task {
     /**
      * the package/module to check out.
      */
-    private String cvsPackage;
+    private String[] cvsPackage;
     /**
      * the tag
      */
@@ -564,7 +564,7 @@ public abstract class AbstractCvsTask extends Task {
      *
      * @param p package or module to operate upon
      */
-    public void setPackage(String p) {
+    public void setPackage(String... p) {
         this.cvsPackage = p;
     }
 
@@ -573,7 +573,7 @@ public abstract class AbstractCvsTask extends Task {
      *
      * @return package/module
      */
-    public String getPackage() {
+    public String[] getPackage() {
 
         return this.cvsPackage;
     }
@@ -745,7 +745,8 @@ public abstract class AbstractCvsTask extends Task {
         }
         c.setExecutable(cvsExe);
         if (cvsPackage != null) {
-            c.createArgument().setLine(cvsPackage);
+            for (String s : cvsPackage)
+                c.createArgument().setValue(s);
         }
         if (this.compression > 0 && this.compression <= MAXIMUM_COMRESSION_LEVEL) {
             c.createArgument(true).setValue("-z" + this.compression);
