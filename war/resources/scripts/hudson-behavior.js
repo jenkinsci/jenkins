@@ -616,3 +616,22 @@ function updateBuildHistory(nBuild) {
     }
     window.setTimeout(updateBuilds, 5000);
 }
+
+// send async request to the given URL (which will send back serialized ListBoxModel object),
+// then use the result to fill the list box.
+function updateListBox(listBox,url) {
+    new Ajax.Request(url, {
+        method: "post",
+        onSuccess: function(rsp,_) {
+            var l = $(listBox);
+            while(l.length>0)   l.options[0] = null;
+
+            var opts = eval('('+rsp.responseText+')').values;
+            for( var i=0; i<opts.length; i++ ) {
+                l.options[i] = new Option(opts[i].name,opts[i].value);
+                if(opts[i].selected)
+                    l.selectedIndex = i;
+            }
+        }
+    });
+}
