@@ -58,9 +58,11 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -747,7 +749,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     public File getRootDirFor(TopLevelItem child) {
-        return new File(new File(getRootDir(),"jobs"),child.getName());
+        return getRootDirFor(child.getName());
+    }
+
+    private File getRootDirFor(String name) {
+        return new File(new File(getRootDir(),"jobs"), name);
     }
 
     /**
@@ -1147,30 +1153,35 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         if(!Hudson.adminCheck(req,rsp))
             return null;
 
-        req.setCharacterEncoding("UTF-8");
+        TopLevelItem result;
+
+        boolean isXmlSubmission = req.getContentType().startsWith("application/xml") || req.getContentType().startsWith("text/xml");
+        if(!isXmlSubmission) {
+            // containers often implement RFCs incorrectly in that it doesn't interpret query parameter
+            // decoding with UTF-8. This will ensure we get it right.
+            // but doing this for config.xml submission could potentiall overwrite valid
+            // "text/xml;charset=xxx"
+            req.setCharacterEncoding("UTF-8");
+        }
+        
         String name = req.getParameter("name").trim();
         String mode = req.getParameter("mode");
 
         try {
             checkGoodName(name);
         } catch (ParseException e) {
+            rsp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             sendError(e,req,rsp);
             return null;
         }
 
         if(getItem(name)!=null) {
+            rsp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             sendError("A job already exists with the name '"+name+"'",req,rsp);
             return null;
         }
 
-        if(mode==null) {
-            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return null;
-        }
-
-        TopLevelItem result;
-
-        if(mode.equals("copyJob")) {
+        if(mode!=null && mode.equals("copyJob")) {
             TopLevelItem src = getItem(req.getParameter("from"));
             if(src==null) {
                 rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -1187,14 +1198,49 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             result.onCopiedFrom(src);
             items.put(name,result);
         } else {
-            // redirect to the project config screen
-            result = createProject(Items.getDescriptor(mode), name);
+            if(isXmlSubmission) {
+                // config.xml submission
+
+                // first copy it as config.xml
+                File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
+                configXml.getParentFile().mkdirs();
+                try {
+                    FileOutputStream fos = new FileOutputStream(configXml);
+                    try {
+                        Util.copyStream(req.getInputStream(),fos);
+                    } finally {
+                        fos.close();
+                    }
+
+                    // load it
+                    result = (TopLevelItem)Items.load(this,configXml.getParentFile());
+                    items.put(name,result);
+                } catch (IOException e) {
+                    // if anything fails, delete the config file to avoid further confusion
+                    Util.deleteRecursive(configXml.getParentFile());
+                    throw e;
+                }
+            } else {
+                // create empty job and redirect to the project config screen
+                if(mode==null) {
+                    rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return null;
+                }
+                result = createProject(Items.getDescriptor(mode), name);
+            }
         }
 
         for (ItemListener l : viewItemListeners)
             l.onCreated(result);
 
-        rsp.sendRedirect2(req.getContextPath()+'/'+result.getUrl()+"configure");
+        if(isXmlSubmission) {
+            // it worked
+            rsp.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            // send the browser to the config page
+            rsp.sendRedirect2(req.getContextPath()+'/'+result.getUrl()+"configure");
+        }
+
         return result;
     }
 
@@ -1679,6 +1725,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public static List<LogRecord> logRecords = Collections.emptyList(); // initialized to dummy value to avoid NPE
 
+    private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
+
     /**
      * Thread-safe reusable {@link XStream}.
      */
@@ -1700,5 +1748,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         // for backward compatibility with <1.75, recognize the tag name "view" as well.
         XSTREAM.alias("view", ListView.class);
         XSTREAM.alias("listView", ListView.class);
+        JAXP.setNamespaceAware(true);
     }
 }
