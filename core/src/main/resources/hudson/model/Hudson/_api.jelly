@@ -6,4 +6,10 @@
     or 4xx/5xx code if it fails. <tt>config.xml</tt> is the format Hudson uses to store the project
     in the file system, so you can see examples of them in <tt>${app.rootDir}</tt>.
   </p>
+
+  <h2>Copy Job</h2>
+  <p>
+    To copy a job, send a POST request to <a href="../createItem">this URL</a> with
+    three query parameters <tt>name=<i>NEWJOBNAME</i>&amp;mode=copyJob&amp;from=<i>FROMJOBNAME</i></tt>
+  </p>
 </j:jelly>
