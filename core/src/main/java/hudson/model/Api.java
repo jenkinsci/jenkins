@@ -22,6 +22,10 @@ import java.io.StringReader;
 /**
  * Used to expose remote access API for ".../api/"
  *
+ * <p>
+ * If the parent object has a <tt>_api.jelly</tt> view, it will be included
+ * in the api index page.
+ *
  * @author Kohsuke Kawaguchi
  * @see Exported
  */
@@ -29,7 +33,7 @@ public class Api extends AbstractModelObject {
     /**
      * Model object to be exposed as XML/JSON/etc.
      */
-    private final Object bean;
+    public final Object bean;
 
     public Api(Object bean) {
         this.bean = bean;
