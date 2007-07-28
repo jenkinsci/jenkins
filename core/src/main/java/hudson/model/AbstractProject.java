@@ -19,6 +19,7 @@ import hudson.triggers.Triggers;
 import hudson.util.EditDistance;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -571,10 +572,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Gets the other {@link AbstractProject}s that should be built
      * when a build of this project is completed.
      */
+    @Exported
     public final List<AbstractProject> getDownstreamProjects() {
         return Hudson.getInstance().getDependencyGraph().getDownstream(this);
     }
 
+    @Exported
     public final List<AbstractProject> getUpstreamProjects() {
         return Hudson.getInstance().getDependencyGraph().getUpstream(this);
     }
