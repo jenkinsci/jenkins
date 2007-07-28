@@ -358,7 +358,7 @@
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
-      <version>20070616</version>
+      <version>20070624</version>
     </dependency>
   </dependencies>
 
