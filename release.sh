@@ -23,5 +23,5 @@ perl -p -i.bak -e "s|https://.+hudson\.jar|$jarUrl|" $WWW/hudson.jnlp
 cp $WWW/hudson.jnlp $WWW/$id.jnlp
 
 # update changelog.html
-perl -n -i.bak -e "print unless /=END=.+/" $WWW/changelog.html
-perl -n -i.bak -e 'print; print "<a name=v$id><h3>What'\''s new in 1.$id</h3></a>\n<ul class=image>\n  <li class=>\n</ul>\n=END=-->\n" if /=BEGIN=/' $WWW/changelog.html
+ruby update.changelog.rb $id < $WWW/changelog.html > $WWW/changelog.new
+mv $WWW/changelog.new $WWW/changelog.html
