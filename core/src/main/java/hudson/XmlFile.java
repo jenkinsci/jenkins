@@ -163,7 +163,6 @@ public final class XmlFile {
     public String sniffEncoding() throws IOException {
         class Eureka extends SAXException {
             final String encoding;
-
             public Eureka(String encoding) {
                 this.encoding = encoding;
             }
@@ -178,7 +177,6 @@ public final class XmlFile {
                 public void startDocument() throws SAXException {
                     attempt();
                 }
-
 
                 public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                     attempt();
