@@ -383,7 +383,9 @@ public class Functions {
 
     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required) throws IOException, ServletException {
         if(required!=null && !Hudson.adminCheck(req,rsp)) {
-            // check failed
+            // check failed. commit the FORBIDDEN response, then abort.
+            rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            rsp.getOutputStream().close();
             throw new ServletException("Unauthorized access");
         }
     }
