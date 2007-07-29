@@ -2,7 +2,6 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
-import org.kohsuke.stapler.export.Exported;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
@@ -30,6 +29,7 @@ import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -37,13 +37,13 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import java.text.ParseException;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
