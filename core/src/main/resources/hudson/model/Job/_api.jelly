@@ -1,0 +1,11 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <h2>Fetch config.xml</h2>
+  <p>
+    To programatically, obtain <tt>config.xml</tt>, hit <a href="../config.xml">this URL</a>.
+  </p>
+
+  <h2>Perform a build</h2>
+  <p>
+    To programatically schedule a new build, post to <a href="../build">this URL</a>.
+  </p>
+</j:jelly>
