@@ -161,7 +161,7 @@ public abstract class AbstractItem extends Actionable implements Item {
         getConfigFile().write(this);
     }
 
-    protected final XmlFile getConfigFile() {
+    public final XmlFile getConfigFile() {
         return Items.getConfigFile(this);
     }
 
