@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.FileReader;
 import java.util.logging.Logger;
 
 import org.xml.sax.helpers.DefaultHandler;
@@ -155,10 +156,21 @@ public final class XmlFile {
     }
 
     /**
+     * Opens a {@link Reader} that loads XML.
+     * This method uses {@link #sniffEncoding() the right encoding},
+     * not just the system default encoding.
+     */
+    public Reader readRaw() throws IOException {
+        return new InputStreamReader(new FileInputStream(file),sniffEncoding());
+    }
+
+    /**
      * Parses the beginning of the file and determines the encoding.
      *
      * @throws IOException
      *      if failed to detect encoding.
+     * @return
+     *      always non-null.
      */
     public String sniffEncoding() throws IOException {
         class Eureka extends SAXException {
