@@ -601,6 +601,7 @@ function updateBuildHistory(nBuild) {
                 // insert new rows
                 var div = document.createElement('div');
                 div.innerHTML = rsp.responseText;
+                Behaviour.applySubtree(div);
 
                 var pivot = rows[0];
                 var newRows = div.firstChild.rows;
