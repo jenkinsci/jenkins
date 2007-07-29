@@ -202,7 +202,7 @@ public final class XmlFile {
                 throw new IOException("Failed to detect encoding of "+file);
             return e.encoding;
         } catch (SAXException e) {
-            throw new IOException("Failed to detect encoding of "+file,e);
+            throw new IOException2("Failed to detect encoding of "+file,e);
         } catch (ParserConfigurationException e) {
             throw new AssertionError(e);    // impossible
         }
