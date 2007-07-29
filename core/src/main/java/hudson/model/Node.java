@@ -2,15 +2,18 @@ package hudson.model;
 
 import hudson.Launcher;
 import hudson.FilePath;
+import hudson.node_monitors.NodeMonitor;
 import hudson.util.EnumConverter;
 import org.apache.commons.beanutils.ConvertUtils;
 
 import java.util.Set;
+import java.io.IOException;
 
 /**
  * Commonality between {@link Slave} and master {@link Hudson}.
  *
  * @author Kohsuke Kawaguchi
+ * @see NodeMonitor
  */
 public interface Node {
     /**
@@ -73,6 +76,18 @@ public interface Node {
      * source code, but it can be used for anything.
      */
     FilePath getWorkspaceFor(TopLevelItem item);
+
+    /**
+     * Estimates the clock difference with this slave.
+     *
+     * @return
+     *      difference in milli-seconds.
+     *      a positive value indicates that the master is ahead of the slave,
+     *      and negative value indicates otherwise.
+     * @throws InterruptedException
+     *      if the operation is aborted.
+     */
+    long getClockDifference() throws IOException, InterruptedException;
 
     public enum Mode {
         NORMAL("Utilize this slave as much as possible"),

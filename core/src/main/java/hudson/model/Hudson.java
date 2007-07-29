@@ -583,6 +583,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
+     * @deprecated
+     *      UI method. Not meant to be used programatically.
+     */
+    public ComputerSet getComputer() {
+        return new ComputerSet();
+    }
+
+    /**
      * Gets the label that exists on this system by the name.
      *
      * @return null if no such label exists.
@@ -703,6 +711,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
     public FilePath getWorkspaceFor(TopLevelItem item) {
         return new FilePath(new File(item.getRootDir(),"workspace"));
+    }
+
+    public long getClockDifference() throws IOException {
+        return 0;
     }
 
     public boolean isUseSecurity() {
@@ -1679,6 +1691,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         @Override
         public String getCaption() {
             return "Master";
+        }
+
+        public String getUrl() {
+            return "computer/(master)/";
         }
 
         @Override

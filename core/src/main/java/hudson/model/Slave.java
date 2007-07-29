@@ -222,31 +222,19 @@ public final class Slave implements Node, Serializable {
         return Hudson.getInstance().getLabel(name);
     }
 
-    /**
-     * Estimates the clock difference with this slave.
-     *
-     * @return
-     *      difference in milli-seconds.
-     *      a positive value indicates that the master is ahead of the slave,
-     *      and negative value indicates otherwise.
-     */
-    public long getClockDifference() throws IOException {
+    public long getClockDifference() throws IOException, InterruptedException {
         VirtualChannel channel = getComputer().getChannel();
         if(channel==null)   return 0;   // can't check
 
-        try {
-            long startTime = System.currentTimeMillis();
-            long slaveTime = channel.call(new Callable<Long,RuntimeException>() {
-                public Long call() {
-                    return System.currentTimeMillis();
-                }
-            });
-            long endTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
+        long slaveTime = channel.call(new Callable<Long,RuntimeException>() {
+            public Long call() {
+                return System.currentTimeMillis();
+            }
+        });
+        long endTime = System.currentTimeMillis();
 
-            return (startTime+endTime)/2 - slaveTime;
-        } catch (InterruptedException e) {
-            return 0;   // couldn't check
-        }
+        return (startTime+endTime)/2 - slaveTime;
     }
 
 
@@ -272,6 +260,8 @@ public final class Slave implements Node, Serializable {
 
             return s;
         } catch (IOException e) {
+            return "<span class='error'>Unable to check</span>";
+        } catch (InterruptedException e) {
             return "<span class='error'>Unable to check</span>";
         }
     }
