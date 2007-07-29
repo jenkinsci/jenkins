@@ -30,7 +30,7 @@
 
       <p>
         For more information about remote API in Hudson, see
-        <a href="https://hudson.dev.java.net/remote-api.html">the documentation</a>.
+        <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Remote+access+API">the documentation</a>.
       </p>
 
       <st:include it="${it.bean}" page="_api.jelly" optional="true" />
