@@ -19,7 +19,7 @@ public final class ComputerSet implements ModelObject {
     }
 
     public List<NodeMonitor> get_monitors() {
-        return NodeMonitor.LIST;
+        return null;
     }
 
     public Computer[] get_all() {
