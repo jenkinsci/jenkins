@@ -1,6 +1,9 @@
 package hudson.util;
 
 import hudson.Util;
+import hudson.model.Node;
+
+import java.io.IOException;
 
 /**
  * Represents a clock difference. Immutable.
@@ -50,4 +53,27 @@ public final class ClockDifference {
         if(isDangerous())   s = "<span class=error>"+s+"</span>";
         return s;
     }
+
+    public static String toHtml(Node d) {
+        try {
+            return d.getClockDifference().toHtml();
+        } catch (IOException e) {
+            return FAILED_HTML;
+        } catch (InterruptedException e) {
+            return FAILED_HTML;
+        }
+    }
+
+    /**
+     * Gets the clock difference in HTML string.
+     * This version handles null {@link ClockDifference}.
+     */
+    public static String toHtml(ClockDifference d) {
+        if(d==null)     return FAILED_HTML;
+        return d.toHtml();
+    }
+
+    public static final ClockDifference ZERO = new ClockDifference(0);
+
+    private static final String FAILED_HTML = "<span class='error'>Failed to heck</span>";
 }

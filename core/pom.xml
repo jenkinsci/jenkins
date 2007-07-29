@@ -222,7 +222,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <version>1.40</version>
+      <version>1.41-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>

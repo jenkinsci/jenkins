@@ -18,6 +18,7 @@ import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamCopyThread;
 import hudson.util.StreamTaskListener;
+import hudson.util.ClockDifference;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -222,9 +223,9 @@ public final class Slave implements Node, Serializable {
         return Hudson.getInstance().getLabel(name);
     }
 
-    public long getClockDifference() throws IOException, InterruptedException {
+    public ClockDifference getClockDifference() throws IOException, InterruptedException {
         VirtualChannel channel = getComputer().getChannel();
-        if(channel==null)   return 0;   // can't check
+        if(channel==null)   return null;   // can't check
 
         long startTime = System.currentTimeMillis();
         long slaveTime = channel.call(new Callable<Long,RuntimeException>() {
@@ -234,36 +235,7 @@ public final class Slave implements Node, Serializable {
         });
         long endTime = System.currentTimeMillis();
 
-        return (startTime+endTime)/2 - slaveTime;
-    }
-
-
-    /**
-     * Gets the clock difference in HTML string.
-     */
-    public String getClockDifferenceString() {
-        try {
-            long diff = getClockDifference();
-            if(-1000<diff && diff <1000)
-                return "In sync";  // clock is in sync
-
-            long abs = Math.abs(diff);
-
-            String s = Util.getTimeSpanString(abs);
-            if(diff<0)
-                s += " ahead";
-            else
-                s += " behind";
-
-            if(abs>100*60) // more than a minute difference
-                s = "<span class='error'>"+s+"</span>";
-
-            return s;
-        } catch (IOException e) {
-            return "<span class='error'>Unable to check</span>";
-        } catch (InterruptedException e) {
-            return "<span class='error'>Unable to check</span>";
-        }
+        return new ClockDifference((startTime+endTime)/2 - slaveTime);
     }
 
     public Computer createComputer() {

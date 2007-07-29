@@ -44,6 +44,7 @@ import hudson.util.CopyOnWriteMap;
 import hudson.util.FormFieldValidator;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.XStream2;
+import hudson.util.ClockDifference;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -713,8 +714,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return new FilePath(new File(item.getRootDir(),"workspace"));
     }
 
-    public long getClockDifference() throws IOException {
-        return 0;
+    public ClockDifference getClockDifference() {
+        return ClockDifference.ZERO;
     }
 
     public boolean isUseSecurity() {
