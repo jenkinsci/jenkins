@@ -10,6 +10,8 @@ import hudson.util.AtomicFileWriter;
 import hudson.util.IOException2;
 import hudson.util.XStream2;
 
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,6 +19,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.logging.Logger;
+
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.Locator;
+import org.xml.sax.Attributes;
+import org.xml.sax.ext.Locator2;
 
 /**
  * Represents an XML data file that Hudson uses as a data file.
@@ -147,9 +155,71 @@ public final class XmlFile {
     }
 
     /**
+     * Parses the beginning of the file and determines the encoding.
+     *
+     * @throws IOException
+     *      if failed to detect encoding.
+     */
+    public String sniffEncoding() throws IOException {
+        class Eureka extends SAXException {
+            final String encoding;
+
+            public Eureka(String encoding) {
+                this.encoding = encoding;
+            }
+        }
+        try {
+            JAXP.newSAXParser().parse(file,new DefaultHandler() {
+                private Locator loc;
+                public void setDocumentLocator(Locator locator) {
+                    this.loc = locator;
+                }
+
+                public void startDocument() throws SAXException {
+                    attempt();
+                }
+
+
+                public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+                    attempt();
+                    // if we still haven't found it at the first start element,
+                    // there's something wrong.
+                    throw new Eureka(null);
+                }
+
+                private void attempt() throws Eureka {
+                    if(loc==null)   return;
+                    if (loc instanceof Locator2) {
+                        Locator2 loc2 = (Locator2) loc;
+                        String e = loc2.getEncoding();
+                        if(e!=null)
+                            throw new Eureka(e);
+                    }
+                }
+            });
+            // can't reach here
+            throw new AssertionError();
+        } catch (Eureka e) {
+            if(e.encoding==null)
+                throw new IOException("Failed to detect encoding of "+file);
+            return e.encoding;
+        } catch (SAXException e) {
+            throw new IOException("Failed to detect encoding of "+file,e);
+        } catch (ParserConfigurationException e) {
+            throw new AssertionError(e);    // impossible
+        }
+    }
+
+    /**
      * {@link XStream} instance is supposed to be thread-safe.
      */
     private static final XStream DEFAULT_XSTREAM = new XStream2();
 
     private static final Logger LOGGER = Logger.getLogger(XmlFile.class.getName());
+
+    private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
+
+    static {
+        JAXP.setNamespaceAware(true);
+    }
 }
