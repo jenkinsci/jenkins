@@ -79,6 +79,19 @@ public interface Node {
     FilePath getWorkspaceFor(TopLevelItem item);
 
     /**
+     * Gets the root directory of this node.
+     *
+     * <p>
+     * Hudson always owns a directory on every node. This method
+     * returns that.
+     *
+     * @return
+     *      null if the node is offline and hence the {@link FilePath}
+     *      object is not available.
+     */
+    FilePath getRootPath();
+
+    /**
      * Estimates the clock difference with this slave.
      *
      * @return

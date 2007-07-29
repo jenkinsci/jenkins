@@ -714,6 +714,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return new FilePath(new File(item.getRootDir(),"workspace"));
     }
 
+    public FilePath getRootPath() {
+        return new FilePath(getRootDir());
+    }
+
     public ClockDifference getClockDifference() {
         return ClockDifference.ZERO;
     }

@@ -136,13 +136,6 @@ public final class Slave implements Node, Serializable {
         return description;
     }
 
-    /**
-     * Gets the root directory of the Hudson workspace on this slave.
-     */
-    public FilePath getFilePath() {
-        return new FilePath(getComputer().getChannel(),remoteFS);
-    }
-
     public int getNumExecutors() {
         return numExecutors;
     }
@@ -246,11 +239,17 @@ public final class Slave implements Node, Serializable {
         return getWorkspaceRoot().child(item.getName());
     }
 
+    public FilePath getRootPath() {
+        VirtualChannel ch = getComputer().getChannel();
+        if(ch==null)    return null;    // offline
+        return new FilePath(ch,remoteFS);
+    }
+
     /**
      * Root directory on this slave where all the job workspaces are laid out.
      */
     public FilePath getWorkspaceRoot() {
-        return getFilePath().child("workspace");
+        return getRootPath().child("workspace");
     }
 
     public static final class ComputerImpl extends Computer {

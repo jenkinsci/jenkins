@@ -9,15 +9,14 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
+import hudson.model.JDK;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.model.Slave;
-import hudson.model.JDK;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
+import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Launcher;
 import hudson.remoting.Which;
-import hudson.remoting.DelegatingCallable;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.Maven.MavenInstallation;
@@ -35,10 +34,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -325,7 +324,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             boolean isMaster = getCurrentNode()==Hudson.getInstance();
             FilePath slaveRoot=null;
             if(!isMaster)
-                slaveRoot = ((Slave)getCurrentNode()).getFilePath();
+                slaveRoot = getCurrentNode().getRootPath();
 
             ArgumentListBuilder args = new ArgumentListBuilder();
             JDK jdk = getParent().getParent().getJDK();
