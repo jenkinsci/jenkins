@@ -1725,8 +1725,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public static List<LogRecord> logRecords = Collections.emptyList(); // initialized to dummy value to avoid NPE
 
-    private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
-
     /**
      * Thread-safe reusable {@link XStream}.
      */
@@ -1748,6 +1746,5 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         // for backward compatibility with <1.75, recognize the tag name "view" as well.
         XSTREAM.alias("view", ListView.class);
         XSTREAM.alias("listView", ListView.class);
-        JAXP.setNamespaceAware(true);
     }
 }
