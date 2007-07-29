@@ -17,7 +17,7 @@ public final class ClockDifference {
      * Positive value means the slave is behind the master,
      * negative value means the slave is ahead of the master.
      */
-    public final Long diff;
+    public final long diff;
 
     public ClockDifference(long value) {
         this.diff = value;
@@ -28,6 +28,13 @@ public final class ClockDifference {
      */
     public boolean isDangerous() {
         return Math.abs(diff)>5000;
+    }
+
+    /**
+     * Gets the absolute value of {@link #diff}.
+     */
+    public long abs() {
+        return Math.abs(diff);
     }
 
     /**

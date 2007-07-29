@@ -1,0 +1,35 @@
+<!--
+  Entrance to the configuration page
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<l:layout title="Nodes">
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel>
+    <j:set var="monitors" value="${it._monitors}"/>
+    <table id="projectstatus" class="sortable pane">
+      <tr>
+        <th width="32">S</th>
+        <th initialSortDir="down">Name</th>
+        <j:forEach var="m" items="${monitors}">
+          <j:if test="${m.columnCaption!=null}">
+            <th>${m.columnCaption}</th>
+          </j:if>
+        </j:forEach>
+      </tr>
+      <j:forEach var="c" items="${it._all}">
+        <tr>
+          <td width="32" data="${c.icon}">
+            <img src="${rootURL}/images/32x32/${c.icon}" width="32" height="32" />
+          </td>
+          <td><a href="${rootURL}/${c.url}">${c.displayName}</a></td>
+          <j:forEach var="m" items="${monitors}">
+            <j:if test="${m.columnCaption!=null}">
+              <st:include page="column.jelly" from="${m}" />
+            </j:if>
+          </j:forEach>
+        </tr>
+      </j:forEach>
+    </table>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

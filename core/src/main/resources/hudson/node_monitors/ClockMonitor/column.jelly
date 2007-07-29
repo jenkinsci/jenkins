@@ -1,0 +1,11 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <j:set var="diff" value="${from.getDifferenceFor(c)}"/>
+  <j:choose>
+    <j:when test="${diff==null}">
+      <td data="-1">N/A</td>
+    </j:when>
+    <j:otherwise>
+      <td data="${diff.abs()}">${diff.toHtml()}</td>
+    </j:otherwise>
+  </j:choose>
+</j:jelly>
