@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.io.StringWriter;
 import java.util.logging.Logger;
 
 /**
@@ -161,6 +162,15 @@ public final class XmlFile {
      */
     public Reader readRaw() throws IOException {
         return new InputStreamReader(new FileInputStream(file),sniffEncoding());
+    }
+
+    /**
+     * Returns the XML file read as a string.
+     */
+    public String asString() throws IOException {
+        StringWriter w = new StringWriter();
+        writeRawTo(w);
+        return w.toString();
     }
 
     /**
