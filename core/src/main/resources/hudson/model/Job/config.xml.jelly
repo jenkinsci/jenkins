@@ -1,0 +1,9 @@
+<!-- Sends config.xml verbatim. Particular attention needs to be paid to avoid sending whitespace -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt"
+><j:new var="h" className="hudson.Functions"
+/><!-- if this page needs to be secured, make sure the user is admin
+-->${h.adminCheck(request,response,true)
+}<!-- write config.xml
+--><st:contentType value="application/xml;charset=UTF-8"
+/>${it.configFile.asString()}
+</j:jelly>
