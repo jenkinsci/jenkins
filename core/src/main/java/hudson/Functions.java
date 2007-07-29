@@ -26,23 +26,23 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.LockInfo;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
-import java.lang.management.ThreadInfo;
-import java.lang.management.MonitorInfo;
-import java.lang.management.LockInfo;
 
 /**
  * Utility functions used in views.
@@ -481,6 +481,18 @@ public class Functions {
     public static ThreadInfo[] getThreadInfos() {
         ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
         return mbean.getThreadInfo(mbean.getAllThreadIds(),mbean.isObjectMonitorUsageSupported(),mbean.isSynchronizerUsageSupported());
+    }
+
+    /**
+     * Are we running on JRE6 or above?
+     */
+    public static boolean isMustangOrAbove() {
+        try {
+            System.console();
+            return true;
+        } catch(LinkageError e) {
+            return false;
+        }
     }
 
     // ThreadInfo.toString() truncates the stack trace by first 8, so needed my own version

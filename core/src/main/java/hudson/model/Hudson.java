@@ -1148,6 +1148,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         rsp.sendRedirect2(".");
     }
 
+    /**
+     * Backward compatibility. Redirect to the thread dump.
+     */
+    public void doClassicThreadDump( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        rsp.sendRedirect2("threadDump");
+    }
+
     public synchronized Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         if(!Hudson.adminCheck(req,rsp))
             return null;
