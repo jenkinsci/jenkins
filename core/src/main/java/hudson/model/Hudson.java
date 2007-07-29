@@ -1589,7 +1589,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         new FormFieldValidator(req,rsp,false) {
             public void check() throws IOException, ServletException {
                 response.setContentType("text/html");
-                response.getWriter().print(getSlave(request.getParameter("node")).getClockDifferenceString());
+                response.getWriter().print(
+                    ClockDifference.toHtml(getSlave(request.getParameter("node"))));
             }
         }.process();
     }
