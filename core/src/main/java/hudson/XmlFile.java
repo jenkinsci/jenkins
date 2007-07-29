@@ -9,23 +9,22 @@ import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOException2;
 import hudson.util.XStream2;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.Locator2;
+import org.xml.sax.helpers.DefaultHandler;
 
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.FileReader;
+import java.io.Writer;
 import java.util.logging.Logger;
-
-import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.Locator;
-import org.xml.sax.Attributes;
-import org.xml.sax.ext.Locator2;
 
 /**
  * Represents an XML data file that Hudson uses as a data file.
@@ -162,6 +161,19 @@ public final class XmlFile {
      */
     public Reader readRaw() throws IOException {
         return new InputStreamReader(new FileInputStream(file),sniffEncoding());
+    }
+
+    /**
+     * Writes the raw XML to the given {@link Writer}.
+     * Writer will not be closed by the implementation.
+     */
+    public void writeRawTo(Writer w) throws IOException {
+        Reader r = readRaw();
+        try {
+            Util.copyStream(r,w);
+        } finally {
+            r.close();
+        }
     }
 
     /**
