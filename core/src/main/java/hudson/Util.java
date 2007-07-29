@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.DigestInputStream;
@@ -243,6 +245,13 @@ public class Util {
 
     public static void copyStream(InputStream in,OutputStream out) throws IOException {
         byte[] buf = new byte[8192];
+        int len;
+        while((len=in.read(buf))>0)
+            out.write(buf,0,len);
+    }
+
+    public static void copyStream(Reader in, Writer out) throws IOException {
+        char[] buf = new char[8192];
         int len;
         while((len=in.read(buf))>0)
             out.write(buf,0,len);
