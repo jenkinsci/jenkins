@@ -2,10 +2,12 @@ package hudson.node_monitors;
 
 import hudson.ExtensionPoint;
 import hudson.model.ComputerSet;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
 import hudson.model.Node;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Extension point for managing and monitoring {@link Node}s.
@@ -22,21 +24,25 @@ import java.util.ArrayList;
  * @author Kohsuke Kawaguchi
  * @since 1.123
  */
-public abstract class NodeMonitor implements ExtensionPoint {
+public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMonitor> {
     /**
      * Returns the name of the column to be added to {@link ComputerSet} index.jelly.
      *
      * @return
      *      null to not render a column. The convention is to use capitalization like "Foo Bar Zot".
      */
-    public abstract String getColumnCaption();
+    public String getColumnCaption() {
+        return getDescriptor().getDisplayName();
+    }
 
     /**
      * All registered {@link NodeMonitor}s.
      */
-    public static final List<NodeMonitor> LIST = new ArrayList<NodeMonitor>();
+    public static final List<Descriptor<NodeMonitor>> LIST = new ArrayList<Descriptor<NodeMonitor>>();
 
     static {
-        LIST.add(new ClockMonitor());
+        LIST.add(ClockMonitor.DESCRIPTOR);
+        //if(Functions.isMustangOrAbove())
+        //    LIST.add(new DiskSpaceMonitor());
     }
 }
