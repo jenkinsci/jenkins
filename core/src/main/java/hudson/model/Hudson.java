@@ -1719,6 +1719,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
 
+        public void launch() {
+            // noop
+        }
+
         /**
          * {@link LocalChannel} instance that can be used to execute programs locally.
          */

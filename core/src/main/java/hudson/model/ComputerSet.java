@@ -8,6 +8,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.io.IOException;
 
 /**
  * Serves as the top of {@link Computer}s in the URL hierarchy.
@@ -47,5 +48,14 @@ public final class ComputerSet implements ModelObject {
 
     public Computer getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         return Hudson.getInstance().getComputer(token);
+    }
+
+    public void do_launchAll(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        for(Computer c : get_all()) {
+            if(c.isJnlpAgent())
+                continue;
+            c.launch();
+        }
+        rsp.sendRedirect(".");
     }
 }

@@ -406,11 +406,16 @@ public final class Slave implements Node, Serializable {
                 return;
             }
 
-            launch(getNode());
+            launch();
 
             // TODO: would be nice to redirect the user to "launching..." wait page,
             // then spend a few seconds there and poll for the completion periodically.
             rsp.sendRedirect("log");
+        }
+
+        public void launch() {
+            if(channel==null)
+                launch(getNode());
         }
 
         /**

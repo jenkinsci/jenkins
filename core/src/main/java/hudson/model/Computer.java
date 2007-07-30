@@ -86,6 +86,14 @@ public abstract class Computer implements ModelObject {
     public abstract void doLaunchSlaveAgent( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
     /**
+     * Do the same as {@link #doLaunchSlaveAgent(StaplerRequest, StaplerResponse)}
+     * but outside the context of serving a request.
+     *
+     * If already connected, no-op.
+     */
+    public abstract void launch();
+
+    /**
      * Number of {@link Executor}s that are configured for this computer.
      *
      * <p>
