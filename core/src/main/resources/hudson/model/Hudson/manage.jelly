@@ -35,6 +35,11 @@
       <local:feature icon="notepad.gif"      href="script"      title="Script Console">
         Executes arbitrary script for administration/trouble-shooting/diagnostics
       </local:feature>
+      <j:if test="${!empty(it.slaves)">
+        <local:feature icon="network.gif"      href="computer/"   title="Manage Slaves">
+          Check the health of slaves and controls them.
+        </local:feature>
+      </j:if>
       <j:choose>
         <j:when test="${it.quietingDown}">
           <local:feature icon="system-log-out.gif"   href="cancelQuietDown" title="Cancel Shutdown"/>
