@@ -505,28 +505,28 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      *     the health report.  Never returns null
      */
     public HealthReport getBuildHealth() {
-        HealthReport buildHealth = null;
+        List<HealthReport> reports = getBuildHealthReports();
+        return reports.isEmpty() ? new HealthReport() : reports.get(0);
+    }
 
+    public List<HealthReport> getBuildHealthReports() {
+        List<HealthReport> reports = new ArrayList<HealthReport>();
         RunT lastBuild = getLastBuild();
 
         if (lastBuild != null && lastBuild.isBuilding()) {
-            // show the previous build's report until the current one is finished building.            
+            // show the previous build's report until the current one is finished building.
             lastBuild = lastBuild.getPreviousBuild();
         }
 
         if (lastBuild != null) {
-
             for (HealthReportingAction healthReportingAction : lastBuild.getActions(HealthReportingAction.class)) {
-                buildHealth = HealthReport.min(buildHealth, healthReportingAction.getBuildHealth());
+                reports.add(healthReportingAction.getBuildHealth());
             }
-
-            // if all else fails, use the stability health report.
-            buildHealth = HealthReport.min(buildHealth, getBuildStabilityHealthReport());
+            reports.add(getBuildStabilityHealthReport());
         }
 
-        if (buildHealth == null)
-            buildHealth = new HealthReport();
-        return buildHealth;
+        Collections.sort(reports);
+        return reports;
     }
 
     private HealthReport getBuildStabilityHealthReport() {

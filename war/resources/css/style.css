@@ -419,6 +419,36 @@ th.pane {
   white-space: nowrap;
 }
 
+/* ============================ health report hover ========================== */
+/* I was using div's but the IE bugs got the better of me anyway, nicer to     */
+/* have a link to the latest build (which is the source of the health report   */
+/* that you are viewing)                                                       */
+/* IE does not render this as nicely as I'd like, but least amount of hacky.   */
+
+a.healthReport {
+    text-decoration: none;
+}
+
+a.healthReport div {
+    display: none;
+}
+
+a.healthReport:hover { /* fix IE6 bug with :hover */
+    background: transparent;
+}
+
+a.healthReport:hover div {
+    display: block;
+    position: absolute;
+    background-color: #ffe;
+    border: 1 solid #bbb;
+    margin-left: 32px; /* move it across a bit */
+}
+
+a.healthReport div table {
+    border-collapse: collapse;
+    width: 450px; /* fix IE bug with width */
+}
 
 /* ========================= editable combobox style ========================= */
 .comboBoxList {

@@ -38,9 +38,33 @@
           <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
             <t:ballColorTd it="${job.iconColor}" />
             <td data="${buildHealth.score}">
-              <img src="${rootURL}${h.ifThenElse(buildHealth.iconUrl.startsWith('/'),'','/images/'+iconSize+'/')}${buildHealth.iconUrl}"
-                alt="${buildHealth.score}%"
-                title="${buildHealth.description}" />
+              <a class="healthReport" href="${jobBaseUrl}${job.shortUrl}lastBuild">
+                <img src="${rootURL}${h.ifThenElse(buildHealth.iconUrl.startsWith('/'),'','/images/'+iconSize+'/')}${buildHealth.iconUrl}"
+                     alt="${buildHealth.score}%"/>
+                <div>
+                  <table border="0">
+                    <thead>
+                      <tr>
+                        <th align="left">W</th>
+                        <th align="left">Description</th>
+                        <th align="right">%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <j:forEach var="rpt" items="${job.buildHealthReports}">
+                        <tr>
+                          <td align="left">
+                            <img src="${rootURL}${h.ifThenElse(rpt.iconUrl.startsWith('/'),'','/images/16x16/')}${rpt.iconUrl}"
+                                 alt="" title="" />
+                          </td>
+                          <td>${rpt.description}</td>
+                          <td align="right">${rpt.score}</td>
+                        </tr>
+                      </j:forEach>
+                    </tbody>
+                  </table>
+                </div>
+              </a>
             </td>
             <td>
               <a href="${jobBaseUrl}${job.shortUrl}">
