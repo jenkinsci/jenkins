@@ -1,9 +1,12 @@
 package hudson.model;
 
+import hudson.model.Descriptor.FormException;
+import hudson.node_monitors.NodeMonitor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import hudson.node_monitors.NodeMonitor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -14,12 +17,28 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public final class ComputerSet implements ModelObject {
+    private static volatile List<NodeMonitor> monitors = Collections.emptyList();
+
+    public ComputerSet() {
+        if(monitors.isEmpty()) {
+            // create all instances when requested for the first time.
+            ArrayList<NodeMonitor> r = new ArrayList<NodeMonitor>();
+            for (Descriptor<NodeMonitor> d : NodeMonitor.LIST)
+                try {
+                    r.add(d.newInstance(null));
+                } catch (FormException e) {
+                    // so far impossible. TODO: report
+                }
+            monitors = r;
+        }
+    }
+
     public String getDisplayName() {
         return "nodes";
     }
 
     public List<NodeMonitor> get_monitors() {
-        return null;
+        return monitors;
     }
 
     public Computer[] get_all() {

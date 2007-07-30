@@ -1,6 +1,7 @@
 package hudson.node_monitors;
 
 import hudson.ExtensionPoint;
+import hudson.Functions;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -42,7 +43,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
 
     static {
         LIST.add(ClockMonitor.DESCRIPTOR);
-        //if(Functions.isMustangOrAbove())
-        //    LIST.add(new DiskSpaceMonitor());
+        if(Functions.isMustangOrAbove())
+            LIST.add(DiskSpaceMonitor.DESCRIPTOR);
     }
 }
