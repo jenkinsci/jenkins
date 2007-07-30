@@ -261,20 +261,24 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             try {
                 while(pollingScheduled) {
                     getLock().lockInterruptibly();
-                    if(pollingScheduled) {
-                        pollingScheduled = false;
-                        boolean foundChanges;
-                        try {
+                    boolean foundChanges=false;
+                    try {
+                        if(pollingScheduled) {
+                            pollingScheduled = false;
                             getDescriptor().items.add(job);
-                            foundChanges = runPolling();
-                        } finally {
-                            getDescriptor().items.remove(job);
-                            getLock().unlock();
+                            try {
+                                foundChanges = runPolling();
+                            } finally {
+                                getDescriptor().items.remove(job);
+                            }
                         }
-                        if(foundChanges) {
-                            LOGGER.info("SCM changes detected in "+ job.getName());
-                            job.scheduleBuild();
-                        }
+                    } finally {
+                        getLock().unlock();
+                    }
+                    
+                    if(foundChanges) {
+                        LOGGER.info("SCM changes detected in "+ job.getName());
+                        job.scheduleBuild();
                     }
                 }
             } catch (InterruptedException e) {
