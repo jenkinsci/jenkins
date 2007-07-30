@@ -32,7 +32,7 @@ public class ClockMonitor extends NodeMonitor {
         }
 
         public NodeMonitor newInstance(StaplerRequest req) throws FormException {
-            return new DiskSpaceMonitor();
+            return new ClockMonitor();
         }
     };
 }
