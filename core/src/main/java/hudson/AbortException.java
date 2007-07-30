@@ -1,4 +1,4 @@
-package hudson.maven;
+package hudson;
 
 import java.io.IOException;
 
@@ -8,6 +8,6 @@ import java.io.IOException;
  * 
  * @author Kohsuke Kawaguchi
 */
-class AbortException extends IOException {
+public final class AbortException extends IOException {
     private static final long serialVersionUID = 1L;
 }

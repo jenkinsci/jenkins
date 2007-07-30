@@ -2,6 +2,7 @@ package hudson.maven;
 
 import hudson.model.TaskListener;
 import hudson.model.BuildListener;
+import hudson.AbortException;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;

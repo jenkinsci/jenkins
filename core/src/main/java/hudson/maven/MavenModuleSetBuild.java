@@ -9,6 +9,7 @@ import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
+import hudson.AbortException;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
