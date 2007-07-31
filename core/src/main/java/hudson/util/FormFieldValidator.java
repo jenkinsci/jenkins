@@ -240,4 +240,36 @@ public abstract class FormFieldValidator {
             }
         }
     }
+
+    /**
+     * Checks a valid executable binary (specified in the 'value' query parameter)
+     *
+     * @since 1.124
+     */
+    public static class Executable extends FormFieldValidator {
+
+        public Executable(StaplerRequest request, StaplerResponse response) {
+            super(request, response, true);
+        }
+
+        protected void check() throws IOException, ServletException {
+            String exe = fixEmpty(request.getParameter("value"));
+            if(exe==null) {
+                ok(); // nothing entered yet
+                return;
+            }
+
+            if(exe.indexOf(File.separatorChar)>=0) {
+                // this is full path
+                if(new File(exe).exists()) {
+                    ok();
+                } else {
+                    error("There's no such file: "+exe);
+                }
+            } else {
+                // can't really check
+                ok();
+            }
+        }
+    }
 }
