@@ -68,5 +68,8 @@
       </tr>
     </j:if>
   </j:forEach>
-  <j:set var="nBuild" value="${nBuild}" scope="parent" /><!-- export -->
+  <j:set var="parentScope" value="${context.parent.parent.variables}"/>
+  <j:if test="${parentScope!=null}">
+    <j:set target="${parentScope}" property="nBuild" value="${nBuild}" /><!-- export -->
+  </j:if>
 </j:jelly>
