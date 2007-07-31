@@ -882,30 +882,7 @@ public class CVSSCM extends SCM implements Serializable {
          * Checks if cvs executable exists.
          */
         public void doCvsExeCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // this method can be used to check if a file exists anywhere in the file system,
-            // so it should be protected.
-            new FormFieldValidator(req,rsp,true) {
-                protected void check() throws IOException, ServletException {
-                    String cvsExe = fixEmpty(request.getParameter("value"));
-                    if(cvsExe==null) {
-                        ok();
-                        return;
-                    }
-
-                    if(cvsExe.indexOf(File.separatorChar)>=0) {
-                        // this is full path
-                        if(new File(cvsExe).exists()) {
-                            ok();
-                        } else {
-                            error("There's no such file: "+cvsExe);
-                        }
-                    } else {
-                        // can't really check
-                        ok();
-                    }
-
-                }
-            }.process();
+            new FormFieldValidator.Executable(req,rsp).process();
         }
 
         /**
