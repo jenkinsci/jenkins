@@ -520,9 +520,15 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
         if (lastBuild != null) {
             for (HealthReportingAction healthReportingAction : lastBuild.getActions(HealthReportingAction.class)) {
-                reports.add(healthReportingAction.getBuildHealth());
+                final HealthReport report = healthReportingAction.getBuildHealth();
+                if (report != null) {
+                    reports.add(report);
+                }
             }
-            reports.add(getBuildStabilityHealthReport());
+            final HealthReport report = getBuildStabilityHealthReport();
+            if (report != null) {
+                reports.add(report);
+            }
         }
 
         Collections.sort(reports);
