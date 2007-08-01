@@ -1,6 +1,10 @@
 package hudson.model;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Represents health of something (typically project).
@@ -43,6 +47,8 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      *                    If the path begins with a '/' then it will be the absolute path, otherwise the image is
      *                    assumed to be in one of <code>/images/16x16/</code>, <code>/images/24x24/</code> or
      *                    <code>/images/32x32/</code> depending on the icon size selected by the user.
+     *                    When calculating the url to display for absolute paths, the getIconUrl(String) method
+     *                    will replace /32x32/ in the path with the appropriate size.
      * @param description The health icon's tool-tip.
      */
     public HealthReport(int score, String iconUrl, String description) {
@@ -110,6 +116,21 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     }
 
     /**
+     * Get's the iconUrl relative to the hudson root url, for the correct size.
+     * @param size The size, e.g. 32x32, 24x24 or 16x16.
+     * @return The url relative to hudson's root url.
+     */
+    public String getIconUrl(String size) {
+        if (iconUrl == null) {
+            return "/images/" + size + "/" + HEALTH_UNKNOWN;
+        }
+        if (iconUrl.startsWith("/")) {
+            return iconUrl.replace("/32x32/", "/" + size + "/");
+        }
+        return "/images/" + size + "/" + iconUrl;
+    }
+
+    /**
      * Setter for property 'iconUrl'.
      *
      * @param iconUrl Value to set for property 'iconUrl'.
@@ -136,6 +157,25 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
         this.description = description;
     }
 
+    /**
+     * Getter for property 'aggregatedReports'.
+     *
+     * @return Value for property 'aggregatedReports'.
+     */
+    public List<HealthReport> getAggregatedReports() {
+        return Collections.EMPTY_LIST;
+    }
+
+    /**
+     * Getter for property 'aggregateReport'.
+     *
+     * @return Value for property 'aggregateReport'.
+     */
+    public boolean isAggregateReport() {
+        return false;
+    }
+
+    /** {@inheritDoc} */
     public int compareTo(HealthReport o) {
         return (this.score < o.score ? -1 : (this.score == o.score ? 0 : 1));
     }

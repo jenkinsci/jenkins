@@ -43,8 +43,7 @@
                 <x:attribute name="onmouseover">this.className='healthReport hover';return true;</x:attribute>
                 <x:attribute name="onmouseout">this.className='healthReport';return true;</x:attribute>
                 <a class="healthReport" href="${jobBaseUrl}${job.shortUrl}lastBuild">
-                  <img src="${rootURL}${h.ifThenElse(buildHealth.iconUrl.startsWith('/'),'','/images/'+iconSize+'/')}${buildHealth.iconUrl}"
-                       alt="${buildHealth.score}%" />
+                  <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}" alt="${buildHealth.score}%" />
                 </a>
                 <div class="healthReportDetails">
                   <table border="0">
@@ -59,8 +58,7 @@
                       <j:forEach var="rpt" items="${job.buildHealthReports}">
                         <tr>
                           <td align="left">
-                            <img src="${rootURL}${h.ifThenElse(rpt.iconUrl.startsWith('/'),'','/images/16x16/')}${rpt.iconUrl}"
-                                 alt="" title="" />
+                            <img src="${rootURL}${rpt.getIconUrl('16x16')}" alt="" title="" />
                           </td>
                           <td>${rpt.description}</td>
                           <td align="right">${rpt.score}</td>
