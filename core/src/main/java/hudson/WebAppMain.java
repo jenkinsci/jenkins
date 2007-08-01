@@ -5,6 +5,7 @@ import com.thoughtworks.xstream.core.JVM;
 import hudson.model.Hudson;
 import hudson.model.User;
 import hudson.triggers.Trigger;
+import hudson.triggers.SafeTimerTask;
 import hudson.util.IncompatibleServletVersionDetected;
 import hudson.util.IncompatibleVMDetected;
 import hudson.util.RingBufferLogHandler;
@@ -23,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -113,8 +113,8 @@ public class WebAppMain implements ServletContextListener {
         // trigger the loading of changelogs in the background,
         // but give the system 10 seconds so that the first page
         // can be served quickly
-        Trigger.timer.schedule(new TimerTask() {
-            public void run() {
+        Trigger.timer.schedule(new SafeTimerTask() {
+            public void doRun() {
                 User.get("nobody").getBuilds();
             }
         }, 1000*10);

@@ -1,6 +1,7 @@
 package hudson.model;
 
-import java.util.TimerTask;
+import hudson.triggers.SafeTimerTask;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -9,7 +10,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class PeriodicWork extends TimerTask {
+public abstract class PeriodicWork extends SafeTimerTask {
 
     /**
      * Name of the work.
@@ -26,7 +27,7 @@ public abstract class PeriodicWork extends TimerTask {
     /**
      * Schedules this periodic work now in a new thread, if one isn't already running.
      */
-    public final void run() {
+    public final void doRun() {
         try {
             if(thread!=null && thread.isAlive()) {
                 logger.log(Level.INFO, name+" thread is still running. Execution aborted.");

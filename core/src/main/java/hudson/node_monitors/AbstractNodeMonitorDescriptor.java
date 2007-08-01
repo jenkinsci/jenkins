@@ -4,12 +4,12 @@ import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.triggers.Trigger;
+import hudson.triggers.SafeTimerTask;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,8 +32,8 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
         super(clazz);
 
         // check every hour
-        Trigger.timer.scheduleAtFixedRate(new TimerTask() {
-            public void run() {
+        Trigger.timer.scheduleAtFixedRate(new SafeTimerTask() {
+            public void doRun() {
                 // start checking
                 new Record().start();
             }

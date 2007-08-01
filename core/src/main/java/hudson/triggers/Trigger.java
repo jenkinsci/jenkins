@@ -20,7 +20,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -125,10 +124,10 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     /**
      * Runs every minute to check {@link TimerTrigger} and schedules build.
      */
-    private static class Cron extends TimerTask {
+    private static class Cron extends SafeTimerTask {
         private final Calendar cal = new GregorianCalendar();
 
-        public void run() {
+        public void doRun() {
             LOGGER.fine("cron checking "+cal.getTime().toLocaleString());
 
             try {
