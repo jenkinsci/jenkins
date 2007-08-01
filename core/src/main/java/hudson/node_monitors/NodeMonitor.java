@@ -9,6 +9,8 @@ import hudson.model.Node;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Extension point for managing and monitoring {@link Node}s.
@@ -42,8 +44,12 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
     public static final List<Descriptor<NodeMonitor>> LIST = new ArrayList<Descriptor<NodeMonitor>>();
 
     static {
-        LIST.add(ClockMonitor.DESCRIPTOR);
-        if(Functions.isMustangOrAbove())
-            LIST.add(DiskSpaceMonitor.DESCRIPTOR);
+        try {
+            LIST.add(ClockMonitor.DESCRIPTOR);
+            if(Functions.isMustangOrAbove())
+                LIST.add(DiskSpaceMonitor.DESCRIPTOR);
+        } catch (Throwable e) {
+            Logger.getLogger(NodeMonitor.class.getName()).log(Level.SEVERE, "Failed to load built-in monitors",e);
+        }
     }
 }
