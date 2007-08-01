@@ -3,7 +3,7 @@
   <%@ attribute name="showViewTabs" required="true" type="java.lang.Boolean" %>
 
   <%@ attribute name="jobBaseUrl" type="String" %>
-    The base URL of all job links. Normally ${rootURL}/  
+    The base URL of all job links. Normally ${rootURL}/
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <t:setIconSize/>
@@ -38,10 +38,15 @@
           <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
             <t:ballColorTd it="${job.iconColor}" />
             <td data="${buildHealth.score}">
-              <a class="healthReport" href="${jobBaseUrl}${job.shortUrl}lastBuild">
-                <img src="${rootURL}${h.ifThenElse(buildHealth.iconUrl.startsWith('/'),'','/images/'+iconSize+'/')}${buildHealth.iconUrl}"
-                     alt="${buildHealth.score}%"/>
-                <div>
+              <x:element name="div">
+                <x:attribute name="class">healthReport</x:attribute>
+                <x:attribute name="onmouseover">this.className='healthReport hover';return true;</x:attribute>
+                <x:attribute name="onmouseout">this.className='healthReport';return true;</x:attribute>
+                <a class="healthReport" href="${jobBaseUrl}${job.shortUrl}lastBuild">
+                  <img src="${rootURL}${h.ifThenElse(buildHealth.iconUrl.startsWith('/'),'','/images/'+iconSize+'/')}${buildHealth.iconUrl}"
+                       alt="${buildHealth.score}%" />
+                </a>
+                <div class="healthReportDetails">
                   <table border="0">
                     <thead>
                       <tr>
@@ -64,7 +69,7 @@
                     </tbody>
                   </table>
                 </div>
-              </a>
+              </x:element>
             </td>
             <td>
               <a href="${jobBaseUrl}${job.shortUrl}">

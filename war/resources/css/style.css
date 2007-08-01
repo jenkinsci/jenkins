@@ -71,7 +71,7 @@ table.center-align td {
 
 #tasks {
   padding: 4px;
-} 
+}
 
 a:link {
   text-decoration: underline;
@@ -101,11 +101,11 @@ a.tip span {
 a.tip:hover span {
   display:block;
   position:absolute;
-  top:2em; 
-  left:2em; 
+  top:2em;
+  left:2em;
   width:400px;
   border:1px solid #bbbbbb;
-  background-color:#fffff0; 
+  background-color:#fffff0;
   color:#000;
   text-align: left
 }
@@ -328,7 +328,7 @@ th.pane {
   border: 1px solid #ccb;
   background: #eed;
   padding: 4px;
-  white-space: normal;  
+  white-space: normal;
 }
 
 .error {
@@ -368,7 +368,7 @@ th.pane {
 }
 
 .help-area {
-  /* this marker class is used by JavaScript to locate the area to display help text. */ 
+  /* this marker class is used by JavaScript to locate the area to display help text. */
 }
 
 
@@ -420,24 +420,20 @@ th.pane {
 }
 
 /* ============================ health report hover ========================== */
-/* I was using div's but the IE bugs got the better of me anyway, nicer to     */
-/* have a link to the latest build (which is the source of the health report   */
-/* that you are viewing)                                                       */
-/* IE does not render this as nicely as I'd like, but least amount of hacky.   */
 
 a.healthReport {
     text-decoration: none;
 }
 
-a.healthReport div {
+div.healthReport div.healthReportDetails {
     display: none;
 }
 
-a.healthReport:hover { /* fix IE6 bug with :hover */
+div.healthReport:hover, div.healthReport.hover { /* fix IE6 bug with :hover */
     background: transparent;
 }
 
-a.healthReport:hover div {
+div.healthReport:hover div.healthReportDetails, div.healthReport.hover div.healthReportDetails {
     display: block;
     position: absolute;
     background-color: #ffe;
@@ -445,7 +441,7 @@ a.healthReport:hover div {
     margin-left: 32px; /* move it across a bit */
 }
 
-a.healthReport div table {
+div.healthReport div.healthReportDetails table {
     border-collapse: collapse;
     width: 450px; /* fix IE bug with width */
 }
