@@ -63,6 +63,7 @@ public final class ClockDifference {
 
     public static String toHtml(Node d) {
         try {
+            if(d==null) return FAILED_HTML;
             return d.getClockDifference().toHtml();
         } catch (IOException e) {
             return FAILED_HTML;
