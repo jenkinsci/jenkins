@@ -567,8 +567,10 @@ public class SubversionSCM extends SCM implements Serializable {
             try {
                 SvnInfo remoteInfo = new SvnInfo(parseSvnInfo(localInfo.getSVNURL(),authProvider));
                 listener.getLogger().println("Revision:"+remoteInfo.revision);
-                if(remoteInfo.revision > localInfo.revision)
+                if(remoteInfo.revision > localInfo.revision) {
+                    listener.getLogger().println("  (changed from "+localInfo.revision+")");
                     return true;    // change found
+                }
             } catch (SVNException e) {
                 e.printStackTrace(listener.error("Failed to check repository revision for "+localInfo.url));
             }
