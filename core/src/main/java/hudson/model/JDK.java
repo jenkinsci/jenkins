@@ -1,6 +1,11 @@
 package hudson.model;
 
+import hudson.util.StreamTaskListener;
+import hudson.util.NullStream;
+import hudson.Launcher;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -67,5 +72,24 @@ public final class JDK {
         env.put("JAVA_HOME",javaHome);
         if(!env.containsKey("HUDSON_HOME"))
             env.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath() );
+    }
+
+    /**
+     * Checks if "java" is in PATH on the given node.
+     *
+     * <p>
+     * If it's not, then the user must specify a configured JDK,
+     * so this is often useful for form field validation.
+     */
+    public static boolean isDefaultJDKValid(Node n) {
+        try {
+            TaskListener listener = new StreamTaskListener(new NullStream());
+            Launcher launcher = n.createLauncher(listener);
+            return launcher.launch("java -fullversion",new String[0],listener.getLogger(),null).join()==0;
+        } catch (IOException e) {
+            return false;
+        } catch (InterruptedException e) {
+            return false;
+        }
     }
 }

@@ -1626,6 +1626,30 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
+     * If the user chose the default JDK, make sure we got 'java' in PATH.
+     */
+    public void doDefaultJDKCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        new FormFieldValidator(req,rsp,true) {
+            public void check() throws IOException, ServletException {
+                String v = request.getParameter("value");
+                if(!v.equals("(Default)"))
+                    // assume the user configured named ones properly in system config ---
+                    // or else system config should have reported form field validation errors.
+                    ok();
+                else {
+                    // default JDK selected. Does such java really exist?
+                    if(JDK.isDefaultJDKValid(Hudson.this))
+                        ok();
+                    else
+                        errorWithMarkup(
+                            "java is not in your PATH. Maybe you need to" +
+                            "<a href='"+request.getContextPath()+"/configure'>configure JDKs</a>?");
+                }
+            }
+        }.process();
+    }
+
+    /**
      * Checks if the top-level item with the given name exists.
      */
     public void doItemExistsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {

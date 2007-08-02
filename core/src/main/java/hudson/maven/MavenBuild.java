@@ -292,8 +292,18 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             Map<String, String> vars = getEnvVars();
             if(debug)
                 listener.getLogger().println("Using env variables: "+vars);
-            return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
-                out, null, vars);
+            try {
+                return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
+                    out, null, vars);
+            } catch (IOException e) {
+                if(e.getMessage().contains("java: not found")) {
+                    // diagnose issue #659
+                    JDK jdk = getParent().getParent().getJDK();
+                    if(jdk==null)
+                        throw new IOException2(getParent().getParent().getDisplayName()+" is not configured with a JDK, but your PATH doesn't include Java",e);
+                }
+                throw e;
+            }
         }
 
         /**

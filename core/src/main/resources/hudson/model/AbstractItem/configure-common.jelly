@@ -5,17 +5,24 @@
   <p:config-disableBuild/>
 
   <j:set var="jdks" value="${app.JDKs}" />
-  <j:if test="${!empty(jdks)}">
-    <f:entry title="JDK"
-             description="JDK to be used for this project">
-      <select class="setting-input" name="jdk">
-        <option>(Default)</option>
-        <j:forEach var="inst" items="${jdks}">
-        	<f:option selected="${inst.name==it.JDK.name}">${inst.name}</f:option>
-        </j:forEach>
-      </select>
-    </f:entry>
-  </j:if>
+  <j:choose>
+    <j:when test="${!empty(jdks)}">
+      <f:entry title="JDK"
+               description="JDK to be used for this project">
+        <select class="setting-input validated" name="jdk" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value">
+          <option>(Default)</option>
+          <j:forEach var="inst" items="${jdks}">
+            <f:option selected="${inst.name==it.JDK.name}">${inst.name}</f:option>
+          </j:forEach>
+        </select>
+      </f:entry>
+    </j:when>
+    <j:otherwise>
+      <f:entry>
+        <input type="hidden" value="(Default)" class="validated" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value" />
+      </f:entry>
+    </j:otherwise>
+  </j:choose>
 
   <!-- master/slave -->
   <j:if test="${!empty(app.slaves)}">
