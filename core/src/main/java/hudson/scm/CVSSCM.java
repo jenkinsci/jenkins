@@ -1,11 +1,11 @@
 package hudson.scm;
 
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
-import hudson.EnvVars;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
 import hudson.model.AbstractBuild;
@@ -52,7 +52,7 @@ import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -65,7 +65,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.TreeSet;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
