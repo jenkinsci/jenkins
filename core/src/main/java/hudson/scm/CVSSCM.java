@@ -275,7 +275,7 @@ public class CVSSCM extends SCM implements Serializable {
         dir.deleteContents();
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.add(getDescriptor().getCvsExe(),debugLogging?"-t":"-Q",compression(),"-d",cvsroot,"co");
+        cmd.add(getDescriptor().getCvsExe(),debugLogging?"-t":"-Q",compression(),"-P","-d",cvsroot,"co");
         if(branch!=null)
             cmd.add("-r",branch);
         if(flatten)
