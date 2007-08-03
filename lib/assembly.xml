@@ -1,0 +1,12 @@
+<assembly>
+  <id>bin</id>
+  <formats>
+    <format>dir</format>
+  </formats>
+  <repositories>
+    <repository>
+      <outputDirectory>repository</outputDirectory>
+      <includeMetadata>true</includeMetadata>
+    </repository>
+  </repositories>
+</assembly>
