@@ -1,2 +1,5 @@
 *.iml
 target
+.classpath
+.project
+.settings
