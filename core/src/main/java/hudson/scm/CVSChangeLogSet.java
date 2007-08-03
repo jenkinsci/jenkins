@@ -4,6 +4,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.scm.CVSChangeLogSet.CVSChangeLog;
 import hudson.util.IOException2;
+import hudson.util.Digester2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.digester.Digester;
@@ -49,7 +50,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
     }
 
     public static CVSChangeLogSet parse( AbstractBuild build, java.io.File f ) throws IOException, SAXException {
-        Digester digester = new Digester();
+        Digester digester = new Digester2();
         ArrayList<CVSChangeLog> r = new ArrayList<CVSChangeLog>();
         digester.push(r);
 
