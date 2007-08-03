@@ -3,4 +3,4 @@ target
 *.iml
 .project
 .settings
-work
+work*
