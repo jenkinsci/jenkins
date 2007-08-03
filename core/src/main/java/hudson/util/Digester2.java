@@ -11,7 +11,7 @@ import org.xml.sax.Attributes;
  * @since 1.125
  */
 public class Digester2 extends Digester {
-
+    @Override
     public void addObjectCreate(String pattern, Class clazz) {
         addRule(pattern,new ObjectCreateRule2(clazz));
     }
