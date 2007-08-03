@@ -24,7 +24,7 @@
     <title>${h.appendIfNotNull(title, ' [Hudson]', 'Hudson')}</title>
     <link rel="stylesheet" href="${rootURL}/css/style.css" type="text/css" />
     <link rel="stylesheet" href="${rootURL}/css/color.css" type="text/css" />
-    <j:if test="${attrs.css}">
+    <j:if test="${attrs.css!=null}">
       <link rel="stylesheet" href="${rootURL}${attrs.css}" type="text/css" />
     </j:if>
     <link rel="shortcut icon" href="${rootURL}/favicon.ico" type="image/vnd.microsoft.icon" />
