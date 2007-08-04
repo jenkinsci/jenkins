@@ -14,6 +14,7 @@ import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
+import hudson.search.SearchableModelObject;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
@@ -355,6 +356,19 @@ public class Functions {
         return null;
     }
 
+    /**
+     * Finds the inner-most {@link SearchableModelObject} in scope.
+     */
+    public static String getSearchURL() {
+        List list = Stapler.getCurrentRequest().getAncestors();
+        for( int i=list.size()-1; i>=0; i-- ) {
+            Ancestor anc = (Ancestor) list.get(i);
+            if(anc.getObject() instanceof SearchableModelObject)
+                return anc.getUrl()+"/search";
+        }
+        return null;
+    }
+
     public static String appendSpaceIfNotNull(String n) {
         if(n==null) return null;
         else        return n+' ';
@@ -583,4 +597,7 @@ public class Functions {
         }
         return buf.toString();
     }
+
+    // the switch to enable search feature
+    public static boolean searchFeature = System.getProperty("search")!=null;
 }

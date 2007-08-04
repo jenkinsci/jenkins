@@ -52,15 +52,15 @@
             <tr><td style="font-weight:bold; font-size: 2em;">
               <a href="${rootURL}/"><img src="${rootURL}/images/title.png" alt="title" /></a>
             </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
-              <!--form action="search">
-                <div id="searchform">
-                  <img width="24" height="24" src="${rootURL}/images/24x24/find.gif"/>
-                  <b>Search:</b>
-                  <input name="search" size="12" value=""/>
-                  <input type="submit" value="Go"/> <st:nbsp/>
-                </div>
-              </form-->
+              <j:if test="${h.searchFeature}">
+                <form action="${h.searchURL}">
+                  <div id="searchform">
+                    <input name="q" size="12" value="" id="search-box"/>
+                  </div>
+                </form>
+              </j:if>
               <j:if test="${app.useSecurity}">
+                <st:nbsp/>
                 <j:choose>
                   <j:when test="${request.userPrincipal!=null}">
                     <a style="color:white" href="${rootURL}/logout"><b>logout</b></a>
