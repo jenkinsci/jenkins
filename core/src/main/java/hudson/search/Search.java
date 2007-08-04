@@ -1,17 +1,15 @@
 package hudson.search;
 
 import hudson.util.EditDistance;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.io.IOException;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Ancestor;
 
 /**
  * Web-bound object that serves QuickSilver-like search requests.
