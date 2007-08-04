@@ -45,7 +45,7 @@
                 <a class="healthReport" href="${jobBaseUrl}${job.shortUrl}lastBuild">
                   <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}" alt="${buildHealth.score}%" />
                 </a>
-                <j:var set="healthReports" value="${job.buildHealthReports}" />
+                <j:set set="healthReports" value="${job.buildHealthReports}" />
                 <j:if test="${!empty(healthReports)}">
                   <div class="healthReportDetails">
                     <table border="0">
