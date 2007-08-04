@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.search.QuickSilver;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
@@ -429,7 +430,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Returns the last build.
      */
-    @Exported
+    @Exported @QuickSilver
     public RunT getLastBuild() {
         SortedMap<Integer,? extends RunT> runs = _getRuns();
 
@@ -440,7 +441,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Returns the oldest build in the record.
      */
-    @Exported
+    @Exported @QuickSilver
     public RunT getFirstBuild() {
         SortedMap<Integer,? extends RunT> runs = _getRuns();
 
@@ -453,7 +454,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * A stable build would include either {@link Result#SUCCESS} or {@link Result#UNSTABLE}.
      * @see #getLastStableBuild()
      */
-    @Exported
+    @Exported @QuickSilver
     public RunT getLastSuccessfulBuild() {
         RunT r = getLastBuild();
         // temporary hack till we figure out what's causing this bug
@@ -465,7 +466,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Returns the last stable build, if any. Otherwise null.
      */
-    @Exported
+    @Exported @QuickSilver
     public RunT getLastStableBuild() {
         RunT r = getLastBuild();
         while(r!=null && (r.isBuilding() || r.getResult().isWorseThan(Result.SUCCESS)))
@@ -476,7 +477,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * Returns the last failed build, if any. Otherwise null.
      */
-    @Exported
+    @Exported @QuickSilver
     public RunT getLastFailedBuild() {
         RunT r = getLastBuild();
         while(r!=null && (r.isBuilding() || r.getResult()!=Result.FAILURE))

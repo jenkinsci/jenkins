@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.Util;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
-import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.util.RunList;
 import org.kohsuke.stapler.Stapler;
@@ -181,13 +180,12 @@ public abstract class View extends AbstractModelObject {
     }
 
     @Override
-    public SearchIndex getSearchIndex() {
-        return new SearchIndexBuilder()
+    public SearchIndexBuilder makeSearchIndex() {
+        return super.makeSearchIndex()
             .add(new CollectionSearchIndex() {
                 protected TopLevelItem get(String key) { return getItem(key); }
                 protected Collection<TopLevelItem> all() { return getItems(); }
-            })
-            .make();
+            });
     }
 
     /**

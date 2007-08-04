@@ -11,6 +11,14 @@ public final class SearchIndexBuilder {
 
     private final List<SearchIndex> indices = new ArrayList<SearchIndex>();
 
+    /**
+     * Adds all {@link QuickSilver}-annotated properties to the search index.
+     */
+    public SearchIndexBuilder addAllAnnotations(SearchableModelObject o) {
+        ParsedQuickSilver.get(o.getClass()).addTo(this,o);
+        return this;
+    }
+
     public SearchIndexBuilder add(String url, String name) {
         items.add(SearchItems.create(name,url));
         return this;
@@ -19,6 +27,11 @@ public final class SearchIndexBuilder {
     public SearchIndexBuilder add(String url, String... names) {
         for (String name : names)
             add(url,name);
+        return this;
+    }
+
+    public SearchIndexBuilder add(SearchItem item) {
+        items.add(item);
         return this;
     }
 

@@ -28,7 +28,6 @@ import hudson.scm.RepositoryBrowsers;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
-import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
@@ -680,12 +679,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     @Override
-    public SearchIndex getSearchIndex() {
-        return new SearchIndexBuilder()
-            .add(super.getSearchIndex())
+    public SearchIndexBuilder makeSearchIndex() {
+        return super.makeSearchIndex()
             .add("configure", "config","configure")
-            .add("log", "log")
-            .make();
+            .add("log", "log");
     }
 
     public String getUrlChildPrefix() {

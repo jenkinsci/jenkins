@@ -7,8 +7,9 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 
 import hudson.search.SearchableModelObject;
-import hudson.search.SearchIndex;
 import hudson.search.Search;
+import hudson.search.SearchIndexBuilder;
+import hudson.search.SearchIndex;
 
 /**
  * {@link ModelObject} with some convenience methods.
@@ -31,9 +32,14 @@ public abstract class AbstractModelObject implements SearchableModelObject {
     /**
      * Default implementation that returns empty index.
      */
-    public SearchIndex getSearchIndex() {
-        return SearchIndex.EMPTY;
+    protected SearchIndexBuilder makeSearchIndex() {
+        return new SearchIndexBuilder().addAllAnnotations(this);
     }
+
+    public final SearchIndex getSearchIndex() {
+        return makeSearchIndex().make();
+    }
+
 
     public Search getSearch() {
         return new Search();
