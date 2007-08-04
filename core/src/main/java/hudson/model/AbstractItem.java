@@ -139,6 +139,10 @@ public abstract class AbstractItem extends Actionable implements Item {
         return getParent().getUrlChildPrefix()+'/'+getName()+'/';
     }
 
+    public String getSearchUrl() {
+        return getShortUrl();
+    }
+
     @Exported(visibility=2,name="url")
     public final String getAbsoluteUrl() {
         StaplerRequest request = Stapler.getCurrentRequest();

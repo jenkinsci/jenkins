@@ -3,7 +3,7 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.util.FormFieldValidator;
+import hudson.model.AbstractItem;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -12,8 +12,7 @@ import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Project;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Result;
-import hudson.model.Actionable;
-import hudson.model.AbstractItem;
+import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -81,7 +80,7 @@ public class JavadocArchiver extends Publisher {
 
     public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
-    public static final class JavadocAction extends Actionable implements ProminentProjectAction {
+    public static final class JavadocAction implements ProminentProjectAction {
         private final AbstractItem project;
 
         public JavadocAction(AbstractItem project) {

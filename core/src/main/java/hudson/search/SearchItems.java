@@ -14,7 +14,7 @@ public class SearchItems {
                 return searchName;
             }
 
-            public String getSearchUrlFragment() {
+            public String getSearchUrl() {
                 return url;
             }
 
@@ -30,7 +30,7 @@ public class SearchItems {
                 return searchName;
             }
 
-            public String getSearchUrlFragment() {
+            public String getSearchUrl() {
                 return url;
             }
 

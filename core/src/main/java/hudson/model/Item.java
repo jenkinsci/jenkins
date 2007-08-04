@@ -5,6 +5,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.IOException;
 import java.util.Collection;
 
+import hudson.search.SearchableModelObject;
+
 /**
  * Basic configuration unit in Hudson.
  *
@@ -33,7 +35,7 @@ import java.util.Collection;
  * @author Kohsuke Kawaguchi
  * @see Items
  */
-public interface Item extends PersistenceRoot, ModelObject {
+public interface Item extends PersistenceRoot, SearchableModelObject {
     /**
      * Gets the parent that contains this item.
      */

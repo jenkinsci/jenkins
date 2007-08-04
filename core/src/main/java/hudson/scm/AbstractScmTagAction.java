@@ -51,6 +51,10 @@ public abstract class AbstractScmTagAction extends AbstractModelObject implement
         return "tagBuild";
     }
 
+    public String getSearchUrl() {
+        return getUrlName();
+    }
+
     public AbstractBuild getBuild() {
         return build;
     }

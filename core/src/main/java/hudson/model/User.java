@@ -87,7 +87,11 @@ public class User extends AbstractModelObject {
     }
 
     public String getUrl() {
-        return "user/"+ id;
+        return "user/"+id;
+    }
+
+    public String getSearchUrl() {
+        return "/user/"+id;
     }
 
     /**

@@ -45,6 +45,14 @@ public class SuggestedItem {
         if(parent!=null) {
             parent.getUrl(buf);
         }
-        buf.append('/').append(item.getSearchUrlFragment());
+        String f = item.getSearchUrl();
+        if(f.startsWith("/")) {
+            buf.setLength(0);
+            buf.append(f);
+        } else {
+            if(buf.charAt(buf.length()-1)!='/')
+                buf.append('/');
+            buf.append(f);
+        }
     }
 }

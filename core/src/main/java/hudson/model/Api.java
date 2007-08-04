@@ -43,6 +43,10 @@ public class Api extends AbstractModelObject {
         return "API";
     }
 
+    public String getSearchUrl() {
+        return "api";
+    }
+
     /**
      * Exposes the bean as XML.
      */

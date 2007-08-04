@@ -15,7 +15,6 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
-import hudson.node_monitors.NodeMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -29,6 +28,8 @@ import hudson.scm.RepositoryBrowsers;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
+import hudson.search.SearchIndex;
+import hudson.search.SearchIndexBuilder;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -40,12 +41,12 @@ import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
+import hudson.util.ClockDifference;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.FormFieldValidator;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.XStream2;
-import hudson.util.ClockDifference;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -678,6 +679,15 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return "";
     }
 
+    @Override
+    public SearchIndex getSearchIndex() {
+        return new SearchIndexBuilder()
+            .add(super.getSearchIndex())
+            .add("configure", "config","configure")
+            .add("log", "log")
+            .make();
+    }
+
     public String getUrlChildPrefix() {
         return "job";
     }
@@ -758,9 +768,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return getItem(name);
     }
 
-    /**
-     * Gets the {@link TopLevelItem} of the given name.
-     */
+    @Override
     public TopLevelItem getItem(String name) {
         return items.get(name);
     }

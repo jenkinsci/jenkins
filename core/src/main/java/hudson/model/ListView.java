@@ -56,8 +56,12 @@ public class ListView extends View {
         return Arrays.asList(items);
     }
 
-    public TopLevelItem getJob(String name) {
+    public TopLevelItem getItem(String name) {
         return owner.getItem(name);
+    }
+
+    public TopLevelItem getJob(String name) {
+        return getItem(name);
     }
 
     public boolean contains(TopLevelItem item) {

@@ -395,6 +395,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return project.getAbsoluteUrl()+getNumber()+'/';
     }
 
+    public final String getSearchUrl() {
+        return getNumber()+"/";
+    }
+
     /**
      * Unique ID of this build.
      */

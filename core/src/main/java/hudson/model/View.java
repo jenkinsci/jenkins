@@ -1,13 +1,16 @@
 package hudson.model;
 
 import hudson.Util;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.export.Exported;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.search.CollectionSearchIndex;
+import hudson.search.SearchIndex;
+import hudson.search.SearchIndexBuilder;
 import hudson.util.RunList;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -37,6 +40,11 @@ public abstract class View extends AbstractModelObject {
     public abstract Collection<TopLevelItem> getItems();
 
     /**
+     * Gets the {@link TopLevelItem} of the given name.
+     */
+    public abstract TopLevelItem getItem(String name);
+
+    /**
      * Checks if the job is in this collection.
      */
     public abstract boolean contains(TopLevelItem item);
@@ -57,6 +65,10 @@ public abstract class View extends AbstractModelObject {
      * Returns the path relative to the context root.
      */
     public abstract String getUrl();
+
+    public String getSearchUrl() {
+        return getUrl();
+    }
 
     /**
      * Gets the absolute URL of this view.
@@ -166,6 +178,16 @@ public abstract class View extends AbstractModelObject {
         Collections.sort(r);
 
         return r;
+    }
+
+    @Override
+    public SearchIndex getSearchIndex() {
+        return new SearchIndexBuilder()
+            .add(new CollectionSearchIndex() {
+                protected TopLevelItem get(String key) { return getItem(key); }
+                protected Collection<TopLevelItem> all() { return getItems(); }
+            })
+            .make();
     }
 
     /**
