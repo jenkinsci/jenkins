@@ -3,7 +3,7 @@ package hudson.search;
 import hudson.model.ModelObject;
 
 /**
- * {@link ModelObject} that has {@link SearchIndex}.
+ * {@link ModelObject} that can be searched.
  *
  * <p>
  * This interface also extends {@link SearchItem} since
