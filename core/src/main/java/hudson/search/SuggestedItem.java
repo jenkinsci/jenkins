@@ -1,6 +1,8 @@
 package hudson.search;
 
 /**
+ * One item of a search result.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class SuggestedItem {
