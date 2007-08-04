@@ -8,6 +8,7 @@ import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
+import hudson.search.SearchIndexBuilder;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.tasks.BuildStep;
@@ -497,6 +498,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public File getLogFile() {
         return new File(getRootDir(),"log");
+    }
+
+    protected SearchIndexBuilder makeSearchIndex() {
+        return super.makeSearchIndex()
+            .add("console");
     }
 
     /**

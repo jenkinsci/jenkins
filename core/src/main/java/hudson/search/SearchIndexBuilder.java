@@ -19,6 +19,10 @@ public final class SearchIndexBuilder {
         return this;
     }
 
+    public SearchIndexBuilder add(String urlAsWellAsName) {
+        return add(urlAsWellAsName,urlAsWellAsName);        
+    }
+
     public SearchIndexBuilder add(String url, String name) {
         items.add(SearchItems.create(name,url));
         return this;

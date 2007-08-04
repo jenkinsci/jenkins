@@ -682,7 +682,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     public SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex()
             .add("configure", "config","configure")
-            .add("log", "log");
+            .add("log");
     }
 
     public String getUrlChildPrefix() {
