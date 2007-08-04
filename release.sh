@@ -25,3 +25,6 @@ cp $WWW/hudson.jnlp $WWW/$id.jnlp
 # update changelog.html
 ruby update.changelog.rb $id < $WWW/changelog.html > $WWW/changelog.new
 mv $WWW/changelog.new $WWW/changelog.html
+
+# push changes to the maven repository
+ruby push-m2-repo.rb $id
