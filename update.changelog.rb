@@ -10,6 +10,9 @@ class VersionNumber
   def inc
     @tokens[-1] = (@tokens[-1].to_i()+1).to_s()
   end
+  def dec
+    @tokens[-1] = (@tokens[-1].to_i()-1).to_s()
+  end
   def to_s
     @tokens.join(".")
   end
