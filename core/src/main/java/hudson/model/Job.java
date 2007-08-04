@@ -3,6 +3,10 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.search.QuickSilver;
+import hudson.search.SearchIndexBuilder;
+import hudson.search.SearchIndex;
+import hudson.search.SearchItem;
+import hudson.search.SearchItems;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
@@ -202,6 +206,27 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         return true;
     }
 
+    protected SearchIndexBuilder makeSearchIndex() {
+        return super.makeSearchIndex()
+            .add(new SearchIndex() {
+                public void find(String token, List<SearchItem> result) {
+                    try {
+                        if(token.startsWith("#"))   token=token.substring(1);   // ignore leading '#'
+                        int n = Integer.parseInt(token);
+                        Run b = getBuildByNumber(n);
+                        if(b==null) return; // no such build
+                        result.add(SearchItems.create("#"+n,""+n,b));
+                    } catch (NumberFormatException e) {
+                        // not a number.
+                    }
+                }
+
+                public void suggest(String token, List<SearchItem> result) {
+                    find(token,result);
+                }
+            });
+    }
+
     public Collection<? extends Job> getAllJobs() {
         return Collections.<Job>singleton(this);
     }
@@ -359,6 +384,8 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     /**
      * @param n
      *      The build number.
+     * @return
+     *      null if no such build exists.
      * @see Run#getNumber()
      */
     public RunT getBuildByNumber(int n) {
