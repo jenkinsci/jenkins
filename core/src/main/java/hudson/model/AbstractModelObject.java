@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import hudson.search.SearchableModelObject;
 import hudson.search.SearchIndex;
+import hudson.search.Search;
 
 /**
  * {@link ModelObject} with some convenience methods.
@@ -32,6 +33,10 @@ public abstract class AbstractModelObject implements SearchableModelObject {
      */
     public SearchIndex getSearchIndex() {
         return SearchIndex.EMPTY;
+    }
+
+    public Search getSearch() {
+        return new Search();
     }
 
     /**

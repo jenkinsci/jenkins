@@ -364,7 +364,7 @@ public class Functions {
         for( int i=list.size()-1; i>=0; i-- ) {
             Ancestor anc = (Ancestor) list.get(i);
             if(anc.getObject() instanceof SearchableModelObject)
-                return anc.getUrl()+"/search";
+                return anc.getUrl()+"/search/";
         }
         return null;
     }

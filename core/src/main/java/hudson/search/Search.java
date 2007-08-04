@@ -1,16 +1,43 @@
 package hudson.search;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Collections;
-
 import hudson.util.EditDistance;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.io.IOException;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Ancestor;
+
 /**
+ * Web-bound object that serves QuickSilver-like search requests.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Search {
+    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        for (Ancestor a : req.getAncestors()) {
+            if (a.getObject() instanceof SearchableModelObject) {
+                SearchableModelObject smo = (SearchableModelObject) a.getObject();
+
+                SearchIndex index = smo.getSearchIndex();
+                String query = req.getParameter("q");
+                SuggestedItem target = find(index, query);
+                if(target!=null) {
+                    // found
+                    rsp.sendRedirect2(target.getUrl());
+                }
+            }
+        }
+
+        // TODO: go to suggestion page
+        throw new UnsupportedOperationException();
+    }
+
     //public static List<SearchItem> find(SearchIndex index, String tokenList) {
     //    List<SearchItem> result = new ArrayList<SearchItem>();
     //    StringTokenizer tokens = new StringTokenizer(tokenList);
@@ -45,8 +72,11 @@ public class Search {
 
     }
 
-    public static SuggestedItem find(SearchIndex index, String tokenList) {
-        List<SuggestedItem> r = find(Mode.FIND, index, tokenList);
+    /**
+     * Performs a search and returns the match, or null if no match was found.
+     */
+    public static SuggestedItem find(SearchIndex index, String query) {
+        List<SuggestedItem> r = find(Mode.FIND, index, query);
         if(r.isEmpty()) return null;
         else            return r.get(0);
     }

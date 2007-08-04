@@ -36,7 +36,7 @@ public class SuggestedItem {
     }
 
     public String getUrl() {
-        StringBuilder buf = new StringBuilder("$contextRoot");
+        StringBuilder buf = new StringBuilder();
         getUrl(buf);
         return buf.toString();
     }
@@ -50,7 +50,7 @@ public class SuggestedItem {
             buf.setLength(0);
             buf.append(f);
         } else {
-            if(buf.charAt(buf.length()-1)!='/')
+            if(buf.length()==0 || buf.charAt(buf.length()-1)!='/')
                 buf.append('/');
             buf.append(f);
         }

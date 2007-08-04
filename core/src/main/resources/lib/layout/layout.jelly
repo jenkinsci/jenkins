@@ -53,7 +53,7 @@
               <a href="${rootURL}/"><img src="${rootURL}/images/title.png" alt="title" /></a>
             </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
               <j:if test="${h.searchFeature}">
-                <form action="${h.searchURL}">
+                <form action="${h.searchURL}" method="get">
                   <div id="searchform">
                     <input name="q" size="12" value="" id="search-box"/>
                   </div>
