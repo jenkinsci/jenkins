@@ -75,6 +75,15 @@ public final class DirectoryBrowserSupport {
             f = f.getParent();
             isFingerprint = true;
         }
+
+        boolean view = false;
+        if (f.getName().equals("*view*")) {
+            // f.name == ".../ws/.../<filename>/*view*/"
+        	// set f to point to the real file
+        	f = f.getParent();
+        	view = true;
+        }
+
         if(f.getParent().getName().equals("*zip*")) {
             // the expected syntax is foo/bar/*zip*/bar.zip
             // the last 'bar.zip' portion is to causes browses to set a good default file name 
@@ -116,8 +125,17 @@ public final class DirectoryBrowserSupport {
         } else {
             ContentInfo ci = f.act(new ContentInfo());
 
-            InputStream in = f.read();
-            rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, f.getName() );
+            InputStream in = f.read();            
+        	if (view) {
+        		// for binary files, provide the file name for download
+        		rsp.setHeader("Content-Disposition", "inline; filename=" + f.getName());
+        		
+				// pseudo file name to let the Stapler set text/plain
+                rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, "plain.txt");
+			} else {
+        		rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, f.getName() );	
+        	}
+
             in.close();
         }
     }

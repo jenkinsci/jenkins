@@ -35,6 +35,8 @@
                   <a href="${x.href}/*fingerprint*/">
                     <img src="${imagesURL}/16x16/fingerprint.gif" alt="fingerprint" />
                   </a>
+                  <st:nbsp/>
+                  <a href="${x.href}/*view*/">view</a>
                 </td>
               </j:if>
             </tr>
