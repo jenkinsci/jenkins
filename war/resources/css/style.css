@@ -638,3 +638,13 @@ DIV.yahooTree td {
 #search-box-completion LI.yui-ac-highlight {
   background: #729FCF;
 }
+#search-box-minWidth {
+  position:absolute;
+  visibility: hidden;
+  width:5em;
+}
+
+#search-box-sizer {
+  position:absolute;
+  visibility: hidden;
+}

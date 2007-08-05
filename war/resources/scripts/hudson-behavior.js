@@ -637,15 +637,55 @@ function updateListBox(listBox,url) {
     });
 }
 
+// get the cascaded computed style value. 'a' is the style name like 'backgroundColor'
+function getStyle(e,a){
+  if(document.defaultView && document.defaultView.getComputedStyle)
+    return document.defaultView.getComputedStyle(e,null).getPropertyValue(a.replace(/([A-Z])/g, "-$1"));
+  if(e.currentStyle)
+    return e.currentStyle[rzCC(a)];
+};
+
+// set up logic behind the search box
 function createSearchBox(searchURL) {
     var ds = new YAHOO.widget.DS_XHR(searchURL+"suggest",["suggestions","name"]);
     ds.queryMatchCase = false;
     var ac = new YAHOO.widget.AutoComplete("search-box","search-box-completion",ds);
-    ac.doBeforeExpandContainer = function(textbox, completionBox, sQuery, aResults) {
-        var pos = YAHOO.util.Dom.getXY(textbox);
-        pos[1] += YAHOO.util.Dom.get(textbox).offsetHeight + 2;
-        YAHOO.util.Dom.setXY(completionBox, pos);
-        return true;
-    };
     ac.typeAhead = false;
+
+    var box   = $("search-box");
+    var sizer = $("search-box-sizer");
+    var comp  = $("search-box-completion");
+    var minW  = $("search-box-minWidth");
+
+    Behaviour.addLoadEvent(function(){
+        // make sure all three components have the same font settings
+        function copyFontStyle(s,d) {
+            var ds = d.style;
+            ds.fontFamily = getStyle(s,"fontFamily");
+            ds.fontSize = getStyle(s,"fontSize");
+            ds.fontStyle = getStyle(s,"fontStyle");
+            ds.fontWeight = getStyle(s,"fontWeight");
+        }
+
+        copyFontStyle(box,sizer);
+        copyFontStyle(box,minW);
+    });
+
+    // update positions and sizes of the components relevant to search
+    function updatePos() {
+        function max(a,b) { if(a>b) return a; else return b; }
+
+        sizer.innerHTML = box.value;
+        var w = max(sizer.offsetWidth,minW.offsetWidth);
+        box.style.width =
+        comp.style.width = 
+        comp.firstChild.style.width = (w+60)+"px";
+
+        var pos = YAHOO.util.Dom.getXY(box);
+        pos[1] += YAHOO.util.Dom.get(box).offsetHeight + 2;
+        YAHOO.util.Dom.setXY(comp, pos);
+    }
+
+    updatePos();
+    box.onkeyup = updatePos;
 }

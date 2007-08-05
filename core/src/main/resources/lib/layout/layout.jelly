@@ -57,6 +57,10 @@
               <j:if test="${h.searchFeature}">
                 <j:set var="searchURL" value="${h.searchURL}"/>
                 <form action="${searchURL}" method="get">
+                  <!-- this div determines the minimum width -->
+                  <div id="search-box-minWidth"/>
+                  <!-- this div is used to calculate the width of the text box -->
+                  <div id="search-box-sizer"/>
                   <div id="searchform">
                     <input name="q" value="" id="search-box"/>
                     <div id="search-box-completion" />
