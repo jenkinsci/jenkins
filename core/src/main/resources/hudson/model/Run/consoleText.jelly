@@ -1,5 +1,5 @@
 <!--
   Displays the console output as plain/text
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-<st:contentType value="text/plain;charset=UTF-8" />${it.log}</j:jelly>
+<st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+<st:contentType value="text/plain;charset=UTF-8" />${it.log}</st:compress>
