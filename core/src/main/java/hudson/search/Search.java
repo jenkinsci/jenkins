@@ -36,24 +36,6 @@ public class Search {
         throw new UnsupportedOperationException();
     }
 
-    //public static List<SearchItem> find(SearchIndex index, String tokenList) {
-    //    List<SearchItem> result = new ArrayList<SearchItem>();
-    //    StringTokenizer tokens = new StringTokenizer(tokenList);
-    //
-    //    while(tokens.hasMoreTokens()) {
-    //        String token = tokens.nextToken();
-    //
-    //        result.clear();
-    //        index.find(token,result);
-    //
-    //        index = SearchIndex.EMPTY;
-    //        for (SearchItem r : result)
-    //            index = UnionSearchIndex.combine(index,r.getSearchIndex());
-    //    }
-    //
-    //    return result;
-    //}
-
     private enum Mode {
         FIND {
             void find(SearchIndex index, String token, List<SearchItem> result) {
