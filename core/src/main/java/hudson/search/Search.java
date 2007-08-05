@@ -28,6 +28,7 @@ public class Search {
                 if(target!=null) {
                     // found
                     rsp.sendRedirect2(a.getUrl()+target.getUrl());
+                    return;
                 }
             }
         }
