@@ -133,7 +133,7 @@
     <table width="100%">
       <tr><td id="footer">
         <a href="http://hudson.dev.java.net/">
-          Hudson ver. ${servletContext.getAttribute('version')}
+          Hudson ver. ${h.version}
         </a>
       </td></tr>
     </table>
