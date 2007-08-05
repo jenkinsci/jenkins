@@ -1,20 +1,20 @@
 package hudson.model;
 
+import hudson.util.ByteBuffer;
 import hudson.util.CharSpool;
 import hudson.util.CountingOutputStream;
-import hudson.util.WriterOutputStream;
-import hudson.util.ByteBuffer;
 import hudson.util.LineEndNormalizingWriter;
+import hudson.util.WriterOutputStream;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Writer;
-import java.io.InputStream;
 
 /**
  * Represents a large text data.
@@ -153,7 +153,13 @@ public class LargeText {
         if(!completed)
             rsp.addHeader("X-More-Data","true");
 
-        spool.writeTo(new LineEndNormalizingWriter(rsp.getWriter()));
+        // when sending big text, try compression. don't bother if it's small
+        Writer w;
+        if(r-start>4096)
+            w = rsp.getCompressedWriter(req);
+        else
+            w = rsp.getWriter();
+        spool.writeTo(new LineEndNormalizingWriter(w));
 
     }
 
