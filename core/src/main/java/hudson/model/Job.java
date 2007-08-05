@@ -224,7 +224,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
                 public void suggest(String token, List<SearchItem> result) {
                     find(token,result);
                 }
-            });
+            }).add("configure","config","configure");
     }
 
     public Collection<? extends Job> getAllJobs() {

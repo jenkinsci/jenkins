@@ -505,7 +505,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex()
-            .add("console");
+            .add("console")
+            .add("changes");
     }
 
     /**
