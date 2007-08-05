@@ -33,7 +33,7 @@
             function loadAllBuildHistory() {
               // first display the "loading..." icon
               var box = $("loadAllBuildHistory");
-              box.innerHTML = '<img src="${rootURL}/images/spinner.gif" />';
+              box.innerHTML = '<img src="${imagesURL}/spinner.gif" />';
 
               // then actually fetch the HTML
               new Ajax.Request("allBuildHistory",{
@@ -65,9 +65,9 @@
     -->
     <tr class="build-row">
       <td colspan="2" align="right">
-        <a href="${rootURL}/${it.url}rssAll"><img src="${rootURL}/images/atom.gif" border="0"/> for all</a>
+        <a href="${rootURL}/${it.url}rssAll"><img src="${imagesURL}/atom.gif" border="0"/> for all</a>
         <st:nbsp/>
-        <a href="${rootURL}/${it.url}rssFailed"><img src="${rootURL}/images/atom.gif" border="0"/> for failures</a>
+        <a href="${rootURL}/${it.url}rssFailed"><img src="${imagesURL}/atom.gif" border="0"/> for failures</a>
       </td>
     </tr>
   </l:pane>

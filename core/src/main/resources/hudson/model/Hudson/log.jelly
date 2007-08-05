@@ -12,7 +12,7 @@
 
     <!-- TODO: put this in the <head> tag. -->
     <div align="right" style="margin:1em">
-      <img src="${rootURL}/images/atom.gif" border="0"/>
+      <img src="${imagesURL}/atom.gif" border="0"/>
       <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
       <a href="logRss">All</a>
       <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>

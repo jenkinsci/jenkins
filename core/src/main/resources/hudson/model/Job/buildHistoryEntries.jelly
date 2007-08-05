@@ -16,7 +16,7 @@
     <j:set var="id" value="${h.generateId()}"/>
     <tr class="build-row transitive" id="${id}">
       <td nowrap="nowrap">
-        <img width="16" height="16" src="${rootURL}/images/16x16/grey.gif" alt="pending" /><st:nbsp/>
+        <img width="16" height="16" src="${imagesURL}/16x16/grey.gif" alt="pending" /><st:nbsp/>
         #${it.nextBuildNumber}
       </td>
       <td nowrap="nowrap" tooltip="${pending.why}">
@@ -30,7 +30,7 @@
     <j:set var="link" value="${url}/${build.number}/" />
     <tr class="build-row ${h.ifThenElse(build.building,'transitive',null)}">
       <td nowrap="nowrap">
-        <img width="16" height="16" src="${rootURL}/images/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description}" /><st:nbsp/>
+        <img width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description}" /><st:nbsp/>
         #${build.number}
       </td>
       <td nowrap="nowrap">
@@ -41,7 +41,7 @@
           <st:nbsp/>
           <img width="16" height="16"
             title="${build.whyKeepLog}"
-            src="${rootURL}/images/16x16/lock.gif"/>
+            src="${imagesURL}/16x16/lock.gif"/>
         </j:if>
       </td>
     </tr>
@@ -53,7 +53,7 @@
             <t:buildProgressBar build="${build}"/>
           </td><td style="padding:0">
             <l:isAdmin>
-              <a href="${link}stop"><img src="${rootURL}/images/16x16/stop.gif" alt="[cancel]"/></a>
+              <a href="${link}stop"><img src="${imagesURL}/16x16/stop.gif" alt="[cancel]"/></a>
             </l:isAdmin>
           </td></tr>
         </table>

@@ -5,7 +5,7 @@
   <l:ajax>
     <p:matrix autoRefresh="${it.isBuilding()}">
       <a href="${p.parent.combination}/">
-        <img src="${rootURL}/images/24x24/${h.ifThenElse(p!=null,p.buildStatusUrl,'grey.gif')}"
+        <img src="${imagesURL}/24x24/${h.ifThenElse(p!=null,p.buildStatusUrl,'grey.gif')}"
              title="${p.iconColor.description}"/>
         <j:if test="${empty(o.x) and empty(o.y)}">
           ${p.parent.combination.toString(o.z)}

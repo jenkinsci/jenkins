@@ -13,7 +13,7 @@
 
     <l:isAdmin>
       <div align="right"><a href="editDescription" onclick="return replaceDescription();">
-        <img src="${rootURL}/images/16x16/notepad.gif" /> ${verb} description
+        <img src="${imagesURL}/16x16/notepad.gif" /> ${verb} description
       </a></div>
     </l:isAdmin>
   </div>

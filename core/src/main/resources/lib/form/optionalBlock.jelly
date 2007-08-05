@@ -24,7 +24,7 @@
     </td>
     <j:if test="${help!=null}">
       <td>
-        <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${rootURL}/images/16x16/help.gif" alt="Help for feature: ${title}" /></a>
+        <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.gif" alt="Help for feature: ${title}" /></a>
       </td>
     </j:if>
   </tr>

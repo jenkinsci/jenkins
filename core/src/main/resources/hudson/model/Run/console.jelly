@@ -10,7 +10,7 @@
       </t:buildCaption>
       <l:rightspace>
         <a href="consoleText">
-          <img src="${rootURL}/images/24x24/document.gif" alt="" />View as plain text
+          <img src="${imagesURL}/24x24/document.gif" alt="" />View as plain text
         </a>
       </l:rightspace>
       <j:choose>
@@ -18,7 +18,7 @@
         <j:when test="${it.building}">
           <pre id="out"></pre>
           <div id="spinner">
-            <img src="${rootURL}/images/spinner.gif" /> 
+            <img src="${imagesURL}/spinner.gif" /> 
           </div>
           <t:progressiveText href="progressiveLog" idref="out" spinner="spinner" />
         </j:when>

@@ -92,7 +92,7 @@
                 <s:entry title="clock" help="/help/system-config/master-slave/clock.html">
                   <j:set var="id" value="${h.generateId()}"/>
                   <div id="${id}">
-                    <img src="${rootURL}/images/spinner.gif"/> checking clock
+                    <img src="${imagesURL}/spinner.gif"/> checking clock
                   </div>
                   <script>
                     FormChecker.delayedCheck("./checkClock?node=${s.nodeName}", "post", $$('${id}') );

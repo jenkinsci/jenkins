@@ -7,20 +7,20 @@
       <!-- parent path -->
         <div class="parentPath">
           <form action="." method="get">
-            <a href="${topPath}"><img src="${rootURL}/images/48x48/${icon}" class="rootIcon" /></a>
+            <a href="${topPath}"><img src="${imagesURL}/48x48/${icon}" class="rootIcon" /></a>
             <j:forEach var="p" items="${parentPath}">
               <a href="${p.href}">${p.title}</a>
               /
             </j:forEach>
             <input type="text" name="path" />
-            <input type="image" src="${rootURL}/images/16x16/go-next.gif" style="vertical-align:middle"/>
+            <input type="image" src="${imagesURL}/16x16/go-next.gif" style="vertical-align:middle"/>
           </form>
         </div>
         <table class="fileList">
           <j:forEach var="f" items="${files}">
             <tr>
               <td>
-                <img src="${rootURL}/images/16x16/${f[0].iconName}"/>
+                <img src="${imagesURL}/16x16/${f[0].iconName}"/>
               </td>
               <td>
                 <j:forEach var="t" items="${f}" varStatus="st">
@@ -33,7 +33,7 @@
                 <td class="fileSize">
                   ${x.getSize()}
                   <a href="${x.href}/*fingerprint*/">
-                    <img src="${rootURL}/images/16x16/fingerprint.gif" alt="fingerprint" />
+                    <img src="${imagesURL}/16x16/fingerprint.gif" alt="fingerprint" />
                   </a>
                 </td>
               </j:if>
@@ -43,7 +43,7 @@
             <td style="text-align:right;" colspan="3">
               <div style="margin-top: 1em;">
                 <a href="*zip*/${dir.name}.zip">
-                  <img src="${rootURL}/images/16x16/package.gif"/>
+                  <img src="${imagesURL}/16x16/package.gif"/>
                   (all files in zip)
                 </a>
               </div>

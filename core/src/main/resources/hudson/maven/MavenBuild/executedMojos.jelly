@@ -32,7 +32,7 @@
               <tr>
                 <td>
                   <a href="${m.getPluginLink(cache)}">
-                    <img src="${rootURL}/images/24x24/gear.gif"/>
+                    <img src="${imagesURL}/24x24/gear.gif"/>
                     ${m.groupId}:${m.artifactId}
                   </a>
                 </td>
@@ -45,7 +45,7 @@
                 <td align="center">${m.readableExecutionId}</td>
                 <td>${m.durationString}</td>
                 <td align="center">
-                  <a href="${rootURL}/fingerprint/${m.digest}/"><img src="${rootURL}/images/16x16/fingerprint.gif" alt="fingerprint" /></a>
+                  <a href="${rootURL}/fingerprint/${m.digest}/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="fingerprint" /></a>
                 </td>
               </tr>
             </j:forEach>

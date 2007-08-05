@@ -119,7 +119,7 @@
               <td>
                 <j:if test="${job.buildable}">
                   <a href="${jobBaseUrl}${job.shortUrl}build">
-                    <img src="${rootURL}/images/${subIconSize}/clock.gif" title="Schedule a build" border="0" /></a>
+                    <img src="${imagesURL}/${subIconSize}/clock.gif" title="Schedule a build" border="0" /></a>
                 </j:if>
               </td>
             </l:isAdmin>

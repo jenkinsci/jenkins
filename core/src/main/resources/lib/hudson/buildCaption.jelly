@@ -12,7 +12,7 @@
 	          <t:buildProgressBar build="${it}"/>
 	        </td><td>
             <l:isAdmin>
-	            <a href="stop"><img src="${rootURL}/images/16x16/stop.gif" alt="[cancel]" /></a>
+	            <a href="stop"><img src="${imagesURL}/16x16/stop.gif" alt="[cancel]" /></a>
             </l:isAdmin>
 	        </td>
 	      </tr></table>

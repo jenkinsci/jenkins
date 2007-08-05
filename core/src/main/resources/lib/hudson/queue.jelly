@@ -36,7 +36,7 @@
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <l:isAdmin>
-                <a href="${rootURL}/${item.task.url}cancelQueue"><img src="${rootURL}/images/16x16/stop.gif" alt="cancel this build" /></a>
+                <a href="${rootURL}/${item.task.url}cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
               </l:isAdmin>
              </td>
           </tr>

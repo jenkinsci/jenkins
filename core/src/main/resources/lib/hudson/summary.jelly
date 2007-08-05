@@ -9,7 +9,7 @@
     <tr>
       <td>
         <a href="${attrs.href}">
-          <img src="${rootURL}/images/48x48/${icon}" width="48" height="48" style="margin-right:1em" />
+          <img src="${imagesURL}/48x48/${icon}" width="48" height="48" style="margin-right:1em" />
         </a>
       </td>
       <td style="vertical-align:middle">

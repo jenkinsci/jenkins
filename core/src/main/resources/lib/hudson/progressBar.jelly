@@ -22,7 +22,7 @@
 	  </j:if>
 	  <j:choose>
 	    <j:when test="${pos lt 0}">
-	      <tbody><tr style="background-image:url(${rootURL}/images/progress-unknown.gif)"><td></td></tr></tbody>
+	      <tbody><tr style="background-image:url(${imagesURL}/progress-unknown.gif)"><td></td></tr></tbody>
 	    </j:when>
 	    <j:otherwise>
 	        <tbody><tr>

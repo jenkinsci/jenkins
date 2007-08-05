@@ -2,14 +2,14 @@
 
   <d:taglib uri="local">
     <d:tag name="showItem">
-      <img src="${rootURL}/images/16x16/${item.buildStatusUrl}" alt="${item.iconColor.description}"/>
+      <img src="${imagesURL}/16x16/${item.buildStatusUrl}" alt="${item.iconColor.description}"/>
       <a href="${h.getRelativeLinkTo(item)}">${item.displayName}</a>
     </d:tag>
     <d:tag name="relationship">
       <j:if test="${lhs.fingerprintConfigured and rhs.fingerprintConfigured}">
         <st:nbsp/>
         <a href="${rootURL}/projectRelationship?lhs=${lhs.name}&amp;rhs=${rhs.name}">
-          <img src="${rootURL}/images/16x16/fingerprint.gif" alt="check relationship"/>
+          <img src="${imagesURL}/16x16/fingerprint.gif" alt="check relationship"/>
         </a>
       </j:if>
     </d:tag>
