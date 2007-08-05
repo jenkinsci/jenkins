@@ -66,9 +66,6 @@ public class Search {
                 r.suggestions.add(new Item(p));
         }
 
-        //// DEBUG
-        //r.suggestions = Arrays.asList(new Item("aaa"),new Item("aab"),new Item("bbb"),new Item("bbc"),new Item("bbd"));
-
         rsp.serveExposedBean(req,r,Flavor.JSON);
     }
 
