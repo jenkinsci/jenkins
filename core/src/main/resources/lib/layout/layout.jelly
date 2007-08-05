@@ -16,31 +16,40 @@
 <j:set var="rootURL" value="${request.contextPath}" />
 <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null)}"/>
+<!--
+  load static resources from the path dedicated to a specific version.
+  This "/static/VERSION/abc/def.ghi" path is interpreted by stapler to be
+  the same thing as "/abc/def.ghi", but this avoids the stale cache
+  problem when the user upgrades to new Hudson. Stapler also sets a long
+  future expiration dates for such static resources.
+-->
+<j:set var="resURL"  value="${rootURL}${h.resourcePath}" />
+<j:set var="imagesURL"  value="${rootURL}${h.resourcePath}/images" />
 <html>
   <head>
     <!-- if this page needs to be secured, make sure the user is admin -->
     ${h.adminCheck(request,response,secured)}
 
     <title>${h.appendIfNotNull(title, ' [Hudson]', 'Hudson')}</title>
-    <link rel="stylesheet" href="${rootURL}/css/style.css" type="text/css" />
-    <link rel="stylesheet" href="${rootURL}/css/color.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <j:if test="${attrs.css!=null}">
       <link rel="stylesheet" href="${rootURL}${attrs.css}" type="text/css" />
     </j:if>
-    <link rel="shortcut icon" href="${rootURL}/favicon.ico" type="image/vnd.microsoft.icon" />
-    <script src="${rootURL}/scripts/prototype.js" type="text/javascript"></script>
-    <script src="${rootURL}/scripts/behavior.js" type="text/javascript"></script>
-    <script src="${rootURL}/scripts/sortable.js" type="text/javascript"></script>
-    <script src="${rootURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
+    <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
+    <script src="${resURL}/scripts/prototype.js" type="text/javascript"></script>
+    <script src="${resURL}/scripts/behavior.js" type="text/javascript"></script>
+    <script src="${resURL}/scripts/sortable.js" type="text/javascript"></script>
+    <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
 
     <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
-    <script src="${rootURL}/scripts/yui/yahoo-${yuiSuffix}.js"></script>
-    <script src="${rootURL}/scripts/yui/dom-${yuiSuffix}.js"></script>
-    <script src="${rootURL}/scripts/yui/event-${yuiSuffix}.js"></script>
-    <script src="${rootURL}/scripts/yui/container-${yuiSuffix}.js"></script>
-    <script src="${rootURL}/scripts/yui/connection-${yuiSuffix}.js"></script>
-    <script src="${rootURL}/scripts/yui/autocomplete-${yuiSuffix}.js"></script>
-    <link rel="stylesheet" href="${rootURL}/scripts/yui/container.css" type="text/css"/>
+    <script src="${resURL}/scripts/yui/yahoo-${yuiSuffix}.js"></script>
+    <script src="${resURL}/scripts/yui/dom-${yuiSuffix}.js"></script>
+    <script src="${resURL}/scripts/yui/event-${yuiSuffix}.js"></script>
+    <script src="${resURL}/scripts/yui/container-${yuiSuffix}.js"></script>
+    <script src="${resURL}/scripts/yui/connection-${yuiSuffix}.js"></script>
+    <script src="${resURL}/scripts/yui/autocomplete-${yuiSuffix}.js"></script>
+    <link rel="stylesheet" href="${resURL}/scripts/yui/container.css" type="text/css"/>
     
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
@@ -52,7 +61,7 @@
         <td id="top-panel" colspan="2">
           <table cellpadding="0" cellspacing="0" width="100%" border="0">
             <tr><td style="font-weight:bold; font-size: 2em;">
-              <a href="${rootURL}/"><img src="${rootURL}/images/title.png" alt="title" /></a>
+              <a href="${rootURL}/"><img src="${imagesURL}/title.png" alt="title" /></a>
             </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
               <j:if test="${h.searchFeature}">
                 <j:set var="searchURL" value="${h.searchURL}"/>
@@ -114,7 +123,7 @@
       </tr>
     </table>
     <table id="main-table" width="100%" height="70%" border="0"
-        style="background-image: url(${rootURL}/images/hudson.png);
+        style="background-image: url(${imagesURL}/hudson.png);
                background-repeat: no-repeat; background-position: bottom left;">
       <tr>
         <td id="side-panel" width="20%">

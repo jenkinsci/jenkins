@@ -108,6 +108,11 @@ public class WebAppMain implements ServletContextListener {
         Hudson.VERSION = ver;
         context.setAttribute("version",ver);
 
+        if(ver.equals("?"))
+            Hudson.RESOURCE_PATH = "";
+        else
+            Hudson.RESOURCE_PATH = "/static/"+Util.getDigestOf(ver).substring(0,8);
+
         Trigger.init(); // start running trigger
 
         // trigger the loading of changelogs in the background,

@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.io.ByteArrayInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.DigestInputStream;
@@ -318,6 +319,14 @@ public class Util {
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
             throw new IOException2("MD5 not installed",e);    // impossible
+        }
+    }
+    
+    public static String getDigestOf(String text) {
+        try {
+            return getDigestOf(new ByteArrayInputStream(text.getBytes()));
+        } catch (IOException e) {
+            throw new Error(e);
         }
     }
 

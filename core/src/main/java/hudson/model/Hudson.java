@@ -1797,6 +1797,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public static String VERSION;
 
+    /**
+     * Prefix to static resources like images and javascripts in the war file.
+     * Either "" or strings like "/static/VERSION", which avoids Hudson to pick up
+     * stale cache when the user upgrades to a different version. 
+     */
+    public static String RESOURCE_PATH;
+
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");

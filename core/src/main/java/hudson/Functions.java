@@ -602,6 +602,13 @@ public class Functions {
         return Hudson.VERSION;
     }
 
+    /**
+     * Resoruce path prefix.
+     */
+    public static String getResourcePath() {
+        return Hudson.RESOURCE_PATH;
+    }
+
     // the switch to enable search feature
     public static boolean searchFeature = System.getProperty("search")!=null;
 }
