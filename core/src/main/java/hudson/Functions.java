@@ -279,7 +279,7 @@ public class Functions {
     /**
      * Set to true if you need to use the debug version of YUI.
      */
-    public static boolean DEBUG_YUI = false;
+    public static boolean DEBUG_YUI = System.getProperty("debug.YUI")!=null;
 
     /**
      * Creates a sub map by using the given range (both ends inclusive).
