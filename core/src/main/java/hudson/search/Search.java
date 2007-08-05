@@ -2,20 +2,21 @@ package hudson.search;
 
 import hudson.util.EditDistance;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.export.Flavor;
-import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Flavor;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Arrays;
 
 /**
  * Web-bound object that serves QuickSilver-like search requests.
@@ -56,13 +57,17 @@ public class Search {
         }
 
         Result r = new Result();
+        Set<String> paths = new HashSet<String>();  // paths already added, to control duplicates
+        for (SuggestedItem item : suggest(builder.make(), query)) {
+            if(r.suggestions.size()>20) break;
 
-        //r.suggestions = suggest(builder.make(), query);
-        //if(r.suggestions.size()>20)
-        //    r.suggestions = r.suggestions.subList(0,20);
-        
-        // DEBUG
-        r.suggestions = Arrays.asList(new Item("aaa"),new Item("aab"),new Item("bbb"),new Item("bbc"),new Item("bbd"));
+            String p = item.getPath();
+            if(paths.add(p))
+                r.suggestions.add(new Item(p));
+        }
+
+        //// DEBUG
+        //r.suggestions = Arrays.asList(new Item("aaa"),new Item("aab"),new Item("bbb"),new Item("bbc"),new Item("bbd"));
 
         rsp.serveExposedBean(req,r,Flavor.JSON);
     }
@@ -70,7 +75,7 @@ public class Search {
     @ExportedBean
     public static class Result {
         @Exported
-        public List<Item> suggestions;
+        public List<Item> suggestions = new ArrayList<Item>();
     }
 
     @ExportedBean(defaultVisibility=999)
