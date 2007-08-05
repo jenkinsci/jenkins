@@ -636,3 +636,16 @@ function updateListBox(listBox,url) {
         }
     });
 }
+
+function createSearchBox(searchURL) {
+    var ds = new YAHOO.widget.DS_XHR(searchURL+"suggest",["suggestions","name"]);
+    ds.queryMatchCase = false;
+    var ac = new YAHOO.widget.AutoComplete("search-box","search-box-completion",ds);
+    ac.doBeforeExpandContainer = function(textbox, completionBox, sQuery, aResults) {
+        var pos = YAHOO.util.Dom.getXY(textbox);
+        pos[1] += YAHOO.util.Dom.get(textbox).offsetHeight + 2;
+        YAHOO.util.Dom.setXY(completionBox, pos);
+        return true;
+    };
+    ac.typeAhead = false;
+}

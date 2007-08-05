@@ -4,12 +4,18 @@ import hudson.util.EditDistance;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.export.Flavor;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Arrays;
 
 /**
  * Web-bound object that serves QuickSilver-like search requests.
@@ -35,6 +41,46 @@ public class Search {
 
         // TODO: go to suggestion page
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Used by search box auto-completion. Returns JSON array.
+     */
+    public void doSuggest(StaplerRequest req, StaplerResponse rsp, @QueryParameter("query")String query) throws IOException, ServletException {
+        SearchIndexBuilder builder = new SearchIndexBuilder();
+        for (Ancestor a : req.getAncestors()) {
+            if (a.getObject() instanceof SearchableModelObject) {
+                SearchableModelObject smo = (SearchableModelObject) a.getObject();
+                builder.add(smo.getSearchIndex());
+            }
+        }
+
+        Result r = new Result();
+
+        //r.suggestions = suggest(builder.make(), query);
+        //if(r.suggestions.size()>20)
+        //    r.suggestions = r.suggestions.subList(0,20);
+        
+        // DEBUG
+        r.suggestions = Arrays.asList(new Item("aaa"),new Item("aab"),new Item("bbb"),new Item("bbc"),new Item("bbd"));
+
+        rsp.serveExposedBean(req,r,Flavor.JSON);
+    }
+
+    @ExportedBean
+    public static class Result {
+        @Exported
+        public List<Item> suggestions;
+    }
+
+    @ExportedBean(defaultVisibility=999)
+    public static class Item {
+        @Exported
+        public String name;
+
+        public Item(String name) {
+            this.name = name;
+        }
     }
 
     private enum Mode {

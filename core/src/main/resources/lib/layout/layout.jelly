@@ -38,6 +38,8 @@
     <script src="${rootURL}/scripts/yui/dom-${yuiSuffix}.js"></script>
     <script src="${rootURL}/scripts/yui/event-${yuiSuffix}.js"></script>
     <script src="${rootURL}/scripts/yui/container-${yuiSuffix}.js"></script>
+    <script src="${rootURL}/scripts/yui/connection-${yuiSuffix}.js"></script>
+    <script src="${rootURL}/scripts/yui/autocomplete-${yuiSuffix}.js"></script>
     <link rel="stylesheet" href="${rootURL}/scripts/yui/container.css" type="text/css"/>
     
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
@@ -53,9 +55,12 @@
               <a href="${rootURL}/"><img src="${rootURL}/images/title.png" alt="title" /></a>
             </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
               <j:if test="${h.searchFeature}">
-                <form action="${h.searchURL}" method="get">
+                <j:set var="searchURL" value="${h.searchURL}"/>
+                <form action="${searchURL}" method="get">
                   <div id="searchform">
-                    <input name="q" size="12" value="" id="search-box"/>
+                    <input name="q" value="" id="search-box"/>
+                    <div id="search-box-completion" />
+                    <script>createSearchBox("${searchURL}");</script>
                   </div>
                 </form>
               </j:if>
