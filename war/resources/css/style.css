@@ -36,40 +36,6 @@ table.center-align td {
   text-decoration: none;
 }
 
-#search-box {
-  background: white url(../images/16x16/search.gif) no-repeat 2px center;
-  padding-left: 20px;
-  width: 10em;
-}
-
-#search-box-completion {
-  text-align: left;
-  width:10em;
-  position: absolute;
-  z-index: 999;
-}
-
-#search-box-completion .yui-ac-content {
-  border: 1px solid black;
-  width:10em;
-  background-color: white;
-  overflow: hidden;
-}
-
-#search-box-completion UL {
-  padding: 0 0;
-  width: 100%;
-  margin: 0 0;
-  list-style: none;
-}
-#search-box-completion LI {
-  padding-left:20px;
-  white-space:nowrap;
-}
-#search-box-completion LI.yui-ac-highlight {
-  background: #729FCF;
-}
-
 #left-top-nav {
   text-align: left;
   border-left: 10px solid #fff;
@@ -636,4 +602,39 @@ DIV.yahooTree td {
   z-index: 999;
   font-family: inherit !important;
   color: inherit !important;
+}
+
+/* ========================= search box at the top-right of the page ========================= */
+#search-box {
+  background: white url(../images/16x16/search.gif) no-repeat 2px center;
+  padding-left: 20px;
+  width: 10em;
+}
+
+#search-box-completion {
+  text-align: left;
+  width:10em;
+  position: absolute;
+  z-index: 999;
+}
+
+#search-box-completion .yui-ac-content {
+  border: 1px solid black;
+  width:10em;
+  background-color: white;
+  overflow: hidden;
+}
+
+#search-box-completion UL {
+  padding: 0 0;
+  width: 100%;
+  margin: 0 0;
+  list-style: none;
+}
+#search-box-completion LI {
+  padding-left:20px;
+  white-space:nowrap;
+}
+#search-box-completion LI.yui-ac-highlight {
+  background: #729FCF;
 }
