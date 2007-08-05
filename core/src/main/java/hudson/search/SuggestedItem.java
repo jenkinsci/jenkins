@@ -37,6 +37,14 @@ public class SuggestedItem {
         }
     }
 
+    /**
+     * Gets the URL to this item.
+     * @return
+     *      URL that starts with '/' but doesn't end with '/'.
+     *      The path is the combined path from the {@link SearchIndex} where the search started
+     *      to the final item found. Thus to convert to the actual URL, the caller would need
+     *      to prepend the URL of the object where the search started. 
+     */
     public String getUrl() {
         StringBuilder buf = new StringBuilder();
         getUrl(buf);
