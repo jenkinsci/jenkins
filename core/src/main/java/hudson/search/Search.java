@@ -27,7 +27,7 @@ public class Search {
                 SuggestedItem target = find(index, query);
                 if(target!=null) {
                     // found
-                    rsp.sendRedirect2(target.getUrl());
+                    rsp.sendRedirect2(a.getUrl()+target.getUrl());
                 }
             }
         }
