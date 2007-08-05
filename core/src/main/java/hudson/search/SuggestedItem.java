@@ -8,6 +8,7 @@ package hudson.search;
 public class SuggestedItem {
     private final SuggestedItem parent;
     public final SearchItem item;
+    private String path;
 
     public SuggestedItem(SearchItem top) {
         this(null,top);
@@ -19,12 +20,13 @@ public class SuggestedItem {
     }
 
     public String getPath() {
+        if(path!=null)  return path;
         if(parent==null)
-            return item.getSearchName();
+            return path=item.getSearchName();
         else {
             StringBuilder buf = new StringBuilder();
             getPath(buf);
-            return buf.toString();
+            return path=buf.toString();
         }
     }
 
