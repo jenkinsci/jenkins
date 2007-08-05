@@ -598,6 +598,10 @@ public class Functions {
         return buf.toString();
     }
 
+    public static String getVersion() {
+        return Hudson.VERSION;
+    }
+
     // the switch to enable search feature
     public static boolean searchFeature = System.getProperty("search")!=null;
 }
