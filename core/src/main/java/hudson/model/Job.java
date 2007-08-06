@@ -73,6 +73,13 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     protected transient int nextBuildNumber = 1;
 
     private LogRotator logRotator;
+    
+    /**
+     * Not all plugins are good at calculating their health report quickly.
+     * These fields are used to cache the health reports to speed up rendering the main page.
+     */
+    private transient Integer cachedBuildHealthReportsBuildNumber = null;
+    private transient List<HealthReport> cachedBuildHealthReports = null;
 
     private boolean keepDependencies;
 
@@ -546,7 +553,13 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
             lastBuild = lastBuild.getPreviousBuild();
         }
 
-        if (lastBuild != null) {
+        // check the cache
+        if (cachedBuildHealthReportsBuildNumber != null && 
+                cachedBuildHealthReports != null &&
+                lastBuild != null &&
+                cachedBuildHealthReportsBuildNumber.intValue() == lastBuild.getNumber()) {
+            reports.addAll(cachedBuildHealthReports);
+        } else if (lastBuild != null) {
             for (HealthReportingAction healthReportingAction : lastBuild.getActions(HealthReportingAction.class)) {
                 final HealthReport report = healthReportingAction.getBuildHealth();
                 if (report != null) {
@@ -565,9 +578,14 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
                     reports.add(report);
                 }
             }
+
+            Collections.sort(reports);
+    
+            // store the cache
+            cachedBuildHealthReportsBuildNumber = lastBuild.getNumber();
+            cachedBuildHealthReports = new ArrayList<HealthReport>(reports);
         }
 
-        Collections.sort(reports);
         return reports;
     }
 
