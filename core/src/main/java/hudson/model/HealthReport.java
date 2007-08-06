@@ -1,12 +1,8 @@
 package hudson.model;
 
-import hudson.Functions;
-
 import java.io.Serializable;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Represents health of something (typically project).
