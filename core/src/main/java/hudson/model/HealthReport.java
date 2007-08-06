@@ -1,5 +1,7 @@
 package hudson.model;
 
+import hudson.Functions;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
@@ -122,12 +124,12 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      */
     public String getIconUrl(String size) {
         if (iconUrl == null) {
-            return "/images/" + size + "/" + HEALTH_UNKNOWN;
+            return Hudson.RESOURCE_PATH+"/images/" + size + "/" + HEALTH_UNKNOWN;
         }
         if (iconUrl.startsWith("/")) {
             return iconUrl.replace("/32x32/", "/" + size + "/");
         }
-        return "/images/" + size + "/" + iconUrl;
+        return Hudson.RESOURCE_PATH+"/images/" + size + "/" + iconUrl;
     }
 
     /**
