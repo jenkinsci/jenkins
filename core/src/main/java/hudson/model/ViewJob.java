@@ -130,16 +130,24 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     private static final class ReloadThread extends Thread {
         private ViewJob getNext() throws InterruptedException {
             synchronized(reloadQueue) {
-                while(reloadQueue.isEmpty())
-                    reloadQueue.wait();
+                // reload operations might eat InterruptException,
+                // so check the status every so often
+                while(reloadQueue.isEmpty() && !terminating())
+                    reloadQueue.wait(60*1000);
+                if(terminating())
+                    throw new InterruptedException();   // terminate now
                 ViewJob job = reloadQueue.iterator().next();
                 reloadQueue.remove(job);
                 return job;
             }
         }
 
+        private boolean terminating() {
+            return Hudson.getInstance().isTerminating();
+        }
+
         public void run() {
-            while (true) {
+            while (!terminating()) {
                 try {
                     getNext()._reload();
                 } catch (InterruptedException e) {
