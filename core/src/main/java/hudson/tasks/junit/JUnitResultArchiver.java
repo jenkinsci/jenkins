@@ -43,13 +43,13 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
     }
 
     public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        TestResult result;
         listener.getLogger().println("Recording test results");
+        TestResultAction action;
 
         try {
             final long buildTime = build.getTimestamp().getTimeInMillis();
 
-            result = build.getProject().getWorkspace().act(new FileCallable<TestResult>() {
+            TestResult result = build.getProject().getWorkspace().act(new FileCallable<TestResult>() {
                 public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
                     FileSet fs = new FileSet();
                     Project p = new Project();
@@ -64,13 +64,13 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
                         throw new AbortException("No test report files were found. Configuration error?");
                     }
 
-                    TestResult r = new TestResult(buildTime, ds);
-                    if(r.getPassCount()==0 && r.getFailCount()==0)
-                        new AbortException("None of the test reports contained any result");
-
-                    return r;
+                    return new TestResult(buildTime, ds);
                 }
             });
+
+            action = new TestResultAction(build, result, listener);
+            if(result.getPassCount()==0 && result.getFailCount()==0)
+                new AbortException("None of the test reports contained any result");
         } catch (AbortException e) {
             listener.getLogger().println(e.getMessage());
             build.setResult(Result.FAILURE);
@@ -78,7 +78,6 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
         }
 
 
-        TestResultAction action = new TestResultAction(build, result, listener);
         build.getActions().add(action);
 
         if(action.getResult().getFailCount()>0)
