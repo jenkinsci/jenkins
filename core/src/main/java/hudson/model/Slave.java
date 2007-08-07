@@ -369,11 +369,7 @@ public final class Slave implements Node, Serializable {
                     log.println("Copied maven-interceptor.jar");
                 }
 
-                isUnix = channel.call(new Callable<Boolean,IOException>() {
-                    public Boolean call() throws IOException {
-                        return File.pathSeparatorChar==':';
-                    }
-                });
+                isUnix = channel.call(new DetectOS());
                 log.println(isUnix?"This is a Unix slave":"This is a Windows slave");
 
                 // install log handler
@@ -475,6 +471,12 @@ public final class Slave implements Node, Serializable {
         }
 
         private static final Logger logger = Logger.getLogger(ComputerImpl.class.getName());
+
+        private static final class DetectOS implements Callable<Boolean,IOException> {
+            public Boolean call() throws IOException {
+                return File.pathSeparatorChar==':';
+            }
+        }
     }
 
     /**
