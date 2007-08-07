@@ -37,6 +37,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.StringTokenizer;
 
 /**
  * Examines the output of cvs log and group related changes together.
@@ -237,7 +238,8 @@ public class ChangeLogTask extends AbstractCvsTask {
                 myCvsVersion.setPassfile(getPassFile());
                 myCvsVersion.setDest(m_dir);
                 myCvsVersion.execute();
-                if (myCvsVersion.supportsCvsLogWithSOption()) {
+                if (supportsCvsLogWithSOption(myCvsVersion.getClientVersion())
+                 && supportsCvsLogWithSOption(myCvsVersion.getServerVersion())) {
                     addCommandArgument("-S");
                 }
             }
@@ -306,6 +308,37 @@ public class ChangeLogTask extends AbstractCvsTask {
         } finally {
             m_dir = savedDir;
         }
+    }
+
+    private static final long VERSION_1_11_2 = 11102;
+    private static final long MULTIPLY = 100;
+    /**
+     * Rip off from {@link CvsVersion#supportsCvsLogWithSOption()}
+     * but we need to check both client and server.
+     */
+    private boolean supportsCvsLogWithSOption(String versionString) {
+        if (versionString == null) {
+            return false;
+        }
+        StringTokenizer mySt = new StringTokenizer(versionString, ".");
+        long counter = MULTIPLY * MULTIPLY;
+        long version = 0;
+        while (mySt.hasMoreTokens()) {
+            String s = mySt.nextToken();
+            int i = 0;
+            for (i = 0; i < s.length(); i++) {
+                if (!Character.isDigit(s.charAt(i))) {
+                    break;
+                }
+            }
+            String s2 = s.substring(0, i);
+            version = version + counter * Long.parseLong(s2);
+            if (counter == 1) {
+                break;
+            }
+            counter = counter / MULTIPLY;
+        }
+        return (version >= VERSION_1_11_2);
     }
 
     /**
