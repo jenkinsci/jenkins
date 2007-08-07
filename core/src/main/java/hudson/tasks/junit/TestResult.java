@@ -78,6 +78,13 @@ public final class TestResult extends MetaTabulatedResult {
         }
 
         if(!parsed) {
+            long localTime = System.currentTimeMillis();
+            if(localTime < buildTime)
+                throw new AbortException(
+                    "Clock on this slave is out of sync with the master, and therefore I" +
+                    "can't figure out what test results are new and what are old." +
+                    "Please keep the slave clock in sync with the master.");
+
             File f = new File(baseDir,includedFiles[0]);
             throw new AbortException(
                 String.format(
