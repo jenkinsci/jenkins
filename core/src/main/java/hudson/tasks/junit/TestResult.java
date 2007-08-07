@@ -2,6 +2,7 @@ package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
 import hudson.util.IOException2;
+import hudson.*;
 import org.apache.tools.ant.DirectoryScanner;
 import org.dom4j.DocumentException;
 import org.kohsuke.stapler.StaplerRequest;
@@ -65,11 +66,24 @@ public final class TestResult extends MetaTabulatedResult {
         String[] includedFiles = results.getIncludedFiles();
         File baseDir = results.getBasedir();
 
+        boolean parsed=false;
+
         for (String value : includedFiles) {
             File reportFile = new File(baseDir, value);
             // only count files that were actually updated during this build
-            if(buildTime <= reportFile.lastModified())
+            if(buildTime <= reportFile.lastModified()) {
                 parse(reportFile);
+                parsed = true;
+            }
+        }
+
+        if(!parsed) {
+            File f = new File(baseDir,includedFiles[0]);
+            throw new AbortException(
+                String.format(
+                "Test reports were found but none of them are new. Did tests run? "+
+                "For example, %s is %s old\n", f,
+                Util.getTimeSpanString(buildTime-f.lastModified())));
         }
     }
 

@@ -2,7 +2,6 @@ package hudson.tasks.junit;
 
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
@@ -43,29 +42,15 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
         this.testResults = testResults;
     }
 
-    private static final class RecordResult implements Serializable {
-        final TestResult tr;
-        final String afile;
-        final long lastModified;
-
-        RecordResult(TestResult tr, String afile, long lastModified) {
-            this.tr = tr;
-            this.afile = afile;
-            this.lastModified = lastModified;
-        }
-
-        private static final long serialVersionUID = 1L;
-    }
-
     public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        RecordResult result;
+        TestResult result;
         listener.getLogger().println("Recording test results");
 
         try {
             final long buildTime = build.getTimestamp().getTimeInMillis();
 
-            result = build.getProject().getWorkspace().act(new FileCallable<RecordResult>() {
-                public RecordResult invoke(File ws, VirtualChannel channel) throws IOException {
+            result = build.getProject().getWorkspace().act(new FileCallable<TestResult>() {
+                public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
                     FileSet fs = new FileSet();
                     Project p = new Project();
                     fs.setProject(p);
@@ -79,12 +64,13 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
                         throw new AbortException("No test report files were found. Configuration error?");
                     }
 
-                    File oneFile = new File(ds.getBasedir(),files[0]);
+                    TestResult r = new TestResult(buildTime, ds);
+                    if(r.getPassCount()==0 && r.getFailCount()==0)
+                        new AbortException("None of the test reports contained any result");
 
-                    return new RecordResult(new TestResult(buildTime,ds),files[0],oneFile.lastModified());
+                    return r;
                 }
             });
-
         } catch (AbortException e) {
             listener.getLogger().println(e.getMessage());
             build.setResult(Result.FAILURE);
@@ -92,20 +78,10 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
         }
 
 
-        TestResultAction action = new TestResultAction(build, result.tr, listener);
-        TestResult r = action.getResult();
+        TestResultAction action = new TestResultAction(build, result, listener);
+        build.getActions().add(action);
 
-        if(r.getPassCount()==0 && r.getFailCount()==0) {
-            listener.getLogger().println("Test reports were found but none of them are new. Did tests run?");
-            listener.getLogger().printf("For example, %s is %s old\n",result.afile,
-                Util.getTimeSpanString(result.lastModified-build.getTimestamp().getTimeInMillis()));
-            // no test result. Most likely a configuration error or fatal problem
-            build.setResult(Result.FAILURE);
-        } else {
-            build.getActions().add(action);
-        }
-
-        if(r.getFailCount()>0)
+        if(action.getResult().getFailCount()>0)
             build.setResult(Result.UNSTABLE);
 
         return true;
