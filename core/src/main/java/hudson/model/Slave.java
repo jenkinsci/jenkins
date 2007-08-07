@@ -254,6 +254,7 @@ public final class Slave implements Node, Serializable {
 
     public static final class ComputerImpl extends Computer {
         private volatile Channel channel;
+        private Boolean isUnix;
 
         /**
          * This is where the log from the remote agent goes.
@@ -357,15 +358,23 @@ public final class Slave implements Node, Serializable {
                 });
                 channel.addListener(listener);
 
+                PrintWriter log = new PrintWriter(launchLog,true);
+
                 {// send jars that we need for our operations
                     // TODO: maybe I should generalize this kind of "post initialization" processing
-                    PrintWriter log = new PrintWriter(launchLog,true);
                     FilePath dst = new FilePath(channel,getNode().getRemoteFS());
                     new FilePath(Which.jarFile(Main.class)).copyTo(dst.child("maven-agent.jar"));
                     log.println("Copied maven-agent.jar");
                     new FilePath(Which.jarFile(PluginManagerInterceptor.class)).copyTo(dst.child("maven-interceptor.jar"));
                     log.println("Copied maven-interceptor.jar");
                 }
+
+                isUnix = channel.call(new Callable<Boolean,IOException>() {
+                    public Boolean call() throws IOException {
+                        return File.pathSeparatorChar==':';
+                    }
+                });
+                log.println(isUnix?"This is a Unix slave":"This is a Windows slave");
 
                 // install log handler
                 channel.call(new LogInstaller());
@@ -448,6 +457,7 @@ public final class Slave implements Node, Serializable {
         private void closeChannel() {
             Channel c = channel;
             channel = null;
+            isUnix=null;
             if(c!=null)
                 try {
                     c.close();
@@ -493,19 +503,15 @@ public final class Slave implements Node, Serializable {
     }
 
     public Launcher createLauncher(TaskListener listener) {
-        // Windows absolute path always include ':', but this is not a valid char in Unix file systems.
-        // Windows can handle '/' as a path separator but Unix can't,
-        // so err on Unix side
-        boolean isUnix = !remoteFS.contains(":") && !remoteFS.contains("\\");
-
-        return new RemoteLauncher(listener, getComputer().getChannel(),isUnix);
+        ComputerImpl c = getComputer();
+        return new RemoteLauncher(listener, c.getChannel(), c.isUnix);
     }
 
     /**
      * Gets th ecorresponding computer object.
      */
-    public Computer getComputer() {
-        return Hudson.getInstance().getComputer(getNodeName());
+    public ComputerImpl getComputer() {
+        return (ComputerImpl)Hudson.getInstance().getComputer(getNodeName());
     }
 
     public boolean equals(Object o) {
