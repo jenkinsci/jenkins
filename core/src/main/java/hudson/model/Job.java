@@ -865,7 +865,9 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         }
 
         renameTo(newName);
-        rsp.sendRedirect2(req.getContextPath()+'/'+getUrl()); // send to the new job page
+        // send to the new job page
+        // note we can't use getUrl() because that would pick up old name in the Ancestor.getUrl()
+        rsp.sendRedirect2(req.getContextPath()+'/'+getParent().getUrl()+getShortUrl());
     }
 
     /**
