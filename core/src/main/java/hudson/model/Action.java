@@ -56,6 +56,14 @@ public interface Action extends Serializable, ModelObject {
 
     /**
      * Gets the URL path name.
+     *
+     * <p>
+     * For example, if this method returns "xyz", and if the parent object
+     * (that this action is associated with) is bound to /foo/bar/zot,
+     * then this action object will be exposed to /foo/bar/zot/xyz.
+     *
+     * <p>
+     * This method should return a string that's unique among other {@link Action}s.
      */
     String getUrlName();
 }
