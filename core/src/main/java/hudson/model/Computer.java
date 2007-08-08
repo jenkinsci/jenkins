@@ -46,7 +46,7 @@ import java.util.logging.LogRecord;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class Computer implements ModelObject {
+public abstract class Computer extends AbstractModelObject {
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
 
     private int numExecutors;
@@ -242,6 +242,10 @@ public abstract class Computer implements ModelObject {
         for (Executor e : executors) {
             e.interrupt();
         }
+    }
+
+    public String getSearchUrl() {
+        return "computer/"+nodeName;
     }
 
     /**

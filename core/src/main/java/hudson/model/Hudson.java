@@ -29,6 +29,7 @@ import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
 import hudson.search.SearchIndexBuilder;
+import hudson.search.CollectionSearchIndex;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -682,7 +683,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     public SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex()
             .add("configure", "config","configure")
-            .add("log");
+            .add("log")
+            .add(new CollectionSearchIndex() {// for computers
+                protected Computer get(String key) { return getComputer(key); }
+                protected Collection<Computer> all() { return computers.values(); }
+            });
     }
 
     public String getUrlChildPrefix() {
