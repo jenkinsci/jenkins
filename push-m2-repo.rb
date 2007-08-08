@@ -25,16 +25,28 @@ print "Releasing master POM for plugins"
 prev=VersionNumber.new(ver)
 prev.dec()
 
-Dir.chdir("../plugins") do
-  open("pom.xml") do |i|
-    open("pom.tmp","w") do |o|
+def updatePom(src)
+  open(src) do |i|
+    open(src+".tmp","w") do |o|
       i.each do |line|
         line = line.gsub("<version>#{prev}</version>","<version>#{ver}</version>")
         o.puts line
       end
     end
   end
-  File.move("pom.tmp","pom.xml")
+  File.move(src+".tmp",src)
+end
+
+Dir.chdir("../plugins") do
+  # update master POM
+  updatePom("pom.xml")
+  # update parent reference in module POM
+  Dir.glob("*") do |name|
+    next unless File.directory?(name)
+    print "#{name}\n"
+    next unless File.exists(name+"/pom.xml")
+    updatePom(name+"/pom.xml")
+  done
   system "cvs commit -m 'bumping up POM version' pom.xml" or fail
   system "mvn -N deploy" or fail
 end
@@ -45,9 +57,9 @@ print "Pushing to maven repository\n"
 Dir.chdir(m2repo) do
   Dir.chdir("org/jvnet/hudson/main") do
 	  Dir.glob("*") do |name|
-	    next if File.directory?(name)
+	    next unless File.directory?(name)
       print "#{name}\n"
-      system "svn add #{ver}" or fail
+      system "svn add name/#{ver}" or fail
 	  end
 	  system "svn commit -m 'Hudson #{ver}'" || fail
   end
