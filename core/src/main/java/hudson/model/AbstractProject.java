@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.search.SearchIndexBuilder;
 import hudson.tasks.BuildTrigger;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
@@ -625,6 +626,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @see DependencyGraph
      */
     protected abstract void buildDependencyGraph(DependencyGraph graph);
+
+    protected SearchIndexBuilder makeSearchIndex() {
+        SearchIndexBuilder sib = super.makeSearchIndex();
+        if(isBuildable() && Hudson.isAdmin())
+            sib.add("build","build");
+        return sib;
+    }
 
 //
 //
