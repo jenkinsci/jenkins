@@ -40,7 +40,6 @@ public abstract class AbstractModelObject implements SearchableModelObject {
         return makeSearchIndex().make();
     }
 
-
     public Search getSearch() {
         return new Search();
     }
