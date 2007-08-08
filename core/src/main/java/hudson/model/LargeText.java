@@ -160,6 +160,7 @@ public class LargeText {
         else
             w = rsp.getWriter();
         spool.writeTo(new LineEndNormalizingWriter(w));
+        w.close();
 
     }
 
