@@ -38,7 +38,7 @@ public abstract class Actionable extends AbstractModelObject {
      * @param type The type of action to return.
      * @return
      *      may be empty but never null.
-     * @see getAction(Class<T>)
+     * @see #getAction(Class)
      */
     public <T extends Action> List<T> getActions(Class<T> type) {
         List<T> result = new Vector<T>();
@@ -67,7 +67,7 @@ public abstract class Actionable extends AbstractModelObject {
      *
      * @param type
      * @return The action or <code>null</code> if no such actions exist.
-     * @see getActions(Class<T>)
+     * @see #getActions(Class)
      */
     public <T extends Action> T getAction(Class<T> type) {
         for (Action a : getActions())
