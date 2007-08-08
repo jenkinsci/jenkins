@@ -47,7 +47,7 @@ Dir.chdir("../plugins") do
     next unless File.exists(name+"/pom.xml")
     updatePom(name+"/pom.xml")
   done
-  system "cvs commit -m 'bumping up POM version' pom.xml" or fail
+  system "cvs commit -m 'bumping up POM version'" or fail
   system "mvn -N deploy" or fail
 end
 
