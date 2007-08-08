@@ -2,7 +2,7 @@
   Log view
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-<l:layout title="Log">
+<l:layout title="Log" secured="true">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1><img src="images/48x48/clipboard.gif" />Hudson Log</h1>
