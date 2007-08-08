@@ -11,12 +11,12 @@ import org.kohsuke.stapler.export.Flavor;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  * Web-bound object that serves QuickSilver-like search requests.
@@ -142,38 +142,73 @@ public class Search {
         return items;
     }
 
+    static final class TokenList {
+        private final String[] tokens;
+
+        public TokenList(String tokenList) {
+            tokens = tokenList.split("(?<=\\s)(?=\\S)");
+        }
+
+        public int length() { return tokens.length; }
+
+        /**
+         * Returns {@link List} such that its <tt>get(end)</tt>
+         * returns the concatanation of [token_start,...,token_end]
+         * (both end inclusive.)
+         */
+        public List<String> subSequence(final int start) {
+            return new AbstractList<String>() {
+                public String get(int index) {
+                    StringBuilder buf = new StringBuilder();
+                    for(int i=start; i<=start+index; i++ )
+                        buf.append(tokens[i]);
+                    return buf.toString().trim();
+                }
+
+                public int size() {
+                    return tokens.length-start;
+                }
+            };
+        }
+    }
+
     private static List<SuggestedItem> find(Mode m, SearchIndex index, String tokenList) {
-        List<SuggestedItem> front = new ArrayList<SuggestedItem>();
-        List<SuggestedItem> back = new ArrayList<SuggestedItem>();
+        TokenList tokens = new TokenList(tokenList);
+        if(tokens.length()==0) return Collections.emptyList();   // no tokens given
+
+        List<SuggestedItem>[] paths = new List[tokens.length()+1]; // we won't use [0].
+        for(int i=1;i<=tokens.length();i++)
+            paths[i] = new ArrayList<SuggestedItem>();
+
         List<SearchItem> items = new ArrayList<SearchItem>(); // items found in 1 step
 
-        StringTokenizer tokens = new StringTokenizer(tokenList);
-        if(!tokens.hasMoreTokens()) return front;   // no tokens given
 
         // first token
-        m.find(index,tokens.nextToken(),items);
-        for (SearchItem i : items)
-            front.add(new SuggestedItem(i));
+        int w=1;    // width of token
+        for (String token : tokens.subSequence(0)) {
+            items.clear();
+            m.find(index,token,items);
+            for (SearchItem si : items)
+                paths[w].add(new SuggestedItem(si));
+            w++;
+        }
 
         // successive tokens
-        while(tokens.hasMoreTokens()) {
-            String token = tokens.nextToken();
-
-            back.clear();
-            for (SuggestedItem r : front) {
-                items.clear();
-                m.find(r.item.getSearchIndex(),token,items);
-                for (SearchItem i : items)
-                    back.add(new SuggestedItem(r,i));
-            }
-
-            {// swap front and back
-                List<SuggestedItem> t = front;
-                front = back;
-                back = t;
+        for (int j=1; j<tokens.length(); j++) {
+            // for each length
+            w=1;
+            for (String token : tokens.subSequence(j)) {
+                // for each candidate
+                for (SuggestedItem r : paths[j]) {
+                    items.clear();
+                    m.find(r.item.getSearchIndex(),token,items);
+                    for (SearchItem i : items)
+                        paths[j+w].add(new SuggestedItem(r,i));
+                }
+                w++;
             }
         }
 
-        return front;
+        return paths[tokens.length()];
     }
 }
