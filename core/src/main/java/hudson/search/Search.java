@@ -25,7 +25,9 @@ import java.util.StringTokenizer;
  */
 public class Search {
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        for (Ancestor a : req.getAncestors()) {
+        List<Ancestor> l = req.getAncestors();
+        for( int i=l.size()-1; i>=0; i-- ) {
+            Ancestor a = l.get(i);
             if (a.getObject() instanceof SearchableModelObject) {
                 SearchableModelObject smo = (SearchableModelObject) a.getObject();
 
