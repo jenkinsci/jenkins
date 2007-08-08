@@ -182,7 +182,7 @@ public abstract class View extends AbstractModelObject {
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex()
-            .add(new CollectionSearchIndex() {
+            .add(new CollectionSearchIndex() {// for jobs in the view
                 protected TopLevelItem get(String key) { return getItem(key); }
                 protected Collection<TopLevelItem> all() { return getItems(); }
             });

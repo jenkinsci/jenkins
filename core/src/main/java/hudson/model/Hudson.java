@@ -1769,6 +1769,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return false;
     }
 
+    /**
+     * Checks if the current user (for which we are processing the current request)
+     * has the admin access.
+     */
     public static boolean isAdmin() {
         return isAdmin(Stapler.getCurrentRequest());
     }
