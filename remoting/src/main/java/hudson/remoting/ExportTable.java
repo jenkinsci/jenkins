@@ -1,5 +1,7 @@
 package hudson.remoting;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,8 +11,19 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 final class ExportTable<T> {
-    private final Map<Integer,T> table = new HashMap<Integer,T>();
+    private final Map<Integer,Entry<T>> table = new HashMap<Integer,Entry<T>>();
     private final Map<T,Integer> reverse = new HashMap<T,Integer>();
+
+    private static final class Entry<T> {
+        final T object;
+        final Exception allocationTrace;
+
+        Entry(T object) {
+            this.object = object;
+            this.allocationTrace = new Exception();
+            allocationTrace.fillInStackTrace();
+        }
+    }
 
     /**
      * Unique ID generator.
@@ -35,7 +48,7 @@ final class ExportTable<T> {
         Integer id = reverse.get(t);
         if(id==null) {
             id = iota++;
-            table.put(id,t);
+            table.put(id,new Entry<T>(t));
             reverse.put(t,id);
         }
 
@@ -43,7 +56,9 @@ final class ExportTable<T> {
     }
 
     public synchronized T get(int id) {
-        return table.get(id);
+        Entry<T> e = table.get(id);
+        if(e!=null) return e.object;
+        else        return null;
     }
 
     /**
@@ -54,5 +69,15 @@ final class ExportTable<T> {
         Integer id = reverse.remove(t);
         if(id==null)    return; // presumably already unexported
         table.remove(id);
+    }
+
+    /**
+     * Dumps the contents of the table to a file.
+     */
+    public synchronized void dump(PrintWriter w) throws IOException {
+        for (Map.Entry<Integer, Entry<T>> e : table.entrySet()) {
+            w.println("#"+e.getKey()+" : "+e.getValue().object);
+            e.getValue().allocationTrace.printStackTrace(w);
+        }
     }
 }
