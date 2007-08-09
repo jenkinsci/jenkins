@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.EnvVars;
 import hudson.Functions;
 import hudson.remoting.Callable;
+import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.RunList;
@@ -11,6 +12,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.management.ThreadInfo;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -328,5 +330,19 @@ public abstract class Computer extends AbstractModelObject {
 
         setTemporarilyOffline(!temporarilyOffline);
         rsp.forwardToPreviousPage(req);
+    }
+
+    /**
+     * Dumps the contents of the export table.
+     */
+    public void doDumpExportTable( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        if(!Hudson.adminCheck(req,rsp)) // this is a debug probe and may expose sensitive information
+            return;
+
+        rsp.setContentType("text/plain");
+        rsp.setCharacterEncoding("UTF-8");
+        PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req));
+        ((Channel)getChannel()).dumpExportTable(w);
+        w.close();
     }
 }
