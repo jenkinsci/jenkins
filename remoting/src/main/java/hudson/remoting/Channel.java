@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Proxy;
 import java.util.Hashtable;
 import java.util.Map;
@@ -382,6 +383,13 @@ public class Channel implements VirtualChannel {
 
     public String toString() {
         return super.toString()+":"+name;
+    }
+
+    /**
+     * Dumps the list of exported objects and their allocation traces to the given output.
+     */
+    public void dumpExportTable(PrintWriter w) throws IOException {
+        exportedObjects.dump(w);
     }
 
     private final class ReaderThread extends Thread {
