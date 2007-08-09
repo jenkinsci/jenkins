@@ -50,7 +50,9 @@
     <script src="${resURL}/scripts/yui/connection-${yuiSuffix}.js"></script>
     <script src="${resURL}/scripts/yui/autocomplete-${yuiSuffix}.js"></script>
     <link rel="stylesheet" href="${resURL}/scripts/yui/container.css" type="text/css"/>
-    
+    <j:if test="${h.searchFeature}">
+      <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Hudson" />
+    </j:if>
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
     <d:invokeBody />
@@ -71,7 +73,9 @@
                   <!-- this div is used to calculate the width of the text box -->
                   <div id="search-box-sizer"/>
                   <div id="searchform">
-                    <input name="q" value="" id="search-box"/>
+                    <input name="q" value="search" id="search-box" class="has-default-text defaulted" />
+                    <st:nbsp />
+                    <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Search+Box"><img src="${imagesURL}/16x16/help.png" /></a>
                     <div id="search-box-completion" />
                     <script>createSearchBox("${searchURL}");</script>
                   </div>
