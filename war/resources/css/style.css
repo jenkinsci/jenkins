@@ -611,6 +611,10 @@ DIV.yahooTree td {
   width: 10em;
 }
 
+#search-box.defaulted {
+  color: gray;
+}
+
 #search-box-completion {
   text-align: left;
   width:10em;

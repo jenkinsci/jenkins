@@ -94,6 +94,24 @@ var hudsonRules = {
     }
   },
 
+  // scripting for having default value in the input field
+  "INPUT.has-default-text" : function(e) {
+    var defaultValue = e.value;
+    Element.addClassName(e,"defaulted");
+    e.onfocus = function() {
+      if(e.value==defaultValue) {
+        e.value="";
+        Element.removeClassName(e,"defaulted");
+      }
+    }
+    e.onblur = function() {
+      if(e.value=="") {
+        e.value=defaultValue;
+        Element.addClassName(e,"defaulted");
+      }
+    }
+  },
+
   ".pseudoLink" : function(e) {
     e.onmouseover = function() {
       this.style.textDecoration="underline";
