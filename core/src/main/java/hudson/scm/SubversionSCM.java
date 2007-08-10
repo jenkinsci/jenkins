@@ -485,7 +485,7 @@ public class SubversionSCM extends SCM implements Serializable {
                         SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws,module.local),SVNRevision.WORKING));
                         revisions.put(info.url,info);
                     } catch (SVNException e) {
-                        e.printStackTrace(listener.error("Failed to parse svn info for "+module));
+                        e.printStackTrace(listener.error("Failed to parse svn info for "+module.remote));
                     }
                 }
                 for(String local : externals){
