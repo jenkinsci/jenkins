@@ -146,7 +146,9 @@ final class ParsedQuickSilver {
                 }
 
                 public SearchIndex getSearchIndex() {
-                    return ((SearchableModelObject)getter.get(instance)).getSearchIndex();
+                    Object child = getter.get(instance);
+                    if(child==null) return SearchIndex.EMPTY;
+                    return ((SearchableModelObject) child).getSearchIndex();
                 }
             });
     }
