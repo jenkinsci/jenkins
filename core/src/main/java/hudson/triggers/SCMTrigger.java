@@ -7,15 +7,12 @@ import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
-import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectStreamException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -226,8 +223,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             try {
                 // to make sure that the log file contains up-to-date text,
                 // don't do buffering.
-                OutputStream fos = new FileOutputStream(getLogFile());
-                TaskListener listener = new StreamTaskListener(fos);
+                StreamTaskListener listener = new StreamTaskListener(getLogFile());
 
                 try {
                     LOGGER.info("Polling SCM changes of "+ job.getName());
@@ -243,7 +239,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                         logger.println("No changes");
                     return result;
                 } finally {
-                    fos.close();
+                    listener.close();
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
