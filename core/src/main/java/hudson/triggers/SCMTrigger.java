@@ -277,8 +277,12 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                     }
                     
                     if(foundChanges) {
-                        LOGGER.info("SCM changes detected in "+ job.getName());
-                        job.scheduleBuild();
+                        String name = " #"+job.asProject().getNextBuildNumber();
+                        if(!job.scheduleBuild()) {
+                            LOGGER.info("SCM changes detected in "+ job.getName()+". Triggering "+name);
+                        } else {
+                            LOGGER.info("SCM changes detected in "+ job.getName()+". Job is already in the queue");
+                        }
                     }
                 }
             } catch (InterruptedException e) {
