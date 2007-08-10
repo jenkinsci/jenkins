@@ -53,6 +53,8 @@ public class Search {
      * <pre>
      * ["queryString",["comp1","comp2",...]]
      * </pre>
+     *
+     * See http://developer.mozilla.org/en/docs/Supporting_search_suggestions_in_search_plugins
      */
     public void doSuggestOpenSearch(StaplerRequest req, StaplerResponse rsp, @QueryParameter("q")String query) throws IOException, ServletException {
         DataWriter w = Flavor.JSON.createDataWriter(null, rsp);
