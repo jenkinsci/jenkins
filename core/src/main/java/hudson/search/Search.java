@@ -8,6 +8,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
+import org.kohsuke.stapler.export.DataWriter;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -47,21 +48,38 @@ public class Search {
     }
 
     /**
+     * Used by OpenSearch auto-completion. Returns JSON array of the form:
+     *
+     * <pre>
+     * ["queryString",["comp1","comp2",...]]
+     * </pre>
+     */
+    public void doSuggestOpenSearch(StaplerRequest req, StaplerResponse rsp, @QueryParameter("q")String query) throws IOException, ServletException {
+        DataWriter w = Flavor.JSON.createDataWriter(null, rsp);
+        w.startArray();
+        w.value(query);
+
+        w.startArray();
+        Set<String> paths = new HashSet<String>();  // paths already added, to control duplicates
+        for (SuggestedItem item : suggest(makeSuggestIndex(req), query)) {
+            if(paths.size()>20) break;
+            
+            String p = item.getPath();
+            if(paths.add(p))
+                w.value(p);
+        }
+        w.endArray();
+        w.endArray();
+    }
+
+    /**
      * Used by search box auto-completion. Returns JSON array.
      */
     public void doSuggest(StaplerRequest req, StaplerResponse rsp, @QueryParameter("query")String query) throws IOException, ServletException {
-        SearchIndexBuilder builder = new SearchIndexBuilder();
-        for (Ancestor a : req.getAncestors()) {
-            if (a.getObject() instanceof SearchableModelObject) {
-                SearchableModelObject smo = (SearchableModelObject) a.getObject();
-                builder.add(smo.getSearchIndex());
-            }
-        }
-
         Result r = new Result();
         Set<String> paths = new HashSet<String>();  // paths already added, to control duplicates
-        for (SuggestedItem item : suggest(builder.make(), query)) {
-            if(r.suggestions.size()>20) break;
+        for (SuggestedItem item : suggest(makeSuggestIndex(req), query)) {
+            if(paths.size()>20) break;
 
             String p = item.getPath();
             if(paths.add(p))
@@ -69,6 +87,20 @@ public class Search {
         }
 
         rsp.serveExposedBean(req,r,Flavor.JSON);
+    }
+
+    /**
+     * Creates merged search index for suggestion.
+     */
+    private SearchIndex makeSuggestIndex(StaplerRequest req) {
+        SearchIndexBuilder builder = new SearchIndexBuilder();
+        for (Ancestor a : req.getAncestors()) {
+            if (a.getObject() instanceof SearchableModelObject) {
+                SearchableModelObject smo = (SearchableModelObject) a.getObject();
+                builder.add(smo.getSearchIndex());
+            }
+        }
+        return builder.make();
     }
 
     @ExportedBean
