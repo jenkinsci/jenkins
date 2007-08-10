@@ -16,6 +16,7 @@
         <j:choose>
           <j:when test="${empty(it.pluginManager.plugins) &amp;&amp; empty(it.pluginManager.failedPlugins)}">
             No plugins installed.
+            <span id="pluginList"/>
           </j:when>
           <j:otherwise>
             <table id="pluginList">
@@ -99,7 +100,7 @@
         <!-- @size is for other browsers, @style is for IE -->
         File: <input type="file" name="name" class="setting-input" style="width:80%" size='40' />
       </s:block>
-      <s:block><div align="right">
+      <s:block><div>
         <input type="submit" name="Submit" value="Upload" />
       </div></s:block>
     </s:form>
