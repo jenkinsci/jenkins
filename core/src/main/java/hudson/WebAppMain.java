@@ -10,6 +10,7 @@ import hudson.util.IncompatibleServletVersionDetected;
 import hudson.util.IncompatibleVMDetected;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.NoHomeDir;
+import hudson.util.InsufficientPermissionDetected;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -26,6 +27,8 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.net.URLClassLoader;
+import java.net.URL;
 
 /**
  * Entry point when Hudson is used as a webapp.
@@ -39,9 +42,19 @@ public class WebAppMain implements ServletContextListener {
      * Creates the sole instance of {@link Hudson} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
-        installLogger();
-
         ServletContext context = event.getServletContext();
+
+        // quick check to see if we (seem to) have enough permissions to run. (see #719)
+        JVM jvm;
+        try {
+            jvm = new JVM();
+            new URLClassLoader(new URL[0],getClass().getClassLoader());
+        } catch(SecurityException e) {
+            context.setAttribute("app",new InsufficientPermissionDetected(e));
+            return;
+        }
+
+        installLogger();
 
         File home = getHomeDir(event);
         home.mkdirs();
@@ -54,7 +67,7 @@ public class WebAppMain implements ServletContextListener {
         }
 
         // make sure that we are using XStream in the "enhanced" (JVM-specific) mode
-        if(new JVM().bestReflectionProvider().getClass()==PureJavaReflectionProvider.class) {
+        if(jvm.bestReflectionProvider().getClass()==PureJavaReflectionProvider.class) {
             // nope
             context.setAttribute("app",new IncompatibleVMDetected());
             return;
