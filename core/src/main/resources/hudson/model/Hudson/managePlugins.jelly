@@ -16,7 +16,7 @@
         <j:choose>
           <j:when test="${empty(it.pluginManager.plugins) &amp;&amp; empty(it.pluginManager.failedPlugins)}">
             No plugins installed.
-            <span id="pluginList"/>
+            <span id="pluginList"/><!-- dummy to keep JavaScript happy -->
           </j:when>
           <j:otherwise>
             <table id="pluginList">
