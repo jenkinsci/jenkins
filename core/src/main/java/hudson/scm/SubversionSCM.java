@@ -316,6 +316,10 @@ public class SubversionSCM extends SCM implements Serializable {
     /**
      * Performs the checkout or update, depending on the configuration and workspace state.
      *
+     * <p>
+     * Use canonical path to avoid SVNKit/symlink problem as described in
+     * https://wiki.svnkit.com/SVNKit_FAQ
+     * 
      * @return null
      *      if the operation failed. Otherwise the set of local workspace paths
      *      (relative to the workspace root) that has loaded due to svn:external.
@@ -338,7 +342,7 @@ public class SubversionSCM extends SCM implements Serializable {
                             listener.getLogger().println("Updating "+ l.remote);
 
                             svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
-                            svnuc.doUpdate(new File(ws, l.local), revision, true);
+                            svnuc.doUpdate(new File(ws, l.local).getCanonicalFile(), revision, true);
 
                         } catch (SVNException e) {
                             e.printStackTrace(listener.error("Failed to update "+l.remote));
@@ -358,7 +362,7 @@ public class SubversionSCM extends SCM implements Serializable {
                             listener.getLogger().println("Checking out "+url);
 
                             svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
-                            svnuc.doCheckout(url, new File(ws, l.local), SVNRevision.HEAD, revision, true);
+                            svnuc.doCheckout(url, new File(ws, l.local).getCanonicalFile(), SVNRevision.HEAD, revision, true);
 
                         } catch (SVNException e) {
                             e.printStackTrace(listener.error("Failed to check out "+l.remote));
