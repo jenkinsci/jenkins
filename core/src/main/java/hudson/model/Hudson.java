@@ -190,6 +190,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     private int slaveAgentPort =0;
 
     /**
+     * Once plugin is uploaded, this flag becomes true.
+     * This is used to report a message that Hudson needs to be restarted
+     * for new plugins to take effect.
+     */
+    private transient boolean pluginUploaded =false;
+
+    /**
      * All labels known to Hudson. This allows us to reuse the same label instances
      * as much as possible, even though that's not a strict requirement.
      */
@@ -1429,6 +1436,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         rsp.sendRedirect2(req.getContextPath()+"/");
     }
 
+    public boolean isPluginUploaded() {
+        return pluginUploaded;
+    }
+
     /**
      * Uploads a plugin.
      */
@@ -1447,8 +1458,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                 return;
             }
             fileItem.write(new File(getPluginManager().rootDir, fileName));
-
             fileItem.delete();
+
+            pluginUploaded=true;
 
             rsp.sendRedirect2("managePlugins");
         } catch (IOException e) {

@@ -8,6 +8,13 @@
     <s:form method="post" action="configSubmit">
       <s:block>
         <h1>Installed Plugins</h1>
+        <j:if test="${app.isPluginUploaded()}">
+          <div style="margin: 1em; height: 1em">
+            <div class="error">
+              New plugins will take effect once you restart Hudson
+            </div>
+          </div>
+        </j:if>
         <div style="margin: 1em; height: 1em">
           <div class="error" id="needRestart" style="display:none">
             Changes will take effect when you restart Hudson
@@ -16,7 +23,7 @@
         <j:choose>
           <j:when test="${empty(it.pluginManager.plugins) &amp;&amp; empty(it.pluginManager.failedPlugins)}">
             No plugins installed.
-            <span id="pluginList"/><!-- dummy to keep JavaScript happy -->
+            <span id="pluginList" style="display:none"/><!-- dummy to keep JavaScript happy -->
           </j:when>
           <j:otherwise>
             <table id="pluginList">
