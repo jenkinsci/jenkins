@@ -1,22 +1,21 @@
 package hudson.util;
 
+import hudson.CloseProofOutputStream;
 import hudson.model.TaskListener;
 import hudson.remoting.RemoteOutputStream;
-import hudson.CloseProofOutputStream;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.io.Serializable;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-import java.io.File;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
+import java.io.Writer;
 
 /**
  * {@link TaskListener} that generates output into a single stream.
@@ -38,7 +37,10 @@ public final class StreamTaskListener implements TaskListener, Serializable {
     }
 
     public StreamTaskListener(File out) throws FileNotFoundException {
-        this(new BufferedOutputStream(new FileOutputStream(out)));
+        // don't do buffering so that what's written to the listener
+        // gets reflected to the file immediately, which can then be
+        // served to the browser immediately
+        this(new FileOutputStream(out));
     }
 
     public StreamTaskListener(Writer w) {

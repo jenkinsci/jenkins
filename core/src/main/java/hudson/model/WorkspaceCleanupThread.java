@@ -5,9 +5,7 @@ import hudson.util.StreamTaskListener;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -30,16 +28,14 @@ public class WorkspaceCleanupThread extends PeriodicWork {
         theInstance.run();
     }
 
-    private TaskListener listener;
+    private StreamTaskListener listener;
 
     protected void execute() {
         Hudson h = Hudson.getInstance();
         try {
             // don't buffer this, so that the log shows what the worker thread is up to in real time
-            OutputStream os = new FileOutputStream(
-                new File(h.getRootDir(),"workspace-cleanup.log"));
             try {
-                listener = new StreamTaskListener(os);
+                listener = new StreamTaskListener(new File(h.getRootDir(),"workspace-cleanup.log"));
 
                 for (Slave s : h.getSlaves())
                     process(s);
@@ -48,7 +44,9 @@ public class WorkspaceCleanupThread extends PeriodicWork {
             } catch (InterruptedException e) {
                 e.printStackTrace(listener.fatalError("aborted"));
             } finally {
-                os.close();
+                if(listener!=null)
+                    listener.close();
+                listener = null;
             }
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to access log file",e);
