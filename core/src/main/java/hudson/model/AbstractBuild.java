@@ -140,7 +140,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if(!isWindows()) {
                 try {
                     // ignore a failure.
-                    new LocalProc(new String[]{"rm","-f","../lastSuccessful"},new String[0],listener.getLogger(),getProject().getBuildDir()).join();
+                    new LocalProc(new String[]{"rm","-rf","../lastSuccessful"},new String[0],listener.getLogger(),getProject().getBuildDir()).join();
 
                     int r = new LocalProc(new String[]{
                         "ln","-s","builds/"+getId()/*ugly*/,"../lastSuccessful"},
