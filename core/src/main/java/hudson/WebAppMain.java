@@ -56,7 +56,7 @@ public class WebAppMain implements ServletContextListener {
 
         installLogger();
 
-        File home = getHomeDir(event);
+        File home = getHomeDir(event).getAbsoluteFile();
         home.mkdirs();
         System.out.println("hudson home directory: "+home);
 
@@ -159,7 +159,7 @@ public class WebAppMain implements ServletContextListener {
             Context env = (Context) new InitialContext().lookup("java:comp/env");
             String value = (String) env.lookup("HUDSON_HOME");
             if(value!=null && value.trim().length()>0)
-                return new File(value.trim()).getAbsoluteFile();
+                return new File(value.trim());
         } catch (NamingException e) {
             // ignore
         }
@@ -172,7 +172,7 @@ public class WebAppMain implements ServletContextListener {
         // finally check the system property
         String sysProp = System.getProperty("HUDSON_HOME");
         if(sysProp!=null)
-            return new File(sysProp.trim()).getAbsoluteFile();
+            return new File(sysProp.trim());
 
         // otherwise pick a place by ourselves
 
@@ -183,11 +183,11 @@ public class WebAppMain implements ServletContextListener {
                 // Hudson <1.42 used to prefer this before ~/.hudson, so
                 // check the existence and if it's there, use it.
                 // otherwise if this is a new installation, prefer ~/.hudson
-                return ws.getAbsoluteFile();
+                return ws;
         }
 
         // if for some reason we can't put it within the webapp, use home directory.
-        return new File(new File(System.getProperty("user.home")),".hudson").getAbsoluteFile();
+        return new File(new File(System.getProperty("user.home")),".hudson");
     }
 
     public void contextDestroyed(ServletContextEvent event) {
