@@ -13,6 +13,10 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
+import java.io.File;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 
 /**
  * {@link TaskListener} that generates output into a single stream.
@@ -31,6 +35,10 @@ public final class StreamTaskListener implements TaskListener, Serializable {
 
     public StreamTaskListener(OutputStream out) {
         this(new PrintStream(out));
+    }
+
+    public StreamTaskListener(File out) throws FileNotFoundException {
+        this(new BufferedOutputStream(new FileOutputStream(out)));
     }
 
     public StreamTaskListener(Writer w) {
@@ -56,6 +64,10 @@ public final class StreamTaskListener implements TaskListener, Serializable {
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         out = new PrintStream((OutputStream)in.readObject(),true);
+    }
+
+    public void close() {
+        out.close();
     }
 
     private static final long serialVersionUID = 1L;
