@@ -75,6 +75,9 @@ public interface Node {
      * <p>
      * Workspace directory is usually used for keeping out the checked out
      * source code, but it can be used for anything.
+     *
+     * @return
+     *      null if this node is not connected hence the path is not available
      */
     FilePath getWorkspaceFor(TopLevelItem item);
 

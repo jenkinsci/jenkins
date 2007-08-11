@@ -236,7 +236,9 @@ public final class Slave implements Node, Serializable {
     }
 
     public FilePath getWorkspaceFor(TopLevelItem item) {
-        return getWorkspaceRoot().child(item.getName());
+        FilePath r = getWorkspaceRoot();
+        if(r==null)     return null;    // offline
+        return r.child(item.getName());
     }
 
     public FilePath getRootPath() {

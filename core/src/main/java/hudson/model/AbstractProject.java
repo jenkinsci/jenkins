@@ -180,6 +180,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Gets the directory where the module is checked out.
+     *
+     * @return
+     *      null if the workspace is on a slave that's not connected.
      */
     public abstract FilePath getWorkspace();
 
