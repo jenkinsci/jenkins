@@ -274,7 +274,7 @@ public class CVSSCM extends SCM implements Serializable {
         dir.deleteContents();
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.add(getDescriptor().getCvsExe(),debugLogging?"-t":"-Q",compression(),"-d",cvsroot,"co","-P");
+        cmd.add(getDescriptor().getCvsExe(), debug ?"-t":"-Q",compression(),"-d",cvsroot,"co","-P");
         if(branch!=null)
             cmd.add("-r",branch);
         if(flatten)
@@ -638,7 +638,7 @@ public class CVSSCM extends SCM implements Serializable {
                                 errorOutput.write('\n');
                                 return;
                             }
-                            if(debugLogging) {
+                            if(debug) {
                                 listener.getLogger().println(msg);
                             }
                         }
@@ -1296,7 +1296,7 @@ public class CVSSCM extends SCM implements Serializable {
      * <p>
      * Setting this property to true would cause <tt>cvs log</tt> to dump a lot of messages.
      */
-    public static boolean debugLogging = false;
+    public static boolean debug = false;
 
     private static final long serialVersionUID = 1L;
 }
