@@ -413,7 +413,7 @@ public class Functions {
         buf.append(req.getServerName());
         if(req.getLocalPort()!=80)
             buf.append(':').append(req.getLocalPort());
-        buf.append('/').append(req.getContextPath());
+        buf.append(req.getContextPath()).append('/');
         return buf.toString();
     }
 
