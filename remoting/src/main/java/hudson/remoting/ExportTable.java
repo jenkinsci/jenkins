@@ -12,16 +12,42 @@ import java.util.Map;
  */
 final class ExportTable<T> {
     private final Map<Integer,Entry<T>> table = new HashMap<Integer,Entry<T>>();
-    private final Map<T,Integer> reverse = new HashMap<T,Integer>();
+    private final Map<T,Entry<T>> reverse = new HashMap<T,Entry<T>>();
 
+    /**
+     * Information about one exporetd object.
+     */
     private static final class Entry<T> {
+        final int id;
         final T object;
+        /**
+         * Where was this object first exported?
+         */
         final Exception allocationTrace;
+        /**
+         * Current reference count.
+         * Access to {@link ExportTable} is guarded by synchronized block,
+         * so accessing this field requires no further synchronization.
+         */
+        private int referenceCount;
 
-        Entry(T object) {
+        Entry(ExportTable<T> parent, T object) {
+            this.id = parent.iota++;
             this.object = object;
             this.allocationTrace = new Exception();
             allocationTrace.fillInStackTrace();
+            addRef();
+
+            parent.table.put(id,this);
+            parent.reverse.put(object,this);
+        }
+
+        void addRef() {
+            referenceCount++;
+        }
+
+        boolean release() {
+            return --referenceCount==0;
         }
     }
 
@@ -41,18 +67,16 @@ final class ExportTable<T> {
      *      The assigned 'object ID'. If the object is already exported,
      *      it will return the ID already assigned to it.
      */
-    // TODO: the 'intern' semantics requires reference counting for proper unexport op.
     public synchronized int export(T t) {
         if(t==null)    return 0;   // bootstrap classloader
 
-        Integer id = reverse.get(t);
-        if(id==null) {
-            id = iota++;
-            table.put(id,new Entry<T>(t));
-            reverse.put(t,id);
-        }
+        Entry<T> e = reverse.get(t);
+        if(e==null)
+            e = new Entry<T>(this,t);
+        else
+            e.addRef();
 
-        return id;
+        return e.id;
     }
 
     public synchronized T get(int id) {
@@ -66,18 +90,21 @@ final class ExportTable<T> {
      */
     public synchronized void unexport(T t) {
         if(t==null)     return;
-        Integer id = reverse.remove(t);
-        if(id==null)    return; // presumably already unexported
-        table.remove(id);
+        Entry<T> e = reverse.get(t);
+        if(e==null)    return; // presumably already unexported
+        if(e.release()) {
+            table.remove(e.id);
+            reverse.remove(e.object);
+        }
     }
 
     /**
      * Dumps the contents of the table to a file.
      */
     public synchronized void dump(PrintWriter w) throws IOException {
-        for (Map.Entry<Integer, Entry<T>> e : table.entrySet()) {
-            w.println("#"+e.getKey()+" : "+e.getValue().object);
-            e.getValue().allocationTrace.printStackTrace(w);
+        for (Entry<T> e : table.values()) {
+            w.printf("#%d (ref.%d) : %s\n", e.id, e.referenceCount, e.object);
+            e.allocationTrace.printStackTrace(w);
         }
     }
 }
