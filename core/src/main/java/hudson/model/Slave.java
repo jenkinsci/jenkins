@@ -247,9 +247,13 @@ public final class Slave implements Node, Serializable {
 
     /**
      * Root directory on this slave where all the job workspaces are laid out.
+     * @return
+     *      null if not connected.
      */
     public FilePath getWorkspaceRoot() {
-        return getRootPath().child("workspace");
+        FilePath r = getRootPath();
+        if(r==null) return null;
+        return r.child("workspace");
     }
 
     public static final class ComputerImpl extends Computer {
