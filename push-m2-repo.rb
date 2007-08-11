@@ -25,7 +25,7 @@ print "Releasing master POM for plugins"
 prev=VersionNumber.new(ver)
 prev.dec()
 
-def updatePom(src)
+def updatePom(src,prev,ver)
   open(src) do |i|
     open(src+".tmp","w") do |o|
       i.each do |line|
@@ -38,15 +38,16 @@ def updatePom(src)
 end
 
 Dir.chdir("../plugins") do
+  system "cvs update -Pd"
   # update master POM
-  updatePom("pom.xml")
+  updatePom("pom.xml",prev,ver)
   # update parent reference in module POM
   Dir.glob("*") do |name|
     next unless File.directory?(name)
     print "#{name}\n"
-    next unless File.exists(name+"/pom.xml")
-    updatePom(name+"/pom.xml")
-  done
+    next unless File.exists?(name+"/pom.xml")
+    updatePom(name+"/pom.xml",prev,ver)
+  end
   system "cvs commit -m 'bumping up POM version'" or fail
   system "mvn -N deploy" or fail
 end
@@ -59,7 +60,7 @@ Dir.chdir(m2repo) do
 	  Dir.glob("*") do |name|
 	    next unless File.directory?(name)
       print "#{name}\n"
-      system "svn add name/#{ver}" or fail
+      system "svn add #{name}/#{ver}" or fail
 	  end
 	  system "svn commit -m 'Hudson #{ver}'" || fail
   end
