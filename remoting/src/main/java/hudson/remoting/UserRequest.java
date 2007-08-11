@@ -26,7 +26,8 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
     private final IClassLoader classLoaderProxy;
     private final String toString;
     /**
-     * Objects exported by the request. This value will remain local.
+     * Objects exported by the request. This value will remain local
+     * and won't be sent over to the remote side.
      */
     private transient final ExportList exports;
 
