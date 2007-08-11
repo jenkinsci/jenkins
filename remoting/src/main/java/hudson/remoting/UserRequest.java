@@ -26,9 +26,9 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
     private final IClassLoader classLoaderProxy;
     private final String toString;
     /**
-     * Objects exported by the request.
+     * Objects exported by the request. This value will remain local.
      */
-    private final ExportList exports;
+    private transient final ExportList exports;
 
     public UserRequest(Channel local, Callable<?,EXC> c) throws IOException {
         exports = local.startExportRecording();
