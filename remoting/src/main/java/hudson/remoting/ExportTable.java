@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manages unique ID for exported objects, and allows look-up from IDs.
@@ -11,13 +13,22 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 final class ExportTable<T> {
-    private final Map<Integer,Entry<T>> table = new HashMap<Integer,Entry<T>>();
-    private final Map<T,Entry<T>> reverse = new HashMap<T,Entry<T>>();
+    private final Map<Integer,Entry> table = new HashMap<Integer,Entry>();
+    private final Map<T,Entry> reverse = new HashMap<T,Entry>();
+    /**
+     * {@link ExportList}s which are actively recording the current
+     * export operation.
+     */
+    private final ThreadLocal<List<ExportList>> lists = new ThreadLocal<List<ExportList>>() {
+        protected List<ExportList> initialValue() {
+            return new ArrayList<ExportList>();
+        }
+    };
 
     /**
      * Information about one exporetd object.
      */
-    private static final class Entry<T> {
+    private final class Entry {
         final int id;
         final T object;
         /**
@@ -31,23 +42,46 @@ final class ExportTable<T> {
          */
         private int referenceCount;
 
-        Entry(ExportTable<T> parent, T object) {
-            this.id = parent.iota++;
+        Entry(T object) {
+            this.id = iota++;
             this.object = object;
             this.allocationTrace = new Exception();
             allocationTrace.fillInStackTrace();
             addRef();
 
-            parent.table.put(id,this);
-            parent.reverse.put(object,this);
+            table.put(id,this);
+            reverse.put(object,this);
         }
 
         void addRef() {
             referenceCount++;
         }
 
-        boolean release() {
-            return --referenceCount==0;
+        void release() {
+            if(--referenceCount==0) {
+                table.remove(id);
+                reverse.remove(object);
+            }
+        }
+    }
+
+    /**
+     * Captures the list of export, so that they can be unexported later.
+     *
+     * This is tied to a particular thread, so it only records operations
+     * on the current thread.
+     */
+    public final class ExportList extends ArrayList<Entry> {
+        void release() {
+            synchronized(ExportTable.this) {
+                for (Entry e : this)
+                    e.release();
+            }
+        }
+        void stopRecording() {
+            synchronized(ExportTable.this) {
+                lists.get().remove(this);
+            }
         }
     }
 
@@ -55,6 +89,18 @@ final class ExportTable<T> {
      * Unique ID generator.
      */
     private int iota = 1;
+
+    /**
+     * Starts the recording of the export operations
+     * and returns the list that captures the result.
+     *
+     * @see ExportList#stopRecording()
+     */
+    public synchronized ExportList startRecording() {
+        ExportList el = new ExportList();
+        lists.get().add(el);
+        return el;
+    }
 
     /**
      * Exports the given object.
@@ -70,17 +116,20 @@ final class ExportTable<T> {
     public synchronized int export(T t) {
         if(t==null)    return 0;   // bootstrap classloader
 
-        Entry<T> e = reverse.get(t);
+        Entry e = reverse.get(t);
         if(e==null)
-            e = new Entry<T>(this,t);
+            e = new Entry(t);
         else
             e.addRef();
+
+        for (ExportList list : lists.get())
+            list.add(e);
 
         return e.id;
     }
 
     public synchronized T get(int id) {
-        Entry<T> e = table.get(id);
+        Entry e = table.get(id);
         if(e!=null) return e.object;
         else        return null;
     }
@@ -90,19 +139,16 @@ final class ExportTable<T> {
      */
     public synchronized void unexport(T t) {
         if(t==null)     return;
-        Entry<T> e = reverse.get(t);
+        Entry e = reverse.get(t);
         if(e==null)    return; // presumably already unexported
-        if(e.release()) {
-            table.remove(e.id);
-            reverse.remove(e.object);
-        }
+        e.release();
     }
 
     /**
      * Dumps the contents of the table to a file.
      */
     public synchronized void dump(PrintWriter w) throws IOException {
-        for (Entry<T> e : table.values()) {
+        for (Entry e : table.values()) {
             w.printf("#%d (ref.%d) : %s\n", e.id, e.referenceCount, e.object);
             e.allocationTrace.printStackTrace(w);
         }

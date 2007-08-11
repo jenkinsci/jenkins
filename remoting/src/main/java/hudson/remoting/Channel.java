@@ -1,5 +1,7 @@
 package hudson.remoting;
 
+import hudson.remoting.ExportTable.ExportList;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -252,8 +254,10 @@ public class Channel implements VirtualChannel {
      */
     public <V,T extends Throwable>
     V call(Callable<V,T> callable) throws IOException, T, InterruptedException {
+        UserRequest<V,T> request=null;
         try {
-            UserResponse<V,T> r = new UserRequest<V,T>(this, callable).call(this);
+            request = new UserRequest<V, T>(this, callable);
+            UserResponse<V,T> r = request.call(this);
             return r.retrieve(this, UserRequest.getClassLoader(callable));
 
         // re-wrap the exception so that we can capture the stack trace of the caller.
@@ -265,6 +269,13 @@ public class Channel implements VirtualChannel {
             IOException x = new IOException("Remote call failed");
             x.initCause(e);
             throw x;
+        } finally {
+            // since this is synchronous operation, when the round trip is over
+            // we assume all the exported objects are out of scope.
+            // (that is, the operation shouldn't spawn a new thread or altter
+            // global state in the remote system.
+            if(request!=null)
+                request.releaseExports();
         }
     }
 
@@ -390,6 +401,10 @@ public class Channel implements VirtualChannel {
      */
     public void dumpExportTable(PrintWriter w) throws IOException {
         exportedObjects.dump(w);
+    }
+
+    public ExportList startExportRecording() {
+        return exportedObjects.startRecording();
     }
 
     private final class ReaderThread extends Thread {

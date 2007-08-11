@@ -1,6 +1,7 @@
 package hudson.remoting;
 
 import hudson.remoting.RemoteClassLoader.IClassLoader;
+import hudson.remoting.ExportTable.ExportList;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,9 +25,19 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
     private final byte[] request;
     private final IClassLoader classLoaderProxy;
     private final String toString;
+    /**
+     * Objects exported by the request.
+     */
+    private final ExportList exports;
 
     public UserRequest(Channel local, Callable<?,EXC> c) throws IOException {
-        request = serialize(c,local);
+        exports = local.startExportRecording();
+        try {
+            request = serialize(c,local);
+        } finally {
+            exports.stopRecording();
+        }
+
         this.toString = c.toString();
         ClassLoader cl = getClassLoader(c);
         classLoaderProxy = RemoteClassLoader.export(cl,local);
@@ -96,6 +107,10 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
         }
     }
 
+    public void releaseExports() {
+        exports.release();
+    }
+
     public String toString() {
         return "UserRequest:"+toString;
     }
@@ -110,6 +125,9 @@ final class UserResponse<RSP,EXC extends Throwable> implements Serializable {
         this.isException = isException;
     }
 
+    /**
+     * Deserializes the response byte stream into an object.
+     */
     public RSP retrieve(Channel channel, ClassLoader cl) throws IOException, ClassNotFoundException, EXC {
         Channel old = Channel.setCurrent(channel);
         try {
