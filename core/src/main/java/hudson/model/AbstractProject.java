@@ -38,6 +38,8 @@ import java.util.Vector;
 import java.util.Set;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -470,7 +472,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
             return scm.checkout(build, launcher, workspace, listener, changelogFile);
         } catch (InterruptedException e) {
-            e.printStackTrace(listener.fatalError("SCM check out aborted"));
+            listener.getLogger().println("SCM check out aborted");
+            LOGGER.log(Level.INFO,build.toString()+" aborted",e);
             return false;
         }
     }
@@ -802,4 +805,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return o2-o1;
         }
     };
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
 }
