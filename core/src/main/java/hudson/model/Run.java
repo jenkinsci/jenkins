@@ -8,12 +8,9 @@ import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
-import hudson.search.SearchIndexBuilder;
-import hudson.search.SearchIndex;
-import hudson.search.SearchItem;
-import hudson.search.SearchItems;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
+import hudson.search.SearchIndexBuilder;
 import hudson.tasks.BuildStep;
 import hudson.tasks.LogRotator;
 import hudson.tasks.test.AbstractTestResultAction;
@@ -41,8 +38,8 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A particular execution of {@link Job}.
