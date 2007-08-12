@@ -218,7 +218,8 @@ public final class Slave implements Node, Serializable {
 
     public ClockDifference getClockDifference() throws IOException, InterruptedException {
         VirtualChannel channel = getComputer().getChannel();
-        if(channel==null)   return null;   // can't check
+        if(channel==null)
+            throw new IOException(getNodeName()+" is offline");
 
         long startTime = System.currentTimeMillis();
         long slaveTime = channel.call(new Callable<Long,RuntimeException>() {
