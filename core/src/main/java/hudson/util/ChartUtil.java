@@ -58,6 +58,11 @@ public class ChartUtil {
 
     /**
      * Generates the graph in PNG format and sends that to the response.
+     *
+     * @param defaultW
+     * @param defaultH
+     *      The size of the picture to be generated. These values can be overridden
+     *      by the query paramter 'width' and 'height' in the request.
      */
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, int defaultW, int defaultH) throws IOException {
         try {
