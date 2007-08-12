@@ -6,21 +6,22 @@
       <div class="dirTree">
       <!-- parent path -->
         <div class="parentPath">
-          <form action="." method="get">
+          <form action="." method="post">
             <a href="${topPath}"><img src="${imagesURL}/48x48/${icon}" class="rootIcon" /></a>
             <j:forEach var="p" items="${parentPath}">
               <a href="${p.href}">${p.title}</a>
               /
             </j:forEach>
-            <input type="text" name="path" />
+            <input type="text" name="pattern" value="${pattern}" />
             <input type="image" src="${imagesURL}/16x16/go-next.gif" style="vertical-align:middle"/>
           </form>
         </div>
         <table class="fileList">
           <j:forEach var="f" items="${files}">
+            <j:set var="x" value="${f.get(f.size()-1)}"/>
             <tr>
               <td>
-                <img src="${imagesURL}/16x16/${f[0].iconName}"/>
+                <img src="${imagesURL}/16x16/${x.iconName}"/>
               </td>
               <td>
                 <j:forEach var="t" items="${f}" varStatus="st">
@@ -28,7 +29,6 @@
                   <j:if test="${!st.last}">/</j:if>
                 </j:forEach>
               </td>
-              <j:set var="x" value="${f.get(f.size()-1)}"/>
               <j:if test="${!x.folder}">
                 <td class="fileSize">
                   ${x.getSize()}

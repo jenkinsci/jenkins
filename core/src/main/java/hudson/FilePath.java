@@ -455,6 +455,17 @@ public final class FilePath implements Serializable {
             }
         });
     }
+    
+    /**
+     * Returns the file size in bytes.
+     */
+    public long length() throws IOException, InterruptedException {
+        return act(new FileCallable<Long>() {
+            public Long invoke(File f, VirtualChannel channel) throws IOException {
+                return f.length();
+            }
+        });
+    }
 
     /**
      * List up files in this directory.

@@ -13,7 +13,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,13 +47,11 @@ public final class DirectoryBrowserSupport {
      *      False to serve "index.html"
      */
     public final void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
-        if(req.getQueryString()!=null) {
-            req.setCharacterEncoding("UTF-8");
-            String path = req.getParameter("path");
-            if(path!=null) {
-                rsp.sendRedirect(URLEncoder.encode(path,"UTF-8"));
-                return;
-            }
+
+        String pattern = req.getParameter("pattern");
+        if (pattern != null) {
+            servePattern(req, rsp, root, icon, pattern);
+            return;
         }
 
         String path = req.getRestOfPath();
@@ -138,6 +135,73 @@ public final class DirectoryBrowserSupport {
 
             in.close();
         }
+    }
+    
+    /**
+     * Serves files matched by the pattern relativ to the current workspace directory.
+     */
+    private void servePattern(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, String pattern) throws IOException, ServletException, InterruptedException {
+        String path = req.getRestOfPath();
+        if (path.length() > 0) {
+            // remove leading slash since the root path ends with a slash
+            path = path.substring(1);
+        }
+
+        // current workspace directory
+        FilePath curDir = new FilePath(root, path);
+
+        FilePath[] matches = curDir.list(pattern);
+        List<List<Path>> files = null;
+
+        if (matches.length > 0) {
+            files = new ArrayList<List<Path>>(matches.length);
+            for (FilePath match : matches) {
+                List<Path> file = buildPathList(curDir, match);
+                files.add(file);
+            }
+        }
+        
+        // this is almost identical to the directory listing except files and pattern attributes
+        req.setAttribute("it",this);
+        List<Path> parentPaths = buildParentPath(path);
+        req.setAttribute("parentPath",parentPaths);
+        req.setAttribute("topPath",
+            parentPaths.isEmpty() ? "." : repeat("../",parentPaths.size()));
+        req.setAttribute("files", files);
+        req.setAttribute("icon",icon);
+        req.setAttribute("path",path);
+        req.setAttribute("pattern", pattern);
+        req.setAttribute("dir",root);
+        req.getView(this,"dir.jelly").forward(req,rsp);
+    }
+
+    /**
+     * Builds a path list from the current workspace directory down to the specified file path.
+     */
+    private List<Path> buildPathList(FilePath curDir, FilePath filePath) throws IOException, InterruptedException {
+        List<Path> pathList = new ArrayList<Path>();
+        StringBuilder href = new StringBuilder();
+
+        buildPathList(curDir, filePath, pathList, href);
+        return pathList;
+    }
+
+    /**
+     * Builds the path list and href recursively top-down.
+     */
+    private void buildPathList(FilePath curDir, FilePath filePath, List<Path> pathList, StringBuilder href) throws IOException, InterruptedException {
+        FilePath parent = filePath.getParent();
+        if (!parent.toURI().equals(curDir.toURI())) {
+            buildPathList(curDir, parent, pathList, href);
+        }
+
+        href.append(filePath.getName());
+        if (filePath.isDirectory()) {
+            href.append("/");
+        }
+
+        Path path = new Path(href.toString(), filePath.getName(), filePath.isDirectory(), filePath.length());
+        pathList.add(path);
     }
 
     private static final class ContentInfo implements FileCallable<ContentInfo> {
