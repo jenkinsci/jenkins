@@ -49,6 +49,8 @@ public final class DirectoryBrowserSupport {
     public final void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
 
         String pattern = req.getParameter("pattern");
+        if(pattern==null)
+            pattern = req.getParameter("path"); // compatibility with Hudson<1.129
         if (pattern != null) {
             servePattern(req, rsp, root, icon, pattern);
             return;
