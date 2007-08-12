@@ -83,5 +83,5 @@ public final class ClockDifference {
 
     public static final ClockDifference ZERO = new ClockDifference(0);
 
-    private static final String FAILED_HTML = "<span class='error'>Failed to heck</span>";
+    private static final String FAILED_HTML = "<span class='error'>Failed to check</span>";
 }
