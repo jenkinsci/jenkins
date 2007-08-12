@@ -30,7 +30,7 @@
     <f:entry title="Root POM" help="/help/maven/root-pom.html">
       <f:textbox name="rootPOM" value="${it.rootPOM}"/>
     </f:entry>
-    <f:entry title="Goals" help="/help/maven/goals.html">
+    <f:entry title="Goals" help="help-goals">
       <f:textbox name="goals" value="${it.userConfiguredGoals}"/>
     </f:entry>
     <f:advanced>

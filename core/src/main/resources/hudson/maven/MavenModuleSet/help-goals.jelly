@@ -1,0 +1,17 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:ajax>
+    <div>
+      Specify a whitespace-separated list of maven goals or phases to be executed,
+      such as "install javadoc:javadoc". If left unspecified,
+      <a href="http://maven.apache.org/pom.html#basebuild_element">the default goal</a>
+      specified in the POM will be used, and if even that is unspecified, "install"
+      will be run.
+
+      <p>
+        This field can also include any other Maven options. Hudson also makes
+        <a href="${rootURL}/env-vars.html">these variables</a>
+        available as system properties to builds.
+      </p>
+    </div>
+  </l:ajax>
+</j:jelly>
