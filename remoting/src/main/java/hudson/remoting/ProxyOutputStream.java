@@ -106,11 +106,6 @@ final class ProxyOutputStream extends OutputStream {
         oid = -1;
     }
 
-    protected void finalize() throws Throwable {
-        super.finalize();
-        close();
-    }
-    
     /**
      * {@link Command} for sending bytes.
      */

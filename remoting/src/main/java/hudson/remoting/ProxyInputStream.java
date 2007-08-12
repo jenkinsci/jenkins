@@ -69,11 +69,6 @@ final class ProxyInputStream extends InputStream {
         }
     }
 
-    protected void finalize() throws Throwable {
-        super.finalize();
-        close();
-    }
-
     private static final class Buffer implements Serializable {
         byte[] buf;
         int len;
