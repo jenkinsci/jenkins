@@ -423,11 +423,16 @@ public class Channel implements VirtualChannel {
                         } finally {
                             Channel.setCurrent(old);
                         }
-                        if(logger.isLoggable(Level.FINE))
-                            logger.fine("Received "+cmd);
-                        cmd.execute(Channel.this);
                     } catch (ClassNotFoundException e) {
                         logger.log(Level.SEVERE, "Unable to read a command",e);
+                    }
+                    if(logger.isLoggable(Level.FINE))
+                        logger.fine("Received "+cmd);
+                    try {
+                        cmd.execute(Channel.this);
+                    } catch (Throwable t) {
+                        logger.log(Level.SEVERE, "Failed to execute command "+cmd,t);
+                        logger.log(Level.SEVERE, "This command is created here",cmd.createdAt);
                     }
                 }
                 ois.close();
