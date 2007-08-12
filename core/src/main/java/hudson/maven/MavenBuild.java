@@ -243,7 +243,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     }
 
     private class RunnerImpl extends AbstractRunner implements ProcessCache.Factory {
-        private List<MavenReporter> reporters = new ArrayList<MavenReporter>();
+        private final List<MavenReporter> reporters = new ArrayList<MavenReporter>();
+        /**
+         * Environment variables to be set to the maven process.
+         * The same variables are exposed to the system property as well.
+         */
+        private final Map<String,String> envVars = getEnvVars();
 
         protected Result doRun(BuildListener listener) throws Exception {
             // pick up a list of reporters to run
@@ -268,7 +273,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             margs.add("-f",getParent().getModuleRoot().child("pom.xml").getRemote());
             margs.addTokenized(getProject().getGoals());
 
-            Map<String,String> systemProps = new HashMap<String, String>();
+            Map<String,String> systemProps = new HashMap<String, String>(envVars);
+            // backward compatibility
             systemProps.put("hudson.build.number",String.valueOf(getNumber()));
 
             boolean normalExit = false;
@@ -289,12 +295,11 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
          * Starts maven process.
          */
         public Channel newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
-            Map<String, String> vars = getEnvVars();
             if(debug)
-                listener.getLogger().println("Using env variables: "+vars);
+                listener.getLogger().println("Using env variables: "+ envVars);
             try {
                 return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
-                    out, null, vars);
+                    out, null, envVars);
             } catch (IOException e) {
                 if(e.getMessage().contains("java: not found")) {
                     // diagnose issue #659
