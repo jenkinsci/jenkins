@@ -115,6 +115,8 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
     public String toString() {
         return "UserRequest:"+toString;
     }
+
+    private static final long serialVersionUID = 1L;
 }
 
 final class UserResponse<RSP,EXC extends Throwable> implements Serializable {
