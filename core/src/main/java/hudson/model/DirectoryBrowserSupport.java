@@ -86,7 +86,7 @@ public final class DirectoryBrowserSupport {
         // and the GLOB portion "**/*.xml" (the rest)
         StringBuilder _base = new StringBuilder();
         StringBuilder _rest = new StringBuilder();
-        int restSize=-1; // number of ".." needed to go back to the 'base' level
+        int restSize=-1; // number of ".." needed to go back to the 'base' level.
         boolean zip=false;  // if we are asked to serve a zip file bundle
         {
             boolean inBase = true;
@@ -118,7 +118,13 @@ public final class DirectoryBrowserSupport {
         FilePath baseFile = new FilePath(root,base);
 
         if(baseFile.isDirectory()) {
-            if(!zip && rest.length()==0) {
+            if(zip) {
+                rsp.setContentType("application/zip");
+                baseFile.createZipArchive(rsp.getOutputStream());
+                return;
+            }
+
+            if(rest.length()==0) {
                 // if the target page to be displayed is a directory and the path doesn't end with '/', redirect
                 StringBuffer reqUrl = req.getRequestURL();
                 if(reqUrl.charAt(reqUrl.length()-1)!='/') {
