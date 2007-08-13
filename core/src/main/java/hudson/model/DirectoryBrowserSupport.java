@@ -66,6 +66,15 @@ public final class DirectoryBrowserSupport {
      *      False to serve "index.html"
      */
     public final void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
+        // handle form submission
+        String pattern = req.getParameter("pattern");
+        if(pattern==null)
+            pattern = req.getParameter("path"); // compatibility with Hudson<1.129
+        if(pattern!=null) {
+            rsp.sendRedirect2(pattern);
+            return;
+        }
+
         String path = getPath(req);
         if(path.indexOf("..")!=-1) {
             // don't serve anything other than files in the artifacts dir
@@ -73,75 +82,106 @@ public final class DirectoryBrowserSupport {
             return;
         }
 
-        // this is the "current" file/directory
-        FilePath f = new FilePath(root,path.substring(1));
+        // split the path to the base directory portion "abc/def/ghi" which doesn't include any wildcard,
+        // and the GLOB portion "**/*.xml" (the rest)
+        StringBuilder _base = new StringBuilder();
+        StringBuilder _rest = new StringBuilder();
+        int restSize=-1; // number of ".." needed to go back to the 'base' level
+        boolean zip=false;  // if we are asked to serve a zip file bundle
+        {
+            boolean inBase = true;
+            StringTokenizer pathTokens = new StringTokenizer(path,"/");
+            while(pathTokens.hasMoreTokens()) {
+                String pathElement = pathTokens.nextToken();
+                if(pathElement.contains("?") || pathElement.contains("*"))
+                    inBase = false;
+                if(pathElement.equals("*zip*")) {
+                    // the expected syntax is foo/bar/*zip*/bar.zip
+                    // the last 'bar.zip' portion is to causes browses to set a good default file name.
+                    // so the 'rest' portion ends here.
+                    zip=true;
+                    break;
+                }
 
-        String pattern = req.getParameter("pattern");
-        if(pattern==null)
-            pattern = req.getParameter("path"); // compatibility with Hudson<1.129
-        if (pattern != null) {// GLOB search
-            servePattern(req, rsp, f, path, icon, pattern);
-            return;
+                StringBuilder sb = inBase?_base:_rest;
+                if(sb.length()>0)   sb.append('/');
+                sb.append(pathElement);
+                if(!inBase)
+                    restSize++;
+            }
         }
+        restSize = Math.max(restSize,0);
+        String base = _base.toString();
+        String rest = _rest.toString();
 
-        boolean isFingerprint=false;
-        if(f.getName().equals("*fingerprint*")) {
-            f = f.getParent();
-            isFingerprint = true;
-        }
+        // this is the base file/directory
+        FilePath baseFile = new FilePath(root,base);
 
-        boolean view = false;
-        if (f.getName().equals("*view*")) {
-            // f.name == ".../ws/.../<filename>/*view*/"
-        	// set f to point to the real file
-        	f = f.getParent();
-        	view = true;
-        }
-
-        if(f.getParent().getName().equals("*zip*")) {
-            // the expected syntax is foo/bar/*zip*/bar.zip
-            // the last 'bar.zip' portion is to causes browses to set a good default file name 
-            rsp.setContentType("application/zip");
-            f.getParent().getParent().createZipArchive(rsp.getOutputStream());
-            return;
-        }
-
-        if(f.isDirectory()) {
-            if(!req.getRequestURL().toString().endsWith("/")) {
-                rsp.sendRedirect2(req.getRequestURL().append('/').toString());
-                return;
+        if(baseFile.isDirectory()) {
+            if(!zip && rest.length()==0) {
+                // if the target page to be displayed is a directory and the path doesn't end with '/', redirect
+                StringBuffer reqUrl = req.getRequestURL();
+                if(reqUrl.charAt(reqUrl.length()-1)!='/') {
+                    rsp.sendRedirect2(reqUrl.append('/').toString());
+                    return;
+                }
             }
 
+            FileCallable<List<List<Path>>> glob = null;
+
+            if(rest.length()>0) {
+                // the rest is Ant glob pattern
+                glob = new PatternScanner(rest,createBackRef(restSize));
+            } else
             if(serveDirIndex) {
-                serveFileListing(req, path, f, icon, rsp, f.act(new ChildPathBuilder()), null);
-                return;
-            } else {
-                f = f.child("index.html");
+                // serve directory index
+                glob = new ChildPathBuilder();
             }
+
+            if(glob!=null) {
+                // serve glob
+                req.setAttribute("it", this);
+                List<Path> parentPaths = buildParentPath(base,restSize);
+                req.setAttribute("parentPath",parentPaths);
+                req.setAttribute("topPath", createBackRef(parentPaths.size()+restSize));
+                req.setAttribute("files", baseFile.act(glob));
+                req.setAttribute("icon", icon);
+                req.setAttribute("path", path);
+                req.setAttribute("pattern",rest);
+                req.setAttribute("dir", baseFile);
+                req.getView(this,"dir.jelly").forward(req, rsp);
+                return;
+            }
+
+            // convert a directory service request to a single file service request by serving
+            // 'index.html'
+            baseFile = baseFile.child("index.html");
         }
 
-        if(!f.exists()) {
+        //serve a single file
+        if(!baseFile.exists()) {
             rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        if(isFingerprint) {
-            rsp.forward(Hudson.getInstance().getFingerprint(f.digest()),"/",req);
+        boolean view = rest.equals("*view*");
+
+        if(rest.equals("*fingerprint*")) {
+            rsp.forward(Hudson.getInstance().getFingerprint(baseFile.digest()),"/",req);
+            return;
+        }
+
+        ContentInfo ci = baseFile.act(new ContentInfo());
+
+        InputStream in = baseFile.read();
+        if (view) {
+            // for binary files, provide the file name for download
+            rsp.setHeader("Content-Disposition", "inline; filename=" + baseFile.getName());
+
+            // pseudo file name to let the Stapler set text/plain
+            rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, "plain.txt");
         } else {
-            ContentInfo ci = f.act(new ContentInfo());
-
-            InputStream in = f.read();
-        	if (view) {
-        		// for binary files, provide the file name for download
-        		rsp.setHeader("Content-Disposition", "inline; filename=" + f.getName());
-        		
-				// pseudo file name to let the Stapler set text/plain
-                rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, "plain.txt");
-			} else {
-        		rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, f.getName() );
-        	}
-
-            in.close();
+            rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, baseFile.getName() );
         }
     }
 
@@ -150,32 +190,6 @@ public final class DirectoryBrowserSupport {
         if(path.length()==0)
             path = "/";
         return path;
-    }
-
-    private void serveFileListing(StaplerRequest req, String path, FilePath dir, String icon, StaplerResponse rsp, List<List<Path>> files, String pattern) throws IOException, InterruptedException, ServletException {
-        req.setAttribute("it",this);
-        List<Path> parentPaths = buildParentPath(path);
-        req.setAttribute("parentPath",parentPaths);
-        req.setAttribute("topPath", createBackRef(parentPaths.size()));
-        req.setAttribute("files",files);
-        req.setAttribute("icon",icon);
-        req.setAttribute("path",path);
-        req.setAttribute("pattern", pattern);
-        req.setAttribute("dir",dir);
-        req.getView(this,"dir.jelly").forward(req,rsp);
-    }
-
-    /**
-     * Serves files matched by the pattern relativ to the current workspace directory.
-     */
-    private void servePattern(StaplerRequest req, StaplerResponse rsp, FilePath root, String path, String icon, String pattern) throws IOException, ServletException, InterruptedException {
-        if(new FilePath(root,pattern).exists()) {
-            // this file/directory exists, so it's not a pattern
-            rsp.sendRedirect2(pattern);
-            return;
-        }
-
-        serveFileListing(req,path,root,icon,rsp,root.act(new PatternScanner(pattern)),pattern);
     }
 
     private static final class ContentInfo implements FileCallable<ContentInfo> {
@@ -195,21 +209,21 @@ public final class DirectoryBrowserSupport {
      * Builds a list of {@link Path} that represents ancestors
      * from a string like "/foo/bar/zot".
      */
-    private List<Path> buildParentPath(String pathList) {
+    private List<Path> buildParentPath(String pathList, int restSize) {
         List<Path> r = new ArrayList<Path>();
         StringTokenizer tokens = new StringTokenizer(pathList, "/");
         int total = tokens.countTokens();
         int current=1;
         while(tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            r.add(new Path(createBackRef(total - current),token,true,0));
+            r.add(new Path(createBackRef(total-current+restSize),token,true,0));
             current++;
         }
         return r;
     }
 
     private static String createBackRef(int times) {
-        if(times==0)    return ".";
+        if(times==0)    return "./";
         StringBuffer buf = new StringBuffer(3*times);
         for(int i=0; i<times; i++ )
             buf.append("../");
@@ -333,9 +347,14 @@ public final class DirectoryBrowserSupport {
      */
     private static class PatternScanner implements FileCallable<List<List<Path>>> {
         private final String pattern;
+        /**
+         * Strling like "../../../" that cancels the 'rest' portion. Can be "./"
+         */
+        private final String baseRef;
 
-        public PatternScanner(String pattern) {
+        public PatternScanner(String pattern,String baseRef) {
             this.pattern = pattern;
+            this.baseRef = baseRef;
         }
 
         public List<List<Path>> invoke(File baseDir, VirtualChannel channel) throws IOException {
@@ -363,7 +382,7 @@ public final class DirectoryBrowserSupport {
          */
         private List<Path> buildPathList(File baseDir, File filePath) throws IOException {
             List<Path> pathList = new ArrayList<Path>();
-            StringBuilder href = new StringBuilder();
+            StringBuilder href = new StringBuilder(baseRef);
 
             buildPathList(baseDir, filePath, pathList, href);
             return pathList;
