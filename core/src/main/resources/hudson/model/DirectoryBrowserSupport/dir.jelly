@@ -13,7 +13,8 @@
               /
             </j:forEach>
             <input type="text" name="pattern" value="${pattern}" />
-            <input type="image" src="${imagesURL}/16x16/go-next.gif" style="vertical-align:middle"/>
+            <img src="${imagesURL}/16x16/go-next.gif" style="vertical-align:middle; cursor:pointer"
+                onclick="this.parentNode.submit()"/>
           </form>
         </div>
         <table class="fileList">
