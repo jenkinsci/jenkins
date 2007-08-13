@@ -32,9 +32,26 @@ import java.util.StringTokenizer;
 public final class DirectoryBrowserSupport {
 
     public final ModelObject owner;
+    
+    public final String title;
 
+    /**
+     * @deprecated
+     *      Use {@link #DirectoryBrowserSupport(ModelObject, String)}
+     */
     public DirectoryBrowserSupport(ModelObject owner) {
+        this(owner,owner.getDisplayName());
+    }
+
+    /**
+     * @param owner
+     *      The parent model object under which the directory browsing is added.
+     * @param title
+     *      Used in the HTML caption. 
+     */
+    public DirectoryBrowserSupport(ModelObject owner, String title) {
         this.owner = owner;
+        this.title = title;
     }
 
     /**

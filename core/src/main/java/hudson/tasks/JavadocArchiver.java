@@ -107,7 +107,8 @@ public class JavadocArchiver extends Publisher {
         }
 
         public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-            new DirectoryBrowserSupport(this).serveFile(req, rsp, new FilePath(getJavadocDir(project)), "help.gif", false);
+            new DirectoryBrowserSupport(this,project.getDisplayName()+" javadoc")
+                .serveFile(req, rsp, new FilePath(getJavadocDir(project)), "help.gif", false);
         }
     }
 
