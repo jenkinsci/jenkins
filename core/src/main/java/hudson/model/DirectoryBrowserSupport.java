@@ -120,7 +120,7 @@ public final class DirectoryBrowserSupport {
         if(baseFile.isDirectory()) {
             if(zip) {
                 rsp.setContentType("application/zip");
-                baseFile.createZipArchive(rsp.getOutputStream());
+                baseFile.createZipArchive(rsp.getOutputStream(),rest);
                 return;
             }
 
@@ -149,6 +149,7 @@ public final class DirectoryBrowserSupport {
                 req.setAttribute("it", this);
                 List<Path> parentPaths = buildParentPath(base,restSize);
                 req.setAttribute("parentPath",parentPaths);
+                req.setAttribute("backPath", createBackRef(restSize));
                 req.setAttribute("topPath", createBackRef(parentPaths.size()+restSize));
                 req.setAttribute("files", baseFile.act(glob));
                 req.setAttribute("icon", icon);

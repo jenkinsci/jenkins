@@ -205,6 +205,45 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Creates a zip file from this directory by only including the files that match the given glob.
+     *
+     * @param glob
+     *      Ant style glob, like "**&#x2F;*.xml". If empty or null, this method
+     *      works like {@link #createZipArchive(OutputStream)}
+     *
+     * @since 1.129
+     */
+    public void createZipArchive(OutputStream os, final String glob) throws IOException, InterruptedException {
+        if(glob==null || glob.length()==0) {
+            createZipArchive(os);
+            return;
+        }
+        
+        final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
+        act(new FileCallable<Void>() {
+            public Void invoke(File dir, VirtualChannel channel) throws IOException {
+                byte[] buf = new byte[8192];
+
+                ZipOutputStream zip = new ZipOutputStream(out);
+                for( String entry : glob(dir,glob) ) {
+                    zip.putNextEntry(new ZipEntry(dir.getName()+'/'+entry));
+                    FileInputStream in = new FileInputStream(new File(dir,entry));
+                    int len;
+                    while((len=in.read(buf))>0)
+                        zip.write(buf,0,len);
+                    in.close();
+                    zip.closeEntry();
+                }
+
+                zip.close();
+                return null;
+            }
+
+            private static final long serialVersionUID = 1L;
+        });
+    }
+
+    /**
      * Code that gets executed on the machine where the {@link FilePath} is local.
      * Used to act on {@link FilePath}.
      *
@@ -458,6 +497,8 @@ public final class FilePath implements Serializable {
     
     /**
      * Returns the file size in bytes.
+     *
+     * @since 1.129
      */
     public long length() throws IOException, InterruptedException {
         return act(new FileCallable<Long>() {
@@ -502,12 +543,7 @@ public final class FilePath implements Serializable {
     public FilePath[] list(final String includes) throws IOException, InterruptedException {
         return act(new FileCallable<FilePath[]>() {
             public FilePath[] invoke(File f, VirtualChannel channel) throws IOException {
-                FileSet fs = new FileSet();
-                fs.setDir(f);
-                fs.setIncludes(includes);
-
-                DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
-                String[] files = ds.getIncludedFiles();
+                String[] files = glob(f,includes);
 
                 FilePath[] r = new FilePath[files.length];
                 for( int i=0; i<r.length; i++ )
@@ -516,6 +552,19 @@ public final class FilePath implements Serializable {
                 return r;
             }
         });
+    }
+
+    /**
+     * Runs Ant glob expansion.
+     */
+    private static String[] glob(File dir, String includes) {
+        FileSet fs = new FileSet();
+        fs.setDir(dir);
+        fs.setIncludes(includes);
+
+        DirectoryScanner ds = fs.getDirectoryScanner(new Project());
+        String[] files = ds.getIncludedFiles();
+        return files;
     }
 
     /**
