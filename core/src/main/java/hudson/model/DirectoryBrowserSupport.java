@@ -153,8 +153,7 @@ public final class DirectoryBrowserSupport {
         req.setAttribute("it",this);
         List<Path> parentPaths = buildParentPath(path);
         req.setAttribute("parentPath",parentPaths);
-        req.setAttribute("topPath",
-                    parentPaths.isEmpty() ? "." : repeat("../",parentPaths.size()));
+        req.setAttribute("topPath", createBackRef(parentPaths.size()));
         req.setAttribute("files",files);
         req.setAttribute("icon",icon);
         req.setAttribute("path",path);
@@ -209,16 +208,17 @@ public final class DirectoryBrowserSupport {
         int current=1;
         while(tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            r.add(new Path(repeat("../",total-current),token,true,0));
+            r.add(new Path(createBackRef(total - current),token,true,0));
             current++;
         }
         return r;
     }
 
-    private static String repeat(String s,int times) {
-        StringBuffer buf = new StringBuffer(s.length()*times);
+    private static String createBackRef(int times) {
+        if(times==0)    return ".";
+        StringBuffer buf = new StringBuffer(3*times);
         for(int i=0; i<times; i++ )
-            buf.append(s);
+            buf.append("../");
         return buf.toString();
     }
 
