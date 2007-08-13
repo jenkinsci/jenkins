@@ -169,6 +169,12 @@ public final class DirectoryBrowserSupport {
         // current workspace directory
         FilePath curDir = new FilePath(root, path);
 
+        if(new FilePath(curDir,pattern).exists()) {
+            // this file/directory exists, so it's not a pattern
+            rsp.sendRedirect2(pattern);
+            return;
+        }
+
         FilePath[] matches = curDir.list(pattern);
         List<List<Path>> files = null;
 
