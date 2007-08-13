@@ -344,9 +344,9 @@ public final class DirectoryBrowserSupport {
             this.pattern = pattern;
         }
 
-        public List<List<Path>> invoke(File f, VirtualChannel channel) throws IOException {
+        public List<List<Path>> invoke(File baseDir, VirtualChannel channel) throws IOException {
             FileSet fs = new FileSet();
-            fs.setDir(f);
+            fs.setDir(baseDir);
             fs.setIncludes(pattern);
 
             DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
@@ -355,7 +355,7 @@ public final class DirectoryBrowserSupport {
             if (files.length > 0) {
                 List<List<Path>> r = new ArrayList<List<Path>>(files.length);
                 for (String match : files) {
-                    List<Path> file = buildPathList(f, new File(f,match));
+                    List<Path> file = buildPathList(baseDir, new File(baseDir,match));
                     r.add(file);
                 }
                 return r;
@@ -367,21 +367,21 @@ public final class DirectoryBrowserSupport {
         /**
          * Builds a path list from the current workspace directory down to the specified file path.
          */
-        private List<Path> buildPathList(File curDir, File filePath) throws IOException {
+        private List<Path> buildPathList(File baseDir, File filePath) throws IOException {
             List<Path> pathList = new ArrayList<Path>();
             StringBuilder href = new StringBuilder();
 
-            buildPathList(curDir, filePath, pathList, href);
+            buildPathList(baseDir, filePath, pathList, href);
             return pathList;
         }
 
         /**
          * Builds the path list and href recursively top-down.
          */
-        private void buildPathList(File curDir, File filePath, List<Path> pathList, StringBuilder href) throws IOException {
+        private void buildPathList(File baseDir, File filePath, List<Path> pathList, StringBuilder href) throws IOException {
             File parent = filePath.getParentFile();
-            if (!curDir.equals(filePath)) {
-                buildPathList(curDir, parent, pathList, href);
+            if (!baseDir.equals(parent)) {
+                buildPathList(baseDir, parent, pathList, href);
             }
 
             href.append(filePath.getName());
