@@ -5,6 +5,8 @@ import hudson.FilePath.FileCallable;
 import hudson.remoting.VirtualChannel;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.DirectoryScanner;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -159,7 +161,7 @@ public final class DirectoryBrowserSupport {
     /**
      * Serves files matched by the pattern relativ to the current workspace directory.
      */
-    private void servePattern(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, String pattern) throws IOException, ServletException, InterruptedException {
+    private void servePattern(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, final String pattern) throws IOException, ServletException, InterruptedException {
         String path = req.getRestOfPath();
         if (path.length() > 0) {
             // remove leading slash since the root path ends with a slash
@@ -175,58 +177,18 @@ public final class DirectoryBrowserSupport {
             return;
         }
 
-        FilePath[] matches = curDir.list(pattern);
-        List<List<Path>> files = null;
-
-        if (matches.length > 0) {
-            files = new ArrayList<List<Path>>(matches.length);
-            for (FilePath match : matches) {
-                List<Path> file = buildPathList(curDir, match);
-                files.add(file);
-            }
-        }
-        
         // this is almost identical to the directory listing except files and pattern attributes
         req.setAttribute("it",this);
         List<Path> parentPaths = buildParentPath(path);
         req.setAttribute("parentPath",parentPaths);
         req.setAttribute("topPath",
             parentPaths.isEmpty() ? "." : repeat("../",parentPaths.size()));
-        req.setAttribute("files", files);
+        req.setAttribute("files", curDir.act(new PatternScanner(pattern)));
         req.setAttribute("icon",icon);
         req.setAttribute("path",path);
         req.setAttribute("pattern", pattern);
         req.setAttribute("dir",root);
         req.getView(this,"dir.jelly").forward(req,rsp);
-    }
-
-    /**
-     * Builds a path list from the current workspace directory down to the specified file path.
-     */
-    private List<Path> buildPathList(FilePath curDir, FilePath filePath) throws IOException, InterruptedException {
-        List<Path> pathList = new ArrayList<Path>();
-        StringBuilder href = new StringBuilder();
-
-        buildPathList(curDir, filePath, pathList, href);
-        return pathList;
-    }
-
-    /**
-     * Builds the path list and href recursively top-down.
-     */
-    private void buildPathList(FilePath curDir, FilePath filePath, List<Path> pathList, StringBuilder href) throws IOException, InterruptedException {
-        FilePath parent = filePath.getParent();
-        if (!parent.toURI().equals(curDir.toURI())) {
-            buildPathList(curDir, parent, pathList, href);
-        }
-
-        href.append(filePath.getName());
-        if (filePath.isDirectory()) {
-            href.append("/");
-        }
-
-        Path path = new Path(href.toString(), filePath.getName(), filePath.isDirectory(), filePath.length());
-        pathList.add(path);
     }
 
     private static final class ContentInfo implements FileCallable<ContentInfo> {
@@ -372,6 +334,69 @@ public final class DirectoryBrowserSupport {
             }
 
             return r;
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * Runs ant GLOB against the current {@link FilePath} and returns matching
+     * paths.
+     */
+    private static class PatternScanner implements FileCallable<List<List<Path>>> {
+        private final String pattern;
+
+        public PatternScanner(String pattern) {
+            this.pattern = pattern;
+        }
+
+        public List<List<Path>> invoke(File f, VirtualChannel channel) throws IOException {
+            FileSet fs = new FileSet();
+            fs.setDir(f);
+            fs.setIncludes(pattern);
+
+            DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+            String[] files = ds.getIncludedFiles();
+
+            if (files.length > 0) {
+                List<List<Path>> r = new ArrayList<List<Path>>(files.length);
+                for (String match : files) {
+                    List<Path> file = buildPathList(f, new File(f,match));
+                    r.add(file);
+                }
+                return r;
+            }
+
+            return null;
+        }
+
+        /**
+         * Builds a path list from the current workspace directory down to the specified file path.
+         */
+        private List<Path> buildPathList(File curDir, File filePath) throws IOException {
+            List<Path> pathList = new ArrayList<Path>();
+            StringBuilder href = new StringBuilder();
+
+            buildPathList(curDir, filePath, pathList, href);
+            return pathList;
+        }
+
+        /**
+         * Builds the path list and href recursively top-down.
+         */
+        private void buildPathList(File curDir, File filePath, List<Path> pathList, StringBuilder href) throws IOException {
+            File parent = filePath.getParentFile();
+            if (!curDir.equals(filePath)) {
+                buildPathList(curDir, parent, pathList, href);
+            }
+
+            href.append(filePath.getName());
+            if (filePath.isDirectory()) {
+                href.append("/");
+            }
+
+            Path path = new Path(href.toString(), filePath.getName(), filePath.isDirectory(), filePath.length());
+            pathList.add(path);
         }
 
         private static final long serialVersionUID = 1L;
