@@ -66,24 +66,20 @@ public final class DirectoryBrowserSupport {
      *      False to serve "index.html"
      */
     public final void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
-        String path = req.getRestOfPath();
-
-        if(path.length()==0)
-            path = "/";
-
+        String path = getPath(req);
         if(path.indexOf("..")!=-1) {
             // don't serve anything other than files in the artifacts dir
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
+        // this is the "current" file/directory
         FilePath f = new FilePath(root,path.substring(1));
-
 
         String pattern = req.getParameter("pattern");
         if(pattern==null)
             pattern = req.getParameter("path"); // compatibility with Hudson<1.129
-        if (pattern != null) {
+        if (pattern != null) {// GLOB search
             servePattern(req, rsp, f, path, icon, pattern);
             return;
         }
@@ -147,6 +143,13 @@ public final class DirectoryBrowserSupport {
 
             in.close();
         }
+    }
+
+    private String getPath(StaplerRequest req) {
+        String path = req.getRestOfPath();
+        if(path.length()==0)
+            path = "/";
+        return path;
     }
 
     private void serveFileListing(StaplerRequest req, String path, FilePath dir, String icon, StaplerResponse rsp, List<List<Path>> files, String pattern) throws IOException, InterruptedException, ServletException {
