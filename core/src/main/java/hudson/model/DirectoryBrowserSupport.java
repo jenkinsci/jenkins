@@ -66,27 +66,27 @@ public final class DirectoryBrowserSupport {
      *      False to serve "index.html"
      */
     public final void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
-
-        String pattern = req.getParameter("pattern");
-        if(pattern==null)
-            pattern = req.getParameter("path"); // compatibility with Hudson<1.129
-        if (pattern != null) {
-            servePattern(req, rsp, root, icon, pattern);
-            return;
-        }
-
         String path = req.getRestOfPath();
 
         if(path.length()==0)
             path = "/";
 
-        if(path.indexOf("..")!=-1 || path.length()<1) {
+        if(path.indexOf("..")!=-1) {
             // don't serve anything other than files in the artifacts dir
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
         FilePath f = new FilePath(root,path.substring(1));
+
+
+        String pattern = req.getParameter("pattern");
+        if(pattern==null)
+            pattern = req.getParameter("path"); // compatibility with Hudson<1.129
+        if (pattern != null) {
+            servePattern(req, rsp, f, path, icon, pattern);
+            return;
+        }
 
         boolean isFingerprint=false;
         if(f.getName().equals("*fingerprint*")) {
@@ -134,7 +134,7 @@ public final class DirectoryBrowserSupport {
         } else {
             ContentInfo ci = f.act(new ContentInfo());
 
-            InputStream in = f.read();            
+            InputStream in = f.read();
         	if (view) {
         		// for binary files, provide the file name for download
         		rsp.setHeader("Content-Disposition", "inline; filename=" + f.getName());
@@ -142,7 +142,7 @@ public final class DirectoryBrowserSupport {
 				// pseudo file name to let the Stapler set text/plain
                 rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, "plain.txt");
 			} else {
-        		rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, f.getName() );	
+        		rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, f.getName() );
         	}
 
             in.close();
@@ -165,23 +165,14 @@ public final class DirectoryBrowserSupport {
     /**
      * Serves files matched by the pattern relativ to the current workspace directory.
      */
-    private void servePattern(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, final String pattern) throws IOException, ServletException, InterruptedException {
-        String path = req.getRestOfPath();
-        if (path.length() > 0) {
-            // remove leading slash since the root path ends with a slash
-            path = path.substring(1);
-        }
-
-        // current workspace directory
-        FilePath curDir = new FilePath(root, path);
-
-        if(new FilePath(curDir,pattern).exists()) {
+    private void servePattern(StaplerRequest req, StaplerResponse rsp, FilePath root, String path, String icon, String pattern) throws IOException, ServletException, InterruptedException {
+        if(new FilePath(root,pattern).exists()) {
             // this file/directory exists, so it's not a pattern
             rsp.sendRedirect2(pattern);
             return;
         }
 
-        serveFileListing(req,path,root,icon,rsp,curDir.act(new PatternScanner(pattern)),pattern);
+        serveFileListing(req,path,root,icon,rsp,root.act(new PatternScanner(pattern)),pattern);
     }
 
     private static final class ContentInfo implements FileCallable<ContentInfo> {
