@@ -117,16 +117,7 @@ public final class DirectoryBrowserSupport {
             }
 
             if(serveDirIndex) {
-                req.setAttribute("it",this);
-                List<Path> parentPaths = buildParentPath(path);
-                req.setAttribute("parentPath",parentPaths);
-                req.setAttribute("topPath",
-                    parentPaths.isEmpty() ? "." : repeat("../",parentPaths.size()));
-                req.setAttribute("files", f.act(new ChildPathBuilder()));
-                req.setAttribute("icon",icon);
-                req.setAttribute("path",path);
-                req.setAttribute("dir",f);
-                req.getView(this,"dir.jelly").forward(req,rsp);
+                serveFileListing(req, path, f, icon, rsp, f.act(new ChildPathBuilder()), null);
                 return;
             } else {
                 f = f.child("index.html");
@@ -157,7 +148,21 @@ public final class DirectoryBrowserSupport {
             in.close();
         }
     }
-    
+
+    private void serveFileListing(StaplerRequest req, String path, FilePath dir, String icon, StaplerResponse rsp, List<List<Path>> files, String pattern) throws IOException, InterruptedException, ServletException {
+        req.setAttribute("it",this);
+        List<Path> parentPaths = buildParentPath(path);
+        req.setAttribute("parentPath",parentPaths);
+        req.setAttribute("topPath",
+                    parentPaths.isEmpty() ? "." : repeat("../",parentPaths.size()));
+        req.setAttribute("files",files);
+        req.setAttribute("icon",icon);
+        req.setAttribute("path",path);
+        req.setAttribute("pattern", pattern);
+        req.setAttribute("dir",dir);
+        req.getView(this,"dir.jelly").forward(req,rsp);
+    }
+
     /**
      * Serves files matched by the pattern relativ to the current workspace directory.
      */
@@ -177,18 +182,7 @@ public final class DirectoryBrowserSupport {
             return;
         }
 
-        // this is almost identical to the directory listing except files and pattern attributes
-        req.setAttribute("it",this);
-        List<Path> parentPaths = buildParentPath(path);
-        req.setAttribute("parentPath",parentPaths);
-        req.setAttribute("topPath",
-            parentPaths.isEmpty() ? "." : repeat("../",parentPaths.size()));
-        req.setAttribute("files", curDir.act(new PatternScanner(pattern)));
-        req.setAttribute("icon",icon);
-        req.setAttribute("path",path);
-        req.setAttribute("pattern", pattern);
-        req.setAttribute("dir",root);
-        req.getView(this,"dir.jelly").forward(req,rsp);
+        serveFileListing(req,path,root,icon,rsp,curDir.act(new PatternScanner(pattern)),pattern);
     }
 
     private static final class ContentInfo implements FileCallable<ContentInfo> {
