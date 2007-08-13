@@ -301,8 +301,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
                     out, null, envVars);
             } catch (IOException e) {
-                String msg = e.getMessage();
-                if(msg!=null && msg.contains("java: not found")) {
+                if(Util.fixNull(e.getMessage()).contains("java: not found")) {
                     // diagnose issue #659
                     JDK jdk = getParent().getParent().getJDK();
                     if(jdk==null)
