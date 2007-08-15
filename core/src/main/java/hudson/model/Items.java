@@ -84,7 +84,7 @@ public class Items {
     /**
      * The file we save our configuration.
      */
-    static XmlFile getConfigFile(File dir) {
+    public static XmlFile getConfigFile(File dir) {
         return new XmlFile(XSTREAM,new File(dir,"config.xml"));
     }
 

@@ -1,7 +1,8 @@
 package hudson.matrix;
 
-import hudson.FilePath;
 import hudson.CopyOnWrite;
+import hudson.FilePath;
+import hudson.XmlFile;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
@@ -9,7 +10,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
-import static hudson.model.ItemGroupMixIn.loadChildren;
+import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
@@ -23,12 +24,12 @@ import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.util.CopyOnWriteMap;
-import hudson.util.Function1;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +41,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link Job} that allows you to run multiple different configurations
@@ -126,11 +131,83 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     /**
+     * Recursively search for configuration and put them to the map
+     *
+     * <p>
+     * The directory structure would be <tt>axis-a/b/axis-c/d/axis-e/f</tt> for
+     * combination [a=b,c=d,e=f]. Note that two combinations [a=b,c=d] and [a=b,c=d,e=f]
+     * can both co-exist (where one is an archived record and the other is live, for example)
+     * so search needs to be thorough.
+     *
+     * @param dir
+     *      Directory to be searched.
+     * @param result
+     *      Receives the loaded {@link MatrixConfiguration}s.
+     * @param combination
+     *      Combination of key/values discovered so far while traversing the directories.
+     *      Read-only.
+     */
+    private void loadConfigurations( File dir, CopyOnWriteMap.Tree<Combination,MatrixConfiguration> result, Map<String,String> combination ) {
+        File[] axisDirs = dir.listFiles(new FileFilter() {
+            public boolean accept(File child) {
+                return child.isDirectory() && child.getName().startsWith("axis-");
+            }
+        });
+        if(axisDirs==null)      return;
+
+        for (File subdir : axisDirs) {
+            String axis = subdir.getName().substring(5);    // axis name
+
+            File[] valuesDir = subdir.listFiles(new FileFilter() {
+                public boolean accept(File child) {
+                    return child.isDirectory();
+                }
+            });
+            if(valuesDir==null) continue;   // no values here
+
+            for (File v : valuesDir) {
+                Map<String,String> c = new HashMap<String, String>(combination);
+                c.put(axis,v.getName());
+
+                try {
+                    XmlFile config = Items.getConfigFile(v);
+                    if(config.exists()) {
+                        MatrixConfiguration item = (MatrixConfiguration) config.read();
+                        item.setCombination(new Combination(c));
+                        item.onLoad(this, v.getName());
+                        result.put(item.getCombination(), item);
+                    }
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to load matrix ocnfiguration "+v,e);
+                }
+                loadConfigurations(v,result,c);
+            }
+        }
+    }
+
+    /**
      * Rebuilds the {@link #configurations} list and {@link #activeConfigurations}.
      */
     private void rebuildConfigurations() throws IOException {
-        configurations = loadChildren(this,getConfigurationsDir(), new Function1<Combination, MatrixConfiguration>() {
-            public Combination call(MatrixConfiguration mc) { return mc.getCombination(); } });
+        {// backward compatibility check to see if there's any data in the old structure
+            File[] oldDirs = getConfigurationsDir().listFiles(new FileFilter() {
+                public boolean accept(File child) {
+                    return child.isDirectory() && !child.getName().startsWith("axis-");
+                }
+            });
+            if(oldDirs!=null) {
+                // rename the old directory to the new one
+                for (File dir : oldDirs) {
+                    Combination c = Combination.fromString(dir.getName());
+                    dir.renameTo(getRootDirFor(c));
+                }
+            }
+        }
+
+        CopyOnWriteMap.Tree<Combination,MatrixConfiguration> configurations =
+            new CopyOnWriteMap.Tree<Combination,MatrixConfiguration>();
+        loadConfigurations(getConfigurationsDir(),configurations,Collections.<String,String>emptyMap());
+        this.configurations = configurations;
 
         // find all active configurations
         Set<MatrixConfiguration> active = new LinkedHashSet<MatrixConfiguration>();
@@ -177,7 +254,15 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     public File getRootDirFor(MatrixConfiguration child) {
-        return new File(getConfigurationsDir(),child.getName());
+        return getRootDirFor(child.getCombination());
+    }
+
+    public File getRootDirFor(Combination combination) {
+        File f = getConfigurationsDir();
+        for (Entry<String, String> e : combination.entrySet())
+            f = new File(f,"axis-"+e.getKey()+'/'+e.getValue());
+        f.getParentFile().mkdirs();
+        return f;
     }
 
     public Hudson getParent() {
@@ -321,4 +406,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             return new MatrixProject(name);
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(MatrixProject.class.getName());
 }

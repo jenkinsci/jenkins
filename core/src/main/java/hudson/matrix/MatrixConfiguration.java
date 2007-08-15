@@ -37,8 +37,15 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
 
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
-        super.onLoad(parent, name);
-        combination = Combination.fromString(name);
+        // directory name is not a name for us --- it's taken from the combination name
+        super.onLoad(parent, combination.toString());
+    }
+
+    /**
+     * Used during loading to set the combination back.
+     */
+    /*package*/ void setCombination(Combination c) {
+        this.combination = c;
     }
 
     /**
