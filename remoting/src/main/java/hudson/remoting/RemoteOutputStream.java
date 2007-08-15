@@ -54,7 +54,7 @@ public final class RemoteOutputStream extends OutputStream implements Serializab
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
-        int id = Channel.current().export(core);
+        int id = Channel.current().export(core,false);
         oos.writeInt(id);
     }
 

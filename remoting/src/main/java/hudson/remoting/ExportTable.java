@@ -114,6 +114,15 @@ final class ExportTable<T> {
      *      it will return the ID already assigned to it.
      */
     public synchronized int export(T t) {
+        return export(t,true);
+    }
+
+    /**
+     * @param notifyListener
+     *      If false, listener will not be notified. This is used to
+     *      create an export that won't get unexported when the call returns.
+     */
+    public synchronized int export(T t, boolean notifyListener) {
         if(t==null)    return 0;   // bootstrap classloader
 
         Entry e = reverse.get(t);

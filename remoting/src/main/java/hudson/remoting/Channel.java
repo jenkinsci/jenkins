@@ -241,6 +241,10 @@ public class Channel implements VirtualChannel {
         return exportedObjects.export(instance);
     }
 
+    /*package*/ int export(Object instance, boolean automaticUnexport) {
+        return exportedObjects.export(instance,automaticUnexport);
+    }
+
     /*package*/ Object getExportedObject(int oid) {
         return exportedObjects.get(oid);
     }
