@@ -131,8 +131,9 @@ final class ExportTable<T> {
         else
             e.addRef();
 
-        for (ExportList list : lists.get())
-            list.add(e);
+        if(notifyListener)
+            for (ExportList list : lists.get())
+                list.add(e);
 
         return e.id;
     }
