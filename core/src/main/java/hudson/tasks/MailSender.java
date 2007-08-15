@@ -1,34 +1,33 @@
 package hudson.tasks;
 
+import hudson.FilePath;
+import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.User;
-import hudson.model.AbstractProject;
-import hudson.Util;
-import hudson.FilePath;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.InternetAddress;
 import javax.mail.Address;
-import javax.mail.Transport;
-import javax.mail.MessagingException;
 import javax.mail.Message;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.logging.Logger;
+import javax.mail.MessagingException;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Core logic of sending out notification e-mail.
@@ -238,7 +237,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         msg.setFrom(new InternetAddress(Mailer.DESCRIPTOR.getAdminAddress()));
         msg.setSentDate(new Date());
 
-        List<InternetAddress> rcp = new ArrayList<InternetAddress>();
+        Set<InternetAddress> rcp = new LinkedHashSet<InternetAddress>();
         StringTokenizer tokens = new StringTokenizer(recipients);
         while (tokens.hasMoreTokens())
             rcp.add(new InternetAddress(tokens.nextToken()));
