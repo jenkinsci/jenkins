@@ -781,6 +781,18 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return getItem(name);
     }
 
+    /**
+     * @deprecated
+     *      Used only for mapping jobs to URL in a case-insensitive fashion.
+     */
+    public TopLevelItem getJobCaseInsensitive(String name) {
+        for (Entry<String, TopLevelItem> e : items.entrySet()) {
+            if(e.getKey().equalsIgnoreCase(name))
+                return e.getValue();
+        }
+        return null;
+    }
+
     @Override
     public TopLevelItem getItem(String name) {
         return items.get(name);
