@@ -17,6 +17,7 @@ import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.Scrambler;
+import hudson.util.EditDistance;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
@@ -27,6 +28,8 @@ import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.SVNNodeKind;
+import org.tmatesoft.svn.core.SVNDirEntry;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
 import org.tmatesoft.svn.core.auth.SVNAuthentication;
@@ -38,6 +41,7 @@ import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager;
+import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
@@ -984,14 +988,46 @@ public class SubversionSCM extends SCM implements Serializable {
 
                     // test the connection
                     try {
-                        SVNRepository repository = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(url));
+                        SVNURL repoURL = SVNURL.parseURIDecoded(url);
+                        SVNRepository repository = SVNRepositoryFactory.create(repoURL);
 
                         ISVNAuthenticationManager sam = SVNWCUtil.createDefaultAuthenticationManager();
                         sam.setAuthenticationProvider(createAuthenticationProvider());
                         repository.setAuthenticationManager(sam);
 
                         repository.testConnection();
-                        ok();
+
+                        long rev = repository.getLatestRevision();
+                        String repoPath = repoURL.getPath().substring(repository.getRepositoryRoot(false).getPath().length());
+                        if(!repoPath.startsWith("/"))    repoPath="/"+repoPath;
+                        if(repository.checkPath(repoPath,rev)==SVNNodeKind.NONE) {
+                            // now go back the tree and find if there's anything that exists
+                            String p = repoPath;
+                            while(p.length()>0) {
+                                p = SVNPathUtil.removeTail(p);
+                                if(repository.checkPath(p,rev)==SVNNodeKind.DIR) {
+                                    // found a matching path
+                                    List<SVNDirEntry> entries = new ArrayList<SVNDirEntry>();
+                                    repository.getDir(p,rev,false,entries);
+
+                                    // build up the name list
+                                    List<String> paths = new ArrayList<String>();
+                                    for (SVNDirEntry e : entries)
+                                        if(e.getKind()==SVNNodeKind.DIR)
+                                            paths.add(e.getName());
+
+                                    String head = SVNPathUtil.head(repoPath.substring(p.length() + 1));
+                                    String candidate = EditDistance.findNearest(head,paths);
+
+                                    error("'%1$s/%2$s' doesn't exist in the repository. Maybe you meant '%1$s/%3$s'?",
+                                        p, head, candidate);
+                                    return;
+                                }
+                            }
+
+                            error(repoPath+" doesn't exist in the repository");
+                        } else
+                            ok();
                     } catch (SVNException e) {
                         StringWriter sw = new StringWriter();
                         e.printStackTrace(new PrintWriter(sw));
