@@ -232,6 +232,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return super.getIconColor();
     }
 
+    protected void updateTransientActions() {
+        synchronized(transientActions) {
+            transientActions.clear();
+            
+            for (JobProperty<? super P> p : properties) {
+                Action a = p.getJobAction((P)this);
+                if(a!=null)
+                    transientActions.add(a);
+            }
+        }
+    }
+
     @Override
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         super.doConfigSubmit(req,rsp);

@@ -19,9 +19,9 @@ public abstract class AbstractMavenProject<P extends AbstractMavenProject<P,R>,R
         super(parent, name);
     }
 
-    /*package*/ void updateTransientActions() {
+    protected void updateTransientActions() {
         synchronized(transientActions) {
-            transientActions.clear();
+            super.updateTransientActions();
 
             // if we just pick up the project actions from the last build,
             // and if the last build failed very early, then the reports that

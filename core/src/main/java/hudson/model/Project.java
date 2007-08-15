@@ -136,14 +136,10 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         updateTransientActions();
     }
 
-    private void updateTransientActions() {
+    protected void updateTransientActions() {
         synchronized(transientActions) {
-            transientActions.clear();
-            for (JobProperty<? super P> p : properties) {
-                Action a = p.getJobAction((P)this);
-                if(a!=null)
-                    transientActions.add(a);
-            }
+            super.updateTransientActions();
+
             for (BuildStep step : builders) {
                 Action a = step.getProjectAction(this);
                 if(a!=null)
