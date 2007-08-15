@@ -69,6 +69,14 @@ public abstract class FormFieldValidator {
     }
 
     /**
+     * Sends out a string error message that indicates an error,
+     * by formatting it with {@link String#format(String, Object[])}
+     */
+    public void error(String format, Object... args) throws IOException, ServletException {
+        error(String.format(format,args));
+    }
+
+    /**
      * Sends out an HTML fragment that indicates an error.
      *
      * <p>
