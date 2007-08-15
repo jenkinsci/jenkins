@@ -20,6 +20,7 @@
 package hudson.util;
 
 import java.util.Collection;
+import java.util.Arrays;
 
 /**
  * Computes the string edit distance.
@@ -50,6 +51,10 @@ public class EditDistance {
      * @return null if group.length==0.
      */
     public static String findNearest( String key, String[] group ) {
+        return findNearest(key,Arrays.asList(group));
+    }
+
+    public static String findNearest( String key, Collection<String> group ) {
         int c = Integer.MAX_VALUE;
         String r = null;
 
@@ -61,10 +66,6 @@ public class EditDistance {
             }
         }
         return r;
-    }
-
-    public static String findNearest( String key, Collection<String> group ) {
-        return findNearest(key,group.toArray(new String[group.size()]));
     }
 
     /** cost vector. */
