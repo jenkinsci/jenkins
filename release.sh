@@ -4,6 +4,9 @@
 # but Maven doesn't let me run release goals unless I have this in CVS.
 #
 # this script is to be run after release:perform runs successfully
+tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
+mvn -Dtag=$tag release:prepare || mvn install release:prepare release:perform
+
 id=$(show-pom-version target/checkout/pom.xml)
 #./publish-javadoc.sh
 javanettasks uploadFile hudson /releases/$id                "`date +"%Y/%m/%d"` release" Stable target/checkout/war/target/hudson.war
