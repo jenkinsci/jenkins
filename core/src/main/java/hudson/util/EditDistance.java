@@ -19,6 +19,8 @@
  */
 package hudson.util;
 
+import java.util.Collection;
+
 /**
  * Computes the string edit distance.
  *
@@ -59,6 +61,10 @@ public class EditDistance {
             }
         }
         return r;
+    }
+
+    public static String findNearest( String key, Collection<String> group ) {
+        return findNearest(key,group.toArray(new String[group.size()]));
     }
 
     /** cost vector. */
