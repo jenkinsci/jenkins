@@ -61,13 +61,13 @@ public class MavenArtifactArchiver extends MavenReporter {
             // record POM
             listener.getLogger().println("[HUDSON] Archiving "+ pom.getFile());
             final FilePath archivedPom = getArtifactArchivePath(build, pom.getGroupId(), pom.getArtifactId(), pom.getVersion())
-                .child(pom.getArtifactId() + '-' + pom.getVersion() + ".pom");
+                .child(getSeed(pom,pom.getArtifactId(),pom.getVersion(),null) + ".pom");
             new FilePath(pom.getFile()).copyTo(archivedPom);
 
             // record artifacts
             record(build,pom.getArtifact(),listener,archivedFiles,true);
             for( Object a : pom.getAttachedArtifacts() )
-                record(build,(Artifact)a,listener,archivedFiles,false);
+                record(build,pom,(Artifact)a,listener,archivedFiles,false);
 
             final boolean installed = this.installed;
             final boolean builtOnSlave = archivedPom.isRemote();
@@ -114,10 +114,27 @@ public class MavenArtifactArchiver extends MavenReporter {
         return true;
     }
 
+
+    /**
+     * Computes the file name seed by taking &lt;finalName> POM entry into consideration.
+     */
+    private String getSeed(MavenProject pom, String artifactId, String version, String classifier) {
+        String name = artifactId+'-'+version;
+        if(artifactId.equals(pom.getArtifactId()) && version.equals(pom.getVersion())) {
+            // this seems to be one of the main artifacts, so let's use the final name
+            String finalName = pom.getBuild().getFinalName();
+            if(finalName!=null) // should never be null because this entry is in Maven super POM, but be defensive
+                name = finalName;
+        }
+        if(classifier!=null)
+            name += '-'+classifier;
+        return name;
+    }
+
     /**
      * Archives the given {@link Artifact}.
      */
-    private void record(MavenBuildProxy build, Artifact a, BuildListener listener, Set<ArtifactInfo> archivedFiles, boolean primary) throws IOException, InterruptedException {
+    private void record(MavenBuildProxy build, MavenProject pom, Artifact a, BuildListener listener, Set<ArtifactInfo> archivedFiles, boolean primary) throws IOException, InterruptedException {
         File file = a.getFile();
         if(file==null)
             return; // perhaps build failed and didn't leave an artifact
@@ -133,7 +150,7 @@ public class MavenArtifactArchiver extends MavenReporter {
             extension = a.getType();
 
         FilePath target = getArtifactArchivePath(build, a.getGroupId(), a.getArtifactId(), a.getVersion())
-            .child(a.getArtifactId() + '-' + a.getVersion() + (a.getClassifier() != null ? '-' + a.getClassifier() : "") + '.' + extension);
+            .child(getSeed(pom,a.getArtifactId(),a.getVersion(),a.getClassifier()) + '.' + extension);
 
         new FilePath(file).copyTo(target);
 
