@@ -65,7 +65,7 @@ public class MavenArtifactArchiver extends MavenReporter {
             new FilePath(pom.getFile()).copyTo(archivedPom);
 
             // record artifacts
-            record(build,pom.getArtifact(),listener,archivedFiles,true);
+            record(build,pom,pom.getArtifact(),listener,archivedFiles,true);
             for( Object a : pom.getAttachedArtifacts() )
                 record(build,pom,(Artifact)a,listener,archivedFiles,false);
 
