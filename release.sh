@@ -5,7 +5,7 @@
 #
 # this script is to be run after release:perform runs successfully
 tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
-mvn -Dtag=$tag release:prepare || mvn install release:prepare release:perform
+mvn -B -Dtag=$tag release:prepare || mvn install release:prepare release:perform
 
 id=$(show-pom-version target/checkout/pom.xml)
 #./publish-javadoc.sh
@@ -31,3 +31,8 @@ mv $WWW/changelog.new $WWW/changelog.html
 
 # push changes to the maven repository
 ruby push-m2-repo.rb $id
+
+./publish-javadoc.sh
+
+cd ../../../www
+cvs commit -m "Hudson $id released" changelog.html hudson.jnlp
