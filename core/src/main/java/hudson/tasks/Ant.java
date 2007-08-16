@@ -145,7 +145,7 @@ public class Ant extends Builder {
         }
 
         public String getDisplayName() {
-            return "Invoke top-level Ant targets";
+            return "Invoke Ant";
         }
 
         public AntInstallation[] getInstallations() {
