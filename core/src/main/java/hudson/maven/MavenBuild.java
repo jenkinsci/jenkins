@@ -39,6 +39,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.net.URL;
+import java.net.JarURLConnection;
+import java.net.URLConnection;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -239,6 +242,17 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
     private static final class GetRemotingJar implements Callable<String,IOException> {
         public String call() throws IOException {
+            URL classFile = Main.class.getClassLoader().getResource(Launcher.class.getName().replace('.','/')+".class");
+
+            // JNLP returns the URL where the jar was originally placed (like http://hudson.dev.java.net/...)
+            // not the local cached file. So we need a rather round about approach to get to
+            // the local file name.
+            URLConnection con = classFile.openConnection();
+            if (con instanceof JarURLConnection) {
+                JarURLConnection connection = (JarURLConnection) con;
+                return connection.getJarFile().getName();
+            }
+
             return Which.jarFile(Launcher.class).getPath();
         }
     }
