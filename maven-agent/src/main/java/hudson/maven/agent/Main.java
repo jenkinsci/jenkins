@@ -102,7 +102,7 @@ public class Main {
             // so unless we discard all the realms multiple invocations
             // that use different versions of the same plugin will fail to work correctly.
             Set all = new HashSet(world.getRealms());
-            all.retainAll(builtinRealms);
+            all.removeAll(builtinRealms);
             for (Iterator itr = all.iterator(); itr.hasNext();) {
                 ClassRealm cr = (ClassRealm) itr.next();
                 world.disposeRealm(cr.getId());
