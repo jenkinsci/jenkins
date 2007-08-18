@@ -1,15 +1,18 @@
 package hudson.maven.agent;
 
 import org.codehaus.classworlds.ClassRealm;
+import org.codehaus.classworlds.ClassWorld;
+import org.codehaus.classworlds.DefaultClassRealm;
 import org.codehaus.classworlds.Launcher;
 import org.codehaus.classworlds.NoSuchRealmException;
-import org.codehaus.classworlds.DefaultClassRealm;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Entry point for launching Maven and Hudson remoting in the same VM,
@@ -86,7 +89,22 @@ public class Main {
      * Called by the code in remoting to launch.
      */
     public static int launch(String[] args) throws NoSuchMethodException, IllegalAccessException, NoSuchRealmException, InvocationTargetException, ClassNotFoundException {
-        launcher.launch(args);
+        ClassWorld world = launcher.getWorld();
+
+        Set<ClassRealm> builtinRealms = new HashSet<ClassRealm>(world.getRealms());
+        try {
+            launcher.launch(args);
+        } finally {
+            // delete all realms created by Maven
+            // this is because Maven creates a child realm for each plugin it loads,
+            // and the realm id doesn't include the version.
+            // so unless we discard all the realms multiple invocations
+            // that use different versions of the same plugin will fail to work correctly.
+            Set<ClassRealm> all = new HashSet<ClassRealm>(world.getRealms());
+            all.retainAll(builtinRealms);
+            for (ClassRealm cr : all)
+                world.disposeRealm(cr.getId());
+        }
         return launcher.getExitCode();
     }
 }
