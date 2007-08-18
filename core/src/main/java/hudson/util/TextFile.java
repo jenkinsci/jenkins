@@ -47,6 +47,7 @@ public class TextFile {
      * Overwrites the file by the given string.
      */
     public void write(String text) throws IOException {
+        file.getParentFile().mkdirs();
         AtomicFileWriter w = new AtomicFileWriter(file);
         w.write(text);
         w.commit();
