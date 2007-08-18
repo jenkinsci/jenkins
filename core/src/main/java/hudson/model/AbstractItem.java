@@ -82,7 +82,6 @@ public abstract class AbstractItem extends Actionable implements Item {
      */
     protected void doSetName(String name) {
         this.name = name;
-        getRootDir().mkdirs();
     }
 
     /**

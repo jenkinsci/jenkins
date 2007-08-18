@@ -229,9 +229,7 @@ public class User extends AbstractModelObject {
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
-        XmlFile config = getConfigFile();
-        config.mkdirs();
-        config.write(this);
+        getConfigFile().write(this);
     }
 
     /**

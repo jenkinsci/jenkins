@@ -476,9 +476,7 @@ public class Fingerprint implements ModelObject {
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
-        XmlFile f = getConfigFile(getFingerprintFile(md5sum));
-        f.mkdirs();
-        f.write(this);
+        getConfigFile(getFingerprintFile(md5sum)).write(this);
     }
 
     /**
