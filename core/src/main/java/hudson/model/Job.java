@@ -90,7 +90,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
     protected Job(ItemGroup parent,String name) {
         super(parent,name);
-        getBuildDir().mkdirs();
     }
 
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
