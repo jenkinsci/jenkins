@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Iterator;
 
 /**
  * Entry point for launching Maven and Hudson remoting in the same VM,
@@ -91,7 +92,7 @@ public class Main {
     public static int launch(String[] args) throws NoSuchMethodException, IllegalAccessException, NoSuchRealmException, InvocationTargetException, ClassNotFoundException {
         ClassWorld world = launcher.getWorld();
 
-        Set<ClassRealm> builtinRealms = new HashSet<ClassRealm>(world.getRealms());
+        Set builtinRealms = new HashSet(world.getRealms());
         try {
             launcher.launch(args);
         } finally {
@@ -100,10 +101,12 @@ public class Main {
             // and the realm id doesn't include the version.
             // so unless we discard all the realms multiple invocations
             // that use different versions of the same plugin will fail to work correctly.
-            Set<ClassRealm> all = new HashSet<ClassRealm>(world.getRealms());
+            Set all = new HashSet(world.getRealms());
             all.retainAll(builtinRealms);
-            for (ClassRealm cr : all)
+            for (Iterator itr = all.iterator(); itr.hasNext();) {
+                ClassRealm cr = (ClassRealm) itr.next();
                 world.disposeRealm(cr.getId());
+            }
         }
         return launcher.getExitCode();
     }
