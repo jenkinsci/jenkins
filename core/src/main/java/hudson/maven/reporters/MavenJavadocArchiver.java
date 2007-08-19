@@ -33,7 +33,9 @@ public class MavenJavadocArchiver extends MavenReporter {
 
         File destDir;
         try {
-            destDir = mojo.getConfigurationValue("outputDirectory", File.class);
+            destDir = mojo.getConfigurationValue("reportOutputDirectory", File.class);
+            if(destDir==null)
+                destDir = mojo.getConfigurationValue("outputDirectory", File.class);
         } catch (ComponentConfigurationException e) {
             e.printStackTrace(listener.fatalError("Unable to obtain the destDir from javadoc mojo"));
             build.setResult(Result.FAILURE);
