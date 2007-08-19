@@ -597,9 +597,14 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        AbstractBuild lastBuild = (AbstractBuild) project.getLastBuild();
+        if(lastBuild==null) {
+            listener.getLogger().println("No existing build. Starting a new one");
+            return true;
+        }
 
         // current workspace revision
-        Map<String, Long> wsRev = parseRevisionFile((AbstractBuild)project.getLastBuild());
+        Map<String, Long> wsRev = parseRevisionFile(lastBuild);
 
         ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
 
