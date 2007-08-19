@@ -598,25 +598,22 @@ public class SubversionSCM extends SCM implements Serializable {
 
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
 
-    	// we need to load the externals info, if any
-    	List<String> externals = parseExternalsFile(project);
-
         // current workspace revision
-        Map<String,SvnInfo> wsRev = workspace.act(new BuildRevisionMapTask(this, listener, externals));
+        Map<String, Long> wsRev = parseRevisionFile((AbstractBuild)project.getLastBuild());
 
         ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
 
         // check the corresponding remote revision
-        for (SvnInfo localInfo : wsRev.values()) {
+        for (Map.Entry<String,Long> localInfo : wsRev.entrySet()) {
             try {
-                SvnInfo remoteInfo = new SvnInfo(parseSvnInfo(localInfo.getSVNURL(),authProvider));
+                SvnInfo remoteInfo = new SvnInfo(parseSvnInfo(SVNURL.parseURIDecoded(localInfo.getKey()),authProvider));
                 listener.getLogger().println("Revision:"+remoteInfo.revision);
-                if(remoteInfo.revision > localInfo.revision) {
-                    listener.getLogger().println("  (changed from "+localInfo.revision+")");
+                if(remoteInfo.revision > localInfo.getValue()) {
+                    listener.getLogger().println("  (changed from "+localInfo.getValue()+")");
                     return true;    // change found
                 }
             } catch (SVNException e) {
-                e.printStackTrace(listener.error("Failed to check repository revision for "+localInfo.url));
+                e.printStackTrace(listener.error("Failed to check repository revision for "+localInfo.getKey()));
             }
         }
 
@@ -1113,6 +1110,10 @@ public class SubversionSCM extends SCM implements Serializable {
 
             this.remote = remote.trim();
             this.local = local.trim();
+        }
+
+        public String toString() {
+            return remote;
         }
 
         private static final long serialVersionUID = 1L;
