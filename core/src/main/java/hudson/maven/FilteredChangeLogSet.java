@@ -82,4 +82,8 @@ public class FilteredChangeLogSet extends ChangeLogSet<Entry> {
     public boolean isEmptySet() {
         return master.isEmpty();
     }
+
+    public List<Entry> getLogs() {
+        return master;
+    }
 }
