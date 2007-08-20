@@ -50,9 +50,7 @@
     <script src="${resURL}/scripts/yui/connection-${yuiSuffix}.js"></script>
     <script src="${resURL}/scripts/yui/autocomplete-${yuiSuffix}.js"></script>
     <link rel="stylesheet" href="${resURL}/scripts/yui/container.css" type="text/css"/>
-    <j:if test="${h.searchFeature}">
-      <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Hudson" />
-    </j:if>
+    <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Hudson" />
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
     <d:invokeBody />
@@ -65,22 +63,24 @@
             <tr><td style="font-weight:bold; font-size: 2em;">
               <a href="${rootURL}/"><img src="${imagesURL}/title.png" alt="title" /></a>
             </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
-              <j:if test="${h.searchFeature}">
-                <j:set var="searchURL" value="${h.searchURL}"/>
-                <form action="${searchURL}" method="get">
-                  <!-- this div determines the minimum width -->
-                  <div id="search-box-minWidth"/>
-                  <!-- this div is used to calculate the width of the text box -->
-                  <div id="search-box-sizer"/>
-                  <div id="searchform">
-                    <input name="q" value="search" id="search-box" class="has-default-text defaulted" />
-                    <st:nbsp />
-                    <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Search+Box"><img src="${imagesURL}/16x16/help.png" /></a>
-                    <div id="search-box-completion" />
-                    <script>createSearchBox("${searchURL}");</script>
-                  </div>
-                </form>
-              </j:if>
+
+              <!-- search box -->
+              <j:set var="searchURL" value="${h.searchURL}"/>
+              <form action="${searchURL}" method="get">
+                <!-- this div determines the minimum width -->
+                <div id="search-box-minWidth"/>
+                <!-- this div is used to calculate the width of the text box -->
+                <div id="search-box-sizer"/>
+                <div id="searchform">
+                  <input name="q" value="search" id="search-box" class="has-default-text defaulted" />
+                  <st:nbsp />
+                  <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Search+Box"><img src="${imagesURL}/16x16/help.png" /></a>
+                  <div id="search-box-completion" />
+                  <script>createSearchBox("${searchURL}");</script>
+                </div>
+              </form>
+
+              <!-- login field -->
               <j:if test="${app.useSecurity}">
                 <st:nbsp/>
                 <j:choose>
