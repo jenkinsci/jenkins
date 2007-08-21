@@ -268,7 +268,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
     }
 
     private String getSubject(B build, String caption) {
-        return caption + build.getProject().getName() + " #" + build.getNumber();
+        return caption + build.getProject().getFullDisplayName() + " #" + build.getNumber();
     }
 
     /**
