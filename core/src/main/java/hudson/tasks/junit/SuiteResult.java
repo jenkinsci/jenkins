@@ -45,6 +45,13 @@ public final class SuiteResult implements Serializable {
         for (Element e : (List<Element>)root.elements("testcase")) {
             cases.add(new CaseResult(this,e));
         }
+        // a user reported that there's a slight variation of the format that puts <testsuites> at root
+        // see http://www.nabble.com/More-JUnit-test-report-problems...-tf4267020.html#a12143611
+        for (Element suite : (List<Element>)root.elements("testsuite")) {
+            for (Element e : (List<Element>)suite.elements("testcase")) {
+                cases.add(new CaseResult(this,e));
+            }
+        }
     }
 
     public String getName() {
