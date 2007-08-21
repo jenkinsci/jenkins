@@ -112,7 +112,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
     private MimeMessage createBackToNormalMail(B build, String subject, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, "Hudson build is back to " + subject + ": "));
+        msg.setSubject(getSubject(build, "Hudson build is back to " + subject + ": "),"UTF-8");
         StringBuffer buf = new StringBuffer();
         appendBuildUrl(build, buf);
         msg.setText(buf.toString());
@@ -123,7 +123,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
     private MimeMessage createUnstableMail(B build, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, "Hudson build became unstable: "));
+        msg.setSubject(getSubject(build, "Hudson build became unstable: "),"UTF-8");
         StringBuffer buf = new StringBuffer();
         appendBuildUrl(build, buf);
         msg.setText(buf.toString());
@@ -141,7 +141,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
     private MimeMessage createFailureMail(B build, BuildListener listener) throws MessagingException, InterruptedException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, "Build failed in Hudson: "));
+        msg.setSubject(getSubject(build, "Build failed in Hudson: "),"UTF-8");
 
         StringBuffer buf = new StringBuffer();
         appendBuildUrl(build, buf);
