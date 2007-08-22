@@ -1,0 +1,28 @@
+<!--
+  Used when the search didn't have the exact hit.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:set var="q" value="${request.getParameter('q')}"/>
+  <l:layout title="Search for '${q}'">
+    <l:main-panel>
+      <h1>Search for '${q}'</h1>
+      <j:set var="items" value="${it.getSuggestions(request,q)}"/>
+      <j:choose>
+        <j:when test="${items.size()==0}">
+          <div class='error'>
+            Nothing seems to match.
+          </div>
+        </j:when>
+        <j:otherwise>
+          <ol>
+            <j:forEach var="i" items="${items}">
+              <li>
+                <a href="?q=${i.path}">${i.path}</a>
+              </li>
+            </j:forEach>
+          </ol>
+        </j:otherwise>
+      </j:choose>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

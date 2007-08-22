@@ -5,12 +5,13 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.DataWriter;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
-import org.kohsuke.stapler.export.DataWriter;
 
 import javax.servlet.ServletException;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import java.util.Set;
  * @author Kohsuke Kawaguchi
  */
 public class Search {
-    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         List<Ancestor> l = req.getAncestors();
         for( int i=l.size()-1; i>=0; i-- ) {
             Ancestor a = l.get(i);
@@ -43,8 +44,9 @@ public class Search {
             }
         }
 
-        // TODO: go to suggestion page
-        throw new UnsupportedOperationException();
+        // no exact match. show the suggestions
+        rsp.setStatus(SC_NOT_FOUND);
+        req.getView(this,"search-failed.jelly").forward(req,rsp);
     }
 
     /**
@@ -62,14 +64,8 @@ public class Search {
         w.value(query);
 
         w.startArray();
-        Set<String> paths = new HashSet<String>();  // paths already added, to control duplicates
-        for (SuggestedItem item : suggest(makeSuggestIndex(req), query)) {
-            if(paths.size()>20) break;
-            
-            String p = item.getPath();
-            if(paths.add(p))
-                w.value(p);
-        }
+        for (SuggestedItem item : getSuggestions(req, query))
+            w.value(item.getPath());
         w.endArray();
         w.endArray();
     }
@@ -79,16 +75,28 @@ public class Search {
      */
     public void doSuggest(StaplerRequest req, StaplerResponse rsp, @QueryParameter("query")String query) throws IOException, ServletException {
         Result r = new Result();
-        Set<String> paths = new HashSet<String>();  // paths already added, to control duplicates
-        for (SuggestedItem item : suggest(makeSuggestIndex(req), query)) {
-            if(paths.size()>20) break;
-
-            String p = item.getPath();
-            if(paths.add(p))
-                r.suggestions.add(new Item(p));
-        }
+        for (SuggestedItem item : getSuggestions(req, query))
+            r.suggestions.add(new Item(item.getPath()));
 
         rsp.serveExposedBean(req,r,Flavor.JSON);
+    }
+
+    /**
+     * Gets the list of suggestions that match the given query.
+     *
+     * @return
+     *      can be empty but never null. The size of the list is always smaller than
+     *      a certain threshold to avoid showing too many options. 
+     */
+    public List<SuggestedItem> getSuggestions(StaplerRequest req, String query) {
+        Set<String> paths = new HashSet<String>();  // paths already added, to control duplicates
+        List<SuggestedItem> r = new ArrayList<SuggestedItem>();
+        for (SuggestedItem i : suggest(makeSuggestIndex(req), query)) {
+            if(r.size()>20) break;
+            if(paths.add(i.getPath()))
+                r.add(i);
+        }
+        return r;
     }
 
     /**
