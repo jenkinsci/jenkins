@@ -152,16 +152,16 @@ public class Search {
             final SuggestedItem item;
             final int distance;
             /** If the path to this suggestion starts with the token list, 1. Otherwise 0. */
-            final int headMatch;
+            final int prefixMatch;
 
             Tag(SuggestedItem i) {
                 item = i;
                 distance = EditDistance.editDistance(i.getPath(),tokenList);
-                headMatch = i.getPath().startsWith(tokenList)?1:0;
+                prefixMatch = i.getPath().startsWith(tokenList)?1:0;
             }
 
             public int compareTo(Tag that) {
-                int r = this.headMatch-that.headMatch;
+                int r = this.prefixMatch -that.prefixMatch;
                 if(r!=0)    return -r;  // ones with head match should show up earlier
                 return this.distance-that.distance;
             }
