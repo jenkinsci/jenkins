@@ -328,7 +328,7 @@
     <dependency>
       <groupId>commons-jelly</groupId>
       <artifactId>commons-jelly</artifactId>
-      <version>1.1-hudson-20061106</version>
+      <version>1.1-hudson-20070821</version>
     </dependency>
     <dependency>
       <groupId>groovy</groupId>
