@@ -66,7 +66,7 @@
 
               <!-- search box -->
               <j:set var="searchURL" value="${h.searchURL}"/>
-              <form action="${searchURL}" method="get">
+              <form action="${searchURL}" method="get" style="position:relative; top:0.5em;">
                 <!-- this div determines the minimum width -->
                 <div id="search-box-minWidth"/>
                 <!-- this div is used to calculate the width of the text box -->
@@ -79,7 +79,7 @@
                   <script>createSearchBox("${searchURL}");</script>
                 </div>
               </form>
-
+            </td><td style="vertical-align: middle; padding-right: 1em; width:1px; whtiespace:nowrap;">
               <!-- login field -->
               <j:if test="${app.useSecurity}">
                 <st:nbsp/>
