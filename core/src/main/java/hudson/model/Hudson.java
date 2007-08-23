@@ -28,8 +28,8 @@ import hudson.scm.RepositoryBrowsers;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
-import hudson.search.SearchIndexBuilder;
 import hudson.search.CollectionSearchIndex;
+import hudson.search.SearchIndexBuilder;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -44,6 +44,7 @@ import hudson.triggers.Triggers;
 import hudson.util.ClockDifference;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.FormFieldValidator;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.XStream2;
@@ -86,7 +87,14 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -1005,14 +1013,37 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             }
         });
         items.clear();
-        for (File subdir : subdirs) {
-            try {
-                TopLevelItem item = (TopLevelItem)Items.load(this,subdir);
-                items.put(item.getName(), item);
-            } catch (Error e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace(); // TODO: logging
+        if(parallelLoad) {
+            // load jobs in parallel for better performance
+            List<Future<TopLevelItem>> loaders = new ArrayList<Future<TopLevelItem>>();
+            for (final File subdir : subdirs) {
+                loaders.add(threadPoolForLoad.submit(new Callable<TopLevelItem>() {
+                    public TopLevelItem call() throws Exception {
+                        return (TopLevelItem) Items.load(Hudson.this, subdir);
+                    }
+                }));
+            }
+
+            for (Future<TopLevelItem> loader : loaders) {
+                try {
+                    TopLevelItem item = loader.get();
+                    items.put(item.getName(), item);
+                } catch (ExecutionException e) {
+                    LOGGER.log(Level.WARNING, "Failed to loa da project",e.getCause());
+                } catch (InterruptedException e) {
+                    e.printStackTrace(); // this is probably not the right thing to do
+                }
+            }
+        } else {
+            for (File subdir : subdirs) {
+                try {
+                    TopLevelItem item = (TopLevelItem)Items.load(this,subdir);
+                    items.put(item.getName(), item);
+                } catch (Error e) {
+                    LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
+                }
             }
         }
         rebuildDependencyGraph();
@@ -1055,6 +1086,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             // if we are aborting because we failed to create HUDSON_HOME,
             // don't try to save. Issue #536
             getQueue().save();
+
+        threadPoolForLoad.shutdown();
     }
 
 
@@ -1830,6 +1863,17 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     private static final XStream XSTREAM = new XStream2();
 
     /**
+     * Thread pool used to load configuration in parallel, to improve the start up time.
+     * <p>
+     * The idea here is to overlap the CPU and I/O, so we want more threads than CPU numbers.
+     */
+    /*package*/ static final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
+        0, Runtime.getRuntime().availableProcessors() * 2,
+        5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
+
+
+
+    /**
      * Version number of this Hudson.
      */
     public static String VERSION;
@@ -1840,6 +1884,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * stale cache when the user upgrades to a different version. 
      */
     public static String RESOURCE_PATH;
+
+    public static boolean parallelLoad = Boolean.getBoolean(Hudson.class.getName()+".parallelLoad");
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 
