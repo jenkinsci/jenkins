@@ -101,6 +101,8 @@ public final class TestResult extends MetaTabulatedResult {
     public void parse(File reportFile) throws IOException {
         try {
             suites.add(new SuiteResult(reportFile));
+        } catch (RuntimeException e) {
+            throw new IOException2("Failed to read "+reportFile,e);
         } catch (DocumentException e) {
             if(!reportFile.getPath().endsWith(".xml"))
                 throw new IOException2("Failed to read "+reportFile+"\n"+
