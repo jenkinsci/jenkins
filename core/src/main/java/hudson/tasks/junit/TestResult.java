@@ -82,14 +82,14 @@ public final class TestResult extends MetaTabulatedResult {
             if(localTime < buildTime)
                 // build time is in the the future. clock on this slave must be running behind
                 throw new AbortException(
-                    "Clock on this slave is out of sync with the master, and therefore I" +
-                    "can't figure out what test results are new and what are old." +
+                    "Clock on this slave is out of sync with the master, and therefore \n" +
+                    "I can't figure out what test results are new and what are old.\n" +
                     "Please keep the slave clock in sync with the master.");
 
             File f = new File(baseDir,includedFiles[0]);
             throw new AbortException(
                 String.format(
-                "Test reports were found but none of them are new. Did tests run? "+
+                "Test reports were found but none of them are new. Did tests run? \n"+
                 "For example, %s is %s old\n", f,
                 Util.getTimeSpanString(buildTime-f.lastModified())));
         }
