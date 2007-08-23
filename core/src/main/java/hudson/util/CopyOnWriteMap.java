@@ -2,8 +2,8 @@ package hudson.util;
 
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.converters.collections.TreeMapConverter;
 import com.thoughtworks.xstream.converters.collections.MapConverter;
+import com.thoughtworks.xstream.converters.collections.TreeMapConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -119,14 +120,14 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
      */
     public static final class Hash<K,V> extends CopyOnWriteMap<K,V> {
         public Hash(Map<K, V> core) {
-            super(new HashMap<K,V>(core));
+            super(new LinkedHashMap<K,V>(core));
         }
 
         public Hash() {
         }
 
         protected Map<K,V> copy() {
-            return new HashMap<K,V>(core);
+            return new LinkedHashMap<K,V>(core);
         }
 
         public static class ConverterImpl extends MapConverter {
