@@ -37,7 +37,12 @@ public final class SuiteResult implements Serializable {
     SuiteResult(File xmlReport) throws DocumentException {
         Document result = new SAXReader().read(xmlReport);
         Element root = result.getRootElement();
-        name = root.attributeValue("name");
+        String name = root.attributeValue("name");
+        if(name==null)
+            // some user reported that name is null in their environment.
+            // see http://www.nabble.com/Unexpected-Null-Pointer-Exception-in-Hudson-1.131-tf4314802.html
+            name = '('+xmlReport.getName()+')';
+        this.name = name;
 
         stdout = root.elementText("system-out");
         stderr = root.elementText("system-err");
