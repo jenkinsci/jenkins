@@ -17,7 +17,7 @@ public abstract class CollectionSearchIndex implements SearchIndex {
 
     /**
      * Returns all items in the map.
-     * The collection can include null items, but the return value must be non-null.
+     * The collection can include null items.
      */
     protected abstract Collection<? extends SearchableModelObject> all();
 
@@ -28,7 +28,9 @@ public abstract class CollectionSearchIndex implements SearchIndex {
     }
 
     public void suggest(String token, List<SearchItem> result) {
-        for (SearchableModelObject o : all()) {
+        Collection<? extends SearchableModelObject> items = all();
+        if(items==null)     return;
+        for (SearchableModelObject o : items) {
             if(o!=null && o.getDisplayName().contains(token))
                 result.add(o);
         }
