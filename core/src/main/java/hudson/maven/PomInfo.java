@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
 
 /**
  * Serializable representation of the key information obtained from Maven POM.
@@ -50,6 +51,11 @@ final class PomInfo implements Serializable {
     public final Set<ModuleName> dependencies = new HashSet<ModuleName>();
 
     /**
+     * Children of this module.
+     */
+    public final List<ModuleName> children = new ArrayList<ModuleName>();
+
+    /**
      * The default goal specified in POM or null.
      */
     public final String defaultGoal;
@@ -67,6 +73,8 @@ final class PomInfo implements Serializable {
         this.defaultGoal = project.getDefaultGoal();
         this.relativePath = relPath;
         this.parent = parent;
+        if(parent!=null)
+            parent.children.add(name);
 
         for (Dependency dep : (List<Dependency>)project.getDependencies())
             dependencies.add(new ModuleName(dep));
