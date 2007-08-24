@@ -4,20 +4,25 @@ import hudson.CopyOnWrite;
 import hudson.FilePath.FileCallable;
 import hudson.Functions;
 import hudson.Launcher;
+import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
+import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormFieldValidator;
+import hudson.util.NullStream;
+import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -128,16 +133,12 @@ public class Maven extends Builder {
                 String execName = proj.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
                 args.add(execName);
             } else {
-                File exec = ai.getExecutable();
+                String exec = ai.getExecutable(launcher);
                 if(exec==null) {
                     listener.fatalError("Couldn't find any executable in "+ai.getMavenHome());
                     return false;
                 }
-                if(!exec.exists()) {
-                    listener.fatalError(exec+" doesn't exist");
-                    return false;
-                }
-                args.add(exec.getPath());
+                args.add(exec);
             }
             args.addKeyValuePairs("-D",build.getBuildVariables());
             args.addTokenized(normalizedTarget);
@@ -266,7 +267,7 @@ public class Maven extends Builder {
         }
     }
 
-    public static final class MavenInstallation {
+    public static final class MavenInstallation implements Serializable {
         private final String name;
         private final String mavenHome;
 
@@ -293,14 +294,21 @@ public class Maven extends Builder {
             return name;
         }
 
-        public File getExecutable() {
-            File exe = getExeFile("maven");
-            if(exe.exists())
-                return exe;
-            exe = getExeFile("mvn");
-            if(exe.exists())
-                return exe;
-            return null;
+        /**
+         * Gets the executable path of this maven on the given target system.
+         */
+        public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
+            return launcher.getChannel().call(new Callable<String,IOException>() {
+                public String call() throws IOException {
+                    File exe = getExeFile("maven");
+                    if(exe.exists())
+                        return exe.getPath();
+                    exe = getExeFile("mvn");
+                    if(exe.exists())
+                        return exe.getPath();
+                    return null;
+                }
+            });
         }
 
         private File getExeFile(String execName) {
@@ -313,7 +321,15 @@ public class Maven extends Builder {
          * Returns true if the executable exists.
          */
         public boolean getExists() {
-            return getExecutable()!=null;
+            try {
+                return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream())))!=null;
+            } catch (IOException e) {
+                return false;
+            } catch (InterruptedException e) {
+                return false;
+            }
         }
+
+        private static final long serialVersionUID = 1L;
     }
 }

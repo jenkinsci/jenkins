@@ -6,6 +6,7 @@ import hudson.Util;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormFieldValidator;
@@ -85,11 +86,7 @@ public class Ant extends Builder {
         if(ai==null) {
             args.add(execName);
         } else {
-            File exec = ai.getExecutable();
-            if(!ai.getExists()) {
-                listener.fatalError(exec+" doesn't exist");
-                return false;
-            }
+            File exec = ai.getExecutable(launcher.isUnix());
             args.add(exec.getPath());
         }
         args.addKeyValuePairs("-D",build.getBuildVariables());
@@ -232,12 +229,12 @@ public class Ant extends Builder {
             return name;
         }
 
-        public File getExecutable() {
+        public File getExecutable(boolean isUnix) {
             String execName;
-            if(File.separatorChar=='\\')
-                execName = "ant.bat";
-            else
+            if(isUnix)
                 execName = "ant";
+            else
+                execName = "ant.bat";
 
             return new File(getAntHome(),"bin/"+execName);
         }
@@ -246,7 +243,7 @@ public class Ant extends Builder {
          * Returns true if the executable exists.
          */
         public boolean getExists() {
-            return getExecutable().exists();
+            return getExecutable(!Hudson.isWindows()).exists();
         }
     }
 }
