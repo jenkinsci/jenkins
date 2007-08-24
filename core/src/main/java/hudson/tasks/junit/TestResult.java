@@ -79,7 +79,7 @@ public final class TestResult extends MetaTabulatedResult {
 
         if(!parsed) {
             long localTime = System.currentTimeMillis();
-            if(localTime < buildTime)
+            if(localTime < buildTime-1000) /*margin*/
                 // build time is in the the future. clock on this slave must be running behind
                 throw new AbortException(
                     "Clock on this slave is out of sync with the master, and therefore \n" +
