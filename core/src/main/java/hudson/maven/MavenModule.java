@@ -70,6 +70,12 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     @CopyOnWrite
     private volatile List<ModuleName> children;
 
+    /**
+     * Nest level used to display this module in the module list.
+     * The root module and orphaned module gets 0.
+     */
+    /*package*/ volatile transient int nestLevel;
+
     /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom, int firstBuildNumber) throws IOException {
         super(parent, pom.name.toFileSystemName());
         reconfigure(pom);
@@ -109,6 +115,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         this.relativePath = pom.relativePath;
         this.dependencies = pom.dependencies;
         this.children = pom.children;
+        this.nestLevel = pom.getNestLevel();
         disabled = false;
 
         if (pom.mailNotifier != null) {

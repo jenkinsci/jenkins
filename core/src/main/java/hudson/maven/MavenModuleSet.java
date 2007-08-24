@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * Group of {@link MavenModule}s.
@@ -205,6 +206,23 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
                 return module.getModuleName();
             }
         });
+        // update the transient nest level field.
+        MavenModule root = getRootModule();
+        if(root!=null) {
+            Stack<MavenModule> q = new Stack<MavenModule>();
+            root.nestLevel = 0;
+            q.push(root);
+            while(!q.isEmpty()) {
+                MavenModule p = q.pop();
+                List<MavenModule> children = p.getChildren();
+                if(children!=null) {
+                    for (MavenModule m : children) {
+                        m.nestLevel = p.nestLevel+1;
+                        q.push(m);
+                    }
+                }
+            }
+        }
 
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);

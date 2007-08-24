@@ -138,5 +138,16 @@ final class PomInfo implements Serializable {
         }
     }
 
+    /**
+     * Computes the number of ancestors of this POM.
+     * returns 0 if this is the top-level module.
+     */
+    public int getNestLevel() {
+        int i=0;
+        for(PomInfo p=parent; p!=null; p=p.parent)
+            i++;
+        return i;
+    }
+
     private static final long serialVersionUID = 1L;
 }
