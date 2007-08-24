@@ -24,6 +24,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +59,16 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * List of modules that this module declares direct dependencies on.
      */
     @CopyOnWrite
-    private Set<ModuleName> dependencies;
+    private volatile Set<ModuleName> dependencies;
+
+    /**
+     * List of child modules as defined by &lt;module> POM element.
+     * Used to determine parent/child relationship of modules.
+     * <p>
+     * For compatibility reason, this field may be null when loading data from old hudson. 
+     */
+    @CopyOnWrite
+    private volatile List<ModuleName> children;
 
     /*package*/ MavenModule(MavenModuleSet parent, PomInfo pom, int firstBuildNumber) throws IOException {
         super(parent, pom.name.toFileSystemName());
@@ -98,6 +108,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         this.displayName = pom.displayName;
         this.relativePath = pom.relativePath;
         this.dependencies = pom.dependencies;
+        this.children = pom.children;
         disabled = false;
 
         if (pom.mailNotifier != null) {
@@ -202,6 +213,25 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
     public MavenModuleSet getParent() {
         return (MavenModuleSet)super.getParent();
+    }
+
+    /**
+     * Gets all the child modules (that are listed in the &lt;module> element in our POM.)
+     * <p>
+     * This method returns null if this information is not recorded. This happens
+     * for compatibility reason.
+     */
+    public List<MavenModule> getChildren() {
+        final List<ModuleName> l = children;    // take a snapshot
+        if(l==null) return null;
+        return new AbstractList<MavenModule>() {
+            public int size() {
+                return l.size();
+            }
+            public MavenModule get(int i) {
+                return getParent().modules.get(l.get(i));
+            }
+        };
     }
 
     /*package*/ void updateNextBuildNumber(int next) throws IOException {
