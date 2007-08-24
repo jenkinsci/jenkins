@@ -4,6 +4,9 @@
 
   <%@ attribute name="jobBaseUrl" type="String" %>
     The base URL of all job links. Normally ${rootURL}/
+
+  @indenter:
+     optional Indenter instance used to indent items.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <t:setIconSize/>
@@ -72,7 +75,7 @@
                 </j:if>
               </x:element>
             </td>
-            <td>
+            <td style="${indenter.getCss(job)}">
               <a href="${jobBaseUrl}${job.shortUrl}">
                   ${job.displayName}
               </a>

@@ -21,7 +21,7 @@
         </j:when>
         <j:otherwise>
           <j:set var="needsView" value="${it.hasDisabledModule()}" />
-          <t:projectView jobs="${it.getDisabledModules(false)}" showViewTabs="${needsView}">
+          <t:projectView jobs="${it.getDisabledModules(false)}" showViewTabs="${needsView}" indenter="${it.createIndenter()}">
             <!-- view tab bar -->
             <j:if test="${needsView}">
               <l:tabBar>

@@ -1,6 +1,8 @@
 package hudson.maven;
 
+import hudson.CopyOnWrite;
 import hudson.FilePath;
+import hudson.Indenter;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -53,6 +55,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
     transient /*final*/ Map<ModuleName,MavenModule> modules = new CopyOnWriteMap.Tree<ModuleName,MavenModule>();
+
+    /**
+     * Topologically sorted list of modules. This only includes live modules,
+     * since archived ones usually don't have consistent history.
+     */
+    @CopyOnWrite
+    transient List<MavenModule> sortedActiveModules;
 
     /**
      * Name of the top-level module. Null until the root module is determined.
@@ -147,13 +156,24 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * Possibly empty list of all disabled modules (if disabled==true)
      * or all enabeld modules (if disabled==false)
      */
-    public Collection<MavenModule> getDisabledModules(boolean disabled) {
+    public List<MavenModule> getDisabledModules(boolean disabled) {
+        if(sortedActiveModules!=null)
+            return sortedActiveModules;
+
         List<MavenModule> r = new ArrayList<MavenModule>();
         for (MavenModule m : modules.values()) {
             if(m.isDisabled()==disabled)
                 r.add(m);
         }
         return r;
+    }
+
+    public Indenter<MavenModule> createIndenter() {
+        return new Indenter<MavenModule>() {
+            protected int getNestLevel(MavenModule job) {
+                return job.nestLevel;
+            }
+        };
     }
 
     /**
@@ -208,20 +228,25 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         });
         // update the transient nest level field.
         MavenModule root = getRootModule();
-        if(root!=null) {
+        if(root!=null && root.getChildren()!=null) {
+            List<MavenModule> sortedList = new ArrayList<MavenModule>();
             Stack<MavenModule> q = new Stack<MavenModule>();
             root.nestLevel = 0;
             q.push(root);
             while(!q.isEmpty()) {
                 MavenModule p = q.pop();
+                sortedList.add(p);
                 List<MavenModule> children = p.getChildren();
                 if(children!=null) {
-                    for (MavenModule m : children) {
+                    for (MavenModule m : children)
                         m.nestLevel = p.nestLevel+1;
-                        q.push(m);
-                    }
+                    for( int i=children.size()-1; i>=0; i--)    // add them in the reverse order
+                        q.push(children.get(i));
                 }
             }
+            this.sortedActiveModules = sortedList;
+        } else {
+            this.sortedActiveModules = getDisabledModules(false);
         }
 
         if(reporters==null)

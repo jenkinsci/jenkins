@@ -225,6 +225,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 Map<ModuleName,MavenModule> modules = project.modules;
                 synchronized(modules) {
                     Map<ModuleName,MavenModule> old = new HashMap<ModuleName, MavenModule>(modules);
+                    List<MavenModule> sortedModules = new ArrayList<MavenModule>();
 
                     modules.clear();
                     if(debug)
@@ -242,8 +243,11 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                             mm = new MavenModule(project,pom,getNumber());
                             modules.put(mm.getModuleName(),mm);
                         }
+                        sortedModules.add(mm);
                         mm.save();
                     }
+                    // at this point the list contains all the live modules
+                    project.sortedActiveModules = sortedModules;
 
                     // remaining modules are no longer active.
                     old.keySet().removeAll(modules.keySet());
