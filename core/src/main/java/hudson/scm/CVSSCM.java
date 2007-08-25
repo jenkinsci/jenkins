@@ -868,7 +868,10 @@ public class CVSSCM extends SCM implements Serializable {
                         File cvsPassFile = new File(v);
 
                         if(cvsPassFile.exists()) {
-                            ok();
+                            if(cvsPassFile.isDirectory())
+                                error(cvsPassFile+" is a directory");
+                            else
+                                ok();
                         } else {
                             error("No such file exists");
                         }
