@@ -2,21 +2,26 @@ package hudson.scm;
 
 import hudson.MarkupText;
 import hudson.Util;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 import hudson.model.AbstractBuild;
 import hudson.model.User;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * Represents SCM change list.
  *
+ * <p>
  * Use the "index" view of this object to render the changeset detail page,
  * and use the "digest" view of this object to render the summary page.
+ *
+ * <p>
+ * {@link Iterator} is expected to return recent changes first.
  *
  * @author Kohsuke Kawaguchi
  */
