@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
 
 /**
  * {@link ChangeLogSet} for Subversion.
@@ -30,6 +31,12 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
 
     /*package*/ SubversionChangeLogSet(AbstractBuild build, List<LogEntry> logs) {
         super(build);
+        // we want recent changes first
+        Collections.sort(logs,new Comparator<LogEntry>() {
+            public int compare(LogEntry a, LogEntry b) {
+                return b.getRevision()-a.getRevision();
+            }
+        });
         this.logs = Collections.unmodifiableList(logs);
         for (LogEntry log : logs)
             log.setParent(this);
