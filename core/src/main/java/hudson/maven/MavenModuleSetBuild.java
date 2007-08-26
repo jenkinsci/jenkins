@@ -266,9 +266,14 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 for (MavenModule m : modules.values())
                     m.updateNextBuildNumber(getNumber());
 
-                // start the build
-                logger.println("Triggering "+project.getRootModule().getModuleName());
-                project.getRootModule().scheduleBuild();
+                if(!aggregatorStyle) {
+                    // start the build
+                    logger.println("Triggering "+project.getRootModule().getModuleName());
+                    project.getRootModule().scheduleBuild();
+                } else {
+                    // run the complete build here
+                    
+                }
                 
                 return null;
             } catch (AbortException e) {
@@ -381,4 +386,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
      * Extra versbose debug switch.
      */
     public static boolean debug = false;
+
+
+    private static boolean aggregatorStyle = Boolean.getBoolean("aggregatorStyle");
 }

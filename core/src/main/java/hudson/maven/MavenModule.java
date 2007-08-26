@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -344,5 +345,25 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
             disabled = true;
             save();
         }
+    }
+
+    /**
+     * Creates a list of {@link MavenReporter}s to be used for a build of this project.
+     */
+    protected final List<MavenReporter> createReporters() {
+        List<MavenReporter> reporters = new ArrayList<MavenReporter>();
+
+        getReporters().addAllTo(reporters);
+        getParent().getReporters().addAllTo(reporters);
+
+        for (MavenReporterDescriptor d : MavenReporters.LIST) {
+            if(getReporters().contains(d))
+                continue;   // already configured
+            MavenReporter auto = d.newAutoInstance(this);
+            if(auto!=null)
+                reporters.add(auto);
+        }
+
+        return reporters;
     }
 }

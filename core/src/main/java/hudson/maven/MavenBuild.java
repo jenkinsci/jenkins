@@ -1,6 +1,5 @@
 package hudson.maven;
 
-import static hudson.Util.fixNull;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.agent.Main;
@@ -10,26 +9,19 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
-import hudson.model.JDK;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
-import hudson.remoting.Launcher;
-import hudson.remoting.Which;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
-import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOException2;
 import org.apache.maven.lifecycle.LifecycleExecutorInterceptor;
 import org.codehaus.classworlds.NoSuchRealmException;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -39,9 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.net.URL;
-import java.net.JarURLConnection;
-import java.net.URLConnection;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -240,48 +229,19 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
     }
 
-    private static final class GetRemotingJar implements Callable<String,IOException> {
-        public String call() throws IOException {
-            URL classFile = Main.class.getClassLoader().getResource(Launcher.class.getName().replace('.','/')+".class");
-
-            // JNLP returns the URL where the jar was originally placed (like http://hudson.dev.java.net/...)
-            // not the local cached file. So we need a rather round about approach to get to
-            // the local file name.
-            URLConnection con = classFile.openConnection();
-            if (con instanceof JarURLConnection) {
-                JarURLConnection connection = (JarURLConnection) con;
-                return connection.getJarFile().getName();
-            }
-
-            return Which.jarFile(Launcher.class).getPath();
-        }
-    }
-
-    private class RunnerImpl extends AbstractRunner implements ProcessCache.Factory {
-        private final List<MavenReporter> reporters = new ArrayList<MavenReporter>();
-        /**
-         * Environment variables to be set to the maven process.
-         * The same variables are exposed to the system property as well.
-         */
-        private final Map<String,String> envVars = getEnvVars();
+    private class RunnerImpl extends AbstractRunner {
+        private List<MavenReporter> reporters;
 
         protected Result doRun(BuildListener listener) throws Exception {
             // pick up a list of reporters to run
-            getProject().getReporters().addAllTo(reporters);
-            getProject().getParent().getReporters().addAllTo(reporters);
-            
-            for (MavenReporterDescriptor d : MavenReporters.LIST) {
-                if(getProject().getReporters().contains(d))
-                    continue;   // already configured
-                MavenReporter auto = d.newAutoInstance(getProject());
-                if(auto!=null)
-                    reporters.add(auto);
-            }
-
+            reporters = getProject().createReporters();
             if(debug)
                 listener.getLogger().println("Reporters="+reporters);
 
-            ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener, this);
+            Map<String,String> envVars = getEnvVars();
+
+            ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener,
+                new MavenProcessFactory(getParent().getParent(),launcher,envVars));
 
             ArgumentListBuilder margs = new ArgumentListBuilder();
             margs.add("-N").add("-B");
@@ -303,100 +263,6 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 if(normalExit)  process.recycle();
                 else            process.discard();
             }
-        }
-
-
-        /**
-         * Starts maven process.
-         */
-        public Channel newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
-            if(debug)
-                listener.getLogger().println("Using env variables: "+ envVars);
-            try {
-                return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
-                    out, null, envVars);
-            } catch (IOException e) {
-                if(fixNull(e.getMessage()).contains("java: not found")) {
-                    // diagnose issue #659
-                    JDK jdk = getParent().getParent().getJDK();
-                    if(jdk==null)
-                        throw new IOException2(getParent().getParent().getDisplayName()+" is not configured with a JDK, but your PATH doesn't include Java",e);
-                }
-                throw e;
-            }
-        }
-
-        /**
-         * Builds the command line argument list to launch the maven process.
-         *
-         * UGLY.
-         */
-        private ArgumentListBuilder buildMavenCmdLine(BuildListener listener) throws IOException, InterruptedException {
-            MavenInstallation mvn = getMavenInstallation();
-            if(mvn==null) {
-                listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
-                throw new RunnerAbortedException();
-            }
-
-            // find classworlds.jar
-            File bootDir = new File(mvn.getHomeDir(), "core/boot");
-            File[] classworlds = bootDir.listFiles(CLASSWORLDS_FILTER);
-            if(classworlds==null || classworlds.length==0) {
-                // Maven 2.0.6 puts it to a different place
-                bootDir = new File(mvn.getHomeDir(), "boot");
-                classworlds = bootDir.listFiles(CLASSWORLDS_FILTER);
-                if(classworlds==null || classworlds.length==0) {
-                    listener.error("No classworlds*.jar found in "+mvn.getHomeDir()+" -- Is this a valid maven2 directory?");
-                    throw new RunnerAbortedException();
-                }
-            }
-
-            boolean isMaster = getCurrentNode()==Hudson.getInstance();
-            FilePath slaveRoot=null;
-            if(!isMaster)
-                slaveRoot = getCurrentNode().getRootPath();
-
-            ArgumentListBuilder args = new ArgumentListBuilder();
-            JDK jdk = getParent().getParent().getJDK();
-            if(jdk==null)
-                args.add("java");
-            else
-                args.add(jdk.getJavaHome()+"/bin/java");
-
-            if(debugPort!=0)
-                args.add("-Xrunjdwp:transport=dt_socket,server=y,address="+debugPort);
-
-            args.addTokenized(getMavenOpts());
-
-            args.add("-cp");
-            args.add(
-                (isMaster?Which.jarFile(Main.class).getAbsolutePath():slaveRoot.child("maven-agent.jar").getRemote())+
-                (launcher.isUnix()?":":";")+
-                classworlds[0].getAbsolutePath());
-            args.add(Main.class.getName());
-
-            // M2_HOME
-            args.add(mvn.getMavenHome());
-
-            // remoting.jar
-            args.add(launcher.getChannel().call(new GetRemotingJar()));
-            // interceptor.jar
-            args.add(isMaster?
-                Which.jarFile(hudson.maven.agent.PluginManagerInterceptor.class).getAbsolutePath():
-                slaveRoot.child("maven-interceptor.jar").getRemote());
-            return args;
-        }
-
-        public String getMavenOpts() {
-            return getParent().getParent().getMavenOpts();
-        }
-
-        public MavenInstallation getMavenInstallation() {
-            return getParent().getParent().getMaven();
-        }
-
-        public JDK getJava() {
-            return getParent().getParent().getJDK();
         }
 
         public void post(BuildListener listener) throws IOException, InterruptedException {
@@ -494,18 +360,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
     }
 
-    /**
-     * If not 0, launch Maven with a debugger port.
-     */
-    public static int debugPort;
-
     private static final int MAX_PROCESS_CACHE = 5;
-
-    static {
-        String port = System.getProperty(MavenBuild.class.getName() + ".debugPort");
-        if(port!=null)
-            debugPort = Integer.parseInt(port);
-    }
 
     private static final ProcessCache mavenProcessCache = new ProcessCache(MAX_PROCESS_CACHE);
 
@@ -528,12 +383,6 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
      * for {@link SurefireArchiver}. Subject to change without notice.
      */
     public static boolean markAsSuccess;
-
-    private static final FilenameFilter CLASSWORLDS_FILTER = new FilenameFilter() {
-        public boolean accept(File dir, String name) {
-            return name.startsWith("classworlds") && name.endsWith(".jar");
-        }
-    };
 
     /**
      * Set true to produce debug output.
