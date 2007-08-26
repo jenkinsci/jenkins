@@ -20,8 +20,8 @@ import hudson.maven.agent.PluginManagerListener;
 import hudson.maven.agent.AbortException;
 
 /**
- * Description in META-INF/plexus/components.xml makes it possible to use this instead of the default
- * plugin manager.
+ * Receives internal maven build events and forward them to the reporters. Used during
+ * the module build.
  *
  * @author Kohsuke Kawaguchi
  */
