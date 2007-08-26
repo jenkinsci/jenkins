@@ -1,6 +1,7 @@
 package hudson.maven;
 
 import hudson.AbortException;
+import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
@@ -277,9 +278,9 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     logger.println("Triggering "+project.getRootModule().getModuleName());
                     project.getRootModule().scheduleBuild();
                 } else {
-                    Map<ModuleName,MavenBuild.ProxyImpl> proxies = new HashMap<ModuleName,MavenBuild.ProxyImpl>();
+                    Map<ModuleName,MavenBuild.ProxyImpl2> proxies = new HashMap<ModuleName,MavenBuild.ProxyImpl2>();
                     for (MavenModule m : modules.values())
-                        proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl());
+                        proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2());
 
                     // run the complete build here
                     Map<String,String> envVars = getEnvVars();
@@ -288,13 +289,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         new MavenProcessFactory(project,launcher,envVars));
 
                     ArgumentListBuilder margs = new ArgumentListBuilder();
-                    margs.add("-B").add("-f",project.getRootPOM());
+                    margs.add("-B").add("-f",project.getModuleRoot().child(project.getRootPOM()).getRemote());
                     margs.addTokenized(project.getGoals());
 
                     try {
                         return process.channel.call(new Builder(
                             listener,proxies,modules.values(),margs.toList(),envVars));
                     } finally {
+                        for (ProxyImpl2 p : proxies.values())
+                            p.abortIfNotStarted();
                         process.discard();
                     }
                 }
@@ -327,10 +330,10 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
      * Runs Maven and builds the project.
      */
     private static final class Builder extends MavenBuilder {
-        private final Map<ModuleName,? extends MavenBuildProxy> buildProxy;
+        private final Map<ModuleName,? extends MavenBuildProxy2> buildProxy;
         private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
 
-        public Builder(BuildListener listener,Map<ModuleName,? extends MavenBuildProxy> buildProxy, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps) {
+        public Builder(BuildListener listener,Map<ModuleName,? extends MavenBuildProxy2> buildProxy, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps) {
             super(listener,goals,systemProps);
             this.buildProxy = buildProxy;
 
@@ -347,19 +350,39 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         }
 
         void preModule(MavenProject project) throws InterruptedException, IOException, hudson.maven.agent.AbortException {
-            // TODO
+            ModuleName name = new ModuleName(project);
+            MavenBuildProxy2 proxy = buildProxy.get(name);
+            proxy.start();
+            for (MavenReporter r : reporters.get(name))
+                if(!r.preBuild(proxy,project,listener))
+                    throw new hudson.maven.agent.AbortException(r+" failed");
         }
 
         void postModule(MavenProject project) throws InterruptedException, IOException, hudson.maven.agent.AbortException {
-            // TODO
+            ModuleName name = new ModuleName(project);
+            MavenBuildProxy2 proxy = buildProxy.get(name);
+            for (MavenReporter r : reporters.get(name))
+                if(!r.postBuild(proxy,project,listener))
+                    throw new hudson.maven.agent.AbortException(r+" failed");
+            proxy.end();
         }
 
         void preExecute(MavenProject project, MojoInfo mojoInfo) throws IOException, InterruptedException, hudson.maven.agent.AbortException {
-            // TODO
+            ModuleName name = new ModuleName(project);
+            MavenBuildProxy proxy = buildProxy.get(name);
+            for (MavenReporter r : reporters.get(name))
+                if(!r.preExecute(proxy,project,mojoInfo,listener))
+                    throw new hudson.maven.agent.AbortException(r+" failed");
         }
 
         void postExecute(MavenProject project, MojoInfo mojoInfo, Exception exception) throws IOException, InterruptedException, hudson.maven.agent.AbortException {
-            // TODO
+            ModuleName name = new ModuleName(project);
+            MavenBuildProxy2 proxy = buildProxy.get(name);
+            for (MavenReporter r : reporters.get(name))
+                if(!r.postExecute(proxy,project,mojoInfo,listener,exception))
+                    throw new hudson.maven.agent.AbortException(r+" failed");
+            if(exception!=null)
+                proxy.setResult(Result.FAILURE);
         }
 
         private static final long serialVersionUID = 1L;

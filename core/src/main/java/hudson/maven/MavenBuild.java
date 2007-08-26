@@ -197,7 +197,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     /**
      * {@link MavenBuildProxy} implementation.
      */
-    final class ProxyImpl implements MavenBuildProxy, Serializable {
+    class ProxyImpl implements MavenBuildProxy, Serializable {
         public <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException {
             return program.call(MavenBuild.this);
         }
@@ -227,7 +227,49 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
 
         private Object writeReplace() {
-            return Channel.current().export(MavenBuildProxy.class, new ProxyImpl());
+            return Channel.current().export(MavenBuildProxy.class,this);
+        }
+    }
+
+    class ProxyImpl2 extends ProxyImpl implements MavenBuildProxy2 {
+        long startTime;
+        public void start() {
+            onStartBuilding();
+            startTime = System.currentTimeMillis();
+        }
+
+        public void end() {
+            if(result==null)
+                setResult(Result.SUCCESS);
+            onEndBuilding();
+            duration = System.currentTimeMillis()- startTime;
+            try {
+                save();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        /**
+         * Mark the build as aborted. This method is used when the aggregated build
+         * failed before it didn't even get to this module.
+         */
+        protected void abortIfNotStarted() {
+            if(hasntStartedYet()) {
+                run(new Runner() {
+                    public Result run(BuildListener listener) throws Exception, RunnerAbortedException {
+                        listener.getLogger().println("Build failed before it gets to this module");
+                        return Result.ABORTED;
+                    }
+
+                    public void post(BuildListener listener) throws Exception {
+                    }
+                });
+            }
+        }
+
+        private Object writeReplace() {
+            return Channel.current().export(MavenBuildProxy2.class,this);
         }
     }
 
