@@ -332,6 +332,9 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
     private static final class Builder extends MavenBuilder {
         private final Map<ModuleName,? extends MavenBuildProxy2> buildProxy;
         private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
+        private final Map<ModuleName,List<ExecutedMojo>> executedMojos = new HashMap<ModuleName,List<ExecutedMojo>>();
+        private long mojoStartTime;
+
 
         public Builder(BuildListener listener,Map<ModuleName,? extends MavenBuildProxy2> buildProxy, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps) {
             super(listener,goals,systemProps);
@@ -364,6 +367,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             for (MavenReporter r : reporters.get(name))
                 if(!r.postBuild(proxy,project,listener))
                     throw new hudson.maven.agent.AbortException(r+" failed");
+            proxy.setExecutedMojos(executedMojos.get(name));
             proxy.end();
         }
 
@@ -373,10 +377,18 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             for (MavenReporter r : reporters.get(name))
                 if(!r.preExecute(proxy,project,mojoInfo,listener))
                     throw new hudson.maven.agent.AbortException(r+" failed");
+
+            mojoStartTime = System.currentTimeMillis();
         }
 
         void postExecute(MavenProject project, MojoInfo mojoInfo, Exception exception) throws IOException, InterruptedException, hudson.maven.agent.AbortException {
             ModuleName name = new ModuleName(project);
+
+            List<ExecutedMojo> mojoList = executedMojos.get(name);
+            if(mojoList==null)
+                executedMojos.put(name,mojoList=new ArrayList<ExecutedMojo>());
+            mojoList.add(new ExecutedMojo(mojoInfo,System.currentTimeMillis()-mojoStartTime));
+
             MavenBuildProxy2 proxy = buildProxy.get(name);
             for (MavenReporter r : reporters.get(name))
                 if(!r.postExecute(proxy,project,mojoInfo,listener,exception))
