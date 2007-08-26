@@ -46,10 +46,6 @@ public class PluginManagerInterceptor implements PluginManagerListener, Lifecycl
     /**
      * Called by {@link MavenBuild} to connect this object to the rest of Hudson objects,
      * namely {@link MavenBuild}.
-     *
-     * <p>
-     * We can't do this in the constructor because this object is created by
-     * Plexus along with the rest of Maven objects.
      */
     public PluginManagerInterceptor(MavenBuildProxy buildProxy, MavenReporter[] reporters, BuildListener listener) {
         this.buildProxy = buildProxy;
@@ -60,31 +56,17 @@ public class PluginManagerInterceptor implements PluginManagerListener, Lifecycl
     /**
      * Called before the whole build.
      */
-    public void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException {
-        try {
-            for (MavenReporter r : reporters)
-                r.preBuild(buildProxy,rm.getTopLevelProject(),listener);
-        } catch (InterruptedException e) {
-            throw new BuildFailureException("aborted",e);
-        } catch (IOException e) {
-            throw new BuildFailureException(e.getMessage(),e);
-        }
+    public void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
+        for (MavenReporter r : reporters)
+            r.preBuild(buildProxy,rm.getTopLevelProject(),listener);
     }
 
 
-    public void postBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException {
-        try {
-            fireLeaveModule();
-            buildProxy.setExecutedMojos(executedMojos);
-            for (MavenReporter r : reporters)
-                r.postBuild(buildProxy,rm.getTopLevelProject(),listener);
-        } catch (InterruptedException e) {
-            throw new BuildFailureException("aborted",e);
-        } catch (IOException e) {
-            throw new BuildFailureException(e.getMessage(),e);
-        } catch (AbortException e) {
-            throw new BuildFailureException("aborted",e);
-        }
+    public void postBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
+        fireLeaveModule();
+        buildProxy.setExecutedMojos(executedMojos);
+        for (MavenReporter r : reporters)
+            r.postBuild(buildProxy,rm.getTopLevelProject(),listener);
     }
 
     public void preExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException, AbortException {
