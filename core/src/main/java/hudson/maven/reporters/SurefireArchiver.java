@@ -1,6 +1,7 @@
 package hudson.maven.reporters;
 
 import hudson.maven.MavenBuild;
+import hudson.maven.MavenBuilder;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.maven.MavenModule;
@@ -79,7 +80,7 @@ public class SurefireArchiver extends MavenReporter {
             // if surefire plugin is going to kill maven because of a test failure,
             // intercept that (or otherwise build will be marked as failure)
             if(failCount>0 && error instanceof MojoFailureException) {
-                MavenBuild.markAsSuccess = true;
+                MavenBuilder.markAsSuccess = true;
             }
         }
 

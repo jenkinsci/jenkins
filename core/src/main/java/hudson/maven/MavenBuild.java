@@ -2,8 +2,7 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.maven.agent.Main;
-import hudson.maven.reporters.SurefireArchiver;
+import hudson.maven.agent.AbortException;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -12,18 +11,19 @@ import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.remoting.Channel;
-import hudson.remoting.DelegatingCallable;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.ArgumentListBuilder;
-import hudson.util.IOException2;
-import org.apache.maven.lifecycle.LifecycleExecutorInterceptor;
-import org.codehaus.classworlds.NoSuchRealmException;
+import org.apache.maven.BuildFailureException;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.ReactorManager;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.monitor.event.EventDispatcher;
+import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -129,64 +129,66 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     /**
      * Runs Maven and builds the project.
      */
-    private static final class Builder implements DelegatingCallable<Result,IOException> {
-        private final BuildListener listener;
+    private static final class Builder extends MavenBuilder {
         private final MavenBuildProxy buildProxy;
         private final MavenReporter[] reporters;
-        private final List<String> goals;
+
         /**
-         * Hudson-defined system properties. These will be made available to Maven,
-         * and accessible as if they are specified as -Dkey=value
+         * Records of what was executed.
          */
-        private final Map<String,String> systemProps;
+        private final List<ExecutedMojo> executedMojos = new ArrayList<ExecutedMojo>();
+
+        private long startTime;
 
         public Builder(BuildListener listener,MavenBuildProxy buildProxy,MavenReporter[] reporters, List<String> goals, Map<String,String> systemProps) {
-            this.listener = listener;
+            super(listener,goals,systemProps);
             this.buildProxy = buildProxy;
             this.reporters = reporters;
-            this.goals = goals;
-            this.systemProps = systemProps;
         }
 
-        /**
-         * This code is executed inside the maven jail process.
-         */
-        public Result call() throws IOException {
-            try {
-                PluginManagerInterceptor pmi = new PluginManagerInterceptor(buildProxy, reporters, listener);
-                hudson.maven.agent.PluginManagerInterceptor.setListener(pmi);
-                LifecycleExecutorInterceptor.setListener(pmi);
-
-                markAsSuccess = false;
-
-                System.getProperties().putAll(systemProps);
-
-                int r = Main.launch(goals.toArray(new String[goals.size()]));
-
-                if(r==0)    return Result.SUCCESS;
-
-                if(markAsSuccess) {
-                    listener.getLogger().println("Maven failed with error.");
-                    return Result.SUCCESS;
-                }
-
-                return Result.FAILURE;
-            } catch (NoSuchMethodException e) {
-                throw new IOException2(e);
-            } catch (IllegalAccessException e) {
-                throw new IOException2(e);
-            } catch (NoSuchRealmException e) {
-                throw new IOException2(e);
-            } catch (InvocationTargetException e) {
-                throw new IOException2(e);
-            } catch (ClassNotFoundException e) {
-                throw new IOException2(e);
-            }
+        @Override
+        void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
+            for (MavenReporter r : reporters)
+                r.preBuild(buildProxy,rm.getTopLevelProject(),listener);
         }
 
-        // since reporters might be from plugins, use the uberjar to resolve them. 
-        public ClassLoader getClassLoader() {
-            return Hudson.getInstance().getPluginManager().uberClassLoader;
+        @Override
+        void postBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
+            buildProxy.setExecutedMojos(executedMojos);
+            for (MavenReporter r : reporters)
+                r.postBuild(buildProxy,rm.getTopLevelProject(),listener);
+        }
+
+        @Override
+        void preExecute(MavenProject project, MojoInfo info) throws IOException, InterruptedException, AbortException {
+            for (MavenReporter r : reporters)
+                if(!r.preExecute(buildProxy,project,info,listener))
+                    throw new AbortException(r+" failed");
+
+            startTime = System.currentTimeMillis();
+        }
+
+        @Override
+        void postExecute(MavenProject project, MojoInfo info, Exception exception) throws IOException, InterruptedException, AbortException {
+            executedMojos.add(new ExecutedMojo(info,System.currentTimeMillis()-startTime));
+
+            for (MavenReporter r : reporters)
+                if(!r.postExecute(buildProxy,project,info,listener,exception))
+                    throw new AbortException(r+" failed");
+        }
+
+        @Override
+        void preModule(MavenProject project) throws InterruptedException, IOException, AbortException {
+            for (MavenReporter r : reporters)
+                if(!r.enterModule(buildProxy,project,listener))
+                    throw new AbortException(r+" failed");
+        }
+
+        @Override
+        void postModule(MavenProject project) throws InterruptedException, IOException, AbortException {
+            for (MavenReporter r : reporters)
+                if(!r.leaveModule(buildProxy,project,listener))
+                    throw new AbortException(r+" failed");
         }
 
         private static final long serialVersionUID = 1L;
@@ -195,7 +197,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     /**
      * {@link MavenBuildProxy} implementation.
      */
-    private class ProxyImpl implements MavenBuildProxy, Serializable {
+    final class ProxyImpl implements MavenBuildProxy, Serializable {
         public <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException {
             return program.call(MavenBuild.this);
         }
@@ -362,27 +364,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
     private static final int MAX_PROCESS_CACHE = 5;
 
-    private static final ProcessCache mavenProcessCache = new ProcessCache(MAX_PROCESS_CACHE);
-
-    /**
-     * Used by selected {@link MavenReporter}s to notify the maven build agent
-     * that even though Maven is going to fail, we should report the build as
-     * success.
-     *
-     * <p>
-     * This rather ugly hook is necessary to mark builds as unstable, since
-     * maven considers a test failure to be a build failure, which will otherwise
-     * mark the build as FAILED.
-     *
-     * <p>
-     * It's OK for this field to be static, because the JVM where this is actually
-     * used is in the Maven JVM, so only one build is going on for the whole JVM.
-     *
-     * <p>
-     * Even though this field is public, please consider this field reserved
-     * for {@link SurefireArchiver}. Subject to change without notice.
-     */
-    public static boolean markAsSuccess;
+    protected static final ProcessCache mavenProcessCache = new ProcessCache(MAX_PROCESS_CACHE);
 
     /**
      * Set true to produce debug output.

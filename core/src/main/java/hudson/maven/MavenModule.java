@@ -195,6 +195,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return MavenBuild.class;
     }
 
+    @Override
+    protected MavenBuild newBuild() throws IOException {
+        return super.newBuild();
+    }
+
     public ModuleName getModuleName() {
         return moduleName;
     }

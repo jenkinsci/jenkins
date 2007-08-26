@@ -1,5 +1,6 @@
 package hudson.maven;
 
+import hudson.AbortException;
 import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
@@ -8,9 +9,14 @@ import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
+import hudson.util.ArgumentListBuilder;
 import hudson.util.IOException2;
-import hudson.AbortException;
+import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedderException;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.ReactorManager;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 
@@ -24,8 +30,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -271,8 +277,26 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     logger.println("Triggering "+project.getRootModule().getModuleName());
                     project.getRootModule().scheduleBuild();
                 } else {
+                    Map<ModuleName,MavenBuild.ProxyImpl> proxies = new HashMap<ModuleName,MavenBuild.ProxyImpl>();
+                    for (MavenModule m : modules.values())
+                        proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl());
+
                     // run the complete build here
-                    
+                    Map<String,String> envVars = getEnvVars();
+
+                    ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), listener,
+                        new MavenProcessFactory(project,launcher,envVars));
+
+                    ArgumentListBuilder margs = new ArgumentListBuilder();
+                    margs.add("-B").add("-f",project.getRootPOM());
+                    margs.addTokenized(project.getGoals());
+
+                    try {
+                        return process.channel.call(new Builder(
+                            listener,proxies,modules.values(),margs.toList(),envVars));
+                    } finally {
+                        process.discard();
+                    }
                 }
                 
                 return null;
@@ -299,6 +323,48 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         }
     }
 
+    /**
+     * Runs Maven and builds the project.
+     */
+    private static final class Builder extends MavenBuilder {
+        private final Map<ModuleName,? extends MavenBuildProxy> buildProxy;
+        private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
+
+        public Builder(BuildListener listener,Map<ModuleName,? extends MavenBuildProxy> buildProxy, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps) {
+            super(listener,goals,systemProps);
+            this.buildProxy = buildProxy;
+
+            for (MavenModule m : modules)
+                reporters.put(m.getModuleName(),m.createReporters());
+        }
+
+        void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
+            // TODO
+        }
+
+        void postBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
+            // TODO
+        }
+
+        void preModule(MavenProject project) throws InterruptedException, IOException, hudson.maven.agent.AbortException {
+            // TODO
+        }
+
+        void postModule(MavenProject project) throws InterruptedException, IOException, hudson.maven.agent.AbortException {
+            // TODO
+        }
+
+        void preExecute(MavenProject project, MojoInfo mojoInfo) throws IOException, InterruptedException, hudson.maven.agent.AbortException {
+            // TODO
+        }
+
+        void postExecute(MavenProject project, MojoInfo mojoInfo, Exception exception) throws IOException, InterruptedException, hudson.maven.agent.AbortException {
+            // TODO
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+    
     /**
      * Executed on the slave to parse POM and extract information into {@link PomInfo},
      * which will be then brought back to the master.
