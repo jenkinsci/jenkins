@@ -278,14 +278,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     logger.println("Triggering "+project.getRootModule().getModuleName());
                     project.getRootModule().scheduleBuild();
                 } else {
+                    SplittableBuildListener slistener = new SplittableBuildListener(listener);
                     Map<ModuleName,MavenBuild.ProxyImpl2> proxies = new HashMap<ModuleName,MavenBuild.ProxyImpl2>();
                     for (MavenModule m : modules.values())
-                        proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2());
+                        proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(slistener));
 
                     // run the complete build here
                     Map<String,String> envVars = getEnvVars();
 
-                    ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), listener,
+                    ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
                         new MavenProcessFactory(project,launcher,envVars));
 
                     ArgumentListBuilder margs = new ArgumentListBuilder();
@@ -294,7 +295,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
                     try {
                         return process.channel.call(new Builder(
-                            listener,proxies,modules.values(),margs.toList(),envVars));
+                            slistener,proxies,modules.values(),margs.toList(),envVars));
                     } finally {
                         for (ProxyImpl2 p : proxies.values())
                             p.abortIfNotStarted();
@@ -330,15 +331,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
      * Runs Maven and builds the project.
      */
     private static final class Builder extends MavenBuilder {
-        private final Map<ModuleName,? extends MavenBuildProxy2> buildProxy;
+        private final Map<ModuleName,? extends MavenBuildProxy2> proxies;
         private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
         private final Map<ModuleName,List<ExecutedMojo>> executedMojos = new HashMap<ModuleName,List<ExecutedMojo>>();
         private long mojoStartTime;
 
 
-        public Builder(BuildListener listener,Map<ModuleName,? extends MavenBuildProxy2> buildProxy, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps) {
+        public Builder(BuildListener listener,Map<ModuleName,? extends MavenBuildProxy2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps) {
             super(listener,goals,systemProps);
-            this.buildProxy = buildProxy;
+            this.proxies = proxies;
 
             for (MavenModule m : modules)
                 reporters.put(m.getModuleName(),m.createReporters());
@@ -354,7 +355,8 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
         void preModule(MavenProject project) throws InterruptedException, IOException, hudson.maven.agent.AbortException {
             ModuleName name = new ModuleName(project);
-            MavenBuildProxy2 proxy = buildProxy.get(name);
+            MavenBuildProxy2 proxy = proxies.get(name);
+            listener.getLogger().flush();   // make sure the data until here are all written
             proxy.start();
             for (MavenReporter r : reporters.get(name))
                 if(!r.preBuild(proxy,project,listener))
@@ -363,17 +365,18 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
         void postModule(MavenProject project) throws InterruptedException, IOException, hudson.maven.agent.AbortException {
             ModuleName name = new ModuleName(project);
-            MavenBuildProxy2 proxy = buildProxy.get(name);
+            MavenBuildProxy2 proxy = proxies.get(name);
             for (MavenReporter r : reporters.get(name))
                 if(!r.postBuild(proxy,project,listener))
                     throw new hudson.maven.agent.AbortException(r+" failed");
             proxy.setExecutedMojos(executedMojos.get(name));
+            listener.getLogger().flush();   // make sure the data until here are all written
             proxy.end();
         }
 
         void preExecute(MavenProject project, MojoInfo mojoInfo) throws IOException, InterruptedException, hudson.maven.agent.AbortException {
             ModuleName name = new ModuleName(project);
-            MavenBuildProxy proxy = buildProxy.get(name);
+            MavenBuildProxy proxy = proxies.get(name);
             for (MavenReporter r : reporters.get(name))
                 if(!r.preExecute(proxy,project,mojoInfo,listener))
                     throw new hudson.maven.agent.AbortException(r+" failed");
@@ -389,7 +392,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 executedMojos.put(name,mojoList=new ArrayList<ExecutedMojo>());
             mojoList.add(new ExecutedMojo(mojoInfo,System.currentTimeMillis()-mojoStartTime));
 
-            MavenBuildProxy2 proxy = buildProxy.get(name);
+            MavenBuildProxy2 proxy = proxies.get(name);
             for (MavenReporter r : reporters.get(name))
                 if(!r.postExecute(proxy,project,mojoInfo,listener,exception))
                     throw new hudson.maven.agent.AbortException(r+" failed");

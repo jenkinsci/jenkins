@@ -23,7 +23,11 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -232,10 +236,19 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     }
 
     class ProxyImpl2 extends ProxyImpl implements MavenBuildProxy2 {
+        private final SplittableBuildListener listener;
         long startTime;
+        private final OutputStream log;
+
+        ProxyImpl2(SplittableBuildListener listener) throws FileNotFoundException {
+            this.listener = listener;
+            log = new BufferedOutputStream(new FileOutputStream(getLogFile()));
+        }
+
         public void start() {
             onStartBuilding();
             startTime = System.currentTimeMillis();
+            listener.setSideOutputStream(log);
         }
 
         public void end() {
@@ -244,6 +257,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             onEndBuilding();
             duration = System.currentTimeMillis()- startTime;
             try {
+                listener.setSideOutputStream(null);
                 save();
             } catch (IOException e) {
                 e.printStackTrace();
