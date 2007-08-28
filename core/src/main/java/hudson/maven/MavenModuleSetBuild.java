@@ -9,6 +9,7 @@ import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Result;
+import hudson.model.AbstractProject;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOException2;
@@ -222,6 +223,8 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
      * and triggers module builds.
      */
     private class RunnerImpl extends AbstractRunner {
+        private Map<ModuleName,MavenBuild.ProxyImpl2> proxies;
+
         protected Result doRun(final BuildListener listener) throws Exception {
             PrintStream logger = listener.getLogger();
             try {
@@ -279,7 +282,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     project.getRootModule().scheduleBuild();
                 } else {
                     SplittableBuildListener slistener = new SplittableBuildListener(listener);
-                    Map<ModuleName,MavenBuild.ProxyImpl2> proxies = new HashMap<ModuleName,MavenBuild.ProxyImpl2>();
+                    proxies = new HashMap<ModuleName, ProxyImpl2>();
                     for (MavenModule m : modules.values())
                         proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(slistener));
 
@@ -324,6 +327,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         }
 
         public void post(BuildListener listener) {
+            if(aggregatorStyle) {
+                // schedule downstream builds. for non aggregator style builds,
+                // this is done by each module
+                if(getResult().isBetterOrEqualTo(Result.SUCCESS)) {
+                    HashSet<AbstractProject> downstreams = new HashSet<AbstractProject>(project.modules.values());
+                    for (ProxyImpl2 p : proxies.values())
+                        p.owner().scheduleDownstreamBuilds(listener,downstreams);
+                }
+            }
         }
     }
 

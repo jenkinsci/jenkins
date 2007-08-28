@@ -21,17 +21,18 @@ import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -269,6 +270,13 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
 
         /**
+         * Gets the build for which this proxy is created.
+         */
+        public MavenBuild owner() {
+            return MavenBuild.this;
+        }
+
+        /**
          * Mark the build as aborted. This method is used when the aggregated build
          * failed before it didn't even get to this module.
          */
@@ -332,20 +340,27 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 reporter.end(MavenBuild.this,launcher,listener);
 
             if(getResult().isBetterOrEqualTo(Result.SUCCESS))
-                scheduleDownstreamBuilds(listener);
+                scheduleDownstreamBuilds(listener,new HashSet<AbstractProject>());
         }
     }
 
     /**
      * Schedules all the downstream builds.
      *
+     * @param downstreams
+     *      List of downstream jobs that are already scheduled.
+     *      The method will add jobs that it triggered here,
+     *      and won't try to trigger jobs that are already in this list.
      * @param listener
      *      Where the progress reports go.
      */
-    /*package*/ final void scheduleDownstreamBuilds(BuildListener listener) {
+    /*package*/ final void scheduleDownstreamBuilds(BuildListener listener, Set<AbstractProject> downstreams) {
         // trigger dependency builds
         DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
         for( AbstractProject<?,?> down : getParent().getDownstreamProjects()) {
+            if(downstreams.contains(down))
+                continue; // already triggered
+
             if(debug)
                 listener.getLogger().println("Considering whether to trigger "+down+" or not");
 
@@ -409,6 +424,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
             if(trigger) {
                 listener.getLogger().println("Triggering a new build of "+down.getName());
+                downstreams.add(down);
                 down.scheduleBuild();
             }
         }
