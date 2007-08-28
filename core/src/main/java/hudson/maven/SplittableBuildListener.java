@@ -65,9 +65,9 @@ final class SplittableBuildListener implements BuildListener, Serializable {
     }
     
     public void setSideOutputStream(OutputStream os) throws IOException {
-        if(os==null)
+        if(os==null) {
             os = unclaimed;
-        else {
+        } else {
             os.write(unclaimed.toByteArray());
             unclaimed.reset();
         }
