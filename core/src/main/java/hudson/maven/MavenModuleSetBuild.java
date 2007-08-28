@@ -276,7 +276,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 for (MavenModule m : modules.values())
                     m.updateNextBuildNumber(getNumber());
 
-                if(!aggregatorStyle) {
+                if(!project.isAggregatorStyleBuild()) {
                     // start the build
                     logger.println("Triggering "+project.getRootModule().getModuleName());
                     project.getRootModule().scheduleBuild();
@@ -327,7 +327,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         }
 
         public void post(BuildListener listener) {
-            if(aggregatorStyle) {
+            if(project.isAggregatorStyleBuild()) {
                 // schedule downstream builds. for non aggregator style builds,
                 // this is done by each module
                 if(getResult().isBetterOrEqualTo(Result.SUCCESS)) {
@@ -502,7 +502,4 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
      * Extra versbose debug switch.
      */
     public static boolean debug = false;
-
-
-    private static boolean aggregatorStyle = Boolean.getBoolean("aggregatorStyle");
 }

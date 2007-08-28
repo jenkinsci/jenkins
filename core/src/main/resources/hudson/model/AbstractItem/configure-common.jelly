@@ -42,6 +42,7 @@
   <f:section title="Advanced Project Options">
     <f:advanced>
       <p:config-quietPeriod />
+      <st:include page="configure-advanced.jelly" optional="true" />
     </f:advanced>
   </f:section>
 

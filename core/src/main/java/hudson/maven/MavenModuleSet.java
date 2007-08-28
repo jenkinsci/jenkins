@@ -89,6 +89,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private String mavenOpts;
 
     /**
+     * If true, the build will be aggregator style. False otherwise.
+     *
+     * @since 1.133
+     */
+    private boolean aggregatorStyleBuild = true;
+
+    /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
@@ -174,6 +181,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
                 return job.nestLevel;
             }
         };
+    }
+
+    public boolean isAggregatorStyleBuild() {
+        return aggregatorStyleBuild;
     }
 
     /**
@@ -392,6 +403,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         goals = Util.fixEmpty(req.getParameter("goals").trim());
         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
         mavenName = req.getParameter("maven_version");
+        aggregatorStyleBuild = req.getParameter("maven.perModuleBuild")==null;
 
         reporters.rebuild(req,MavenReporters.getConfigurableList(),"reporter");
     }
