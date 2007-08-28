@@ -178,7 +178,7 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
         }
 
         public void postExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException {
-            listener.preExecute(project, new MojoInfo(exec, mergedConfig, eval));
+            listener.postExecute(project, new MojoInfo(exec, mergedConfig, eval),exception);
         }
 
         private void fireEnterModule(MavenProject project) throws InterruptedException, IOException {
