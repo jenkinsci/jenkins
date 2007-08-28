@@ -248,7 +248,11 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         public void start() {
             onStartBuilding();
             startTime = System.currentTimeMillis();
-            listener.setSideOutputStream(log);
+            try {
+                listener.setSideOutputStream(log);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         public void end() {

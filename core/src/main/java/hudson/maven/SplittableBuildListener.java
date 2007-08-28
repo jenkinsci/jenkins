@@ -3,8 +3,8 @@ package hudson.maven;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.StreamBuildListener;
-import hudson.util.NullStream;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -24,7 +24,13 @@ final class SplittableBuildListener implements BuildListener, Serializable {
      */
     private final BuildListener core;
 
-    private OutputStream side = new NullStream();
+    /**
+     * Used to accumulate data when no one is claiming the {@link #side},
+     * so that the next one who set the {@link #side} can claim all the data.
+     */
+    private final ByteArrayOutputStream unclaimed = new ByteArrayOutputStream();
+
+    private OutputStream side = unclaimed;
 
     /**
      * Constant {@link PrintStream} connected to both {@link #core} and {@link #side}.
@@ -58,8 +64,13 @@ final class SplittableBuildListener implements BuildListener, Serializable {
         });
     }
     
-    public void setSideOutputStream(OutputStream os) {
-        if(os==null)    os = new NullStream();
+    public void setSideOutputStream(OutputStream os) throws IOException {
+        if(os==null)
+            os = unclaimed;
+        else {
+            os.write(unclaimed.toByteArray());
+            unclaimed.reset();
+        }
         this.side = os;
     }
 
