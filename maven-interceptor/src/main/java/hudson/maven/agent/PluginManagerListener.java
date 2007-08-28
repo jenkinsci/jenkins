@@ -16,7 +16,7 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public interface PluginManagerListener {
-    void preExecute(MavenProject project,MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException, AbortException;
+    void preExecute(MavenProject project,MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException;
 
     /**
      * Called after the mojo has finished executing.
@@ -35,5 +35,5 @@ public interface PluginManagerListener {
      *      with those error objects.
      *      If mojo executed successfully, this parameter is null.
      */
-    void postExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException, AbortException;
+    void postExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException;
 }

@@ -20,4 +20,10 @@ import java.io.IOException;
 public interface LifecycleExecutorListener {
     void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, InterruptedException, IOException;
     void postBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, InterruptedException, IOException;
+
+    /**
+     * This event is avaialble from {@link LifecycleExecutorListener}
+     * and offers accurate "leaving module" event.
+     */
+    void endModule() throws InterruptedException, IOException;
 }

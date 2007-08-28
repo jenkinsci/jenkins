@@ -1,13 +1,14 @@
 package org.apache.maven.lifecycle;
 
+import hudson.maven.agent.AbortException;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.monitor.event.EventDispatcher;
+import org.apache.maven.monitor.event.EventMonitor;
+import org.apache.maven.monitor.event.MavenEvents;
 
 import java.io.IOException;
-
-import hudson.maven.agent.AbortException;
 
 /**
  * {@link LifecycleExecutor} interceptor.
@@ -34,6 +35,7 @@ public class LifecycleExecutorInterceptor extends DefaultLifecycleExecutor {
 
     public void execute(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException {
         try {
+            session.getEventDispatcher().addEventMonitor(new EventMonitorImpl());
             if(listener!=null)
                 listener.preBuild(session,rm,dispatcher);
             try {
@@ -48,6 +50,35 @@ public class LifecycleExecutorInterceptor extends DefaultLifecycleExecutor {
             throw new BuildFailureException(e.getMessage(),e);
         } catch (AbortException e) {
             throw new BuildFailureException("aborted",e);
+        }
+    }
+
+    /**
+     * {@link EventMonitor} offers mostly useless events, but this offers
+     * the most accurate "end of module" event.
+     */
+    private final class EventMonitorImpl implements EventMonitor {
+        public void startEvent(String eventName, String target, long timestamp) {
+            // TODO
+        }
+
+        public void endEvent(String eventName, String target, long timestamp) {
+            if(eventName.equals(MavenEvents.PROJECT_EXECUTION)) {
+                if(listener!=null) {
+                    try {
+                        listener.endModule();
+                    } catch (InterruptedException e) {
+                        // can't interrupt now
+                        Thread.currentThread().interrupt();
+                    } catch (IOException e) {
+                        throw new Error(e);
+                    }
+                }
+            }
+        }
+
+        public void errorEvent(String eventName, String target, long timestamp, Throwable cause) {
+            // TODO
         }
     }
 }
