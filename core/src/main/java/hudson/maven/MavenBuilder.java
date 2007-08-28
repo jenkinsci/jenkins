@@ -163,7 +163,11 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
             listener.postBuild(session, rm, dispatcher);
         }
 
-        public void preExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException, AbortException {
+        public void endModule() throws InterruptedException, IOException {
+            fireLeaveModule();
+        }
+
+        public void preExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException {
             if(lastModule!=project) {
                 // module change
                 fireLeaveModule();
@@ -173,18 +177,19 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
             listener.preExecute(project, new MojoInfo(exec, mergedConfig, eval));
         }
 
-        public void postExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException, AbortException {
+        public void postExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException {
             listener.preExecute(project, new MojoInfo(exec, mergedConfig, eval));
         }
 
-        private void fireEnterModule(MavenProject project) throws InterruptedException, IOException, AbortException {
+        private void fireEnterModule(MavenProject project) throws InterruptedException, IOException {
             lastModule = project;
             listener.preModule(project);
         }
 
-        private void fireLeaveModule() throws InterruptedException, IOException, AbortException {
+        private void fireLeaveModule() throws InterruptedException, IOException {
             if(lastModule!=null) {
                 listener.postModule(lastModule);
+                lastModule = null;
             }
         }
     }
