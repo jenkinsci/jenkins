@@ -4,6 +4,7 @@ import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.reporters.MavenMailer;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
@@ -25,12 +26,12 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.ArrayList;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -298,10 +299,12 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
             modules.put(m.getModuleName(),m);
         }
 
+        AbstractProject dest = getParent().isAggregatorStyleBuild() ? getParent() : this;
+
         for (ModuleName d : dependencies) {
             MavenModule src = modules.get(d);
             if(src!=null)
-                graph.addDependency(src,this);
+                graph.addDependency(src,dest);
         }
     }
 
