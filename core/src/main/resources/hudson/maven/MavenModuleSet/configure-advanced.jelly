@@ -1,7 +1,0 @@
-<!--
-  configurations in the "advanced" tab.
--->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
-  <f:optionalBlock name="maven.perModuleBuild" title="Build modules in parallel" help="/help/maven/aggregator.html"
-    checked="${!it.aggregatorStyleBuild}" />
-</j:jelly>
