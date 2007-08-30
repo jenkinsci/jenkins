@@ -1,9 +1,9 @@
 package hudson.maven.reporters;
 
 import hudson.maven.MavenBuild;
-import hudson.maven.MavenBuilder;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
+import hudson.maven.MavenBuilder;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
@@ -19,6 +19,7 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
+import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +33,17 @@ public class SurefireArchiver extends MavenReporter {
     private transient Date started;
 
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
-        if (isSurefireTest(mojo))
+        if (isSurefireTest(mojo)) {
             started = new Date();
+
+            // tell surefire:test to keep going even if there was a failure,
+            // so that we can record this as yellow.
+            if(mojo.configuration.getChild("testFailureIgnore")==null) {
+                XmlPlexusConfiguration configuration = new XmlPlexusConfiguration("testFailureIgnore");
+                configuration.setValue("true");
+                mojo.configuration.addChild(configuration);
+            }
+        }
         return true;
     }
 
