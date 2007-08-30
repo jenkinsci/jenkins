@@ -283,12 +283,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         protected void abortIfNotStarted() {
             if(hasntStartedYet()) {
                 run(new Runner() {
-                    public Result run(BuildListener listener) throws Exception, RunnerAbortedException {
+                    public Result run(BuildListener listener) {
                         listener.getLogger().println("Build failed before it gets to this module");
                         return Result.ABORTED;
                     }
 
-                    public void post(BuildListener listener) throws Exception {
+                    public void post(BuildListener listener) {
                     }
                 });
             }
