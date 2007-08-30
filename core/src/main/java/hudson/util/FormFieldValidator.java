@@ -190,7 +190,7 @@ public abstract class FormFieldValidator {
             try {
                 FilePath ws = p.getWorkspace();
 
-                if(!ws.exists()) {// no workspace. can't check
+                if(ws==null || !ws.exists()) {// no workspace. can't check
                     ok();
                     return;
                 }
