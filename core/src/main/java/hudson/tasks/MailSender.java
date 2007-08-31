@@ -252,7 +252,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
             for (Entry change : build.getChangeSet()) {
                 User a = change.getAuthor();
                 if (users.add(a)) {
-                    String adrs = a.getProperty(Mailer.UserProperty.class).getAddress();
+                    String adrs = Util.fixEmpty(a.getProperty(Mailer.UserProperty.class).getAddress());
                     if(debug)
                         listener.getLogger().println("  User "+a.getId()+" -> "+adrs);
                     if (adrs != null)
