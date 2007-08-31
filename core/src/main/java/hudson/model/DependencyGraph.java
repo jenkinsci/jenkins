@@ -187,7 +187,8 @@ public final class DependencyGraph {
             set = new ArrayList<AbstractProject>();
             map.put(src,set);
         }
-        set.add(dst);
+        if(!set.contains(dst))
+            set.add(dst);
     }
 
     private Map<AbstractProject, List<AbstractProject>> finalize(Map<AbstractProject, List<AbstractProject>> m) {

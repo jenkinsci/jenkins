@@ -299,12 +299,18 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
             modules.put(m.getModuleName(),m);
         }
 
+        // if the build style is the aggregator build, define dependencies against project,
+        // not module.
         AbstractProject dest = getParent().isAggregatorStyleBuild() ? getParent() : this;
 
         for (ModuleName d : dependencies) {
             MavenModule src = modules.get(d);
-            if(src!=null)
-                graph.addDependency(src,dest);
+            if(src!=null) {
+                if(src.getParent().isAggregatorStyleBuild())
+                    graph.addDependency(src.getParent(),dest);
+                else
+                    graph.addDependency(src,dest);
+            }
         }
     }
 
