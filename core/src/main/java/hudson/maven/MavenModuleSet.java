@@ -4,6 +4,7 @@ import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.matrix.MatrixConfiguration;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
@@ -285,6 +286,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         updateNextBuildNumber();
 
         return super.assignBuildNumber();
+    }
+
+    public void logRotate() throws IOException {
+        super.logRotate();
+        // perform the log rotation of modules
+        for (MavenModule m : modules.values())
+            m.logRotate();
     }
 
     /**
