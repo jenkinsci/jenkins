@@ -38,11 +38,10 @@ public class SurefireArchiver extends MavenReporter {
 
             // tell surefire:test to keep going even if there was a failure,
             // so that we can record this as yellow.
-            if(mojo.configuration.getChild("testFailureIgnore")==null) {
-                XmlPlexusConfiguration configuration = new XmlPlexusConfiguration("testFailureIgnore");
-                configuration.setValue("true");
-                mojo.configuration.addChild(configuration);
-            }
+            // note that because of the way Maven works, just updating system property at this point is too late
+            XmlPlexusConfiguration c = (XmlPlexusConfiguration) mojo.configuration.getChild("testFailureIgnore");
+            if(c!=null && c.getValue().equals("${maven.test.failure.ignore}") && System.getProperty("maven.test.failure.ignore")==null)
+                c.setValue("true");
         }
         return true;
     }
