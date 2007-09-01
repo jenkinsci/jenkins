@@ -166,6 +166,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
     public void run() {
         run(new RunnerImpl());
+        getProject().updateTransientActions();
     }
 
     /**
@@ -202,7 +203,9 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         AggregatableAction aa = (AggregatableAction) a;
                         if(individuals.add(aa.getClass())) {
                             // new AggregatableAction
-                            actions.add(aa.createAggregatedAction(this,moduleBuilds));
+                            MavenAggregatedReport mar = aa.createAggregatedAction(this, moduleBuilds);
+                            mar.update(moduleBuilds,newBuild);
+                            actions.add(mar);
                             modified = true;
                         }
                     }
@@ -277,14 +280,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     m.updateNextBuildNumber(getNumber());
 
                 if(!project.isAggregatorStyleBuild()) {
-                    // start the build
+                    // start module builds
                     logger.println("Triggering "+project.getRootModule().getModuleName());
                     project.getRootModule().scheduleBuild();
                 } else {
+                    // do builds here
                     SplittableBuildListener slistener = new SplittableBuildListener(listener);
                     proxies = new HashMap<ModuleName, ProxyImpl2>();
                     for (MavenModule m : modules.values())
-                        proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(slistener));
+                        proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(MavenModuleSetBuild.this,slistener));
 
                     // run the complete build here
                     Map<String,String> envVars = getEnvVars();

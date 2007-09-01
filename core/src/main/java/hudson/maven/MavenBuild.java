@@ -240,8 +240,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         private final SplittableBuildListener listener;
         long startTime;
         private final OutputStream log;
+        private final MavenModuleSetBuild parentBuild;
 
-        ProxyImpl2(SplittableBuildListener listener) throws FileNotFoundException {
+        ProxyImpl2(MavenModuleSetBuild parentBuild,SplittableBuildListener listener) throws FileNotFoundException {
+            this.parentBuild = parentBuild;
             this.listener = listener;
             log = new BufferedOutputStream(new FileOutputStream(getLogFile()));
         }
@@ -261,6 +263,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 setResult(Result.SUCCESS);
             onEndBuilding();
             duration = System.currentTimeMillis()- startTime;
+            parentBuild.notifyModuleBuild(MavenBuild.this);
             try {
                 listener.setSideOutputStream(null);
                 save();
