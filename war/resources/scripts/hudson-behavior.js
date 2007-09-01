@@ -708,3 +708,77 @@ function createSearchBox(searchURL) {
     updatePos();
     box.onkeyup = updatePos;
 }
+
+
+//
+// structured form submission handling
+//   see http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
+function buildFormTree(form) {
+    // I initially tried to use an associative array with DOM elemnets as keys
+    // but that doesn't seem to work neither on IE nor Firefox.
+    // so I switch back to adding a dynamic property on DOM.
+    form.formDom = {}; // root object
+
+    var doms = []; // DOMs that we added 'formDom' for.
+    doms.push(form);
+
+    function addProperty(parent,name,value) {
+        if(parent[name]!=null) {
+            if(typeof parent[name]!="array")
+                parent[name] = [ parent[name] ];
+            parent[name].push(value);
+        } else {
+            parent[name] = value;
+        }
+    }
+
+    // find the grouping parent node, which will have @name.
+    // then return the corresponding object in the map
+    function findParent(e) {
+        while(e!=form) {
+            e = e.parentNode;
+            var name = e.getAttribute("name");
+            if(name!=null) {
+                var m = e.formDom;
+                if(m==null) {
+                    // this is a new grouping node
+                    doms.push(e);
+                    e.formDom = m = {};
+                    addProperty(findParent(e), name, m);
+                }
+                return m;
+            }
+        }
+
+        return form.formDom; // guaranteed non-null
+    }
+
+    for( var i=0; i<form.elements.length; i++ ) {
+        var e = form.elements[i];
+        var p;
+        switch(e.getAttribute("type").toLowerCase()) {
+        case "button":
+            break;
+        case "checkbox":
+            p = findParent(e);
+            addProperty(p, e.name, e.checked);
+            break;
+        case "radio":
+            if(!e.checked)  break;
+            // otherwise fall through
+        default:
+            p = findParent(e);
+            addProperty(p, e.name, e.value);
+            break;
+        }
+    }
+
+    alert(Object.toJSON(form.formDom));
+
+    // clean up
+    for( i=0; i<doms.length; i++ )
+        doms[i].formDom = null;
+    
+
+    return false;
+}
