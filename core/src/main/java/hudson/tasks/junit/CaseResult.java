@@ -26,10 +26,17 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     private /*final*/ int failedSince;
 
     CaseResult(SuiteResult parent, Element testCase) {
-        String cn = testCase.attributeValue("classname");
-        if(cn==null)
-            // Maven seems to skip classname, and that shows up in testSuite/@name
-            cn = parent.getName();
+        // schema for JUnit report XML format is not available in Ant,
+        // so I don't know for sure what means what.
+        // reports in http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
+        // indicates that maybe I shouldn't use @classname altogether.
+        
+        //String cn = testCase.attributeValue("classname");
+        //if(cn==null)
+        //    // Maven seems to skip classname, and that shows up in testSuite/@name
+        //    cn = parent.getName();
+
+        String cn = parent.getName();
         className = cn.replace('/','_');    // avoid unsafe chars
         testName = testCase.attributeValue("name").replace('/','_');
         errorStackTrace = getError(testCase);
