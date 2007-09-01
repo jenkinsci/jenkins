@@ -23,7 +23,7 @@
     description="
       If checked, Hudson will use 'svn update' whenever possible, making the build faster.
       But this causes the artifacts from the previous build to remain when a new build starts.">
-    <f:checkbox name="svn_use_update" checked="${scm.useUpdate}"/>
+    <f:checkbox name="svn_use_update" checked="${h.defaultToTrue(scm.useUpdate)}"/>
   </f:entry>
 
   <t:listScmBrowsers name="svn.browser" />  

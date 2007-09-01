@@ -608,4 +608,14 @@ public class Functions {
     public static String getResourcePath() {
         return Hudson.RESOURCE_PATH;
     }
+
+    /**
+     * Can be used to check a checkbox by default.
+     * Used from views like {@code h.defaultToTrue(scm.useUpdate)}.
+     * The expression will evaluate to true if scm is null.
+     */
+    public static boolean defaultToTrue(Boolean b) {
+        if(b==null) return true;
+        return b;
+    }
 }

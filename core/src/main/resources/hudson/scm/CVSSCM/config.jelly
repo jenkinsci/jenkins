@@ -16,7 +16,7 @@
 	  <f:textbox name="cvs.cvsRsh" value="${scm.cvsRsh}"/>
 	</f:entry>
 	<f:entry title="Use update" help="/help/_cvs/update.html">
-	  <f:checkbox name="cvs.canUseUpdate" checked="${scm.canUseUpdate}"/>
+	  <f:checkbox name="cvs.canUseUpdate" checked="${h.defaultToTrue(scm.canUseUpdate)}"/>
 	</f:entry>
 	<f:entry title="Legacy mode" help="/help/_cvs/legacy.html">
 	  <f:checkbox name="cvs.legacy" checked="${scm!=null and !scm.flatten}"/>
