@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.UnsupportedCharsetException;
+import java.nio.charset.CodingErrorAction;
 
 /**
  * {@link OutputStream} that writes to {@link Writer}
@@ -26,6 +27,8 @@ public class WriterOutputStream extends OutputStream {
     public WriterOutputStream(Writer out) {
         this.writer = out;
         decoder = DEFAULT_CHARSET.newDecoder();
+        decoder.onMalformedInput(CodingErrorAction.REPLACE);
+        decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
     }
 
     public void write(int b) throws IOException {
