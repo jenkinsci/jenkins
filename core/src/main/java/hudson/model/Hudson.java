@@ -1617,7 +1617,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         String qs = req.getQueryString();
         if(!ICON_SIZE.matcher(qs).matches())
             throw new ServletException();
-        rsp.addCookie(new Cookie("iconSize", qs));
+        Cookie cookie = new Cookie("iconSize", qs);
+        cookie.setMaxAge(/* ~4 mo. */9999999); // #762
+        rsp.addCookie(cookie);
         String ref = req.getHeader("Referer");
         if(ref==null)   ref=".";
         rsp.sendRedirect2(ref);
