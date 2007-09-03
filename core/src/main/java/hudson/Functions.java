@@ -408,6 +408,10 @@ public class Functions {
      * Infers the hudson installation URL from the given request.
      */
     public static String inferHudsonURL(StaplerRequest req) {
+        String rootUrl = Hudson.getInstance().getRootUrl();
+        if(rootUrl !=null)
+            // prefer the one explicitly configured, to work with load-balancer, frontend, etc.
+            return rootUrl;
         StringBuilder buf = new StringBuilder();
         buf.append(req.getScheme()).append("://");
         buf.append(req.getServerName());
