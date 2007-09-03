@@ -23,19 +23,14 @@ import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 
 /**
  * Records the surefire test result.
  * @author Kohsuke Kawaguchi
  */
 public class SurefireArchiver extends MavenReporter {
-    private transient Date started;
-
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
         if (isSurefireTest(mojo)) {
-            started = new Date();
-
             // tell surefire:test to keep going even if there was a failure,
             // so that we can record this as yellow.
             // note that because of the way Maven works, just updating system property at this point is too late
@@ -74,7 +69,7 @@ public class SurefireArchiver extends MavenReporter {
                 // no test in this module
                 return true;
 
-            final TestResult tr = new TestResult(started.getTime() - 1000/*error margin*/, ds);
+            final TestResult tr = new TestResult(build.getTimestamp().getTimeInMillis() - 1000/*error margin*/, ds);
 
             int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                 public Integer call(MavenBuild build) throws IOException, InterruptedException {

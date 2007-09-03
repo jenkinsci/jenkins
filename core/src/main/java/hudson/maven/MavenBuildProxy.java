@@ -3,8 +3,9 @@ package hudson.maven;
 import hudson.FilePath;
 import hudson.model.Result;
 
-import java.io.Serializable;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -54,6 +55,11 @@ public interface MavenBuildProxy {
      * @see MavenBuild#setResult(Result)
      */
     void setResult(Result result);
+
+    /**
+     * @see MavenBuild#getTimestamp()
+     */
+    Calendar getTimestamp();
 
     /**
      * Nominates that the reporter will contribute a project action

@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Date;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -221,6 +222,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
         public void setResult(Result result) {
             MavenBuild.this.setResult(result);
+        }
+
+        public Calendar getTimestamp() {
+            return MavenBuild.this.getTimestamp();
         }
 
         public void registerAsProjectAction(MavenReporter reporter) {
