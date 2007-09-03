@@ -29,6 +29,8 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class SurefireArchiver extends MavenReporter {
+    private TestResult result;
+
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
         if (isSurefireTest(mojo)) {
             // tell surefire:test to keep going even if there was a failure,
@@ -69,15 +71,22 @@ public class SurefireArchiver extends MavenReporter {
                 // no test in this module
                 return true;
 
-            final TestResult tr = new TestResult(build.getTimestamp().getTimeInMillis() - 1000/*error margin*/, ds);
+            if(result==null)
+                result = new TestResult(build.getTimestamp().getTimeInMillis() - 1000/*error margin*/, ds);
+            else
+                result.parse(build.getTimestamp().getTimeInMillis() - 1000/*error margin*/, ds);
 
             int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                 public Integer call(MavenBuild build) throws IOException, InterruptedException {
-                    build.getActions().add(new SurefireReport(build, tr, listener));
-                    if(tr.getFailCount()>0)
+                    SurefireReport sr = build.getAction(SurefireReport.class);
+                    if(sr==null)
+                        build.getActions().add(new SurefireReport(build, result, listener));
+                    else
+                        sr.setResult(result,listener);
+                    if(result.getFailCount()>0)
                         build.setResult(Result.UNSTABLE);
                     build.registerAsProjectAction(SurefireArchiver.this);
-                    return tr.getFailCount();
+                    return result.getFailCount();
                 }
             });
 
