@@ -17,56 +17,55 @@ var iota = 0;
 // Form check code
 //========================================================
 var FormChecker = {
-  // pending requests
-  queue : [],
+    // pending requests
+    queue : [],
 
-  inProgress : false,
+    inProgress : false,
 
-  delayedCheck : function(url,method,target) {
-    this.queue.push({url:url, method:method, target:target});
-    this.schedule();
-  },
+    delayedCheck : function(url, method, target) {
+        this.queue.push({url:url, method:method, target:target});
+        this.schedule();
+    },
 
-  sendRequest : function(url,params) {
-    if(params.method=="post") {
-      var idx = url.indexOf('?');
-      params.parameters = url.substring(idx+1);
-      url = url.substring(0,idx);
-    }
-    new Ajax.Request(url,params);
-  },
-
-  schedule : function() {
-    if(this.inProgress)  return;
-    if(this.queue.length==0) return;
-
-    var next = this.queue.shift();
-    this.inProgress = true;
-
-    this.sendRequest(next.url, {
-        method : next.method,
-        onComplete : function(x) {
-          next.target.innerHTML = x.responseText;
-          FormChecker.inProgress = false;
-          FormChecker.schedule();
+    sendRequest : function(url, params) {
+        if (params.method == "post") {
+            var idx = url.indexOf('?');
+            params.parameters = url.substring(idx + 1);
+            url = url.substring(0, idx);
         }
-      }
-    );
-  }
+        new Ajax.Request(url, params);
+    },
+
+    schedule : function() {
+        if (this.inProgress)  return;
+        if (this.queue.length == 0) return;
+
+        var next = this.queue.shift();
+        this.inProgress = true;
+
+        this.sendRequest(next.url, {
+            method : next.method,
+            onComplete : function(x) {
+                next.target.innerHTML = x.responseText;
+                FormChecker.inProgress = false;
+                FormChecker.schedule();
+            }
+        });
+    }
 }
 
-function findFollowingTR(input,className) {
-  // identify the parent TR
-  var tr = input;
-  while(tr.tagName!="TR")
-    tr = tr.parentNode;
+function findFollowingTR(input, className) {
+    // identify the parent TR
+    var tr = input;
+    while (tr.tagName != "TR")
+        tr = tr.parentNode;
 
-  // then next TR that matches the CSS
-  do {
-    tr = tr.nextSibling;
-  } while(tr.tagName!="TR" || tr.className!=className);
+    // then next TR that matches the CSS
+    do {
+        tr = tr.nextSibling;
+    } while (tr.tagName != "TR" || tr.className != className);
 
-  return tr;
+    return tr;
 }
 
 // shared tooltip object
@@ -78,130 +77,130 @@ var tooltip;
 //========================================================
 // using tag names in CSS selector makes the processing faster
 function registerValidator(e) {
-    e.targetElement = findFollowingTR(e,"validation-error-area").firstChild.nextSibling;
-    e.targetUrl = function() {return eval(this.getAttribute("checkUrl"));};
+    e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
+    e.targetUrl = function() {
+        return eval(this.getAttribute("checkUrl"));
+    };
     var method = e.getAttribute("checkMethod");
-    if(!method) method="get";
+    if (!method) method = "get";
 
     FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
 
     e.onchange = function() {
-      var target = this.targetElement;
-      FormChecker.sendRequest(this.targetUrl(), {
-          method : method,
-          onComplete : function(x) {target.innerHTML = x.responseText;}
-        }
-      );
+        var target = this.targetElement;
+        FormChecker.sendRequest(this.targetUrl(), {
+            method : method,
+            onComplete : function(x) {
+                target.innerHTML = x.responseText;
+            }
+        });
     }
     e = null; // avoid memory leak
-  }
+}
 
 var hudsonRules = {
-  "BODY" : function() {
-      tooltip = new YAHOO.widget.Tooltip("tt",{context:[]});
-  },
+    "BODY" : function() {
+        tooltip = new YAHOO.widget.Tooltip("tt", {context:[]});
+    },
 
-  "INPUT.advancedButton" : function(e) {
-    e.onclick = function() {
-      var link = this.parentNode;
-      link.style.display = "none"; // hide the button
+    "INPUT.advancedButton" : function(e) {
+        e.onclick = function() {
+            var link = this.parentNode;
+            link.style.display = "none"; // hide the button
 
-      var container = link.nextSibling.firstChild; // TABLE -> TBODY
+            var container = link.nextSibling.firstChild; // TABLE -> TBODY
 
-      var tr = link;
-      while(tr.tagName!="TR")
-        tr = tr.parentNode;
+            var tr = link;
+            while (tr.tagName != "TR")
+                tr = tr.parentNode;
 
-      // move the contents of the advanced portion into the main table
-      while(container.lastChild!=null) {
-        tr.parentNode.insertBefore(container.lastChild,tr.nextSibling);
-      }
-    }
-    e = null; // avoid memory leak
-  },
+            // move the contents of the advanced portion into the main table
+            while (container.lastChild != null)
+                tr.parentNode.insertBefore(container.lastChild, tr.nextSibling);
+        }
+        e = null; // avoid memory leak
+    },
 
-  // scripting for having default value in the input field
-  "INPUT.has-default-text" : function(e) {
-    var defaultValue = e.value;
-    Element.addClassName(e,"defaulted");
-    e.onfocus = function() {
-      if(this.value==defaultValue) {
-        this.value="";
-        Element.removeClassName(e,"defaulted");
-      }
-    }
-    e.onblur = function() {
-      if(this.value=="") {
-        this.value=defaultValue;
-        Element.addClassName(e,"defaulted");
-      }
-    }
-    e = null; // avoid memory leak
-  },
+// scripting for having default value in the input field
+    "INPUT.has-default-text" : function(e) {
+        var defaultValue = e.value;
+        Element.addClassName(e, "defaulted");
+        e.onfocus = function() {
+            if (this.value == defaultValue) {
+                this.value = "";
+                Element.removeClassName(e, "defaulted");
+            }
+        }
+        e.onblur = function() {
+            if (this.value == "") {
+                this.value = defaultValue;
+                Element.addClassName(e, "defaulted");
+            }
+        }
+        e = null; // avoid memory leak
+    },
 
-  // form fields that are validated via AJAX call to the server
-  // elements with this class should have two attributes 'checkUrl' that evaluates to the server URL.
-  "INPUT.validated" : registerValidator,
-  "SELECT.validated" : registerValidator,
-  "TEXTAREA.validated" : registerValidator,
+// form fields that are validated via AJAX call to the server
+// elements with this class should have two attributes 'checkUrl' that evaluates to the server URL.
+    "INPUT.validated" : registerValidator,
+    "SELECT.validated" : registerValidator,
+    "TEXTAREA.validated" : registerValidator,
 
-  // validate form values to be a number
-  "INPUT.number" : function(e) {
-    e.targetElement = findFollowingTR(e,"validation-error-area").firstChild.nextSibling;
-    e.onchange = function() {
-      if(this.value.match(/^(\d+|)$/)) {
-        this.targetElement.innerHTML="";
-      } else {
-        this.targetElement.innerHTML="<div class=error>Not a number</div>";
-      }
-    }
-    e = null; // avoid memory leak
-  },
+// validate form values to be a number
+    "INPUT.number" : function(e) {
+        e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
+        e.onchange = function() {
+            if (this.value.match(/^(\d+|)$/)) {
+                this.targetElement.innerHTML = "";
+            } else {
+                this.targetElement.innerHTML = "<div class=error>Not a number</div>";
+            }
+        }
+        e = null; // avoid memory leak
+    },
 
-  "A.help-button" : function(e) {
-    e.onclick = function() {
-      var tr = findFollowingTR(this,"help-area");
-      var div = tr.firstChild.nextSibling.firstChild;
+    "A.help-button" : function(e) {
+        e.onclick = function() {
+            var tr = findFollowingTR(this, "help-area");
+            var div = tr.firstChild.nextSibling.firstChild;
 
-      if(div.style.display!="block") {
-        div.style.display="block";
+            if (div.style.display != "block") {
+                div.style.display = "block";
         // make it visible
+                new Ajax.Request(
+                        this.getAttribute("helpURL"),
+                    {
+                        method : 'get',
+                        onComplete : function(x) {
+                            div.innerHTML = x.responseText;
+                        }
+                    });
+            } else {
+                div.style.display = "none";
+            }
+
+            return false;
+        }
+        e = null; // avoid memory leak
+    },
+
+// deferred client-side clickable map.
+// this is useful where the generation of <map> element is time consuming
+    "IMG[lazymap]" : function(e) {
         new Ajax.Request(
-            this.getAttribute("helpURL"),
+            e.getAttribute("lazymap"),
             {
-              method : 'get',
-              onComplete : function(x) {
-                div.innerHTML = x.responseText;
-              }
-            }
-        );
-      } else {
-        div.style.display = "none";
-      }
-
-      return false;
-    }
-    e = null; // avoid memory leak
-  },
-
-  // deferred client-side clickable map.
-  // this is useful where the generation of <map> element is time consuming
-  "IMG[lazymap]" : function(e) {
-      new Ajax.Request(
-          e.getAttribute("lazymap"),
-          {
-            method : 'get',
-            onComplete : function(x) {
-              var div = document.createElement("div");
-              document.body.appendChild(div);
-              div.innerHTML = x.responseText;
-              var id = "map"+(iota++);
-              div.firstChild.setAttribute("name",id);
-              e.setAttribute("usemap","#"+id);
-            }
-          }
-      );
-  },
+                method : 'get',
+                onComplete : function(x) {
+                    var div = document.createElement("div");
+                    document.body.appendChild(div);
+                    div.innerHTML = x.responseText;
+                    var id = "map" + (iota++);
+                    div.firstChild.setAttribute("name", id);
+                    e.setAttribute("usemap", "#" + id);
+                }
+            });
+    },
 
 
     // button to add a new repeatable block
@@ -222,10 +221,10 @@ var hudsonRules = {
     "DIV.repeated-container" : function(e) {
         // compute the insertion point
         var ip = e.lastChild;
-        while(!Element.hasClassName(ip,"repeatable-insertion-point"))
+        while (!Element.hasClassName(ip, "repeatable-insertion-point"))
             ip = ip.previousSibling;
         // set up the logic
-        object(repetableSupport).init( e, e.firstChild, ip);
+        object(repetableSupport).init(e, e.firstChild, ip);
     },
 
     // hook up tooltip
@@ -797,10 +796,12 @@ function buildFormTree(form) {
 
 // this used to be in prototype.js but it must have been removed somewhere between 1.4.0 to 1.5.1
 String.prototype.trim = function() {
-  var temp = this;
-  var obj = /^(\s*)([\W\w]*)(\b\s*$)/;
-  if (obj.test(temp)) { temp = temp.replace(obj, '$2'); }
-  obj = /  /g;
-  while (temp.match(obj)) { temp = temp.replace(obj, " "); }
-  return temp;
+    var temp = this;
+    var obj = /^(\s*)([\W\w]*)(\b\s*$)/;
+    if (obj.test(temp))
+        temp = temp.replace(obj, '$2');
+    obj = /  /g;
+    while (temp.match(obj))
+        temp = temp.replace(obj, " ");
+    return temp;
 }
