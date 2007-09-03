@@ -42,12 +42,6 @@ The script guesses the table data, and try to use the right sorting algorithm.
 But you can override this behavior by having 'data="..."' attribute on each row,
 in which case the sort will be done on that field.
 */
-addEvent(window, "load", sortables_init);
-
-function sortables_init() {
-  document.getElementsByClassName("sortable")._each(ts_makeSortable)
-}
-
 function ts_makeSortable(table) {
     var firstRow;
     if (table.rows && table.rows.length > 0) {
@@ -225,21 +219,4 @@ function ts_sort_default(a,b) {
     if (a==b) return 0;
     if (a<b) return -1;
     return 1;
-}
-
-
-function addEvent(elm, evType, fn, useCapture)
-// addEvent and removeEvent
-// cross-browser event handling for IE5+,  NS6 and Mozilla
-// By Scott Andrew
-{
-  if (elm.addEventListener){
-    elm.addEventListener(evType, fn, useCapture);
-    return true;
-  } else if (elm.attachEvent){
-    var r = elm.attachEvent("on"+evType, fn);
-    return r;
-  } else {
-    alert("Handler could not be removed");
-  }
 }

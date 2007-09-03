@@ -103,6 +103,10 @@ var hudsonRules = {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[]});
     },
 
+    "TABLE.sortable" : function(e) {// sortable table
+        ts_makeSortable(e);
+    },
+
     "INPUT.advancedButton" : function(e) {
         e.onclick = function() {
             var link = this.parentNode;
