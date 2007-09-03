@@ -210,9 +210,9 @@
       <version>2.0.4</version>
     </dependency>
     <dependency>
-      <groupId>org.tmatesoft</groupId>
+      <groupId>org.jvnet.hudson.svnkit</groupId>
       <artifactId>svnkit</artifactId>
-      <version>1.1.2-hudson-3</version>
+      <version>1.1.4-hudson-1</version>
     </dependency>
     <dependency>
       <groupId>${groupId}</groupId>
