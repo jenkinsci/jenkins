@@ -132,13 +132,13 @@ var hudsonRules = {
         e.onfocus = function() {
             if (this.value == defaultValue) {
                 this.value = "";
-                Element.removeClassName(e, "defaulted");
+                Element.removeClassName(this, "defaulted");
             }
         }
         e.onblur = function() {
             if (this.value == "") {
                 this.value = defaultValue;
-                Element.addClassName(e, "defaulted");
+                Element.addClassName(this, "defaulted");
             }
         }
         e = null; // avoid memory leak
