@@ -70,7 +70,7 @@ var tooltip;
 
 // Behavior rules
 //========================================================
-
+// using tag names in CSS selector makes the processing faster
 function registerValidator(e) {
     e.targetElement = findFollowingTR(e,"validation-error-area").firstChild.nextSibling;
     e.targetUrl = function() {return eval(this.getAttribute("checkUrl"));};
