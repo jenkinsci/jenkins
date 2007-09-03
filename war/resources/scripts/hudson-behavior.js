@@ -1,3 +1,9 @@
+//
+// JavaScript for Hudson
+//     See http://www.ibm.com/developerworks/web/library/wa-memleak/?ca=dgr-lnxw97JavascriptLeaks
+//     for memory leak patterns and how to prevent them.
+//
+
 // create a new object whose prototype is the given object
 function object(o) {
     function F() {}
@@ -80,12 +86,14 @@ function registerValidator(e) {
     FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
 
     e.onchange = function() {
+      var target = this.targetElement;
       FormChecker.sendRequest(this.targetUrl(), {
           method : method,
-          onComplete : function(x) {e.targetElement.innerHTML = x.responseText;}
+          onComplete : function(x) {target.innerHTML = x.responseText;}
         }
       );
     }
+    e = null; // avoid memory leak
   }
 
 var hudsonRules = {
@@ -109,6 +117,7 @@ var hudsonRules = {
         tr.parentNode.insertBefore(container.lastChild,tr.nextSibling);
       }
     }
+    e = null; // avoid memory leak
   },
 
   // scripting for having default value in the input field
@@ -116,26 +125,18 @@ var hudsonRules = {
     var defaultValue = e.value;
     Element.addClassName(e,"defaulted");
     e.onfocus = function() {
-      if(e.value==defaultValue) {
-        e.value="";
+      if(this.value==defaultValue) {
+        this.value="";
         Element.removeClassName(e,"defaulted");
       }
     }
     e.onblur = function() {
-      if(e.value=="") {
-        e.value=defaultValue;
+      if(this.value=="") {
+        this.value=defaultValue;
         Element.addClassName(e,"defaulted");
       }
     }
-  },
-
-  ".pseudoLink" : function(e) {
-    e.onmouseover = function() {
-      this.style.textDecoration="underline";
-    }
-    e.onmouseout = function() {
-      this.style.textDecoration="none";
-    }
+    e = null; // avoid memory leak
   },
 
   // form fields that are validated via AJAX call to the server
@@ -154,12 +155,13 @@ var hudsonRules = {
         this.targetElement.innerHTML="<div class=error>Not a number</div>";
       }
     }
+    e = null; // avoid memory leak
   },
 
   "A.help-button" : function(e) {
     e.onclick = function() {
-      tr = findFollowingTR(this,"help-area");
-      div = tr.firstChild.nextSibling.firstChild;
+      var tr = findFollowingTR(this,"help-area");
+      var div = tr.firstChild.nextSibling.firstChild;
 
       if(div.style.display!="block") {
         div.style.display="block";
@@ -179,6 +181,7 @@ var hudsonRules = {
 
       return false;
     }
+    e = null; // avoid memory leak
   },
 
   // deferred client-side clickable map.
@@ -206,12 +209,14 @@ var hudsonRules = {
         e.onclick = function() {
             repetableSupport.onAdd(this);
         };
+        e = null; // avoid memory leak
     },
 
     "INPUT.repeatable-delete" : function(e) {
         e.onclick = function() {
             repetableSupport.onDelete(this);
         };
+        e = null; // avoid memory leak
     },
 
     "DIV.repeated-container" : function(e) {
