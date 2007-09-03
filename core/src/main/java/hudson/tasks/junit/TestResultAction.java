@@ -36,7 +36,13 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
 
     public TestResultAction(AbstractBuild owner, TestResult result, BuildListener listener) {
         super(owner);
+        setResult(result, listener);
+    }
 
+    /**
+     * Overwrites the {@link TestResult} by a new data set.
+     */
+    public void setResult(TestResult result, BuildListener listener) {
         result.freeze(this);
 
         totalCount = result.getTotalCount();
