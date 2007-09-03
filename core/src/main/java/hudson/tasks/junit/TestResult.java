@@ -60,9 +60,17 @@ public final class TestResult extends MetaTabulatedResult {
 
     /**
      * Collect reports from the given {@link DirectoryScanner}, while
-     * filtering out all files that were created before the given tiem.
+     * filtering out all files that were created before the given time.
      */
     public TestResult(long buildTime, DirectoryScanner results) throws IOException {
+        parse(buildTime, results);
+    }
+
+    /**
+     * Collect reports from the given {@link DirectoryScanner}, while
+     * filtering out all files that were created before the given time.
+     */
+    public void parse(long buildTime, DirectoryScanner results) throws IOException {
         String[] includedFiles = results.getIncludedFiles();
         File baseDir = results.getBasedir();
 
