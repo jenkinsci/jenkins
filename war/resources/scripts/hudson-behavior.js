@@ -782,3 +782,13 @@ function buildFormTree(form) {
 
     return false;
 }
+
+// this used to be in prototype.js but it must have been removed somewhere between 1.4.0 to 1.5.1
+String.prototype.trim = function() {
+  var temp = this;
+  var obj = /^(\s*)([\W\w]*)(\b\s*$)/;
+  if (obj.test(temp)) { temp = temp.replace(obj, '$2'); }
+  obj = /  /g;
+  while (temp.match(obj)) { temp = temp.replace(obj, " "); }
+  return temp;
+}
