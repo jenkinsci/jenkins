@@ -22,7 +22,8 @@
       <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
       <j:set var="resURL"  value="${rootURL}${h.resourcePath}" />
       <j:set var="imagesURL"  value="${rootURL}${h.resourcePath}/images" />
-
+      <j:set var="ajax" value="true"/>
+      
       <d:invokeBody/>
     </j:otherwise>
   </j:choose>

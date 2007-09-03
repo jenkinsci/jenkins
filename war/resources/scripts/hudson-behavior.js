@@ -383,10 +383,13 @@ function refreshPart(id,url) {
 
                 var node = div.firstChild;
                 p.insertBefore(node, next);
+
                 Behaviour.applySubtree(node);
+
+                refreshPart(id,url);
             }
         });
-    }, 5000);
+    }, 500);
 }
 
 

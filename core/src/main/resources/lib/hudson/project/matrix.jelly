@@ -57,7 +57,7 @@
         </table>
       </j:otherwise>
     </j:choose>
-    <j:if test="${attrs.autoRefresh and !h.isAutoRefresh(request)}">
+    <j:if test="${ajax==null and attrs.autoRefresh and !h.isAutoRefresh(request)}">
       <script defer="defer">
         refreshPart('matrix',"./ajaxMatrix");
       </script>

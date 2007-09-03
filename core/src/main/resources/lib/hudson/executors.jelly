@@ -65,7 +65,8 @@
 	      </tr>
 	    </j:forEach>
 	  </j:forEach>
-    <j:if test="${!h.isAutoRefresh(request)}">
+    <!-- schedule updates only for the full page reload -->
+    <j:if test="${ajax==null and !h.isAutoRefresh(request)}">
       <script defer="defer">
         refreshPart('executors',"./ajaxExecutors");
       </script>
