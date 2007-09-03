@@ -86,7 +86,7 @@ function registerValidator(e) {
 
     FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
 
-    e.onchange = function() {
+    e.onchange = e.onblur = function() {
         var target = this.targetElement;
         FormChecker.sendRequest(this.targetUrl(), {
             method : method,
