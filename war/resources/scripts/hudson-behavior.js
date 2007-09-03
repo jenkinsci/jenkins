@@ -71,12 +71,29 @@ var tooltip;
 // Behavior rules
 //========================================================
 
+function registerValidator(e) {
+    e.targetElement = findFollowingTR(e,"validation-error-area").firstChild.nextSibling;
+    e.targetUrl = function() {return eval(this.getAttribute("checkUrl"));};
+    var method = e.getAttribute("checkMethod");
+    if(!method) method="get";
+
+    FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
+
+    e.onchange = function() {
+      FormChecker.sendRequest(this.targetUrl(), {
+          method : method,
+          onComplete : function(x) {e.targetElement.innerHTML = x.responseText;}
+        }
+      );
+    }
+  }
+
 var hudsonRules = {
-  "BODY" : function(e) {
+  "BODY" : function() {
       tooltip = new YAHOO.widget.Tooltip("tt",{context:[]});
   },
 
-  ".advancedButton" : function(e) {
+  "INPUT.advancedButton" : function(e) {
     e.onclick = function() {
       var link = this.parentNode;
       link.style.display = "none"; // hide the button
@@ -123,25 +140,12 @@ var hudsonRules = {
 
   // form fields that are validated via AJAX call to the server
   // elements with this class should have two attributes 'checkUrl' that evaluates to the server URL.
-  ".validated" : function(e) {
-    e.targetElement = findFollowingTR(e,"validation-error-area").firstChild.nextSibling;
-    e.targetUrl = function() {return eval(this.getAttribute("checkUrl"));};
-    var method = e.getAttribute("checkMethod");
-    if(!method) method="get";
-
-    FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
-
-    e.onchange = function() {
-      FormChecker.sendRequest(this.targetUrl(), {
-          method : method,
-          onComplete : function(x) {e.targetElement.innerHTML = x.responseText;}
-        }
-      );
-    }
-  },
+  "INPUT.validated" : registerValidator,
+  "SELECT.validated" : registerValidator,
+  "TEXTAREA.validated" : registerValidator,
 
   // validate form values to be a number
-  "input.number" : function(e) {
+  "INPUT.number" : function(e) {
     e.targetElement = findFollowingTR(e,"validation-error-area").firstChild.nextSibling;
     e.onchange = function() {
       if(this.value.match(/^(\d+|)$/)) {
@@ -152,7 +156,7 @@ var hudsonRules = {
     }
   },
 
-  ".help-button" : function(e) {
+  "A.help-button" : function(e) {
     e.onclick = function() {
       tr = findFollowingTR(this,"help-area");
       div = tr.firstChild.nextSibling.firstChild;
@@ -609,7 +613,7 @@ function updateBuildHistory(nBuild) {
         var bh = $('buildHistory');
         new Ajax.Request("./ajaxBuildHistoryUpdate", {
             requestHeaders: bh.headers,
-            onSuccess: function(rsp, _) {
+            onSuccess: function(rsp) {
                 var rows = bh.rows;
 
                 //delete rows with transitive data
@@ -641,7 +645,7 @@ function updateBuildHistory(nBuild) {
 function updateListBox(listBox,url) {
     new Ajax.Request(url, {
         method: "post",
-        onSuccess: function(rsp,_) {
+        onSuccess: function(rsp) {
             var l = $(listBox);
             while(l.length>0)   l.options[0] = null;
 
