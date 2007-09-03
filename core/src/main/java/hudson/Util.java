@@ -115,11 +115,8 @@ public class Util {
         File[] files = file.listFiles();
         if(files==null)
             return;     // the directory didn't exist in the first place
-        for (File child : files) {
-            if (child.isDirectory())
-                deleteContentsRecursive(child);
-            deleteFile(child);
-        }
+        for (File child : files)
+            deleteRecursive(child);
     }
 
     private static void deleteFile(File f) throws IOException {
