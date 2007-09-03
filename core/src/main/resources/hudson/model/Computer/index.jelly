@@ -38,7 +38,8 @@
                   </a>
                 </p>
                 <p>
-                  (Click the above link from this slave computer to launch the slave agent via JNLP)
+                  (Click the above link from this slave computer to launch the slave agent via JNLP,
+                  or from command-line run <nowrap><tt>javaws ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</tt></nowrap>)
                 </p>
               </l:isAdmin>
             </j:when>
