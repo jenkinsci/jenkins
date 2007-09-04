@@ -1111,7 +1111,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
             {
                 String v = req.getParameter("slaveAgentPortType");
-                if(v==null || v.equals("random"))
+                if(!useSecurity || v==null || v.equals("random"))
                     slaveAgentPort = 0;
                 else
                 if(v.equals("disable"))
