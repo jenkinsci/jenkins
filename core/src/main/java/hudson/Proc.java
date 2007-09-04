@@ -54,6 +54,7 @@ public abstract class Proc {
     public static final class LocalProc extends Proc {
         private final Process proc;
         private final Thread t1,t2;
+        private final OutputStream out;
 
         public LocalProc(String cmd, Map<String,String> env, OutputStream out, File workDir) throws IOException {
             this(cmd,Util.mapToEnv(env),out,workDir);
@@ -81,6 +82,7 @@ public abstract class Proc {
 
         private LocalProc( String name, Process proc, InputStream in, OutputStream out ) throws IOException {
             Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
+            this.out = out;
             this.proc = proc;
             t1 = new StreamCopyThread(name+": stdout copier", proc.getInputStream(), out);
             t1.start();
@@ -96,11 +98,26 @@ public abstract class Proc {
          * Waits for the completion of the process.
          */
         @Override
-        public int join() throws InterruptedException {
+        public int join() throws InterruptedException, IOException {
             try {
-                t1.join();
-                t2.join();
-                return proc.waitFor();
+                int r = proc.waitFor();
+                // see http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build
+                // problems like that shows up as inifinite wait in join(), which confuses great many users.
+                // So let's do a timed wait here and try to diagnose the problem
+                t1.join(10*1000);
+                t2.join(10*1000);
+                if(t1.isAlive() || t2.isAlive()) {
+                    // looks like handles are leaking.
+                    // closing these handles should terminate the threads.
+                    String msg = "Process leaked file descriptors. See http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build for more information";
+                    Throwable e = new Exception().fillInStackTrace();
+                    LOGGER.log(Level.WARNING,msg,e);
+                    proc.getInputStream().close();
+                    proc.getErrorStream().close();
+                    out.write(msg.getBytes());
+                    out.write('\n');
+                }
+                return r;
             } catch (InterruptedException e) {
                 // aborting. kill the process
                 proc.destroy();
@@ -109,7 +126,7 @@ public abstract class Proc {
         }
 
         @Override
-        public void kill() throws InterruptedException {
+        public void kill() throws InterruptedException, IOException {
             proc.destroy();
             join();
         }
@@ -180,4 +197,6 @@ public abstract class Proc {
             }
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(Proc.class.getName());
 }
