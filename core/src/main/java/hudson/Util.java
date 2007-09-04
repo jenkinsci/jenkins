@@ -341,24 +341,31 @@ public class Util {
         return toHexString(bytes,0,bytes.length);
     }
 
+    private static String twoDigits(long l) {
+        if(l<100)
+            return (l/10)+"."+(l%10);
+        l/=10;
+        return Long.toString(l);
+    }
+
     public static String getTimeSpanString(long duration) {
-        duration /= 1000;
-        if(duration<60)
-            return combine(duration,"second");
+        duration /= 100;
+        if(duration<600)
+            return twoDigits(duration)+" seconds";
         duration /= 60;
-        if(duration<60)
-            return combine(duration,"minute");
+        if(duration<600)
+            return twoDigits(duration)+" minutes";
         duration /= 60;
-        if(duration<24)
-            return combine(duration,"hour");
+        if(duration<240)
+            return twoDigits(duration)+" hours";
         duration /= 24;
-        if(duration<30)
-            return combine(duration,"day");
+        if(duration<300)
+            return twoDigits(duration)+" days";
         duration /= 30;
-        if(duration<12)
-            return combine(duration,"month");
+        if(duration<120)
+            return twoDigits(duration)+" months";
         duration /= 12;
-        return combine(duration,"year");
+        return twoDigits(duration)+" years";
     }
 
     /**
