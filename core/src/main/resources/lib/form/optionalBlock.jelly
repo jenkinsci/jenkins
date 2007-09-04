@@ -35,7 +35,7 @@
   <!-- end marker -->
   <tr id="oe_e${oe_id}" style="display:none">
     <script>
-      updateOptionalBlock('oe_s${oe_id}','oe_e${oe_id}','oe_c${oe_id}');
+      initOptionalBlock('oe_s${oe_id}','oe_e${oe_id}','oe_c${oe_id}');
     </script>
   </tr>
 </j:jelly>

@@ -37,6 +37,7 @@
         <st:include page="configure-entries.jelly" />
 
         <f:block>
+          <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
           <input type="submit" name="Submit" value="Save" />
         </f:block>
       </f:form>

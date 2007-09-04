@@ -262,6 +262,17 @@ function replaceDescription() {
     return false;
 }
 
+function applyNameRef(s,e,id) {
+    $(id).groupingNode = true;
+    // s contains the node itself
+    for(var x=s.nextSibling; x!=e; x=x.nextSibling)
+        x.setAttribute("nameRef",id);
+}
+
+function initOptionalBlock(sid, eid, cid) {
+    applyNameRef($(sid),$(eid),cid);
+    updateOptionalBlock(sid,eid,cid);
+}
 
 // used by optionalBlock.jelly to update the form status
 //   @param sid     ID of the start marker
@@ -560,27 +571,27 @@ function addRadioBlock(id) {
         },
 
         // update one block based on the status of the given radio button
-        updateSingleButton : function(radio,blockStart,blockEnd) {
+        updateSingleButton : function(radio, blockStart, blockEnd) {
             var tbl = blockStart.parentNode;
             var i = false;
             var o = false;
             var show = radio.checked;
 
-            for( var j=0; tbl.rows[j]; j++ ) {
-              var n = tbl.rows[j];
+            for (var j = 0; tbl.rows[j]; j++) {
+                var n = tbl.rows[j];
 
-              if(n==blockEnd)
-                o = true;
+                if (n == blockEnd)
+                    o = true;
 
-              if( i && !o ) {
-                if( show )
-                  n.style.display = "";
-                else
-                  n.style.display = "none";
-              }
+                if (i && !o) {
+                    if (show)
+                        n.style.display = "";
+                    else
+                        n.style.display = "none";
+                }
 
-              if(n==blockStart)
-                i = true;
+                if (n == blockStart)
+                    i = true;
             }
         }
     };
@@ -600,12 +611,13 @@ function addRadioBlock(id) {
         g.buttons = [];
     }
 
-    var u = function() {
-        g.updateSingleButton(r,
-            document.getElementById("rb_s"+id),
-            document.getElementById("rb_e"+id));
-    };
+    var s = document.getElementById("rb_s"+id);
+    var e = document.getElementById("rb_e"+id);
 
+    var u = function() {
+        g.updateSingleButton(r,s,e);
+    };
+    applyNameRef(s,e,'Rb'+id);
     g.buttons.push(u);
 
     // apply the initial visibility
@@ -738,6 +750,10 @@ function buildFormTree(form) {
     doms.push(form);
 
     function addProperty(parent,name,value) {
+        // abc.def.ghi -> ghi
+        var idx = name.lastIndexOf('.');
+        if(idx>=0)  name = name.substring(idx+1);
+        
         if(parent[name]!=null) {
             if(typeof parent[name]!="array")
                 parent[name] = [ parent[name] ];
@@ -752,8 +768,18 @@ function buildFormTree(form) {
     function findParent(e) {
         while(e!=form) {
             e = e.parentNode;
+
+            // this is used to create a group where no single containing parent node exists,
+            // like <optionalBlock>
+            var nameRef = e.getAttribute("nameRef");
+            if(nameRef!=null)
+                e = $(nameRef);
+            
             var name = e.getAttribute("name");
             if(name!=null) {
+                if(e.tagName=="INPUT" && !e.checked)
+                    return {};  // field is not active
+
                 var m = e.formDom;
                 if(m==null) {
                     // this is a new grouping node
@@ -771,15 +797,29 @@ function buildFormTree(form) {
     for( var i=0; i<form.elements.length; i++ ) {
         var e = form.elements[i];
         var p;
-        switch(e.getAttribute("type").toLowerCase()) {
+        var type = e.getAttribute("type");
+        if(type==null)  type="";
+        switch(type.toLowerCase()) {
         case "button":
+        case "submit":
             break;
         case "checkbox":
             p = findParent(e);
-            addProperty(p, e.name, e.checked);
+            if(!e.groupingNode)
+                addProperty(p, e.name, e.checked);
+            else {
+                if(e.checked)
+                    addProperty(p, e.name, e.formDom = {});
+            }
             break;
         case "radio":
             if(!e.checked)  break;
+            if(e.groupingNode) {
+                p = findParent(e);
+                addProperty(p, e.name, e.formDom = { value: e.value });
+                break;
+            }
+
             // otherwise fall through
         default:
             p = findParent(e);
