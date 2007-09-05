@@ -15,10 +15,6 @@
     </j:if>
     <j:if test="${href!=null}">
 	  	<x:attribute name="style">cursor:pointer</x:attribute>
-	    <x:attribute name="onclick">window.location='${href}'</x:attribute>
-      <!-- note that this won't take effect in browsers that don't let JavaScript change status bar, like Firefox. -->
-	    <x:attribute name="onmouseover">window.status='${href}';return true;</x:attribute>
-	    <x:attribute name="onmouseout">window.status=null;return true;</x:attribute>
 	  </j:if>
 	  <j:choose>
 	    <j:when test="${pos lt 0}">

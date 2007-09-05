@@ -234,11 +234,12 @@ var hudsonRules = {
     // hook up tooltip
     "[tooltip]" : function(e) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
-        var event = YAHOO.util.Event;
-        event.addListener(e, "mouseover", tooltip.onContextMouseOver, tooltip);
-        event.addListener(e, "mousemove", tooltip.onContextMouseMove, tooltip);
-        event.addListener(e, "mouseout", tooltip.onContextMouseOut, tooltip);
+        // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
+        e.onmouseover = function() { return tooltip.onContextMouseOver.call(this,window.event,tooltip); }
+        e.onmousemove = function() { return tooltip.onContextMouseMove.call(this,window.event,tooltip); }
+        e.onmouseout  = function() { return tooltip.onContextMouseOut .call(this,window.event,tooltip); }
         e.title = e.getAttribute("tooltip");
+        e = null; // avoid memory leak
     }
 };
 
@@ -403,7 +404,7 @@ function refreshPart(id,url) {
                 refreshPart(id,url);
             }
         });
-    }, 5000);
+    }, 500);
 }
 
 
