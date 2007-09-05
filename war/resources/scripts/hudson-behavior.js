@@ -404,7 +404,7 @@ function refreshPart(id,url) {
                 refreshPart(id,url);
             }
         });
-    }, 500);
+    }, 5000);
 }
 
 
