@@ -3,43 +3,45 @@ package hudson.model;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.search.SearchIndexBuilder;
-import hudson.tasks.BuildTrigger;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
 import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
+import hudson.scm.ChangeLogSet.Entry;
+import hudson.search.SearchIndexBuilder;
+import hudson.tasks.BuildTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
 import hudson.util.EditDistance;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
-import java.util.Set;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -92,7 +94,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * True to suspend new builds.
      */
-    protected boolean disabled;
+    public boolean disabled;
 
     /**
      * Identifies {@link JDK} to be used.

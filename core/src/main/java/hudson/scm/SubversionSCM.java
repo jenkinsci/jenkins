@@ -292,7 +292,7 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, final BuildListener listener, File changelogFile) throws IOException, InterruptedException {
-        List<String> externals = checkout(build.getTimestamp().getTime(),workspace,listener);
+        List<String> externals = checkout(build,workspace,listener);
 
         if(externals==null)
             return false;
@@ -333,9 +333,14 @@ public class SubversionSCM extends SCM implements Serializable {
      *      if the operation failed. Otherwise the set of local workspace paths
      *      (relative to the workspace root) that has loaded due to svn:external.
      */
-    private List<String> checkout(Date timestamp, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
-        boolean isUpdatable = useUpdate && workspace.act(new IsUpdatableTask(this, listener));
-        return workspace.act(new CheckOutTask(this, timestamp, isUpdatable, listener));
+    private List<String> checkout(AbstractBuild build, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        if (projectDeleted(listener)) {
+            // Disable this project, see issue #763
+            build.getProject().disabled = true;
+            return null;
+        }
+        Boolean isUpdatable = useUpdate && workspace.act(new IsUpdatableTask(this, listener));
+        return workspace.act(new CheckOutTask(this, build.getTimestamp().getTime(), isUpdatable, listener));
     }
 
     private static class CheckOutTask implements FileCallable<List<String>> {
@@ -487,7 +492,7 @@ public class SubversionSCM extends SCM implements Serializable {
      * @param remoteUrl
      *      The target to run "svn info".
      */
-    private SVNInfo parseSvnInfo(SVNURL remoteUrl, ISVNAuthenticationProvider authProvider) throws SVNException {
+    private static SVNInfo parseSvnInfo(SVNURL remoteUrl, ISVNAuthenticationProvider authProvider) throws SVNException {
         SVNWCClient svnWc = createSvnClientManager(authProvider).getWCClient();
         return svnWc.doInfo(remoteUrl, SVNRevision.HEAD, SVNRevision.HEAD);
     }
@@ -561,26 +566,28 @@ public class SubversionSCM extends SCM implements Serializable {
         private final TaskListener listener;
         private final ISVNAuthenticationProvider authProvider;
         private final ModuleLocation[] locations;
-
+    
         IsUpdatableTask(SubversionSCM parent,TaskListener listener) {
             this.authProvider = parent.getDescriptor().createAuthenticationProvider();
             this.listener = listener;
             this.locations = parent.getLocations();
         }
-
+    
         public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
             for (ModuleLocation l : locations) {
                 String url = l.remote;
                 String moduleName = l.local;
                 File module = new File(ws,moduleName).getCanonicalFile(); // canonicalize to remove ".." and ".". See #474
-
+    
                 if(!module.exists()) {
                     listener.getLogger().println("Checking out a fresh workspace because "+module+" doesn't exist");
                     return false;
                 }
-
+    
                 try {
-                    SvnInfo svnInfo = new SvnInfo(parseSvnInfo(module, authProvider));
+                    SVNInfo svnkitInfo = parseSvnInfo(module, authProvider);
+                    SvnInfo svnInfo = new SvnInfo(svnkitInfo);
+    
                     if(!svnInfo.url.equals(url)) {
                         listener.getLogger().println("Checking out a fresh workspace because the workspace is not "+url);
                         return false;
@@ -594,6 +601,26 @@ public class SubversionSCM extends SCM implements Serializable {
             return true;
         }
         private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * Returns true if the project does not exist in SVN anymore
+     */
+    public boolean projectDeleted(TaskListener listener) {
+        for (ModuleLocation l : locations) {
+            String url = l.remote;
+            try {
+                ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
+                // This will throw an SVNException if the remote path does not exist anymore
+                parseSvnInfo(SVNURL.parseURIDecoded(url), authProvider);
+            } catch (SVNException e) {
+                // issue #763 Gracefully handle project deleted in SVN
+                listener.getLogger().println("Project does not exist anymore in SVN: " + url);
+                e.printStackTrace(listener.error(e.getMessage()));
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
