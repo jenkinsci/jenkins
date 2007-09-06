@@ -81,7 +81,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         return true;
     }
 
-    private MimeMessage getMail(B build, BuildListener listener) throws MessagingException, InterruptedException {
+    protected MimeMessage getMail(B build, BuildListener listener) throws MessagingException, InterruptedException {
         if (build.getResult() == Result.FAILURE) {
             return createFailureMail(build, listener);
         }
