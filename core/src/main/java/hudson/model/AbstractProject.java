@@ -37,6 +37,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.mail.Address;
 import javax.servlet.ServletException;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -69,6 +70,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * The quiet period. Null to delegate to the system default.
      */
     private Integer quietPeriod = null;
+
+    public volatile Set<User> culprits = new HashSet<User>();
 
     /**
      * If this project is configured to be only built on a certain label,

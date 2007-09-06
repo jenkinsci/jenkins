@@ -117,6 +117,9 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         appendBuildUrl(build, buf);
         msg.setText(buf.toString());
 
+        // Reset the list of culprits
+        build.getProject().culprits.clear();
+
         return msg;
     }
 
@@ -248,18 +251,18 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
                 listener.getLogger().println("Trying to send e-mails to individuals who broke the build. sizeof(changeset)=="+count);
             }
 
-            Set<User> users = new HashSet<User>();
             for (Entry change : build.getChangeSet()) {
-                User a = change.getAuthor();
-                if (users.add(a)) {
-                    String adrs = Util.fixEmpty(a.getProperty(Mailer.UserProperty.class).getAddress());
-                    if(debug)
-                        listener.getLogger().println("  User "+a.getId()+" -> "+adrs);
-                    if (adrs != null)
-                        rcp.add(new InternetAddress(adrs));
-                    else {
-                        listener.getLogger().println("Failed to send e-mail to " + a.getFullName() + " because no e-mail address is known, and no default e-mail domain is configured");
-                    }
+                build.getProject().culprits.add(change.getAuthor());
+            }
+
+            for (User a : build.getProject().culprits) {
+                String adrs = Util.fixEmpty(a.getProperty(Mailer.UserProperty.class).getAddress());
+                if(debug)
+                    listener.getLogger().println("  User "+a.getId()+" -> "+adrs);
+                if (adrs != null)
+                    rcp.add(new InternetAddress(adrs));
+                else {
+                    listener.getLogger().println("Failed to send e-mail to " + a.getFullName() + " because no e-mail address is known, and no default e-mail domain is configured");
                 }
             }
         }
