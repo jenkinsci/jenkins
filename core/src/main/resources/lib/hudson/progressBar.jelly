@@ -15,6 +15,7 @@
     </j:if>
     <j:if test="${href!=null}">
 	  	<x:attribute name="style">cursor:pointer</x:attribute>
+      <x:attribute name="href">${href}</x:attribute>
 	  </j:if>
 	  <j:choose>
 	    <j:when test="${pos lt 0}">

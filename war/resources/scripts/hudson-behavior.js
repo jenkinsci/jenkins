@@ -107,6 +107,14 @@ var hudsonRules = {
         ts_makeSortable(e);
     },
 
+    "TABLE.progress-bar" : function(e) {// sortable table
+        e.onclick = function() {
+            var href = this.getAttribute("href");
+            if(href!=null)      window.href = href;
+        }
+        e = null; // avoid memory leak
+    },
+
     "INPUT.advancedButton" : function(e) {
         e.onclick = function() {
             var link = this.parentNode;
