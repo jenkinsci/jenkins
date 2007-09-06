@@ -108,7 +108,7 @@ public class SubversionSCM extends SCM implements Serializable {
     @Deprecated
     private String modules;
 
-    SubversionSCM(String[] remoteLocations, String[] localLocations,
+    public SubversionSCM(String[] remoteLocations, String[] localLocations,
             boolean useUpdate, String username, SubversionRepositoryBrowser browser) {
 
         List<ModuleLocation> modules = new ArrayList<ModuleLocation>();
