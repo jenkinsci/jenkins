@@ -110,7 +110,7 @@ var hudsonRules = {
     "TABLE.progress-bar" : function(e) {// sortable table
         e.onclick = function() {
             var href = this.getAttribute("href");
-            if(href!=null)      window.href = href;
+            if(href!=null)      window.location = href;
         }
         e = null; // avoid memory leak
     },
