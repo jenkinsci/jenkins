@@ -19,6 +19,7 @@ import java.util.List;
  * <p>
  * Use the "index" view of this object to render the changeset detail page,
  * and use the "digest" view of this object to render the summary page.
+ * For the change list at project level, see {@link SCM}.
  *
  * <p>
  * {@link Iterator} is expected to return recent changes first.

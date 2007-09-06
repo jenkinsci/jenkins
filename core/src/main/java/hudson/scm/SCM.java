@@ -22,6 +22,13 @@ import java.util.Map;
  * To register a custom {@link SCM} implementation from a plugin,
  * add it to {@link SCMS#SCMS}.
  *
+ * <p>
+ * Use the "project-changes" view to render change list to be displayed
+ * at the project level. The default implementation simply aggregates
+ * change lists from builds, but your SCM can provide different views.
+ * The view gets the "builds" variable which is a list of builds that are
+ * selected for the display.
+ *
  * @author Kohsuke Kawaguchi
  */
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
