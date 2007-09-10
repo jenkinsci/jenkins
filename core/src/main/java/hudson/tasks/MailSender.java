@@ -251,6 +251,9 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
                 listener.getLogger().println("Trying to send e-mails to individuals who broke the build. sizeof(changeset)=="+count);
             }
 
+            if (build.getProject().culprits == null)
+            	build.getProject().culprits = new HashSet<User>();
+
             for (Entry change : build.getChangeSet()) {
                 build.getProject().culprits.add(change.getAuthor());
             }
