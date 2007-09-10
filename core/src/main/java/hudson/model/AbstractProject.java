@@ -71,7 +71,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     private Integer quietPeriod = null;
 
-    public volatile Set<User> culprits = new HashSet<User>();
+    public transient Set<User> culprits = new HashSet<User>();
 
     /**
      * If this project is configured to be only built on a certain label,
