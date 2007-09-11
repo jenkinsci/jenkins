@@ -27,7 +27,7 @@ println(hudson.model.Hudson.instance.pluginManager.plugins)
       </form>
       <j:if test="${output!=null}">
         <h2>Result</h2>
-        <pre>${output}</pre>
+        <pre><st:out value="${output}"/></pre>
       </j:if>
     </l:main-panel>
   </l:layout>
