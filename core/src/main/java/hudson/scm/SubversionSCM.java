@@ -336,7 +336,7 @@ public class SubversionSCM extends SCM implements Serializable {
     private List<String> checkout(AbstractBuild build, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         if (projectDeleted(listener)) {
             // Disable this project, see issue #763
-            build.getProject().disabled = true;
+            build.getProject().makeDisabled(true);
             return null;
         }
         Boolean isUpdatable = useUpdate && workspace.act(new IsUpdatableTask(this, listener));

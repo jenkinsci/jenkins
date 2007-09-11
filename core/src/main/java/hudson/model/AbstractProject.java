@@ -97,7 +97,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * True to suspend new builds.
      */
-    public boolean disabled;
+    protected boolean disabled;
 
     /**
      * Identifies {@link JDK} to be used.
@@ -226,6 +226,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     public boolean isDisabled() {
         return disabled;
+    }
+
+    /**
+     * Marks the build as disabled.
+     */
+    public void makeDisabled(boolean b) throws IOException {
+        this.disabled = b;
+        save();
     }
 
     @Override
