@@ -1,23 +1,22 @@
 package hudson.model;
 
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.Flavor;
-import org.kohsuke.stapler.export.SchemaGenerator;
-import org.kohsuke.stapler.export.ModelBuilder;
-import org.kohsuke.stapler.export.Model;
+import hudson.util.IOException2;
+import org.dom4j.CharacterData;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
-import org.dom4j.*;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 
 /**
  * Used to expose remote access API for ".../api/"
@@ -69,7 +68,7 @@ public class Api extends AbstractModelObject {
             Document dom = new SAXReader().read(new StringReader(sw.toString()));
             result = dom.selectSingleNode(xpath);
         } catch (DocumentException e) {
-            throw new IOException(e);
+            throw new IOException2(e);
         }
 
         if(result==null) {
