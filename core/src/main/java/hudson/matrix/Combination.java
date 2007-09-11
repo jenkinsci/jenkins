@@ -70,15 +70,24 @@ public final class Combination extends TreeMap<String,String> implements Compara
     /**
      * Converts to the ID string representation:
      * <tt>axisName=value,axisName=value,...</tt>
+     *
+     * @param sep1
+     *      The separator between multiple axes.
+     * @param sep2
+     *      The separator between axis name and value.
      */
-    public String toString() {
+    public String toString(char sep1, char sep2) {
         StringBuilder buf = new StringBuilder();
         for (Map.Entry<String,String> e : entrySet()) {
-            if(buf.length()>0) buf.append(',');
-            buf.append(e.getKey()).append('=').append(e.getValue());
+            if(buf.length()>0) buf.append(sep1);
+            buf.append(e.getKey()).append(sep2).append(e.getValue());
         }
         if(buf.length()==0) buf.append("default"); // special case to avoid 0-length name.
         return buf.toString();
+    }
+
+    public String toString() {
+        return toString(',','=');
     }
 
     /**
