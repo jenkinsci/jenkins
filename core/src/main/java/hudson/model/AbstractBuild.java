@@ -114,7 +114,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * List of users who committed a change since the last non-broken build till now.
      *
      * <p>
-     * This
+     * This list at least always include people who made changes in this build, but
+     * if the previous build was a failure it also includes the culprit list from there.
      *
      * @return
      *      can be empty but never null.
