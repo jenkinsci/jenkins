@@ -615,7 +615,7 @@ public class SubversionSCM extends SCM implements Serializable {
                 parseSvnInfo(SVNURL.parseURIDecoded(url), authProvider);
             } catch (SVNException e) {
                 // issue #763 Gracefully handle project deleted in SVN
-                listener.getLogger().println("Project does not exist anymore in SVN: " + url);
+                listener.getLogger().println("Project does not exist anymore in SVN: " + url + ", project will be disabled.");
                 e.printStackTrace(listener.error(e.getMessage()));
                 return true;
             }
@@ -645,7 +645,10 @@ public class SubversionSCM extends SCM implements Serializable {
                     return true;    // change found
                 }
             } catch (SVNException e) {
-                e.printStackTrace(listener.error("Failed to check repository revision for "+localInfo.getKey()));
+                e.printStackTrace(listener.error("Failed to check repository revision for "+localInfo.getKey() + ", project will be disabled."));
+                // Disable this project, see issue #763
+                project.makeDisabled(true);
+                return false;
             }
         }
 
