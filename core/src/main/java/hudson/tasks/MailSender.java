@@ -2,13 +2,8 @@ package hudson.tasks;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.model.Result;
-import hudson.model.User;
+import hudson.model.*;
 import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -21,7 +16,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -116,9 +110,6 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         StringBuffer buf = new StringBuffer();
         appendBuildUrl(build, buf);
         msg.setText(buf.toString());
-
-        // Reset the list of culprits
-        build.getProject().culprits.clear();
 
         return msg;
     }
@@ -245,20 +236,12 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         while (tokens.hasMoreTokens())
             rcp.add(new InternetAddress(tokens.nextToken()));
         if (sendToIndividuals) {
-            if(debug) {
-                int count = 0;
-                for (Entry cs : build.getChangeSet())   count++;
-                listener.getLogger().println("Trying to send e-mails to individuals who broke the build. sizeof(changeset)=="+count);
-            }
+            Set<User> culprits = build.getCulprits();
 
-            if (build.getProject().culprits == null)
-            	build.getProject().culprits = new HashSet<User>();
+            if(debug)
+                listener.getLogger().println("Trying to send e-mails to individuals who broke the build. sizeof(culprits)=="+culprits.size());
 
-            for (Entry change : build.getChangeSet()) {
-                build.getProject().culprits.add(change.getAuthor());
-            }
-
-            for (User a : build.getProject().culprits) {
+            for (User a : culprits) {
                 String adrs = Util.fixEmpty(a.getProperty(Mailer.UserProperty.class).getAddress());
                 if(debug)
                     listener.getLogger().println("  User "+a.getId()+" -> "+adrs);

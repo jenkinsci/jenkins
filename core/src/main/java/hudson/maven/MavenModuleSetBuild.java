@@ -330,7 +330,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             }
         }
 
-        public void post(BuildListener listener) {
+        public void post2(BuildListener listener) throws Exception {
             if(project.isAggregatorStyleBuild()) {
                 // schedule downstream builds. for non aggregator style builds,
                 // this is done by each module

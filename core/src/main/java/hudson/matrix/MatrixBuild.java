@@ -1,11 +1,6 @@
 package hudson.matrix;
 
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
-import hudson.model.Result;
-import hudson.model.Executor;
-import hudson.model.Hudson;
-import hudson.model.Queue;
+import hudson.model.*;
 import hudson.tasks.Publisher;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -13,11 +8,10 @@ import org.kohsuke.stapler.StaplerResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.logging.Logger;
 
 /**
  * Build of {@link MatrixProject}.
@@ -141,7 +135,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             }
         }
 
-        public void post(BuildListener listener) throws IOException, InterruptedException {
+        public void post2(BuildListener listener) throws Exception {
             for (MatrixAggregator a : aggregators)
                 a.endBuild();
         }

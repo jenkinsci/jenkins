@@ -343,7 +343,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             }
         }
 
-        public void post(BuildListener listener) throws IOException, InterruptedException {
+        public void post2(BuildListener listener) throws Exception {
             for (MavenReporter reporter : reporters)
                 reporter.end(MavenBuild.this,launcher,listener);
 

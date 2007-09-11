@@ -3,35 +3,31 @@ package hudson.model;
 import hudson.Launcher;
 import hudson.Proc.LocalProc;
 import hudson.Util;
+import hudson.util.AdaptedIterator;
 import hudson.matrix.MatrixConfiguration;
-import org.kohsuke.stapler.export.Exported;
-import hudson.tasks.Fingerprinter.FingerprintAction;
-import hudson.tasks.test.AbstractTestResultAction;
-import hudson.tasks.Builder;
 import hudson.maven.MavenBuild;
+import hudson.model.Fingerprint.BuildPtr;
+import hudson.model.Fingerprint.RangeSet;
 import static hudson.model.Hudson.isWindows;
 import hudson.model.listeners.SCMListener;
-import hudson.model.Fingerprint.RangeSet;
-import hudson.model.Fingerprint.BuildPtr;
 import hudson.scm.CVSChangeLogParser;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.SCM;
+import hudson.tasks.Builder;
+import hudson.tasks.Fingerprinter.FingerprintAction;
+import hudson.tasks.test.AbstractTestResultAction;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Calendar;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -65,6 +61,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     private volatile transient ChangeLogSet<? extends Entry> changeSet;
 
+    /**
+     * Cumulative list of people who contributed to the build problem.
+     *
+     * <p>
+     * This is a list of {@link User#getId() user ids} who made a change
+     * since the last non-broken build. Can be null (which should be
+     * treated like empty set), because of the compatibility.
+     *
+     * <p>
+     * This field is semi-final --- once set the value will never be modified.
+     *
+     * @since 1.137
+     */
+    private volatile Set<String> culprits;
+
     protected AbstractBuild(P job) throws IOException {
         super(job);
     }
@@ -97,6 +108,46 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Exported(name="builtOn")
     public String getBuiltOnStr() {
         return builtOn;
+    }
+
+    /**
+     * List of users who committed a change since the last non-broken build till now.
+     *
+     * <p>
+     * This
+     *
+     * @return
+     *      can be empty but never null.
+     */
+    @Exported
+    public Set<User> getCulprits() {
+        if(culprits==null) {
+            Set<User> r = new HashSet<User>();
+            if(getPreviousBuild()!=null && isBuilding() && getPreviousBuild().getResult().isWorseThan(Result.UNSTABLE)) {
+                // we are still building, so this is just the current latest information,
+                // but we seems to be failing so far, so inherit culprits from the previous build.
+                // isBuilding() check is to avoid recursion when loading data from old Hudson, which doesn't record
+                // this information
+                r.addAll(getPreviousBuild().getCulprits());
+            }
+            for( Entry e : getChangeSet() )
+                r.add(e.getAuthor());
+            return r;
+        }
+
+        return new AbstractSet<User>() {
+            public Iterator<User> iterator() {
+                return new AdaptedIterator<String,User>(culprits.iterator()) {
+                    protected User adapt(String id) {
+                        return User.get(id);
+                    }
+                };
+            }
+
+            public int size() {
+                return culprits.size();
+            }
+        };
     }
 
     protected abstract class AbstractRunner implements Runner {
@@ -180,6 +231,23 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          *      Return a non-null value to abort the build right there with the specified result code.
          */
         protected abstract Result doRun(BuildListener listener) throws Exception;
+
+        /**
+         * @see #post(BuildListener)
+         */
+        protected abstract void post2(BuildListener listener) throws Exception;
+
+        public final void post(BuildListener listener) throws Exception {
+            try {
+                post2(listener);
+            } finally {
+                // update the culprit list
+                HashSet<String> r = new HashSet<String>();
+                for (User u : getCulprits())
+                    r.add(u.getId());
+                culprits = r;
+            }
+        }
     }
 
     /**

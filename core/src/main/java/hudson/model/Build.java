@@ -136,7 +136,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             return null;
         }
 
-        public void post(BuildListener listener) throws IOException, InterruptedException {
+        public void post2(BuildListener listener) throws IOException, InterruptedException {
             // run all of them even if one of them failed
             for( Publisher bs : project.getPublishers().values() )
                 bs.perform(Build.this, launcher, listener);
