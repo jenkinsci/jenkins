@@ -1,14 +1,8 @@
 package hudson;
 
-import hudson.model.ExternalJob;
-import hudson.model.ExternalRun;
-import hudson.model.Hudson;
-import hudson.model.Result;
-import hudson.model.TopLevelItem;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -43,39 +37,11 @@ public class Main {
             return -1;
         }
 
-        if(home.startsWith("http")) {
-            return remotePost(args);
-        } else {
-            return localPost(args);
-        }
+        return remotePost(args);
     }
 
     private static String getHudsonHome() {
         return EnvVars.masterEnvVars.get("HUDSON_HOME");
-    }
-
-    /**
-     * Run command and place the result directly into the local installation of Hudson.
-     */
-    public static int localPost(String[] args) throws Exception {
-        Hudson app = new Hudson(new File(getHudsonHome()),null);
-
-        TopLevelItem item = app.getItem(args[0]);
-        if(!(item instanceof ExternalJob)) {
-            System.err.println(args[0]+" is not a valid external job name in Hudson");
-            return -1;
-        }
-        ExternalJob ejob = (ExternalJob) item;
-
-        ExternalRun run = ejob.newBuild();
-
-        // run the command
-        List<String> cmd = new ArrayList<String>();
-        for( int i=1; i<args.length; i++ )
-            cmd.add(args[i]);
-        run.run(cmd.toArray(new String[cmd.size()]));
-
-        return run.getResult()==Result.SUCCESS?0:1;
     }
 
     /**
