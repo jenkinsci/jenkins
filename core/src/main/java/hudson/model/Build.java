@@ -93,10 +93,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         return env;
     }
 
-    public Api getApi(final StaplerRequest req) {
-        return new Api(this);
-    }
-
 //
 //
 // actions
