@@ -337,7 +337,7 @@ public class SubversionSCM extends SCM implements Serializable {
         try {
             if (! repositoryLocationsExist()) {
                 // Disable this project, see issue #763
-                listener.getLogger().println("One or more repository locations do not exist anymore for " + build.getProject() + ", project will be disabled.");
+                listener.getLogger().println("One or more repository locations do not exist anymore for " + build.getProject().getName() + ", project will be disabled.");
                 build.getProject().makeDisabled(true);
                 return null;
             }
