@@ -4,6 +4,7 @@ import antlr.ANTLRException;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
@@ -63,15 +64,20 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         return super.readResolve();
     }
 
-    protected void run() {
+    public void run() {
         if(pollingScheduled)
             return; // noop
         pollingScheduled = true;
 
-        // schedule the polling.
-        // even if we end up submitting this too many times, that's OK.
-        // the real exclusion control happens inside Runner.
-        DESCRIPTOR.getExecutor().submit(new Runner());
+        if (DESCRIPTOR.synchronousPolling) {
+            // Run the trigger directly without threading, as it's already taken care of by Trigger.Cron
+            new Runner().run();
+        } else {
+            // schedule the polling.
+            // even if we end up submitting this too many times, that's OK.
+            // the real exclusion control happens inside Runner.
+            DESCRIPTOR.getExecutor().submit(new Runner());
+        }
     }
 
     public Action getProjectAction() {
@@ -96,6 +102,12 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          * Used to control the execution of the polling tasks.
          */
         transient volatile ExecutorService executor;
+
+        /**
+         * Whether the projects should be polled all in one go in the order of dependencies. The default behavior is
+         * that each project polls for changes independently.
+         */
+        public boolean synchronousPolling = false;
 
         /**
          * Jobs that are being polled. The value is useful for trouble-shooting.

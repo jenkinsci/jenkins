@@ -1,17 +1,19 @@
 package hudson.triggers;
 
-import antlr.ANTLRException;
 import static hudson.Util.fixNull;
-import hudson.model.Descriptor;
 import hudson.model.BuildableItem;
 import hudson.model.Item;
 import hudson.scheduler.CronTabList;
 import hudson.util.FormFieldValidator;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
+import antlr.ANTLRException;
 
 /**
  * {@link Trigger} that runs a job periodically.
@@ -23,7 +25,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
         super(cronTabSpec);
     }
 
-    protected void run() {
+    public void run() {
         job.scheduleBuild();
     }
 

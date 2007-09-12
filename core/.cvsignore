@@ -10,3 +10,4 @@ target
 hudson.iml
 hudson-core.iml
 hudson.ipr
+.settings

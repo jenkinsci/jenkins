@@ -1,7 +1,9 @@
 package hudson.triggers;
 
 import antlr.ANTLRException;
+import hudson.DependencyRunner;
 import hudson.ExtensionPoint;
+import hudson.DependencyRunner.ProjectRunnable;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -17,6 +19,7 @@ import hudson.scheduler.CronTabList;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.Timer;
@@ -53,7 +56,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * This method is invoked when {@link #Trigger(String)} is used
      * to create an instance, and the crontab matches the current time.
      */
-    protected void run() {}
+    public void run() {}
 
     /**
      * Called before a {@link Trigger} is removed.
@@ -131,16 +134,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             LOGGER.fine("cron checking "+cal.getTime().toLocaleString());
 
             try {
-                Hudson inst = Hudson.getInstance();
-                for (AbstractProject<?,?> p : inst.getAllItems(AbstractProject.class)) {
-                    for (Trigger t : p.getTriggers().values()) {
-                        LOGGER.fine("cron checking "+p.getName());
-                        if(t.tabs.check(cal)) {
-                            LOGGER.fine("cron triggered "+p.getName());
-                            t.run();
-                        }
-                    }
-                }
+                checkTriggers(cal);
             } catch (Throwable e) {
                 LOGGER.log(Level.WARNING,"Cron thread throw an exception",e);
                 // bug in the code. Don't let the thread die.
@@ -148,6 +142,38 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             }
 
             cal.add(Calendar.MINUTE,1);
+        }
+    }
+
+    public static void checkTriggers(final Calendar cal) {
+        Hudson inst = Hudson.getInstance();
+
+        if (SCMTrigger.DESCRIPTOR.synchronousPolling) {
+            // Process SCMTriggers in the order of dependencies. Note that the crontab spec expressed per-project is
+            // ignored, only the global setting is honored
+            // FIXME allow to set a global crontab spec
+            SCMTrigger.DESCRIPTOR.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
+                public void run(AbstractProject p) {
+                    for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
+                        if (t instanceof SCMTrigger)
+                            t.run();
+                    }
+                }
+            }));
+        }
+
+        // Process all triggers, except SCMTriggers when synchronousPolling is set
+        for (AbstractProject<?,?> p : inst.getAllItems(AbstractProject.class)) {
+            for (Trigger t : p.getTriggers().values()) {
+                if (! (t instanceof SCMTrigger && SCMTrigger.DESCRIPTOR.synchronousPolling)) {
+                    LOGGER.fine("cron checking "+p.getName());
+
+                    if (t.tabs.check(cal)) {
+                        LOGGER.fine("cron triggered "+p.getName());
+                        t.run();
+                    }
+                }
+            }
         }
     }
 
