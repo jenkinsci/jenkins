@@ -279,12 +279,12 @@ public class SubversionSCM extends SCM implements Serializable {
 
             BufferedReader br = new BufferedReader(new FileReader(file));
             try {
-            	String line;
-            	while((line=br.readLine())!=null) {
-            		ext.add(line);
-            	}
+                String line;
+                while((line=br.readLine())!=null) {
+                    ext.add(line);
+                }
             } finally {
-            	br.close();
+                br.close();
             }
         }
 
@@ -335,16 +335,16 @@ public class SubversionSCM extends SCM implements Serializable {
      */
     private List<String> checkout(AbstractBuild build, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         try {
-			if (! repositoryLocationsExist()) {
-			    // Disable this project, see issue #763
-	            listener.getLogger().println("One or more repository locations do not exist anymore for " + build.getProject() + ", project will be disabled.");
-			    build.getProject().makeDisabled(true);
-			    return null;
-			}
-		} catch (SVNException e) {
+            if (! repositoryLocationsExist()) {
+                // Disable this project, see issue #763
+                listener.getLogger().println("One or more repository locations do not exist anymore for " + build.getProject() + ", project will be disabled.");
+                build.getProject().makeDisabled(true);
+                return null;
+            }
+        } catch (SVNException e) {
             e.printStackTrace(listener.error(e.getMessage()));
-			return null;
-		}
+            return null;
+        }
         Boolean isUpdatable = useUpdate && workspace.act(new IsUpdatableTask(this, listener));
         return workspace.act(new CheckOutTask(this, build.getTimestamp().getTime(), isUpdatable, listener));
     }
@@ -572,28 +572,28 @@ public class SubversionSCM extends SCM implements Serializable {
         private final TaskListener listener;
         private final ISVNAuthenticationProvider authProvider;
         private final ModuleLocation[] locations;
-    
+
         IsUpdatableTask(SubversionSCM parent,TaskListener listener) {
             this.authProvider = parent.getDescriptor().createAuthenticationProvider();
             this.listener = listener;
             this.locations = parent.getLocations();
         }
-    
+
         public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
             for (ModuleLocation l : locations) {
                 String url = l.remote;
                 String moduleName = l.local;
                 File module = new File(ws,moduleName).getCanonicalFile(); // canonicalize to remove ".." and ".". See #474
-    
+
                 if(!module.exists()) {
                     listener.getLogger().println("Checking out a fresh workspace because "+module+" doesn't exist");
                     return false;
                 }
-    
+
                 try {
                     SVNInfo svnkitInfo = parseSvnInfo(module, authProvider);
                     SvnInfo svnInfo = new SvnInfo(svnkitInfo);
-    
+
                     if(!svnInfo.url.equals(url)) {
                         listener.getLogger().println("Checking out a fresh workspace because the workspace is not "+url);
                         return false;
@@ -617,16 +617,16 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         try {
-			if (! repositoryLocationsExist()) {
-			    // Disable this project, see issue #763
-	            listener.getLogger().println("One or more repository locations do not exist anymore for " + project + ", project will be disabled.");
-			    project.makeDisabled(true);
-			    return false;
-			}
-		} catch (SVNException e) {
+            if (! repositoryLocationsExist()) {
+                // Disable this project, see issue #763
+                listener.getLogger().println("One or more repository locations do not exist anymore for " + project + ", project will be disabled.");
+                project.makeDisabled(true);
+                return false;
+            }
+        } catch (SVNException e) {
             e.printStackTrace(listener.error(e.getMessage()));
-			return false;
-		}
+            return false;
+        }
 
         // current workspace revision
         Map<String, Long> wsRev = parseRevisionFile(lastBuild);
@@ -1017,11 +1017,11 @@ public class SubversionSCM extends SCM implements Serializable {
                     // test the connection
                     try {
                         SVNURL repoURL = SVNURL.parseURIDecoded(url);
-                    	if (checkRepositoryPath(repoURL)==SVNNodeKind.NONE) {
-                    		SVNRepository repository = getRepository(repoURL);
-                    		long rev = repository.getLatestRevision();
+                        if (checkRepositoryPath(repoURL)==SVNNodeKind.NONE) {
+                            SVNRepository repository = getRepository(repoURL);
+                            long rev = repository.getLatestRevision();
                             // now go back the tree and find if there's anything that exists
-                    		String repoPath = getRelativePath(repoURL, repository);
+                            String repoPath = getRelativePath(repoURL, repository);
                             String p = repoPath;
                             while(p.length()>0) {
                                 p = SVNPathUtil.removeTail(p);
@@ -1068,16 +1068,16 @@ public class SubversionSCM extends SCM implements Serializable {
             }.process();
         }
 
-		public SVNNodeKind checkRepositoryPath(SVNURL repoURL) throws SVNException {
+        public SVNNodeKind checkRepositoryPath(SVNURL repoURL) throws SVNException {
             SVNRepository repository = getRepository(repoURL);
             repository.testConnection();
 
             long rev = repository.getLatestRevision();
             String repoPath = getRelativePath(repoURL, repository);
             return repository.checkPath(repoPath, rev);
-		}
+        }
 
-		protected SVNRepository getRepository(SVNURL repoURL) throws SVNException {
+        protected SVNRepository getRepository(SVNURL repoURL) throws SVNException {
             SVNRepository repository = SVNRepositoryFactory.create(repoURL);
 
             ISVNAuthenticationManager sam = SVNWCUtil.createDefaultAuthenticationManager();
@@ -1085,13 +1085,13 @@ public class SubversionSCM extends SCM implements Serializable {
             repository.setAuthenticationManager(sam);
 
             return repository;
-		}
+        }
 
-		public static String getRelativePath(SVNURL repoURL, SVNRepository repository) throws SVNException {
+        public static String getRelativePath(SVNURL repoURL, SVNRepository repository) throws SVNException {
             String repoPath = repoURL.getPath().substring(repository.getRepositoryRoot(false).getPath().length());
             if(!repoPath.startsWith("/"))    repoPath="/"+repoPath;
             return repoPath;
-		}
+        }
 
         /**
          * validate the value for a local location (local checkout directory).
@@ -1125,12 +1125,12 @@ public class SubversionSCM extends SCM implements Serializable {
         }
     }
 
-	public boolean repositoryLocationsExist() throws SVNException {
-		for (ModuleLocation l : getLocations())
-			if (getDescriptor().checkRepositoryPath(SVNURL.parseURIDecoded(l.remote)) == SVNNodeKind.NONE)
-				return false;
-		return true;
-	}
+    public boolean repositoryLocationsExist() throws SVNException {
+        for (ModuleLocation l : getLocations())
+            if (getDescriptor().checkRepositoryPath(SVNURL.parseURIDecoded(l.remote)) == SVNNodeKind.NONE)
+                return false;
+        return true;
+    }
 
     static final Pattern URL_PATTERN = Pattern.compile("(https?|svn(\\+[a-z0-9]+)?|file)://.+");
 
