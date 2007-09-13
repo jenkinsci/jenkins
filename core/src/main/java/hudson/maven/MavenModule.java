@@ -4,19 +4,8 @@ import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.reporters.MavenMailer;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.DependencyGraph;
-import hudson.model.Descriptor;
+import hudson.model.*;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Hudson;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.JDK;
-import hudson.model.Job;
-import hudson.model.Label;
-import hudson.model.Node;
-import hudson.model.Resource;
 import hudson.tasks.LogRotator;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
@@ -25,13 +14,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -236,16 +219,16 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * for compatibility reason.
      */
     public List<MavenModule> getChildren() {
-        final List<ModuleName> l = children;    // take a snapshot
+        List<ModuleName> l = children;    // take a snapshot
         if(l==null) return null;
-        return new AbstractList<MavenModule>() {
-            public int size() {
-                return l.size();
-            }
-            public MavenModule get(int i) {
-                return getParent().modules.get(l.get(i));
-            }
-        };
+
+        List<MavenModule> modules = new ArrayList<MavenModule>(l.size());
+        for (ModuleName n : l) {
+            MavenModule m = getParent().modules.get(n);
+            if(m!=null)
+                modules.add(m);
+        }
+        return modules;
     }
 
     /*package*/ void updateNextBuildNumber(int next) throws IOException {

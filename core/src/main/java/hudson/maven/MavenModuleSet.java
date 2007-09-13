@@ -250,13 +250,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
                 sortedList.add(p);
                 List<MavenModule> children = p.getChildren();
                 if(children!=null) {
-                    for( int i=children.size()-1; i>=0; i--) {    // add them in the reverse order
-                        MavenModule m = children.get(i);
-                        if(m != null) {
-                            m.nestLevel = p.nestLevel+1;
-                            q.push(m);
-                        }
-                    }
+                    for (MavenModule m : children)
+                        m.nestLevel = p.nestLevel+1;
+                    for( int i=children.size()-1; i>=0; i--)    // add them in the reverse order
+                        q.push(children.get(i));
                 }
             }
             this.sortedActiveModules = sortedList;
