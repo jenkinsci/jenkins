@@ -38,7 +38,7 @@ def updatePom(src,prev,ver)
 end
 
 Dir.chdir("../plugins") do
-  system "cvs update -Pd"
+  system "cvs -q update -Pd"
   # update master POM
   updatePom("pom.xml",prev,ver)
   # update parent reference in module POM
