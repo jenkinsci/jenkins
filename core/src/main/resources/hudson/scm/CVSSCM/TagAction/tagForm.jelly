@@ -15,7 +15,7 @@
                    checkUrl="'checkTag?value='+escape(this.value)"/>
           </f:block>
 
-          <j:set var="upstream" value="${it.build.upstreamBuilds}" />
+          <j:set var="upstream" value="${it.build.transitiveUpstreamBuilds}" />
           <j:if test="${!empty(upstream)}">
             <f:optionalBlock name="upstream" title="Tag all upstream builds at once" help="/help/_cvs/tagAll.html">
               <j:forEach var="up" items="${upstream}">
