@@ -37,7 +37,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.mail.Address;
 import javax.servlet.ServletException;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -616,6 +615,24 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Exported
     public final List<AbstractProject> getUpstreamProjects() {
         return Hudson.getInstance().getDependencyGraph().getUpstream(this);
+    }
+
+    /**
+     * Gets all the upstream projects including transitive upstream projects.
+     *
+     * @since 1.138
+     */
+    public final Set<AbstractProject> getTransitiveUpstreamProjects() {
+        return Hudson.getInstance().getDependencyGraph().getTransitiveUpstream(this);
+    }
+
+    /**
+     * Gets all the downstream projects including transitive downstream projects.
+     *
+     * @since 1.138
+     */
+    public final Set<AbstractProject> getTransitiveDownstreamProjects() {
+        return Hudson.getInstance().getDependencyGraph().getTransitiveUpstream(this);
     }
 
     /**
