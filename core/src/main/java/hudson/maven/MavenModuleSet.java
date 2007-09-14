@@ -146,7 +146,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * or all enabeld modules (if disabled==false)
      */
     public List<MavenModule> getDisabledModules(boolean disabled) {
-        if(sortedActiveModules!=null)
+        if(!disabled && sortedActiveModules!=null)
             return sortedActiveModules;
 
         List<MavenModule> r = new ArrayList<MavenModule>();
