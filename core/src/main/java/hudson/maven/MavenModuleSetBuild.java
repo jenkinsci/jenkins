@@ -287,7 +287,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     // do builds here
                     SplittableBuildListener slistener = new SplittableBuildListener(listener);
                     proxies = new HashMap<ModuleName, ProxyImpl2>();
-                    for (MavenModule m : modules.values())
+                    for (MavenModule m : project.sortedActiveModules)
                         proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(MavenModuleSetBuild.this,slistener));
 
                     // run the complete build here
@@ -302,7 +302,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
                     try {
                         return process.channel.call(new Builder(
-                            slistener,proxies,modules.values(),margs.toList(),envVars));
+                            slistener,proxies,project.sortedActiveModules,margs.toList(),envVars));
                     } finally {
                         for (ProxyImpl2 p : proxies.values())
                             p.abortIfNotStarted();
