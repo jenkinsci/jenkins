@@ -17,17 +17,17 @@ public final class Result implements Serializable, CustomExportedBean {
      */
     public static final Result SUCCESS = new Result("SUCCESS",BallColor.BLUE,0);
     /**
-     * The build was manually aborted.
-     */
-    public static final Result ABORTED = new Result("ABORTED",BallColor.GREY,1);
-    /**
      * The build didn't have any fatal errors but some errors.
      */
-    public static final Result UNSTABLE = new Result("UNSTABLE",BallColor.YELLOW,2);
+    public static final Result UNSTABLE = new Result("UNSTABLE",BallColor.YELLOW,1);
     /**
      * The build had a fatal error.
      */
-    public static final Result FAILURE = new Result("FAILURE",BallColor.RED,3);
+    public static final Result FAILURE = new Result("FAILURE",BallColor.RED,2);
+    /**
+     * The build was manually aborted.
+     */
+    public static final Result ABORTED = new Result("ABORTED",BallColor.GREY,3);
 
     private final String name;
 
