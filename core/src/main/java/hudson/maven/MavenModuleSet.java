@@ -211,16 +211,19 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex()
-            .add(new CollectionSearchIndex() {// for computers
+            .add(new CollectionSearchIndex<MavenModule>() {// for computers
                 protected MavenModule get(String key) {
                     for (MavenModule m : modules.values()) {
-                        if(m.getName().equals(key))
+                        if(m.getDisplayName().equals(key))
                             return m;
                     }
                     return null;
                 }
                 protected Collection<MavenModule> all() {
                     return modules.values();
+                }
+                protected String getName(MavenModule o) {
+                    return o.getName();
                 }
             });
     }

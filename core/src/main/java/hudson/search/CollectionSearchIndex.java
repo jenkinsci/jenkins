@@ -9,7 +9,7 @@ import java.util.Map;
  * 
  * @author Kohsuke Kawaguchi
  */
-public abstract class CollectionSearchIndex implements SearchIndex {
+public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> implements SearchIndex {
     /**
      * Gets a single item that exactly matches the given key.
      */
@@ -19,7 +19,7 @@ public abstract class CollectionSearchIndex implements SearchIndex {
      * Returns all items in the map.
      * The collection can include null items.
      */
-    protected abstract Collection<? extends SearchableModelObject> all();
+    protected abstract Collection<SMT> all();
 
     public void find(String token, List<SearchItem> result) {
         SearchItem p = get(token);
@@ -28,11 +28,15 @@ public abstract class CollectionSearchIndex implements SearchIndex {
     }
 
     public void suggest(String token, List<SearchItem> result) {
-        Collection<? extends SearchableModelObject> items = all();
+        Collection<SMT> items = all();
         if(items==null)     return;
-        for (SearchableModelObject o : items) {
-            if(o!=null && o.getDisplayName().contains(token))
+        for (SMT o : items) {
+            if(o!=null && getName(o).contains(token))
                 result.add(o);
         }
+    }
+
+    protected String getName(SMT o) {
+        return o.getDisplayName();
     }
 }
