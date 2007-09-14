@@ -78,6 +78,9 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             if(r==null)
                 r = br;
             else
+            if(br==Result.NOT_BUILT)
+                continue;   // UGLY: when computing combined status, ignore the modules that were not built
+            else
             if(br!=null)
                 r = r.combine(br);
         }

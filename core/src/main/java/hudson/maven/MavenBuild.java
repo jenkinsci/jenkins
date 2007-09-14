@@ -3,13 +3,7 @@ package hudson.maven;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.agent.AbortException;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.model.DependencyGraph;
-import hudson.model.Hudson;
-import hudson.model.Result;
-import hudson.model.Run;
+import hudson.model.*;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -21,22 +15,8 @@ import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Date;
+import java.io.*;
+import java.util.*;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -293,7 +273,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 run(new Runner() {
                     public Result run(BuildListener listener) {
                         listener.getLogger().println("Build failed before it gets to this module");
-                        return Result.ABORTED;
+                        return Result.NOT_BUILT;
                     }
 
                     public void post(BuildListener listener) {

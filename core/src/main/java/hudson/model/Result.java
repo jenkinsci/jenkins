@@ -25,9 +25,16 @@ public final class Result implements Serializable, CustomExportedBean {
      */
     public static final Result FAILURE = new Result("FAILURE",BallColor.RED,2);
     /**
+     * The module was not built.
+     * <p>
+     * This status code is used in a multi-stage build (like maven2)
+     * where a problem in earlier stage prevented later stages from building.
+     */
+    public static final Result NOT_BUILT = new Result("NOT_BUILT",BallColor.GREY,3);
+    /**
      * The build was manually aborted.
      */
-    public static final Result ABORTED = new Result("ABORTED",BallColor.GREY,3);
+    public static final Result ABORTED = new Result("ABORTED",BallColor.GREY,4);
 
     private final String name;
 
@@ -91,7 +98,7 @@ public final class Result implements Serializable, CustomExportedBean {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Result[] all = new Result[] {SUCCESS,UNSTABLE,FAILURE,ABORTED};
+    private static final Result[] all = new Result[] {SUCCESS,UNSTABLE,FAILURE,NOT_BUILT,ABORTED};
 
     public static final Converter conv = new AbstractBasicConverter () {
         public boolean canConvert(Class clazz) {
