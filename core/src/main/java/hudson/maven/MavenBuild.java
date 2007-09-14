@@ -257,6 +257,9 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             }
         }
 
+        /**
+         * Sends the accumuldated log in {@link SplittableBuildListener} to the log of this build.
+         */
         public void appendLastLog() {
             try {
                 listener.setSideOutputStream(log);
@@ -301,6 +304,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         private Object writeReplace() {
             return Channel.current().export(MavenBuildProxy2.class,this);
         }
+
+
     }
 
     private class RunnerImpl extends AbstractRunner {

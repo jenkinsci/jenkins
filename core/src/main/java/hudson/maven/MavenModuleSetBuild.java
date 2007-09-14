@@ -1,6 +1,7 @@
 package hudson.maven;
 
 import hudson.AbortException;
+import hudson.Launcher;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
@@ -303,12 +304,11 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     margs.add("-B").add("-f",project.getModuleRoot().child(project.getRootPOM()).getRemote());
                     margs.addTokenized(project.getGoals());
 
+                    Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
                     try {
-                        return process.channel.call(new Builder(
-                            slistener,proxies,project.sortedActiveModules,margs.toList(),envVars));
+                        return process.channel.call(builder);
                     } finally {
-                        for (ProxyImpl2 p : proxies.values())
-                            p.close();
+                        builder.end(launcher);
                         process.discard();
                     }
                 }
@@ -364,6 +364,22 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
             for (MavenModule m : modules)
                 reporters.put(m.getModuleName(),m.createReporters());
+        }
+
+        /**
+         * Invoked after the maven has finished running, and in the master, not in the maven process.
+         */
+        void end(Launcher launcher) throws IOException, InterruptedException {
+            for (Map.Entry<ModuleName,? extends MavenBuildProxy2> e : proxies.entrySet()) {
+                ProxyImpl2 p = (ProxyImpl2) e.getValue();
+                for (MavenReporter r : reporters.get(e.getKey())) {
+                    // we'd loe to do this when the module build ends, but do so requires
+                    // we know how many task segments are in the current build.
+                    r.end(p.owner(),launcher,listener);
+                    p.appendLastLog();
+                }
+                p.close();
+            }
         }
 
         public Result call() throws IOException {
