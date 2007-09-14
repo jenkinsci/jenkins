@@ -4,6 +4,8 @@ import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.search.SearchIndexBuilder;
+import hudson.search.CollectionSearchIndex;
 import hudson.model.*;
 import hudson.model.Descriptor.FormException;
 import static hudson.model.ItemGroupMixIn.loadChildren;
@@ -204,6 +206,23 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     @Override
     protected Class<MavenModuleSetBuild> getBuildClass() {
         return MavenModuleSetBuild.class;
+    }
+
+    @Override
+    protected SearchIndexBuilder makeSearchIndex() {
+        return super.makeSearchIndex()
+            .add(new CollectionSearchIndex() {// for computers
+                protected MavenModule get(String key) {
+                    for (MavenModule m : modules.values()) {
+                        if(m.getName().equals(key))
+                            return m;
+                    }
+                    return null;
+                }
+                protected Collection<MavenModule> all() {
+                    return modules.values();
+                }
+            });
     }
 
     @Override
