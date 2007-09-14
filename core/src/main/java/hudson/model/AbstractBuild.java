@@ -425,10 +425,24 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Gets the upstream builds of this build, which are the builds of the
      * upstream projects whose artifacts feed into this build.
+     *
+     * @see #getTransitiveUpstreamBuilds()
      */
     public Map<AbstractProject,Integer> getUpstreamBuilds() {
+        return _getUpstreamBuilds(getParent().getUpstreamProjects());
+    }
+
+    /**
+     * Works like {@link #getUpstreamBuilds()}  but also includes all the transitive
+     * dependencies as well.
+     */
+    public Map<AbstractProject,Integer> getTransitiveUpstreamBuilds() {
+        return _getUpstreamBuilds(getParent().getTransitiveUpstreamProjects());
+    }
+
+    private Map<AbstractProject, Integer> _getUpstreamBuilds(Collection<AbstractProject> projects) {
         Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
-        for (AbstractProject p : getParent().getUpstreamProjects()) {
+        for (AbstractProject p : projects) {
             int n = getUpstreamRelationship(p);
             if(n>=0)
                 r.put(p,n);
