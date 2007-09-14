@@ -308,7 +308,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                             slistener,proxies,project.sortedActiveModules,margs.toList(),envVars));
                     } finally {
                         for (ProxyImpl2 p : proxies.values())
-                            p.abortIfNotStarted();
+                            p.close();
                         process.discard();
                     }
                 }
@@ -356,6 +356,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         private final Map<ModuleName,List<ExecutedMojo>> executedMojos = new HashMap<ModuleName,List<ExecutedMojo>>();
         private long mojoStartTime;
 
+        private MavenBuildProxy2 lastProxy;
 
         public Builder(BuildListener listener,Map<ModuleName,? extends MavenBuildProxy2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps) {
             super(listener,goals,systemProps);
@@ -363,6 +364,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
             for (MavenModule m : modules)
                 reporters.put(m.getModuleName(),m.createReporters());
+        }
+
+        public Result call() throws IOException {
+            try {
+                return super.call();
+            } finally {
+                if(lastProxy!=null)
+                    lastProxy.appendLastLog();
+            }
         }
 
         void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
@@ -392,6 +402,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             proxy.setExecutedMojos(executedMojos.get(name));
             listener.getLogger().flush();   // make sure the data until here are all written
             proxy.end();
+            lastProxy = proxy;
         }
 
         void preExecute(MavenProject project, MojoInfo mojoInfo) throws IOException, InterruptedException, hudson.maven.agent.AbortException {

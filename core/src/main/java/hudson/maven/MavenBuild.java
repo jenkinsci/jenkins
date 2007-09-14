@@ -230,7 +230,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         ProxyImpl2(MavenModuleSetBuild parentBuild,SplittableBuildListener listener) throws FileNotFoundException {
             this.parentBuild = parentBuild;
             this.listener = listener;
-            log = new BufferedOutputStream(new FileOutputStream(getLogFile()));
+            log = new FileOutputStream(getLogFile()); // no buffering so that AJAX clients can see the log live
         }
 
         public void start() {
@@ -257,19 +257,28 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             }
         }
 
-        /**
-         * Gets the build for which this proxy is created.
-         */
-        public MavenBuild owner() {
-            return MavenBuild.this;
+        public void appendLastLog() {
+            try {
+                listener.setSideOutputStream(log);
+                listener.setSideOutputStream(null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         /**
-         * Mark the build as aborted. This method is used when the aggregated build
-         * failed before it didn't even get to this module.
+         * Performs final clean up. Invoked after the entire aggregator build is completed.
          */
-        protected void abortIfNotStarted() {
+        protected void close() {
+            try {
+                log.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             if(hasntStartedYet()) {
+                // Mark the build as aborted. This method is used when the aggregated build
+                // failed before it didn't even get to this module.
                 run(new Runner() {
                     public Result run(BuildListener listener) {
                         listener.getLogger().println("Build failed before it gets to this module");
@@ -280,6 +289,13 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                     }
                 });
             }
+        }
+
+        /**
+         * Gets the build for which this proxy is created.
+         */
+        public MavenBuild owner() {
+            return MavenBuild.this;
         }
 
         private Object writeReplace() {
