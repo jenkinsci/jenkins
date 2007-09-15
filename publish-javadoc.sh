@@ -7,7 +7,7 @@ pushd ../../../www/javadoc
 cvs update -Pd
 popd
 
-cp -R target/checkout/core/target/site/apidocs/* ../../../www/javadoc
+cp -R target/checkout/core/target/apidocs/* ../../../www/javadoc
 
 cd ../../../www/javadoc
 
