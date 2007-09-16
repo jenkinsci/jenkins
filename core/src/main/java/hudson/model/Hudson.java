@@ -41,13 +41,7 @@ import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
-import hudson.util.ClockDifference;
-import hudson.util.CopyOnWriteList;
-import hudson.util.CopyOnWriteMap;
-import hudson.util.DaemonThreadFactory;
-import hudson.util.FormFieldValidator;
-import hudson.util.MultipartFormDataParser;
-import hudson.util.XStream2;
+import hudson.util.*;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -1476,9 +1470,23 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         if(!Hudson.adminCheck(req,rsp))
             return;
 
-        load();
-        User.reload();
+        // engage "loading ..." UI and then run the actual task in a separate thread
+        final ServletContext context = req.getServletContext();
+        context.setAttribute("app",new HudsonIsLoading());
+
         rsp.sendRedirect2(req.getContextPath()+"/");
+
+        new Thread("Hudson config reload thread") {
+            public void run() {
+                try {
+                    load();
+                    User.reload();
+                    context.setAttribute("app",Hudson.this);
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE,"Failed to reload Hudson config",e);
+                }
+            }
+        }.start();
     }
 
     public boolean isPluginUploaded() {

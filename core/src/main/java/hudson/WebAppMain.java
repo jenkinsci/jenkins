@@ -6,11 +6,7 @@ import hudson.model.Hudson;
 import hudson.model.User;
 import hudson.triggers.Trigger;
 import hudson.triggers.SafeTimerTask;
-import hudson.util.IncompatibleServletVersionDetected;
-import hudson.util.IncompatibleVMDetected;
-import hudson.util.RingBufferLogHandler;
-import hudson.util.NoHomeDir;
-import hudson.util.InsufficientPermissionDetected;
+import hudson.util.*;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -42,7 +38,7 @@ public class WebAppMain implements ServletContextListener {
      * Creates the sole instance of {@link Hudson} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
-        ServletContext context = event.getServletContext();
+        final ServletContext context = event.getServletContext();
 
         // quick check to see if we (seem to) have enough permissions to run. (see #719)
         JVM jvm;
@@ -56,7 +52,7 @@ public class WebAppMain implements ServletContextListener {
 
         installLogger();
 
-        File home = getHomeDir(event).getAbsoluteFile();
+        final File home = getHomeDir(event).getAbsoluteFile();
         home.mkdirs();
         System.out.println("hudson home directory: "+home);
 
@@ -100,43 +96,47 @@ public class WebAppMain implements ServletContextListener {
             }
         }
 
+        context.setAttribute("app",new HudsonIsLoading());
 
-        try {
-            context.setAttribute("app",new Hudson(home,context));
-        } catch( IOException e ) {
-            throw new Error(e);
-        }
+        new Thread("hudson initialization thread") {
+            public void run() {
+                try {
+                    context.setAttribute("app",new Hudson(home,context));
+                } catch( IOException e ) {
+                    throw new Error(e);
+                }
 
-        // set the version
-        Properties props = new Properties();
-        try {
-            InputStream is = getClass().getResourceAsStream("hudson-version.properties");
-            if(is!=null)
-                props.load(is);
-        } catch (IOException e) {
-            e.printStackTrace(); // if the version properties is missing, that's OK.
-        }
-        String ver = props.getProperty("version");
-        if(ver==null)   ver="?";
-        Hudson.VERSION = ver;
-        context.setAttribute("version",ver);
+                // set the version
+                Properties props = new Properties();
+                try {
+                    InputStream is = getClass().getResourceAsStream("hudson-version.properties");
+                    if(is!=null)
+                        props.load(is);
+                } catch (IOException e) {
+                    e.printStackTrace(); // if the version properties is missing, that's OK.
+                }
+                String ver = props.getProperty("version");
+                if(ver==null)   ver="?";
+                Hudson.VERSION = ver;
+                context.setAttribute("version",ver);
 
-        if(ver.equals("?"))
-            Hudson.RESOURCE_PATH = "";
-        else
-            Hudson.RESOURCE_PATH = "/static/"+Util.getDigestOf(ver).substring(0,8);
+                if(ver.equals("?"))
+                    Hudson.RESOURCE_PATH = "";
+                else
+                    Hudson.RESOURCE_PATH = "/static/"+Util.getDigestOf(ver).substring(0,8);
 
-        Trigger.init(); // start running trigger
+                Trigger.init(); // start running trigger
 
-        // trigger the loading of changelogs in the background,
-        // but give the system 10 seconds so that the first page
-        // can be served quickly
-        Trigger.timer.schedule(new SafeTimerTask() {
-            public void doRun() {
-                User.get("nobody").getBuilds();
+                // trigger the loading of changelogs in the background,
+                // but give the system 10 seconds so that the first page
+                // can be served quickly
+                Trigger.timer.schedule(new SafeTimerTask() {
+                    public void doRun() {
+                        User.get("nobody").getBuilds();
+                    }
+                }, 1000*10);
             }
-        }, 1000*10);
-
+        }.start();
     }
 
     /**
