@@ -4,8 +4,6 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
-import hudson.tasks.DynamicLabeler;
-import hudson.tasks.LabelFinder;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.model.Descriptor.FormException;
@@ -14,31 +12,18 @@ import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
-import hudson.util.NullStream;
-import hudson.util.RingBufferLogHandler;
-import hudson.util.StreamCopyThread;
-import hudson.util.StreamTaskListener;
-import hudson.util.ClockDifference;
+import hudson.tasks.DynamicLabeler;
+import hudson.tasks.LabelFinder;
+import hudson.util.*;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -284,6 +269,13 @@ public final class Slave implements Node, Serializable {
         }
 
         /**
+         * Gets the formatted current time stamp.
+         */
+        private static String getTimestamp() {
+            return String.format("[%1$tD %1$tT]",new Date());
+        }
+
+        /**
          * Launches a remote agent.
          */
         private void launch(final Slave slave) {
@@ -299,7 +291,7 @@ public final class Slave implements Node, Serializable {
                     public void run() {
                         final StreamTaskListener listener = new StreamTaskListener(launchLog);
                         try {
-                            listener.getLogger().println("Launching slave agent");
+                            listener.getLogger().printf("%s Launching slave agent\n",getTimestamp());
                             listener.getLogger().println("$ "+slave.agentCommand);
                             final Process proc = Runtime.getRuntime().exec(slave.agentCommand);
 
@@ -311,7 +303,7 @@ public final class Slave implements Node, Serializable {
                             setChannel(proc.getInputStream(),proc.getOutputStream(),launchLog,new Listener() {
                                 public void onClosed(Channel channel, IOException cause) {
                                     if(cause!=null)
-                                        cause.printStackTrace(listener.error("slave agent was terminated"));
+                                        cause.printStackTrace(listener.error("%s slave agent was terminated\n"));
                                     proc.destroy();
                                 }
                             });
