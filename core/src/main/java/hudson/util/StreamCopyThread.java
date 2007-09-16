@@ -1,7 +1,5 @@
 package hudson.util;
 
-import hudson.Util;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -24,7 +22,10 @@ public class StreamCopyThread extends Thread {
     public void run() {
         try {
             try {
-                Util.copyStream(in,out);
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = in.read(buf)) > 0)
+                    out.write(buf, 0, len);
             } finally {
                 in.close();
             }
