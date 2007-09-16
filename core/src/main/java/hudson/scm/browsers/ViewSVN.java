@@ -7,6 +7,7 @@ import hudson.scm.SubversionChangeLogSet;
 import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.scm.SubversionRepositoryBrowser;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -29,9 +30,7 @@ public class ViewSVN extends SubversionRepositoryBrowser {
      */
     public final URL url;
 
-    /**
-     * @stapler-constructor
-     */
+    @DataBoundConstructor
     public ViewSVN(URL url) throws MalformedURLException {
         this.url = normalizeToEndWithSlash(url);
     }

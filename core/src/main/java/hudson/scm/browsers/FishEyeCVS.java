@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Repository browser for CVS in a FishEye server.
@@ -26,9 +27,7 @@ public final class FishEyeCVS extends CVSRepositoryBrowser {
      */
     public final URL url;
 
-    /**
-     * @stapler-constructor
-     */
+    @DataBoundConstructor
     public FishEyeCVS(URL url) {
         this.url = normalizeToEndWithSlash(url);
     }

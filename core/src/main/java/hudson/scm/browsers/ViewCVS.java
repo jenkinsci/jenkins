@@ -7,6 +7,7 @@ import hudson.scm.CVSChangeLogSet.Revision;
 import hudson.scm.CVSRepositoryBrowser;
 import hudson.scm.RepositoryBrowser;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -27,9 +28,7 @@ public final class ViewCVS extends CVSRepositoryBrowser {
      */
     public final URL url;
 
-    /**
-     * @stapler-constructor
-     */
+    @DataBoundConstructor
     public ViewCVS(URL url) throws MalformedURLException {
         this.url = normalizeToEndWithSlash(url);
     }

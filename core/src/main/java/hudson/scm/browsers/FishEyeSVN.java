@@ -10,6 +10,7 @@ import hudson.scm.EditType;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -37,9 +38,7 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
      */
     private final String rootModule;
 
-    /**
-     * @stapler-constructor
-     */
+    @DataBoundConstructor
     public FishEyeSVN(URL url, String rootModule) throws MalformedURLException {
         this.url = normalizeToEndWithSlash(url);
 
