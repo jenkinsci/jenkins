@@ -269,8 +269,9 @@ public abstract class FormFieldValidator {
 
             if(exe.indexOf(File.separatorChar)>=0) {
                 // this is full path
-                if(new File(exe).exists()) {
-                    ok();
+                File f = new File(exe);
+                if(f.exists()) {
+                    checkExecutable(f);
                 } else {
                     error("There's no such file: "+exe);
                 }
@@ -278,6 +279,13 @@ public abstract class FormFieldValidator {
                 // can't really check
                 ok();
             }
+        }
+
+        /**
+         * Provides an opportunity for derived classes to do additional checks on the executable.
+         */
+        protected void checkExecutable(File exe) throws IOException, ServletException {
+            ok();
         }
     }
 }
