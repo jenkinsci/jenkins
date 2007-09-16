@@ -2,10 +2,7 @@ package hudson.scm;
 
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.scm.browsers.FishEyeCVS;
-import hudson.scm.browsers.FishEyeSVN;
-import hudson.scm.browsers.ViewCVS;
-import hudson.scm.browsers.ViewSVN;
+import hudson.scm.browsers.*;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.ArrayList;
@@ -24,7 +21,8 @@ public class RepositoryBrowsers {
         ViewCVS.DESCRIPTOR,
         ViewSVN.DESCRIPTOR,
         FishEyeSVN.DESCRIPTOR,
-        FishEyeCVS.DESCRIPTOR
+        FishEyeCVS.DESCRIPTOR,
+        WebSVN.DESCRIPTOR
     );
 
     /**
