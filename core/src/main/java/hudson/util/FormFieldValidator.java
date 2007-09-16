@@ -76,6 +76,14 @@ public abstract class FormFieldValidator {
         error(String.format(format,args));
     }
 
+    public void warning(String message) throws IOException, ServletException {
+        error(message); // for now
+    }
+
+    public void warning(String format, Object... args) throws IOException, ServletException {
+        warning(String.format(format,args));
+    }
+
     /**
      * Sends out an HTML fragment that indicates an error.
      *
