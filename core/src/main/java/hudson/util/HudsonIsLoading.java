@@ -1,15 +1,19 @@
 package hudson.util;
 
-import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
-
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import java.io.IOException;
 
 /**
- * Model object used to display "Hudson is loading data"
+ * Model object used to display "Hudson is loading data".
+ *
+ * Set this object to {@link ServletContext#setAttribute(String, Object)} "app" while
+ * the loading activity is taking place.
+ * 
  * @author Kohsuke Kawaguchi
  */
 public class HudsonIsLoading {
