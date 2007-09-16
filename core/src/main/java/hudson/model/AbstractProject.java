@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.AbortException;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
@@ -534,6 +535,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
 
             return scm.pollChanges(this, workspace.createLauncher(listener), workspace, listener );
+        } catch (AbortException e) {
+            listener.fatalError("Aborted");
+            return false;
         } catch (IOException e) {
             e.printStackTrace(listener.fatalError(e.getMessage()));
             return false;
