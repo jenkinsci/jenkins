@@ -56,6 +56,10 @@ public final class StreamTaskListener implements TaskListener, Serializable {
         return new PrintWriter(new OutputStreamWriter(out),true);
     }
 
+    public void error(String format, Object... args) {
+        out.printf(format,args);
+    }
+
     public PrintWriter fatalError(String msg) {
         return error(msg);
     }
