@@ -1,19 +1,13 @@
 package hudson.maven.reporters;
 
 import hudson.FilePath;
-import hudson.maven.MavenBuild;
-import hudson.maven.MavenBuildProxy;
+import hudson.maven.*;
 import hudson.maven.MavenBuildProxy.BuildCallable;
-import hudson.maven.MavenEmbedder;
-import hudson.maven.MavenModule;
-import hudson.maven.MavenReporter;
-import hudson.maven.MavenReporterDescriptor;
-import hudson.maven.MavenUtil;
-import hudson.maven.MojoInfo;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
 import hudson.model.Result;
+import hudson.util.IOException2;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
@@ -21,6 +15,7 @@ import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 
 import java.io.File;
@@ -41,6 +36,7 @@ import java.util.Set;
  */
 public class MavenArtifactArchiver extends MavenReporter {
     private transient boolean installed;
+    private transient String finalName;
 
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
         if(!mojo.pluginName.matches("org.apache.maven.plugins","maven-install-plugin"))
@@ -49,6 +45,15 @@ public class MavenArtifactArchiver extends MavenReporter {
             return true;
 
         this.installed = true;
+
+        // this is not the same as pom.getBuild().getFinalName() because this performs
+        // recursive variable expansions (with those variables that are defined during build)
+        // See https://hudson.dev.java.net/issues/show_bug.cgi?id=812
+        try {
+            this.finalName = mojo.expressionEvaluator.evaluate("${project.build.finalName}").toString();
+        } catch (ExpressionEvaluationException e) {
+            throw new IOException2(e);
+        }
 
         return true;
     }
@@ -122,7 +127,6 @@ public class MavenArtifactArchiver extends MavenReporter {
         String name = artifactId+'-'+version;
         if(artifactId.equals(pom.getArtifactId()) && version.equals(pom.getVersion())) {
             // this seems to be one of the main artifacts, so let's use the final name
-            String finalName = pom.getBuild().getFinalName();
             if(finalName!=null) // should never be null because this entry is in Maven super POM, but be defensive
                 name = finalName;
         }
