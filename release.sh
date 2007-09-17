@@ -4,6 +4,7 @@
 # but Maven doesn't let me run release goals unless I have this in CVS.
 #
 # this script is to be run after release:perform runs successfully
+cvs -q update -Pd
 tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
 mvn -B -Dtag=$tag release:prepare || mvn install release:prepare release:perform
 
