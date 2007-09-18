@@ -42,6 +42,7 @@ import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
+import org.tmatesoft.svn.core.io.ISVNSession;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
@@ -939,7 +940,7 @@ public class SubversionSCM extends SCM implements Serializable {
                     }
             }
 
-
+            SVNRepository repository = null;
             try {
                 // the way it works with SVNKit is that
                 // 1) svnkit calls AuthenticationManager asking for a credential.
@@ -947,7 +948,7 @@ public class SubversionSCM extends SCM implements Serializable {
                 // 2) DefaultSVNAuthenticationManager returns the username and password we set below
                 // 3) if the authentication is successful, svnkit calls back acknowledgeAuthentication
                 //    (so we store the password info here)
-                SVNRepository repository = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(url));
+                repository = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(url));
                 repository.setAuthenticationManager(new DefaultSVNAuthenticationManager(SVNWCUtil.getDefaultConfigurationDirectory(),true,username,password,keyFile,password) {
                     Credential cred = null;
 
@@ -988,6 +989,8 @@ public class SubversionSCM extends SCM implements Serializable {
                     keyFile.delete();
                 if(item!=null)
                     item.delete();
+                if (repository != null)
+                	repository.closeSession();
             }
         }
 
@@ -1018,34 +1021,40 @@ public class SubversionSCM extends SCM implements Serializable {
                     try {
                         SVNURL repoURL = SVNURL.parseURIDecoded(url);
                         if (checkRepositoryPath(repoURL)==SVNNodeKind.NONE) {
-                            SVNRepository repository = getRepository(repoURL);
-                            long rev = repository.getLatestRevision();
-                            // now go back the tree and find if there's anything that exists
-                            String repoPath = getRelativePath(repoURL, repository);
-                            String p = repoPath;
-                            while(p.length()>0) {
-                                p = SVNPathUtil.removeTail(p);
-                                if(repository.checkPath(p,rev)==SVNNodeKind.DIR) {
-                                    // found a matching path
-                                    List<SVNDirEntry> entries = new ArrayList<SVNDirEntry>();
-                                    repository.getDir(p,rev,false,entries);
+                            SVNRepository repository = null;
+                            try {
+                            	repository = getRepository(repoURL);
+	                            long rev = repository.getLatestRevision();
+	                            // now go back the tree and find if there's anything that exists
+	                            String repoPath = getRelativePath(repoURL, repository);
+	                            String p = repoPath;
+	                            while(p.length()>0) {
+	                                p = SVNPathUtil.removeTail(p);
+	                                if(repository.checkPath(p,rev)==SVNNodeKind.DIR) {
+	                                    // found a matching path
+	                                    List<SVNDirEntry> entries = new ArrayList<SVNDirEntry>();
+	                                    repository.getDir(p,rev,false,entries);
+	
+	                                    // build up the name list
+	                                    List<String> paths = new ArrayList<String>();
+	                                    for (SVNDirEntry e : entries)
+	                                        if(e.getKind()==SVNNodeKind.DIR)
+	                                            paths.add(e.getName());
+	
+	                                    String head = SVNPathUtil.head(repoPath.substring(p.length() + 1));
+	                                    String candidate = EditDistance.findNearest(head,paths);
+	
+	                                    error("'%1$s/%2$s' doesn't exist in the repository. Maybe you meant '%1$s/%3$s'?",
+	                                        p, head, candidate);
+	                                    return;
+	                                }
+	                            }
 
-                                    // build up the name list
-                                    List<String> paths = new ArrayList<String>();
-                                    for (SVNDirEntry e : entries)
-                                        if(e.getKind()==SVNNodeKind.DIR)
-                                            paths.add(e.getName());
-
-                                    String head = SVNPathUtil.head(repoPath.substring(p.length() + 1));
-                                    String candidate = EditDistance.findNearest(head,paths);
-
-                                    error("'%1$s/%2$s' doesn't exist in the repository. Maybe you meant '%1$s/%3$s'?",
-                                        p, head, candidate);
-                                    return;
-                                }
+	                            error(repoPath+" doesn't exist in the repository");
+                            } finally {
+                            	if (repository != null)
+                            		repository.closeSession();
                             }
-
-                            error(repoPath+" doesn't exist in the repository");
                         } else
                             ok();
                     } catch (SVNException e) {
@@ -1069,12 +1078,19 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         public SVNNodeKind checkRepositoryPath(SVNURL repoURL) throws SVNException {
-            SVNRepository repository = getRepository(repoURL);
-            repository.testConnection();
-
-            long rev = repository.getLatestRevision();
-            String repoPath = getRelativePath(repoURL, repository);
-            return repository.checkPath(repoPath, rev);
+        	SVNRepository repository = null;
+        	
+        	try {
+            	repository = getRepository(repoURL);
+	            repository.testConnection();
+	
+	            long rev = repository.getLatestRevision();
+	            String repoPath = getRelativePath(repoURL, repository);
+	            return repository.checkPath(repoPath, rev);
+            } finally {
+            	if (repository != null)
+            		repository.closeSession();
+            }
         }
 
         protected SVNRepository getRepository(SVNURL repoURL) throws SVNException {
