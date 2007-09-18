@@ -23,7 +23,7 @@ import java.io.IOException;
 public class ArtifactArchiver extends Publisher {
 
     /**
-     * Comma-separated list of files/directories to be archived.
+     * Comma- or space-separated list of patterns of files/directories to be archived.
      */
     private final String artifacts;
 
