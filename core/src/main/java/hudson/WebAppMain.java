@@ -100,30 +100,13 @@ public class WebAppMain implements ServletContextListener {
 
         new Thread("hudson initialization thread") {
             public void run() {
+                computeVersion(context);
+
                 try {
                     context.setAttribute("app",new Hudson(home,context));
                 } catch( IOException e ) {
                     throw new Error(e);
                 }
-
-                // set the version
-                Properties props = new Properties();
-                try {
-                    InputStream is = getClass().getResourceAsStream("hudson-version.properties");
-                    if(is!=null)
-                        props.load(is);
-                } catch (IOException e) {
-                    e.printStackTrace(); // if the version properties is missing, that's OK.
-                }
-                String ver = props.getProperty("version");
-                if(ver==null)   ver="?";
-                Hudson.VERSION = ver;
-                context.setAttribute("version",ver);
-
-                if(ver.equals("?"))
-                    Hudson.RESOURCE_PATH = "";
-                else
-                    Hudson.RESOURCE_PATH = "/static/"+Util.getDigestOf(ver).substring(0,8);
 
                 Trigger.init(); // start running trigger
 
@@ -139,7 +122,28 @@ public class WebAppMain implements ServletContextListener {
         }.start();
     }
 
-    /**
+    protected void computeVersion(ServletContext context) {
+        // set the version
+        Properties props = new Properties();
+        try {
+            InputStream is = getClass().getResourceAsStream("hudson-version.properties");
+            if(is!=null)
+                props.load(is);
+        } catch (IOException e) {
+            e.printStackTrace(); // if the version properties is missing, that's OK.
+        }
+        String ver = props.getProperty("version");
+        if(ver==null)   ver="?";
+        Hudson.VERSION = ver;
+        context.setAttribute("version",ver);
+
+        if(ver.equals("?"))
+            Hudson.RESOURCE_PATH = "";
+        else
+            Hudson.RESOURCE_PATH = "/static/"+Util.getDigestOf(ver).substring(0,8);
+	}
+
+	/**
      * Installs log handler to monitor all Hudson logs.
      */
     private void installLogger() {
