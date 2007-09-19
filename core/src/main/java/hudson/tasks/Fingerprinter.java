@@ -125,7 +125,14 @@ public class Fingerprinter extends Publisher implements Serializable {
         Project p = build.getProject();
         final long buildTimestamp = build.getTimestamp().getTimeInMillis();
 
-        List<Record> records = p.getWorkspace().act(new FileCallable<List<Record>>() {
+        FilePath ws = p.getWorkspace();
+        if(ws==null) {
+            listener.error("Unable to record fingerprints because there's no workspace");
+            build.setResult(Result.FAILURE);
+            return;
+        }
+
+        List<Record> records = ws.act(new FileCallable<List<Record>>() {
             public List<Record> invoke(File baseDir, VirtualChannel channel) throws IOException {
                 List<Record> results = new ArrayList<Record>();
 
