@@ -85,7 +85,9 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     public FilePath getWorkspace() {
         Node node = getLastBuiltOn();
         if(node==null)  node = Hudson.getInstance();
-        return node.getWorkspaceFor(getParent()).child(getCombination().toString('/','/'));
+        FilePath ws = node.getWorkspaceFor(getParent());
+        if(ws==null)    return null;
+        return ws.child(getCombination().toString('/','/'));
     }
 
     @Override
