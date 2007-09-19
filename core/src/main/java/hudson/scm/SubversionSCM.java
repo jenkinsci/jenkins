@@ -555,7 +555,7 @@ public class SubversionSCM extends SCM implements Serializable {
     /**
      * Gets the file that stores the revision.
      */
-    private static File getRevisionFile(AbstractBuild build) {
+    public static File getRevisionFile(AbstractBuild build) {
         return new File(build.getRootDir(),"revision.txt");
     }
 

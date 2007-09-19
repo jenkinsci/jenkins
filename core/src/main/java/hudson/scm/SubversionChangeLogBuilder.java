@@ -96,6 +96,10 @@ final class SubversionChangeLogBuilder {
             return false;
         }
         Long thisRev = thisRevisions.get(url);
+        if (thisRev == null) {
+        	listener.error("No revision found for URL: " + url + " in " + SubversionSCM.getRevisionFile(build) + ". Revision file contains: " + thisRevisions.keySet());
+        	return true;
+        }
         if(thisRev.equals(prevRev)) {
             logger.println("no change for "+url+" since the previous build");
             return false;
