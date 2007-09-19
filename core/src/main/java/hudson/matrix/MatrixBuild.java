@@ -103,11 +103,21 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     // wait for the completion
                     while(true) {
                         MatrixRun b = c.getBuildByNumber(n);
-                        if(b!=null && !b.isBuilding()) {
-                            r = r.combine(b.getResult());
-                            for (MatrixAggregator a : aggregators)
-                                if(!a.endRun(b))
-                                    return Result.FAILURE;
+
+                        // two ways to get beyond this. one is that the build starts and gets done,
+                        // or the build gets cancelled before it even started.
+                        Result buildResult = null;
+                        if(b!=null && !b.isBuilding())
+                            buildResult = b.getResult();
+                        if(b==null && !c.isInQueue())
+                            buildResult = Result.ABORTED;
+
+                        if(buildResult!=null) {
+                            r = r.combine(buildResult);
+                            if(b!=null)
+                                for (MatrixAggregator a : aggregators)
+                                    if(!a.endRun(b))
+                                        return Result.FAILURE;
                             break;
                         }
                         Thread.sleep(1000);
