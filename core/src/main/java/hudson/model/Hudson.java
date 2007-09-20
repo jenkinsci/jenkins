@@ -225,12 +225,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         else
             tcpSlaveAgentListener = null;
 
+        // if we are loading old data that doesn't have this field
+        if(slaves==null)    slaves = new ArrayList<Slave>();
+
         // work around to have MavenModule register itself until we either move it to a plugin
         // or make it a part of the core.
         Items.LIST.hashCode();
 
         load();
-        if(slaves==null)    slaves = new ArrayList<Slave>();
         updateComputerList();
 
         getQueue().load();
