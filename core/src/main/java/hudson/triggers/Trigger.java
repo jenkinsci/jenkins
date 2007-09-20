@@ -1,6 +1,5 @@
 package hudson.triggers;
 
-import antlr.ANTLRException;
 import hudson.DependencyRunner;
 import hudson.ExtensionPoint;
 import hudson.DependencyRunner.ProjectRunnable;
@@ -10,9 +9,9 @@ import hudson.model.Build;
 import hudson.model.Describable;
 import hudson.model.FingerprintCleanupThread;
 import hudson.model.Hudson;
+import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.WorkspaceCleanupThread;
-import hudson.model.Item;
 import hudson.scheduler.CronTab;
 import hudson.scheduler.CronTabList;
 
@@ -23,8 +22,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.Timer;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import antlr.ANTLRException;
 
 /**
  * Triggers a {@link Build}.
@@ -145,21 +147,28 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
     }
 
+    private static Future previousSynchronousPolling;
+
     public static void checkTriggers(final Calendar cal) {
         Hudson inst = Hudson.getInstance();
 
+        // Are we using synchronous polling?
         if (SCMTrigger.DESCRIPTOR.synchronousPolling) {
-            // Process SCMTriggers in the order of dependencies. Note that the crontab spec expressed per-project is
-            // ignored, only the global setting is honored
-            // FIXME allow to set a global crontab spec
-            SCMTrigger.DESCRIPTOR.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
-                public void run(AbstractProject p) {
-                    for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
-                        if (t instanceof SCMTrigger)
-                            t.run();
-                    }
-                }
-            }));
+            // Check that previous synchronous polling job is done to prevent piling up too many jobs
+        	if (previousSynchronousPolling == null || previousSynchronousPolling.isDone()) {
+	            // Process SCMTriggers in the order of dependencies. Note that the crontab spec expressed per-project is
+	            // ignored, only the global setting is honored. The polling job is submitted only if the previous job has
+	            // terminated.
+	            // FIXME allow to set a global crontab spec
+	            previousSynchronousPolling = SCMTrigger.DESCRIPTOR.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
+	                public void run(AbstractProject p) {
+	                    for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
+	                        if (t instanceof SCMTrigger)
+	                            t.run();
+	                    }
+	                }
+	            }));
+        	}
         }
 
         // Process all triggers, except SCMTriggers when synchronousPolling is set
