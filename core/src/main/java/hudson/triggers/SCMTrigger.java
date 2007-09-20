@@ -65,7 +65,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
     }
 
     public void run() {
-        if(pollingScheduled)
+        if(pollingScheduled || Hudson.getInstance().isQuietingDown())
             return; // noop
         pollingScheduled = true;
 
@@ -123,8 +123,6 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         DescriptorImpl() {
             super(SCMTrigger.class);
             load();
-            // create an executor
-            update();
         }
 
         public boolean isApplicable(Item item) {
@@ -169,19 +167,25 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             return maximumThreads;
         }
 
+        /**
+         * Sets the number of concurrent threads used for SCM polling and resizes the thread pool accordingly
+         * @param n number of concurrent threads, zero or less means unlimited, maximum is 100
+         */
         public void setPollingThreadCount(int n) {
             // fool proof
             if(n<0)     n=0;
             if(n>100)   n=100;
 
             maximumThreads = n;
-            save();
+
+            // Shutdown some threads if necessary
+            resizeThreadPool();
         }
 
         /**
          * Update the {@link ExecutorService} instance.
          */
-        /*package*/ synchronized void update() {
+        /*package*/ synchronized void resizeThreadPool() {
             // swap to a new one, and shut down the old one gradually
             ExecutorService newExec = maximumThreads==0 ? Executors.newCachedThreadPool() : Executors.newFixedThreadPool(maximumThreads);
             ExecutorService old = executor;
@@ -196,6 +200,10 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                 setPollingThreadCount(0);
             else
                 setPollingThreadCount(Integer.parseInt(t));
+
+            // Save configuration
+            save();
+
             return super.configure(req);
         }
     }
