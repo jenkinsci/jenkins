@@ -37,8 +37,8 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         //    cn = parent.getName();
 
         String cn = parent.getName();
-        className = cn.replace('/','_');    // avoid unsafe chars
-        testName = testCase.attributeValue("name").replace('/','_');
+        className = safe(cn);
+        testName = safe(testCase.attributeValue("name"));
         errorStackTrace = getError(testCase);
     }
 

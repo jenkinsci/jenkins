@@ -20,4 +20,11 @@ public abstract class TestObject implements ModelObject, Serializable {
      *      if no such counter part exists.
      */
     public abstract TestObject getPreviousResult();
+
+    /**
+     * Replaces URL-unasfe characters.
+     */
+    protected static String safe(String s) {
+        return s.replace('/','_').replace(':','_');
+    }
 }

@@ -42,7 +42,7 @@ public final class SuiteResult implements Serializable {
             // some user reported that name is null in their environment.
             // see http://www.nabble.com/Unexpected-Null-Pointer-Exception-in-Hudson-1.131-tf4314802.html
             name = '('+xmlReport.getName()+')';
-        this.name = name;
+        this.name = TestObject.safe(name);
 
         stdout = root.elementText("system-out");
         stderr = root.elementText("system-err");
