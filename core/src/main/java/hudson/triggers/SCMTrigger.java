@@ -123,8 +123,10 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         DescriptorImpl() {
             super(SCMTrigger.class);
             load();
-            // Need to resize the thread pool here in case there is no existing configuration file for SCMTrigger as
-			// setPollingThreadCount() is not called in this case
+            /*
+             * Need to resize the thread pool here in case there is no existing configuration file for SCMTrigger as
+             * setPollingThreadCount() is not called in this case
+             */
             resizeThreadPool();
         }
 
