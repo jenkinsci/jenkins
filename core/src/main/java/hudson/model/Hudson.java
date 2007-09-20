@@ -1424,6 +1424,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * RSS feed for log entries.
      */
     public void doLogRss( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
+
         List<LogRecord> logs = logRecords;
 
         // filter log records based on the log level
