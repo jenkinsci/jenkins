@@ -129,7 +129,6 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         reporters.setOwner(this);
         if(dependencies==null)
             dependencies = Collections.emptySet();
-        updateTransientActions();
     }
 
     /**

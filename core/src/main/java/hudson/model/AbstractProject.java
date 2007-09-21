@@ -159,6 +159,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         if(transientActions==null)
             transientActions = new Vector<Action>();    // happens when loaded from disk
+        updateTransientActions();
     }
 
     /**
@@ -747,6 +748,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         triggers = buildDescribable(req, Triggers.getApplicableTriggers(this), "trigger");
         for (Trigger t : triggers)
             t.start(this,true);
+
+        updateTransientActions();
     }
 
     protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix)

@@ -383,6 +383,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         buildWrappers = buildDescribable(req, BuildWrappers.WRAPPERS, "wrapper");
         builders = buildDescribable(req, BuildStep.BUILDERS, "builder");
         publishers = buildDescribable(req, BuildStep.PUBLISHERS, "publisher");
+        updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
 
         rebuildConfigurations();
     }

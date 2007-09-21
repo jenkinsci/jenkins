@@ -54,8 +54,6 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         if(buildWrappers==null)
             // it didn't exist in < 1.64
             buildWrappers = new Vector<BuildWrapper>();
-
-        updateTransientActions();
     }
 
     public AbstractProject<?, ?> asProject() {
@@ -132,8 +130,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         buildWrappers = buildDescribable(req, BuildWrappers.WRAPPERS, "wrapper");
         builders = buildDescribable(req, BuildStep.BUILDERS, "builder");
         publishers = buildDescribable(req, BuildStep.PUBLISHERS, "publisher");
-
-        updateTransientActions();
+        updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }
 
     protected void updateTransientActions() {

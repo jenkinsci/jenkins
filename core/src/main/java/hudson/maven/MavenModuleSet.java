@@ -266,8 +266,6 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
-
-        updateTransientActions();
     }
 
     private File getModulesDir() {
