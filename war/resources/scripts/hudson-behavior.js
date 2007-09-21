@@ -243,9 +243,9 @@ var hudsonRules = {
     "[tooltip]" : function(e) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
         // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
-        e.onmouseover = function() { return tooltip.onContextMouseOver.call(this,window.event,tooltip); }
-        e.onmousemove = function() { return tooltip.onContextMouseMove.call(this,window.event,tooltip); }
-        e.onmouseout  = function() { return tooltip.onContextMouseOut .call(this,window.event,tooltip); }
+        e.onmouseover = function(ev) { return tooltip.onContextMouseOver.call(this,YAHOO.Event.getEvent(ev),tooltip); }
+        e.onmousemove = function(ev) { return tooltip.onContextMouseMove.call(this,YAHOO.Event.getEvent(ev),tooltip); }
+        e.onmouseout  = function(ev) { return tooltip.onContextMouseOut .call(this,YAHOO.Event.getEvent(ev),tooltip); }
         e.title = e.getAttribute("tooltip");
         e = null; // avoid memory leak
     }
