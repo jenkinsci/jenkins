@@ -5,8 +5,8 @@
       type="text" value="${instance.recipients}"/>
   </f:entry>
   <f:entry title="">
-    <f:checkbox name="mailer_dontNotifyEveryUnstableBuild" checked="${instance.dontNotifyEveryUnstableBuild}" />
-    Don't send e-mail for every unstable build
+    <f:checkbox name="mailer_notifyEveryUnstableBuild" checked="${h.defaultToTrue(!instance.dontNotifyEveryUnstableBuild)}" />
+    Send e-mail for every unstable build
   </f:entry>
   <f:entry title="" help="/help/tasks/mailer/sendToindividuals.html">
     <f:checkbox name="mailer_sendToIndividuals" checked="${instance.sendToIndividuals}"

@@ -256,6 +256,7 @@ public class Mailer extends Publisher {
         public Publisher newInstance(StaplerRequest req) {
             Mailer m = new Mailer();
             req.bindParameters(m,"mailer_");
+            m.dontNotifyEveryUnstableBuild = req.getParameter("mailer_notifyEveryUnstableBuild")==null;
             return m;
         }
 
