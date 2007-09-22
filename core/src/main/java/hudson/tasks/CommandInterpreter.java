@@ -53,7 +53,11 @@ public abstract class CommandInterpreter extends Builder {
             int r;
             try {
                 Map<String,String> envVars = build.getEnvVars();
-                envVars.putAll(build.getBuildVariables());
+                // on Windows environment variables are converted to all upper case,
+                // but no such conversions are done on Unix, so to make this cross-platform,
+                // convert variables to all upper cases.
+                for(Map.Entry<String,String> e : build.getBuildVariables().entrySet())
+                    envVars.put(e.getKey(),e.getValue());
                 r = launcher.launch(cmd,envVars,listener.getLogger(),ws).join();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
