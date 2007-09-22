@@ -367,11 +367,13 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         AxisList newAxes = new AxisList();
 
         // parse user axes
-        newAxes.addAll(req.bindParametersToList(Axis.class,"axis."));
-        // get rid of empty values
-        for (Iterator<Axis> itr = newAxes.iterator(); itr.hasNext();) {
-            Axis a = itr.next();
-            if(a.values.isEmpty())  itr.remove();
+        if(req.getParameter("hasAxes")!=null) {
+            newAxes.addAll(req.bindParametersToList(Axis.class,"axis."));
+            // get rid of empty values
+            for (Iterator<Axis> itr = newAxes.iterator(); itr.hasNext();) {
+                Axis a = itr.next();
+                if(a.values.isEmpty())  itr.remove();
+            }
         }
 
         // parse system axes
