@@ -234,6 +234,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+        modules = Collections.emptyMap(); // needed during load
         super.onLoad(parent, name);
 
         modules = loadChildren(this, getModulesDir(),new Function1<ModuleName,MavenModule>() {
@@ -266,6 +267,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
+
+        updateTransientActions();
     }
 
     private File getModulesDir() {
