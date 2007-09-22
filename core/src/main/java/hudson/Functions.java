@@ -27,6 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
@@ -621,5 +623,11 @@ public class Functions {
     public static boolean defaultToTrue(Boolean b) {
         if(b==null) return true;
         return b;
+    }
+
+    public static String printThrowable(Throwable t) {
+        StringWriter sw = new StringWriter();
+        t.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
     }
 }

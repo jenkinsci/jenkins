@@ -1,0 +1,30 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.name}">
+    <l:header />
+    <l:side-panel>
+      <l:tasks>
+        <l:task icon="images/24x24/up.gif" href="../.." title="Back" />
+      </l:tasks>
+    </l:side-panel>
+    <l:main-panel>
+      <j:choose>
+        <j:when test="${it.alive}">
+          <h1>
+            <img src="${imagesURL}/48x48/blue.gif" width="48" height="48" />
+            Thread is still alive
+          </h1>
+        </j:when>
+        <j:otherwise>
+          <h1>
+            <img src="${imagesURL}/48x48/red.gif" width="48" height="48" />            
+            Thread has died
+          </h1>
+          <pre>${h.printThrowable(it.causeOfDeath)}</pre>
+          <pre>
+            <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Dead+Executor">more info</a>
+          </pre>
+        </j:otherwise>
+      </j:choose>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

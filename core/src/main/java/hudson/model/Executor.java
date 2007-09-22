@@ -13,7 +13,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Executor extends Thread {
+public class Executor extends Thread implements ModelObject {
     private final Computer owner;
     private final Queue queue;
 
@@ -25,6 +25,8 @@ public class Executor extends Thread {
     private int number;
     private Queue.Executable executable;
 
+    private Throwable causeOfDeath;
+
     public Executor(Computer owner) {
         super("Executor #"+owner.getExecutors().size()+" for "+owner.getDisplayName());
         this.owner = owner;
@@ -34,36 +36,44 @@ public class Executor extends Thread {
     }
 
     public void run() {
-        while(true) {
-            if(Hudson.getInstance().isTerminating())
-                return;
-
-            synchronized(owner) {
-                if(owner.getNumExecutors()<owner.getExecutors().size()) {
-                    // we've got too many executors.
-                    owner.removeExecutor(this);
+        try {
+            while(true) {
+                if(Hudson.getInstance().isTerminating())
                     return;
+
+                synchronized(owner) {
+                    if(owner.getNumExecutors()<owner.getExecutors().size()) {
+                        // we've got too many executors.
+                        owner.removeExecutor(this);
+                        return;
+                    }
                 }
-            }
 
-            Queue.Task task;
-            try {
-                task = queue.pop();
-            } catch (InterruptedException e) {
-                continue;
-            }
+                Queue.Task task;
+                try {
+                    task = queue.pop();
+                } catch (InterruptedException e) {
+                    continue;
+                }
 
-            try {
-                startTime = System.currentTimeMillis();
-                executable = task.createExecutable();
-                queue.execute(executable,task);
-            } catch (Throwable e) {
-                // for some reason the executor died. this is really
-                // a bug in the code, but we don't want the executor to die,
-                // so just leave some info and go on to build other things
-                e.printStackTrace();
+                try {
+                    startTime = System.currentTimeMillis();
+                    executable = task.createExecutable();
+                    queue.execute(executable,task);
+                } catch (Throwable e) {
+                    // for some reason the executor died. this is really
+                    // a bug in the code, but we don't want the executor to die,
+                    // so just leave some info and go on to build other things
+                    e.printStackTrace();
+                }
+                executable = null;
             }
-            executable = null;
+        } catch(RuntimeException e) {
+            causeOfDeath = e;
+            throw e;
+        } catch (Error e) {
+            causeOfDeath = e;
+            throw e;
         }
     }
 
@@ -75,6 +85,13 @@ public class Executor extends Thread {
      */
     public Queue.Executable getCurrentExecutable() {
         return executable;
+    }
+
+    /**
+     * Same as {@link #getName()}.
+     */
+    public String getDisplayName() {
+        return "Executor #"+getNumber();
     }
 
     /**
@@ -93,6 +110,16 @@ public class Executor extends Thread {
      */
     public boolean isIdle() {
         return executable==null;
+    }
+
+    /**
+     * If this thread dies unexpectedly, obtain the cause of the failure.
+     *
+     * @return null if the death is expected death or the thread is {@link #isAlive() still alive}.
+     * @since 1.142
+     */
+    public Throwable getCauseOfDeath() {
+        return causeOfDeath;
     }
 
     /**

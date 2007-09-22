@@ -40,7 +40,7 @@
 	        <j:choose>
             <j:when test="${!e.alive}">
               <td class="pane" width="70%">
-                <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Dead+Executor">
+                <a href="${rootURL}/computers/${cloop.index}/executors/${eloop.index}/causeOfDeath">
                   <span class="error">Dead (!)</span>
                 </a>
               </td>
