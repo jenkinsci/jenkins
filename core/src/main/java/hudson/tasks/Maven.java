@@ -123,9 +123,12 @@ public class Maven extends Builder {
                 endIndex = targets.length();
             }
 
+            Map<String,String> env = build.getEnvVars();
+
             String normalizedTarget = targets
                     .substring(startIndex, endIndex)
                     .replaceAll("[\t\r\n]+"," ");
+            normalizedTarget = Util.replaceMacro(normalizedTarget,env);
 
             ArgumentListBuilder args = new ArgumentListBuilder();
             MavenInstallation ai = getMaven();
@@ -143,7 +146,6 @@ public class Maven extends Builder {
             args.addKeyValuePairs("-D",build.getBuildVariables());
             args.addTokenized(normalizedTarget);
 
-            Map<String,String> env = build.getEnvVars();
             if(ai!=null) {
                 // if somebody has use M2_HOME they will get a classloading error
                 // when M2_HOME points to a different version of Maven2 from
