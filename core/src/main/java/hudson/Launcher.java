@@ -88,6 +88,8 @@ public abstract class Launcher {
     }
 
     /**
+     * @param env
+     *      Environment variable overrides.
      * @param in
      *      null if there's no input.
      * @param workDir
