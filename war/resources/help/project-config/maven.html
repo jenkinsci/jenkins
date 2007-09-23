@@ -3,4 +3,8 @@
   invoke Maven with the given goals and options. Non-0 exit code from
   Maven makes Hudson to mark the build as a failure.
   Some maven versions have a bug where it doesn't return the exit code correctly.
+
+  <p>
+  Hudson passes <a href="https://hudson.dev.java.net/source/browse/*checkout*/hudson/hudson/main/war/resources/env-vars.html">
+  various environment variables</a> to Maven, which you can acecss from Maven by doing "${env.VARIABLENAME}"
 </div>
