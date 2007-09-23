@@ -21,8 +21,11 @@ public class UtilTest extends TestCase {
         // invalid keys are ignored
         assertEquals("$AAB",Util.replaceMacro("$AAB",m));
 
-	// test that more complex scenarios work
-	assertEquals("/a/B/aa", Util.replaceMacro("/$A/$B/$AA",m));
+        assertEquals("aaB",Util.replaceMacro("${AA}B",m));
+        assertEquals("${AAB}",Util.replaceMacro("${AAB}",m));
+
+    	// test that more complex scenarios work
+	    assertEquals("/a/B/aa", Util.replaceMacro("/$A/$B/$AA",m));
         assertEquals("a-aa", Util.replaceMacro("$A-$AA",m));
         assertEquals("/a/foo/can/B/you-believe_aa~it?", Util.replaceMacro("/$A/foo/can/$B/you-believe_$AA~it?",m));
     }

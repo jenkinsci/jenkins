@@ -7,6 +7,7 @@ import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,7 +18,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.io.ByteArrayInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.DigestInputStream;
@@ -55,34 +55,34 @@ public class Util {
     }
 
     /**
+     * Pattern for capturing variables. Either $xyz or ${xyz}, while ignoring "$$"
+      */
+    private static final Pattern VARIABLE = Pattern.compile("(?<!\\$)\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_]+\\})");
+
+    /**
      * Replaces the occurrence of '$key' by <tt>properties.get('key')</tt>.
      *
      * <p>
-     * This is a rather naive implementation that causes somewhat unexpected
-     * behavior when the expansion contains other macros.
+     * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.) 
+     *
      */
     public static String replaceMacro(String s, Map<String,String> properties) {
         int idx=0;
-        while((idx=s.indexOf('$',idx))>=0) {
-            // identify the key
-            int end=idx+1;
-            while(end<s.length()) {
-                char ch = s.charAt(end);
-                if(!Character.isJavaIdentifierPart(ch))
-                    break;
-                else
-                    end++;
-            }
-            String key = s.substring(idx+1,end);
+        while(true) {
+            Matcher m = VARIABLE.matcher(s);
+            if(!m.find(idx))   return s;
+
+            String key = m.group().substring(1);
+            if(key.charAt(0)=='{')  key = key.substring(1,key.length()-1);
+
             String value = properties.get(key);
-            if(value==null) {
-                idx++;  // skip this '$' mark
-            } else {
-                s = s.substring(0,idx)+value+s.substring(end);
+            if(value==null)
+                idx = m.start()+1; // skip this
+            else {
+                s = s.substring(0,m.start())+value+s.substring(m.end());
+                idx = m.start();
             }
         }
-        
-        return s;
     }
 
     /**
