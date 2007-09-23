@@ -6,5 +6,9 @@
 
   <p>
   Hudson passes <a href="https://hudson.dev.java.net/source/browse/*checkout*/hudson/hudson/main/war/resources/env-vars.html">
-  various environment variables</a> to Maven, which you can acecss from Maven by doing "${env.VARIABLENAME}"
+  various environment variables</a> to Maven, which you can acecss from Maven as "${env.VARIABLENAME}".
+
+  <p>
+  The same variables can be used in the command-line argument (as if you are invoking this from shell.)
+  For example, you can specify <tt>-DresultsFile=${WORKSPACE}/${BUILD_TAG}.results.txt</tt>
 </div>
