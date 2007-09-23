@@ -293,6 +293,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public Map<String,String> getEnvVars() {
         Map<String,String> env = super.getEnvVars();
         env.put("WORKSPACE", getProject().getWorkspace().getRemote());
+        // servlet container may have set CLASSPATH in its launch script,
+        // so don't let that inherit to the new child process.
+        // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
+        env.put("CLASSPATH","");
 
         JDK jdk = project.getJDK();
         if(jdk !=null)
