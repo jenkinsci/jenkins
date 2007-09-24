@@ -1163,6 +1163,10 @@ public class SubversionSCM extends SCM implements Serializable {
             DAVRepositoryFactory.setup();   // http, https
             SVNRepositoryFactoryImpl.setup();   // svn, svn+xxx
             FSRepositoryFactory.setup();    // file
+
+            // work around for http://www.nabble.com/Slow-SVN-Checkout-tf4486786.html
+            if(System.getProperty("svnkit.symlinks")==null)
+                System.setProperty("svnkit.symlinks","false");
         }
     }
 
