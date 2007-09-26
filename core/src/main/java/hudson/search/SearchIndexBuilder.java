@@ -19,10 +19,19 @@ public final class SearchIndexBuilder {
         return this;
     }
 
+    /**
+     * Short for {@code add(urlAsWellAsName,urlAsWellAsName)}
+     */
     public SearchIndexBuilder add(String urlAsWellAsName) {
         return add(urlAsWellAsName,urlAsWellAsName);        
     }
 
+    /**
+     * Adds a search index under the keyword 'name' to the given URL.
+     *
+     * @param url
+     *      Relative URL from the source of the search index. 
+     */
     public SearchIndexBuilder add(String url, String name) {
         items.add(SearchItems.create(name,url));
         return this;
