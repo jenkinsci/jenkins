@@ -702,7 +702,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             })
             .add(new CollectionSearchIndex() {// for users
                 protected User get(String key) { return getUser(key); }
-                protected Collection<User> all() { return Collections.emptySet(); } // TODO
+                protected Collection<User> all() { return User.getAll(); }
             })
             .add(new CollectionSearchIndex() {// for views
                 protected View get(String key) { return getView(key); }
