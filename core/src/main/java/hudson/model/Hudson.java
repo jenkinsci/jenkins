@@ -700,6 +700,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                 protected Computer get(String key) { return getComputer(key); }
                 protected Collection<Computer> all() { return computers.values(); }
             })
+            .add(new CollectionSearchIndex() {// for users
+                protected User get(String key) { return getUser(key); }
+                protected Collection<User> all() { return Collections.emptySet(); } // TODO
+            })
             .add(new CollectionSearchIndex() {// for views
                 protected View get(String key) { return getView(key); }
                 protected Collection<ListView> all() { return views; }
