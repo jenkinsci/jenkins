@@ -27,4 +27,6 @@ public abstract class TestObject implements ModelObject, Serializable {
     protected static String safe(String s) {
         return s.replace('/','_').replace(':','_');
     }
+
+    private static final long serialVersionUID = 1L;
 }
