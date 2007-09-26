@@ -694,6 +694,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     public SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex()
             .add("configure", "config","configure")
+            .add("manage")
             .add("log")
             .add(new CollectionSearchIndex() {// for computers
                 protected Computer get(String key) { return getComputer(key); }
