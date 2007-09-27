@@ -27,8 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
@@ -46,6 +46,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
+import java.util.regex.Pattern;
 
 /**
  * Utility functions used in views.
@@ -630,4 +631,15 @@ public class Functions {
         t.printStackTrace(new PrintWriter(sw));
         return sw.toString();
     }
+
+    /**
+     * Counts the number of rows needed for textarea to fit the content.
+     * Minimum 5 rows.
+     */
+    public static int determineRows(String s) {
+        if(s==null)     return 5;
+        return Math.max(5,LINE_END.split(s).length);
+    }
+
+    private static final Pattern LINE_END = Pattern.compile("\r?\n");
 }

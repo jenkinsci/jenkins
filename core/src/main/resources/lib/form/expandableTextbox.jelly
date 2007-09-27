@@ -6,11 +6,11 @@
 
   TODO: support @checkUrl
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <j:choose>
     <j:when test="${h.isMultiline(attrs.value)}">
       <!-- multiline text area to begin with -->
-      <textarea rows="8" class='setting-input' name='${attrs.name}'>${attrs.value}</textarea>
+      <f:textarea name='${attrs.name}' value="${attrs.value}"/>
     </j:when>
     <j:otherwise>
       <!-- single line textbox with expand button -->

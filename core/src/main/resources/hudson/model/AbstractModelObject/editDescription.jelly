@@ -6,7 +6,7 @@
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <form action="submitDescription" method="post">
-        <textarea name="description" style="width:100%; height:10em;"><st:out value="${it.description}" /></textarea>
+        <f:textarea name="description" value="${it.description}" />
         <input type="submit" value="Submit" />
       </form>
     </l:main-panel>

@@ -1,0 +1,15 @@
+<!--
+	<textarea> tag on steroid.
+
+	The textarea will be rendered to fit the content. It also gets the resize handle.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <textarea name="${attrs.name}" id="${attrs.id}" style="${attrs.style}"
+            class="setting-input ${h.ifThenElse(attrs.checkUrl!=null,'validated','')}"
+            checkUrl="${attrs.checkUrl}"
+            rows="${h.determineRows(attrs.value)}">
+    <st:out value="${attrs.value}" />
+  </textarea>
+  <!-- resize handle -->
+  <div class="textarea-handle"/>
+</j:jelly>
