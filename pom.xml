@@ -55,7 +55,11 @@
       </plugin>
     </plugins>
   </build>
-
+  
+  <properties>
+    <maven.version>2.0.4</maven.version>
+  </properties>
+  
   <profiles>
     <profile>
       <id>debug</id>
