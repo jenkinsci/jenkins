@@ -7,7 +7,7 @@
       </j:forEach>
     </select>
   </f:entry>
-  <f:entry title="Targets">
+  <f:entry title="Targets" help="/help/ant/ant-targets.html">
     <f:expandableTextbox name="ant.targets" value="${instance.targets}" />
   </f:entry>
   <f:advanced>
