@@ -15,7 +15,7 @@
       <f:textbox name="ant.buildFile" value="${instance.buildFile}"/>
     </f:entry>
     <f:entry title="Properties" help="/help/ant/ant-properties.html">
-      <f:expandableTextbox name="ant.properties" value="${instance.properties}"/>
+      <f:textarea name="ant.properties" value="${instance.properties}"/>
     </f:entry>
     <f:entry title="Java Options" help="/help/ant/ant-opts.html">
       <f:expandableTextbox name="ant.antOpts" value="${instance.antOpts}"/>
