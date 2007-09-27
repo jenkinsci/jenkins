@@ -241,21 +241,30 @@ var hudsonRules = {
 
     // resizable text area
     "TEXTAREA" : function(textarea) {
-        var handle = document.createElement("div");
-        handle.setAttribute("class","textarea-handle");
-        textarea.parentNode.insertBefore(handle,textarea.nextSibling);
+        var handle = textarea.nextSibling;
+        if(handle==null || handle.className!="textarea-handle") return;
+
+        var Event = YAHOO.util.Event;
+
         handle.onmousedown = function(ev) {
-            var offset = textarea.offsetHeight-YAHOO.util.Event.getPageY(ev);
+            ev = Event.getEvent(ev);
+            var offset = textarea.offsetHeight-Event.getPageY(ev);
             textarea.style.opacity = 0.5;
             document.onmousemove = function(ev) {
+                ev = Event.getEvent(ev);
                 function max(a,b) { if(a<b) return b; else return a; }
-                textarea.style.height = max(32, offset + YAHOO.util.Event.getPageY(ev)) + 'px';
+                textarea.style.height = max(32, offset + Event.getPageY(ev)) + 'px';
+                return false;
             };
             document.onmouseup = function() {
                 document.onmousemove = null;
                 document.onmouseup = null;
                 textarea.style.opacity = 1;
             }
+        };
+        handle.ondblclick = function() {
+            textarea.style.height = "";
+            textarea.rows = textarea.value.split("\n").length;
         }
     },
 
