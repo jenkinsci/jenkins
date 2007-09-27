@@ -72,6 +72,11 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
             if(result.getPassCount()==0 && result.getFailCount()==0)
                 new AbortException("None of the test reports contained any result");
         } catch (AbortException e) {
+            if(build.getResult()==Result.FAILURE)
+                // most likely a build failed before it gets to the test phase.
+                // don't report confusing error message.
+                return true;
+
             listener.getLogger().println(e.getMessage());
             build.setResult(Result.FAILURE);
             return true;
