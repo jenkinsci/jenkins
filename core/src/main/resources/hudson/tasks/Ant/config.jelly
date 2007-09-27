@@ -7,16 +7,18 @@
       </j:forEach>
     </select>
   </f:entry>
-  <f:entry title="Targets" description="
-    Specify Ant target(s) to run. If necessary, you can also specify any ant command line options,
-    such as '-Dprop=value'. Also, &lt;a href='${rootURL}/env-vars.html' target=_new>some
-    environment variables are available to the build script&lt;/a>
-    ">
+  <f:entry title="Targets">
     <f:expandableTextbox name="ant.targets" value="${instance.targets}" />
   </f:entry>
   <f:advanced>
-    <f:entry title="ANT_OPTS" help="/help/ant/ant-opts.html">
-      <f:textbox name="ant.antOpts" value="${instance.antOpts}"/>
+    <f:entry title="Build File" help="/help/ant/ant-buildfile.html">
+      <f:textbox name="ant.buildFile" value="${instance.buildFile}"/>
+    </f:entry>
+    <f:entry title="Properties" help="/help/ant/ant-properties.html">
+      <f:expandableTextbox name="ant.properties" value="${instance.properties}"/>
+    </f:entry>
+    <f:entry title="Java Options" help="/help/ant/ant-opts.html">
+      <f:expandableTextbox name="ant.antOpts" value="${instance.antOpts}"/>
     </f:entry>
   </f:advanced>
 </j:jelly>

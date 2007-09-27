@@ -17,7 +17,15 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -39,14 +47,28 @@ public class Ant extends Builder {
      */
     private final String antOpts;
 
+    private final String buildFile;
+    
+    private final String properties;
+    
     @DataBoundConstructor
-    public Ant(String targets,String antName, String antOpts) {
+    public Ant(String targets,String antName, String antOpts, String buildFile, String properties) {
         this.targets = targets;
         this.antName = antName;
         this.antOpts = Util.fixEmpty(antOpts.trim());
+        this.buildFile = Util.fixEmpty(buildFile);
+        this.properties = Util.fixEmpty(properties);
     }
+    
+	public String getBuildFile() {
+		return buildFile;
+	}
 
-    public String getTargets() {
+	public String getProperties() {
+		return properties;
+	}
+
+	public String getTargets() {
         return targets;
     }
 
@@ -69,7 +91,7 @@ public class Ant extends Builder {
         return antOpts;
     }
 
-    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         Project proj = build.getProject();
 
         ArgumentListBuilder args = new ArgumentListBuilder();
@@ -89,7 +111,28 @@ public class Ant extends Builder {
             File exec = ai.getExecutable(launcher.isUnix());
             args.add(exec.getPath());
         }
+        
+        if(buildFile!=null) {
+        	args.add("-file", buildFile);
+        }
+
         args.addKeyValuePairs("-D",build.getBuildVariables());
+        
+        if(properties!=null) {
+        	final Properties p = new Properties();
+        	final Reader reader = new StringReader(properties);
+        	try {
+			p.load(reader);
+        	}
+        	finally {
+    			reader.close();
+        	}
+        	
+			for (final Entry<Object, Object> entry : p.entrySet()) {
+				args.add("-D"+entry.getKey()+"="+entry.getValue());
+			}
+        }
+        
         args.addTokenized(normalizedTarget);
 
         Map<String,String> env = build.getEnvVars();

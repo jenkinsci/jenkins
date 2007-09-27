@@ -1,10 +1,8 @@
 <div>
   For projects that use Ant as the build system. This causes Hudson to
-  invoke Ant with the given targets and options. Non-0 exit code from
-  Ant makes Hudson to mark the build as a failure.
-
+  invoke Ant with the given targets and options. Any non-zero exit code 
+  causes Hudson to mark the build as a failure.
   <p>
-  If your build script is located in somewhere other than the module top
-  <tt>build.xml</tt>, then you can use <a href="http://ant.apache.org/manual/running.html#options">
-  Ant's <tt>-f</tt> option</a> to specify where it is.
+  Hudson supplies some <a href='../../env-vars.html' target=_new>
+  environment variables</a> that can be used from within the build script.
 </div>
