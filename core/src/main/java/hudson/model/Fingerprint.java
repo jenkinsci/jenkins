@@ -11,6 +11,8 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.util.HexBinaryConverter;
 import hudson.util.XStream2;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,10 +30,12 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public class Fingerprint implements ModelObject {
     /**
      * Pointer to a {@link Build}.
      */
+    @ExportedBean(defaultVisibility=2)
     public static class BuildPtr {
         final String name;
         final int number;
@@ -52,6 +56,7 @@ public class Fingerprint implements ModelObject {
          * so there might not be a corresponding
          * {@link Job}.
          */
+        @Exported
         public String getName() {
             return name;
         }
@@ -70,6 +75,7 @@ public class Fingerprint implements ModelObject {
          * Such {@link Run} could be since then
          * discarded.
          */
+        @Exported
         public int getNumber() {
             return number;
         }
@@ -106,6 +112,7 @@ public class Fingerprint implements ModelObject {
     /**
      * Range of build numbers [start,end). Immutable.
      */
+    @ExportedBean(defaultVisibility=4)
     public static final class Range {
         final int start;
         final int end;
@@ -116,10 +123,12 @@ public class Fingerprint implements ModelObject {
             this.end = end;
         }
 
+        @Exported
         public int getStart() {
             return start;
         }
 
+        @Exported
         public int getEnd() {
             return end;
         }
@@ -173,6 +182,7 @@ public class Fingerprint implements ModelObject {
     /**
      * Set of {@link Range}s.
      */
+    @ExportedBean(defaultVisibility=3)
     public static final class RangeSet {
         // sorted
         private final List<Range> ranges;
@@ -188,6 +198,7 @@ public class Fingerprint implements ModelObject {
         /**
          * Gets all the ranges.
          */
+        @Exported
         public synchronized List<Range> getRanges() {
             return new ArrayList<Range>(ranges);
         }
@@ -358,6 +369,7 @@ public class Fingerprint implements ModelObject {
      * @return null
      *      if the file is apparently created outside Hudson.
      */
+    @Exported
     public BuildPtr getOriginal() {
         return original;
     }
@@ -369,6 +381,7 @@ public class Fingerprint implements ModelObject {
     /**
      * The file name (like "foo.jar" without path).
      */
+    @Exported
     public String getFileName() {
         return fileName;
     }
@@ -376,6 +389,7 @@ public class Fingerprint implements ModelObject {
     /**
      * Gets the MD5 hash string.
      */
+    @Exported(name="hash")
     public String getHashString() {
         return Util.toHexString(md5sum);
     }
@@ -383,6 +397,7 @@ public class Fingerprint implements ModelObject {
     /**
      * Gets the timestamp when this record is created.
      */
+    @Exported
     public Date getTimestamp() {
         return timestamp;
     }
@@ -427,6 +442,28 @@ public class Fingerprint implements ModelObject {
 
     public Hashtable<String,RangeSet> getUsages() {
         return usages;
+    }
+
+    @ExportedBean(defaultVisibility=2)
+    public static final class RangeItem {
+        @Exported
+        public final String name;
+        @Exported
+        public final RangeSet ranges;
+
+        public RangeItem(String name, RangeSet ranges) {
+            this.name = name;
+            this.ranges = ranges;
+        }
+    }
+
+    // this is for remote API
+    @Exported(name="usage")
+    public List<RangeItem> _getUsages() {
+        List<RangeItem> r = new ArrayList<RangeItem>();
+        for (Entry<String, RangeSet> e : usages.entrySet())
+            r.add(new RangeItem(e.getKey(),e.getValue()));
+        return r;
     }
 
     public synchronized void add(AbstractBuild b) throws IOException {
@@ -477,6 +514,10 @@ public class Fingerprint implements ModelObject {
      */
     public synchronized void save() throws IOException {
         getConfigFile(getFingerprintFile(md5sum)).write(this);
+    }
+
+    public Api getApi() {
+        return new Api(this);
     }
 
     /**
