@@ -19,15 +19,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 /**
+ * Ant launcher.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Ant extends Builder {
@@ -47,8 +45,15 @@ public class Ant extends Builder {
      */
     private final String antOpts;
 
+    /**
+     * Optional build script path relative to the workspace.
+     * Used for the Ant '-f' option.
+     */
     private final String buildFile;
-    
+
+    /**
+     * Optional properties to be passed to Ant. Follows {@link Properties} syntax.
+     */
     private final String properties;
     
     @DataBoundConstructor
@@ -56,7 +61,7 @@ public class Ant extends Builder {
         this.targets = targets;
         this.antName = antName;
         this.antOpts = Util.fixEmpty(antOpts.trim());
-        this.buildFile = Util.fixEmpty(buildFile);
+        this.buildFile = Util.fixEmpty(buildFile.trim());
         this.properties = Util.fixEmpty(properties);
     }
     
@@ -117,22 +122,22 @@ public class Ant extends Builder {
         }
 
         args.addKeyValuePairs("-D",build.getBuildVariables());
-        
-        if(properties!=null) {
-        	final Properties p = new Properties();
-        	final Reader reader = new StringReader(properties);
-        	try {
-			p.load(reader);
-        	}
-        	finally {
-    			reader.close();
-        	}
-        	
-			for (final Entry<Object, Object> entry : p.entrySet()) {
-				args.add("-D"+entry.getKey()+"="+entry.getValue());
-			}
+
+        if (properties != null) {
+            final Properties p = new Properties();
+            final Reader reader = new StringReader(properties);
+            try {
+                p.load(reader);
+            }
+            finally {
+                reader.close();
+            }
+
+            for (final Entry<Object, Object> entry : p.entrySet()) {
+                args.add("-D" + entry.getKey() + "=" + entry.getValue());
+            }
         }
-        
+
         args.addTokenized(normalizedTarget);
 
         Map<String,String> env = build.getEnvVars();
