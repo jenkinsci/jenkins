@@ -159,22 +159,26 @@ public class User extends AbstractModelObject {
         return get("unknown");
     }
 
-    /**
-     * Gets the {@link User} object by its id.
-     */
-    public static User get(String id) {
+    public static User get(String id, boolean create) {
         if(id==null)
             return null;
         id = id.replace('\\', '_').replace('/', '_');
         
         synchronized(byName) {
             User u = byName.get(id);
-            if(u==null) {
+            if(u==null && create) {
                 u = new User(id);
                 byName.put(id,u);
             }
             return u;
         }
+    }
+
+    /**
+     * Gets the {@link User} object by its id.
+     */
+    public static User get(String id) {
+        return get(id,true);
     }
 
     /**
