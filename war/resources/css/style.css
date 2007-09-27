@@ -652,3 +652,17 @@ DIV.yahooTree td {
   position:absolute;
   visibility: hidden;
 }
+
+/* ========================= resizable text area ========================= */
+
+TEXTAREA {
+    margin-bottom: 0;
+}
+DIV.textarea-handle {
+    height: 5px;
+    font-size: 0;
+    background: #EEE url(../images/textarea-handle.gif) no-repeat 50% 1px;
+    border: 1px solid #BABDB6;
+    border-top: none;
+    cursor: s-resize;
+}

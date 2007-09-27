@@ -239,6 +239,26 @@ var hudsonRules = {
         object(repetableSupport).init(e, e.firstChild, ip);
     },
 
+    // resizable text area
+    "TEXTAREA" : function(textarea) {
+        var handle = document.createElement("div");
+        handle.setAttribute("class","textarea-handle");
+        textarea.parentNode.insertBefore(handle,textarea.nextSibling);
+        handle.onmousedown = function(ev) {
+            var offset = textarea.offsetHeight-YAHOO.util.Event.getPageY(ev);
+            textarea.style.opacity = 0.5;
+            document.onmousemove = function(ev) {
+                function max(a,b) { if(a<b) return b; else return a; }
+                textarea.style.height = max(32, offset + YAHOO.util.Event.getPageY(ev)) + 'px';
+            };
+            document.onmouseup = function() {
+                document.onmousemove = null;
+                document.onmouseup = null;
+                textarea.style.opacity = 1;
+            }
+        }
+    },
+
     // hook up tooltip
     "[tooltip]" : function(e) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
@@ -264,6 +284,7 @@ function replaceDescription() {
           method : 'get',
           onComplete : function(x) {
             d.innerHTML = x.responseText;
+            Behaviour.applySubtree(d);
             d.getElementsByTagName("TEXTAREA")[0].focus();
           }
         }
