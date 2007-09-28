@@ -1,6 +1,7 @@
 package hudson.util;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.model.AbstractProject;
@@ -121,7 +122,10 @@ public abstract class FormFieldValidator {
             ok();
         } else {
             response.setContentType("text/html;charset=UTF-8");
-            response.getWriter().print("<div class="+ cssClass +">"+message+"</div>");
+            // 1x16 spacer needed for IE since it doesn't support min-height
+            response.getWriter().print("<div class="+ cssClass +"><img src='"+
+                    request.getContextPath()+Hudson.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
+                    message+"</div>");
         }
     }
 
@@ -202,9 +206,15 @@ public abstract class FormFieldValidator {
      * @since 1.90.
      */
     public static class WorkspaceFileMask extends FormFieldValidator {
+        private final boolean errorIfNotExist;
 
         public WorkspaceFileMask(StaplerRequest request, StaplerResponse response) {
+            this(request, response, true);
+        }
+
+        public WorkspaceFileMask(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist) {
             super(request, response, false);
+            this.errorIfNotExist = errorIfNotExist;
         }
 
         protected void check() throws IOException, ServletException {
@@ -224,7 +234,9 @@ public abstract class FormFieldValidator {
                     return;
                 }
 
-                error(ws.validateAntFileMask(value));
+                String msg = ws.validateAntFileMask(value);
+                if(errorIfNotExist)     error(msg);
+                else                    warning(msg);
             } catch (InterruptedException e) {
                 ok(); // coundn't check
             }
@@ -237,9 +249,15 @@ public abstract class FormFieldValidator {
      * @since 1.116.
      */
     public static class WorkspaceDirectory extends FormFieldValidator {
+        private final boolean errorIfNotExist;
+
+        public WorkspaceDirectory(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist) {
+            super(request, response, false);
+            this.errorIfNotExist = errorIfNotExist;
+        }
 
         public WorkspaceDirectory(StaplerRequest request, StaplerResponse response) {
-            super(request, response, false);
+            this(request, response, true);
         }
 
         protected void check() throws IOException, ServletException {
@@ -270,8 +288,11 @@ public abstract class FormFieldValidator {
                         ok();
                     else
                         error(value+" is not a directory");
-                } else
-                    error("No such directory: "+value);
+                } else {
+                    String msg = "No such directory: " + value;
+                    if(errorIfNotExist)     error(msg);
+                    else                    warning(msg);
+                }
             } catch (InterruptedException e) {
                 ok(); // coundn't check
             }
