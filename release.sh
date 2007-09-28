@@ -22,6 +22,7 @@ javanettasks uploadFile hudson /releases/jnlp/hudson.jar "version $id" Stable ta
 
 # replace the jar file link accordingly
 WWW=../../../www
+cvs update -l
 jarUrl=$(cat target/upload.log | grep "^Posted" | sed -e "s/Posted //g")
 perl -p -i.bak -e "s|https://.+hudson\.jar|$jarUrl|" $WWW/hudson.jnlp
 cp $WWW/hudson.jnlp $WWW/$id.jnlp
