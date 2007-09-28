@@ -331,11 +331,6 @@ th.pane {
   white-space: normal;
 }
 
-.error {
-  color: red;
-  font-weight: bold;
-}
-
 .disabledJob {
   color: gray;
 }
@@ -357,6 +352,28 @@ th.pane {
   background-repeat: no-repeat;
   background-position: right;
 }
+
+/* ======================== error/warning message (mainly in the form) ======================== */
+.error {
+    color: #CC0000;
+    font-weight: bold;
+    padding-left: 20px;
+    min-height: 16px;
+    background-image: url("../images/16x16/error.gif");
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
+.warning {
+    color: #C4A000;
+    font-weight: bold;
+    padding-left: 20px;
+    min-height: 16px;
+    background-image: url( "../images/16x16/warning.gif" );
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
 /* ====================== help ===================================== */
 
 .help {
