@@ -81,16 +81,16 @@ public abstract class FormFieldValidator {
         errorWithMarkup(message==null?null:Util.escape(message));
     }
 
+    public void warning(String message) throws IOException, ServletException {
+        warningWithMarkup(message==null?null:Util.escape(message));
+    }
+    
     /**
      * Sends out a string error message that indicates an error,
      * by formatting it with {@link String#format(String, Object[])}
      */
     public void error(String format, Object... args) throws IOException, ServletException {
         error(String.format(format,args));
-    }
-
-    public void warning(String message) throws IOException, ServletException {
-        error(message); // for now
     }
 
     public void warning(String format, Object... args) throws IOException, ServletException {
@@ -109,11 +109,19 @@ public abstract class FormFieldValidator {
      *      can be used as <tt>ok()</tt>.
      */
     public void errorWithMarkup(String message) throws IOException, ServletException {
+        _errorWithMarkup(message,"error");
+    }
+
+    public void warningWithMarkup(String message) throws IOException, ServletException {
+        _errorWithMarkup(message,"warning");
+    }
+
+    private void _errorWithMarkup(String message, String cssClass) throws IOException, ServletException {
         if(message==null) {
             ok();
         } else {
             response.setContentType("text/html;charset=UTF-8");
-            response.getWriter().print("<div class=error>"+message+"</div>");
+            response.getWriter().print("<div class="+ cssClass +">"+message+"</div>");
         }
     }
 
