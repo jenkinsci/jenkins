@@ -268,6 +268,17 @@ var hudsonRules = {
         }
     },
 
+    // structured form submission
+    "FORM" : function(form) {
+        // add the hidden 'json' input field
+        var div = document.createElement("div");
+        div.innerHTML = "<input type=hidden name=json>";
+        form.appendChild(div);
+        
+        form.onsubmit = function() { buildFormTree(this) };
+        form = null; // memory leak prevention
+    },
+
     // hook up tooltip
     "[tooltip]" : function(e) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
@@ -833,8 +844,14 @@ function buildFormTree(form) {
         return form.formDom; // guaranteed non-null
     }
 
+    var jsonElement = null;
+
     for( var i=0; i<form.elements.length; i++ ) {
         var e = form.elements[i];
+        if(e.name=="json") {
+            jsonElement = e;
+            continue;
+        }
         var p;
         var type = e.getAttribute("type");
         if(type==null)  type="";
@@ -867,7 +884,7 @@ function buildFormTree(form) {
         }
     }
 
-    alert(Object.toJSON(form.formDom));
+    jsonElement.value = Object.toJSON(form.formDom);
 
     // clean up
     for( i=0; i<doms.length; i++ )
