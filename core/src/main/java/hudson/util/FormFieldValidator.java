@@ -30,6 +30,13 @@ public abstract class FormFieldValidator {
     protected final StaplerResponse response;
     private final boolean isAdminOnly;
 
+    /**
+     *
+     * @param adminOnly
+     *      Pass true to only let admin users to run the check. This is necessary
+     *      for security reason, so that unauthenticated user cannot obtain sensitive
+     *      information or run a process that may have side-effect.
+     */
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, boolean adminOnly) {
         this.request = request;
         this.response = response;
