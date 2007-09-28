@@ -17,6 +17,12 @@ import java.net.URL;
 import java.net.URLConnection;
 
 /**
+ * Base class that provides the framework for doing on-the-fly form field validation.
+ *
+ * <p>
+ * The {@link #check()} method is to be implemented by derived classes to perform
+ * the validation. See hudson-behavior.js 'validated' CSS class and 'checkUrl' attribute.
+ *
  * @author Kohsuke Kawaguchi
  */
 public abstract class FormFieldValidator {
