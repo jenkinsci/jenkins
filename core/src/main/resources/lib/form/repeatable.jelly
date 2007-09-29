@@ -12,6 +12,8 @@
       variable that receives the item of the current iteration.
     @varStatus
       status variable that indicates the loop status.
+    @name
+      name used in the structured form submission. Defaults to @var.
     @items
       The item collection to loop over.
     @noAddButton
@@ -51,6 +53,7 @@
     for this purpose.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="name" value="${h.ifThenElse(attrs.name!=null,attrs.name,attrs.var)}"/>
   <div class="repeated-container">
     <!-- The first DIV is the master copy. -->
     <div class="repeated-chunk" style="display:none">
@@ -58,7 +61,7 @@
     </div>
     <!-- then populate them for each item -->
     <j:forEach var="loop" varStatus="loopStatus" items="${items}">
-      <div class="repeated-chunk">
+      <div class="repeated-chunk" name="${name}">
         <j:set var="${var}" value="${loop}" />
         <d:invokeBody />
       </div>
@@ -68,7 +71,7 @@
     <j:if test="${minimum}">
       <j:forEach begin="${h.size2(items)}" end="${minimum-1}" var="i">
         <j:set var="${var}" value="${null}" />
-        <div class="repeated-chunk">
+        <div class="repeated-chunk" name="${name}">
           <d:invokeBody />
         </div>
       </j:forEach>

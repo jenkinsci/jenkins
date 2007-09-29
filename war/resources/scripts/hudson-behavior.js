@@ -559,6 +559,9 @@ var repetableSupport = {
     // containing <div>.
     container: null,
 
+    // block name for structured HTML
+    name : null,
+
     // do the initialization
     init : function(container,master,insertionPoint) {
         this.container = $(container);
@@ -567,6 +570,7 @@ var repetableSupport = {
         this.blockHTML = master.innerHTML;
         master.parentNode.removeChild(master);
         this.insertionPoint = $(insertionPoint);
+        this.name = master.getAttribute("name");
         this.update();
     },
 
@@ -576,6 +580,7 @@ var repetableSupport = {
         // nc = document.importNode(node,true);
         var nc = document.createElement("div");
         nc.className = "repeated-chunk";
+        nc.setAttribute("name",name);
         nc.innerHTML = this.blockHTML;
         this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
 

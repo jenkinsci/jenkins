@@ -52,7 +52,7 @@
             List of slave nodes register to this master Hudson. Jobs can be configured to
             execute on slave nodes to handle a large number of jobs.
           ">
-          <s:repeatable var="s" items="${it.slaves}">
+          <s:repeatable var="s" items="${it.slaves}" name="slaves">
             <table width="100%">
               <s:entry title="name" help="/help/system-config/master-slave/name.html">
                 <s:textbox name="slave.name" value="${s.nodeName}" />
@@ -112,7 +112,7 @@
       <s:section title="JDKs">
         <s:entry title="JDK installations"
                  description="List of JDK installations on this system">
-          <s:repeatable var="inst" items="${it.JDKs}">
+          <s:repeatable var="inst" items="${it.JDKs}" name="jdks">
             <table width="100%">
               <s:entry title="name">
                 <input class="setting-input" name="jdk_name"
