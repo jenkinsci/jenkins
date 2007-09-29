@@ -905,7 +905,7 @@ function buildFormTree(form) {
         doms[i].formDom = null;
     
 
-    return false;
+    return jsonElement.value;
 }
 
 // this used to be in prototype.js but it must have been removed somewhere between 1.4.0 to 1.5.1
