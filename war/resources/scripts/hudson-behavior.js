@@ -819,7 +819,7 @@ function buildFormTree(form) {
         if(idx>=0)  name = name.substring(idx+1);
         
         if(parent[name]!=null) {
-            if(typeof parent[name]!="array")
+            if(parent[name].push==null) // is this array?
                 parent[name] = [ parent[name] ];
             parent[name].push(value);
         } else {
