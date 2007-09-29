@@ -152,6 +152,17 @@ var hudsonRules = {
         e = null; // avoid memory leak
     },
 
+// <label> that doesn't use ID, so that it can be copied in <repeatable>
+    "LABEL.attach-previous" : function(e) {
+        e.onclick = function() {
+            var e = this;
+            while(e.tagName!="INPUT")
+                e=e.previousSibling;
+            e.click();
+        }
+        e = null;
+    },
+
 // form fields that are validated via AJAX call to the server
 // elements with this class should have two attributes 'checkUrl' that evaluates to the server URL.
     "INPUT.validated" : registerValidator,
@@ -321,24 +332,27 @@ function applyNameRef(s,e,id) {
 
 function initOptionalBlock(sid, eid, cid) {
     applyNameRef($(sid),$(eid),cid);
-    updateOptionalBlock(sid,eid,cid);
+    updateOptionalBlock($(cid));
 }
 
 // used by optionalBlock.jelly to update the form status
-//   @param sid     ID of the start marker
-//   @param sid     ID of the end marker
-//   @param cid     ID of the check box
-function updateOptionalBlock(sid, eid, cid) {
-    var tbl = document.getElementById(sid).parentNode;
+//   @param c     checkbox element
+function updateOptionalBlock(c) {
+    // find the start TR
+    var s = c;
+    while(!s.hasClassName("optional-block-start"))
+        s = s.parentNode;
+
+    var tbl = s.parentNode;
     var i = false;
     var o = false;
 
-    var checked = document.getElementById(cid).checked;
+    var checked = c.checked;
 
     for (var j = 0; tbl.rows[j]; j++) {
         var n = tbl.rows[j];
 
-        if (n.id == eid)
+        if (i && n.hasClassName("optional-block-end"))
             o = true;
 
         if (i && !o) {
@@ -348,7 +362,7 @@ function updateOptionalBlock(sid, eid, cid) {
                 n.style.display = "none";
         }
 
-        if (n.id == sid) {
+        if (n==s) {
             if (n.getAttribute('hasHelp') == 'true')
                 j++;
             i = true;

@@ -15,12 +15,12 @@
   <j:if test="${empty(help)}">
     <j:set var="help" value="${null}" />
   </j:if>
-  <tr id="oe_s${id}" hasHelp="${help!=null}"><!-- this ID marks the beginning -->
+  <tr id="oe_s${id}" class="optional-block-start" hasHelp="${help!=null}"><!-- this ID marks the beginning -->
     <td colspan="3">
-      <f:checkbox name="${name}" onclick="javascript:updateOptionalBlock('oe_s${id}','oe_e${id}','oe_c${id}')"
+      <f:checkbox name="${name}" onclick="javascript:updateOptionalBlock(this)"
                   id="oe_c${id}" checked="${checked}" />
       <st:nbsp/>
-      <label for="oe_c${id}">${title}</label>
+      <label class="attach-previous">${title}</label>
     </td>
     <j:if test="${help!=null}">
       <td>
@@ -33,7 +33,7 @@
   </j:if>
   <d:invokeBody />
   <!-- end marker -->
-  <tr id="oe_e${id}" style="display:none">
+  <tr class="optional-block-end" style="display:none" id="oe_e${id}">
     <script>
       initOptionalBlock('oe_s${id}','oe_e${id}','oe_c${id}');
     </script>
