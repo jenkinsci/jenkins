@@ -17,7 +17,7 @@
   </j:if>
   <tr id="oe_s${oe_id}" hasHelp="${help!=null}"><!-- this ID marks the beginning -->
     <td colspan="3">
-      <f:checkbox name="${name}" onclick="javascript:updateOptionalBlock('oe_s${oe_id}','oe_e${oe_id}','oe_c${oe_id}')"
+      <f:checkbox name="${name}" onclick="javascript:updateOptionalBlock('oe_s${oe_id}','oe_c${oe_id}')"
                   id="oe_c${oe_id}" checked="${checked}" />
       <st:nbsp/>
       <label for="oe_c${oe_id}">${title}</label>
@@ -33,9 +33,9 @@
   </j:if>
   <d:invokeBody />
   <!-- end marker -->
-  <tr id="oe_e${oe_id}" style="display:none">
+  <tr class='optional-block-end' style="display:none">
     <script>
-      initOptionalBlock('oe_s${oe_id}','oe_e${oe_id}','oe_c${oe_id}');
+      initOptionalBlock('oe_s${oe_id}','oe_c${oe_id}');
     </script>
   </tr>
 </j:jelly>

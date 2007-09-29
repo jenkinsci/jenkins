@@ -319,16 +319,23 @@ function applyNameRef(s,e,id) {
         x.setAttribute("nameRef",id);
 }
 
-function initOptionalBlock(sid, eid, cid) {
-    applyNameRef($(sid),$(eid),cid);
-    updateOptionalBlock(sid,eid,cid);
+function initOptionalBlock(sid,cid) {
+    function findEndOptionalBlock(s) {
+        while(!s.hasClassName("optional-block-end"))
+            s=s.nextSibling;
+        return s;
+    }
+    var s = $(sid);
+    var e = findEndOptionalBlock(s);
+    applyNameRef(s,e,cid);
+    updateOptionalBlock(sid,cid);
 }
 
 // used by optionalBlock.jelly to update the form status
 //   @param sid     ID of the start marker
 //   @param sid     ID of the end marker
 //   @param cid     ID of the check box
-function updateOptionalBlock(sid, eid, cid) {
+function updateOptionalBlock(sid, cid) {
     var tbl = document.getElementById(sid).parentNode;
     var i = false;
     var o = false;
@@ -338,7 +345,7 @@ function updateOptionalBlock(sid, eid, cid) {
     for (var j = 0; tbl.rows[j]; j++) {
         var n = tbl.rows[j];
 
-        if (n.id == eid)
+        if (i && n.hasClassName("optional-block-end"))
             o = true;
 
         if (i && !o) {
