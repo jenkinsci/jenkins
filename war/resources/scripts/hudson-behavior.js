@@ -348,7 +348,7 @@ function updateOptionalBlock(c,scroll) {
     var o = false;
 
     var checked = c.checked;
-    var region=null;
+    var lastRow = null;
 
     for (var j = 0; tbl.rows[j]; j++) {
         var n = tbl.rows[j];
@@ -359,10 +359,7 @@ function updateOptionalBlock(c,scroll) {
         if (i && !o) {
             if (checked) {
                 n.style.display = "";
-                if(region==null)
-                    region = YAHOO.util.Dom.getRegion(n);
-                else
-                    region = region.union(YAHOO.util.Dom.getRegion(n));
+                lastRow = n;
             } else
                 n.style.display = "none";
         }
@@ -374,8 +371,13 @@ function updateOptionalBlock(c,scroll) {
         }
     }
 
-    if(checked && scroll)
-        scrollIntoView(region);
+    if(checked && scroll) {
+        var D = YAHOO.util.Dom;
+
+        var r = D.getRegion(s);
+        if(lastRow!=null)   r = r.union(D.getRegion(lastRow));
+        scrollIntoView(r);
+    }
 }
 
 
