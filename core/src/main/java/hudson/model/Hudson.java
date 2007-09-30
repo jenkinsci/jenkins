@@ -178,7 +178,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * List of registered {@link JobListener}s.
      */
-    private transient final CopyOnWriteList<ItemListener> viewItemListeners = new CopyOnWriteList<ItemListener>();
+    private transient final CopyOnWriteList<ItemListener> itemListeners = new CopyOnWriteList<ItemListener>();
 
     /**
      * List of registered {@link SCMListener}s.
@@ -237,7 +237,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
         getQueue().load();
 
-        for (ItemListener l : viewItemListeners)
+        for (ItemListener l : itemListeners)
             l.onLoaded();
     }
 
@@ -341,7 +341,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      *      Use {@code getJobListners().add(l)} instead.
      */
     public void addListener(JobListener l) {
-        viewItemListeners.add(new JobListenerAdapter(l));
+        itemListeners.add(new JobListenerAdapter(l));
     }
 
     /**
@@ -351,14 +351,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      *      Use {@code getJobListners().remove(l)} instead.
      */
     public boolean removeListener(JobListener l ) {
-        return viewItemListeners.remove(new JobListenerAdapter(l));
+        return itemListeners.remove(new JobListenerAdapter(l));
     }
 
     /**
      * Gets all the installed {@link ItemListener}s.
      */
     public CopyOnWriteList<ItemListener> getJobListeners() {
-        return viewItemListeners;
+        return itemListeners;
     }
 
     /**
@@ -884,7 +884,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
      */
     /*package*/ void deleteJob(TopLevelItem item) throws IOException {
-        for (ItemListener l : viewItemListeners)
+        for (ItemListener l : itemListeners)
             l.onDeleted(item);
 
         items.remove(item.getName());
@@ -1321,7 +1321,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             }
         }
 
-        for (ItemListener l : viewItemListeners)
+        for (ItemListener l : itemListeners)
             l.onCreated(result);
 
         if(isXmlSubmission) {
