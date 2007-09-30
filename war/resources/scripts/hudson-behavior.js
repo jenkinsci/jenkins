@@ -332,12 +332,12 @@ function applyNameRef(s,e,id) {
 
 function initOptionalBlock(sid, eid, cid) {
     applyNameRef($(sid),$(eid),cid);
-    updateOptionalBlock($(cid));
+    updateOptionalBlock($(cid),false);
 }
 
 // used by optionalBlock.jelly to update the form status
 //   @param c     checkbox element
-function updateOptionalBlock(c) {
+function updateOptionalBlock(c,scroll) {
     // find the start TR
     var s = c;
     while(!s.hasClassName("optional-block-start"))
@@ -348,6 +348,7 @@ function updateOptionalBlock(c) {
     var o = false;
 
     var checked = c.checked;
+    var region=null;
 
     for (var j = 0; tbl.rows[j]; j++) {
         var n = tbl.rows[j];
@@ -356,9 +357,13 @@ function updateOptionalBlock(c) {
             o = true;
 
         if (i && !o) {
-            if (checked)
+            if (checked) {
                 n.style.display = "";
-            else
+                if(region==null)
+                    region = YAHOO.util.Dom.getRegion(n);
+                else
+                    region = region.union(YAHOO.util.Dom.getRegion(n));
+            } else
                 n.style.display = "none";
         }
 
@@ -368,6 +373,9 @@ function updateOptionalBlock(c) {
             i = true;
         }
     }
+
+    if(checked && scroll)
+        scrollIntoView(region);
 }
 
 
@@ -430,6 +438,28 @@ function AutoScroller(scrollContainer) {
     };
 }
 
+// scroll the current window to display the given element or the region.
+function scrollIntoView(e) {
+    function calcDelta(ex1,ex2,vx1,vw) {
+        var vx2=vx1+vw;
+        var a;
+        a = Math.min(vx1-ex1,vx2-ex2);
+        if(a>0)     return -a;
+        a = Math.min(ex1-vx1,ex2-vx2);
+        if(a>0)     return a;
+        return 0;
+    }
+
+    var D = YAHOO.util.Dom;
+
+    var r;
+    if(e.tagName!=null) r = D.getRegion(e);
+    else                r = e;
+
+    var dx = calcDelta(r.left,r.right, document.body.scrollLeft, D.getViewportWidth());
+    var dy = calcDelta(r.top, r.bottom,document.body.scrollTop,  D.getViewportHeight());
+    window.scrollBy(dx,dy);
+}
 
 // used in expandableTextbox.jelly to change a input field into a text area
 function expandTextArea(button,id) {

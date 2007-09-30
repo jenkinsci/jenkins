@@ -17,7 +17,7 @@
   </j:if>
   <tr id="oe_s${id}" class="optional-block-start" hasHelp="${help!=null}"><!-- this ID marks the beginning -->
     <td colspan="3">
-      <f:checkbox name="${name}" onclick="javascript:updateOptionalBlock(this)"
+      <f:checkbox name="${name}" onclick="javascript:updateOptionalBlock(this,true)"
                   id="oe_c${id}" checked="${checked}" />
       <st:nbsp/>
       <label class="attach-previous">${title}</label>
