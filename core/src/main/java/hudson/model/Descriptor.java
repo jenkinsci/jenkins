@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.json.JSONObject;
+
 /**
  * Metadata about a configurable instance.
  *
@@ -85,6 +87,15 @@ public abstract class Descriptor<T extends Describable<T>> {
     public abstract String getDisplayName();
 
     /**
+     * @deprecated
+     *      Implement {@link #newInstance(StaplerRequest, JSONObject)} method instead.
+     *      Deprecated as of 1.145. 
+     */
+    public T newInstance(StaplerRequest req) throws FormException {
+        throw new UnsupportedOperationException(getClass()+" should implement newInstance(StaplerRequest,JSONObject)");
+    }
+
+    /**
      * Creates a configured instance from the submitted form.
      *
      * <p>
@@ -92,12 +103,19 @@ public abstract class Descriptor<T extends Describable<T>> {
      * So there's no need to check that in the implementation.
      *
      * @param req
-     *      Always non-null. This object includes all the submitted form values.
+     *      Always non-null. This object includes represents the entire submisison.
+     * @param formData
+     *      The JSON object that captures the configuration data for this {@link Descriptor}.
+     *      See http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
      *
      * @throws FormException
      *      Signals a problem in the submitted form.
+     * @since 1.145
      */
-    public abstract T newInstance(StaplerRequest req) throws FormException;
+    public T newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        // backward compatibility.
+        return newInstance(req);
+    }
 
     /**
      * Returns the resource path to the help screen HTML, if any.

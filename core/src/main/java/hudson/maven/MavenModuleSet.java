@@ -4,6 +4,7 @@ import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.StructuredForm;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.CollectionSearchIndex;
 import hudson.model.*;
@@ -417,7 +418,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         mavenName = req.getParameter("maven_version");
         aggregatorStyleBuild = req.getParameter("maven.perModuleBuild")==null;
 
-        reporters.rebuild(req,MavenReporters.getConfigurableList(),"reporter");
+        reporters.rebuild(req, StructuredForm.get(req),MavenReporters.getConfigurableList(),"reporter");
     }
 
     /**

@@ -4,6 +4,7 @@ import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.AbortException;
+import hudson.StructuredForm;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
@@ -43,6 +44,7 @@ import javax.servlet.ServletException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import net.sf.json.JSONObject;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -755,10 +757,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix)
         throws FormException {
 
+        JSONObject data = StructuredForm.get(req);
         List<T> r = new Vector<T>();
         for( int i=0; i< descriptors.size(); i++ ) {
-            if(req.getParameter(prefix +i)!=null) {
-                T instance = descriptors.get(i).newInstance(req);
+            String name = prefix + i;
+            if(req.getParameter(name)!=null) {
+                T instance = descriptors.get(i).newInstance(req,data.getJSONObject(name));
                 r.add(instance);
             }
         }

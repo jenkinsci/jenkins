@@ -2,6 +2,7 @@ package hudson.scm;
 
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.StructuredForm;
 
 import java.util.List;
 
@@ -33,6 +34,6 @@ public class SCMS {
         int scmidx = Integer.parseInt(scm);
         SCMDescriptor<?> d = SCMS.get(scmidx);
         d.generation++;
-        return d.newInstance(req);
+        return d.newInstance(req,StructuredForm.get(req).getJSONObject("scm"));
     }
 }

@@ -26,7 +26,7 @@ public final class ComputerSet implements ModelObject {
             ArrayList<NodeMonitor> r = new ArrayList<NodeMonitor>();
             for (Descriptor<NodeMonitor> d : NodeMonitor.LIST)
                 try {
-                    r.add(d.newInstance(null));
+                    r.add(d.newInstance(null,null));
                 } catch (FormException e) {
                     // so far impossible. TODO: report
                 }

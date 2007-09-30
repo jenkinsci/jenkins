@@ -268,7 +268,7 @@ public class User extends AbstractModelObject {
 
             List<UserProperty> props = new ArrayList<UserProperty>();
             for (Descriptor<UserProperty> d : UserProperties.LIST)
-                props.add(d.newInstance(req));
+                props.add(d.newInstance(req,null));
             this.properties = props;
 
             save();

@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import net.sf.json.JSONObject;
+
 /**
  * Deletes old log files.
  *

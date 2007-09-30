@@ -10,15 +10,15 @@ import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.maven.MavenReporterDescriptor;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Collection;
 
 /**
  * Persisted list of {@link Describable}s with some operations specific
@@ -93,13 +93,17 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * <p>
      * This method is almost always used by the owner.
      * This method does not invoke the save method.
+     *
+     * @param json
+     *      Structured form data that includes the data for nested descriptor list.
      */
-    public void rebuild(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException {
+    public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException {
         List<T> newList = new ArrayList<T>();
 
         for( int i=0; i< descriptors.size(); i++ ) {
-            if(req.getParameter(prefix +i)!=null) {
-                T instance = descriptors.get(i).newInstance(req);
+            String name = prefix + i;
+            if(req.getParameter(name)!=null) {
+                T instance = descriptors.get(i).newInstance(req,json.getJSONObject(name));
                 newList.add(instance);
             }
         }

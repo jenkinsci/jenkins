@@ -2,10 +2,22 @@ package hudson.maven;
 
 import hudson.CopyOnWrite;
 import hudson.FilePath;
+import hudson.StructuredForm;
 import hudson.Util;
 import hudson.maven.reporters.MavenMailer;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.DependencyGraph;
+import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.JDK;
+import hudson.model.Job;
+import hudson.model.Label;
+import hudson.model.Node;
+import hudson.model.Resource;
 import hudson.tasks.LogRotator;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
@@ -14,7 +26,12 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -320,7 +337,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
 
-        reporters.rebuild(req,MavenReporters.getConfigurableList(),"reporter");
+        reporters.rebuild(req,StructuredForm.get(req),MavenReporters.getConfigurableList(),"reporter");
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
 

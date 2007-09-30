@@ -46,6 +46,6 @@ public class RepositoryBrowsers {
         if(value==null || value.equals("auto"))
             return null;
 
-        return type.cast(list.get(Integer.parseInt(value)).newInstance(req));
+        return type.cast(list.get(Integer.parseInt(value)).newInstance(req,null/*TODO*/));
     }
 }
