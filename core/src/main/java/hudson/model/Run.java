@@ -8,6 +8,7 @@ import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
+import hudson.model.listeners.RunListener;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.search.SearchIndexBuilder;
@@ -50,6 +51,7 @@ import java.util.logging.Logger;
  * mechanism for custom {@link Run} types.
  *
  * @author Kohsuke Kawaguchi
+ * @see RunListener
  */
 @ExportedBean
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
@@ -599,6 +601,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             } catch( Throwable e ) {
                 handleFatalBuildProblem(listener,e);
                 result = Result.FAILURE;
+            } finally {
+                RunListener.fireCompleted(this,listener);
             }
 
             long end = System.currentTimeMillis();

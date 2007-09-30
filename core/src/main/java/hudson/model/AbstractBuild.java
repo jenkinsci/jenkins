@@ -10,6 +10,7 @@ import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
 import static hudson.model.Hudson.isWindows;
 import hudson.model.listeners.SCMListener;
+import hudson.model.listeners.RunListener;
 import hudson.scm.CVSChangeLogParser;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
