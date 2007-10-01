@@ -55,7 +55,9 @@ public interface Item extends PersistenceRoot, SearchableModelObject {
      *
      * <p>
      * This name is also used for directory name, so it cannot contain
-     * any character that's not allowed on the file system. 
+     * any character that's not allowed on the file system.
+     *
+     * @see #getFullName() 
      */
     String getName();
 
