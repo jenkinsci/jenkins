@@ -255,12 +255,19 @@ public class Util {
             out.write(buf,0,len);
     }
 
-    public static String[] tokenize(String s) {
-        StringTokenizer st = new StringTokenizer(s);
+    /**
+     * @since 1.145
+     */
+    public static String[] tokenize(String s,String delimiter) {
+        StringTokenizer st = new StringTokenizer(s,delimiter);
         String[] a = new String[st.countTokens()];
         for (int i = 0; st.hasMoreTokens(); i++)
             a[i] = st.nextToken();
         return a;
+    }
+
+    public static String[] tokenize(String s) {
+        return tokenize(s," \t\n\r\f");
     }
 
     public static String[] mapToEnv(Map<String,String> m) {
