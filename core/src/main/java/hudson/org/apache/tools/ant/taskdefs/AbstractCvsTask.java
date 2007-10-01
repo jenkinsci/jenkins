@@ -18,12 +18,19 @@
 package hudson.org.apache.tools.ant.taskdefs;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -142,7 +149,6 @@ public abstract class AbstractCvsTask extends Task {
      * Create accessors for the following, to allow different handling of
      * the output.
      */
-    private ExecuteStreamHandler executeStreamHandler;
     private OutputStream outputStream;
     private OutputStream errorStream;
     private String cvsExe = "cvs";
@@ -157,26 +163,12 @@ public abstract class AbstractCvsTask extends Task {
     }
 
     /**
-     * sets the handler
-     * @param handler a handler able of processing the output and error streams from the cvs exe
-     */
-    public void setExecuteStreamHandler(ExecuteStreamHandler handler) {
-        this.executeStreamHandler = handler;
-    }
-
-    /**
      * find the handler and instantiate it if it does not exist yet
      * @return handler for output and error streams
      */
-    protected ExecuteStreamHandler getExecuteStreamHandler() {
-
-        if (this.executeStreamHandler == null) {
-            setExecuteStreamHandler(new PumpStreamHandler(getOutputStream(),
-                                                          getErrorStream()));
+    protected ExecuteStreamHandler getExecuteStreamHandler(InputStream input) {
+        return new PumpStreamHandler(getOutputStream(), getErrorStream(), input);
         }
-
-        return this.executeStreamHandler;
-    }
 
     /**
      * sets a stream to which the output from the cvs executable should be sent
@@ -324,7 +316,53 @@ public abstract class AbstractCvsTask extends Task {
         // Just call the getExecuteStreamHandler() and let it handle
         //     the semantics of instantiation or retrieval.
         //
-        Execute exe = new Execute(getExecuteStreamHandler(), null);
+        String[] argv = toExecute.getCommandline();
+        InputStream input = null;
+        String inputText = null;
+        if (new File("/usr/bin/xargs").isFile()) {
+            // Hudson workaround #864. Check for very long command lines and use xargs whenever possible.
+            int sz = 0;
+            for (String arg : argv) {
+                sz += arg.length() + /*NUL*/1;
+            }
+            if (sz > 125000) {
+                // We are in the danger zone for Linux, which imposes a 128Kb kernel buffer max by default.
+                // (Need to leave some room open for ENVP.)
+                ByteArrayOutputStream baos = null;
+                List<String> _argv = new ArrayList<String>();
+                _argv.add("/usr/bin/xargs");
+                boolean prefix = true;
+                LOAD: for (String s : argv) {
+                    if (s.equals("--")) {
+                        // See ChangeLogTask.execute. xargs will try to split up long input into >1 command.
+                        prefix = false;
+                        baos = new ByteArrayOutputStream();
+                    } else if (prefix) {
+                        _argv.add(s);
+                    } else {
+                        for (byte b : s.getBytes()) {
+                            if (b < 0) {
+                                // XXX we cannot handle non-ASCII chars here, probably. Punt.
+                                baos = null;
+                                break LOAD;
+                            }
+                            // GNU xargs accepts -0, which would be nice, but this is unfortunately not universal.
+                            // The safest approach is to backslash every char, then use \n for separator.
+                            baos.write('\\');
+                            baos.write(b);
+                        }
+                        baos.write('\n');
+                    }
+                }
+                if (baos != null) {
+                    Logger.getLogger(AbstractCvsTask.class.getName()).log(Level.INFO, "Using xargs to run very long command line ({0} bytes)", sz);
+                    input = new ByteArrayInputStream(baos.toByteArray());
+                    inputText = baos.toString();
+                    argv = _argv.toArray(new String[_argv.size()]);
+                }
+            }
+        }
+        Execute exe = new Execute(getExecuteStreamHandler(input), null);
 
         exe.setAntRun(getProject());
         if (dest == null) {
@@ -336,7 +374,7 @@ public abstract class AbstractCvsTask extends Task {
         }
 
         exe.setWorkingDirectory(dest);
-        exe.setCommandline(toExecute.getCommandline());
+        exe.setCommandline(argv);
         exe.setEnvironment(env.getVariables());
 
         try {
@@ -350,7 +388,8 @@ public abstract class AbstractCvsTask extends Task {
                                          + retCode
                                          + StringUtils.LINE_SEP
                                          + "Command line was ["
-                                         + actualCommandLine + "]", getLocation());
+                                         + actualCommandLine + "] in " + dest +
+                                         "\nInput text:\nSTART==>" + inputText + "<==END", getLocation());
             }
         } catch (IOException e) {
             if (failOnError) {

@@ -21,6 +21,7 @@ import org.apache.tools.ant.taskdefs.PumpStreamHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -30,11 +31,11 @@ import java.io.OutputStream;
  */
 class RedirectingStreamHandler extends PumpStreamHandler {
     RedirectingStreamHandler(final ChangeLogParser parser) {
-        this(new RedirectingOutputStream(parser));
+        this(new RedirectingOutputStream(parser), null);
     }
 
-    RedirectingStreamHandler(OutputStream out) {
-        super(out, new ByteArrayOutputStream());
+    RedirectingStreamHandler(OutputStream out, InputStream in) {
+        super(out, new ByteArrayOutputStream(), in);
     }
 
     String getErrors() {

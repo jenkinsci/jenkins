@@ -26,6 +26,7 @@ import org.apache.tools.ant.taskdefs.cvslib.CvsVersion;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.StringTokenizer;
+import org.apache.tools.ant.taskdefs.ExecuteStreamHandler;
 
 /**
  * Examines the output of cvs log and group related changes together.
@@ -197,6 +199,9 @@ public class ChangeLogTask extends AbstractCvsTask {
     }
 
 
+    // XXX crude but how else to track the parser & handler and still pass to super impl?
+    private ChangeLogParser parser;
+    private RedirectingStreamHandler handler;
     /**
      * Execute task
      *
@@ -273,21 +278,17 @@ public class ChangeLogTask extends AbstractCvsTask {
 
             // Check if list of files to check has been specified
             if (!m_filesets.isEmpty()) {
+                addCommandArgument("--");
                 for (String file : m_filesets) {
                     addCommandArgument(file);
                 }
             }
 
-            final ChangeLogParser parser = new ChangeLogParser(this);
-            RedirectingStreamHandler handler;
-            handler = new RedirectingStreamHandler(
-                new ForkOutputStream(new RedirectingOutputStream(parser),
-                    new LogOutputStream(this,Project.MSG_VERBOSE)));
+            parser = new ChangeLogParser(this);
 
             log("Running "+getCommand()+" at "+m_dir, Project.MSG_VERBOSE);
 
             setDest(m_dir);
-            setExecuteStreamHandler(handler);
             try {
                 super.execute();
             } finally {
@@ -308,6 +309,12 @@ public class ChangeLogTask extends AbstractCvsTask {
         } finally {
             m_dir = savedDir;
         }
+    }
+    protected @Override ExecuteStreamHandler getExecuteStreamHandler(InputStream input) {
+        return handler = new RedirectingStreamHandler(
+                new ForkOutputStream(new RedirectingOutputStream(parser),
+                    new LogOutputStream(this,Project.MSG_VERBOSE)),
+                    input);
     }
 
     private static final long VERSION_1_11_2 = 11102;
