@@ -173,7 +173,7 @@
           <userRealms>
             <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
               <name>default</name>
-              <config>src/realm.properties</config>
+              <config>${basedir}/src/realm.properties</config>
             </userRealm>
           </userRealms>
           <systemProperties>
