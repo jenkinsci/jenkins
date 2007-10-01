@@ -56,7 +56,7 @@
   <j:set var="name" value="${h.ifThenElse(attrs.name!=null,attrs.name,attrs.var)}"/>
   <div class="repeated-container">
     <!-- The first DIV is the master copy. -->
-    <div class="repeated-chunk" style="display:none">
+    <div class="repeated-chunk" style="display:none" name="${name}">
       <d:invokeBody />
     </div>
     <!-- then populate them for each item -->
