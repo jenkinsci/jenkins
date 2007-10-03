@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.ByteArrayInputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -125,7 +126,14 @@ public class Ant extends Builder {
 
         if (properties != null) {
             Properties p = new Properties();
-            p.load(new StringReader(properties));
+            try {
+                p.load(new StringReader(properties));
+            } catch (NoSuchMethodError e) {
+                // load(Reader) method is only available on JDK6.
+                // this fall back version doesn't work correctly with non-ASCII characters,
+                // but there's no other easy ways out it seems.
+                p.load(new ByteArrayInputStream(properties.getBytes()));
+            }
 
             for (Entry<Object,Object> entry : p.entrySet()) {
                 args.add("-D" + entry.getKey() + "=" + entry.getValue());
