@@ -128,8 +128,7 @@ public class Ant extends Builder {
             final Reader reader = new StringReader(properties);
             try {
                 p.load(reader);
-            }
-            finally {
+            } finally {
                 reader.close();
             }
 
