@@ -124,15 +124,10 @@ public class Ant extends Builder {
         args.addKeyValuePairs("-D",build.getBuildVariables());
 
         if (properties != null) {
-            final Properties p = new Properties();
-            final Reader reader = new StringReader(properties);
-            try {
-                p.load(reader);
-            } finally {
-                reader.close();
-            }
+            Properties p = new Properties();
+            p.load(new StringReader(properties));
 
-            for (final Entry<Object, Object> entry : p.entrySet()) {
+            for (Entry<Object,Object> entry : p.entrySet()) {
                 args.add("-D" + entry.getKey() + "=" + entry.getValue());
             }
         }
