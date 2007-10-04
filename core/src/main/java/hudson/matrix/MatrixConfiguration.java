@@ -1,6 +1,7 @@
 package hudson.matrix;
 
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -50,11 +51,35 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     /**
      * Build numbers are always synchronized with the parent.
+     *
+     * <p>
+     * Computing this is bit tricky. Several considerations:
+     *
+     * <ol>
+     * <li>A new configuration build #N is started while the parent build #N is building,
+     *     and when that happens we want to return N.
+     * <li>But the configuration build #N is done before the parent build #N finishes,
+     *     and when that happens we want to return N+1 because that's going to be the next one.
+     * <li>Configuration builds might skip some numbers if the parent build is aborted
+     *     before this configuration is built.
+     * <li>If nothing is building right now and the last build of the parent is #N,
+     *     then we want to return N+1.
+     * </ol>
      */
     @Override
     public int getNextBuildNumber() {
-        MatrixBuild lb = getParent().getLastBuild();
-        return lb!=null ? lb.getNumber() : 0;
+        AbstractBuild lb = getParent().getLastBuild();
+        if(lb==null)    return 0;
+        
+
+        int n=lb.getNumber();
+        if(!lb.isBuilding())    n++;
+
+        lb = getLastBuild();
+        if(lb!=null)
+            n = Math.max(n,lb.getNumber());
+
+        return n;
     }
 
     public int assignBuildNumber() throws IOException {
