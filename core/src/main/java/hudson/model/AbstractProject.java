@@ -198,7 +198,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Returns the root directory of the checked-out module.
      * <p>
      * This is usually where <tt>pom.xml</tt>, <tt>build.xml</tt>
-     * and so on exists. 
+     * and so on exists.
      */
     public FilePath getModuleRoot() {
         return getScm().getModuleRoot(getWorkspace());
@@ -249,7 +249,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected void updateTransientActions() {
         synchronized(transientActions) {
             transientActions.clear();
-            
+
             for (JobProperty<? super P> p : properties) {
                 Action a = p.getJobAction((P)this);
                 if(a!=null)
@@ -484,7 +484,24 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * List of necessary resources to perform the build of this project.
      */
     public ResourceList getResourceList() {
-        return new ResourceList().w(getWorkspaceResource());
+        final Set<ResourceActivity> resourceActivities = getResourceActivities();
+        final List<ResourceList> resourceLists = new ArrayList<ResourceList>(1 + resourceActivities.size());
+        for (ResourceActivity activity : resourceActivities) {
+            if (activity != this && activity != null) {
+                // defensive infinite recursion and null check
+                resourceLists.add(activity.getResourceList());
+            }
+        }
+        resourceLists.add(new ResourceList().w(getWorkspaceResource()));
+        return ResourceList.union(resourceLists);
+    }
+
+    /**
+     * Set of child resource activities of the build of this project (override in child projects).
+     * @return The set of child resource activities of the build of this project.
+     */
+    protected Set<ResourceActivity> getResourceActivities() {
+        return Collections.EMPTY_SET;
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {

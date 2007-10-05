@@ -14,9 +14,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Buildable software project.
@@ -70,6 +68,29 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     public Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
         return Descriptor.toMap(buildWrappers);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected Set<ResourceActivity> getResourceActivities() {
+        final Set<ResourceActivity> activities = new HashSet<ResourceActivity>();
+        activities.addAll(super.getResourceActivities());
+        for (Builder builder : builders) {
+            if (builder instanceof ResourceActivity) {
+                activities.add(ResourceActivity.class.cast(builder));
+            }
+        }
+        for (Publisher publisher : publishers) {
+            if (publisher instanceof ResourceActivity) {
+                activities.add(ResourceActivity.class.cast(publisher));
+            }
+        }
+        for (BuildWrapper buildWrapper : buildWrappers) {
+            if (buildWrapper instanceof ResourceActivity) {
+                activities.add(ResourceActivity.class.cast(buildWrapper));
+            }
+        }
+        return activities;
     }
 
     /**
