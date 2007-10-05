@@ -46,11 +46,7 @@ public class DiskSpaceMonitor extends NodeMonitor {
             FilePath p = c.getNode().getRootPath();
             if(p==null) return null;
 
-            return p.act(new FileCallable<Long>() {
-                public Long invoke(File f, VirtualChannel channel) throws IOException {
-                    return f.getUsableSpace();
-                }
-            });
+            return p.act(new GetUsableSpace());
         }
 
         public String getDisplayName() {
@@ -61,4 +57,11 @@ public class DiskSpaceMonitor extends NodeMonitor {
             return new DiskSpaceMonitor();
         }
     };
+
+    private static final class GetUsableSpace implements FileCallable<Long> {
+        public Long invoke(File f, VirtualChannel channel) throws IOException {
+            return f.getUsableSpace();
+        }
+        private static final long serialVersionUID = 1L;
+    }
 }
