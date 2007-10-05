@@ -32,7 +32,7 @@ ruby update.changelog.rb $id < $WWW/changelog.html > $WWW/changelog.new
 mv $WWW/changelog.new $WWW/changelog.html
 
 # push changes to the maven repository
-ruby push-m2-repo.rb $id
+ruby push-m2-repo.rb $JAVANET_M2_REPO $id
 
 ./publish-javadoc.sh
 

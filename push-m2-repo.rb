@@ -1,5 +1,6 @@
 #!/bin/ruby
-m2repo="c:/kohsuke/Sun/java.net/m2-repo"
+#m2repo="c:/kohsuke/Sun/java.net/m2-repo"
+m2repo=ARGV.shift
 ver=ARGV.shift
 
 
