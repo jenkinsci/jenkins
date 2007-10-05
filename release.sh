@@ -2,11 +2,18 @@
 #
 # Kohsuke's automated release script. Sorry for my checking this in,
 # but Maven doesn't let me run release goals unless I have this in CVS.
-#
-# this script is to be run after release:perform runs successfully
+
+# make sure we have up to date workspace and M2 repo copy
 cvs -q update -Pd
+old=$PWD
+cd "$JAVANET_M2_REPO"
+cd org/jvnet/hudson
+svn update
+cd "$old"
+
 tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
-mvn -B -Dtag=$tag release:prepare || mvn install release:prepare release:perform
+mvn -B -Dtag=$tag release:prepare || mvn install release:prepare
+mvn release:perform
 
 id=$(show-pom-version target/checkout/pom.xml)
 #./publish-javadoc.sh
