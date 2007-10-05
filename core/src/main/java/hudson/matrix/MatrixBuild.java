@@ -109,8 +109,10 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                         Result buildResult = null;
                         if(b!=null && !b.isBuilding())
                             buildResult = b.getResult();
-                        if(b==null && !c.isInQueue())
+                        if(b==null && !c.isInQueue()) {
+                            logger.println(c.getDisplayName()+" appears to be cancelled");
                             buildResult = Result.ABORTED;
+                        }
 
                         if(buildResult!=null) {
                             r = r.combine(buildResult);
