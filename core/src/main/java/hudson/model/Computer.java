@@ -5,6 +5,8 @@ import hudson.Functions;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.tasks.Publisher;
+import hudson.tasks.BuildWrapper;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.RunList;
 import org.kohsuke.stapler.StaplerRequest;
@@ -355,5 +357,14 @@ public abstract class Computer extends AbstractModelObject {
         PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req));
         ((Channel)getChannel()).dumpExportTable(w);
         w.close();
+    }
+
+    /**
+     * Gets the current {@link Computer} that the build is running.
+     * This method only works when called during a build, such as by
+     * {@link Publisher}, {@link BuildWrapper}, etc.
+     */
+    public static Computer currentComputer() {
+        return Executor.currentExecutor().getOwner();
     }
 }
