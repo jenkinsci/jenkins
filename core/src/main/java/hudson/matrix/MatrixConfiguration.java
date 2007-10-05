@@ -77,7 +77,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
         lb = getLastBuild();
         if(lb!=null)
-            n = Math.max(n,lb.getNumber());
+            n = Math.max(n,lb.getNumber()+1);
 
         return n;
     }
