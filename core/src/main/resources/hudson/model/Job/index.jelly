@@ -1,4 +1,4 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
@@ -10,30 +10,10 @@
 
       <h2>Permalinks</h2>
       <ul>
-        <j:if test="${it.lastBuild!=null}">
-          <li>
-            <a href="lastBuild/">Last build
-              (#${it.lastBuild.number}), ${it.lastBuild.timestampString} ago</a>
-          </li>
-        </j:if>
-        <j:if test="${it.lastStableBuild!=null}">
-          <li>
-            <a href="lastStableBuild/">Last stable build
-              (#${it.lastStableBuild.number}), ${it.lastStableBuild.timestampString} ago</a>
-          </li>
-        </j:if>
-        <j:if test="${it.lastSuccessfulBuild!=null}">
-          <li>
-            <a href="lastSuccessfulBuild/">Last successful build
-              (#${it.lastSuccessfulBuild.number}), ${it.lastSuccessfulBuild.timestampString} ago</a>
-          </li>
-        </j:if>
-        <j:if test="${it.lastFailedBuild!=null}">
-          <li>
-            <a href="lastFailedBuild/">Last failed build
-              (#${it.lastFailedBuild.number}), ${it.lastFailedBuild.timestampString} ago</a>
-          </li>
-        </j:if>
+        <p:build-permalink property="lastBuild"           title="Last build" />
+        <p:build-permalink property="lastStableBuild"     title="Last stable build" />
+        <p:build-permalink property="lastSuccessfulBuild" title="Last successful build" />
+        <p:build-permalink property="lastFailedBuild"     title="Last failed build" />
       </ul>
     </l:main-panel>
   </l:layout>
