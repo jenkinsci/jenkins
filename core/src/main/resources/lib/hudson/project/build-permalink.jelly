@@ -1,0 +1,17 @@
+<!--
+  Permalink to a build from a project page
+
+  @attrs property
+      The build property name
+  @attrs title
+      Title of the link
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
+  <j:set var="b" value="${it[property]}"/>
+  <j:if test="${b!=null}">
+    <li>
+      <a href="${property}/">${title}
+        (#${b.number}), ${b.timestampString} ago</a>
+    </li>
+  </j:if>
+</j:jelly>
