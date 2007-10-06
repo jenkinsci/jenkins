@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
@@ -14,7 +15,11 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 
 /**
  * Buildable software project.
@@ -74,22 +79,12 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     @Override
     protected Set<ResourceActivity> getResourceActivities() {
         final Set<ResourceActivity> activities = new HashSet<ResourceActivity>();
+
         activities.addAll(super.getResourceActivities());
-        for (Builder builder : builders) {
-            if (builder instanceof ResourceActivity) {
-                activities.add(ResourceActivity.class.cast(builder));
-            }
-        }
-        for (Publisher publisher : publishers) {
-            if (publisher instanceof ResourceActivity) {
-                activities.add(ResourceActivity.class.cast(publisher));
-            }
-        }
-        for (BuildWrapper buildWrapper : buildWrappers) {
-            if (buildWrapper instanceof ResourceActivity) {
-                activities.add(ResourceActivity.class.cast(buildWrapper));
-            }
-        }
+        activities.addAll(Util.filter(builders,ResourceActivity.class));
+        activities.addAll(Util.filter(publishers,ResourceActivity.class));
+        activities.addAll(Util.filter(buildWrappers,ResourceActivity.class));
+
         return activities;
     }
 
