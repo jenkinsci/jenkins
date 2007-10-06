@@ -501,7 +501,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @return The set of child resource activities of the build of this project.
      */
     protected Set<ResourceActivity> getResourceActivities() {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {
