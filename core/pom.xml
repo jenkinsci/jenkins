@@ -18,7 +18,7 @@
         <executions>
           <execution>
             <goals>
-              <goal>enforce-once</goal>
+              <goal>enforce</goal>
             </goals>
             <configuration>
               <rules>
