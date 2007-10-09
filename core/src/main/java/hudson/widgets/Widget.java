@@ -5,7 +5,6 @@ import hudson.ExtensionPoint;
 /**
  * Box to be rendered in the side panel.
  *
- *
  * <h2>Views</h2>
  * <ul>
  * <li><b>index.jelly</b> should display the widget. It should have:
