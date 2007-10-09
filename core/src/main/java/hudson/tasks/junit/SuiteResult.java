@@ -47,6 +47,12 @@ public final class SuiteResult implements Serializable {
         stdout = root.elementText("system-out");
         stderr = root.elementText("system-err");
 
+        Element ex = root.element("error");
+        if(ex!=null) {
+            // according to junit-noframes.xsl l.229, this happens when the test class failed to load
+            cases.add(new CaseResult(this,root,"<init>"));
+        }
+
         for (Element e : (List<Element>)root.elements("testcase")) {
             cases.add(new CaseResult(this,e));
         }

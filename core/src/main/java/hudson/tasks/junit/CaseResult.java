@@ -26,6 +26,10 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     private /*final*/ int failedSince;
 
     CaseResult(SuiteResult parent, Element testCase) {
+        this(parent,testCase,testCase.attributeValue("name"));
+    }
+
+    CaseResult(SuiteResult parent, Element testCase, String testCaseName) {
         // schema for JUnit report XML format is not available in Ant,
         // so I don't know for sure what means what.
         // reports in http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
@@ -38,11 +42,11 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
 
         String cn = parent.getName();
         className = safe(cn);
-        testName = safe(testCase.attributeValue("name"));
+        testName = safe(testCaseName);
         errorStackTrace = getError(testCase);
     }
 
-    private String getError(Element testCase) {
+    private static String getError(Element testCase) {
         String msg = testCase.elementText("error");
         if(msg!=null)
             return msg;

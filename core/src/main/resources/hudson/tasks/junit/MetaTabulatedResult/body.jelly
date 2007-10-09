@@ -9,7 +9,7 @@
       <j:forEach var="f" items="${it.failedTests}" varStatus="i">
         <tr>
           <td class="pane">
-            <a href="${f.getRelativePathFrom(it)}">${f.fullName}</a>
+            <a href="${f.getRelativePathFrom(it)}"><st:out value="${f.fullName}"/></a>
           </td>
           <td class="pane" style="text-align:right;">
             ${f.age}

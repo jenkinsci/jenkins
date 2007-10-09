@@ -4,10 +4,10 @@
     <l:main-panel>
       <j:set var="st" value="${it.status}" />
       <h1 class="${st.cssClass}">
-        ${st.message}
+        <st:out value="${st.message}" />
       </h1>
       <p style="font-weight:bold">
-        ${it.fullName}
+        <st:out value="${it.fullName}"/>
       </p>
       <j:if test="${!it.passed}">
         <div style="text-align:right;">
