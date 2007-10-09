@@ -966,8 +966,7 @@ public class CVSSCM extends SCM implements Serializable {
                                 // if this is explicitly specified, then our system config page should have
                                 // reported an error.
                                 if(!scanCvsPassFile(passfile, v)) {
-                                    error("It doesn't look like this CVSROOT has its password set." +
-                                        " Would you like to set it now?");
+                                    error("It doesn't look like this CVSROOT has its password set.");
                                     return;
                                 }
                             }
