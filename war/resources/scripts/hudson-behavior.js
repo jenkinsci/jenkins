@@ -730,12 +730,12 @@ function addRadioBlock(id) {
 }
 
 
-function updateBuildHistory(nBuild) {
+function updateBuildHistory(ajaxUrl,nBuild) {
     $('buildHistory').headers = ["n",nBuild];
 
     function updateBuilds() {
         var bh = $('buildHistory');
-        new Ajax.Request("./ajaxBuildHistoryUpdate", {
+        new Ajax.Request(ajaxUrl, {
             requestHeaders: bh.headers,
             onSuccess: function(rsp) {
                 var rows = bh.rows;
