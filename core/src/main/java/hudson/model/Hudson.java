@@ -41,7 +41,15 @@ import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
-import hudson.util.*;
+import hudson.util.ClockDifference;
+import hudson.util.CopyOnWriteList;
+import hudson.util.CopyOnWriteMap;
+import hudson.util.DaemonThreadFactory;
+import hudson.util.FormFieldValidator;
+import hudson.util.HudsonIsLoading;
+import hudson.util.MultipartFormDataParser;
+import hudson.util.XStream2;
+import hudson.widgets.Widget;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -89,6 +97,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -141,6 +150,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     private transient boolean terminating;
 
     private List<JDK> jdks = new ArrayList<JDK>();
+
+    /**
+     * Widgets on Hudson.
+     */
+    private transient final List<Widget> widgets = new CopyOnWriteArrayList<Widget>();
 
     private transient volatile DependencyGraph dependencyGraph = DependencyGraph.EMPTY;
 
@@ -1798,6 +1812,17 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
     public DependencyGraph getDependencyGraph() {
         return dependencyGraph;
+    }
+
+    /**
+     * Gets the {@link Widget}s registered on this object.
+     *
+     * <p>
+     * Plugins who wish to contribute boxes on the side panel can add widgets
+     * by {@code getWidgets().add(new MyWidget())} from {@link Plugin#start()}.
+     */
+    public List<Widget> getWidgets() {
+        return widgets;
     }
 
     public static final class MasterComputer extends Computer {

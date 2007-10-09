@@ -21,5 +21,8 @@
     </l:tasks>
     <t:queue items="${app.queue.items}" />
     <t:executors />
+    <j:forEach var="w" items="${it.widgets}">
+      <st:include it="${w}" page="index.jelly" />
+    </j:forEach>
   </l:side-panel>
 </j:jelly>
