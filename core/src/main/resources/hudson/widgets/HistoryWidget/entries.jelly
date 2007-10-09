@@ -1,0 +1,10 @@
+<!--
+  Render build histories. 
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:set target="${it}" property="nextBuildNumberToFetch" value="${it.owner.nextBuildNumber}"/>
+  <!-- build history -->
+  <j:forEach var="build" items="${it.renderList}">
+    <st:include page="entry.jelly" />
+  </j:forEach>
+</j:jelly>

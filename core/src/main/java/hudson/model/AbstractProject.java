@@ -5,6 +5,8 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.AbortException;
 import hudson.StructuredForm;
+import hudson.widgets.HistoryWidget;
+import hudson.widgets.BuildHistoryWidget;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
@@ -708,6 +710,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(isBuildable() && Hudson.isAdmin())
             sib.add("build","build");
         return sib;
+    }
+
+    @Override
+    protected HistoryWidget createHistoryWidget() {
+        return new BuildHistoryWidget<R>(this,getBuilds(),HISTORY_ADAPTER);
     }
 
 //

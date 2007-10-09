@@ -2,12 +2,12 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.model.Descriptor.FormException;
 import hudson.search.QuickSilver;
-import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchIndex;
+import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.search.SearchItems;
-import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
 import hudson.util.ChartUtil;
@@ -19,6 +19,9 @@ import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
 import hudson.util.TextFile;
+import hudson.widgets.HistoryWidget;
+import hudson.widgets.Widget;
+import hudson.widgets.HistoryWidget.Adapter;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.jfree.chart.ChartFactory;
@@ -31,15 +34,13 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
-import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.Color;
-import java.awt.Paint;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -256,6 +257,34 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         return null;
     }
 
+    public List<Widget> getWidgets() {
+        ArrayList<Widget> r = new ArrayList<Widget>();
+        r.add(createHistoryWidget());
+        return r;
+    }
+
+    protected HistoryWidget createHistoryWidget() {
+        return new HistoryWidget<Job,RunT>(this,getBuilds(),HISTORY_ADAPTER);
+    }
+
+    protected static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<Run>() {
+        public int compare(Run record, String key) {
+            return record.getNumber()-Integer.parseInt(key);
+        }
+
+        public String getKey(Run record) {
+            return String.valueOf(record.getNumber());
+        }
+
+        public boolean isBuilding(Run record) {
+            return record.isBuilding();
+        }
+
+        public String getNextKey(String key) {
+            return String.valueOf(Integer.parseInt(key)+1);
+        }
+    };
+
     /**
      * Renames a job.
      *
@@ -427,6 +456,12 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
             // try to interpret the token as build number
             return _getRuns().get(Integer.valueOf(token));
         } catch (NumberFormatException e) {
+            // try to map that to widgets
+            for (Widget w : getWidgets()) {
+                if(w.getUrlName().equals(token))
+                    return w;
+            }
+            
             return super.getDynamic(token,req,rsp);
         }
     }
@@ -867,33 +902,6 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         // send to the new job page
         // note we can't use getUrl() because that would pick up old name in the Ancestor.getUrl()
         rsp.sendRedirect2(req.getContextPath()+'/'+getParent().getUrl()+getShortUrl());
-    }
-
-    /**
-     * Handles AJAX requests from browsers to update build history.
-     *
-     * @param n
-     *      The build number to fetch
-     */
-    public void doAjaxBuildHistoryUpdate( StaplerRequest req, StaplerResponse rsp,
-                  @Header("n") int n ) throws IOException, ServletException {
-
-        rsp.setContentType("text/html;charset=UTF-8");
-
-        // pick up builds to send back
-        Collection<? extends RunT> builds = _getRuns().headMap(n-1).values();
-
-        req.setAttribute("builds",builds);
-
-        int next = getNextBuildNumber();
-        if(!builds.isEmpty()) {
-            RunT b = builds.iterator().next();
-            next = b.getNumber();
-            if(!b.isBuilding())  next++;
-        }
-        rsp.setHeader("n",String.valueOf(next));
-
-        req.getView(this,"ajaxBuildHistory.jelly").forward(req,rsp);
     }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {

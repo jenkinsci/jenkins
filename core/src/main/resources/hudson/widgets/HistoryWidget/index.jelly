@@ -1,32 +1,17 @@
-<!--
-  History of runs.
-
-  variables:
-
-    all="true" : display all builds. Otherwise limit it to most recent N builds.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
-
+  <j:set target="${it}" property="trimmed" value="${all==null}"/>
   <l:pane width="2" title="
-    &lt;div style='float:right'>(&lt;a href='${url}/buildTimeTrend'>trend&lt;/a>)&lt;/div>Build History
+    &lt;div style='float:right'>(&lt;a href='${it.baseUrl}/buildTimeTrend'>trend&lt;/a>)&lt;/div>Build History
   " id="buildHistory">
 
-    <!-- decide if we want to display all or just top 50 -->
-    <j:set var="builds" value="${it.builds}"/>
-    <j:if test="${!all &amp;&amp; builds.size() &gt; 50}">
-      <j:set var="builds" value="${builds.subList(0,50)}"/>
-      <j:set var="trimmed" value="${true}" />
-    </j:if>
-
     <!-- build history -->
-    <st:include page="buildHistoryEntries.jelly" />
+    <st:include page="entries.jelly" />
 
     <!--
       If we are trimming the build history because it's too long,
       show the link to fetch all the records by using AJAX.
     -->
-    <j:if test="${trimmed}">
+    <j:if test="${it.trimmed}">
       <tr class="build-row">
         <td colspan="2" align="right">
           <script>
@@ -36,11 +21,11 @@
               box.innerHTML = '<img src="${imagesURL}/spinner.gif" />';
 
               // then actually fetch the HTML
-              new Ajax.Request("allBuildHistory",{
+              new Ajax.Request("${it.baseUrl}/buildHistory/all",{
                 method: "get",
                 onComplete: function(rsp,_) {
                   <!-- neither outerHTML nor responseXML works in Firefox 2.0 -->
-                  var hist = $('buildHistory');
+                  var hist = $$("buildHistory");
                   var p = hist.parentNode;
                   var next = hist.nextSibling;
                   p.removeChild(hist);
@@ -65,13 +50,13 @@
     -->
     <tr class="build-row">
       <td colspan="2" align="right">
-        <a href="${rootURL}/${it.url}rssAll"><img src="${imagesURL}/atom.gif" border="0"/> for all</a>
+        <a href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0"/> for all</a>
         <st:nbsp/>
-        <a href="${rootURL}/${it.url}rssFailed"><img src="${imagesURL}/atom.gif" border="0"/> for failures</a>
+        <a href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0"/> for failures</a>
       </td>
     </tr>
   </l:pane>
   <script defer="true">
-    updateBuildHistory(${nBuild});
+    updateBuildHistory("${it.baseUrl}/buildHistory/ajax",${it.nextBuildNumberToFetch});
   </script>
 </j:jelly>

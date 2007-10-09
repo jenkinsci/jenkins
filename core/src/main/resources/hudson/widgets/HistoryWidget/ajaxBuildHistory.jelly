@@ -3,7 +3,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:ajax>
     <table>
-      <st:include page="buildHistoryEntries.jelly" />
+      <st:include page="entries.jelly" />
     </table>
   </l:ajax>
 </j:jelly>

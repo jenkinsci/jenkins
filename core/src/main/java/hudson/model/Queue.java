@@ -250,7 +250,7 @@ public class Queue extends ResourceController {
      *
      * @return null if the project is not in the queue.
      */
-    public synchronized Item getItem(AbstractProject p) {
+    public synchronized Item getItem(Task p) {
         if(blockedProjects.contains(p))
             return new Item(new GregorianCalendar(),p,true,false);
         if(buildables.contains(p))
@@ -260,6 +260,15 @@ public class Queue extends ResourceController {
                 return item;
         }
         return null;
+    }
+
+    /**
+     * Left for backward compatibility.
+     * 
+     * @see #getItem(Task)
+     */
+    public synchronized Item getItem(AbstractProject p) {
+        return getItem((Task)p);
     }
 
     /**
