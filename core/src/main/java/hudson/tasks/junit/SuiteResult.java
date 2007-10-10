@@ -8,6 +8,7 @@ import org.dom4j.io.SAXReader;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -33,6 +34,13 @@ public final class SuiteResult implements Serializable {
      */
     private final List<CaseResult> cases = new ArrayList<CaseResult>();
     private transient TestResult parent;
+
+    SuiteResult(String name, String stdout, String stderr, Collection<CaseResult> cases) throws DocumentException {
+        this.name = name;
+        this.stderr = stderr;
+        this.stdout = stdout;
+        this.cases.addAll(cases);
+    }
 
     SuiteResult(File xmlReport) throws DocumentException {
         Document result = new SAXReader().read(xmlReport);
