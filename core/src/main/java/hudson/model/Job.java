@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
+import hudson.model.listeners.ItemListener;
 import hudson.search.QuickSilver;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -366,15 +367,8 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
                 parent.onRenamed((TopLevelItem)this,oldName,newName);
 
-                // update BuildTrigger of other projects that point to this object.
-                // can't we generalize this?
-                for( Project p : parent.getProjects() ) {
-                    BuildTrigger t = (BuildTrigger) p.getPublishers().get(BuildTrigger.DESCRIPTOR);
-                    if(t!=null) {
-                        if(t.onJobRenamed(oldName,newName))
-                            p.save();
-                    }
-                }
+                for (ItemListener l : Hudson.getInstance().getJobListeners())
+                    l.onRenamed(this,oldName,newName);
             }
         }
     }

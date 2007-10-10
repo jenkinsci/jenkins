@@ -9,18 +9,22 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Items;
 import hudson.model.Job;
+import hudson.model.Project;
 import hudson.model.Result;
+import hudson.model.listeners.ItemListener;
 import hudson.util.FormFieldValidator;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Collection;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Triggers builds of other projects.
@@ -146,6 +150,26 @@ public class BuildTrigger extends Publisher {
     public static class DescriptorImpl extends Descriptor<Publisher> {
         public DescriptorImpl() {
             super(BuildTrigger.class);
+
+            Hudson.getInstance().getJobListeners().add(new ItemListener() {
+                @Override
+                public void onRenamed(Item item, String oldName, String newName) {
+                    // update BuildTrigger of other projects that point to this object.
+                    // can't we generalize this?
+                    for( Project p : Hudson.getInstance().getProjects() ) {
+                        BuildTrigger t = (BuildTrigger) p.getPublishers().get(BuildTrigger.DESCRIPTOR);
+                        if(t!=null) {
+                            if(t.onJobRenamed(oldName,newName)) {
+                                try {
+                                    p.save();
+                                } catch (IOException e) {
+                                    LOGGER.log(Level.WARNING, "Failed to persist project setting during rename from "+oldName+" to "+newName,e);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         public String getDisplayName() {
@@ -191,4 +215,6 @@ public class BuildTrigger extends Publisher {
             }.process();
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(BuildTrigger.class.getName());
 }
