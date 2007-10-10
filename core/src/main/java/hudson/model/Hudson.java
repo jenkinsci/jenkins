@@ -332,7 +332,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Gets the {@link JobPropertyDescriptor} by name. Primarily used for making them web-visible.
      */
     public JobPropertyDescriptor getJobProperty(String shortClassName) {
-        return (JobPropertyDescriptor)findDescriptor(shortClassName, Jobs.PROPERTIES);
+        // combining these two lines triggers javac bug. See issue #610.
+        Descriptor d = findDescriptor(shortClassName, Jobs.PROPERTIES);
+        return (JobPropertyDescriptor) d;
     }
 
     /**
