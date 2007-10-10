@@ -46,6 +46,13 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         errorStackTrace = getError(testCase);
     }
 
+    CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
+        this.className = parent.getName();
+        this.testName = testName;
+        this.errorStackTrace = errorStackTrace;
+        this.parent = parent;
+    }
+
     private static String getError(Element testCase) {
         String msg = testCase.elementText("error");
         if(msg!=null)

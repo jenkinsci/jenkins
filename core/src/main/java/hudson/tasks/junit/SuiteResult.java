@@ -35,11 +35,10 @@ public final class SuiteResult implements Serializable {
     private final List<CaseResult> cases = new ArrayList<CaseResult>();
     private transient TestResult parent;
 
-    SuiteResult(String name, String stdout, String stderr, Collection<CaseResult> cases) throws DocumentException {
+    SuiteResult(String name, String stdout, String stderr) {
         this.name = name;
         this.stderr = stderr;
         this.stdout = stdout;
-        this.cases.addAll(cases);
     }
 
     SuiteResult(File xmlReport) throws DocumentException {
@@ -71,6 +70,10 @@ public final class SuiteResult implements Serializable {
                 cases.add(new CaseResult(this,e));
             }
         }
+    }
+
+    /*package*/ void addCase(CaseResult cr) {
+        cases.add(cr);
     }
 
     public String getName() {
