@@ -24,6 +24,8 @@ import java.util.List;
 /**
  * Just prints out the progress of svn update/checkout operation in a way similar to
  * the svn CLI.
+ *
+ * This code also records all the referenced external locations.
  */
 final class SubversionUpdateEventHandler implements ISVNEventHandler {
 
