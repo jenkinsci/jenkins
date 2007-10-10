@@ -44,4 +44,5 @@ ruby push-m2-repo.rb $JAVANET_M2_REPO $id
 ./publish-javadoc.sh
 
 cd ../../../www
+cvs update -l
 cvs commit -m "Hudson $id released" changelog.html hudson.jnlp
