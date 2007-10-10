@@ -21,7 +21,7 @@
     </td>
   </tr>
   <j:if test="${build.building}">
-    <j:set target="it" property="nextBuildNumberToFetch" value="${it.number}"/>
+    <j:set target="${it}" property="nextBuildNumberToFetch" value="${build.number}"/>
     <tr class="transitive"><td></td><td style="padding:0">
       <table class="middle-align">
         <tr><td>
