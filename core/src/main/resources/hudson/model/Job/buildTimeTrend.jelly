@@ -13,6 +13,7 @@
           <div align="center">
             <table class="sortable" style="margin-top:1em;">
               <tr>
+                <th><st:nbsp/></th>
                 <th initialSortDir="up">Build</th>
                 <th>Duration</th>
                 <j:if test="${isMasterSlaveEnabled}">
@@ -21,6 +22,9 @@
               </tr>
               <j:forEach var="r" items="${it.builds}">
                 <tr>
+                  <td>
+                  	<img width="16" height="16" src="${imagesURL}/16x16/${r.buildStatusUrl}" alt="${r.iconColor.description}" />
+                  </td>
                   <td>
                     ${r.displayName}
                   </td>
