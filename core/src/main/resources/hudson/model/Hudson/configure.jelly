@@ -49,7 +49,7 @@
       <s:section title="Master/Slave Support">
         <s:entry title="Slaves"
           description="
-            List of slave nodes register to this master Hudson. Jobs can be configured to
+            List of slave nodes registered to this master Hudson. Jobs can be configured to
             execute on slave nodes to handle a large number of jobs.
           ">
           <s:repeatable var="s" items="${it.slaves}" name="slaves">
