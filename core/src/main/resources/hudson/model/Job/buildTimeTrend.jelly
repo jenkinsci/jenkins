@@ -25,7 +25,7 @@
                   <td>
                   	<img width="16" height="16" src="${imagesURL}/16x16/${r.buildStatusUrl}" alt="${r.iconColor.description}" />
                   </td>
-                  <td>
+                  <td data="${r.number}">
                     ${r.displayName}
                   </td>
                   <td data="${r.duration}">
