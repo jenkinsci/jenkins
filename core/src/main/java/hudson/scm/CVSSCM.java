@@ -159,6 +159,18 @@ public class CVSSCM extends SCM implements Serializable {
         return workspace.child(getAllModulesNormalized()[0]);
     }
 
+    public FilePath[] getModuleRoots(FilePath workspace) {
+        if (!flatten) {
+            final String[] moduleLocations = getAllModulesNormalized();
+            FilePath[] moduleRoots = new FilePath[moduleLocations.length];
+            for (int i = 0; i < moduleLocations.length; i++) {
+                moduleRoots[i] = workspace.child(moduleLocations[i]);
+            }
+            return moduleRoots;
+        }
+        return new FilePath[]{getModuleRoot(workspace)};
+    }
+
     public ChangeLogParser createChangeLogParser() {
         return new CVSChangeLogParser();
     }
@@ -222,7 +234,7 @@ public class CVSSCM extends SCM implements Serializable {
         // archive the workspace to support later tagging
         File archiveFile = getArchiveFile(build);
         final OutputStream os = new RemoteOutputStream(new FileOutputStream(archiveFile));
-        
+
         ws.act(new FileCallable<Void>() {
             public Void invoke(File ws, VirtualChannel channel) throws IOException {
                 ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(os));
@@ -950,7 +962,7 @@ public class CVSSCM extends SCM implements Serializable {
                     // check .cvspass file to see if it has entry.
                     // CVS handles authentication only if it's pserver.
                     if(v.startsWith(":pserver")) {
-                        if(m.group(2)==null) {// if password is not specified in CVSROOT 
+                        if(m.group(2)==null) {// if password is not specified in CVSROOT
                             String cvspass = getCvspassFile();
                             File passfile;
                             if(cvspass.equals("")) {

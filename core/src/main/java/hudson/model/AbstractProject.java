@@ -206,6 +206,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return getScm().getModuleRoot(getWorkspace());
     }
 
+    /**
+     * Returns the root directories of all checked-out modules.
+     * <p>
+     * Some SCMs support checking out multiple modules into the same workspace.
+     * In these cases, the returned array will have a length greater than one.
+     * @return The roots of all modules checked out from the SCM.
+     */
+    public FilePath[] getModuleRoots() {
+        return getScm().getModuleRoots(getWorkspace());
+    }
+
     public int getQuietPeriod() {
         return quietPeriod!=null ? quietPeriod : Hudson.getInstance().getQuietPeriod();
     }

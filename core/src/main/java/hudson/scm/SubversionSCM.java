@@ -329,7 +329,7 @@ public class SubversionSCM extends SCM implements Serializable {
      * <p>
      * Use canonical path to avoid SVNKit/symlink problem as described in
      * https://wiki.svnkit.com/SVNKit_FAQ
-     * 
+     *
      * @return null
      *      if the operation failed. Otherwise the set of local workspace paths
      *      (relative to the workspace root) that has loaded due to svn:external.
@@ -665,6 +665,18 @@ public class SubversionSCM extends SCM implements Serializable {
         if (getLocations().length > 0)
             return workspace.child(getLocations()[0].local);
         return workspace;
+    }
+
+    public FilePath[] getModuleRoots(FilePath workspace) {
+        final ModuleLocation[] moduleLocations = getLocations();
+        if (moduleLocations.length > 0) {
+            FilePath[] moduleRoots = new FilePath[moduleLocations.length];
+            for (int i = 0; i < moduleLocations.length; i++) {
+                moduleRoots[i] = workspace.child(moduleLocations[i].local);
+            }
+            return moduleRoots;
+        }
+        return new FilePath[] { getModuleRoot(workspace) };
     }
 
     private static String getLastPathComponent(String s) {
@@ -1034,16 +1046,16 @@ public class SubversionSCM extends SCM implements Serializable {
 	                                    // found a matching path
 	                                    List<SVNDirEntry> entries = new ArrayList<SVNDirEntry>();
 	                                    repository.getDir(p,rev,false,entries);
-	
+
 	                                    // build up the name list
 	                                    List<String> paths = new ArrayList<String>();
 	                                    for (SVNDirEntry e : entries)
 	                                        if(e.getKind()==SVNNodeKind.DIR)
 	                                            paths.add(e.getName());
-	
+
 	                                    String head = SVNPathUtil.head(repoPath.substring(p.length() + 1));
 	                                    String candidate = EditDistance.findNearest(head,paths);
-	
+
 	                                    error("'%1$s/%2$s' doesn't exist in the repository. Maybe you meant '%1$s/%3$s'?",
 	                                        p, head, candidate);
 	                                    return;
@@ -1079,11 +1091,11 @@ public class SubversionSCM extends SCM implements Serializable {
 
         public SVNNodeKind checkRepositoryPath(SVNURL repoURL) throws SVNException {
         	SVNRepository repository = null;
-        	
+
         	try {
             	repository = getRepository(repoURL);
 	            repository.testConnection();
-	
+
 	            long rev = repository.getLatestRevision();
 	            String repoPath = getRelativePath(repoURL, repository);
 	            return repository.checkPath(repoPath, rev);

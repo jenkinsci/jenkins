@@ -57,7 +57,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This method attempts to find applicable browser
-     * from other job configurations. 
+     * from other job configurations.
      */
     public final RepositoryBrowser getEffectiveBrowser() {
         RepositoryBrowser b = getBrowser();
@@ -182,7 +182,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * <p>
      * If this SCM is configured to create a directory, try to
      * return that directory so that builders can work seamlessly.
-     *  
+     *
      * <p>
      * If SCM doesn't need to create any directory inside workspace,
      * or in any other tricky cases, it should revert to the default
@@ -193,6 +193,37 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public FilePath getModuleRoot(FilePath workspace) {
         return workspace;
+    }
+
+    /**
+     * Gets the top directories of all the checked out modules.
+     *
+     * <p>
+     * Some SCMs support checking out multiple modules inside a workspace, which
+     * creates directory layout like this:
+     *
+     * <pre>
+     * workspace  <- workspace root
+     *  +- xyz    <- directory checked out by SCM
+     *      +- .svn
+     *      +- build.xml  <- user file
+     *  +- abc    <- second module from different SCM root
+     *      +- .svn
+     *      +- build.xml  <- user file
+     * </pre>
+     *
+     * This method takes the workspace root as a parameter, and is expected to return
+     * all the module roots that were checked out from SCM.
+     *
+     * <p>
+     * For normal SCMs, the array will be of length <code>1</code> and it's contents
+     * will be identical to calling {@link getModuleRoot(FilePath)}.
+     *
+     * @param workspace The workspace root directory
+     * @return An array of all module roots.
+     */
+    public FilePath[] getModuleRoots(FilePath workspace) {
+        return new FilePath[] { getModuleRoot(workspace), };
     }
 
     /**
