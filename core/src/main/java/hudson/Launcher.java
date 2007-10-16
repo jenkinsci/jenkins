@@ -67,24 +67,96 @@ public abstract class Launcher {
         return launch(cmd,Util.mapToEnv(env),out,workDir);
     }
 
-    public final Proc launch(String[] cmd, Map<String,String> env, OutputStream out, FilePath workDir) throws IOException {
-        return launch(cmd,Util.mapToEnv(env),out,workDir);
+    public final Proc launch(String[] cmd, Map<String, String> env, OutputStream out, FilePath workDir) throws IOException {
+        return launch(cmd, Util.mapToEnv(env), out, workDir);
     }
 
-    public final Proc launch(String[] cmd, Map<String,String> env, InputStream in, OutputStream out) throws IOException {
-        return launch(cmd,Util.mapToEnv(env),in,out);
+    public final Proc launch(String[] cmd, Map<String, String> env, InputStream in, OutputStream out) throws IOException {
+        return launch(cmd, Util.mapToEnv(env), in, out);
+    }
+
+    /**
+     * Launch a command with optional censoring of arguments from the listener (Note: <strong>The censored portions will
+     * remain visible through /proc, pargs, process explorer, etc. i.e. people logged in on the same machine</strong>
+     * This version of the launch command just ensures that it is not visible from a build log which is exposed via the
+     * web)
+     *
+     * @param cmd     The command and all it's arguments.
+     * @param mask    Which of the command and arguments should be masked from the listener
+     * @param env     Environment variable overrides.
+     * @param out     stdout and stderr of the process will be sent to this stream. the stream won't be closed.
+     * @param workDir null if the working directory could be anything.
+     * @return The process of the command.
+     * @throws IOException When there are IO problems.
+     */
+    public final Proc launch(String[] cmd, boolean[] mask, Map<String, String> env, OutputStream out, FilePath workDir) throws IOException {
+        return launch(cmd, mask, Util.mapToEnv(env), out, workDir);
+    }
+
+    /**
+     * Launch a command with optional censoring of arguments from the listener (Note: <strong>The censored portions will
+     * remain visible through /proc, pargs, process explorer, etc. i.e. people logged in on the same machine</strong>
+     * This version of the launch command just ensures that it is not visible from a build log which is exposed via the
+     * web)
+     *
+     * @param cmd     The command and all it's arguments.
+     * @param mask    Which of the command and arguments should be masked from the listener
+     * @param env     Environment variable overrides.
+     * @param in      null if there's no input.
+     * @param out     stdout and stderr of the process will be sent to this stream. the stream won't be closed.
+     * @return The process of the command.
+     * @throws IOException When there are IO problems.
+     */
+    public final Proc launch(String[] cmd, boolean[] mask, Map<String, String> env, InputStream in, OutputStream out) throws IOException {
+        return launch(cmd, mask, Util.mapToEnv(env), in, out);
     }
 
     public final Proc launch(String cmd,String[] env,OutputStream out, FilePath workDir) throws IOException {
         return launch(Util.tokenize(cmd),env,out,workDir);
     }
 
-    public final Proc launch(String[] cmd,String[] env,OutputStream out, FilePath workDir) throws IOException {
-        return launch(cmd,env,null,out,workDir);
+    public final Proc launch(String[] cmd, String[] env, OutputStream out, FilePath workDir) throws IOException {
+        return launch(cmd, env, null, out, workDir);
     }
 
-    public final Proc launch(String[] cmd,String[] env,InputStream in,OutputStream out) throws IOException {
-        return launch(cmd,env,in,out,null);
+    public final Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out) throws IOException {
+        return launch(cmd, env, in, out, null);
+    }
+
+    /**
+     * Launch a command with optional censoring of arguments from the listener (Note: <strong>The censored portions will
+     * remain visible through /proc, pargs, process explorer, etc. i.e. people logged in on the same machine</strong>
+     * This version of the launch command just ensures that it is not visible from a build log which is exposed via the
+     * web)
+     *
+     * @param cmd     The command and all it's arguments.
+     * @param mask    Which of the command and arguments should be masked from the listener
+     * @param env     Environment variable overrides.
+     * @param out     stdout and stderr of the process will be sent to this stream. the stream won't be closed.
+     * @param workDir null if the working directory could be anything.
+     * @return The process of the command.
+     * @throws IOException When there are IO problems.
+     */
+    public final Proc launch(String[] cmd, boolean[] mask, String[] env, OutputStream out, FilePath workDir) throws IOException {
+        return launch(cmd, mask, env, null, out, workDir);
+    }
+
+    /**
+     * Launch a command with optional censoring of arguments from the listener (Note: <strong>The censored portions will
+     * remain visible through /proc, pargs, process explorer, etc. i.e. people logged in on the same machine</strong>
+     * This version of the launch command just ensures that it is not visible from a build log which is exposed via the
+     * web)
+     *
+     * @param cmd     The command and all it's arguments.
+     * @param mask    Which of the command and arguments should be masked from the listener
+     * @param env     Environment variable overrides.
+     * @param in      null if there's no input.
+     * @param out     stdout and stderr of the process will be sent to this stream. the stream won't be closed.
+     * @return The process of the command.
+     * @throws IOException When there are IO problems.
+     */
+    public final Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out) throws IOException {
+        return launch(cmd, mask, env, in, out, null);
     }
 
     /**
@@ -99,6 +171,23 @@ public abstract class Launcher {
      *      the stream won't be closed.
      */
     public abstract Proc launch(String[] cmd,String[] env,InputStream in,OutputStream out, FilePath workDir) throws IOException;
+
+    /**
+     * Launch a command with optional censoring of arguments from the listener (Note: <strong>The censored portions will
+     * remain visible through /proc, pargs, process explorer, etc. i.e. people logged in on the same machine</strong>
+     * This version of the launch command just ensures that it is not visible from a build log which is exposed via the
+     * web)
+     *
+     * @param cmd     The command and all it's arguments.
+     * @param mask    Which of the command and arguments should be masked from the listener
+     * @param env     Environment variable overrides.
+     * @param in      null if there's no input.
+     * @param out     stdout and stderr of the process will be sent to this stream. the stream won't be closed.
+     * @param workDir null if the working directory could be anything.
+     * @return The process of the command.
+     * @throws IOException When there are IO problems.
+     */
+    public abstract Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException;
 
     /**
      * Launches a specified process and connects its input/output to a {@link Channel}, then
@@ -154,6 +243,28 @@ public abstract class Launcher {
     }
 
     /**
+     * Prints out the command line to the listener with some portions masked to prevent sensitive information from being
+     * recorded on the listener.
+     *
+     * @param cmd     The commands
+     * @param mask    An array of booleans which control whether a cmd element should be masked (<code>true</code>) or
+     *                remain unmasked (<code>false</code>).
+     * @param workDir The work dir.
+     */
+    protected final void maskedPrintCommandLine(final String[] cmd, final boolean[] mask, final FilePath workDir) {
+        assert mask.length == cmd.length;
+        final String[] masked = new String[cmd.length];
+        for (int i = 0; i < cmd.length; i++) {
+            if (mask[i]) {
+                masked[i] = "********************************************************".substring(0, cmd[i].length());
+            } else {
+                masked[i] = cmd[i];
+            }
+        }
+        printCommandLine(masked, workDir);
+    }
+
+    /**
      * {@link Launcher} that launches process locally.
      */
     public static class LocalLauncher extends Launcher {
@@ -165,9 +276,18 @@ public abstract class Launcher {
             super(listener, channel);
         }
 
-        public Proc launch(String[] cmd,String[] env,InputStream in,OutputStream out, FilePath workDir) throws IOException {
+        public Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
             printCommandLine(cmd, workDir);
-            return new LocalProc(cmd,Util.mapToEnv(inherit(env)),in,out, toFile(workDir));
+            return createLocalProc(cmd, env, in, out, workDir);
+        }
+
+        public Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
+            maskedPrintCommandLine(cmd, mask, workDir);
+            return createLocalProc(cmd, env, in, out, workDir);
+        }
+
+        private Proc createLocalProc(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
+            return new LocalProc(cmd, Util.mapToEnv(inherit(env)), in, out, toFile(workDir));
         }
 
         private File toFile(FilePath f) {
@@ -207,9 +327,17 @@ public abstract class Launcher {
             this.isUnix = isUnix;
         }
 
-        public Proc launch(final String[] cmd, final String[] env, InputStream _in, OutputStream _out, FilePath _workDir) throws IOException {
-            printCommandLine(cmd,_workDir);
+        public Proc launch(final String[] cmd, final String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
+            printCommandLine(cmd, workDir);
+            return createRemoteProc(cmd, env, in, out, workDir);
+        }
 
+        public Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
+            maskedPrintCommandLine(cmd, mask, workDir);
+            return createRemoteProc(cmd, env, in, out, workDir);
+        }
+
+        private Proc createRemoteProc(String[] cmd, String[] env, InputStream _in, OutputStream _out, FilePath _workDir) throws IOException {
             final OutputStream out = new RemoteOutputStream(new CloseProofOutputStream(_out));
             final InputStream  in  = _in==null ? null : new RemoteInputStream(_in);
             final String workDir = _workDir==null ? null : _workDir.getRemote();
