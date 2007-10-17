@@ -256,7 +256,7 @@ public abstract class Launcher {
         final String[] masked = new String[cmd.length];
         for (int i = 0; i < cmd.length; i++) {
             if (mask[i]) {
-                masked[i] = "********************************************************".substring(0, cmd[i].length());
+                masked[i] = "********";
             } else {
                 masked[i] = cmd[i];
             }
