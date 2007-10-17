@@ -159,19 +159,17 @@ public class CVSSCM extends SCM implements Serializable {
         return workspace.child(getAllModulesNormalized()[0]);
     }
 
-// until I understand better why this is causing an IOException in MecurialSCM
-// CVSSCM will use the super method (i.e. only one module root)
-//    public FilePath[] getModuleRoots(FilePath workspace) {
-//        if (!flatten) {
-//            final String[] moduleLocations = getAllModulesNormalized();
-//            FilePath[] moduleRoots = new FilePath[moduleLocations.length];
-//            for (int i = 0; i < moduleLocations.length; i++) {
-//                moduleRoots[i] = workspace.child(moduleLocations[i]);
-//            }
-//            return moduleRoots;
-//        }
-//        return new FilePath[]{getModuleRoot(workspace)};
-//    }
+    public FilePath[] getModuleRoots(FilePath workspace) {
+        if (!flatten) {
+            final String[] moduleLocations = getAllModulesNormalized();
+            FilePath[] moduleRoots = new FilePath[moduleLocations.length];
+            for (int i = 0; i < moduleLocations.length; i++) {
+                moduleRoots[i] = workspace.child(moduleLocations[i]);
+            }
+            return moduleRoots;
+        }
+        return new FilePath[]{getModuleRoot(workspace)};
+    }
 
     public ChangeLogParser createChangeLogParser() {
         return new CVSChangeLogParser();
