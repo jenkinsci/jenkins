@@ -1,29 +1,30 @@
 package hudson.maven;
 
-import hudson.tasks.Maven.MavenInstallation;
-import hudson.model.JDK;
-import hudson.model.BuildListener;
-import hudson.model.Hudson;
-import hudson.model.Node;
-import hudson.model.Executor;
-import hudson.model.Run.RunnerAbortedException;
-import hudson.remoting.Channel;
-import hudson.remoting.Which;
-import hudson.remoting.Callable;
-import static hudson.Util.fixNull;
-import hudson.util.IOException2;
-import hudson.util.ArgumentListBuilder;
 import hudson.FilePath;
 import hudson.Launcher;
+import static hudson.Util.fixNull;
 import hudson.maven.agent.Main;
+import hudson.model.BuildListener;
+import hudson.model.Executor;
+import hudson.model.Hudson;
+import hudson.model.JDK;
+import hudson.model.Node;
+import hudson.model.Run.RunnerAbortedException;
+import hudson.model.TaskListener;
+import hudson.remoting.Callable;
+import hudson.remoting.Channel;
+import hudson.remoting.Which;
+import hudson.tasks.Maven.MavenInstallation;
+import hudson.util.ArgumentListBuilder;
+import hudson.util.IOException2;
 
-import java.io.OutputStream;
-import java.io.IOException;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.JarURLConnection;
 import java.util.Map;
 
 /**
@@ -79,17 +80,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         }
 
         // find classworlds.jar
-        File bootDir = new File(mvn.getHomeDir(), "core/boot");
-        File[] classworlds = bootDir.listFiles(CLASSWORLDS_FILTER);
-        if(classworlds==null || classworlds.length==0) {
-            // Maven 2.0.6 puts it to a different place
-            bootDir = new File(mvn.getHomeDir(), "boot");
-            classworlds = bootDir.listFiles(CLASSWORLDS_FILTER);
-            if(classworlds==null || classworlds.length==0) {
-                listener.error("No classworlds*.jar found in "+mvn.getHomeDir()+" -- Is this a valid maven2 directory?");
-                throw new RunnerAbortedException();
-            }
-        }
+        String classWorldsJar = launcher.getChannel().call(new GetClassWorldsJar(mvn.getMavenHome(),listener));
 
         boolean isMaster = getCurrentNode()== Hudson.getInstance();
         FilePath slaveRoot=null;
@@ -111,8 +102,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         args.add("-cp");
         args.add(
             (isMaster? Which.jarFile(Main.class).getAbsolutePath():slaveRoot.child("maven-agent.jar").getRemote())+
-            (launcher.isUnix()?":":";")+
-            classworlds[0].getAbsolutePath());
+            (launcher.isUnix()?":":";")+classWorldsJar);
         args.add(Main.class.getName());
 
         // M2_HOME
@@ -137,6 +127,35 @@ final class MavenProcessFactory implements ProcessCache.Factory {
 
     public JDK getJava() {
         return mms.getJDK();
+    }
+
+    /**
+     * Finds classworlds.jar
+     */
+    private static final class GetClassWorldsJar implements Callable<String,IOException> {
+        private final String mvnHome;
+        private final TaskListener listener;
+
+        private GetClassWorldsJar(String mvnHome, TaskListener listener) {
+            this.mvnHome = mvnHome;
+            this.listener = listener;
+        }
+
+        public String call() throws IOException {
+            File home = new File(mvnHome);
+            File bootDir = new File(home, "core/boot");
+            File[] classworlds = bootDir.listFiles(CLASSWORLDS_FILTER);
+            if(classworlds==null || classworlds.length==0) {
+                // Maven 2.0.6 puts it to a different place
+                bootDir = new File(home, "boot");
+                classworlds = bootDir.listFiles(CLASSWORLDS_FILTER);
+                if(classworlds==null || classworlds.length==0) {
+                    listener.error("No classworlds*.jar found in "+home+" -- Is this a valid maven2 directory?");
+                    throw new RunnerAbortedException();
+                }
+            }
+            return classworlds[0].getAbsolutePath();
+        }
     }
 
     private static final class GetRemotingJar implements Callable<String,IOException> {
