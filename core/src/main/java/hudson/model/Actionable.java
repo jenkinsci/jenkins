@@ -78,7 +78,10 @@ public abstract class Actionable extends AbstractModelObject {
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         for (Action a : getActions()) {
-            if(a.getUrlName().equals(token))
+            String urlName = a.getUrlName();
+            if(urlName==null)
+                throw new AssertionError("Action "+a+" returned null from the getUrlName() method");
+            if(urlName.equals(token))
                 return a;
         }
         return null;
