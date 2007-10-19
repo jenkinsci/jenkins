@@ -3,6 +3,7 @@ package hudson;
 import hudson.model.Hudson;
 import hudson.util.Service;
 
+import java.util.Enumeration;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -12,6 +13,7 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -172,6 +174,15 @@ public final class PluginManager {
                     return url;
             }
             return null;
+        }
+
+        @Override
+        protected Enumeration<URL> findResources(String name) throws IOException {
+            List<URL> resources = new ArrayList<URL>();
+            for (PluginWrapper p : activePlugins) {
+                resources.addAll(Collections.list(p.classLoader.getResources(name)));
+            }
+            return Collections.enumeration(resources);
         }
     }
 
