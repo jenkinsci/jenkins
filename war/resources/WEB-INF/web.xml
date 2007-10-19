@@ -38,7 +38,7 @@
 	below.  So if Hudson is on a public server, and you want to only allow
 	authorized users to access it, you may want to pay attention to this.
 	
-	See: http://www.nabble.com/No-browser-caching-with-Hudson--tf4601857.html
+	See: http://www.nabble.com/No-browser-caching-with-Hudson- -tf4601857.html
   
   <filter>
     <filter-name>change-headers-filter</filter-name>
