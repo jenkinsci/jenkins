@@ -150,29 +150,29 @@ public class SubversionTagAction extends AbstractScmTagAction {
             try {
                 final SVNClientManager cm = SubversionSCM.createSvnClientManager(SubversionSCM.DescriptorImpl.DESCRIPTOR.createAuthenticationProvider());
                 try {
-                for (Entry<SvnInfo, String> e : tagSet.entrySet()) {
-                    PrintStream logger = listener.getLogger();
-                    logger.println("Tagging "+e.getKey()+" to "+e.getValue());
+                    for (Entry<SvnInfo, String> e : tagSet.entrySet()) {
+                        PrintStream logger = listener.getLogger();
+                        logger.println("Tagging "+e.getKey()+" to "+e.getValue());
 
-                    try {
-                        SVNURL src = SVNURL.parseURIDecoded(e.getKey().url);
-                        SVNURL dst = SVNURL.parseURIDecoded(e.getValue());
+                        try {
+                            SVNURL src = SVNURL.parseURIDecoded(e.getKey().url);
+                            SVNURL dst = SVNURL.parseURIDecoded(e.getValue());
 
-                        SVNCopyClient svncc = cm.getCopyClient();
-                        svncc.doCopy(src, SVNRevision.create(e.getKey().revision), dst, false, true, "Tagged from "+build );
-                    } catch (SVNException x) {
-                        x.printStackTrace(listener.error("Failed to tag"));
-                        return;
+                            SVNCopyClient svncc = cm.getCopyClient();
+                            svncc.doCopy(src, SVNRevision.create(e.getKey().revision), dst, false, true, "Tagged from "+build );
+                        } catch (SVNException x) {
+                            x.printStackTrace(listener.error("Failed to tag"));
+                            return;
+                        }
                     }
-                }
 
-                // completed successfully
-                for (Entry<SvnInfo,String> e : tagSet.entrySet())
-                    SubversionTagAction.this.tags.get(e.getKey()).add(e.getValue());
-                build.save();
-                workerThread = null;
+                    // completed successfully
+                    for (Entry<SvnInfo,String> e : tagSet.entrySet())
+                        SubversionTagAction.this.tags.get(e.getKey()).add(e.getValue());
+                    build.save();
+                    workerThread = null;
                 } finally {
-                	cm.dispose();
+                    cm.dispose();
                 }
            } catch (Throwable e) {
                e.printStackTrace(listener.fatalError(e.getMessage()));

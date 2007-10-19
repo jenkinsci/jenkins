@@ -369,46 +369,46 @@ public class SubversionSCM extends SCM implements Serializable {
         public List<String> invoke(File ws, VirtualChannel channel) throws IOException {
             final SVNClientManager manager = createSvnClientManager(authProvider);
             try {
-				final SVNUpdateClient svnuc = manager.getUpdateClient();
-	            final List<String> externals = new ArrayList<String>(); // store discovered externals to here
-	            final SVNRevision revision = SVNRevision.create(timestamp);
-            if(update) {
-	                for (final ModuleLocation l : locations) {
-                    try {
-                        listener.getLogger().println("Updating "+ l.remote);
+                final SVNUpdateClient svnuc = manager.getUpdateClient();
+                final List<String> externals = new ArrayList<String>(); // store discovered externals to here
+                final SVNRevision revision = SVNRevision.create(timestamp);
+                if(update) {
+                    for (final ModuleLocation l : locations) {
+                        try {
+                            listener.getLogger().println("Updating "+ l.remote);
 
-                        svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
-                        svnuc.doUpdate(new File(ws, l.local).getCanonicalFile(), revision, true);
+                            svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
+                            svnuc.doUpdate(new File(ws, l.local).getCanonicalFile(), revision, true);
 
-	                    } catch (final SVNException e) {
-                        e.printStackTrace(listener.error("Failed to update "+l.remote));
-                        // trouble-shooting probe for #591
-                        if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_NOT_LOCKED) {
-                            listener.getLogger().println("Polled jobs are "+ SCMTrigger.DESCRIPTOR.getItemsBeingPolled());
+                        } catch (final SVNException e) {
+                            e.printStackTrace(listener.error("Failed to update "+l.remote));
+                            // trouble-shooting probe for #591
+                            if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_NOT_LOCKED) {
+                                listener.getLogger().println("Polled jobs are "+ SCMTrigger.DESCRIPTOR.getItemsBeingPolled());
+                            }
+                            return null;
                         }
-                        return null;
+                    }
+                } else {
+                    Util.deleteContentsRecursive(ws);
+
+                    for (final ModuleLocation l : locations) {
+                        try {
+                            final SVNURL url = SVNURL.parseURIEncoded(l.remote);
+                            listener.getLogger().println("Checking out "+url);
+
+                            svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
+                            svnuc.doCheckout(url, new File(ws, l.local).getCanonicalFile(), SVNRevision.HEAD, revision, true);
+
+                        } catch (final SVNException e) {
+                            e.printStackTrace(listener.error("Failed to check out "+l.remote));
+                            return null;
+                        }
                     }
                 }
-            } else {
-                Util.deleteContentsRecursive(ws);
-
-	                for (final ModuleLocation l : locations) {
-                    try {
-	                        final SVNURL url = SVNURL.parseURIEncoded(l.remote);
-                        listener.getLogger().println("Checking out "+url);
-
-                        svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
-                        svnuc.doCheckout(url, new File(ws, l.local).getCanonicalFile(), SVNRevision.HEAD, revision, true);
-
-	                    } catch (final SVNException e) {
-                        e.printStackTrace(listener.error("Failed to check out "+l.remote));
-                        return null;
-                    }
-                }
-            }
-            return externals;
+                return externals;
             } finally {
-            	manager.dispose();
+                manager.dispose();
             }
         }
 
@@ -495,10 +495,10 @@ public class SubversionSCM extends SCM implements Serializable {
     private static SVNInfo parseSvnInfo(File workspace, ISVNAuthenticationProvider authProvider) throws SVNException {
         final SVNClientManager manager = createSvnClientManager(authProvider);
         try {
-        	final SVNWCClient svnWc = manager.getWCClient();
-        return svnWc.doInfo(workspace,SVNRevision.WORKING);
+            final SVNWCClient svnWc = manager.getWCClient();
+            return svnWc.doInfo(workspace,SVNRevision.WORKING);
         } finally {
-        	manager.dispose();
+            manager.dispose();
         }
     }
 
@@ -511,10 +511,10 @@ public class SubversionSCM extends SCM implements Serializable {
     private static SVNInfo parseSvnInfo(SVNURL remoteUrl, ISVNAuthenticationProvider authProvider) throws SVNException {
         final SVNClientManager manager = createSvnClientManager(authProvider);
         try {
-        	final SVNWCClient svnWc = manager.getWCClient();
-        return svnWc.doInfo(remoteUrl, SVNRevision.HEAD, SVNRevision.HEAD);
+            final SVNWCClient svnWc = manager.getWCClient();
+            return svnWc.doInfo(remoteUrl, SVNRevision.HEAD, SVNRevision.HEAD);
         } finally {
-        	manager.dispose();
+            manager.dispose();
         }
     }
 
@@ -543,29 +543,29 @@ public class SubversionSCM extends SCM implements Serializable {
 
             final SVNClientManager manager = createSvnClientManager(authProvider);
             try {
-				final SVNWCClient svnWc = manager.getWCClient();
-            // invoke the "svn info"
-            for( ModuleLocation module : locations ) {
-                try {
-                    SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws,module.local), SVNRevision.WORKING));
-                    revisions.put(info.url,info);
-                } catch (SVNException e) {
-                    e.printStackTrace(listener.error("Failed to parse svn info for "+module.remote));
+                final SVNWCClient svnWc = manager.getWCClient();
+                // invoke the "svn info"
+                for( ModuleLocation module : locations ) {
+                    try {
+                        SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws,module.local), SVNRevision.WORKING));
+                        revisions.put(info.url,info);
+                    } catch (SVNException e) {
+                        e.printStackTrace(listener.error("Failed to parse svn info for "+module.remote));
+                    }
                 }
-            }
-            for(String local : externals){
-                try {
-                    SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws, local),SVNRevision.WORKING));
-                    revisions.put(info.url,info);
-                } catch (SVNException e) {
-                    e.printStackTrace(listener.error("Failed to parse svn info for external "+local));
+                for(String local : externals){
+                    try {
+                        SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws, local),SVNRevision.WORKING));
+                        revisions.put(info.url,info);
+                    } catch (SVNException e) {
+                        e.printStackTrace(listener.error("Failed to parse svn info for external "+local));
+                    }
+
                 }
 
-            }
-
-            return revisions;
+                return revisions;
             } finally {
-            	manager.dispose();
+                manager.dispose();
             }
         }
         private static final long serialVersionUID = 1L;
@@ -1021,7 +1021,7 @@ public class SubversionSCM extends SCM implements Serializable {
                 if(item!=null)
                     item.delete();
                 if (repository != null)
-                	repository.closeSession();
+                    repository.closeSession();
             }
         }
 
@@ -1054,37 +1054,37 @@ public class SubversionSCM extends SCM implements Serializable {
                         if (checkRepositoryPath(repoURL)==SVNNodeKind.NONE) {
                             SVNRepository repository = null;
                             try {
-                            	repository = getRepository(repoURL);
-	                            long rev = repository.getLatestRevision();
-	                            // now go back the tree and find if there's anything that exists
-	                            String repoPath = getRelativePath(repoURL, repository);
-	                            String p = repoPath;
-	                            while(p.length()>0) {
-	                                p = SVNPathUtil.removeTail(p);
-	                                if(repository.checkPath(p,rev)==SVNNodeKind.DIR) {
-	                                    // found a matching path
-	                                    List<SVNDirEntry> entries = new ArrayList<SVNDirEntry>();
-	                                    repository.getDir(p,rev,false,entries);
+                                repository = getRepository(repoURL);
+                                long rev = repository.getLatestRevision();
+                                // now go back the tree and find if there's anything that exists
+                                String repoPath = getRelativePath(repoURL, repository);
+                                String p = repoPath;
+                                while(p.length()>0) {
+                                    p = SVNPathUtil.removeTail(p);
+                                    if(repository.checkPath(p,rev)==SVNNodeKind.DIR) {
+                                        // found a matching path
+                                        List<SVNDirEntry> entries = new ArrayList<SVNDirEntry>();
+                                        repository.getDir(p,rev,false,entries);
 
-	                                    // build up the name list
-	                                    List<String> paths = new ArrayList<String>();
-	                                    for (SVNDirEntry e : entries)
-	                                        if(e.getKind()==SVNNodeKind.DIR)
-	                                            paths.add(e.getName());
+                                        // build up the name list
+                                        List<String> paths = new ArrayList<String>();
+                                        for (SVNDirEntry e : entries)
+                                            if(e.getKind()==SVNNodeKind.DIR)
+                                                paths.add(e.getName());
 
-	                                    String head = SVNPathUtil.head(repoPath.substring(p.length() + 1));
-	                                    String candidate = EditDistance.findNearest(head,paths);
+                                        String head = SVNPathUtil.head(repoPath.substring(p.length() + 1));
+                                        String candidate = EditDistance.findNearest(head,paths);
 
-	                                    error("'%1$s/%2$s' doesn't exist in the repository. Maybe you meant '%1$s/%3$s'?",
-	                                        p, head, candidate);
-	                                    return;
-	                                }
-	                            }
+                                        error("'%1$s/%2$s' doesn't exist in the repository. Maybe you meant '%1$s/%3$s'?",
+                                                p, head, candidate);
+                                        return;
+                                    }
+                                }
 
-	                            error(repoPath+" doesn't exist in the repository");
+                                error(repoPath+" doesn't exist in the repository");
                             } finally {
-                            	if (repository != null)
-                            		repository.closeSession();
+                                if (repository != null)
+                                    repository.closeSession();
                             }
                         } else
                             ok();
@@ -1109,18 +1109,18 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         public SVNNodeKind checkRepositoryPath(SVNURL repoURL) throws SVNException {
-        	SVNRepository repository = null;
+            SVNRepository repository = null;
 
-        	try {
-            	repository = getRepository(repoURL);
-	            repository.testConnection();
+            try {
+                repository = getRepository(repoURL);
+                repository.testConnection();
 
-	            long rev = repository.getLatestRevision();
-	            String repoPath = getRelativePath(repoURL, repository);
-	            return repository.checkPath(repoPath, rev);
+                long rev = repository.getLatestRevision();
+                String repoPath = getRelativePath(repoURL, repository);
+                return repository.checkPath(repoPath, rev);
             } finally {
-            	if (repository != null)
-            		repository.closeSession();
+                if (repository != null)
+                    repository.closeSession();
             }
         }
 

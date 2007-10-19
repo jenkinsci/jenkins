@@ -60,29 +60,29 @@ final class SubversionChangeLogBuilder {
 
         final SVNClientManager manager = SubversionSCM.createSvnClientManager(createAuthenticationProvider());
         try {
-			SVNLogClient svnlc = manager.getLogClient();
-        TransformerHandler th = createTransformerHandler();
-        th.setResult(changeLog);
-        SVNXMLLogHandler logHandler = new SVNXMLLogHandler(th);
-        // work around for http://svnkit.com/tracker/view.php?id=175
-        th.setDocumentLocator(DUMMY_LOCATOR);
-        logHandler.startDocument();
+            SVNLogClient svnlc = manager.getLogClient();
+            TransformerHandler th = createTransformerHandler();
+            th.setResult(changeLog);
+            SVNXMLLogHandler logHandler = new SVNXMLLogHandler(th);
+            // work around for http://svnkit.com/tracker/view.php?id=175
+            th.setDocumentLocator(DUMMY_LOCATOR);
+            logHandler.startDocument();
 
-        for (ModuleLocation l : scm.getLocations()) {
-            changelogFileCreated |= buildModule(l.remote, svnlc, logHandler);
-        }
-        for(String path : externals) {
-            changelogFileCreated |= buildModule(
-                getUrlForPath(build.getProject().getWorkspace().child(path)), svnlc, logHandler);
-        }
+            for (ModuleLocation l : scm.getLocations()) {
+                changelogFileCreated |= buildModule(l.remote, svnlc, logHandler);
+            }
+            for(String path : externals) {
+                changelogFileCreated |= buildModule(
+                        getUrlForPath(build.getProject().getWorkspace().child(path)), svnlc, logHandler);
+            }
 
-        if(changelogFileCreated) {
-            logHandler.endDocument();
-        }
+            if(changelogFileCreated) {
+                logHandler.endDocument();
+            }
 
-        return changelogFileCreated;
+            return changelogFileCreated;
         } finally {
-        	manager.dispose();
+            manager.dispose();
         }
     }
 
@@ -103,8 +103,8 @@ final class SubversionChangeLogBuilder {
         }
         Long thisRev = thisRevisions.get(url);
         if (thisRev == null) {
-        	listener.error("No revision found for URL: " + url + " in " + SubversionSCM.getRevisionFile(build) + ". Revision file contains: " + thisRevisions.keySet());
-        	return true;
+            listener.error("No revision found for URL: " + url + " in " + SubversionSCM.getRevisionFile(build) + ". Revision file contains: " + thisRevisions.keySet());
+            return true;
         }
         if(thisRev.equals(prevRev)) {
             logger.println("no change for "+url+" since the previous build");
@@ -150,18 +150,18 @@ final class SubversionChangeLogBuilder {
         public String invoke(File p, VirtualChannel channel) throws IOException {
             final SVNClientManager manager = SubversionSCM.createSvnClientManager(authProvider);
             try {
-				final SVNWCClient svnwc = manager.getWCClient();
+                final SVNWCClient svnwc = manager.getWCClient();
 
-            SVNInfo info;
-            try {
-                info = svnwc.doInfo(p, SVNRevision.WORKING);
-                return info.getURL().toDecodedString();
-            } catch (SVNException e) {
-                e.printStackTrace();
-                return null;
-            }
+                SVNInfo info;
+                try {
+                    info = svnwc.doInfo(p, SVNRevision.WORKING);
+                    return info.getURL().toDecodedString();
+                } catch (SVNException e) {
+                    e.printStackTrace();
+                    return null;
+                }
             } finally {
-            	manager.dispose();
+                manager.dispose();
             }
         }
 
