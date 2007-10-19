@@ -40,6 +40,10 @@ public class ResourceController {
         }
     };
 
+    /**
+     * Union of all {@link Resource}s that are currently in use.
+     * Updated as a task starts/completes executing. 
+     */
     private ResourceList inUse = ResourceList.EMPTY;
 
     /**
