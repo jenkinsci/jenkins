@@ -9,6 +9,7 @@ import hudson.FilePath.FileCallable;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
+import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
@@ -57,7 +58,9 @@ final class SubversionChangeLogBuilder {
     public boolean run(Collection<String> externals, Result changeLog) throws IOException, InterruptedException {
         boolean changelogFileCreated = false;
 
-        SVNLogClient svnlc = SubversionSCM.createSvnClientManager(createAuthenticationProvider()).getLogClient();
+        final SVNClientManager manager = SubversionSCM.createSvnClientManager(createAuthenticationProvider());
+        try {
+			SVNLogClient svnlc = manager.getLogClient();
         TransformerHandler th = createTransformerHandler();
         th.setResult(changeLog);
         SVNXMLLogHandler logHandler = new SVNXMLLogHandler(th);
@@ -78,6 +81,9 @@ final class SubversionChangeLogBuilder {
         }
 
         return changelogFileCreated;
+        } finally {
+        	manager.dispose();
+        }
     }
 
     private String getUrlForPath(FilePath path) throws IOException, InterruptedException {
@@ -142,7 +148,9 @@ final class SubversionChangeLogBuilder {
         }
 
         public String invoke(File p, VirtualChannel channel) throws IOException {
-            SVNWCClient svnwc = SubversionSCM.createSvnClientManager(authProvider).getWCClient();
+            final SVNClientManager manager = SubversionSCM.createSvnClientManager(authProvider);
+            try {
+				final SVNWCClient svnwc = manager.getWCClient();
 
             SVNInfo info;
             try {
@@ -151,6 +159,9 @@ final class SubversionChangeLogBuilder {
             } catch (SVNException e) {
                 e.printStackTrace();
                 return null;
+            }
+            } finally {
+            	manager.dispose();
             }
         }
 

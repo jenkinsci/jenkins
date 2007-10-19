@@ -148,8 +148,8 @@ public class SubversionTagAction extends AbstractScmTagAction {
         @Override
         protected void perform(TaskListener listener) {
             try {
-                SVNClientManager cm = SubversionSCM.createSvnClientManager(SubversionSCM.DescriptorImpl.DESCRIPTOR.createAuthenticationProvider());
-
+                final SVNClientManager cm = SubversionSCM.createSvnClientManager(SubversionSCM.DescriptorImpl.DESCRIPTOR.createAuthenticationProvider());
+                try {
                 for (Entry<SvnInfo, String> e : tagSet.entrySet()) {
                     PrintStream logger = listener.getLogger();
                     logger.println("Tagging "+e.getKey()+" to "+e.getValue());
@@ -171,6 +171,9 @@ public class SubversionTagAction extends AbstractScmTagAction {
                     SubversionTagAction.this.tags.get(e.getKey()).add(e.getValue());
                 build.save();
                 workerThread = null;
+                } finally {
+                	cm.dispose();
+                }
            } catch (Throwable e) {
                e.printStackTrace(listener.fatalError(e.getMessage()));
            }

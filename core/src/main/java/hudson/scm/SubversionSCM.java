@@ -367,19 +367,20 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         public List<String> invoke(File ws, VirtualChannel channel) throws IOException {
-            SVNUpdateClient svnuc = createSvnClientManager(authProvider).getUpdateClient();
-            List<String> externals = new ArrayList<String>(); // store discovered externals to here
-            SVNRevision revision = SVNRevision.create(timestamp);
+            final SVNClientManager manager = createSvnClientManager(authProvider);
+            try {
+				final SVNUpdateClient svnuc = manager.getUpdateClient();
+	            final List<String> externals = new ArrayList<String>(); // store discovered externals to here
+	            final SVNRevision revision = SVNRevision.create(timestamp);
             if(update) {
-
-                for (ModuleLocation l : locations) {
+	                for (final ModuleLocation l : locations) {
                     try {
                         listener.getLogger().println("Updating "+ l.remote);
 
                         svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
                         svnuc.doUpdate(new File(ws, l.local).getCanonicalFile(), revision, true);
 
-                    } catch (SVNException e) {
+	                    } catch (final SVNException e) {
                         e.printStackTrace(listener.error("Failed to update "+l.remote));
                         // trouble-shooting probe for #591
                         if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_NOT_LOCKED) {
@@ -391,21 +392,24 @@ public class SubversionSCM extends SCM implements Serializable {
             } else {
                 Util.deleteContentsRecursive(ws);
 
-                for (ModuleLocation l : locations) {
+	                for (final ModuleLocation l : locations) {
                     try {
-                        SVNURL url = SVNURL.parseURIEncoded(l.remote);
+	                        final SVNURL url = SVNURL.parseURIEncoded(l.remote);
                         listener.getLogger().println("Checking out "+url);
 
                         svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
                         svnuc.doCheckout(url, new File(ws, l.local).getCanonicalFile(), SVNRevision.HEAD, revision, true);
 
-                    } catch (SVNException e) {
+	                    } catch (final SVNException e) {
                         e.printStackTrace(listener.error("Failed to check out "+l.remote));
                         return null;
                     }
                 }
             }
             return externals;
+            } finally {
+            	manager.dispose();
+            }
         }
 
         private static final long serialVersionUID = 1L;
@@ -489,8 +493,13 @@ public class SubversionSCM extends SCM implements Serializable {
      *      The target to run "svn info".
      */
     private static SVNInfo parseSvnInfo(File workspace, ISVNAuthenticationProvider authProvider) throws SVNException {
-        SVNWCClient svnWc = createSvnClientManager(authProvider).getWCClient();
+        final SVNClientManager manager = createSvnClientManager(authProvider);
+        try {
+        	final SVNWCClient svnWc = manager.getWCClient();
         return svnWc.doInfo(workspace,SVNRevision.WORKING);
+        } finally {
+        	manager.dispose();
+        }
     }
 
     /**
@@ -500,8 +509,13 @@ public class SubversionSCM extends SCM implements Serializable {
      *      The target to run "svn info".
      */
     private static SVNInfo parseSvnInfo(SVNURL remoteUrl, ISVNAuthenticationProvider authProvider) throws SVNException {
-        SVNWCClient svnWc = createSvnClientManager(authProvider).getWCClient();
+        final SVNClientManager manager = createSvnClientManager(authProvider);
+        try {
+        	final SVNWCClient svnWc = manager.getWCClient();
         return svnWc.doInfo(remoteUrl, SVNRevision.HEAD, SVNRevision.HEAD);
+        } finally {
+        	manager.dispose();
+        }
     }
 
     /**
@@ -527,7 +541,9 @@ public class SubversionSCM extends SCM implements Serializable {
         public Map<String,SvnInfo> invoke(File ws, VirtualChannel channel) throws IOException {
             Map<String/*module name*/,SvnInfo> revisions = new HashMap<String,SvnInfo>();
 
-            SVNWCClient svnWc = createSvnClientManager(authProvider).getWCClient();
+            final SVNClientManager manager = createSvnClientManager(authProvider);
+            try {
+				final SVNWCClient svnWc = manager.getWCClient();
             // invoke the "svn info"
             for( ModuleLocation module : locations ) {
                 try {
@@ -548,6 +564,9 @@ public class SubversionSCM extends SCM implements Serializable {
             }
 
             return revisions;
+            } finally {
+            	manager.dispose();
+            }
         }
         private static final long serialVersionUID = 1L;
     }
