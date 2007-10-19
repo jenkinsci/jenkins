@@ -31,11 +31,51 @@
     <filter-class>hudson.BasicAuthenticationFilter</filter-class>
   </filter>
 
+  <!--
+	The Headers filter allows us to to override headers sent by the container
+	that may be in conflict with what we want.  For example, Tomcat will set
+	Cache-Control: no-cache for any files behind the security-constraint
+	below.  So if Hudson is on a public server, and you want to only allow
+	authorized users to access it, you may want to pay attention to this.
+	
+	See: http://www.nabble.com/No-browser-caching-with-Hudson--tf4601857.html
+  
+  <filter>
+    <filter-name>change-headers-filter</filter-name>
+    <filter-class>hudson.ResponseHeaderFilter</filter-class>
+    <!- The value listed here is for 24 hours.  Increase or decrease as you see 
+    fit.  Value is in seconds. Make sure to keep the public option ->
+    <init-param>
+      <param-name>Cache-Control</param-name>
+      <param-value>max-age=86400, public</param-value>
+    </init-param>
+    <!- It turns out that Tomcat just doesn't want to let
+    go of its cache option.  If you override Cache-Control,
+    it starts to send Pragma: no-cache as a backup.
+     ->
+    <init-param>
+      <param-name>Pragma</param-name>
+      <param-value>public</param-value>
+    </init-param>
+  </filter>
+  -->
+  
   <filter-mapping>
     <filter-name>authentication-filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
+  <!-- Uncomment this if you are protecting your entire hudson setup
+  	from public view.  See note above about the filter.
+  <filter-mapping>
+    <filter-name>change-headers-filter</filter-name>
+    <!- This path should match the value of:
+    		/security-constraint/web-resource-collection/url-pattern
+     ->
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  -->
+  
   <listener>
     <listener-class>hudson.WebAppMain</listener-class>
   </listener>
