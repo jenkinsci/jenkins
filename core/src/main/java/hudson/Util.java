@@ -137,8 +137,8 @@ public class Util {
                 LOGGER.log(Level.INFO,"Failed to chmod "+f,e);
             }
 
-            throw new IOException("Unable to delete " + f.getPath());
-
+            if(!f.delete() && f.exists())
+                throw new IOException("Unable to delete " + f.getPath());
         }
     }
 
