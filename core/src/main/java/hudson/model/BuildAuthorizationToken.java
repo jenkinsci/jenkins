@@ -28,7 +28,7 @@ public final class BuildAuthorizationToken {
     }
 
     public static void startBuildIfAuthorized(BuildAuthorizationToken token, BuildableItem job, StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if(token==null || token.authorizedToStartBuild(req,rsp)) {
+        if(!Hudson.getInstance().isUseSecurity() || (token!=null && token.authorizedToStartBuild(req,rsp))) {
             job.scheduleBuild();
             rsp.forwardToPreviousPage(req);
         }
