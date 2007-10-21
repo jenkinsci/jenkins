@@ -290,11 +290,16 @@ var hudsonRules = {
         form = null; // memory leak prevention
     },
 
-    // hook up tooltip
+    // hook up tooltip.
+    //   add nodismiss="" if you'd like to display the tooltip forever as long as the mouse is on the element.
     "[tooltip]" : function(e) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
         // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
-        e.onmouseover = function(ev) { return tooltip.onContextMouseOver.call(this,YAHOO.util.Event.getEvent(ev),tooltip); }
+        e.onmouseover = function(ev) {
+            var delay = this.getAttribute("nodismiss")!=null ? 99999999 : 5000;
+            tooltip.cfg.setProperty("autodismissdelay",delay);
+            return tooltip.onContextMouseOver.call(this,YAHOO.util.Event.getEvent(ev),tooltip);
+        }
         e.onmousemove = function(ev) { return tooltip.onContextMouseMove.call(this,YAHOO.util.Event.getEvent(ev),tooltip); }
         e.onmouseout  = function(ev) { return tooltip.onContextMouseOut .call(this,YAHOO.util.Event.getEvent(ev),tooltip); }
         e.title = e.getAttribute("tooltip");
