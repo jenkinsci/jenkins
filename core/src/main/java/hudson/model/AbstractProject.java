@@ -811,7 +811,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         FilePath ws = getWorkspace();
         if(!ws.exists()) {
             // if there's no workspace, report a nice error message
-            rsp.forward(this,"noWorkspace",req);
+            req.getView(this,"noWorkspace.jelly").forward(req,rsp);
         } else {
             new DirectoryBrowserSupport(this,getDisplayName()+" workspace").serveFile(req, rsp, ws, "folder.gif", true);
         }
