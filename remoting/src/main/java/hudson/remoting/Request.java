@@ -3,6 +3,7 @@ package hudson.remoting;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -19,7 +20,6 @@ import java.util.logging.Logger;
  * @see Response
  */
 abstract class Request<RSP extends Serializable,EXC extends Throwable> extends Command {
-
     /**
      * Executed on a remote system to perform the task.
      *
@@ -42,6 +42,12 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
     private final int id;
 
     private volatile Response<RSP,EXC> response;
+
+    /**
+     * While executing the call this is set to the handle of the execution.
+     */
+    private volatile transient Future<?> future;
+
 
     protected Request() {
         synchronized(Request.class) {
@@ -77,8 +83,14 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
         }
 
         synchronized(this) {
-            while(response==null)
-                wait(); // wait until the response arrives
+            try {
+                while(response==null)
+                    wait(); // wait until the response arrives
+            } catch (InterruptedException e) {
+                // if we are cancelled, abort the remote computation, too
+                channel.send(new Cancel(id));
+                throw e;
+            }
 
             Object exc = response.exception;
 
@@ -100,13 +112,13 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
      * @throws IOException
      *      If there's an error during the communication.
      */
-    public final Future<RSP> callAsync(Channel channel) throws IOException {
+    public final hudson.remoting.Future<RSP> callAsync(final Channel channel) throws IOException {
         response=null;
 
         channel.pendingCalls.put(id,this);
         channel.send(this);
 
-        return new Future<RSP>() {
+        return new hudson.remoting.Future<RSP>() {
             /**
              * The task cannot be cancelled.
              */
@@ -124,8 +136,17 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
 
             public RSP get() throws InterruptedException, ExecutionException {
                 synchronized(Request.this) {
-                    while(response==null)
+                    try {
+                        while(response==null)
                         Request.this.wait(); // wait until the response arrives
+                    } catch (InterruptedException e) {
+                        try {
+                            channel.send(new Cancel(id));
+                        } catch (IOException e1) {
+                            // couldn't cancel. ignore.
+                        }
+                        throw e;
+                    }
 
                     if(response.exception!=null)
                         throw new ExecutionException(response.exception);
@@ -170,7 +191,8 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
      * Schedules the execution of this request.
      */
     protected final void execute(final Channel channel) {
-        channel.executor.execute(new Runnable() {
+        channel.executingCalls.put(id,this);
+        future = channel.executor.submit(new Runnable() {
             public void run() {
                 try {
                     RSP rsp;
@@ -187,6 +209,8 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
                     // communication error.
                     // this means the caller will block forever
                     logger.log(Level.SEVERE, "Failed to send back a reply",e);
+                } finally {
+                    channel.executingCalls.remove(id);
                 }
             }
         });
@@ -214,4 +238,22 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
     //        throw new Error(e);
     //    }
     //}
+
+    /**
+     * Interrupts the execution of the remote computation.
+     */
+    private static final class Cancel extends Command {
+        private final int id;
+
+        Cancel(int id) {
+            this.id = id;
+        }
+
+        protected void execute(Channel channel) {
+            Request<?,?> r = channel.executingCalls.get(id);
+            if(r==null)     return; // already completed
+            Future<?> f = r.future;
+            if(f!=null)     f.cancel(true);
+        }
+    }
 }

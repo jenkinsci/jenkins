@@ -10,11 +10,13 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Proxy;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,7 +75,7 @@ public class Channel implements VirtualChannel {
     private final ObjectInputStream ois;
     private final ObjectOutputStream oos;
     private final String name;
-    /*package*/ final Executor executor;
+    /*package*/ final ExecutorService executor;
 
     /**
      * If true, the incoming link is already shut down,
@@ -87,6 +89,12 @@ public class Channel implements VirtualChannel {
     private volatile boolean outClosed = false;
 
     /*package*/ final Map<Integer,Request<?,?>> pendingCalls = new Hashtable<Integer,Request<?,?>>();
+
+    /**
+     * Records the {@link Request}s being executed on this channel, sent by the remote peer.
+     */
+    /*package*/ final Map<Integer,Request<?,?>> executingCalls =
+        Collections.synchronizedMap(new Hashtable<Integer,Request<?,?>>());
 
     /**
      * {@link ClassLoader}s that are proxies of the remote classloaders.
@@ -104,7 +112,7 @@ public class Channel implements VirtualChannel {
     private final Vector<Listener> listeners = new Vector<Listener>();
     private int gcCounter;
 
-    public Channel(String name, Executor exec, InputStream is, OutputStream os) throws IOException {
+    public Channel(String name, ExecutorService exec, InputStream is, OutputStream os) throws IOException {
         this(name,exec,is,os,null);
     }
 
@@ -125,7 +133,7 @@ public class Channel implements VirtualChannel {
      *      when the established communication channel might include some data that might
      *      be useful for debugging/trouble-shooting.
      */
-    public Channel(String name, Executor exec, InputStream is, OutputStream os, OutputStream header) throws IOException {
+    public Channel(String name, ExecutorService exec, InputStream is, OutputStream os, OutputStream header) throws IOException {
         this.name = name;
         this.executor = exec;
 
