@@ -412,7 +412,11 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         void postModule(MavenProject project) throws InterruptedException, IOException, hudson.maven.agent.AbortException {
             ModuleName name = new ModuleName(project);
             MavenBuildProxy2 proxy = proxies.get(name);
-            for (MavenReporter r : reporters.get(name))
+            List<MavenReporter> rs = reporters.get(name);
+            if(rs==null) { // probe for issue #906
+                throw new AssertionError("reporters.get("+name+")==null. reporters="+reporters+" proxies="+proxies);
+            }
+            for (MavenReporter r : rs)
                 if(!r.postBuild(proxy,project,listener))
                     throw new hudson.maven.agent.AbortException(r+" failed");
             proxy.setExecutedMojos(executedMojos.get(name));
