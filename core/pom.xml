@@ -334,19 +334,19 @@
       <version>1.1</version>
     </dependency>
     <dependency>
-      <groupId>commons-jelly</groupId>
+      <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jelly-tags-define</artifactId>
-      <version>1.0.1-hudson-20061106</version>
+      <version>1.0.1-hudson-20071021</version>
     </dependency>
     <dependency>
-      <groupId>commons-jexl</groupId>
+      <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jexl</artifactId>
-      <version>1.1-hudson-20061106</version>
+      <version>1.1-hudson-20071021</version>
     </dependency>
     <dependency>
-      <groupId>commons-jelly</groupId>
+      <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jelly</artifactId>
-      <version>1.1-hudson-20070821</version>
+      <version>1.1-hudson-20071021</version>
     </dependency>
     <dependency>
       <groupId>groovy</groupId>
@@ -364,7 +364,7 @@
       <version>3.8</version>
     </dependency>
     <dependency><!-- needed by Jelly -->
-      <groupId>jstl</groupId>
+      <groupId>javax.servlet</groupId>
       <artifactId>jstl</artifactId>
       <version>1.1.0</version>
     </dependency>
