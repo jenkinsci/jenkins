@@ -137,6 +137,13 @@ public class Util {
                 LOGGER.log(Level.INFO,"Failed to chmod "+f,e);
             }
 
+            // also try JDK6-way of doing it.
+            try {
+                f.setWritable(true);
+            } catch (NoSuchMethodError e) {
+                // not JDK6
+            }
+
             if(!f.delete() && f.exists())
                 throw new IOException("Unable to delete " + f.getPath());
         }
