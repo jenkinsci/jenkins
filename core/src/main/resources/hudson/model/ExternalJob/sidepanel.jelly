@@ -15,7 +15,9 @@
 	    </l:isAdmin>
 	    <st:include page="actions.jelly" />
 	  </l:tasks>
-
-	  <st:include page="buildHistory.jelly" />
+    
+    <j:forEach var="w" items="${it.widgets}">
+      <st:include it="${w}" page="index.jelly" />
+    </j:forEach>
 	</l:side-panel>
 </j:jelly>
