@@ -16,6 +16,7 @@ import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.search.SearchableModelObject;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
+import org.apache.commons.jexl.util.Introspector;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -446,7 +447,7 @@ public class Functions {
      */
     public static int size2(Object o) throws Exception {
         if(o==null) return 0;
-        return ASTSizeFunction.sizeOf(o);
+        return ASTSizeFunction.sizeOf(o,Introspector.getUberspect());
     }
 
     public static ExecutedMojo.Cache createExecutedMojoCache() {
