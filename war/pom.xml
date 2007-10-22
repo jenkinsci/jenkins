@@ -267,18 +267,6 @@
           <artifactId>commons-discovery</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commons-jelly</groupId>
-          <artifactId>commons-jelly-tags-junit</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-jelly</groupId>
-          <artifactId>commons-jelly</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-jexl</groupId>
-          <artifactId>commons-jexl</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>jaxme</groupId>
           <artifactId>jaxme-api</artifactId>
         </exclusion>
