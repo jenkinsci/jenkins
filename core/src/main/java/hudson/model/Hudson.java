@@ -667,7 +667,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Gets the JDK installation of the given name, or returns null.
      */
     public JDK getJDK(String name) {
-        if(name==null)  return null;
+        if(name==null) {
+            // if only one JDK is configured, "default JDK" should mean that JDK.
+            List<JDK> jdks = getJDKs();
+            if(jdks.size()==1)  return jdks.get(0);
+            return null;
+        }
         for (JDK j : getJDKs()) {
             if(j.getName().equals(name))
                 return j;
