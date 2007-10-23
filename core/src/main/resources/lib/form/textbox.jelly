@@ -3,5 +3,5 @@
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
   <input class="setting-input ${h.ifThenElse(attrs.checkUrl!=null,'validated','')}" name="${attrs.name}" id="${attrs.id}"
-         type="text" value="${attrs.value}" checkUrl="${attrs.checkUrl}" checkMethod="${attrs.checkMethod}"/>
+         type="text" value="${attrs.value}" checkUrl="${attrs.checkUrl}" checkMethod="${attrs.checkMethod}" onchange="${attrs.onchange}"/>
 </j:jelly>

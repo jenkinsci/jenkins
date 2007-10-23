@@ -86,7 +86,7 @@ function registerValidator(e) {
 
     FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
 
-    e.onchange = e.onblur = function() {
+    var checker = function() {
         var target = this.targetElement;
         FormChecker.sendRequest(this.targetUrl(), {
             method : method,
@@ -95,6 +95,13 @@ function registerValidator(e) {
             }
         });
     }
+    var oldOnchange = e.onchange;
+    if(typeof oldOnchange=="function") {
+        e.onchange = function() { checker.call(this); oldOnchange.call(this); }
+    } else
+        e.onchange = checker; 
+    e.onblur = checker;
+
     e = null; // avoid memory leak
 }
 

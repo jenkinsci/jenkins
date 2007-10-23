@@ -6,8 +6,8 @@
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
 		  <s:form method="post" action="createItem">
-		    <s:entry title="Job name">
-		      <s:textbox id="name" name="name" checkUrl="'${rootURL}/itemExistsCheck?value='+escape(this.value)" />
+        <s:entry title="Job name">
+		      <s:textbox id="name" name="name" checkUrl="'${rootURL}/itemExistsCheck?value='+escape(this.value)" onchange="updateOk(this.form)" />
           <script>$('name').focus();</script>
         </s:entry>
 
@@ -15,7 +15,7 @@
         <j:forEach var="d" items="${jobs}">
           <s:block>
             <j:set var="id" value="${h.generateId()}"/>
-            <input type="radio" name="mode" value="${d.displayName}" onchange="$('ok').disabled=false" onclick="$('ok').disabled=false" id="${id}" />
+            <input type="radio" name="mode" value="${d.displayName}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" id="${id}" />
             <st:nbsp/>
             <label for="${id}"><b>${d.displayName}</b></label>
           </s:block>
@@ -25,7 +25,7 @@
         </j:forEach>
         <s:block>
           <j:set var="id" value="${h.generateId()}"/>
-          <input type="radio" name="mode" value="copyJob" onchange="$('ok').disabled=false" onclick="$('ok').disabled=false" id="${id}"/>
+          <input type="radio" name="mode" value="copyJob" onchange="updateOk(this.form)" onclick="updateOk(this.form)" id="${id}"/>
           <st:nbsp/>
           <label for="${id}"><b>Copy existing job</b></label>
         </s:block>
@@ -37,7 +37,22 @@
 		    <s:block>
 		      <input type="submit" name="Submit" value="OK" id="ok" disabled="true" style="margin-left:5em" />
 		    </s:block>
-		  </s:form>
-		</l:main-panel>
+      </s:form>
+      <script><![CDATA[
+        function updateOk(form) {
+          function state() {
+            if($('name').value.length==0)   return true;
+            var radio = form.elements['mode'];
+            for(i=0;i<radio.length;i++)
+              if(radio[i].checked)
+                return false;
+            return true;
+          }
+
+          $('ok').disabled = state()
+        }
+        updateOk($('ok').form);ext
+      ]]></script>
+    </l:main-panel>
 	</l:layout>
 </j:jelly>
