@@ -29,7 +29,7 @@ public final class BuildAuthorizationToken {
     }
 
     public static void startBuildIfAuthorized(BuildAuthorizationToken token, BuildableItem job, StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if(!Hudson.getInstance().isUseSecurity() || (token!=null && token.authorizedToStartBuild(req,rsp))) {
+        if(!Hudson.getInstance().isUseSecurity() || (token!=null && token.authorizedToStartBuild(req,rsp)) || Hudson.adminCheck(req, rsp)) {
             job.scheduleBuild();
             rsp.forwardToPreviousPage(req);
         }
