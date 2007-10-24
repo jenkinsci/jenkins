@@ -364,8 +364,8 @@
     </dependency>
     <dependency>
       <groupId>groovy</groupId>
-      <artifactId>groovy-all-1.0-jsr</artifactId>
-      <version>06</version>
+      <artifactId>groovy-all</artifactId>
+      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>xpp3</groupId>
@@ -395,7 +395,7 @@
     <dependency>
       <groupId>net.sf.json-lib</groupId>
       <artifactId>json-lib</artifactId>
-      <version>2.0</version>
+      <version>2.1</version>
       <classifier>jdk15</classifier>
     </dependency>
     <dependency>
