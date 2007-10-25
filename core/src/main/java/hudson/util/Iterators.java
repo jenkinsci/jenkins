@@ -93,6 +93,8 @@ public class Iterators {
 
         return new AbstractList<Integer>() {
             public Integer get(int index) {
+                if(index<0 || index>=size)
+                    throw new IndexOutOfBoundsException();
                 return start+index*step;
             }
 
