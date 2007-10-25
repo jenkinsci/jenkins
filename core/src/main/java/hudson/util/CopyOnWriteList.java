@@ -105,6 +105,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         return core.toArray(array);
     }
 
+    public List<E> getView() {
+        return Collections.unmodifiableList(core);
+    }
+
     public void addAllTo(Collection<? super E> dst) {
         dst.addAll(core);
     }
