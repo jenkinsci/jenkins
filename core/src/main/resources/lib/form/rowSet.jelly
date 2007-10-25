@@ -13,7 +13,7 @@
   <j:set var="head" value="${h.ifThenElse(attrs.name!=null, attrs.name, 'rowGroupStart'+id)}"/>
   <j:set var="ref" value="${h.ifThenElse(attrs.ref!=null, attrs.ref, head)}"/>
 
-  <tr id="${head}" style="display:none" />
+  <tr id="${head}" style="display:none" name="${attrs.name}" />
   <d:invokeBody />
   <tr id="rowGroupEnd${id}" style="display:none" />
   <script>
