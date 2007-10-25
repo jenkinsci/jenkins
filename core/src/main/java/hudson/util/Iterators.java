@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.ListIterator;
+import java.util.AbstractList;
 
 /**
  * Varios {@link Iterator} implementations.
@@ -78,5 +79,41 @@ public class Iterators {
                 };
             }
         };
+    }
+
+    /**
+     * Returns a list that represents [start,end).
+     *
+     * For example sequence(1,5,1)={1,2,3,4}, and sequence(7,1,-2)={7.5,3}
+     */
+    public static List<Integer> sequence(final int start, int end, final int step) {
+
+        final int size = (end-start)/step;
+        if(size<0)  throw new IllegalArgumentException("List size is negative");
+
+        return new AbstractList<Integer>() {
+            public Integer get(int index) {
+                return start+index*step;
+            }
+
+            public int size() {
+                return size;
+            }
+        };
+    }
+
+    public static List<Integer> sequence(int start, int end) {
+        return sequence(start,end,1);
+    }
+
+    /**
+     * The short cut for {@code reverse(sequence(start,end,step))}.
+     */
+    public static List<Integer> reverseSequence(int start, int end, int step) {
+        return sequence(end-1,start-1,-step);
+    }
+
+    public static List<Integer> reverseSequence(int start, int end) {
+        return reverseSequence(start,end,1);
     }
 }
