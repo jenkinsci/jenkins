@@ -31,6 +31,10 @@ public class Iterators {
             cur = Collections.<U>emptyList().iterator();
         }
 
+        protected FlattenIterator(Iterable<? extends T> core) {
+            this(core.iterator());
+        }
+
         protected abstract Iterator<U> expand(T t);
 
         public boolean hasNext() {
