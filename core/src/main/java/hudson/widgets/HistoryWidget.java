@@ -123,7 +123,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         req.getView(this,"ajaxBuildHistory.jelly").forward(req,rsp);
     }
 
-    private static final int THRESHOLD = 10; // while debugging
+    private static final int THRESHOLD = 30;
 
     public String getNextBuildNumberToFetch() {
         return nextBuildNumberToFetch;
