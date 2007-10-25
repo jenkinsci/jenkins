@@ -470,10 +470,10 @@
           <groupId>regexp</groupId>
           <artifactId>regexp</artifactId>
         </exclusion>
-        <exclusion>
+        <!--exclusion>
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
-        </exclusion>
+        </exclusion-->
         <exclusion>
           <groupId>javax.servlet</groupId>
           <artifactId>jsp-api</artifactId>
