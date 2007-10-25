@@ -29,7 +29,10 @@
         <j:forEach var="d" items="${h.getJobPropertyDescriptors(it.getClass())}" varStatus="loop">
           <j:set var="descriptor" value="${d}" />
           <j:set var="instance" value="${instances[d]}" />
-          <st:include from="${d}" page="${d.configPage}" optional="true"/>
+
+          <f:rowSet name="jobProperty${loop.index}">
+            <st:include from="${d}" page="${d.configPage}" optional="true"/>
+          </f:rowSet>
         </j:forEach>
 
         <!-- additional entries from derived classes -->

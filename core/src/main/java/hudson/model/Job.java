@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.StructuredForm;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.search.QuickSilver;
@@ -51,6 +52,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+
+import net.sf.json.JSONObject;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -692,8 +695,13 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
         try {
             properties.clear();
+
+            JSONObject json = StructuredForm.get(req);
+
+            int i=0;
             for (JobPropertyDescriptor d : JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass())) {
-                JobProperty prop = d.newInstance(req,null);
+                String name = "jobProperty"+(i++);
+                JobProperty prop = d.newInstance(req,json.getJSONObject(name));
                 if (prop != null) {
                     prop.setOwner(this);
                     properties.add(prop);
