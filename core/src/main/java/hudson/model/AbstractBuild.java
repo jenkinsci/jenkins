@@ -3,14 +3,12 @@ package hudson.model;
 import hudson.Launcher;
 import hudson.Proc.LocalProc;
 import hudson.Util;
-import hudson.util.AdaptedIterator;
 import hudson.matrix.MatrixConfiguration;
 import hudson.maven.MavenBuild;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
 import static hudson.model.Hudson.isWindows;
 import hudson.model.listeners.SCMListener;
-import hudson.model.listeners.RunListener;
 import hudson.scm.CVSChangeLogParser;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
@@ -19,6 +17,7 @@ import hudson.scm.SCM;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.test.AbstractTestResultAction;
+import hudson.util.AdaptedIterator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -28,7 +27,17 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -408,6 +417,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         return n;
+    }
+
+    /**
+     * Works like {@link #getUpstreamRelationship(AbstractProject)} but returns the
+     * actual build object.
+     *
+     * @return
+     *      null if no such upstream build was found, or it was found but the
+     *      build record is already lost.
+     */
+    public <J extends AbstractProject<J,R>,R extends AbstractBuild<J,R>>
+    R getUpstreamRelationshipBuild(J that) {
+        int n = getUpstreamRelationship(that);
+        if(n!=-1)   return null;
+        return that.getBuildByNumber(n);
     }
 
     /**
