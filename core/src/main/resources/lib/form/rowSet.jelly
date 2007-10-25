@@ -1,6 +1,6 @@
 <!--
-  Adds @nameRef to all rows inside this tag, so that when the form is submitted,
-  it gets grouped in one thing.
+  Adds @nameRef to all table rows inside this tag, so that when the form is submitted,
+  it gets grouped in one JSON object.
 
   @ref: id of the thing that serves as the group head, if that's available separately
 
