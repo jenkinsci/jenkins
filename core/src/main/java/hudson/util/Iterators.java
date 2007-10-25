@@ -11,6 +11,7 @@ import java.util.AbstractList;
  * Varios {@link Iterator} implementations.
  *
  * @author Kohsuke Kawaguchi
+ * @see AdaptedIterator
  */
 public class Iterators {
     /**
@@ -59,6 +60,8 @@ public class Iterators {
 
     /**
      * Creates a filtered view of another iterator.
+     *
+     * @since 1.150
      */
     public static abstract class FilterIterator<T> implements Iterator<T> {
         private final Iterator<? extends T> core;
@@ -111,6 +114,8 @@ public class Iterators {
 
     /**
      * Returns the {@link Iterable} that lists items in the reverse order.
+     *
+     * @since 1.150
      */
     public static <T> Iterable<T> reverse(final List<T> lst) {
         return new Iterable<T>() {
@@ -137,6 +142,8 @@ public class Iterators {
      * Returns a list that represents [start,end).
      *
      * For example sequence(1,5,1)={1,2,3,4}, and sequence(7,1,-2)={7.5,3}
+     *
+     * @since 1.150
      */
     public static List<Integer> sequence(final int start, int end, final int step) {
 
@@ -162,6 +169,8 @@ public class Iterators {
 
     /**
      * The short cut for {@code reverse(sequence(start,end,step))}.
+     *
+     * @since 1.150
      */
     public static List<Integer> reverseSequence(int start, int end, int step) {
         return sequence(end-1,start-1,-step);
