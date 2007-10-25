@@ -18,6 +18,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AdaptedIterator;
+import hudson.util.Iterators;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -393,6 +394,30 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         return rs;
+    }
+
+    /**
+     * Works like {@link #getDownstreamRelationship(AbstractProject)} but returns
+     * the actual build objects, in ascending order.
+     * @since 1.150
+     */
+    public Iterable<AbstractBuild<?,?>> getDownstreamBuilds(final AbstractProject<?,?> that) {
+        final Iterable<Integer> nums = getDownstreamRelationship(that).listNumbers();
+
+        return new Iterable<AbstractBuild<?, ?>>() {
+            public Iterator<AbstractBuild<?, ?>> iterator() {
+                return new Iterators.FilterIterator<AbstractBuild<?,?>>(
+                        new AdaptedIterator<Integer,AbstractBuild<?,?>>(nums) {
+                            protected AbstractBuild<?, ?> adapt(Integer item) {
+                                return that.getBuildByNumber(item);
+                            }
+                        }) {
+                    protected boolean filter(AbstractBuild<?,?> build) {
+                        return build!=null;
+                    }
+                };
+            }
+        };
     }
 
     /**
