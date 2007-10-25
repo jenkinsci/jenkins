@@ -454,7 +454,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     public AbstractBuild<?,?> getUpstreamRelationshipBuild(AbstractProject<?,?> that) {
         int n = getUpstreamRelationship(that);
-        if(n!=-1)   return null;
+        if(n==-1)   return null;
         return that.getBuildByNumber(n);
     }
 
