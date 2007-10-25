@@ -17,6 +17,6 @@
   <d:invokeBody />
   <tr id="rowGroupEnd${id}" style="display:none" />
   <script>
-    applyNameRef($$('${head}}') , $$('rowGroupEnd${id}') , '${ref}')
+    applyNameRef($$('${head}') , $$('rowGroupEnd${id}') , '${ref}')
   </script>
 </j:jelly>
