@@ -11,10 +11,10 @@
   </f:entry>
   <f:entry title="">
     <f:checkbox name="fingerprint_artifacts" checked="${instance.recordBuildArtifacts}" />
-    Fingerprint all archived artifacts
+    <label class="attach-previous">Fingerprint all archived artifacts</label>
   </f:entry>
   <f:entry title="" help="/help/tasks/fingerprint/keepDependencies.html">
     <f:checkbox name="keepDependencies" checked="${it.keepDependencies}" />
-    Keep the build logs of dependencies 
+    <label class="attach-previous">Keep the build logs of dependencies</label> 
   </f:entry>
 </j:jelly>
