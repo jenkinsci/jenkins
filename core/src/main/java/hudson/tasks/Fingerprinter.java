@@ -146,7 +146,8 @@ public class Fingerprinter extends Publisher implements Serializable {
 
                     // consider the file to be produced by this build only if the timestamp
                     // is newer than when the build has started.
-                    boolean produced = buildTimestamp <= file.lastModified();
+                    // 2000ms is an error margin since since VFAT only retains timestamp at 2sec precision
+                    boolean produced = buildTimestamp <= file.lastModified()+2000;
 
                     try {
                         results.add(new Record(produced,f,file.getName(),new FilePath(file).digest()));
