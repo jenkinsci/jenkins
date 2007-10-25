@@ -377,7 +377,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * @return
      *      range of build numbers that represent which downstream builds are using this build.
-     *      The range will be empty if no build of that project matches this.
+     *      The range will be empty if no build of that project matches this, but it'll never be null.
      */
     public RangeSet getDownstreamRelationship(AbstractProject that) {
         RangeSet rs = new RangeSet();
