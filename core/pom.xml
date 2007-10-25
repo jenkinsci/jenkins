@@ -502,10 +502,10 @@
           <groupId>xstream</groupId>
           <artifactId>xstream</artifactId>
         </exclusion>
-        <exclusion>
+        <!--exclusion>
           <groupId>xpp3</groupId>
           <artifactId>xpp3</artifactId>
-        </exclusion>
+        </exclusioni-->
         <exclusion>
           <groupId>com.tonicsystems</groupId>
           <artifactId>jarjar</artifactId>
