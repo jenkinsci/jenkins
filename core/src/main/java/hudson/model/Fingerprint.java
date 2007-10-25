@@ -198,6 +198,22 @@ public class Fingerprint implements ModelObject {
         }
 
         /**
+         * List all numbers in this range set.
+         */
+        public Iterable<Integer> listNumbers() {
+            final List<Range> ranges = getRanges();
+            return new Iterable<Integer>() {
+                public Iterator<Integer> iterator() {
+                    return new Iterators.FlattenIterator<Integer,Range>(ranges) {
+                        protected Iterator<Integer> expand(Range range) {
+                            return Iterators.sequence(range.start,range.end).iterator();
+                        }
+                    };
+                }
+            };
+        }
+
+        /**
          * List all numbers in this range set in the descending order.
          */
         public Iterable<Integer> listNumbersReverse() {
