@@ -370,7 +370,7 @@ public class Channel implements VirtualChannel {
         protected void execute(Channel channel) {
             try {
                 channel.close();
-                channel.terminate(null);
+                channel.terminate(new OrderlyShutdown(createdAt));
             } catch (IOException e) {
                 logger.log(Level.SEVERE,"close command failed on "+channel.name,e);
                 logger.log(Level.INFO,"close command created at",createdAt);
@@ -380,6 +380,18 @@ public class Channel implements VirtualChannel {
         public String toString() {
             return "close";
         }
+    }
+
+    /**
+     * Signals the orderly shutdown of the channel, but captures
+     * where the termination was initiated as a nested exception.
+     */
+    private static final class OrderlyShutdown extends IOException {
+        private OrderlyShutdown(Throwable cause) {
+            super(cause.getMessage());
+            initCause(cause);
+        }
+        private static final long serialVersionUID = 1L;
     }
 
     /**
