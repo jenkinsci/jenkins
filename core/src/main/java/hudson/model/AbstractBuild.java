@@ -427,8 +427,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      null if no such upstream build was found, or it was found but the
      *      build record is already lost.
      */
-    public <J extends AbstractProject<J,R>,R extends AbstractBuild<J,R>>
-    R getUpstreamRelationshipBuild(J that) {
+    public AbstractBuild<?,?> getUpstreamRelationshipBuild(AbstractProject<?,?> that) {
         int n = getUpstreamRelationship(that);
         if(n!=-1)   return null;
         return that.getBuildByNumber(n);
