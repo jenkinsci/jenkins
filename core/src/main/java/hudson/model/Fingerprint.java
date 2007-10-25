@@ -10,6 +10,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.util.HexBinaryConverter;
+import hudson.util.Iterators;
 import hudson.util.XStream2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -193,6 +195,22 @@ public class Fingerprint implements ModelObject {
 
         private RangeSet(List<Range> data) {
             this.ranges = data;
+        }
+
+        /**
+         * List all numbers in this range set in the descending order.
+         */
+        public Iterable<Integer> listNumbersReverse() {
+            final List<Range> ranges = getRanges();
+            return new Iterable<Integer>() {
+                public Iterator<Integer> iterator() {
+                    return new Iterators.FlattenIterator<Integer,Range>(Iterators.reverse(ranges)) {
+                        protected Iterator<Integer> expand(Range range) {
+                            return Iterators.reverseSequence(range.start,range.end).iterator();
+                        }
+                    };
+                }
+            };
         }
 
         /**
