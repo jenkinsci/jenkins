@@ -2,7 +2,9 @@ package hudson.util;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.ListIterator;
 
 /**
  * Varios {@link Iterator} implementations.
@@ -48,5 +50,29 @@ public class Iterators {
         public void remove() {
             throw new UnsupportedOperationException();
         }
+    }
+
+    /**
+     * Returns the {@link Iterable} that lists items in the reverse order.
+     */
+    public static <T> Iterable<T> reverse(final List<T> lst) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                final ListIterator<T> itr = lst.listIterator(lst.size());
+                return new Iterator<T>() {
+                    public boolean hasNext() {
+                        return itr.hasPrevious();
+                    }
+
+                    public T next() {
+                        return itr.previous();
+                    }
+
+                    public void remove() {
+                        itr.remove();
+                    }
+                };
+            }
+        };
     }
 }
