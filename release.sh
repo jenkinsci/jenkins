@@ -1,4 +1,4 @@
-#!/bin/sh -ex
+#!/bin/bash -ex
 #
 # Kohsuke's automated release script. Sorry for my checking this in,
 # but Maven doesn't let me run release goals unless I have this in CVS.
@@ -29,7 +29,9 @@ javanettasks uploadFile hudson /releases/jnlp/hudson.jar "version $id" Stable ta
 
 # replace the jar file link accordingly
 WWW=../../../www
+pushd $WWW
 cvs update -l
+popd
 jarUrl=$(cat target/upload.log | grep "^Posted" | sed -e "s/Posted //g")
 perl -p -i.bak -e "s|https://.+hudson\.jar|$jarUrl|" $WWW/hudson.jnlp
 cp $WWW/hudson.jnlp $WWW/$id.jnlp
@@ -44,5 +46,4 @@ ruby push-m2-repo.rb $JAVANET_M2_REPO $id
 ./publish-javadoc.sh
 
 cd ../../../www
-cvs update -l
 cvs commit -m "Hudson $id released" changelog.html hudson.jnlp
