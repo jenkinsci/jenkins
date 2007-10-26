@@ -8,9 +8,9 @@ import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
-import hudson.model.listeners.RunListener;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
+import hudson.model.listeners.RunListener;
 import hudson.search.SearchIndexBuilder;
 import hudson.tasks.BuildStep;
 import hudson.tasks.LogRotator;
@@ -34,6 +34,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -189,6 +190,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 result = r;
             }
         }
+    }
+
+    /**
+     * Gets the subset of {@link #getActions()} that consists of {@link BuildBadgeAction}s. 
+     */
+    public List<BuildBadgeAction> getBadgeActions() {
+        List<BuildBadgeAction> r = null;
+        for (Action a : getActions()) {
+            if(a instanceof BuildBadgeAction) {
+                if(r==null)
+                    r = new ArrayList<BuildBadgeAction>();
+                r.add((BuildBadgeAction)a);
+            }
+        }
+        if(r==null)     return Collections.emptyList();
+        else            return r;
     }
 
     private StackTraceElement findCaller(StackTraceElement[] stackTrace, String callee) {
