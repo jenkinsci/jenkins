@@ -624,7 +624,7 @@ var repetableSupport = {
         // nc = document.importNode(node,true);
         var nc = document.createElement("div");
         nc.className = "repeated-chunk";
-        nc.setAttribute("name",name);
+        nc.setAttribute("name",this.name);
         nc.innerHTML = this.blockHTML;
         this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
 
