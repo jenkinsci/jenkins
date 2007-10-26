@@ -683,3 +683,12 @@ DIV.textarea-handle {
     border-top: none;
     cursor: s-resize;
 }
+
+/* ========================= hover notification ========================= */
+
+#hoverNotification {
+    visibility:hidden;
+    background-color: white;
+    border: 1px solid black;
+    padding: 0.5em;
+}

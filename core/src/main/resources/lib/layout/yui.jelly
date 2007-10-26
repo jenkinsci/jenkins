@@ -1,0 +1,9 @@
+<!--
+  Load Yahoo UI module.
+
+  Attributes:
+    @module   module name to be loaded
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <script src="${resURL}/scripts/yui/${module}-${yuiSuffix}.js" />
+</j:jelly>

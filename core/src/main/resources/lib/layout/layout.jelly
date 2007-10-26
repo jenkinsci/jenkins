@@ -11,7 +11,7 @@
      path is interprted as relative to the context root. e.g.,
      <l:layout css="/plugin/mysuperplugin/css/myneatstyle.css">
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
 <st:contentType value="text/html;charset=UTF-8" />
 <j:set var="rootURL" value="${request.contextPath}" />
 <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
@@ -43,12 +43,13 @@
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
 
     <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
-    <script src="${resURL}/scripts/yui/yahoo-${yuiSuffix}.js"></script>
-    <script src="${resURL}/scripts/yui/dom-${yuiSuffix}.js"></script>
-    <script src="${resURL}/scripts/yui/event-${yuiSuffix}.js"></script>
-    <script src="${resURL}/scripts/yui/container-${yuiSuffix}.js"></script>
-    <script src="${resURL}/scripts/yui/connection-${yuiSuffix}.js"></script>
-    <script src="${resURL}/scripts/yui/autocomplete-${yuiSuffix}.js"></script>
+    <l:yui module="yahoo" />
+    <l:yui module="dom" />
+    <l:yui module="event" />
+    <l:yui module="container" />
+    <l:yui module="connection" />
+    <l:yui module="autocomplete" />
+    
     <link rel="stylesheet" href="${resURL}/scripts/yui/container.css" type="text/css"/>
     <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Hudson" />
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />

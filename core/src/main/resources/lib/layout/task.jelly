@@ -7,11 +7,11 @@
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <div class="task">
-    <a href="${href}">
+    <a href="${href}" onclick="${attrs.onclick}">
       <img width="24" height="24" style="margin: 2px;" src="${rootURL}${h.ifThenElse(icon.startsWith('images/'),h.resourcePath,'')}/${icon}"/>
     </a>
     <st:nbsp />
-    <a href="${href}">
+    <a href="${href}" onclick="${attrs.onclick}">
       <j:choose>
         <j:invokeStatic var="requestURL" className="java.net.URLDecoder" method="decode">
           <j:arg value="${request.requestURL.toString()}"/>
