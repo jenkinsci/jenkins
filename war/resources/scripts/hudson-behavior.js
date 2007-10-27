@@ -99,10 +99,25 @@ function registerValidator(e) {
     if(typeof oldOnchange=="function") {
         e.onchange = function() { checker.call(this); oldOnchange.call(this); }
     } else
-        e.onchange = checker; 
+        e.onchange = checker;
     e.onblur = checker;
 
     e = null; // avoid memory leak
+}
+
+/**
+ * Wraps a <button> into YUI button.
+ *
+ * @param e
+ *      button element
+ * @param onclick
+ *      onclick handler
+ */
+function makeButton(e,onclick) {
+    var clsName = e.className;
+    var btn = new YAHOO.widget.Button(e,{});
+    btn.addListener("click",onclick);
+    Element.addClassName(btn.get("element"),clsName);
 }
 
 var hudsonRules = {
@@ -123,8 +138,8 @@ var hudsonRules = {
     },
 
     "INPUT.advancedButton" : function(e) {
-        e.onclick = function() {
-            var link = this.parentNode;
+        makeButton(e,function(e) {
+            var link = e.target.parentNode;
             link.style.display = "none"; // hide the button
 
             var container = link.nextSibling.firstChild; // TABLE -> TBODY
@@ -136,7 +151,7 @@ var hudsonRules = {
             // move the contents of the advanced portion into the main table
             while (container.lastChild != null)
                 tr.parentNode.insertBefore(container.lastChild, tr.nextSibling);
-        }
+        });
         e = null; // avoid memory leak
     },
 
@@ -232,22 +247,6 @@ var hudsonRules = {
             });
     },
 
-
-    // button to add a new repeatable block
-    "INPUT.repeatable-add" : function(e) {
-        e.onclick = function() {
-            repetableSupport.onAdd(this);
-        };
-        e = null; // avoid memory leak
-    },
-
-    "INPUT.repeatable-delete" : function(e) {
-        e.onclick = function() {
-            repetableSupport.onDelete(this);
-        };
-        e = null; // avoid memory leak
-    },
-
     "DIV.repeated-container" : function(e) {
         // compute the insertion point
         var ip = e.lastChild;
@@ -255,6 +254,21 @@ var hudsonRules = {
             ip = ip.previousSibling;
         // set up the logic
         object(repetableSupport).init(e, e.firstChild, ip);
+    },
+
+    // button to add a new repeatable block
+    "INPUT.repeatable-add" : function(e) {
+        makeButton(e,function(e) {
+            repetableSupport.onAdd(e.target);
+        });
+        e = null; // avoid memory leak
+    },
+
+    "INPUT.repeatable-delete" : function(e) {
+        makeButton(e,function(e) {
+            repetableSupport.onDelete(e.target);
+        });
+        e = null; // avoid memory leak
     },
 
     // resizable text area
