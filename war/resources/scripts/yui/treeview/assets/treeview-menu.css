@@ -1,0 +1,98 @@
+/*
+Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.net/yui/license.txt
+version: 2.3.1
+*/
+/* first or middle sibling, no children */
+.ygtvtn {
+	width:1em; height:20px; background:none
+}
+
+/* first or middle sibling, collapsable */
+.ygtvtm {
+	width:1em; height:20px; 
+	cursor:pointer ;
+	background: url(sprite-menu.gif) -8px 2px no-repeat; 
+}
+
+/* first or middle sibling, collapsable, hover */
+.ygtvtmh {
+	width:1em; height:20px; 
+	cursor:pointer ;
+	background: url(sprite-menu.gif) -8px -77px no-repeat; 
+}
+
+/* first or middle sibling, expandable */
+.ygtvtp {
+	width:1em; height:20px; 
+	cursor:pointer ;
+	background: url(sprite-menu.gif) -8px -315px no-repeat; 
+}
+
+/* first or middle sibling, expandable, hover */
+.ygtvtph {
+	width:1em; height:20px; 
+	cursor:pointer ;
+	background: url(sprite-menu.gif) -8px -395px no-repeat; 
+}
+
+/* last sibling, no children */
+.ygtvln {
+	width:1em; height:20px; background:none
+}
+
+/* Last sibling, collapsable */
+.ygtvlm {
+	width:1em; height:20px; 
+	cursor:pointer ;
+	background: url(sprite-menu.gif) -8px 2px no-repeat; 
+}
+
+/* Last sibling, collapsable, hover */
+.ygtvlmh {
+	width:1em; height:20px; 
+	cursor:pointer ;
+	background: url(sprite-menu.gif) -8px -77px no-repeat; 
+}
+
+/* Last sibling, expandable */
+.ygtvlp { 
+	width:1em; height:20px; 
+	cursor:pointer ;
+	background: url(sprite-menu.gif) -8px -315px no-repeat; 
+}
+
+/* Last sibling, expandable, hover */
+.ygtvlph { 
+	width:1em; height:20px; cursor:pointer ;
+	background: url(sprite-menu.gif) -8px -395px no-repeat; 
+}
+
+/* Loading icon */
+.ygtvloading { 
+	width:1em; height:20px; 
+	background: url(treeview-loading.gif) 0 0 no-repeat; 
+}
+
+/* the style for the empty cells that are used for rendering the depth 
+ * of the node */
+.ygtvdepthcell { width:1em; height:20px; background:none}
+
+.ygtvblankdepthcell { width:1em; height:20px; }
+
+/* the style of the div around each node */
+.ygtvitem { border: 0px solid grey; }  
+
+/* the style of the div around each node's collection of children */
+.ygtvchildren {  }  
+* html .ygtvchildren { height:2%; }  
+
+/* the style of the text label in ygTextNode */
+.ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover { 
+	margin-left:2px;
+	text-decoration: none;
+    background-color: white; /* workaround for IE font smoothing bug */
+}
+
+.ygtvspacer { height: 20px; width: 1em; }

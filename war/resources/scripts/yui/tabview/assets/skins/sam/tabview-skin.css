@@ -1,0 +1,187 @@
+/*
+Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.net/yui/license.txt
+version: 2.3.1
+*/
+/* .yui-navset defaults to .yui-navset-top */
+.yui-skin-sam .yui-navset .yui-nav,
+.yui-skin-sam .yui-navset .yui-navset-top .yui-nav { /* protect nested tabviews from other orientations */
+    border:solid #2647a0; /* color between tab list and content */
+    border-width:0 0 5px;
+    Xposition:relative;
+    zoom:1;
+}
+
+.yui-skin-sam .yui-navset .yui-nav li,
+.yui-skin-sam .yui-navset .yui-navset-top .yui-nav li {
+    margin:0 0.16em 0 0; /* space between tabs */
+    padding:1px 0 0; /* gecko: make room for overflow */
+    zoom:1;
+}
+
+.yui-skin-sam .yui-navset .yui-nav .selected,
+.yui-skin-sam .yui-navset .yui-navset-top .yui-nav .selected { 
+    margin:0 0.16em -1px 0; /* for overlap */
+}
+
+.yui-skin-sam .yui-navset .yui-nav a,
+.yui-skin-sam .yui-navset .yui-navset-top .yui-nav a {
+    background:#d8d8d8 url(../../../../assets/skins/sam/sprite.png) repeat-x; /* tab background */
+    border:solid #a3a3a3;
+    border-width:0 1px;
+    color:#000;
+    position:relative;
+    text-decoration:none;
+}
+
+.yui-skin-sam .yui-navset .yui-nav a em,
+.yui-skin-sam .yui-navset .yui-navset-top .yui-nav a em {
+    border:solid #a3a3a3;
+    border-width:1px 0 0;
+    cursor:hand;
+    padding:0.25em .75em;
+    left:0; right: 0; bottom: 0; /* protect from other orientations */
+    top:-1px; /* for 1px rounded corners */
+    position:relative;
+}
+
+.yui-skin-sam .yui-navset .yui-nav .selected a,
+.yui-skin-sam .yui-navset .yui-nav .selected a:focus, /* no focus effect for selected */
+.yui-skin-sam .yui-navset .yui-nav .selected a:hover { /* no hover effect for selected */
+    background:#2647a0 url(../../../../assets/skins/sam/sprite.png) repeat-x left -1400px; /* selected tab background */
+    color:#fff;
+}
+
+.yui-skin-sam .yui-navset .yui-nav a:hover,
+.yui-skin-sam .yui-navset .yui-nav a:focus {
+    background:#bfdaff url(../../../../assets/skins/sam/sprite.png) repeat-x left -1300px; /* selected tab background */
+    outline:0;
+}
+
+.yui-skin-sam .yui-navset .yui-nav .selected a em {
+    padding:0.35em 0.75em; /* raise selected tab */
+}
+
+.yui-skin-sam .yui-navset .yui-nav .selected a,
+.yui-skin-sam .yui-navset .yui-nav .selected a em {
+    border-color:#243356; /* selected tab border color */
+}
+
+.yui-skin-sam .yui-navset .yui-content {
+    background:#edf5ff; /* content background color */
+}
+
+.yui-skin-sam .yui-navset .yui-content,
+.yui-skin-sam .yui-navset .yui-navset-top .yui-content {
+    border:1px solid #808080; /* content border */
+    border-top-color:#243356; /* different border color */
+    padding:0.25em 0.5em; /* content padding */
+}
+
+/* left and right orientations */
+.yui-skin-sam .yui-navset-left .yui-nav,
+.yui-skin-sam .yui-navset .yui-navset-left .yui-nav,
+.yui-skin-sam .yui-navset .yui-navset-right .yui-nav,
+.yui-skin-sam .yui-navset-right .yui-nav {
+    border-width:0 5px 0 0;
+    Xposition:absolute; /* from tabview-core; have to reiterate for skin-sam due to pos:rel on skin-sam yui-nav */
+    top:0; bottom:0; /* stretch to fill content height */
+}
+
+.yui-skin-sam .yui-navset .yui-navset-right .yui-nav,
+.yui-skin-sam .yui-navset-right .yui-nav {
+    border-width:0 0 0 5px;
+}
+
+.yui-skin-sam .yui-navset-left .yui-nav li,
+.yui-skin-sam .yui-navset .yui-navset-left .yui-nav li,
+.yui-skin-sam .yui-navset-right .yui-nav li {
+    margin:0 0 0.16em; /* space between tabs */
+    padding:0 0 0 1px; /* gecko: make room for overflow */
+}
+
+.yui-skin-sam .yui-navset-right .yui-nav li {
+    padding:0 1px 0 0; /* gecko: make room for overflow */
+}
+
+.yui-skin-sam .yui-navset-left .yui-nav .selected,
+.yui-skin-sam .yui-navset .yui-navset-left .yui-nav .selected { 
+    margin:0 -1px 0.16em 0;
+}
+
+.yui-skin-sam .yui-navset-right .yui-nav .selected { 
+    margin:0 0 0.16em -1px;
+}
+
+.yui-skin-sam .yui-navset-left .yui-nav a,
+.yui-skin-sam .yui-navset-right .yui-nav a {
+    border-width:1px 0;
+}
+
+.yui-skin-sam .yui-navset-left .yui-nav a em,
+.yui-skin-sam .yui-navset .yui-navset-left .yui-nav a em,
+.yui-skin-sam .yui-navset-right .yui-nav a em {
+    border-width:0 0 0 1px;
+    padding:0.2em .75em;
+    top:auto;
+    left:-1px; /* for 1px rounded corners */
+}
+
+.yui-skin-sam .yui-navset-right .yui-nav a em {
+    border-width:0 1px 0 0;
+    left:auto;
+    right:-1px; /* for 1px rounded corners */
+}
+
+.yui-skin-sam .yui-navset-left .yui-nav a,
+.yui-skin-sam .yui-navset-left .yui-nav .selected a,
+.yui-skin-sam .yui-navset-left .yui-nav a:hover,
+.yui-skin-sam .yui-navset-right .yui-nav a,
+.yui-skin-sam .yui-navset-right .yui-nav .selected a,
+.yui-skin-sam .yui-navset-right .yui-nav a:hover,
+.yui-skin-sam .yui-navset-bottom .yui-nav a,
+.yui-skin-sam .yui-navset-bottom .yui-nav .selected a,
+.yui-skin-sam .yui-navset-bottom .yui-nav a:hover {
+    background-image:none; /* no left-right or bottom-top gradient */
+}
+
+.yui-skin-sam .yui-navset-left .yui-content {
+    border:1px solid #808080; /* content border */
+    border-left-color:#243356; /* different border color */
+}
+
+/* bottom orientation */
+.yui-skin-sam .yui-navset-bottom .yui-nav,
+.yui-skin-sam .yui-navset .yui-navset-bottom .yui-nav {
+    border-width:5px 0 0; /* color between tab list and content */
+}
+
+.yui-skin-sam .yui-navset .yui-navset-bottom .yui-nav .selected,
+.yui-skin-sam .yui-navset-bottom .yui-nav .selected { 
+    margin:-1px 0.16em 0 0; /* for overlap */
+}
+
+.yui-skin-sam .yui-navset .yui-navset-bottom .yui-nav li,
+.yui-skin-sam .yui-navset-bottom .yui-nav li { 
+    padding:0 0 1px 0; /* gecko: make room for overflow */
+    vertical-align:top;
+}
+
+.yui-skin-sam .yui-navset .yui-navset-bottom .yui-nav li a,
+.yui-skin-sam .yui-navset-bottom .yui-nav li a { 
+}
+
+.yui-skin-sam .yui-navset .yui-navset-bottom .yui-nav a em,
+.yui-skin-sam .yui-navset-bottom .yui-nav a em {
+    border-width:0 0 1px;
+    top:auto;
+    bottom:-1px; /* for 1px rounded corners */
+}
+
+.yui-skin-sam .yui-navset-bottom .yui-content,
+.yui-skin-sam .yui-navset .yui-navset-bottom .yui-content {
+    border:1px solid #808080; /* content border */
+    border-bottom-color:#243356; /* different border color */
+}
+

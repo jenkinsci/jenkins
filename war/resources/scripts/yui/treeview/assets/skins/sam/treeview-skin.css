@@ -1,0 +1,104 @@
+/*
+Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.net/yui/license.txt
+version: 2.3.1
+*/
+/* first or middle sibling, no children */
+.ygtvtn {
+	width:18px; height:22px; 
+	background: url(treeview-sprite.gif) 0 -5600px no-repeat; 
+}
+
+/* first or middle sibling, collapsable */
+.ygtvtm {
+	width:18px; height:22px; 
+	cursor:pointer ;
+	background: url(treeview-sprite.gif) 0 -4000px no-repeat; 
+}
+
+/* first or middle sibling, collapsable, hover */
+.ygtvtmh {
+	width:18px; height:22px; 
+	cursor:pointer ;
+	background: url(treeview-sprite.gif) 0 -4800px no-repeat; 
+}
+
+/* first or middle sibling, expandable */
+.ygtvtp {
+	width:18px; height:22px; 
+	cursor:pointer ;
+	background: url(treeview-sprite.gif) 0 -6400px no-repeat; 
+}
+
+/* first or middle sibling, expandable, hover */
+.ygtvtph {
+	width:18px; height:22px; 
+	cursor:pointer ;
+	background: url(treeview-sprite.gif) 0 -7200px no-repeat; 
+}
+
+/* last sibling, no children */
+.ygtvln {
+	width:18px; height:22px; 
+	background: url(treeview-sprite.gif) 0 -1600px no-repeat; 
+}
+
+/* Last sibling, collapsable */
+.ygtvlm {
+	width:18px; height:22px; 
+	cursor:pointer ;
+	background: url(treeview-sprite.gif) 0 0px no-repeat; 
+}
+
+/* Last sibling, collapsable, hover */
+.ygtvlmh {
+	width:18px; height:22px; 
+	cursor:pointer ;
+	background: url(treeview-sprite.gif) 0 -800px no-repeat; 
+}
+
+/* Last sibling, expandable */
+.ygtvlp { 
+	width:18px; height:22px; 
+	cursor:pointer ;
+	background: url(treeview-sprite.gif) 0 -2400px no-repeat; 
+}
+
+/* Last sibling, expandable, hover */
+.ygtvlph { 
+	width:18px; height:22px; cursor:pointer ;
+	background: url(treeview-sprite.gif) 0 -3200px no-repeat; 
+}
+
+/* Loading icon */
+.ygtvloading { 
+	width:18px; height:22px; 
+	background: url(treeview-loading.gif) 0 0 no-repeat; 
+}
+
+/* the style for the empty cells that are used for rendering the depth 
+ * of the node */
+.ygtvdepthcell { 
+	width:18px; height:22px; 
+	background: url(treeview-sprite.gif) 0 -8000px no-repeat; 
+}
+
+.ygtvblankdepthcell { width:18px; height:22px; }
+
+/* the style of the div around each node */
+.ygtvitem { }  
+
+/* the style of the div around each node's collection of children */
+.ygtvchildren {  
+    *zoom: 1;
+}  
+
+/* the style of the text label in ygTextNode */
+.ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover { 
+	margin-left:2px;
+	text-decoration: none;
+    background-color: white;
+}
+
+.ygtvspacer { height: 22px; width: 18px; }

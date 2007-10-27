@@ -1,0 +1,355 @@
+/*
+Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.net/yui/license.txt
+version: 2.3.1
+*/
+/* Menu & MenuBar styles */
+
+.yuimenu {
+
+    background-color:#f6f7ee;
+    border:solid 1px #c4c4be;
+    padding:1px;
+    
+}
+
+/*
+
+The following style rule (".yuimenu.show-scrollbars") overrides the 
+".show-scrollbars" rule defined in container.css which sets the 
+"overflow" property of a YAHOO.widget.Overlay instance's root HTML element to 
+"auto" when it is visible.  Without this override, a Menu would have scrollbars
+when one of its submenus is visible.
+
+*/
+
+.yuimenu.show-scrollbars {
+
+	overflow: visible; 
+
+}
+
+.yui-menu-shadow {
+
+    display: none;
+
+}
+
+.yuimenu .yuimenu,
+.yuimenubar .yuimenu {
+
+    position:absolute;
+    visibility:hidden;
+
+}
+
+.yuimenubar {
+
+    background-color:#f6f7ee;
+    
+}
+
+.yuimenubar ul {
+
+    *zoom:1;
+
+}
+
+.yuimenubar ul:after {
+
+    content:".";
+    display:block;
+    clear:both;
+    visibility:hidden;
+    height:0;
+    line-height:0;
+
+}
+
+.yuimenu h6,
+.yuimenubar h6 { 
+
+    font-size:100%;
+    font-weight:normal;
+    margin:0;
+    border:solid 1px #c4c4be;
+    color:#b9b9b9;    
+
+}
+
+.yuimenubar h6 {
+
+    float:left;
+    padding:4px 12px;
+    border-width:0 1px 0 0;
+
+}
+
+.yuimenubar .yuimenu h6 {
+
+    float:none;
+
+}
+
+.yuimenu h6 {
+
+    border-width:1px 0 0 0;
+    padding:5px 10px 0 10px;
+
+}
+
+.yuimenubar ul {
+
+    margin:0;
+    padding:0;
+
+}
+
+.yuimenu ul {
+
+    border:solid 1px #c4c4be;
+    border-width:1px 0 0 0;
+    margin:0;
+    padding:10px 0;
+
+}
+
+.yuimenu ul.first-of-type, 
+.yuimenu ul.hastitle,
+.yuimenu h6.first-of-type {
+
+    border-width:0;
+
+}
+
+.yuimenubar li, 
+.yuimenu li {
+
+    list-style-type: none;    
+
+}
+
+.yuimenu .yui-menu-body-scrolled {
+
+    overflow: hidden;
+
+}
+
+.yuimenu .topscrollbar,
+.yuimenu .bottomscrollbar {
+
+    height:16px;
+    background-image:url(map.gif);
+    background-repeat:no-repeat;
+
+}
+
+.yuimenu .topscrollbar {
+
+    background-image:url(map.gif);
+    background-position:center -72px;
+
+}
+
+.yuimenu .topscrollbar_disabled {
+
+    background-image:url(map.gif);
+    background-position:center -88px;
+
+}
+
+.yuimenu .bottomscrollbar {
+
+    background-image:url(map.gif);
+    background-position:center -104px;
+
+}
+
+.yuimenu .bottomscrollbar_disabled {
+
+    background-image:url(map.gif);
+    background-position:center -120px;
+
+}
+
+
+/* MenuItem and MenuBarItem styles */
+
+.yuimenubaritem {
+
+    float:left;
+
+}
+
+.yuimenuitemlabel,
+.yuimenubaritemlabel {
+
+    white-space: nowrap;
+    font-size:85%;
+    display:block;
+    color:#000;
+    text-decoration:none;
+
+}
+
+.yuimenuitemlabel {
+
+    padding:2px 24px;
+    outline:none;
+    
+}
+
+.yuimenubaritemlabel {
+
+    border-width:0 0 0 1px;
+    border-style:solid;
+    border-color:#c4c4be;
+    padding:4px 24px;
+
+}
+
+li.first-of-type .yuimenubaritemlabel {
+
+    border-width:0;
+
+}
+
+.yuimenuitemlabel .helptext {
+
+    font-style:normal;
+    margin:0 0 0 40px;
+    
+}
+
+.yuimenuitemlabel .submenuindicator,
+.yuimenuitemlabel .checkedindicator, 
+.yuimenubaritemlabel .submenuindicator {
+    
+    display:block;
+    height:8px;
+    width:8px;
+    overflow:hidden;
+    vertical-align:middle;
+    text-indent:9px;
+    background-image:url(map.gif);
+    background-repeat:no-repeat;
+
+}
+
+.yuimenubaritemlabel .submenuindicator {
+
+    display:-moz-inline-stack; /* Gecko */
+    display:inline-block; /* IE, Opera and Safari */
+    font:0/0 arial; /* Gecko */
+
+}
+
+.yuimenuitemlabel .submenuindicator {
+
+    background-position:0 0;
+
+}
+
+.yuimenubaritemlabel .submenuindicator {
+
+    background-position:0 -24px;
+    margin:0 0 0 10px;
+
+}
+
+.yuimenuitemlabel .checkedindicator {
+
+    background-position:0 -48px;
+
+}
+
+.visible .yuimenuitem,
+.visible .yuimenuitemlabel {
+
+    *zoom:1;
+
+}
+
+.visible .yuimenuitemlabel .helptext {
+
+    float:right;
+    width:100%;
+    text-align:right;
+    margin:-1.2em 0 0 0;
+    *cursor:hand; /* Required to restore the style of the cursor in IE */
+
+}
+
+.visible .yuimenuitemlabel .submenuindicator {
+
+    margin:-.9em -16px 4px auto;
+    *margin:-.9em -16px 0 105%;
+
+}
+
+.visible .yuimenuitemlabel .checkedindicator {
+
+    margin:-.9em auto 4px -16px;
+    *margin-bottom:0;
+
+}
+
+
+
+/* Matches selected menu items */
+
+.yuimenuitem a.selected,
+.yuimenubaritem a.selected {
+
+    background-color:#8c8ad0;
+    text-decoration:underline;
+    color:#fff;
+
+}
+
+.yuimenubaritem a.selected .submenuindicator {
+
+    background-position:0 -32px;
+
+}
+
+.yuimenuitem a.selected .submenuindicator {
+
+    background-position:0 -8px;
+
+}
+
+.yuimenuitem a.selected .checkedindicator {
+
+    background-position:0 -56px;
+
+}
+
+
+/* Matches disabled menu items */
+
+.yuimenubaritem a.disabled .submenuindicator {
+
+    background-position:0 -40px;
+
+}
+
+.yuimenuitem a.disabled {
+
+    cursor:default;
+    color:#b9b9b9;
+
+}
+
+.yuimenuitem a.disabled .submenuindicator {
+
+    background-position:0 -16px;
+
+}
+
+.yuimenuitem a.disabled .checkedindicator {
+
+    background-position:0 -64px;
+
+}
