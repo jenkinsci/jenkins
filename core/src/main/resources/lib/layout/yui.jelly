@@ -3,6 +3,7 @@
 
   Attributes:
     @module   module name to be loaded
+    @suffix   if loading beta module, use suffix='-beta'
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <script src="${resURL}/scripts/yui/${module}/${module}${attrs.suffix}-${yuiSuffix}.js" />
