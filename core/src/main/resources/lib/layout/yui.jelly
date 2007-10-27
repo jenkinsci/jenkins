@@ -5,5 +5,5 @@
     @module   module name to be loaded
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <script src="${resURL}/scripts/yui/${module}-${yuiSuffix}.js" />
+  <script src="${resURL}/scripts/yui/${module}/${module}${attrs.suffix}-${yuiSuffix}.js" />
 </j:jelly>
