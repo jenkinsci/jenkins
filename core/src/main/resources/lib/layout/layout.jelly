@@ -54,7 +54,7 @@
       <l:yui module="logger" />
     </j:if>
     
-    <link rel="stylesheet" href="${resURL}/scripts/yui/container/asserts/container.css" type="text/css"/>
+    <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
     <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Hudson" />
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
