@@ -116,7 +116,8 @@ function registerValidator(e) {
 function makeButton(e,onclick) {
     var clsName = e.className;
     var btn = new YAHOO.widget.Button(e,{});
-    btn.addListener("click",onclick);
+    if(onclick!=null)
+        btn.addListener("click",onclick);
     Element.addClassName(btn.get("element"),clsName);
 }
 
@@ -139,7 +140,9 @@ var hudsonRules = {
 
     "INPUT.advancedButton" : function(e) {
         makeButton(e,function(e) {
-            var link = e.target.parentNode;
+            var link = e.target;
+            while(!Element.hasClassName(link,"advancedLink"))
+                link = link.parentNode;
             link.style.display = "none"; // hide the button
 
             var container = link.nextSibling.firstChild; // TABLE -> TBODY
@@ -360,6 +363,10 @@ var hudsonRules = {
             
             Behaviour.applySubtree(nc);
         });
+    },
+
+    "INPUT.submit-button" : function(e) {
+        makeButton(e);
     }
 };
 
