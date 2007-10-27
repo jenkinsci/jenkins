@@ -14,6 +14,9 @@
       <j:set var="instance" value="${i}" />
       <table>
         <st:include from="${descriptor}" page="${descriptor.configPage}" />
+        <f:block>
+          <f:repeatableDeleteButton />
+        </f:block>
       </table>
     </j:forEach>
 
@@ -26,6 +29,9 @@
           <input type="hidden" name="kind" value="${descriptor.displayName}" />
           <table>
             <st:include from="${descriptor}" page="${descriptor.configPage}" />
+            <f:block>
+              <f:repeatableDeleteButton />
+            </f:block>
           </table>
         </div>
       </j:forEach>
