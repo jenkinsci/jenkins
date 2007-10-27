@@ -594,14 +594,14 @@ TABLE.fingerprint-in-build TD {
 
 /* ========================= repeatable elements ========================= */
 
-.repeated-chunk .show-if-last      { display: none; }
-.repeated-chunk.last .show-if-last { display: inline; }
+.repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk.last .show-if-last { visibility: visible; }
 
-.repeated-chunk .show-if-not-last      { display: inline; }
-.repeated-chunk.last .show-if-not-last { display: none; }
+.repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk.last .show-if-not-last { visibility: hidden; }
 
-.repeated-chunk .show-if-not-only      { display: inline; }
-.repeated-chunk.only .show-if-not-only { display: none; }
+.repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
 /* ========================= Yahoo UI style adjustments ========================= */
 .ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
