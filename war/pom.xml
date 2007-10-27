@@ -23,6 +23,9 @@
           <webResources>
             <resource>
               <directory>${basedir}/resources</directory>
+              <!--excludes> not much size improvements
+                <exclude>**/*-debug.js</exclude>
+              </excludes-->
             </resource>
             <resource>
               <directory>${basedir}/target/generated-resources</directory>
