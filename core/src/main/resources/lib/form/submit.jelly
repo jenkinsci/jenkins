@@ -1,0 +1,6 @@
+<!--
+  Submit button
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define">
+  <input type="submit" name="Submit" value="${attrs.value}" class="submit-button" />
+</j:jelly>
