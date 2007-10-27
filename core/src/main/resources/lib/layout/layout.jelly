@@ -50,15 +50,17 @@
     <l:yui module="container" />
     <l:yui module="connection" />
     <l:yui module="autocomplete" />
+    <l:yui module="menu" />
     <l:yui module="element" suffix="-beta" />
     <l:yui module="button" suffix="-beta" />
     <j:if test="${yuiSuffix=='debug'}">
       <l:yui module="logger" />
     </j:if>
-    
+
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
     <link rel="stylesheet" href="${resURL}/scripts/yui/assets/skins/sam/skin.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/scripts/yui/button/assets/skins/sam/button.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
 
     <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Hudson" />
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
