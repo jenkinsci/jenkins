@@ -2,6 +2,7 @@ package hudson.tasks;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
@@ -78,8 +79,22 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
          * @throws IOException
          *      terminates the build abnormally. Hudson will handle the exception
          *      and reports a nice error message.
+         * @since 1.150
          */
-        public abstract boolean tearDown( Build build, BuildListener listener ) throws IOException, InterruptedException;
+        public boolean tearDown( AbstractBuild build, BuildListener listener ) throws IOException, InterruptedException {
+            if (build instanceof Build)
+                return tearDown((Build)build, listener);
+            else
+                return true;
+        }
+
+        /**
+         * @deprecated
+         *      Use {@link #tearDown(AbstractBuild, BuildListener)} instead.
+         */
+        public boolean tearDown( Build build, BuildListener listener ) throws IOException, InterruptedException {
+            return true;
+        }
     }
 
     /**
@@ -100,6 +115,20 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
      * @throws IOException
      *      terminates the build abnormally. Hudson will handle the exception
      *      and reports a nice error message.
+     * @since 1.150
      */
-    public abstract Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException;
+    public Environment setUp( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
+        if (build instanceof Build)
+            return setUp((Build)build,launcher,listener);
+        else
+            throw new AssertionError();
+    }
+
+    /**
+     * @deprecated
+     *      Use {@link #setUp(AbstractBuild, Launcher, BuildListener)} instead.
+     */
+    public Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
+        throw new UnsupportedOperationException(getClass()+" needs to implement the setUp method");
+    }
 }

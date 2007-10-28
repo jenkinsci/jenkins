@@ -20,6 +20,8 @@ import hudson.model.View;
 import hudson.search.SearchableModelObject;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
@@ -435,6 +437,10 @@ public class Functions {
 
     public static List<JobPropertyDescriptor> getJobPropertyDescriptors(Class<? extends Job> clazz) {
         return JobPropertyDescriptor.getPropertyDescriptors(clazz);
+    }
+
+    public static List<Descriptor<BuildWrapper>> getBuildWrapperDescriptors(AbstractProject<?,?> project) {
+        return BuildWrappers.getFor(project);
     }
 
     public static List<Descriptor<Builder>> getBuilderDescriptors(AbstractProject<?,?> project) {
