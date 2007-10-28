@@ -12,14 +12,16 @@
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
-      <table>
-        <st:include from="${descriptor}" page="${descriptor.configPage}" />
-        <f:block>
-          <div align="right">
-            <f:repeatableDeleteButton />
-          </div>
-        </f:block>
-      </table>
+      <div name="${attrs.name}">
+        <table>
+          <st:include from="${descriptor}" page="${descriptor.configPage}" />
+          <f:block>
+            <div align="right">
+              <f:repeatableDeleteButton />
+            </div>
+          </f:block>
+        </table>
+      </div>
     </j:forEach>
 
     <div class="repeatable-insertion-point" />
