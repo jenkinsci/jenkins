@@ -15,7 +15,9 @@
       <table>
         <st:include from="${descriptor}" page="${descriptor.configPage}" />
         <f:block>
-          <f:repeatableDeleteButton />
+          <div align="right">
+            <f:repeatableDeleteButton />
+          </div>
         </f:block>
       </table>
     </j:forEach>
@@ -30,7 +32,9 @@
           <table>
             <st:include from="${descriptor}" page="${descriptor.configPage}" />
             <f:block>
-              <f:repeatableDeleteButton />
+              <div align="right">
+                <f:repeatableDeleteButton />
+              </div>
             </f:block>
           </table>
         </div>
