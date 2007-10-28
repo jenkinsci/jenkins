@@ -621,6 +621,10 @@ DIV.yahooTree td {
   color: inherit !important;
 }
 
+.yui-skin-sam .yui-tt .bd {
+  border: none !important;
+  background-color: #FFF !important;
+}
 /* ========================= search box at the top-right of the page ========================= */
 #search-box {
   background: white url(../images/16x16/search.gif) no-repeat 2px center;
