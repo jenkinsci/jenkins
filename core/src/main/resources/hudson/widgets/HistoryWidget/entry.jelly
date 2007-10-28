@@ -12,11 +12,12 @@
       <a class="tip" href="${link}">
         <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
       </a>
-      <j:if test="${build.keepLog}">
+      <j:set var="badges" value="${build.badgeActions}"/>
+      <j:if test="${!empty(badges)}">
         <st:nbsp/>
-        <img width="16" height="16"
-          title="${build.whyKeepLog}"
-          src="${imagesURL}/16x16/lock.gif"/>
+        <j:forEach var="badge" items="${badges}">
+          <st:include it="${badge}" page="badge.jelly" />
+        </j:forEach>
       </j:if>
     </td>
   </tr>

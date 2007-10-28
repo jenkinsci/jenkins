@@ -204,6 +204,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 r.add((BuildBadgeAction)a);
             }
         }
+        if(isKeepLog()) {
+            if(r==null)
+                r = new ArrayList<BuildBadgeAction>();
+            r.add(new KeepLogBuildBadge());
+        }
         if(r==null)     return Collections.emptyList();
         else            return r;
     }
@@ -925,4 +930,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return entry.getTimestamp();
         }
     };
+
+    /**
+     * {@link BuildBadgeAction} that shows the logs are being kept.
+     */
+    public final class KeepLogBuildBadge implements BuildBadgeAction {
+        public String getIconFileName() { return null; }
+        public String getDisplayName() { return null; }
+        public String getUrlName() { return null; }
+        public String getWhyKeepLog() { return Run.this.getWhyKeepLog(); }
+    }
 }
