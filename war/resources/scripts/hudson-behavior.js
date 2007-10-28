@@ -123,7 +123,7 @@ function makeButton(e,onclick) {
 
 var hudsonRules = {
     "BODY" : function() {
-        tooltip = new YAHOO.widget.Tooltip("tt", {context:[]});
+        tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
     },
 
     "TABLE.sortable" : function(e) {// sortable table

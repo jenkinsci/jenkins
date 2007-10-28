@@ -616,7 +616,6 @@ DIV.yahooTree td {
   border: 1px solid black !important;
   background-color: #FFFFFF !important;
   padding: 2px !important;
-  z-index: 999;
   font-family: inherit !important;
   color: inherit !important;
 }
