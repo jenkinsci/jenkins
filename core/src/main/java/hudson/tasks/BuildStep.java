@@ -1,6 +1,8 @@
 package hudson.tasks;
 
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -41,7 +43,7 @@ public interface BuildStep {
      *      true if the build can continue, false if there was an error
      *      and the build needs to be aborted.
      */
-    boolean prebuild( Build<?,?> build, BuildListener listener );
+    boolean prebuild( AbstractBuild<?,?> build, BuildListener listener );
 
     /**
      * Runs the step over the given build and reports the progress to the listener.
@@ -67,7 +69,7 @@ public interface BuildStep {
      *      provide a better error message, if it can do so, so that users have better
      *      understanding on why it failed.
      */
-    boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException;
+    boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException;
 
     /**
      * Returns an action object if this {@link BuildStep} has an action
@@ -84,7 +86,7 @@ public interface BuildStep {
      * @return
      *      null if there's no action to be contributed.
      */
-    Action getProjectAction(Project<?,?> project);
+    Action getProjectAction(AbstractProject<?,?> project);
 
     /**
      * List of all installed builders.

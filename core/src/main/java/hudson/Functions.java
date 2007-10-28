@@ -1,7 +1,10 @@
 package hudson;
 
 import hudson.maven.ExecutedMojo;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -15,6 +18,10 @@ import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.search.SearchableModelObject;
+import hudson.tasks.BuildStep;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Builder;
+import hudson.tasks.Publisher;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.kohsuke.stapler.Ancestor;
@@ -37,6 +44,7 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -427,6 +435,31 @@ public class Functions {
 
     public static List<JobPropertyDescriptor> getJobPropertyDescriptors(Class<? extends Job> clazz) {
         return JobPropertyDescriptor.getPropertyDescriptors(clazz);
+    }
+
+    public static List<Descriptor<Builder>> getBuilderDescriptors(AbstractProject<?,?> project) {
+        return filterBuildStepDescriptors(BuildStep.BUILDERS,project);
+    }
+
+    public static List<Descriptor<Publisher>> getPublisherDescriptors(AbstractProject<?,?> project) {
+        return filterBuildStepDescriptors(BuildStep.PUBLISHERS,project);
+    }
+
+    private static <T extends BuildStep&Describable<T>> List<Descriptor<T>> filterBuildStepDescriptors(List<Descriptor<T>> list,AbstractProject<?,?> project) {
+        List<Descriptor<T>> result = new ArrayList<Descriptor<T>>();
+        for (Descriptor<T> b : list) {
+            if (b instanceof BuildStepDescriptor) {
+                BuildStepDescriptor bsd = (BuildStepDescriptor) b;
+                if(bsd.isApplicable(project))
+                    result.add(b);
+            } else {
+                // old plugins built before 1.150 may not implement BuildStepDescriptor
+                if(project instanceof Project) {
+                    result.add(b);
+                }
+            }
+        }
+        return result;
     }
 
     /**

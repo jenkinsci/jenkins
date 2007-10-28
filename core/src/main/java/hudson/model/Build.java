@@ -4,7 +4,6 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapper.Environment;
 import hudson.tasks.Builder;
-import hudson.tasks.Publisher;
 import hudson.triggers.SCMTrigger;
 
 import java.io.File;
@@ -133,12 +132,12 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
         public void post2(BuildListener listener) throws IOException, InterruptedException {
             // run all of them even if one of them failed
-            for( Publisher bs : project.getPublishers().values() )
+            for( BuildStep bs : project.getPublishers().values() )
                 bs.perform(Build.this, launcher, listener);
         }
 
         private boolean build(BuildListener listener, Map<?, Builder> steps) throws IOException, InterruptedException {
-            for( Builder bs : steps.values() )
+            for( BuildStep bs : steps.values() )
                 if(!bs.perform(Build.this, launcher, listener))
                     return false;
             return true;

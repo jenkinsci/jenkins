@@ -16,7 +16,12 @@ import hudson.model.Project;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class Builder implements BuildStep, Describable<Builder>, ExtensionPoint {
+public abstract class Builder extends BuildStepCompatibilityLayer implements BuildStep, Describable<Builder>, ExtensionPoint {
+    
+
+//
+// these two methods need to remain to keep binary compatibility with plugins built with Hudson < 1.150
+//
     /**
      * Default implementation that does nothing.
      */
