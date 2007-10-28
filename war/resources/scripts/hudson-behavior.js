@@ -256,20 +256,20 @@ var hudsonRules = {
         while (!Element.hasClassName(ip, "repeatable-insertion-point"))
             ip = ip.previousSibling;
         // set up the logic
-        object(repetableSupport).init(e, e.firstChild, ip);
+        object(repeatableSupport).init(e, e.firstChild, ip);
     },
 
     // button to add a new repeatable block
     "INPUT.repeatable-add" : function(e) {
         makeButton(e,function(e) {
-            repetableSupport.onAdd(e.target);
+            repeatableSupport.onAdd(e.target);
         });
         e = null; // avoid memory leak
     },
 
     "INPUT.repeatable-delete" : function(e) {
         makeButton(e,function(e) {
-            repetableSupport.onDelete(e.target);
+            repeatableSupport.onDelete(e.target);
         });
         e = null; // avoid memory leak
     },
@@ -649,7 +649,7 @@ function updateDropDownList(sel) {
 
 
 // code for supporting repeatable.jelly
-var repetableSupport = {
+var repeatableSupport = {
     // set by the inherited instance to the insertion point DIV
     insertionPoint: null,
 
