@@ -88,7 +88,7 @@ public class BuildTrigger extends Publisher {
             PrintStream logger = listener.getLogger();
             for (AbstractProject p : getChildProjects()) {
                 if(p.isDisabled()) {
-                    logger.println(p.getName()+" is disabled. Triggering skiiped");
+                    logger.println(p.getName()+" is disabled. Triggering skipped");
                     continue;
                 }
 
