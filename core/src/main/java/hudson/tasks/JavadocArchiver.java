@@ -3,9 +3,9 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractItem;
 import hudson.model.Action;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.DirectoryBrowserSupport;
@@ -46,7 +46,7 @@ public class JavadocArchiver extends Publisher {
         return new File(project.getRootDir(),"javadoc");
     }
 
-    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         listener.getLogger().println("Publishing Javadoc");
 
         FilePath javadoc = build.getParent().getWorkspace().child(javadocDir);

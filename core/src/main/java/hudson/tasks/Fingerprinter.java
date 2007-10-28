@@ -3,6 +3,8 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -11,13 +13,10 @@ import hudson.model.Fingerprint;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
-import hudson.model.Project;
 import hudson.model.Result;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.remoting.VirtualChannel;
-import hudson.util.IOException2;
 import hudson.util.FormFieldValidator;
+import hudson.util.IOException2;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.StaplerRequest;
@@ -68,7 +67,7 @@ public class Fingerprinter extends Publisher implements Serializable {
         return recordBuildArtifacts;
     }
 
-    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         try {
             listener.getLogger().println("Recording fingerprints");
 
@@ -78,8 +77,8 @@ public class Fingerprinter extends Publisher implements Serializable {
             if(targets.length()!=0)
                 record(build, listener, record, targets);
 
-            if(recordBuildArtifacts) {
-                ArtifactArchiver aa = (ArtifactArchiver) build.getProject().getPublishers().get(ArtifactArchiver.DESCRIPTOR);
+            if(recordBuildArtifacts && build instanceof Build) {
+                ArtifactArchiver aa = (ArtifactArchiver) ((Build<?,?>)build).getProject().getPublishers().get(ArtifactArchiver.DESCRIPTOR);
                 if(aa==null) {
                     // configuration error
                     listener.error("Build artifacts are supposed to be fingerprinted, but build artifact archiving is not configured");
@@ -100,7 +99,7 @@ public class Fingerprinter extends Publisher implements Serializable {
         return true;
     }
 
-    private void record(Build<?,?> build, BuildListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
+    private void record(AbstractBuild<?,?> build, BuildListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
         final class Record implements Serializable {
             final boolean produced;
             final String relativePath;
@@ -114,7 +113,7 @@ public class Fingerprinter extends Publisher implements Serializable {
                 this.md5sum = md5sum;
             }
 
-            Fingerprint addRecord(Build build) throws IOException {
+            Fingerprint addRecord(AbstractBuild build) throws IOException {
                 FingerprintMap map = Hudson.getInstance().getFingerprintMap();
                 return map.getOrCreate(produced?build:null, fileName, md5sum);
             }
@@ -122,7 +121,7 @@ public class Fingerprinter extends Publisher implements Serializable {
             private static final long serialVersionUID = 1L;
         }
 
-        Project p = build.getProject();
+        AbstractProject p = build.getProject();
         final long buildTimestamp = build.getTimestamp().getTimeInMillis();
 
         FilePath ws = p.getWorkspace();

@@ -3,11 +3,11 @@ package hudson.tasks;
 import hudson.CopyOnWrite;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-import hudson.model.Project;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -15,11 +15,10 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
-import java.io.ByteArrayInputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -97,8 +96,8 @@ public class Ant extends Builder {
         return antOpts;
     }
 
-    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        Project proj = build.getProject();
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        AbstractProject proj = build.getProject();
 
         ArgumentListBuilder args = new ArgumentListBuilder();
 

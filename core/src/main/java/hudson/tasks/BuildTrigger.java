@@ -1,8 +1,8 @@
 package hudson.tasks;
 
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -23,8 +23,8 @@ import java.io.PrintStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Triggers builds of other projects.
@@ -83,7 +83,7 @@ public class BuildTrigger extends Publisher {
         return children.size()==projects.size() && children.containsAll(projects);
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) {
+    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
         if(!build.getResult().isWorseThan(getThreshold())) {
             PrintStream logger = listener.getLogger();
             for (AbstractProject p : getChildProjects()) {

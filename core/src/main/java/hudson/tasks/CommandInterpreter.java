@@ -31,8 +31,8 @@ public abstract class CommandInterpreter extends Builder {
         return command;
     }
 
-    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
-        return perform((AbstractBuild)build,launcher,(TaskListener)listener);
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+        return perform(build,launcher,(TaskListener)listener);
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {

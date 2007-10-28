@@ -5,8 +5,8 @@ import hudson.Launcher;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
+import hudson.model.AbstractBuild;
 import hudson.model.Action;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
@@ -42,7 +42,7 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
         this.testResults = testResults;
     }
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         listener.getLogger().println("Recording test results");
         TestResultAction action;
 

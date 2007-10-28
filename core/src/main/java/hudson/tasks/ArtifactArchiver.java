@@ -3,11 +3,11 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.util.FormFieldValidator;
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
-import hudson.model.Project;
+import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -55,8 +55,8 @@ public class ArtifactArchiver extends Publisher {
         return latestOnly;
     }
 
-    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
-        Project<?,?> p = build.getProject();
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+        AbstractProject<?,?> p = build.getProject();
 
         File dir = build.getArtifactsDir();
         dir.mkdirs();
@@ -70,7 +70,7 @@ public class ArtifactArchiver extends Publisher {
         }
 
         if(latestOnly) {
-            Build<?,?> b = p.getLastSuccessfulBuild();
+            AbstractBuild<?,?> b = p.getLastSuccessfulBuild();
             if(b!=null) {
                 while(true) {
                     b = b.getPreviousBuild();
