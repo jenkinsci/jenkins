@@ -627,6 +627,17 @@ public class Functions {
         return b;
     }
 
+    /**
+     * If the value exists, return that value. Otherwise return the default value.
+     * <p>
+     * This method is useful for supplying a default value to a form field.
+     *
+     * @since 1.150
+     */
+    public static Object defaulted(Object value, Object defaultValue) {
+        return value!=null ? value : defaultValue;
+    }
+
     public static String printThrowable(Throwable t) {
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
