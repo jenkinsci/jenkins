@@ -47,6 +47,7 @@
     <l:yui module="yahoo" />
     <l:yui module="dom" />
     <l:yui module="event" />
+    <l:yui module="animation" />
     <l:yui module="container" />
     <l:yui module="connection" />
     <l:yui module="autocomplete" />
