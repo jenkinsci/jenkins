@@ -102,7 +102,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
 
         for( int i=0; i< descriptors.size(); i++ ) {
             String name = prefix + i;
-            if(req.getParameter(name)!=null) {
+            if(json.has(name)) {
                 T instance = descriptors.get(i).newInstance(req,json.getJSONObject(name));
                 newList.add(instance);
             }
