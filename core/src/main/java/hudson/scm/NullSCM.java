@@ -10,7 +10,6 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * No {@link SCM}.
@@ -39,7 +38,13 @@ public class NullSCM extends SCM {
         return new NullChangeLogParser();
     }
 
-    static final SCMDescriptor DESCRIPTOR = new SCMDescriptor<NullSCM>(NullSCM.class,null) {
+    static final SCMDescriptor DESCRIPTOR = new DescriptorImpl();
+
+    public static class DescriptorImpl extends SCMDescriptor<NullSCM> {
+        public DescriptorImpl() {
+            super(NullSCM.class, null);
+        }
+
         public String getDisplayName() {
             return "None";
         }
@@ -47,5 +52,5 @@ public class NullSCM extends SCM {
         public SCM newInstance(StaplerRequest req) {
             return new NullSCM();
         }
-    };
+    }
 }
