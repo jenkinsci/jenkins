@@ -13,6 +13,7 @@
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
       <div name="${attrs.name}">
+        <input type="hidden" name="kind" value="${descriptor.displayName}" />
         <table>
           <st:include from="${descriptor}" page="${descriptor.configPage}" />
           <f:block>
