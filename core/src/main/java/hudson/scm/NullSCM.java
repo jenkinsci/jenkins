@@ -6,6 +6,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.TaskListener;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
@@ -24,10 +25,6 @@ public class NullSCM extends SCM {
 
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException {
         return createEmptyChangeLog(changeLogFile, listener, "log");
-    }
-
-    public boolean checkout(Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
-        return true;
     }
 
     public SCMDescriptor getDescriptor() {
@@ -49,7 +46,7 @@ public class NullSCM extends SCM {
             return "None";
         }
 
-        public SCM newInstance(StaplerRequest req) {
+        public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new NullSCM();
         }
     }
