@@ -215,14 +215,12 @@ var hudsonRules = {
             if (div.style.display != "block") {
                 div.style.display = "block";
                 // make it visible
-                new Ajax.Request(
-                        this.getAttribute("helpURL"),
-                    {
-                        method : 'get',
-                        onComplete : function(x) {
-                            div.innerHTML = x.responseText;
-                        }
-                    });
+                new Ajax.Request(this.getAttribute("helpURL"), {
+                    method : 'get',
+                    onComplete : function(x) {
+                        div.innerHTML = x.responseText;
+                    }
+                });
             } else {
                 div.style.display = "none";
             }
