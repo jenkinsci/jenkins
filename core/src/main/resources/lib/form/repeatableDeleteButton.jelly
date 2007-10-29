@@ -3,5 +3,5 @@
 
   As of 1.91, left for backward compatibility.
 -->
-<input type="button" value="${h.ifThenElse(attrs.value==null,'Delete',attrs.value)}"
+<input type="button" value="${h.defaulted(attrs.value,'Delete')}"
        class="repeatable-delete" />
