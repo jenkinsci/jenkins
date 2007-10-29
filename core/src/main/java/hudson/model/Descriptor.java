@@ -5,7 +5,6 @@ import hudson.scm.CVSSCM;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
-import sun.security.krb5.internal.crypto.Des;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
