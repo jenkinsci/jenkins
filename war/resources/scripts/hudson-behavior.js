@@ -214,7 +214,7 @@ var hudsonRules = {
 
             if (div.style.display != "block") {
                 div.style.display = "block";
-        // make it visible
+                // make it visible
                 new Ajax.Request(
                         this.getAttribute("helpURL"),
                     {
