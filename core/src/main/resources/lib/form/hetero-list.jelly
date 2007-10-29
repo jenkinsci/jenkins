@@ -12,7 +12,7 @@
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
-      <div name="${attrs.name}">
+      <div name="${attrs.name}" class="repeated-chunk">
         <input type="hidden" name="kind" value="${descriptor.displayName}" />
         <table>
           <st:include from="${descriptor}" page="${descriptor.configPage}" />
