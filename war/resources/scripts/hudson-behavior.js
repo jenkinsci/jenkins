@@ -972,7 +972,7 @@ function buildFormTree(form) {
                 jsonElement = e;
                 continue;
             }
-            if(e.tagName=="fieldset")
+            if(e.tagName=="FIELDSET")
                 continue;
             var p;
             var type = e.getAttribute("type");
