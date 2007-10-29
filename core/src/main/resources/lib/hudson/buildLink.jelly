@@ -2,12 +2,12 @@
   Link to a build. Used by fingerprint/index.jsp
 
   Attributes:
-    jobName    name of the job. Can be omitted if @job is specified.
-    job        A 'job' object. Can be omitted if @jobName is specified.
+    jobName    name of the job. Can be omitted if you don't want to show a name.
+    job        A 'job' object. Can be omitted if you don't want to link.
     number     build number to link to.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:set var="jobName_" value="${h.appendSpaceIfNotNull(h.defaulted(jobName,job.name))}"/>
+  <j:set var="jobName_" value="${h.appendSpaceIfNotNull(jobName)}"/>
   <j:choose>
 	  <j:when test="${job==null}">
 	    ${jobName_}#<!-- -->${number}
