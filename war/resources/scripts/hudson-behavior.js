@@ -910,107 +910,113 @@ function createSearchBox(searchURL) {
 // structured form submission handling
 //   see http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
 function buildFormTree(form) {
-    // I initially tried to use an associative array with DOM elemnets as keys
-    // but that doesn't seem to work neither on IE nor Firefox.
-    // so I switch back to adding a dynamic property on DOM.
-    form.formDom = {}; // root object
+    try {
+        // I initially tried to use an associative array with DOM elemnets as keys
+        // but that doesn't seem to work neither on IE nor Firefox.
+        // so I switch back to adding a dynamic property on DOM.
+        form.formDom = {}; // root object
 
-    var doms = []; // DOMs that we added 'formDom' for.
-    doms.push(form);
+        var doms = []; // DOMs that we added 'formDom' for.
+        doms.push(form);
 
-    function addProperty(parent,name,value) {
-        // abc.def.ghi -> ghi
-        var idx = name.lastIndexOf('.');
-        if(idx>=0)  name = name.substring(idx+1);
-        
-        if(parent[name]!=null) {
-            if(parent[name].push==null) // is this array?
-                parent[name] = [ parent[name] ];
-            parent[name].push(value);
-        } else {
-            parent[name] = value;
+        function addProperty(parent,name,value) {
+            // abc.def.ghi -> ghi
+            var idx = name.lastIndexOf('.');
+            if(idx>=0)  name = name.substring(idx+1);
+
+            if(parent[name]!=null) {
+                if(parent[name].push==null) // is this array?
+                    parent[name] = [ parent[name] ];
+                parent[name].push(value);
+            } else {
+                parent[name] = value;
+            }
         }
-    }
 
-    // find the grouping parent node, which will have @name.
-    // then return the corresponding object in the map
-    function findParent(e) {
-        while(e!=form) {
-            e = e.parentNode;
+        // find the grouping parent node, which will have @name.
+        // then return the corresponding object in the map
+        function findParent(e) {
+            while(e!=form) {
+                e = e.parentNode;
 
-            // this is used to create a group where no single containing parent node exists,
-            // like <optionalBlock>
-            var nameRef = e.getAttribute("nameRef");
-            if(nameRef!=null)
-                e = $(nameRef);
-            
-            var name = e.getAttribute("name");
-            if(name!=null) {
-                if(e.tagName=="INPUT" && !e.checked)
-                    return {};  // field is not active
+                // this is used to create a group where no single containing parent node exists,
+                // like <optionalBlock>
+                var nameRef = e.getAttribute("nameRef");
+                if(nameRef!=null)
+                    e = $(nameRef);
 
-                var m = e.formDom;
-                if(m==null) {
-                    // this is a new grouping node
-                    doms.push(e);
-                    e.formDom = m = {};
-                    addProperty(findParent(e), name, m);
+                var name = e.getAttribute("name");
+                if(name!=null) {
+                    if(e.tagName=="INPUT" && !e.checked)
+                        return {};  // field is not active
+
+                    var m = e.formDom;
+                    if(m==null) {
+                        // this is a new grouping node
+                        doms.push(e);
+                        e.formDom = m = {};
+                        addProperty(findParent(e), name, m);
+                    }
+                    return m;
                 }
-                return m;
             }
+
+            return form.formDom; // guaranteed non-null
         }
 
-        return form.formDom; // guaranteed non-null
-    }
+        var jsonElement = null;
 
-    var jsonElement = null;
-
-    for( var i=0; i<form.elements.length; i++ ) {
-        var e = form.elements[i];
-        if(e.name=="json") {
-            jsonElement = e;
-            continue;
-        }
-        var p;
-        var type = e.getAttribute("type");
-        if(type==null)  type="";
-        switch(type.toLowerCase()) {
-        case "button":
-        case "submit":
-            break;
-        case "checkbox":
-            p = findParent(e);
-            if(!e.groupingNode)
-                addProperty(p, e.name, e.checked);
-            else {
-                if(e.checked)
-                    addProperty(p, e.name, e.formDom = {});
+        for( var i=0; i<form.elements.length; i++ ) {
+            var e = form.elements[i];
+            if(e.name=="json") {
+                jsonElement = e;
+                continue;
             }
-            break;
-        case "radio":
-            if(!e.checked)  break;
-            if(e.groupingNode) {
+            if(e.tagName=="fieldset")
+                continue;
+            var p;
+            var type = e.getAttribute("type");
+            if(type==null)  type="";
+            switch(type.toLowerCase()) {
+            case "button":
+            case "submit":
+                break;
+            case "checkbox":
                 p = findParent(e);
-                addProperty(p, e.name, e.formDom = { value: e.value });
+                if(!e.groupingNode)
+                    addProperty(p, e.name, e.checked);
+                else {
+                    if(e.checked)
+                        addProperty(p, e.name, e.formDom = {});
+                }
+                break;
+            case "radio":
+                if(!e.checked)  break;
+                if(e.groupingNode) {
+                    p = findParent(e);
+                    addProperty(p, e.name, e.formDom = { value: e.value });
+                    break;
+                }
+
+                // otherwise fall through
+            default:
+                p = findParent(e);
+                addProperty(p, e.name, e.value);
                 break;
             }
-
-            // otherwise fall through
-        default:
-            p = findParent(e);
-            addProperty(p, e.name, e.value);
-            break;
         }
+
+        jsonElement.value = Object.toJSON(form.formDom);
+
+        // clean up
+        for( i=0; i<doms.length; i++ )
+            doms[i].formDom = null;
+
+
+        return jsonElement.value;
+    } catch(e) {
+        alert(e);
     }
-
-    jsonElement.value = Object.toJSON(form.formDom);
-
-    // clean up
-    for( i=0; i<doms.length; i++ )
-        doms[i].formDom = null;
-    
-
-    return jsonElement.value;
 }
 
 // this used to be in prototype.js but it must have been removed somewhere between 1.4.0 to 1.5.1
