@@ -456,7 +456,7 @@ public class Functions {
         for (Descriptor<T> b : list) {
             if (b instanceof BuildStepDescriptor) {
                 BuildStepDescriptor bsd = (BuildStepDescriptor) b;
-                if(bsd.isApplicable(project))
+                if(bsd.isApplicable(project.getClass()))
                     result.add(b);
             } else {
                 // old plugins built before 1.150 may not implement BuildStepDescriptor

@@ -188,7 +188,8 @@ public class BuildTrigger extends Publisher {
                 formData.getBoolean("evenIfUnstable"));
         }
 
-        public boolean isApplicable(AbstractProject<?,?> item) {
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
 

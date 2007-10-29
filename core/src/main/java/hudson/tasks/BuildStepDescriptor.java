@@ -24,5 +24,5 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
      * @return
      *      true to allow user to configure this post-promotion task for the given project.
      */
-    public abstract boolean isApplicable(AbstractProject<?,?> item);
+    public abstract boolean isApplicable(Class<? extends AbstractProject> jobType);
 }
