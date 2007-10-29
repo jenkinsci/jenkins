@@ -1,10 +1,14 @@
 <!--
   Outer most tag for creating a heterogeneous list, where the user can add different contents.
 
-  Attributes:
-    name:  form name that receives an array for all the items in the heterogeneous list.
-    items: existing items to be displayed
-    descriptors: all types that the user can add.
+  Mandatory attributes:
+    name:         form name that receives an array for all the items in the heterogeneous list.
+    items:        existing items to be displayed
+    descriptors:  all types that the user can add.
+
+ Optional attributes:
+   addCaption:    caption of the 'add' button.
+   deleteCaption: caption of the 'delete' button.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="hetero-list-container">
@@ -18,7 +22,7 @@
           <st:include from="${descriptor}" page="${descriptor.configPage}" />
           <f:block>
             <div align="right">
-              <f:repeatableDeleteButton />
+              <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
             </div>
           </f:block>
         </table>
@@ -36,7 +40,7 @@
             <st:include from="${descriptor}" page="${descriptor.configPage}" />
             <f:block>
               <div align="right">
-                <f:repeatableDeleteButton />
+                <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
               </div>
             </f:block>
           </table>
@@ -45,7 +49,7 @@
     </div>
 
     <div>
-      <input type="button" value="Add" class="hetero-list-add" />
+      <input type="button" value="${h.defaulted(attrs.addCaption,'Add')}" class="hetero-list-add" />
     </div>
   </div>
 </j:jelly>
