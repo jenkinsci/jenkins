@@ -26,6 +26,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.json.JSONObject;
+
 /**
  * Triggers builds of other projects.
  *
@@ -147,7 +149,7 @@ public class BuildTrigger extends Publisher {
 
     public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
-    public static class DescriptorImpl extends Descriptor<Publisher> {
+    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public DescriptorImpl() {
             super(BuildTrigger.class);
 
@@ -180,11 +182,14 @@ public class BuildTrigger extends Publisher {
             return "/help/project-config/downstream.html";
         }
 
-        public Publisher newInstance(StaplerRequest req) {
+        public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new BuildTrigger(
-                req.getParameter("buildTrigger.childProjects"),
-                req.getParameter("buildTrigger.evenIfUnstable")!=null
-                );
+                formData.getString("buildTrigger.childProjects"),
+                formData.getBoolean("buildTrigger.evenIfUnstable"));
+        }
+
+        public boolean isApplicable(AbstractProject<?,?> item) {
+            return true;
         }
 
         /**
