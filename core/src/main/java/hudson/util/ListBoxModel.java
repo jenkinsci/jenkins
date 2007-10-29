@@ -91,6 +91,10 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> {
             this(name,value,false);
         }
 
+        public Option(String name) {
+            this(name,name,false);
+        }
+
         public Option(String name, String value, boolean selected) {
             this.name = name;
             this.value = value;
