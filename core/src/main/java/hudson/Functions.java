@@ -460,9 +460,7 @@ public class Functions {
                     result.add(b);
             } else {
                 // old plugins built before 1.150 may not implement BuildStepDescriptor
-                if(project instanceof Project) {
-                    result.add(b);
-                }
+                result.add(b);
             }
         }
         return result;

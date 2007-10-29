@@ -32,8 +32,7 @@ public class BuildWrappers {
                     result.add(bwd);
             } else {
                 // old BuildWrapper that doesn't implement BuildWrapperDescriptor
-                if(project instanceof Project)
-                    result.add(w);
+                result.add(w);
             }
         }
         return result;
