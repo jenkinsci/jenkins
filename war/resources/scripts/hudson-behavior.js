@@ -845,6 +845,10 @@ function updateListBox(listBox,url) {
                 if(opts[i].selected)
                     l.selectedIndex = i;
             }
+        },
+        onFailure: function(rsp) {
+            var l = $(listBox);
+            l.options[0] = null;
         }
     });
 }
