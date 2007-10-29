@@ -386,7 +386,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * Gets all the builds.
      *
      * @return
-     *      never null. The first entry is the latest buildCommand.
+     *      never null. The first entry is the latest build.
      */
     public List<RunT> getBuilds() {
         return new ArrayList<RunT>(_getRuns().values());
