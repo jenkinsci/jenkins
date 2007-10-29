@@ -1,7 +1,13 @@
 package hudson.model;
 
 import hudson.ExtensionPoint;
+import hudson.Launcher;
 import hudson.Plugin;
+import hudson.tasks.BuildStep;
+import hudson.tasks.Builder;
+import hudson.tasks.Publisher;
+
+import java.io.IOException;
 
 /**
  * Extensible property of {@link Job}.
@@ -16,12 +22,18 @@ import hudson.Plugin;
  * Within this page, the {@link JobProperty} instance is available
  * as <tt>instance</tt> variable (while <tt>it</tt> refers to {@link Job}.
  *
+ * <p>
+ * Starting 1.150, {@link JobProperty} implements {@link BuildStep},
+ * meaning it gets the same hook as {@link Publisher} and {@link Builder}.
+ * The primary intention of this mechanism is so that {@link JobProperty}s
+ * can add actions to the new build.
+ *
  *
  * @author Kohsuke Kawaguchi
  * @see JobPropertyDescriptor
  * @since 1.72
  */
-public abstract class JobProperty<J extends Job<?,?>> implements Describable<JobProperty<?>>, ExtensionPoint {
+public abstract class JobProperty<J extends Job<?,?>> implements Describable<JobProperty<?>>, BuildStep, ExtensionPoint {
     /**
      * The {@link Job} object that owns this property.
      * This value will be set by the Hudson code.
@@ -47,5 +59,21 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
      */
     public Action getJobAction(J job) {
         return null;
+    }
+
+//
+// default no-op implementation
+//
+
+    public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener) {
+        return true;
+    }
+
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        return true;
+    }
+
+    public final Action getProjectAction(AbstractProject<?,?> project) {
+        return getJobAction((J)project);
     }
 }

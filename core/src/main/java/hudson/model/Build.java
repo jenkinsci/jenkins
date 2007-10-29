@@ -103,6 +103,8 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
     
     protected class RunnerImpl extends AbstractRunner {
         protected Result doRun(BuildListener listener) throws Exception {
+            if(!preBuild(listener,project.getProperties()))
+                return Result.FAILURE;
             if(!preBuild(listener,project.getBuilders()))
                 return Result.FAILURE;
             if(!preBuild(listener,project.getPublishers()))
@@ -133,6 +135,8 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         public void post2(BuildListener listener) throws IOException, InterruptedException {
             // run all of them even if one of them failed
             for( BuildStep bs : project.getPublishers().values() )
+                bs.perform(Build.this, launcher, listener);
+            for( BuildStep bs : project.getProperties().values() )
                 bs.perform(Build.this, launcher, listener);
         }
 
