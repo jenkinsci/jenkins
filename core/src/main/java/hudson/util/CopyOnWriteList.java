@@ -113,6 +113,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         dst.addAll(core);
     }
 
+    public boolean isEmpty() {
+        return core.isEmpty();
+    }
+
     /**
      * {@link Converter} implementation for XStream.
      */
