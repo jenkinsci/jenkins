@@ -1,9 +1,10 @@
 <!--
   Link to a build. Used by fingerprint/index.jsp
 
-	<%@ attribute name="jobName" type="java.lang.String" %>
-	<%@ attribute name="job" type="hudson.model.Job" required="true" %>
-	<%@ attribute name="number" type="java.lang.Integer" required="true" %>
+  Attributes:
+    jobName    name of the job. Can be omitted if @job is specified.
+    job        A 'job' object. Can be omitted if @jobName is specified.
+    number     build number to link to.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set var="jobName_" value="${h.appendSpaceIfNotNull(jobName)}"/>
