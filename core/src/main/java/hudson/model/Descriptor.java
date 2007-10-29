@@ -259,13 +259,18 @@ public abstract class Descriptor<T extends Describable<T>> {
      *      The JSON property name for 'formData' that represents the data for the list of describables.
      * @param descriptors
      *      List of descriptors to create instances from.
+     * @return
+     *      Can be empty but never null.
      */
     public static <T extends Describable<T>>
     List<T> newInstancesFromHeteroList(StaplerRequest req, JSONObject formData, String key,
                 Collection<? extends Descriptor<T>> descriptors) throws FormException {
-        JSONArray a = JSONArray.fromObject(formData.get(key));
 
         List<T> items = new ArrayList<T>();
+
+        if(!formData.has(key))   return items;
+        JSONArray a = JSONArray.fromObject(formData.get(key));
+
         for (Object o : a) {
             JSONObject jo = (JSONObject)o;
             String kind = jo.getString("kind");
