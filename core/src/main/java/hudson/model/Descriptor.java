@@ -2,19 +2,21 @@ package hudson.model;
 
 import hudson.XmlFile;
 import hudson.scm.CVSSCM;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import sun.security.krb5.internal.crypto.Des;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import net.sf.json.JSONObject;
 
 /**
  * Metadata about a configurable instance.
@@ -244,6 +246,44 @@ public abstract class Descriptor<T extends Describable<T>> {
             m.put(d.getDescriptor(),d);
         }
         return m;
+    }
+
+    /**
+     * Used to build {@link Describable} instance list from &lt;f:hetero-list> tag.
+     *
+     * @param req
+     *      Request that represents the form submission.
+     * @param formData
+     *      Structured form data that represents the contains data for the list of describables.
+     * @param key
+     *      The JSON property name for 'formData' that represents the data for the list of describables.
+     * @param descriptors
+     *      List of descriptors to create instances from.
+     */
+    public static <T extends Describable<T>>
+    List<T> newInstancesFromHeteroList(StaplerRequest req, JSONObject formData, String key,
+                Collection<? extends Descriptor<T>> descriptors) throws FormException {
+        JSONArray a = JSONArray.fromObject(formData.get(key));
+
+        List<T> items = new ArrayList<T>();
+        for (Object o : a) {
+            JSONObject jo = (JSONObject)o;
+            String kind = jo.getString("kind");
+            items.add(find(descriptors,kind).newInstance(req,jo));
+        }
+
+        return items;
+    }
+
+    /**
+     * Finds a descriptor from a collection by its display name.
+     */
+    public static <T extends Descriptor> T find(Collection<? extends T> list, String displayName) {
+        for (T d : list) {
+            if(d.getDisplayName().equals(displayName))
+                return d;
+        }
+        return null;
     }
 
     public static final class FormException extends Exception {
