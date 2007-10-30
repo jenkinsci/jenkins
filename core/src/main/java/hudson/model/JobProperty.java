@@ -41,6 +41,14 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
      */
     protected transient J owner;
 
+    /**
+     * Hook for performing post-initialization action.
+     *
+     * <p>
+     * This method is invoked in two cases. One is when the {@link Job} that owns
+     * this property is loaded from disk, and the other is when a job is re-configured
+     * and all the {@link JobProperty} instances got re-created.
+     */
     protected void setOwner(J owner) {
         this.owner = owner;
     }
