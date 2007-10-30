@@ -34,7 +34,7 @@ public final class Result implements Serializable, CustomExportedBean {
     /**
      * The build was manually aborted.
      */
-    public static final Result ABORTED = new Result("ABORTED",BallColor.GREY,4);
+    public static final Result ABORTED = new Result("ABORTED",BallColor.ABORTED,4);
 
     private final String name;
 

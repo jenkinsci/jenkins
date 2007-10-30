@@ -716,7 +716,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public String getBuildStatusUrl() {
-        return getIconColor()+".gif";
+        return getIconColor().getImage();
     }
 
     public static class Summary {

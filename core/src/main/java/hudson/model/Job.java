@@ -1,8 +1,8 @@
 package hudson.model;
 
 import hudson.ExtensionPoint;
-import hudson.Util;
 import hudson.StructuredForm;
+import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.search.QuickSilver;
@@ -10,7 +10,6 @@ import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.search.SearchItems;
-import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
 import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
@@ -22,8 +21,9 @@ import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
 import hudson.util.TextFile;
 import hudson.widgets.HistoryWidget;
-import hudson.widgets.Widget;
 import hudson.widgets.HistoryWidget.Adapter;
+import hudson.widgets.Widget;
+import net.sf.json.JSONObject;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.jfree.chart.ChartFactory;
@@ -42,7 +42,8 @@ import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -52,8 +53,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-
-import net.sf.json.JSONObject;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -744,7 +743,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     public String getBuildStatusUrl() {
-        return getIconColor()+".gif";
+        return getIconColor().getImage();
     }
 
     /**
