@@ -1,7 +1,11 @@
 package hudson.model;
 
+import org.kohsuke.stapler.StaplerRequest;
+
 import java.util.List;
 import java.util.ArrayList;
+
+import net.sf.json.JSONObject;
 
 /**
  * {@link Descriptor} for {@link JobProperty}.
@@ -13,6 +17,16 @@ import java.util.ArrayList;
 public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     protected JobPropertyDescriptor(Class<? extends JobProperty<?>> clazz) {
         super(clazz);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     *      null to avoid setting an instance of {@link JobProperty} to the target project.
+     */
+    public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        return super.newInstance(req, formData);
     }
 
     /**
