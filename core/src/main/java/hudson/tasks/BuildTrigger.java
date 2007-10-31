@@ -185,7 +185,7 @@ public class BuildTrigger extends Publisher {
         public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new BuildTrigger(
                 formData.getString("childProjects"),
-                formData.getBoolean("evenIfUnstable"));
+                formData.has("evenIfUnstable") && formData.getBoolean("evenIfUnstable"));
         }
 
         @Override
