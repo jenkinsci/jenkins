@@ -193,9 +193,9 @@ public class BuildTrigger extends Publisher {
             return true;
         }
 
-        public boolean showEvenIfUnstableOption(AbstractProject p) {
+        public boolean showEvenIfUnstableOption(Class<? extends AbstractProject> jobType) {
             // UGLY: for promotion process, this option doesn't make sense. 
-            return !p.getClass().getName().contains("PromotionProcess");
+            return !jobType.getName().contains("PromotionProcess");
         }
 
         /**

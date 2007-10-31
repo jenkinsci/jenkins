@@ -6,9 +6,12 @@
     descriptors   hudson.model.Descriptor collection to display  (required)
     instances     Map<Descriptor,Describable>. Instances to display as current settings (required)
     varName       Used as a variable name as well as block name (required)
+    targetType    the type for which descriptors will be configured.
+                  default to ${it.class} (optional)
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:section title="${attrs.title}">
+  <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
+  <f:section title="${attrs.title}">
     <d:invokeBody />
 	  <j:forEach var="d" items="${descriptors}" varStatus="loop">
       <f:optionalBlock name="${varName}${loop.index}" help="${d.helpFile}"

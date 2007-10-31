@@ -9,8 +9,11 @@
  Optional attributes:
    addCaption:    caption of the 'add' button.
    deleteCaption: caption of the 'delete' button.
+   targetType:    the type for which descriptors will be configured.
+                  default to ${it.class} (optional)
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
   <div class="hetero-list-container">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}">
