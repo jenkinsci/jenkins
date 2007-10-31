@@ -38,88 +38,104 @@ public class WebAppMain implements ServletContextListener {
      * Creates the sole instance of {@link Hudson} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
-        final ServletContext context = event.getServletContext();
-
-        // quick check to see if we (seem to) have enough permissions to run. (see #719)
-        JVM jvm;
         try {
-            jvm = new JVM();
-            new URLClassLoader(new URL[0],getClass().getClassLoader());
-        } catch(SecurityException e) {
-            context.setAttribute("app",new InsufficientPermissionDetected(e));
-            return;
-        }
+            final ServletContext context = event.getServletContext();
 
-        installLogger();
+            // quick check to see if we (seem to) have enough permissions to run. (see #719)
+            JVM jvm;
+            try {
+                jvm = new JVM();
+                new URLClassLoader(new URL[0],getClass().getClassLoader());
+            } catch(SecurityException e) {
+                context.setAttribute("app",new InsufficientPermissionDetected(e));
+                return;
+            }
 
-        final File home = getHomeDir(event).getAbsoluteFile();
-        home.mkdirs();
-        System.out.println("hudson home directory: "+home);
+            installLogger();
 
-        // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
-        if (! home.exists()) {
-            context.setAttribute("app",new NoHomeDir(home));
-            return;
-        }
+            final File home = getHomeDir(event).getAbsoluteFile();
+            home.mkdirs();
+            System.out.println("hudson home directory: "+home);
 
-        // make sure that we are using XStream in the "enhanced" (JVM-specific) mode
-        if(jvm.bestReflectionProvider().getClass()==PureJavaReflectionProvider.class) {
-            // nope
-            context.setAttribute("app",new IncompatibleVMDetected());
-            return;
-        }
+            // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
+            if (! home.exists()) {
+                context.setAttribute("app",new NoHomeDir(home));
+                return;
+            }
 
-        // make sure this is servlet 2.4 container or above
-        try {
-            ServletResponse.class.getMethod("setCharacterEncoding",String.class);
-        } catch (NoSuchMethodException e) {
-            context.setAttribute("app,",new IncompatibleServletVersionDetected());
-            return;
-        }
+            // make sure that we are using XStream in the "enhanced" (JVM-specific) mode
+            if(jvm.bestReflectionProvider().getClass()==PureJavaReflectionProvider.class) {
+                // nope
+                context.setAttribute("app",new IncompatibleVMDetected());
+                return;
+            }
 
-        // Tomcat breaks XSLT with JDK 5.0 and onward. Check if that's the case, and if so,
-        // try to correct it
-        try {
-            TransformerFactory.newInstance();
-            // if this works we are all happy
-        } catch (TransformerFactoryConfigurationError x) {
-            // no it didn't.
-            Logger logger = Logger.getLogger(WebAppMain.class.getName());
+            // make sure this is servlet 2.4 container or above
+            try {
+                ServletResponse.class.getMethod("setCharacterEncoding",String.class);
+            } catch (NoSuchMethodException e) {
+                context.setAttribute("app,",new IncompatibleServletVersionDetected());
+                return;
+            }
 
-            logger.log(Level.WARNING, "XSLT not configured correctly. Hudson will try to fix this. See http://issues.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
-            System.setProperty(TransformerFactory.class.getName(),"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
+            // Tomcat breaks XSLT with JDK 5.0 and onward. Check if that's the case, and if so,
+            // try to correct it
             try {
                 TransformerFactory.newInstance();
-                logger.info("XSLT is set to the JAXP RI in JRE");
-            } catch(TransformerFactoryConfigurationError y) {
-                logger.log(Level.SEVERE, "Failed to correct the problem.");
-            }
-        }
+                // if this works we are all happy
+            } catch (TransformerFactoryConfigurationError x) {
+                // no it didn't.
+                Logger logger = Logger.getLogger(WebAppMain.class.getName());
 
-        context.setAttribute("app",new HudsonIsLoading());
-
-        new Thread("hudson initialization thread") {
-            public void run() {
-                computeVersion(context);
-
+                logger.log(Level.WARNING, "XSLT not configured correctly. Hudson will try to fix this. See http://issues.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
+                System.setProperty(TransformerFactory.class.getName(),"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
                 try {
-                    context.setAttribute("app",new Hudson(home,context));
-                } catch( IOException e ) {
-                    throw new Error(e);
+                    TransformerFactory.newInstance();
+                    logger.info("XSLT is set to the JAXP RI in JRE");
+                } catch(TransformerFactoryConfigurationError y) {
+                    logger.log(Level.SEVERE, "Failed to correct the problem.");
                 }
-
-                Trigger.init(); // start running trigger
-
-                // trigger the loading of changelogs in the background,
-                // but give the system 10 seconds so that the first page
-                // can be served quickly
-                Trigger.timer.schedule(new SafeTimerTask() {
-                    public void doRun() {
-                        User.get("nobody").getBuilds();
-                    }
-                }, 1000*10);
             }
-        }.start();
+
+            context.setAttribute("app",new HudsonIsLoading());
+
+            new Thread("hudson initialization thread") {
+                public void run() {
+                    try {
+                        computeVersion(context);
+
+                        try {
+                            context.setAttribute("app",new Hudson(home,context));
+                        } catch( IOException e ) {
+                            throw new Error(e);
+                        }
+
+                        Trigger.init(); // start running trigger
+
+                        // trigger the loading of changelogs in the background,
+                        // but give the system 10 seconds so that the first page
+                        // can be served quickly
+                        Trigger.timer.schedule(new SafeTimerTask() {
+                            public void doRun() {
+                                User.get("nobody").getBuilds();
+                            }
+                        }, 1000*10);
+                    } catch (Error e) {
+                        LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+                        throw e;
+                    } catch (RuntimeException e) {
+                        LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+                        throw e;
+                    }
+                }
+            }.start();
+        } catch (Error e) {
+            LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+            throw e;
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+            throw e;
+        }
     }
 
     protected void computeVersion(ServletContext context) {
@@ -203,4 +219,6 @@ public class WebAppMain implements ServletContextListener {
         // the whole web app will never be undepoyed.
         Logger.getLogger("hudson").removeHandler(handler);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(WebAppMain.class.getName());
 }
