@@ -193,6 +193,11 @@ public class BuildTrigger extends Publisher {
             return true;
         }
 
+        public boolean showEvenIfUnstableOption(AbstractProject p) {
+            // UGLY: for promotion process, this option doesn't make sense. 
+            return !p.getClass().getName().contains("PromotionProcess");
+        }
+
         /**
          * Form validation method.
          */

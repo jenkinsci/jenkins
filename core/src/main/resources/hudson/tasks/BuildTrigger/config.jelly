@@ -3,8 +3,10 @@
 	  <f:textbox name="buildTrigger.childProjects" value="${instance.childProjectsValue}"
       checkUrl="'${rootURL}/publisher/BuildTrigger/check?value='+escape(this.value)"/>
 	</f:entry>
-  <f:entry title="">
-    <f:checkbox id="buildTrigger.evenIfUnstable" name="buildTrigger.evenIfUnstable" checked="${instance.threshold.toString()=='UNSTABLE'}" />
-    <label for="buildTrigger.evenIfUnstable">Trigger even if the build is unstable</label>
-  </f:entry>
+  <j:if test="${descriptor.showEvenIfUnstableOption(it)}">
+    <f:entry title="">
+      <f:checkbox id="buildTrigger.evenIfUnstable" name="buildTrigger.evenIfUnstable" checked="${instance.threshold.toString()=='UNSTABLE'}" />
+      <label for="buildTrigger.evenIfUnstable">Trigger even if the build is unstable</label>
+    </f:entry>
+  </j:if>
 </j:jelly>
