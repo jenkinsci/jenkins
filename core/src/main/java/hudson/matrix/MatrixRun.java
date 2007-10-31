@@ -50,15 +50,8 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
 
     @Override
     public Map<String,String> getBuildVariables() {
-        AxisList axes = getParent().getParent().getAxes();
-
         // pick up user axes
-        Map<String,String> r = new HashMap<String,String>();
-        for (Entry<String,String> e : getParent().getCombination().entrySet()) {
-            if(!axes.find(e.getKey()).isSystem())
-                r.put(e.getKey(),e.getValue());
-        }
-        return r;
+        return new HashMap<String,String>(getParent().getCombination());
     }
 
     @Override
