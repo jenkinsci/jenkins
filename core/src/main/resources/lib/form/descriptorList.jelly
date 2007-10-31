@@ -1,10 +1,11 @@
 <!--
   Generate config pages from a list of Descriptors into a section.
 
-	<%@ attribute name="title" required="true" description="caption for the section" %>
-	<%@ attribute name="descriptors" required="true" type="hudson.model.Descriptor[]" description="descriptors" %>
-	<%@ attribute name="instances" required="true" type="java.util.Map" description="instances keyed by their descriptors" %>
-	<%@ attribute name="varName" required="true" type="java.lang.String" description="used as a variable name as well as block name" %>
+  Attributes:
+    title         caption for the section (required)
+    descriptors   hudson.model.Descriptor collection to display  (required)
+    instances     Map<Descriptor,Describable>. Instances to display as current settings (required)
+    varName       Used as a variable name as well as block name (required)
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<f:section title="${attrs.title}">
