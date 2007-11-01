@@ -33,6 +33,7 @@ import java.net.URL;
  */
 public class WebAppMain implements ServletContextListener {
     private final RingBufferLogHandler handler = new RingBufferLogHandler();
+    private static final String APP = "app";
 
     /**
      * Creates the sole instance of {@link Hudson} and register it to the {@link ServletContext}.
@@ -47,7 +48,7 @@ public class WebAppMain implements ServletContextListener {
                 jvm = new JVM();
                 new URLClassLoader(new URL[0],getClass().getClassLoader());
             } catch(SecurityException e) {
-                context.setAttribute("app",new InsufficientPermissionDetected(e));
+                context.setAttribute(APP,new InsufficientPermissionDetected(e));
                 return;
             }
 
@@ -59,14 +60,14 @@ public class WebAppMain implements ServletContextListener {
 
             // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
             if (! home.exists()) {
-                context.setAttribute("app",new NoHomeDir(home));
+                context.setAttribute(APP,new NoHomeDir(home));
                 return;
             }
 
             // make sure that we are using XStream in the "enhanced" (JVM-specific) mode
             if(jvm.bestReflectionProvider().getClass()==PureJavaReflectionProvider.class) {
                 // nope
-                context.setAttribute("app",new IncompatibleVMDetected());
+                context.setAttribute(APP,new IncompatibleVMDetected());
                 return;
             }
 
@@ -74,7 +75,7 @@ public class WebAppMain implements ServletContextListener {
             try {
                 ServletResponse.class.getMethod("setCharacterEncoding",String.class);
             } catch (NoSuchMethodException e) {
-                context.setAttribute("app,",new IncompatibleServletVersionDetected());
+                context.setAttribute(APP,new IncompatibleServletVersionDetected());
                 return;
             }
 
@@ -97,7 +98,7 @@ public class WebAppMain implements ServletContextListener {
                 }
             }
 
-            context.setAttribute("app",new HudsonIsLoading());
+            context.setAttribute(APP,new HudsonIsLoading());
 
             new Thread("hudson initialization thread") {
                 public void run() {
@@ -105,7 +106,7 @@ public class WebAppMain implements ServletContextListener {
                         computeVersion(context);
 
                         try {
-                            context.setAttribute("app",new Hudson(home,context));
+                            context.setAttribute(APP,new Hudson(home,context));
                         } catch( IOException e ) {
                             throw new Error(e);
                         }
