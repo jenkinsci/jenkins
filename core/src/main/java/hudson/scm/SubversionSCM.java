@@ -1024,6 +1024,7 @@ public class SubversionSCM extends SCM implements Serializable {
                 rsp.sendRedirect("credentialOK");
             } catch (SVNException e) {
                 req.setAttribute("message",e.getErrorMessage());
+                req.setAttribute("exception",e);
                 rsp.forward(Hudson.getInstance(),"error",req);
             } finally {
                 if(keyFile!=null)
