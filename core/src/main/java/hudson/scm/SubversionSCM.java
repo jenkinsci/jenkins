@@ -889,16 +889,20 @@ public class SubversionSCM extends SCM implements Serializable {
             public SVNAuthentication requestClientAuthentication(String kind, SVNURL url, String realm, SVNErrorMessage errorMessage, SVNAuthentication previousAuth, boolean authMayBeStored) {
                 Credential cred = source.getCredential(realm);
                 LOGGER.fine(String.format("requestClientAuthentication(%s,%s,%s)=>%s",kind,url,realm,cred));
-                if(cred==null) {
-                    // this happens with file:// URL. The base class does this, too.
-                    if (ISVNAuthenticationManager.USERNAME.equals(kind))
-                        // user auth shouldn't be null.
-                        return new SVNUserNameAuthentication("",false);
-                    return null;
-                }
 
                 try {
-                    return cred.createSVNAuthentication(kind);
+                    SVNAuthentication auth=null;
+                    if(cred!=null)
+                        auth = cred.createSVNAuthentication(kind);
+
+                    if(auth==null && ISVNAuthenticationManager.USERNAME.equals(kind)) {
+                        // this happens with file:// URL and svn+ssh (in this case this method gets invoked twice.)
+                        // The base class does this, too.
+                        // user auth shouldn't be null.
+                        return new SVNUserNameAuthentication("",false);
+                    }
+
+                    return auth;
                 } catch (SVNException e) {
                     logger.log(Level.SEVERE, "Failed to authorize",e);
                     throw new RuntimeException("Failed to authorize",e);
@@ -987,6 +991,14 @@ public class SubversionSCM extends SCM implements Serializable {
 
                     @Override
                     public SVNAuthentication getFirstAuthentication(String kind, String realm, SVNURL url) throws SVNException {
+                        if(kind.equals(ISVNAuthenticationManager.USERNAME))
+                            // when using svn+ssh, svnkit first asks for ISVNAuthenticationManager.SSH
+                            // authentication to connect via SSH, then calls this method one more time
+                            // to get the user name. Perhaps svn takes user name on its own, separate
+                            // from OS user name? In any case, we need to return the same user name.
+                            // I don't set the cred field here, so that the 1st credential for ssh
+                            // won't get clobbered.
+                            return new SVNUserNameAuthentication(username,false);
                         if(kind.equals(ISVNAuthenticationManager.PASSWORD))
                             cred = new PasswordCredential(username,password);
                         if(kind.equals(ISVNAuthenticationManager.SSH)) {
