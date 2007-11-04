@@ -187,18 +187,6 @@
             <enabled>false</enabled>
           </snapshots>
         </repository>
-        <!-- put java.net2 second, as it's faster than the https CVS access -->
-        <repository>
-          <id>java.net2</id>
-          <url>http://download.java.net/maven/2</url>
-          <releases>
-            <enabled>true</enabled>
-            <updatePolicy>never</updatePolicy>
-          </releases>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-        </repository>
         <!-- put hudson-libs last as it is the slowest to access -->
         <repository>
           <id>hudson-libs</id>
