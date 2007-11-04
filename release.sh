@@ -3,7 +3,8 @@
 # Kohsuke's automated release script. Sorry for my checking this in,
 # but Maven doesn't let me run release goals unless I have this in CVS.
 
-# make sure we have up to date workspace and M2 repo copy
+# make sure we have up to date workspace
+cvs -q update -Pd
 
 tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
 mvn -B -Dtag=$tag release:prepare || mvn install release:prepare
