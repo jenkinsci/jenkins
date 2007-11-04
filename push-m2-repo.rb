@@ -1,6 +1,4 @@
 #!/bin/ruby
-#m2repo="c:/kohsuke/Sun/java.net/m2-repo"
-m2repo=ARGV.shift
 ver=ARGV.shift
 
 
@@ -51,22 +49,4 @@ Dir.chdir("../plugins") do
   end
   system "cvs commit -m 'bumping up POM version'" or fail
   system "mvn -N deploy" or fail
-end
-
-
-
-print "Pushing to maven repository\n"
-Dir.chdir(m2repo) do
-  Dir.chdir("org/jvnet/hudson/main") do
-	  Dir.glob("*") do |name|
-	    next unless File.directory?(name)
-      print "#{name}\n"
-      system "svn add #{name}/#{ver}" or fail
-	  end
-	  system "svn commit -m 'Hudson #{ver}'" || fail
-  end
-  Dir.chdir("org/jvnet/hudson/plugins/plugin") do
-    system "svn add #{ver}" or fail
-	  system "svn commit -m 'Hudson #{ver}'" || fail
-  end
 end

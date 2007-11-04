@@ -4,12 +4,6 @@
 # but Maven doesn't let me run release goals unless I have this in CVS.
 
 # make sure we have up to date workspace and M2 repo copy
-cvs -q update -Pd
-old=$PWD
-cd "$JAVANET_M2_REPO"
-cd org/jvnet/hudson
-svn update
-cd "$old"
 
 tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
 mvn -B -Dtag=$tag release:prepare || mvn install release:prepare
@@ -41,7 +35,7 @@ ruby update.changelog.rb $id < $WWW/changelog.html > $WWW/changelog.new
 mv $WWW/changelog.new $WWW/changelog.html
 
 # push changes to the maven repository
-ruby push-m2-repo.rb $JAVANET_M2_REPO $id
+ruby push-m2-repo.rb $id
 
 ./publish-javadoc.sh
 
