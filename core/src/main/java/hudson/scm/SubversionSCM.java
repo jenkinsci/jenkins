@@ -1,5 +1,6 @@
 package hudson.scm;
 
+import ch.ethz.ssh2.SCPClient;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
@@ -76,6 +77,7 @@ import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.ConsoleHandler;
 import java.util.regex.Pattern;
 
 /**
@@ -1209,6 +1211,11 @@ public class SubversionSCM extends SCM implements Serializable {
             // work around for http://www.nabble.com/Slow-SVN-Checkout-tf4486786.html
             if(System.getProperty("svnkit.symlinks")==null)
                 System.setProperty("svnkit.symlinks","false");
+
+            // disable the connection pooling, which causes problems like
+            // http://www.nabble.com/SSH-connection-problems-p12028339.html
+            if(System.getProperty("svnkit.ssh2.persistent")==null)
+                System.setProperty("svnkit.ssh2.persistent","false");
         }
     }
 
@@ -1237,4 +1244,22 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     private static final Logger LOGGER = Logger.getLogger(SubversionSCM.class.getName());
+
+    /**
+     * Enables trace logging of Ganymed SSH library.
+     * <p>
+     * Intended to be invoked from Groovy console.
+     */
+    public static void enableSshDebug(Level level) {
+        if(level==null)     level= Level.FINEST; // default
+        
+        Logger ganymedLogger = Logger.getLogger(SCPClient.class.getPackage().getName());
+        ganymedLogger.setLevel(level);
+        ganymedLogger.setUseParentHandlers(false);
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setLevel(level);
+        ganymedLogger.addHandler(handler);
+
+        ch.ethz.ssh2.log.Logger.logLevel = 100;
+    }
 }
