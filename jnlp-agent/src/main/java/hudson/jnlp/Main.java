@@ -4,12 +4,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.JOptionPane;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.util.logging.Logger;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class Main {
-
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
     public static void main(String[] args) {
         // see http://forum.java.sun.com/thread.jspa?threadID=706976&tstart=0
         // not sure if this is the cause, but attempting to fix
@@ -17,6 +18,14 @@ public class Main {
         // by overwriting the security manager.
         System.setSecurityManager(null);
 
+        boolean headlessMode = Boolean.getBoolean("hudson.agent.headless");
+        if (headlessMode) {
+            mainHeadless(args);
+        } else {
+            mainGui(args);
+        }
+    }
+    private static void mainGui(String[] args) {
         GUI.setUILookAndFeel();
         final MainDialog frame = new MainDialog();
         frame.setVisible(true);
@@ -41,6 +50,21 @@ public class Main {
                         System.exit(-1);
                     }
                 });
+            }
+        }, args[0], args[1], args[2], args[3]);
+        engine.start();
+    }
+    
+    public static void mainHeadless(String[] args) {
+        LOGGER.info("Hudson agent is running in headless mode.");
+        Engine engine = new Engine(new Listener() {
+            public void status(final String msg) {
+                LOGGER.info(msg);
+            }
+
+            public void error(final Throwable t) {
+                LOGGER.severe(t.getMessage());
+                System.exit(-1);
             }
         }, args[0], args[1], args[2], args[3]);
         engine.start();
