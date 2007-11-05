@@ -37,9 +37,9 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -860,11 +860,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Returns the map that contains environmental variables for this build.
-     *
+     * <p>
      * Used by {@link BuildStep}s that invoke external processes.
+     * <p>
+     * On Windows systems, environment variables are case-preserving but
+     * comparison/query is case insensitive (IOW, you can set 'Path' to something
+     * and you get the same value by doing '%PATH%'.)  So to implement this semantics
+     * the map returned from here is a {@link TreeMap} with a special comparator.
+     *
      */
     public Map<String,String> getEnvVars() {
-        Map<String,String> env = new HashMap<String,String>();
+        Map<String,String> env = new TreeMap<String,String>(CASE_INSENSITIVE_COMPARATOR);
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());
         env.put("BUILD_TAG","hudson-"+getParent().getName()+"-"+number);
@@ -940,4 +946,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public String getUrlName() { return null; }
         public String getWhyKeepLog() { return Run.this.getWhyKeepLog(); }
     }
+
+    /**
+     * Compares strings case insensitively.
+     */
+    private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new Comparator<String>() {
+        public int compare(String lhs, String rhs) {
+            return lhs.compareToIgnoreCase(rhs);
+        }
+    };
 }
