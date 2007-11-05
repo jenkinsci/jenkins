@@ -1,5 +1,10 @@
 package hudson.util;
 
+import hudson.remoting.Which;
+
+import java.io.File;
+import java.io.IOException;
+
 /**
  * Model object used to display the error top page if
  * we find out that the container doesn't support servlet 2.4.
@@ -10,4 +15,13 @@ package hudson.util;
  * @author Kohsuke Kawaguchi
  */
 public class IncompatibleServletVersionDetected {
+    private final Class servletClass;
+
+    public IncompatibleServletVersionDetected(Class servletClass) {
+        this.servletClass = servletClass;
+    }
+    
+    public File getWhereServletIsLoaded() throws IOException {
+        return Which.jarFile(servletClass);
+    }
 }

@@ -75,7 +75,7 @@ public class WebAppMain implements ServletContextListener {
             try {
                 ServletResponse.class.getMethod("setCharacterEncoding",String.class);
             } catch (NoSuchMethodException e) {
-                context.setAttribute(APP,new IncompatibleServletVersionDetected());
+                context.setAttribute(APP,new IncompatibleServletVersionDetected(ServletResponse.class));
                 return;
             }
 
