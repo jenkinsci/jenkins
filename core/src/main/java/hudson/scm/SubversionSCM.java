@@ -104,7 +104,6 @@ public class SubversionSCM extends SCM implements Serializable {
     private ModuleLocation[] locations = new ModuleLocation[0];
 
     private boolean useUpdate;
-    private String username;
     private final SubversionRepositoryBrowser browser;
 
     // No longer in use but left for serialization compatibility.
@@ -112,7 +111,7 @@ public class SubversionSCM extends SCM implements Serializable {
     private String modules;
 
     public SubversionSCM(String[] remoteLocations, String[] localLocations,
-            boolean useUpdate, String username, SubversionRepositoryBrowser browser) {
+                         boolean useUpdate, SubversionRepositoryBrowser browser) {
 
         List<ModuleLocation> modules = new ArrayList<ModuleLocation>();
         if (remoteLocations != null && localLocations != null) {
@@ -131,7 +130,6 @@ public class SubversionSCM extends SCM implements Serializable {
         locations = modules.toArray(new ModuleLocation[modules.size()]);
 
         this.useUpdate = useUpdate;
-        this.username = nullify(username);
         this.browser = browser;
     }
 
@@ -170,10 +168,6 @@ public class SubversionSCM extends SCM implements Serializable {
 
     public boolean isUseUpdate() {
         return useUpdate;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     @Override
@@ -930,8 +924,7 @@ public class SubversionSCM extends SCM implements Serializable {
                 req.getParameterValues("svn.location_remote"),
                 req.getParameterValues("svn.location_local"),
                 req.getParameter("svn_use_update") != null,
-                req.getParameter("svn_username"),
-                RepositoryBrowsers.createInstance(SubversionRepositoryBrowser.class, req, "svn.browser"));
+                    RepositoryBrowsers.createInstance(SubversionRepositoryBrowser.class, req, "svn.browser"));
         }
 
         /**
