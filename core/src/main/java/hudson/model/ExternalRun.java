@@ -45,6 +45,10 @@ public class ExternalRun extends Run<ExternalJob,ExternalRun> {
             public void post(BuildListener listener) {
                 // do nothing
             }
+
+            public void cleanUp(BuildListener listener) {
+                // do nothing
+            }
         });
     }
 
@@ -92,6 +96,10 @@ public class ExternalRun extends Run<ExternalJob,ExternalRun> {
             }
 
             public void post(BuildListener listener) {
+                // do nothing
+            }
+
+            public void cleanUp(BuildListener listener) {
                 // do nothing
             }
         });

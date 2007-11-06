@@ -108,6 +108,11 @@ public class BuildTrigger extends Publisher {
         return true;
     }
 
+    @Override
+    public boolean needsToRunAfterFinalized() {
+        return true;
+    }
+
     /**
      * Called from {@link Job#renameTo(String)} when a job is renamed.
      *

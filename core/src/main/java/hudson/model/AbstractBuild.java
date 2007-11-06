@@ -260,6 +260,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 culprits = r;
             }
         }
+
+        public void cleanUp(BuildListener listener) throws Exception {
+            // default is no-op
+        }
     }
 
     /**

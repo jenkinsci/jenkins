@@ -569,7 +569,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         /**
          * Performs the post-build action.
-         *
+         * <p>
          * This method is called after the status of the build is determined.
          * This is a good opportunity to do notifications based on the result
          * of the build. When this method is called, the build is not really
@@ -578,6 +578,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * by {@link Job#getLastSuccessfulBuild()}. 
          */
         void post( BuildListener listener ) throws Exception;
+
+        /**
+         * Performs final clean up action.
+         * <p>
+         * This method is called after {@link #post(BuildListener)},
+         * after the build result is fully finalized. This is the point
+         * where the build is already considered completed.
+         * <p>
+         * Among other things, this is often a necessary pre-condition
+         * before invoking other builds that depend on this build.
+         */
+        void cleanUp(BuildListener listener) throws Exception;
     }
 
     /**
@@ -591,14 +603,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if(result!=null)
             return;     // already built.
 
+        BuildListener listener=null;
+        PrintStream log = null;
+
         onStartBuilding();
         try {
             // to set the state to COMPLETE in the end, even if the thread dies abnormally.
             // otherwise the queue state becomes inconsistent
 
             long start = System.currentTimeMillis();
-            BuildListener listener=null;
-            PrintStream log = null;
 
             try {
                 try {
@@ -633,21 +646,35 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 handleFatalBuildProblem(listener,e);
                 result = Result.FAILURE;
             } finally {
+                long end = System.currentTimeMillis();
+                duration = end-start;
+
+                // mark the state as completed.
+                // the significance of doing this is that Hudson
+                // will now see this build as completed.
+                // things like triggering other builds requires this as pre-condition.
+                // see issue #980.
+                state = State.COMPLETED;
+
+                try {
+                    job.cleanUp(listener);
+                } catch (Exception e) {
+                    handleFatalBuildProblem(listener,e);
+                    // too late to update the result now
+                }
+
                 RunListener.fireCompleted(this,listener);
-            }
 
-            long end = System.currentTimeMillis();
-            duration = end-start;
+                if(listener!=null)
+                    listener.finished(result);
+                if(log!=null)
+                    log.close();
 
-            if(listener!=null)
-                listener.finished(result);
-            if(log!=null)
-                log.close();
-
-            try {
-                save();
-            } catch (IOException e) {
-                e.printStackTrace();
+                try {
+                    save();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             try {

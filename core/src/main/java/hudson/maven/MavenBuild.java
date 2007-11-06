@@ -290,6 +290,9 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
                     public void post(BuildListener listener) {
                     }
+
+                    public void cleanUp(BuildListener listener) {
+                    }
                 });
             }
         }
@@ -347,7 +350,9 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         public void post2(BuildListener listener) throws Exception {
             for (MavenReporter reporter : reporters)
                 reporter.end(MavenBuild.this,launcher,listener);
+        }
 
+        public void cleanUp(BuildListener listener) throws Exception {
             if(getResult().isBetterOrEqualTo(Result.SUCCESS))
                 scheduleDownstreamBuilds(listener,new HashSet<AbstractProject>());
         }
