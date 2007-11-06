@@ -331,6 +331,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Gets the string that says how long the build took to run.
      */
     public String getDurationString() {
+        if(isBuilding())
+            return Util.getTimeSpanString(System.currentTimeMillis()-timestamp.getTimeInMillis())+" and counting";
         return Util.getTimeSpanString(duration);
     }
 
