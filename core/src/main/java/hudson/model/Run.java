@@ -570,8 +570,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         /**
          * Performs the post-build action.
          *
-         * This method is called after the status of the build is determined
-         * and finalized.
+         * This method is called after the status of the build is determined.
+         * This is a good opportunity to do notifications based on the result
+         * of the build. When this method is called, the build is not really
+         * finalized yet, and the build is still considered in progress --- for example,
+         * even if the build is successful, this build still won't be picked up
+         * by {@link Job#getLastSuccessfulBuild()}. 
          */
         void post( BuildListener listener ) throws Exception;
     }
