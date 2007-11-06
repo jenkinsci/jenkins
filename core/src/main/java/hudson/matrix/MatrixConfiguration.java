@@ -113,7 +113,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         FilePath ws = node.getWorkspaceFor(getParent());
         if(ws==null)    return null;
         if(useShortWorkspaceName)
-            return ws.child(getCombination().digest());
+            return ws.child(getCombination().digest().substring(0,8));
         else
             return ws.child(getCombination().toString('/','/'));
     }
