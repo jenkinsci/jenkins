@@ -32,7 +32,9 @@ public enum BallColor {
     GREY_ANIME("grey_anime","In progress"),
 
     DISABLED("grey","Disabled"),
+    DISABLED_ANIME("grey_anime","In progress"),
     ABORTED("grey","Aborted"),
+    ABORTED_ANIME("grey_anime","In progress"),
     ;
 
     private final String description;
