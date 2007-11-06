@@ -569,6 +569,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         /**
          * Performs the post-build action.
+         *
+         * This method is called after the status of the build is determined
+         * and finalized.
          */
         void post( BuildListener listener ) throws Exception;
     }
