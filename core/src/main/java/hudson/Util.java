@@ -315,6 +315,8 @@ public class Util {
      *
      * @param source
      *      The stream will be closed by this method at the end of this method.
+     * @return
+     *      32-char wide string
      */
     public static String getDigestOf(InputStream source) throws IOException {
         try {
