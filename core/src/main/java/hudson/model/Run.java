@@ -101,8 +101,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected volatile transient State state;
 
     private static enum State {
+        /**
+         * Build is created/queued but we haven't started building it.
+         */
         NOT_STARTED,
+        /**
+         * Build is in progress.
+         */
         BUILDING,
+        /**
+         * Build is completed now, and the status is determined,
+         * but log files are still being updated.
+         */
+        POST_PRODUCTION,
+        /**
+         * Build is completed now, and log file is closed.
+         */
         COMPLETED
     }
 
@@ -224,10 +238,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Returns true if the build is not completed yet.
+     * This includes "not started yet" state.
      */
     @Exported
     public boolean isBuilding() {
-        return state!=State.COMPLETED;
+        return state.compareTo(State.POST_PRODUCTION) < 0;
+    }
+
+    /**
+     * Returns true if the log file is still being updated.
+     */
+    public boolean isLogUpdated() {
+        return state.compareTo(State.COMPLETED) < 0;
     }
 
     /**
@@ -649,12 +671,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 long end = System.currentTimeMillis();
                 duration = end-start;
 
-                // mark the state as completed.
+                // advance the state.
                 // the significance of doing this is that Hudson
                 // will now see this build as completed.
                 // things like triggering other builds requires this as pre-condition.
                 // see issue #980.
-                state = State.COMPLETED;
+                state = State.POST_PRODUCTION;
 
                 try {
                     job.cleanUp(listener);
@@ -841,7 +863,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Handles incremental log output.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        new LargeText(getLogFile(),!isBuilding()).doProgressText(req,rsp);
+        new LargeText(getLogFile(),!isLogUpdated()).doProgressText(req,rsp);
     }
 
     public void doToggleLogKeep( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
