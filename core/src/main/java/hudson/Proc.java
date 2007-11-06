@@ -87,7 +87,7 @@ public abstract class Proc {
             m.clear();
             for (String e : env) {
                 int idx = e.indexOf('=');
-                m.put(e.substring(0,idx),e.substring(idx+1,0));
+                m.put(e.substring(0,idx),e.substring(idx+1,e.length()));
             }
             return pb;
         }
