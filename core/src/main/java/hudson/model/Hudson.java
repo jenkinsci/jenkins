@@ -1700,19 +1700,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
-     * Check the clock difference between slave and this node.
-     */
-    public void doCheckClock( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        new FormFieldValidator(req,rsp,false) {
-            public void check() throws IOException, ServletException {
-                response.setContentType("text/html");
-                response.getWriter().print(
-                    ClockDifference.toHtml(getSlave(request.getParameter("node"))));
-            }
-        }.process();
-    }
-
-    /**
      * Checks if the JAVA_HOME is a valid JAVA_HOME path.
      */
     public void doJavaHomeCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {

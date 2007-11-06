@@ -87,18 +87,6 @@
                 <s:textbox name="slave.label" value="${s.labelString}" />
               </s:entry>
 
-              <j:if test="${s!=null}">
-                <s:entry title="clock" help="/help/system-config/master-slave/clock.html">
-                  <j:set var="id" value="${h.generateId()}"/>
-                  <div id="${id}">
-                    <img src="${imagesURL}/spinner.gif"/> checking clock
-                  </div>
-                  <script>
-                    FormChecker.delayedCheck("./checkClock?node=${s.nodeName}", "post", $$('${id}') );
-                  </script>
-                </s:entry>
-              </j:if>
-
               <s:entry title="">
                 <div align="right">
                   <s:repeatableDeleteButton />
