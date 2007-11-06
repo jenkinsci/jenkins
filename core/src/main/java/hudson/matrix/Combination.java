@@ -1,16 +1,18 @@
 package hudson.matrix;
 
+import hudson.Util;
+
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.Collection;
-import java.util.Set;
-import java.util.HashSet;
 
 /**
  * A particular combination of {@link Axis} values.
@@ -88,6 +90,13 @@ public final class Combination extends TreeMap<String,String> implements Compara
 
     public String toString() {
         return toString(',','=');
+    }
+
+    /**
+     * Gets the 8 character-wide hash code for this combination
+     */
+    public String digest() {
+        return Util.getDigestOf(toString());
     }
 
     /**

@@ -112,7 +112,10 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         if(node==null)  node = Hudson.getInstance();
         FilePath ws = node.getWorkspaceFor(getParent());
         if(ws==null)    return null;
-        return ws.child(getCombination().toString('/','/'));
+        if(useShortWorkspaceName)
+            return ws.child(getCombination().digest());
+        else
+            return ws.child(getCombination().toString('/','/'));
     }
 
     @Override
@@ -226,4 +229,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     public boolean isActiveConfiguration() {
         return getParent().getActiveConfigurations().contains(this);
     }
+
+    /**
+     * On Cygwin, path names cannot be longer than 256 chars.
+     * See http://cygwin.com/ml/cygwin/2005-04/msg00395.html and
+     * http://www.nabble.com/Windows-Filename-too-long-errors-t3161089.html for
+     * the background of this issue. Setting this flag to true would
+     * cause Hudson to use cryptic but short path name, giving more room for
+     * jobs to use longer path names.
+     */
+    public static boolean useShortWorkspaceName = Boolean.getBoolean(MatrixConfiguration.class.getName()+".useShortWorkspaceName");
 }
