@@ -53,7 +53,7 @@ public abstract class Proc {
      */
     public static final class LocalProc extends Proc {
         private final Process proc;
-        private final Thread t1,t2;
+        private final Thread copier;
         private final OutputStream out;
 
         public LocalProc(String cmd, Map<String,String> env, OutputStream out, File workDir) throws IOException {
@@ -77,17 +77,27 @@ public abstract class Proc {
         }
 
         public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out, File workDir) throws IOException {
-            this( calcName(cmd), Runtime.getRuntime().exec(cmd,env,workDir), in, out );
+            this( calcName(cmd),
+                  environment(new ProcessBuilder(cmd),env).directory(workDir).redirectErrorStream(true).start(),
+                  in, out );
+        }
+
+        private static ProcessBuilder environment(ProcessBuilder pb, String[] env) {
+            Map<String, String> m = pb.environment();
+            m.clear();
+            for (String e : env) {
+                int idx = e.indexOf('=');
+                m.put(e.substring(0,idx),e.substring(idx+1,0));
+            }
+            return pb;
         }
 
         private LocalProc( String name, Process proc, InputStream in, OutputStream out ) throws IOException {
             Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
             this.out = out;
             this.proc = proc;
-            t1 = new StreamCopyThread(name+": stdout copier", proc.getInputStream(), out);
-            t1.start();
-            t2 = new StreamCopyThread(name+": stderr copier", proc.getErrorStream(), out);
-            t2.start();
+            copier = new StreamCopyThread(name+": stdout copier", proc.getInputStream(), out);
+            copier.start();
             if(in!=null)
                 new ByteCopier(name+": stdin copier",in,proc.getOutputStream()).start();
             else
@@ -104,9 +114,8 @@ public abstract class Proc {
                 // see http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build
                 // problems like that shows up as inifinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
-                t1.join(10*1000);
-                t2.join(10*1000);
-                if(t1.isAlive() || t2.isAlive()) {
+                copier.join(10*1000);
+                if(copier.isAlive()) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.
                     String msg = "Process leaked file descriptors. See http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build for more information";
