@@ -7,6 +7,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.Result;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -62,7 +63,11 @@ public class ArtifactArchiver extends Publisher {
         dir.mkdirs();
 
         try {
-            p.getWorkspace().copyRecursiveTo(artifacts,excludes,new FilePath(dir));
+            if(p.getWorkspace().copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
+                listener.error("No artifact founds that matches the file pattern \""+artifacts+"\". Configuration error?");
+                build.setResult(Result.FAILURE);
+                return true;
+            }
         } catch (IOException e) {
             Util.displayIOException(e,listener);
             e.printStackTrace(listener.error("Failed to archive artifacts: "+artifacts));
