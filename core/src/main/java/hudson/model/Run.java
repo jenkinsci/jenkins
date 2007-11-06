@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1008,9 +1009,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Compares strings case insensitively.
      */
-    private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new Comparator<String>() {
+    private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new CaseInsensitiveComparator();
+
+    private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
         public int compare(String lhs, String rhs) {
             return lhs.compareToIgnoreCase(rhs);
         }
-    };
+        private static final long serialVersionUID = 1L;
+    }
 }
