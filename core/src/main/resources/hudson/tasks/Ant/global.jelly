@@ -2,14 +2,14 @@
   <f:section title="Ant">
     <f:entry title="Ant installation"
       description="List of Ant installations on this system">
-      <f:repeatable var="inst" items="${descriptor.installations}">
+      <f:repeatable name="ant" var="inst" items="${descriptor.installations}">
         <table width="100%">
           <f:entry title="name">
-            <f:textbox name="ant_name" value="${inst.name}" />
+            <f:textbox name="ant.name" value="${inst.name}" />
           </f:entry>
 
           <f:entry title="ANT_HOME">
-            <f:textbox name="ant_home" value="${inst.antHome}"
+            <f:textbox name="ant.home" value="${inst.antHome}"
               checkUrl="'builder/Ant/checkAntHome?value='+escape(this.value)"/>
           </f:entry>
           

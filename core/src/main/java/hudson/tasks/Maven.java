@@ -18,6 +18,7 @@ import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -25,6 +26,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.StringTokenizer;
+
+import net.sf.json.JSONObject;
 
 /**
  * Build by using Maven.
@@ -43,9 +46,10 @@ public class Maven extends Builder {
      */
     private final String mavenName;
 
-    public Maven(String targets,String mavenName) {
+    @DataBoundConstructor
+    public Maven(String targets,String name) {
         this.targets = targets;
-        this.mavenName = mavenName;
+        this.mavenName = name;
     }
 
     public String getTargets() {
@@ -235,8 +239,8 @@ public class Maven extends Builder {
             return r;
         }
 
-        public Builder newInstance(StaplerRequest req) {
-            return new Maven(req.getParameter("maven_targets"),req.getParameter("maven_version"));
+        public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            return req.bindJSON(Maven.class,formData);
         }
 
 

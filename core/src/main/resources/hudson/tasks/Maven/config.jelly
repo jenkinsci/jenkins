@@ -1,7 +1,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${!empty(descriptor.installations)}">
     <f:entry title="Maven Version">
-      <select class="setting-input" name="maven_version">
+      <select class="setting-input" name="maven.name">
         <option>(Default)</option>
         <j:forEach var="inst" items="${descriptor.installations}">
           <f:option selected="${inst.name==instance.maven.name}">${inst.name}</f:option>
@@ -10,6 +10,6 @@
     </f:entry>
   </j:if>
   <f:entry title="Goals">
-    <f:expandableTextbox name="maven_targets" value="${instance.targets}" />
+    <f:expandableTextbox name="maven.targets" value="${instance.targets}" />
   </f:entry>
 </j:jelly>

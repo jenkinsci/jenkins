@@ -3,6 +3,7 @@ package hudson.tasks;
 import hudson.CopyOnWrite;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.StructuredForm;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -22,6 +23,8 @@ import java.io.StringReader;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+
+import net.sf.json.JSONObject;
 
 /**
  * Ant launcher.
@@ -60,9 +63,9 @@ public class Ant extends Builder {
     public Ant(String targets,String antName, String antOpts, String buildFile, String properties) {
         this.targets = targets;
         this.antName = antName;
-        this.antOpts = Util.fixEmpty(antOpts.trim());
-        this.buildFile = Util.fixEmpty(buildFile.trim());
-        this.properties = Util.fixEmpty(properties);
+        this.antOpts = Util.fixEmptyAndTrim(antOpts);
+        this.buildFile = Util.fixEmptyAndTrim(buildFile);
+        this.properties = Util.fixEmptyAndTrim(properties);
     }
     
 	public String getBuildFile() {
@@ -199,32 +202,14 @@ public class Ant extends Builder {
         }
 
         public boolean configure(StaplerRequest req) {
-            boolean r = true;
-
-            int i;
-            String[] names = req.getParameterValues("ant_name");
-            String[] homes = req.getParameterValues("ant_home");
-            int len;
-            if(names!=null && homes!=null)
-                len = Math.min(names.length,homes.length);
-            else
-                len = 0;
-            AntInstallation[] insts = new AntInstallation[len];
-
-            for( i=0; i<len; i++ ) {
-                if(names[i].length()==0 || homes[i].length()==0)    continue;
-                insts[i] = new AntInstallation(names[i],homes[i]);
-            }
-
-            this.installations = insts;
-
+            installations = req.bindJSONToList(
+                    AntInstallation.class,StructuredForm.get(req).get("ant")).toArray(new AntInstallation[0]);
             save();
-
-            return r;
+            return true;
         }
 
-        public Builder newInstance(StaplerRequest req) {
-            return req.bindParameters(Ant.class,"ant.");
+        public Ant newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            return req.bindJSON(Ant.class,formData);
         }
 
     //
@@ -259,9 +244,10 @@ public class Ant extends Builder {
         private final String name;
         private final String antHome;
 
-        public AntInstallation(String name, String antHome) {
+        @DataBoundConstructor
+        public AntInstallation(String name, String home) {
             this.name = name;
-            this.antHome = antHome;
+            this.antHome = home;
         }
 
         /**
