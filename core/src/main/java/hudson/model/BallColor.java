@@ -1,5 +1,7 @@
 package hudson.model;
 
+import java.util.Locale;
+
 /**
  * Ball color used for the build status indication.
  *
@@ -65,7 +67,7 @@ public enum BallColor {
      * Also used as a final name.
      */
     public String toString() {
-        return name().toLowerCase();
+        return name().toLowerCase(Locale.ENGLISH);
     }
 
     /**
