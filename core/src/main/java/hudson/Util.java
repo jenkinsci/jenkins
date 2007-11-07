@@ -516,6 +516,16 @@ public class Util {
     }
 
     /**
+     * Convert empty string to null, and trim whitespace.
+     *
+     * @since 1.154
+     */
+    public static String fixEmptyAndTrim(String s) {
+        if(s==null)    return null;
+        return s.trim();
+    }
+
+    /**
      * Cuts all the leading path portion and get just the file name.
      */
     public static String getFileName(String filePath) {
