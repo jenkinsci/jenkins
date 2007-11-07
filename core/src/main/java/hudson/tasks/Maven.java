@@ -6,6 +6,7 @@ import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
+import hudson.StructuredForm;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -214,29 +215,10 @@ public class Maven extends Builder {
         }
 
         public boolean configure(StaplerRequest req) {
-            boolean r = true;
-
-            int i;
-            String[] names = req.getParameterValues("maven_name");
-            String[] homes = req.getParameterValues("maven_home");
-            int len;
-            if(names!=null && homes!=null)
-                len = Math.min(names.length,homes.length);
-            else
-                len = 0;
-            MavenInstallation[] insts = new MavenInstallation[len];
-
-            for( i=0; i<len; i++ ) {
-                if(Util.nullify(names[i])==null)    continue;
-                if(Util.nullify(homes[i])==null)    continue;
-                insts[i] = new MavenInstallation(names[i],homes[i]);
-            }
-
-            this.installations = insts;
-
+            this.installations = req.bindJSONToList(MavenInstallation.class,StructuredForm.get(req).get("maven"))
+                    .toArray(new MavenInstallation[0]);
             save();
-
-            return r;
+            return true;
         }
 
         public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
@@ -277,6 +259,7 @@ public class Maven extends Builder {
         private final String name;
         private final String mavenHome;
 
+        @DataBoundConstructor
         public MavenInstallation(String name, String mavenHome) {
             this.name = name;
             this.mavenHome = mavenHome;

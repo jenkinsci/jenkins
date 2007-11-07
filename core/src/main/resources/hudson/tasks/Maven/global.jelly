@@ -2,15 +2,15 @@
   <f:section title="Maven">
     <f:entry title="Maven installation"
       description="List of Maven installations on this system. Both maven 1 and 2 are supported.">
-      <f:repeatable var="inst" items="${descriptor.installations}">
+      <f:repeatable name="maven" var="inst" items="${descriptor.installations}">
         <table width="100%">
           <f:entry title="name">
-            <input class="setting-input" name="maven_name"
+            <input class="setting-input" name="maven.name"
               type="text" value="${inst.name}"/>
           </f:entry>
 
           <f:entry title="MAVEN_HOME">
-            <input class="setting-input validated" name="maven_home"
+            <input class="setting-input validated" name="maven.home"
               type="text" value="${inst.mavenHome}"
               checkUrl="'builder/Maven/checkMavenHome?value='+escape(this.value)"/>
           </f:entry>
