@@ -8,6 +8,8 @@ import hudson.remoting.VirtualChannel;
 import hudson.FilePath.FileCallable;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.ISVNLogEntryHandler;
+import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNLogClient;
@@ -112,14 +114,36 @@ final class SubversionChangeLogBuilder {
         }
 
         try {
+            if(debug)
+                listener.getLogger().printf("Computing changelog of %1s from %2s to %3s\n",
+                        SVNURL.parseURIEncoded(url), prevRev+1, thisRev);
             svnlc.doLog(SVNURL.parseURIEncoded(url),null,
                 SVNRevision.UNDEFINED, SVNRevision.create(prevRev+1),
                 SVNRevision.create(thisRev),
-                false, true, Long.MAX_VALUE, logHandler);
+                false, true, Long.MAX_VALUE,
+                debug ? new DebugSVNLogHandler(logHandler) : logHandler);
+            if(debug)
+                listener.getLogger().println("done");
         } catch (SVNException e) {
             e.printStackTrace(listener.error("revision check failed on "+url));
         }
         return true;
+    }
+
+    /**
+     * Filter {@link ISVNLogEntryHandler} that dumps information. Used only for debugging.
+     */
+    private class DebugSVNLogHandler implements ISVNLogEntryHandler {
+        private final ISVNLogEntryHandler core;
+
+        private DebugSVNLogHandler(ISVNLogEntryHandler core) {
+            this.core = core;
+        }
+
+        public void handleLogEntry(SVNLogEntry logEntry) throws SVNException {
+            listener.getLogger().println("SVNLogEntry="+logEntry);
+            core.handleLogEntry(logEntry);
+        }
     }
 
     /**
@@ -134,6 +158,8 @@ final class SubversionChangeLogBuilder {
     }
 
     private static final LocatorImpl DUMMY_LOCATOR = new LocatorImpl();
+
+    public static boolean debug = false;
 
     static {
         DUMMY_LOCATOR.setLineNumber(-1);
