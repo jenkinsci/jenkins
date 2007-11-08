@@ -34,7 +34,7 @@ import java.util.Collection;
  *
  * @author Kohsuke Kawaguchi
  */
-final class SubversionChangeLogBuilder {
+public final class SubversionChangeLogBuilder {
     /**
      * Revisions of the workspace before the update/checkout.
      */
