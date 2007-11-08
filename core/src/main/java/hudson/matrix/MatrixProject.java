@@ -198,8 +198,12 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             if(oldDirs!=null) {
                 // rename the old directory to the new one
                 for (File dir : oldDirs) {
-                    Combination c = Combination.fromString(dir.getName());
-                    dir.renameTo(getRootDirFor(c));
+                    try {
+                        Combination c = Combination.fromString(dir.getName());
+                        dir.renameTo(getRootDirFor(c));
+                    } catch (IllegalArgumentException e) {
+                        // it's not a configuration dir. Just ignore.
+                    }
                 }
             }
         }
