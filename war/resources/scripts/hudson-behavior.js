@@ -199,8 +199,13 @@ var hudsonRules = {
                 tr = tr.parentNode;
 
             // move the contents of the advanced portion into the main table
-            while (container.lastChild != null)
-                tr.parentNode.insertBefore(container.lastChild, tr.nextSibling);
+            var nameRef = tr.getAttribute("nameref");
+            while (container.lastChild != null) {
+                var row = container.lastChild;
+                if(nameRef!=null)
+                    row.setAttribute("nameref",nameRef);
+                tr.parentNode.insertBefore(row, tr.nextSibling);
+            }
         });
         e = null; // avoid memory leak
     },
