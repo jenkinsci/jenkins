@@ -178,7 +178,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
                         result.put(item.getCombination(), item);
                     }
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to load matrix ocnfiguration "+v,e);
+                    LOGGER.log(Level.WARNING, "Failed to load matrix configuration "+v,e);
                 }
                 loadConfigurations(v,result,c);
             }
