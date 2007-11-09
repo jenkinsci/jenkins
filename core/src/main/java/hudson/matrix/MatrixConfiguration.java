@@ -32,9 +32,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      */
     private transient /*final*/ Combination combination;
 
+    /**
+     * Hash value of {@link #combination}. Cached for efficiency.
+     */
+    private transient String digestName;
+
     public MatrixConfiguration(MatrixProject parent, Combination c) {
         super(parent,c.toString());
-        this.combination = c;
+        setCombination(c);
     }
 
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
@@ -47,6 +52,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      */
     /*package*/ void setCombination(Combination c) {
         this.combination = c;
+        this.digestName = c.digest().substring(0,8);
     }
 
     /**
@@ -113,7 +119,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         FilePath ws = node.getWorkspaceFor(getParent());
         if(ws==null)    return null;
         if(useShortWorkspaceName)
-            return ws.child(getCombination().digest().substring(0,8));
+            return ws.child(digestName);
         else
             return ws.child(getCombination().toString('/','/'));
     }
