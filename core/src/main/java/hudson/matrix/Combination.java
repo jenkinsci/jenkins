@@ -18,7 +18,7 @@ import java.util.TreeMap;
  * A particular combination of {@link Axis} values.
  *
  * For example, when axes are "x={1,2},y={3,4}", then
- * [1,3] is a combination (out of 4 possible combinations)
+ * [x=1,y=3] is a combination (out of 4 possible combinations)
  *
  * @author Kohsuke Kawaguchi
  */
