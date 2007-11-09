@@ -144,8 +144,9 @@ var hudsonRules = {
         var templates = []; var i=0;
         for(var n=prototypes.firstChild;n!=null;n=n.nextSibling,i++) {
             var name = n.getAttribute("name");
+            var tooltip = n.getAttribute("tooltip");
             menu.options[i] = new Option(n.getAttribute("title"),""+i);
-            templates.push({html:n.innerHTML, name:name});
+            templates.push({html:n.innerHTML, name:name, tooltip:tooltip});
         }
         Element.remove(prototypes);
 
@@ -160,6 +161,16 @@ var hudsonRules = {
             insertionPoint.parentNode.insertBefore(nc, insertionPoint);
 
             Behaviour.applySubtree(nc);
+        });
+
+        menuButton.getMenu().renderEvent.subscribe(function(type,args,value) {
+            // hook up tooltip for menu items
+            var items = menuButton.getMenu().getItems();
+            for(i=0; i<items.length; i++) {
+                var t = templates[i].tooltip;
+                if(t!=null)
+                    applyTooltip(items[i].element,t);
+            }
         });
     },
 
@@ -358,6 +369,15 @@ var hudsonRules = {
     // hook up tooltip.
     //   add nodismiss="" if you'd like to display the tooltip forever as long as the mouse is on the element.
     "[tooltip]" : function(e) {
+        applyTooltip(e,e.getAttribute("tooltip"));
+    },
+
+    "INPUT.submit-button" : function(e) {
+        makeButton(e);
+    }
+};
+
+function applyTooltip(e,text) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
         // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
         e.onmouseover = function(ev) {
@@ -367,14 +387,9 @@ var hudsonRules = {
         }
         e.onmousemove = function(ev) { return tooltip.onContextMouseMove.call(this,YAHOO.util.Event.getEvent(ev),tooltip); }
         e.onmouseout  = function(ev) { return tooltip.onContextMouseOut .call(this,YAHOO.util.Event.getEvent(ev),tooltip); }
-        e.title = e.getAttribute("tooltip");
+        e.title = text;
         e = null; // avoid memory leak
-    },
-
-    "INPUT.submit-button" : function(e) {
-        makeButton(e);
     }
-};
 
 Behaviour.register(hudsonRules);
 
