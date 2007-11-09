@@ -337,7 +337,7 @@ public class Util {
     
     public static String getDigestOf(String text) {
         try {
-            return getDigestOf(new ByteArrayInputStream(text.getBytes()));
+            return getDigestOf(new ByteArrayInputStream(text.getBytes("UTF-8")));
         } catch (IOException e) {
             throw new Error(e);
         }
