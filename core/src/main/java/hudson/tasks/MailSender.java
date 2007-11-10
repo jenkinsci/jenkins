@@ -56,6 +56,14 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         try {
             MimeMessage mail = getMail(build, listener);
             if (mail != null) {
+                // if the previous e-mail was sent for a success, this new e-mail
+                // is not a follow up
+                B pb = build.getPreviousBuild();
+                if(pb!=null && pb.getResult()==Result.SUCCESS) {
+                    mail.removeHeader("In-Reply-To");
+                    mail.removeHeader("References");
+                }
+
                 Address[] allRecipients = mail.getAllRecipients();
                 if (allRecipients != null) {
                     StringBuffer buf = new StringBuffer("Sending e-mails to:");
@@ -63,6 +71,8 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
                         buf.append(' ').append(a);
                     listener.getLogger().println(buf);
                     Transport.send(mail);
+
+                    build.addAction(new MailMessageIdAction(mail.getMessageID()));
                 } else {
                     listener.getLogger().println("An attempt to send an e-mail"
                         + " to empty list of recipients, ignored.");
@@ -253,6 +263,16 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
             }
         }
         msg.setRecipients(Message.RecipientType.TO, rcp.toArray(new InternetAddress[rcp.size()]));
+
+        B pb = build.getPreviousBuild();
+        if(pb!=null) {
+            MailMessageIdAction b = pb.getAction(MailMessageIdAction.class);
+            if(b!=null) {
+                msg.setHeader("In-Reply-To",b.messageId);
+                msg.setHeader("References",b.messageId);
+            }
+        }
+
         return msg;
     }
 
