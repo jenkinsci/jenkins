@@ -17,44 +17,49 @@
                 onclick="this.parentNode.submit()"/>
           </form>
         </div>
-        <table class="fileList">
-          <j:forEach var="f" items="${files}">
-            <j:set var="x" value="${f.get(f.size()-1)}"/>
-            <tr>
-              <td>
-                <img src="${imagesURL}/16x16/${x.iconName}"/>
-              </td>
-              <td>
-                <j:forEach var="t" items="${f}" varStatus="st">
-                  <a href="${t.href}">${t.title}</a>
-                  <j:if test="${!st.last}">/</j:if>
-                </j:forEach>
-              </td>
-              <j:if test="${!x.folder}">
-                <td class="fileSize">
-                  ${x.getSize()}
-                  <a href="${x.href}/*fingerprint*/">
-                    <img src="${imagesURL}/16x16/fingerprint.gif" alt="fingerprint" />
-                  </a>
-                  <st:nbsp/>
-                  <a href="${x.href}/*view*/">view</a>
+        <j:choose>
+          <j:when test="${empty(files)}">
+            No files in directory
+          </j:when>
+          <j:otherwise>
+            <table class="fileList">
+              <j:forEach var="f" items="${files}">
+                <j:set var="x" value="${f.get(f.size()-1)}"/>
+                <tr>
+                  <td>
+                    <img src="${imagesURL}/16x16/${x.iconName}"/>
+                  </td>
+                  <td>
+                    <j:forEach var="t" items="${f}" varStatus="st">
+                      <a href="${t.href}">${t.title}</a>
+                      <j:if test="${!st.last}">/</j:if>
+                    </j:forEach>
+                  </td>
+                  <j:if test="${!x.folder}">
+                    <td class="fileSize">
+                      ${x.getSize()}
+                      <a href="${x.href}/*fingerprint*/">
+                        <img src="${imagesURL}/16x16/fingerprint.gif" alt="fingerprint" />
+                      </a>
+                      <st:nbsp/>
+                      <a href="${x.href}/*view*/">view</a>
+                    </td>
+                  </j:if>
+                </tr>
+              </j:forEach>
+              <tr>
+                <td style="text-align:right;" colspan="3">
+                  <div style="margin-top: 1em;">
+                    <a href="${backPath}${pattern}/*zip*/${dir.name}.zip">
+                      <img src="${imagesURL}/16x16/package.gif"/>
+                      (all files in zip)
+                    </a>
+                  </div>
                 </td>
-              </j:if>
-            </tr>
-          </j:forEach>
-          <j:if test="${!empty(files)}">
-            <tr>
-              <td style="text-align:right;" colspan="3">
-                <div style="margin-top: 1em;">
-                  <a href="${backPath}${pattern}/*zip*/${dir.name}.zip">
-                    <img src="${imagesURL}/16x16/package.gif"/>
-                    (all files in zip)
-                  </a>
-                </div>
-              </td>
-            </tr>
-          </j:if>
-        </table>
+              </tr>
+            </table>
+          </j:otherwise>
+        </j:choose>
       </div>
     </l:main-panel>
   </l:layout>
