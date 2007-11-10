@@ -2,6 +2,7 @@ package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.CloseProofOutputStream;
+import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.FilePath;
@@ -30,7 +31,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -929,7 +929,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      */
     public Map<String,String> getEnvVars() {
-        Map<String,String> env = new TreeMap<String,String>(CASE_INSENSITIVE_COMPARATOR);
+        EnvVars env = new EnvVars();
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());
         env.put("BUILD_TAG","hudson-"+getParent().getName()+"-"+number);
@@ -1004,17 +1004,5 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public String getDisplayName() { return null; }
         public String getUrlName() { return null; }
         public String getWhyKeepLog() { return Run.this.getWhyKeepLog(); }
-    }
-
-    /**
-     * Compares strings case insensitively.
-     */
-    private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new CaseInsensitiveComparator();
-
-    private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
-        public int compare(String lhs, String rhs) {
-            return lhs.compareToIgnoreCase(rhs);
-        }
-        private static final long serialVersionUID = 1L;
     }
 }

@@ -8,7 +8,7 @@
         </f:entry>
         <f:entry title="Local module directory (optional)" help="/help/subversion/local.html">
           <f:textbox name="svn.location_local" value="${loc.local}"
-            checkUrl="'${rootURL}/scm/SubversionSCM/svnLocalLocationCheck?value='+escape(this.value)"/>     
+            checkUrl="'${rootURL}/scm/SubversionSCM/svnLocalLocationCheck?value='+escape(this.value)"/>
         </f:entry>
         <f:entry>
           <div align="right">

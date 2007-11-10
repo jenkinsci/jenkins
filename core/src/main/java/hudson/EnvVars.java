@@ -1,8 +1,10 @@
 package hudson;
 
 import java.io.File;
-import java.util.HashMap;
+import java.io.Serializable;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.Comparator;
 
 /**
  * Environment variables.
@@ -17,13 +19,15 @@ import java.util.Map;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class EnvVars extends HashMap<String,String> {
+public class EnvVars extends TreeMap<String,String> {
 
     public EnvVars() {
+        super(CASE_INSENSITIVE_COMPARATOR);
     }
 
     public EnvVars(Map<String,String> m) {
-        super(m);
+        super(CASE_INSENSITIVE_COMPARATOR);
+        putAll(m);
     }
 
     /**
@@ -61,4 +65,16 @@ public class EnvVars extends HashMap<String,String> {
      * Environmental variables that we've inherited.
      */
     public static final Map<String,String> masterEnvVars = System.getenv();
+
+    /**
+     * Compares strings case insensitively.
+     */
+    private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new CaseInsensitiveComparator();
+
+    private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
+        public int compare(String lhs, String rhs) {
+            return lhs.compareToIgnoreCase(rhs);
+        }
+        private static final long serialVersionUID = 1L;
+    }
 }
