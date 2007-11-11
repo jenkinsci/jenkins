@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -170,15 +171,10 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         buf.append("------------------------------------------\n");
 
         try {
-            String log = build.getLog();
-            String[] lines = log.split("\n");
-            int start = 0;
-            if (lines.length > MAX_LOG_LINES) {
-                // Avoid sending enormous logs over email.
-                // Interested users can always look at the log on the web server.
-                buf.append("[...truncated " + (lines.length - MAX_LOG_LINES) + " lines...]\n");
-                start = lines.length - MAX_LOG_LINES;
-            }
+            // Restrict max log size to avoid sending enormous logs over email.
+            // Interested users can always look at the log on the web server.
+            List<String> lines = build.getLog(MAX_LOG_LINES);
+
             String workspaceUrl = null, artifactUrl = null;
             Pattern wsPattern = null;
             String baseUrl = Mailer.DESCRIPTOR.getUrl();
@@ -201,8 +197,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
                 wsPattern = Pattern.compile("(" +
                     quoteRegexp(ws.getRemote()) + "|" + quoteRegexp(ws.toURI().toString()) + ")[/\\\\]?([^:#\\s]*)");
             }
-            for (int i = start; i < lines.length; i++) {
-                String line = lines[i];
+            for (String line : lines) {
                 if (wsPattern != null) {
                     // Perl: $line =~ s{$rx}{$path = $2; $path =~ s!\\\\!/!g; $workspaceUrl . $path}eg;
                     Matcher m = wsPattern.matcher(line);

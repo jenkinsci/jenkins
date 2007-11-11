@@ -25,8 +25,10 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -38,6 +40,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -208,7 +211,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Gets the subset of {@link #getActions()} that consists of {@link BuildBadgeAction}s. 
+     * Gets the subset of {@link #getActions()} that consists of {@link BuildBadgeAction}s.
      */
     public List<BuildBadgeAction> getBadgeActions() {
         List<BuildBadgeAction> r = null;
@@ -318,7 +321,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
 
         final String ending = "...";
-        
+
         // limit the description
         String truncDescr = description.substring(
                 0, maxDescrLength - ending.length());
@@ -598,7 +601,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * of the build. When this method is called, the build is not really
          * finalized yet, and the build is still considered in progress --- for example,
          * even if the build is successful, this build still won't be picked up
-         * by {@link Job#getLastSuccessfulBuild()}. 
+         * by {@link Job#getLastSuccessfulBuild()}.
          */
         void post( BuildListener listener ) throws Exception;
 
@@ -763,10 +766,46 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Gets the log of the build as a string.
      *
-     * I know, this isn't terribly efficient!
+     * @deprecated Use {@link #getLog(int)} instead as it avoids loading
+     * the whole log into memory unnecessarily.
      */
+    @Deprecated
     public String getLog() throws IOException {
         return Util.loadFile(getLogFile());
+    }
+
+    /**
+     * Gets the log of the build as a list of strings (one per log line).
+     * The number of lines returned is constrained by the maxLines parameter.
+     *
+     * @param maxLines The maximum number of log lines to return.  If the log
+     * is bigger than this, only the most recent lines are returned.
+     * @return A list of log lines.  Will have no more than maxLines elements.
+     * @throws IOException If there is a problem reading the log file.
+     */
+    public List<String> getLog(int maxLines) throws IOException {
+        int lineCount = 0;
+        List<String> logLines = new LinkedList<String>();
+        BufferedReader reader = new BufferedReader(new FileReader(getLogFile()));
+        for (String line = reader.readLine(); line != null; line = reader.readLine())
+        {
+            logLines.add(line);
+            ++lineCount;
+            // If we have too many lines, remove the oldest line.  This way we
+            // never have to hold the full contents of a huge log file in memory.
+            // Adding to and removing from the ends of a linked list are cheap
+            // operations.
+            if (lineCount > maxLines)
+                logLines.remove(0);
+        }
+
+        // If the log has been truncated, include that information.
+        // Use set (replaces the first element) rather than add so that
+        // the list doesn't grow beyond the specified maximum number of lines.
+        if (lineCount > maxLines)
+            logLines.set(0, "[...truncated " + (lineCount - (maxLines - 1)) + " lines...]");
+
+        return logLines;
     }
 
     public void doBuildStatus( StaplerRequest req, StaplerResponse rsp ) throws IOException {
