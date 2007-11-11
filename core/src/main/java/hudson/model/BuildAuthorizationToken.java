@@ -5,7 +5,6 @@ import hudson.Util;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 
 /**
@@ -28,26 +27,19 @@ public final class BuildAuthorizationToken {
             return null;
     }
 
-    public static void startBuildIfAuthorized(BuildAuthorizationToken token, BuildableItem job, StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if(!Hudson.getInstance().isUseSecurity() || (token!=null && token.authorizedToStartBuild(req,rsp)) || Hudson.adminCheck(req, rsp)) {
-            job.scheduleBuild();
-            rsp.forwardToPreviousPage(req);
-        }
-    }
-
-    public boolean authorizedToStartBuild(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public static boolean canStartBuild(BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
         if (!Hudson.getInstance().isUseSecurity())
-            // everyone is authorized
-            return true;
+            return true;    // everyone is authorized
 
-        if(token != null) {
-            //check the provided token
-            String providedToken = req.getParameter("token");
-            if (providedToken != null && providedToken.equals(token))
-                return true;
+        if(token!=null) {
+            if(token.token != null) {
+                //check the provided token
+                String providedToken = req.getParameter("token");
+                if (providedToken != null && providedToken.equals(token.token))
+                    return true;
+            }
         }
 
-        // otherwise it must be an admin
         return Hudson.adminCheck(req, rsp);
     }
 

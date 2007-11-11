@@ -21,6 +21,7 @@ import hudson.tasks.BuildTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
+import hudson.triggers.SCMTrigger;
 import hudson.util.EditDistance;
 
 import java.io.File;
@@ -332,6 +333,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
+     * Schedules a polling of this project.
+     */
+    public boolean schedulePolling() {
+        if(isDisabled())    return false;
+        SCMTrigger scmt = getTrigger(SCMTrigger.class);
+        if(scmt==null)      return false;
+        scmt.run();
+        return true;
+    }
+
+    /**
      * Returns true if the build is in the queue.
      */
     @Override
@@ -630,6 +642,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return (Map)Descriptor.toMap(triggers);
     }
 
+    /**
+     * Gets the specific trigger, or null if the propert is not configured for this job.
+     */
+    public <T extends Trigger> T getTrigger(Class<T> clazz) {
+        for (Trigger p : triggers) {
+            if(clazz.isInstance(p))
+                return clazz.cast(p);
+        }
+        return null;
+    }
+
 //
 //
 // fingerprint related
@@ -737,7 +760,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a new build command.
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        BuildAuthorizationToken.startBuildIfAuthorized(authToken,this,req,rsp);
+    if(BuildAuthorizationToken.canStartBuild(authToken, req, rsp)) {
+        scheduleBuild();
+        rsp.forwardToPreviousPage(req);
+    }
+}
+
+    /**
+     * Schedules a new SCM polling command.
+     */
+    public void doPolling( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        if(BuildAuthorizationToken.canStartBuild(authToken, req, rsp)) {
+            schedulePolling();
+            rsp.forwardToPreviousPage(req);
+        }
     }
 
     /**
