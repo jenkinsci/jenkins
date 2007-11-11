@@ -9,7 +9,8 @@ package hudson.model;
  * be run at the same time.
  *
  * <p>
- * Resources are compared by using their names.
+ * Resources are compared by using their {@link #displayName names}, and
+ * need not have the "same object" semantics. 
  *
  * @since 1.121
  */
