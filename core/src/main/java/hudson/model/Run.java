@@ -787,8 +787,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         int lineCount = 0;
         List<String> logLines = new LinkedList<String>();
         BufferedReader reader = new BufferedReader(new FileReader(getLogFile()));
-        for (String line = reader.readLine(); line != null; line = reader.readLine())
-        {
+        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             logLines.add(line);
             ++lineCount;
             // If we have too many lines, remove the oldest line.  This way we
