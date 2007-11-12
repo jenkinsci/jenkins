@@ -154,6 +154,8 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
         // Are we using synchronous polling?
         if (SCMTrigger.DESCRIPTOR.synchronousPolling) {
+        	LOGGER.fine("using synchronous polling");
+        	
             // Check that previous synchronous polling job is done to prevent piling up too many jobs
         	if (previousSynchronousPolling == null || previousSynchronousPolling.isDone()) {
 	            // Process SCMTriggers in the order of dependencies. Note that the crontab spec expressed per-project is
@@ -163,11 +165,15 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 	            previousSynchronousPolling = SCMTrigger.DESCRIPTOR.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
 	                public void run(AbstractProject p) {
 	                    for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
-	                        if (t instanceof SCMTrigger)
+	                        if (t instanceof SCMTrigger) { 
+	                        	LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
 	                            t.run();
+	                        }
 	                    }
 	                }
 	            }));
+        	} else {
+            	LOGGER.fine("synchronous polling has detected unfinished jobs, will not trigger additional jobs.");
         	}
         }
 
