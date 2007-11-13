@@ -690,5 +690,27 @@ public class Functions {
         return Math.max(5,LINE_END.split(s).length);
     }
 
+    /**
+     * Converts the Hudson build status to CruiseControl build status,
+     * which is either Success, Failure, Exception, or Unknown.
+     */
+    public static String toCCStatus(Item i) {
+        if (i instanceof Job) {
+            Job j = (Job) i;
+            switch (j.getIconColor().noAnime()) {
+            case ABORTED:
+            case RED:
+            case YELLOW:
+                return "Failure";
+            case BLUE:
+                return "Success";
+            case DISABLED:
+            case GREY:
+                return "Unknown";
+            }
+        }
+        return "Unknown";
+    }
+
     private static final Pattern LINE_END = Pattern.compile("\r?\n");
 }

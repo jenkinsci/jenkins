@@ -757,7 +757,20 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public String getRootUrl() {
         // for compatibility. the actual data is stored in Mailer
-        return Mailer.DESCRIPTOR.getUrl();
+        String url = Mailer.DESCRIPTOR.getUrl();
+        if(url!=null)   return url;
+
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if(req!=null) {
+            StringBuilder buf = new StringBuilder();
+            buf.append("http://");
+            buf.append(req.getServerName());
+            if(req.getServerPort()!=80)
+                buf.append(':').append(req.getServerPort());
+            buf.append(req.getContextPath()).append('/');
+            return buf.toString();
+        }
+        return null;
     }
 
     public File getRootDir() {

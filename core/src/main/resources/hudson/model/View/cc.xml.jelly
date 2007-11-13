@@ -1,0 +1,23 @@
+<!--
+  Generate status XML compatible with CruiseControl.
+  See http://confluence.public.thoughtworks.org/display/CI/Multiple+Project+Summary+Reporting+Standard
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:contentType value="text/xml;charset=UTF-8" />
+  <j:new var="h" className="hudson.Functions" />
+
+  <Projects>
+    <j:forEach var="p" items="${it.items}">
+      <j:set var="lb" value="${p.lastBuild}"/>
+      <j:if test="${lb!=null}">
+        <Project  name="${p.displayName}"
+                  activity="${h.ifThenElse(p.isBuilding(),'Building','Sleeping')}"
+                  lastBuildStatus="${h.toCCStatus(p)}"
+                  lastBuildLabel="${lb.number}"
+                  lastBuildTime="${lb.timestampString2}"
+                  webUrl="${app.rootUrl}${p.url}"
+          />
+      </j:if>
+    </j:forEach>
+  </Projects>
+</j:jelly>
