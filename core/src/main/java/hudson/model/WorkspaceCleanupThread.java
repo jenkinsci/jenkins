@@ -88,13 +88,11 @@ public class WorkspaceCleanupThread extends PeriodicWork {
 
         // if older than a month, delete
         long now = new Date().getTime();
-        if(dir.lastModified() + 30 * DAY < now) {
-            if(LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Directory "+dir+" is "+ Util.getTimeSpanString(now-dir.lastModified())+" old, so deleting");
-            }
-        }
-
-        return false;
+        boolean r = dir.lastModified() + 30 * DAY < now;
+        if(LOGGER.isLoggable(Level.FINE))
+            LOGGER.fine("Directory "+dir+" is "+ Util.getTimeSpanString(now-dir.lastModified())+" old, so "+
+                    (r?"":"NOT ")+"deleting");
+        return r;
     }
 
     private void process(Slave s) throws InterruptedException {
