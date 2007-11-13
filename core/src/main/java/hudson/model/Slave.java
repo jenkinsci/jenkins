@@ -303,7 +303,7 @@ public final class Slave implements Node, Serializable {
                             setChannel(proc.getInputStream(),proc.getOutputStream(),launchLog,new Listener() {
                                 public void onClosed(Channel channel, IOException cause) {
                                     if(cause!=null)
-                                        cause.printStackTrace(listener.error("%s slave agent was terminated\n"));
+                                        cause.printStackTrace(listener.error("%s slave agent was terminated\n",getTimestamp()));
                                     proc.destroy();
                                 }
                             });
