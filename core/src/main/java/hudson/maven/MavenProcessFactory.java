@@ -78,6 +78,10 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
             throw new RunnerAbortedException();
         }
+        if(mvn.getMavenHome()==null) {
+            listener.error("Maven '%s' doesn't have its home set",mvn.getName());
+            throw new RunnerAbortedException();
+        }
 
         // find classworlds.jar
         String classWorldsJar = launcher.getChannel().call(new GetClassWorldsJar(mvn.getMavenHome(),listener));
