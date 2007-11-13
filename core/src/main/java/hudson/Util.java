@@ -522,7 +522,7 @@ public class Util {
      */
     public static String fixEmptyAndTrim(String s) {
         if(s==null)    return null;
-        return s.trim();
+        return fixEmpty(s.trim());
     }
 
     /**
