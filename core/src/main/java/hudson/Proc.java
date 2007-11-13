@@ -83,11 +83,13 @@ public abstract class Proc {
         }
 
         private static ProcessBuilder environment(ProcessBuilder pb, String[] env) {
-            Map<String, String> m = pb.environment();
-            m.clear();
-            for (String e : env) {
-                int idx = e.indexOf('=');
-                m.put(e.substring(0,idx),e.substring(idx+1,e.length()));
+            if(env!=null) {
+                Map<String, String> m = pb.environment();
+                m.clear();
+                for (String e : env) {
+                    int idx = e.indexOf('=');
+                    m.put(e.substring(0,idx),e.substring(idx+1,e.length()));
+                }
             }
             return pb;
         }
