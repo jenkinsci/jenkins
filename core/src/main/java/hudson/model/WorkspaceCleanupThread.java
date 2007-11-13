@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.FilePath;
+import hudson.Util;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Clean up old left-over workspaces from slaves.
@@ -85,8 +87,14 @@ public class WorkspaceCleanupThread extends PeriodicWork {
         }
 
         // if older than a month, delete
-        return dir.lastModified() + 30 * DAY < new Date().getTime();
+        long now = new Date().getTime();
+        if(dir.lastModified() + 30 * DAY < now) {
+            if(LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Directory "+dir+" is "+ Util.getTimeSpanString(now-dir.lastModified())+" old, so deleting");
+            }
+        }
 
+        return false;
     }
 
     private void process(Slave s) throws InterruptedException {
@@ -123,4 +131,6 @@ public class WorkspaceCleanupThread extends PeriodicWork {
     private static final FileFilter DIR_FILTER = new DirectoryFilter();
 
     private static final long DAY = 1000*60*60*24;
+
+    private static final Logger LOGGER = Logger.getLogger(WorkspaceCleanupThread.class.getName());
 }
