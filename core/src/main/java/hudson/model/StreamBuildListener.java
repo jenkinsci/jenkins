@@ -47,9 +47,17 @@ public class StreamBuildListener implements BuildListener, Serializable {
         return w;
     }
 
+    public PrintWriter error(String format, Object... args) {
+        return error(String.format(format,args));
+    }
+
     public PrintWriter fatalError(String msg) {
         w.println("FATAL: "+msg);
         return w;
+    }
+
+    public PrintWriter fatalError(String format, Object... args) {
+        return fatalError(String.format(format,args));
     }
 
     public void finished(Result result) {

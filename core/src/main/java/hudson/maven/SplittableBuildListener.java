@@ -91,8 +91,18 @@ final class SplittableBuildListener implements BuildListener, Serializable {
         return new PrintWriter(logger);
     }
 
+    public PrintWriter error(String format, Object... args) {
+        core.error(format,args);
+        return new PrintWriter(logger);
+    }
+
     public PrintWriter fatalError(String msg) {
         core.fatalError(msg);
+        return new PrintWriter(logger);
+    }
+
+    public PrintWriter fatalError(String format, Object... args) {
+        core.fatalError(format,args);
         return new PrintWriter(logger);
     }
 

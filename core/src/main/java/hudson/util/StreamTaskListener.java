@@ -64,6 +64,10 @@ public final class StreamTaskListener implements TaskListener, Serializable {
         return error(msg);
     }
 
+    public PrintWriter fatalError(String format, Object... args) {
+        return fatalError(String.format(format,args));
+    }
+
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(new RemoteOutputStream(new CloseProofOutputStream(this.out)));
     }

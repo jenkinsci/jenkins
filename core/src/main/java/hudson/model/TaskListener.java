@@ -5,6 +5,7 @@ import hudson.util.StreamTaskListener;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Formatter;
 
 /**
  * Receives events that happen during some task execution,
@@ -30,12 +31,22 @@ public interface TaskListener {
     PrintWriter error(String msg);
 
     /**
+     * {@link Formatter#format(String, Object[])} version of {@link #error(String)}.
+     */
+    PrintWriter error(String format, Object... args);
+
+    /**
      * A fatal error in the build.
      *
      * @return
      *      A writer to receive details of the error. Not null.
      */
     PrintWriter fatalError(String msg);
+
+    /**
+     * {@link Formatter#format(String, Object[])} version of {@link #fatalError(String)}.
+     */
+    PrintWriter fatalError(String format, Object... args);
 
     /**
      * {@link TaskListener} that discards the output.
