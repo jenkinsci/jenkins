@@ -71,9 +71,11 @@ public class WorkspaceCleanupThread extends PeriodicWork {
         // TODO: the use of remoting is not optimal.
         // One remoting can execute "exists", "lastModified", and "delete" all at once.
         TopLevelItem item = Hudson.getInstance().getItem(jobName);
-        if(item==null)
+        if(item==null) {
             // no such project anymore
+            LOGGER.fine("Directory "+dir+" is not owned by any project");
             return true;
+        }
 
         if(!dir.exists())
             return false;
@@ -81,9 +83,11 @@ public class WorkspaceCleanupThread extends PeriodicWork {
         if (item instanceof AbstractProject) {
             AbstractProject p = (AbstractProject) item;
             Node lb = p.getLastBuiltOn();
-            if(lb!=null && lb.equals(n))
+            if(lb!=null && lb.equals(n)) {
                 // this is the active workspace. keep it.
+                LOGGER.fine("Directory "+dir+" is the last workspace for "+p);
                 return false;
+            }
         }
 
         // if older than a month, delete
