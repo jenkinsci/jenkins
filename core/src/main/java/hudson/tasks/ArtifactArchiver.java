@@ -64,7 +64,7 @@ public class ArtifactArchiver extends Publisher {
 
         try {
             if(p.getWorkspace().copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
-                listener.error("No artifact founds that matches the file pattern \""+artifacts+"\". Configuration error?");
+                listener.error("No artifacts found that match the file pattern \""+artifacts+"\". Configuration error?");
                 build.setResult(Result.FAILURE);
                 return true;
             }
