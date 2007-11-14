@@ -117,11 +117,15 @@ public final class SubversionChangeLogBuilder {
             if(debug)
                 listener.getLogger().printf("Computing changelog of %1s from %2s to %3s\n",
                         SVNURL.parseURIEncoded(url), prevRev+1, thisRev);
-            svnlc.doLog(SVNURL.parseURIEncoded(url),null,
-                SVNRevision.UNDEFINED, SVNRevision.create(prevRev+1),
-                SVNRevision.create(thisRev),
-                false, true, Long.MAX_VALUE,
-                debug ? new DebugSVNLogHandler(logHandler) : logHandler);
+            svnlc.doLog(SVNURL.parseURIEncoded(url),
+                        null,
+                        SVNRevision.UNDEFINED,
+                        SVNRevision.create(prevRev+1),
+                        SVNRevision.create(thisRev),
+                        false, // Don't stop on copy.
+                        true, // Report paths.
+                        0, // Retrieve log entries for unlimited number of revisions.
+                        debug ? new DebugSVNLogHandler(logHandler) : logHandler);
             if(debug)
                 listener.getLogger().println("done");
         } catch (SVNException e) {
