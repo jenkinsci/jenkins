@@ -145,7 +145,7 @@
       <local:globalConfig className="hudson.model.Jobs" field="PROPERTIES" />
 
       <s:block>
-        <input type="submit" name="Submit" value="OK" />
+        <s:submit value="Save" />
       </s:block>
     </s:form>
   </l:main-panel>
