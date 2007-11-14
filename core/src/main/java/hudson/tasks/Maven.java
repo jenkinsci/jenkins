@@ -260,9 +260,9 @@ public class Maven extends Builder {
         private final String mavenHome;
 
         @DataBoundConstructor
-        public MavenInstallation(String name, String mavenHome) {
+        public MavenInstallation(String name, String home) {
             this.name = name;
-            this.mavenHome = mavenHome;
+            this.mavenHome = home;
         }
 
         /**
