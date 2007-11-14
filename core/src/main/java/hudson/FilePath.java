@@ -132,13 +132,24 @@ public final class FilePath implements Serializable {
     // since the platform of the slave might be different, can't use java.io.File
     private final String remote;
 
+    /**
+     * Creates a {@link FilePath} that represents a path on the given node.
+     *
+     * @param channel
+     *      To create a path that represents a remote path, pass in a {@link Channel}
+     *      that's connected to that machine. If null, that means the local file path.
+     */
     public FilePath(VirtualChannel channel, String remote) {
         this.channel = channel;
         this.remote = remote;
     }
 
     /**
-     * To create {@link FilePath} on the master computer.
+     * To create {@link FilePath} that represents a "local" path.
+     *
+     * <p>
+     * A "local" path means a file path on the computer where the
+     * constructor invocation happened.
      */
     public FilePath(File localPath) {
         this.channel = null;
