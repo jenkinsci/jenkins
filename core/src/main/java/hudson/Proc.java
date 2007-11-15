@@ -1,8 +1,8 @@
 package hudson;
 
 import hudson.remoting.Channel;
-import hudson.util.StreamCopyThread;
 import hudson.util.IOException2;
+import hudson.util.StreamCopyThread;
 
 import java.io.File;
 import java.io.IOException;
@@ -123,8 +123,21 @@ public abstract class Proc {
                     String msg = "Process leaked file descriptors. See http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build for more information";
                     Throwable e = new Exception().fillInStackTrace();
                     LOGGER.log(Level.WARNING,msg,e);
-                    proc.getInputStream().close();
-                    proc.getErrorStream().close();
+
+                    // doing proc.getInputStream().close() hangs in FileInputStream.close0()
+                    // it could be either because another thread is blocking on read, or
+                    // it could be a bug in Windows JVM. Who knows.
+                    // so I'm abandoning the idea of closing the stream
+//                    try {
+//                        proc.getInputStream().close();
+//                    } catch (IOException x) {
+//                        LOGGER.log(Level.FINE,"stdin termination failed",x);
+//                    }
+//                    try {
+//                        proc.getErrorStream().close();
+//                    } catch (IOException x) {
+//                        LOGGER.log(Level.FINE,"stderr termination failed",x);
+//                    }
                     out.write(msg.getBytes());
                     out.write('\n');
                 }
