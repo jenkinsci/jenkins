@@ -1950,5 +1950,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         // for backward compatibility with <1.75, recognize the tag name "view" as well.
         XSTREAM.alias("view", ListView.class);
         XSTREAM.alias("listView", ListView.class);
+        // this seems to be necessary to force registration of converter early enough
+        Mode.class.getEnumConstants();
     }
 }
