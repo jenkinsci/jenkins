@@ -60,7 +60,7 @@ public class Sventon extends SubversionRepositoryBrowser {
             return null;    // no diff if this is not an edit change
         int r = path.getLogEntry().getRevision();
         return new URL(url, String.format("diffprev.svn?name=%s&commitrev=%d&revision=%d&path=%s",
-                repositoryInstance,r-1,r,URLEncoder.encode(getPath(path))));
+                repositoryInstance,r,r,URLEncoder.encode(getPath(path))));
     }
 
     @Override
