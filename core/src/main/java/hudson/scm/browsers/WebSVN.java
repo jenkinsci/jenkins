@@ -20,7 +20,8 @@ import java.net.URL;
 
 
 /**
- * {@link RepositoryBrowser} for Subversion.
+ * {@link RepositoryBrowser} for Subversion.  Assumes that WebSVN is
+ * configured with Multiviews enabled.
  *
  * @author jasonchaffee at dev.java.net
  * @since 1.139
@@ -80,7 +81,7 @@ public class WebSVN extends SubversionRepositoryBrowser {
 
         return new URL(url,
                        trimHeadSlash(path.getValue()) +
-                       param().add("opp=diff").add("rev=" + (r - 1)));
+                       param().add("op=diff").add("rev=" + r));
     }
 
     /**
