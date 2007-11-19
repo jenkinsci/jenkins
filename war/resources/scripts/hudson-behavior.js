@@ -119,6 +119,7 @@ function makeButton(e,onclick) {
     if(onclick!=null)
         btn.addListener("click",onclick);
     Element.addClassName(btn.get("element"),clsName);
+    return btn;
 }
 
 var hudsonRules = {
