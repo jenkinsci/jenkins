@@ -39,6 +39,8 @@
 		    </s:block>
       </s:form>
       <script><![CDATA[
+        var okButton = makeButton($('ok'),null);
+
         function updateOk(form) {
           function state() {
             if($('name').value.length==0)   return true;
@@ -49,9 +51,9 @@
             return true;
           }
 
-          $('ok').disabled = state()
+          okButton.set('disabled',state(),false);
         }
-        updateOk($('ok').form);ext
+        updateOk(okButton.getForm());
       ]]></script>
     </l:main-panel>
 	</l:layout>
