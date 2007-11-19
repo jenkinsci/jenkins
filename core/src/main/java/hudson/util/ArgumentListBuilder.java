@@ -81,4 +81,17 @@ public class ArgumentListBuilder {
     public List<String> toList() {
         return args;
     }
+
+    public String toStringWithQuote() {
+        StringBuilder buf = new StringBuilder();
+        for (String arg : args) {
+            if(buf.length()>0)  buf.append(' ');
+
+            if(arg.indexOf(' ')>=0 || arg.length()==0)
+                buf.append('"').append(arg).append('"');
+            else
+                buf.append(arg);
+        }
+        return buf.toString();
+    }
 }
