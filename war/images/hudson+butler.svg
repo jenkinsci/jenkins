@@ -32,8 +32,8 @@
   <defs
      id="defs2211" />
   <sodipodi:namedview
-     inkscape:window-height="594"
-     inkscape:window-width="866"
+     inkscape:window-height="652"
+     inkscape:window-width="987"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      guidetolerance="10.0"
@@ -43,9 +43,9 @@
      bordercolor="#666666"
      pagecolor="#ffffff"
      id="base"
-     inkscape:zoom="0.73632813"
-     inkscape:cx="63.000734"
-     inkscape:cy="-58.165779"
+     inkscape:zoom="7.7727263"
+     inkscape:cx="225.04217"
+     inkscape:cy="8.3443064"
      inkscape:window-x="286"
      inkscape:window-y="153"
      inkscape:current-layer="svg2078"
@@ -396,4 +396,11 @@
      height="218.65253"
      x="111.3634"
      y="75.055702" />
+  <rect
+     style="opacity:1;fill:black;fill-opacity:1;fill-rule:nonzero;stroke:black;stroke-width:1;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.99999997, 0.99999997;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect1937"
+     width="74.491234"
+     height="6.0467839"
+     x="178.0585"
+     y="85.713455" />
 </svg>
