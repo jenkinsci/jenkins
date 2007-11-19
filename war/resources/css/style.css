@@ -10,6 +10,10 @@ body, table, form, input, td, th, p, textarea, select
   font-size: 11px;
 }
 
+FORM {
+  margin: 0;
+}
+
 td {
   vertical-align: top;
 }
