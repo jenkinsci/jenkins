@@ -1,15 +1,9 @@
 package hudson.tasks;
 
 import hudson.FilePath;
-import hudson.Launcher;
-import hudson.Util;
-import hudson.model.Build;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
-import hudson.model.Project;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
 
 /**
  * Executes commands by using Windows batch file.
@@ -52,8 +46,8 @@ public class BatchFile extends CommandInterpreter {
             return "Execute Windows batch command";
         }
 
-        public Builder newInstance(StaplerRequest req) {
-            return new BatchFile(req.getParameter("batchFile"));
+        public Builder newInstance(StaplerRequest req, JSONObject data) {
+            return new BatchFile(data.getString("batchFile"));
         }
     }
 }

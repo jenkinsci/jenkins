@@ -7,6 +7,8 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.Map;
 
+import net.sf.json.JSONObject;
+
 /**
  * Executes a series of commands by using a shell.
  *
@@ -92,8 +94,8 @@ public class Shell extends CommandInterpreter {
             return "Execute shell";
         }
 
-        public Builder newInstance(StaplerRequest req) {
-            return new Shell(req.getParameter("shell"));
+        public Builder newInstance(StaplerRequest req, JSONObject data) {
+            return new Shell(data.getString("shell"));
         }
 
         public boolean configure( StaplerRequest req ) {
