@@ -19,6 +19,8 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     private final List<CaseResult> cases = new ArrayList<CaseResult>();
 
     private int passCount,failCount;
+    
+    private float duration; 
 
     private final PackageResult parent;
 
@@ -64,6 +66,10 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         return cases;
     }
 
+    public float getDuration() {
+        return duration; 
+    }
+    
     public int getPassCount() {
         return passCount;
     }

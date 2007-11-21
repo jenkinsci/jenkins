@@ -47,6 +47,9 @@ public final class TestResult extends MetaTabulatedResult {
      * Number of all tests.
      */
     private transient int totalTests;
+    
+    private float duration; 
+    
     /**
      * Number of failed/error tests.
      */
@@ -115,7 +118,9 @@ public final class TestResult extends MetaTabulatedResult {
      */
     public void parse(File reportFile) throws IOException {
         try {
-            suites.add(new SuiteResult(reportFile));
+            SuiteResult suiteResult = new SuiteResult(reportFile);
+            suites.add( suiteResult );
+            duration += suiteResult.getDuration(); 
         } catch (RuntimeException e) {
             throw new IOException2("Failed to read "+reportFile,e);
         } catch (DocumentException e) {
@@ -152,6 +157,10 @@ public final class TestResult extends MetaTabulatedResult {
         return "Package";
     }
 
+    public float getDuration() {
+        return duration; 
+    }
+    
     @Override
     public int getPassCount() {
         return totalTests-getFailCount();

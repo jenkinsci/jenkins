@@ -27,6 +27,7 @@ public final class PackageResult extends MetaTabulatedResult {
     private int passCount,failCount;
 
     private final TestResult parent;
+    private float duration; 
 
     PackageResult(TestResult parent, String packageName) {
         this.packageName = packageName;
@@ -55,6 +56,10 @@ public final class PackageResult extends MetaTabulatedResult {
         return "Class";
     }
 
+    public float getDuration() {
+        return duration; 
+    }
+    
     public int getPassCount() {
         return passCount;
     }
@@ -89,6 +94,7 @@ public final class PackageResult extends MetaTabulatedResult {
         if(c==null)
             classes.put(n,c=new ClassResult(this,n));
         c.add(r);
+        duration += r.getDuration(); 
     }
 
     void freeze() {

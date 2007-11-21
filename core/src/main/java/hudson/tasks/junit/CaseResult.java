@@ -1,5 +1,6 @@
 package hudson.tasks.junit;
 
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import org.dom4j.Element;
 
@@ -11,6 +12,7 @@ import java.util.Comparator;
  * @author Kohsuke Kawaguchi
  */
 public final class CaseResult extends TestObject implements Comparable<CaseResult> {
+    private final float duration; 
     private final String className;
     private final String testName;
     private final String errorStackTrace;
@@ -26,7 +28,13 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     private /*final*/ int failedSince;
 
     CaseResult(SuiteResult parent, Element testCase) {
-        this(parent,testCase,testCase.attributeValue("name"));
+        this(parent,testCase.attributeValue("name"), getError(testCase), parseTime(testCase));
+    }
+
+    private static float parseTime(Element testCase) {
+        String time = testCase.attributeValue("time");
+        if(time!=null)      return Float.parseFloat(time);
+        return 0.0f;
     }
 
     CaseResult(SuiteResult parent, Element testCase, String testCaseName) {
@@ -43,14 +51,19 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         String cn = parent.getName();
         className = safe(cn);
         testName = safe(testCaseName);
+        duration = Float.parseFloat( testCase.attributeValue( "time" ) ); 
         errorStackTrace = getError(testCase);
     }
 
     CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
+        this( parent, testName, errorStackTrace, 0.0f ); 
+    }
+    CaseResult(SuiteResult parent, String testName, String errorStackTrace, float duration) {
         this.className = parent.getName();
         this.testName = testName;
         this.errorStackTrace = errorStackTrace;
         this.parent = parent;
+        this.duration = duration; 
     }
 
     private static String getError(Element testCase) {
@@ -72,6 +85,17 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      */
     public String getName() {
         return testName;
+    }
+
+    /**
+     * Gets the duration of the test, in seconds
+     */
+    public float getDuration() {
+        return duration;
+    }
+
+    public String getDurationString() {
+        return Util.getTimeSpanString((long)(duration*1000));
     }
 
     /**

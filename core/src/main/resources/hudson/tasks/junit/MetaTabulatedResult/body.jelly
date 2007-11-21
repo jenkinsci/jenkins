@@ -4,12 +4,16 @@
     <table class="pane sortable">
       <tr>
         <td class="pane-header">Test Name</td>
+        <td class="pane-header" style="width:4em">Duration</td>
         <td class="pane-header" style="width:4em">Age</td>
       </tr>
       <j:forEach var="f" items="${it.failedTests}" varStatus="i">
         <tr>
           <td class="pane">
             <a href="${f.getRelativePathFrom(it)}"><st:out value="${f.fullName}"/></a>
+          </td>
+          <td class="pane" style="text-align:right;">
+            ${f.duration}
           </td>
           <td class="pane" style="text-align:right;">
             ${f.age}
@@ -24,6 +28,7 @@
     <table class="pane sortable" id="testresult">
       <tr>
         <td class="pane-header">${it.childTitle}</td>
+        <td class="pane-header" style="width:5em">Duration</td>
         <td class="pane-header" style="width:5em">Fail</td>
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(diff)</td>
         <td class="pane-header" style="width:5em">Total</td>
@@ -34,6 +39,7 @@
           <j:set var="prev" value="${p.previousResult}" />
           <tr>
             <td class="pane"><a href="${p.name}/">${p.name}</a></td>
+            <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
             <td class="pane" style="text-align:right">
               ${h.getDiffString2(p.failCount-prev.failCount)}

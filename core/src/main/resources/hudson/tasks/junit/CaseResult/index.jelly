@@ -16,6 +16,11 @@
           (since <t:buildLink job="${it.owner.project}" number="${it.failedSince}"/>)
         </div>
       </j:if>
+
+        <div style="text-align:right;">
+          Took ${it.durationString}. 
+        </div>
+      
       <pre><st:out value="${it.errorStackTrace}"/></pre>
 
       <j:if test="${!empty(it.parent.stdout)}">

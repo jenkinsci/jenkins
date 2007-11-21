@@ -4,12 +4,14 @@
     <table class="pane sortable" id="testresult">
       <tr>
         <td class="pane-header">Test name</td>
+        <td class="pane-header" style="width:6em">Duration</td>
         <td class="pane-header" style="width:6em">Status</td>
       </tr>
       <tbody>
         <j:forEach var="p" items="${it.children}" varStatus="status">
           <tr>
             <td class="pane"><a href="${p.safeName}">${p.name}</a></td>
+            <td class="pane" style="width:6em" data="${p.duration}">${p.durationString}</td>
             <td class="pane" style="width:6em">
               <j:set var="pst" value="${p.status}" />
               <span class="${pst.cssClass}">

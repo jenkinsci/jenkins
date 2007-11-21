@@ -28,6 +28,7 @@ public final class SuiteResult implements Serializable {
     private final String name;
     private final String stdout;
     private final String stderr;
+    private float duration; 
 
     /**
      * All test cases.
@@ -57,29 +58,34 @@ public final class SuiteResult implements Serializable {
         Element ex = root.element("error");
         if(ex!=null) {
             // according to junit-noframes.xsl l.229, this happens when the test class failed to load
-            cases.add(new CaseResult(this,root,"<init>"));
+            addCase(new CaseResult(this,root,"<init>"));
         }
 
         for (Element e : (List<Element>)root.elements("testcase")) {
-            cases.add(new CaseResult(this,e));
+            addCase(new CaseResult(this,e));
         }
         // a user reported that there's a slight variation of the format that puts <testsuites> at root
         // see http://www.nabble.com/More-JUnit-test-report-problems...-tf4267020.html#a12143611
         for (Element suite : (List<Element>)root.elements("testsuite")) {
             for (Element e : (List<Element>)suite.elements("testcase")) {
-                cases.add(new CaseResult(this,e));
+                addCase(new CaseResult(this,e));
             }
         }
     }
 
     /*package*/ void addCase(CaseResult cr) {
         cases.add(cr);
+        duration += cr.getDuration(); 
     }
 
     public String getName() {
         return name;
     }
 
+    public float getDuration() {
+        return duration; 
+    }
+    
     public String getStdout() {
         return stdout;
     }

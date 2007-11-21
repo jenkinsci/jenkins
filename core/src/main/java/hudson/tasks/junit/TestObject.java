@@ -21,6 +21,8 @@ public abstract class TestObject implements ModelObject, Serializable {
      */
     public abstract TestObject getPreviousResult();
 
+    public abstract float getDuration(); 
+    
     /**
      * Replaces URL-unasfe characters.
      */
