@@ -457,9 +457,6 @@ public class Util {
             if(ch=='&')
                 buf.append("&amp;");
             else
-            if(ch==' ')
-                buf.append("&nbsp;");
-            else
                 buf.append(ch);
         }
         return buf.toString();
