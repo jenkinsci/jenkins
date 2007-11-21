@@ -357,6 +357,12 @@ public class Util {
         return toHexString(bytes,0,bytes.length);
     }
 
+    /**
+     * Returns a human readable text of the time duration.
+     *
+     * @param duration
+     *      number of milliseconds.
+     */
     public static String getTimeSpanString(long duration) {
         duration /= 1000;
         if(duration<60)
