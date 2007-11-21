@@ -189,7 +189,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * Rebuilds the {@link #configurations} list and {@link #activeConfigurations}.
      */
     private void rebuildConfigurations() throws IOException {
-        {// backward compatibility check to see if there's any data in the old structure
+        {
+            // backward compatibility check to see if there's any data in the old structure
+            // if so, bring them to the newer structure.
             File[] oldDirs = getConfigurationsDir().listFiles(new FileFilter() {
                 public boolean accept(File child) {
                     return child.isDirectory() && !child.getName().startsWith("axis-");
