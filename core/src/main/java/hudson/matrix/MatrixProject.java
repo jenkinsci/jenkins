@@ -172,9 +172,17 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
                 try {
                     XmlFile config = Items.getConfigFile(v);
                     if(config.exists()) {
-                        MatrixConfiguration item = (MatrixConfiguration) config.read();
-                        item.setCombination(new Combination(c));
-                        item.onLoad(this, v.getName());
+                        Combination comb = new Combination(c);
+                        // if we already have this in memory, just use it.
+                        // otherwise load it
+                        MatrixConfiguration item=null;
+                        if(this.configurations!=null)
+                            item = this.configurations.get(comb);
+                        if(item==null) {
+                            item = (MatrixConfiguration) config.read();
+                            item.setCombination(comb);
+                            item.onLoad(this, v.getName());
+                        }
                         result.put(item.getCombination(), item);
                     }
                 } catch (IOException e) {
