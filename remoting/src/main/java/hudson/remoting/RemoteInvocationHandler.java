@@ -57,6 +57,23 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
             new RemoteInvocationHandler(channel,id,userProxy)));
     }
 
+    /**
+     * If the given object is a proxy to a remote object in the specified channel,
+     * return its object ID. Otherwise return -1.
+     * <p>
+     * This method can be used to get back the original reference when
+     * a proxy is sent back to the channel it came from. 
+     */
+    public static int unwrap(Object proxy, Channel src) {
+        InvocationHandler h = Proxy.getInvocationHandler(proxy);
+        if (h instanceof RemoteInvocationHandler) {
+            RemoteInvocationHandler rih = (RemoteInvocationHandler) h;
+            if(rih.channel==src)
+                return rih.oid;
+        }
+        return -1;
+    }
+
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if(channel==null)
             throw new IllegalStateException("proxy is not connected to a channel");

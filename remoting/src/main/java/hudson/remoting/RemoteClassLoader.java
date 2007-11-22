@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -24,7 +25,17 @@ final class RemoteClassLoader extends ClassLoader {
     private final Map<String,URL> resourceMap = new HashMap<String,URL>();
     private final Map<String,Vector<URL>> resourcesMap = new HashMap<String,Vector<URL>>();
 
-    public RemoteClassLoader(ClassLoader parent, IClassLoader proxy) {
+    public static ClassLoader create(ClassLoader parent, IClassLoader proxy) {
+        if(proxy instanceof ClassLoaderProxy) {
+            // when the remote sends 'RemoteIClassLoader' as the proxy, on this side we get it
+            // as ClassLoaderProxy. This means, the so-called remote classloader here is
+            // actually our classloader that we exported to the other side.
+            return ((ClassLoaderProxy)proxy).cl;
+        }
+        return new RemoteClassLoader(parent, proxy);
+    }
+
+    private RemoteClassLoader(ClassLoader parent, IClassLoader proxy) {
         super(parent);
         this.proxy = proxy;
     }
@@ -89,6 +100,14 @@ final class RemoteClassLoader extends ClassLoader {
     }
 
     public static IClassLoader export(ClassLoader cl, Channel local) {
+        if (cl instanceof RemoteClassLoader) {
+            // check if this is a remote classloader from the channel
+            final RemoteClassLoader rcl = (RemoteClassLoader) cl;
+            int oid = RemoteInvocationHandler.unwrap(rcl.proxy, local);
+            if(oid!=-1) {
+                return new RemoteIClassLoader(oid,rcl.proxy);
+            }
+        }
         return local.export(IClassLoader.class, new ClassLoaderProxy(cl), false);
     }
 
@@ -160,4 +179,41 @@ final class RemoteClassLoader extends ClassLoader {
             return cl.hashCode();
         }
     }
+
+    /**
+     * {@link IClassLoader} to be shipped back to the channel where it came from.
+     *
+     * <p>
+     * When the object stays on the side where it's created, delegate to the proxy field
+     * to work (which will be the remote instance.) Once transferred to the other side,
+     * resolve back to the instance on the server.
+     */
+    private static class RemoteIClassLoader implements IClassLoader, Serializable {
+        private transient final IClassLoader proxy;
+        private final int oid;
+
+        private RemoteIClassLoader(int oid, IClassLoader proxy) {
+            this.proxy = proxy;
+            this.oid = oid;
+        }
+
+        public byte[] fetch(String className) throws ClassNotFoundException {
+            return proxy.fetch(className);
+        }
+
+        public byte[] getResource(String name) throws IOException {
+            return proxy.getResource(name);
+        }
+
+        public byte[][] getResources(String name) throws IOException {
+            return proxy.getResources(name);
+        }
+
+        private Object readResolve() {
+            return Channel.current().getExportedObject(oid);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
 }
