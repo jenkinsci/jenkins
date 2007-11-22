@@ -154,12 +154,12 @@ public class Maven extends Builder {
             if(ai!=null) {
                 // if somebody has use M2_HOME they will get a classloading error
                 // when M2_HOME points to a different version of Maven2 from
-                // MAVEN_HOME (as Maven 2 gives M2_HOME priority)
+                // MAVEN_HOME (as Maven 2 gives M2_HOME priority.)
                 // 
                 // The other solution would be to set M2_HOME if we are calling Maven2 
                 // and MAVEN_HOME for Maven1 (only of use for strange people that
                 // are calling Maven2 from Maven1)
-                env.remove("M2_HOME");
+                env.put("M2_HOME",ai.getMavenHome());
                 env.put("MAVEN_HOME",ai.getMavenHome());
             }
             // just as a precaution
