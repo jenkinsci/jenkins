@@ -457,6 +457,14 @@ public class Util {
             if(ch=='&')
                 buf.append("&amp;");
             else
+            if(ch==' ') {
+                // All spaces in a block of consecutive spaces are converted to
+                // non-breaking space (&nbsp;) except for the last one.  This allows
+                // significant whitespace to be retained without prohibiting wrapping.
+                char nextCh = i+1 < text.length() ? text.charAt(i+1) : 0;
+                buf.append(nextCh==' ' ? "&nbsp;" : " ");
+            }
+            else
                 buf.append(ch);
         }
         return buf.toString();
