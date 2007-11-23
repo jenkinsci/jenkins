@@ -94,10 +94,6 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         return duration;
     }
 
-    public String getDurationString() {
-        return Util.getTimeSpanString((long)(duration*1000));
-    }
-
     /**
      * Gets the version of {@link #getName()} that's URL-safe.
      */

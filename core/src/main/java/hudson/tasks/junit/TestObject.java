@@ -2,6 +2,7 @@ package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
 import hudson.model.ModelObject;
+import hudson.Util;
 
 import java.io.Serializable;
 
@@ -21,8 +22,19 @@ public abstract class TestObject implements ModelObject, Serializable {
      */
     public abstract TestObject getPreviousResult();
 
-    public abstract float getDuration(); 
-    
+    /**
+     * Time took to run this test. In seconds.
+     */
+    public abstract float getDuration();
+
+    /**
+     * Returns the string representation of the {@link #getDuration()},
+     * in a human readable format.
+     */
+    public String getDurationString() {
+        return Util.getTimeSpanString((long)(getDuration()*1000));
+    }
+
     /**
      * Replaces URL-unasfe characters.
      */
