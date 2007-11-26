@@ -1,4 +1,4 @@
-package hudson;
+package hudson.security;
 
 import hudson.model.Hudson;
 import hudson.util.Scrambler;

@@ -28,7 +28,7 @@
 
   <filter>
     <filter-name>authentication-filter</filter-name>
-    <filter-class>hudson.BasicAuthenticationFilter</filter-class>
+    <filter-class>hudson.security.BasicAuthenticationFilter</filter-class>
   </filter>
 
   <!--

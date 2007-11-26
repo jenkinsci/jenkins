@@ -2,7 +2,7 @@ package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
 import groovy.lang.GroovyShell;
-import hudson.BasicAuthenticationFilter;
+import hudson.security.BasicAuthenticationFilter;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Functions;
