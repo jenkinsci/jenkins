@@ -2,7 +2,6 @@ package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
 import groovy.lang.GroovyShell;
-import hudson.security.BasicAuthenticationFilter;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Functions;
@@ -30,6 +29,8 @@ import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
+import hudson.security.BasicAuthenticationFilter;
+import hudson.security.SecurityMode;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -91,13 +92,13 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -123,8 +124,16 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
     /**
      * False to enable anyone to do anything.
+     * @deprecated as of 1.160.
+     * @see #security
      */
-    private boolean useSecurity = false;
+    private transient Boolean useSecurity;
+
+    /**
+     * Hudson's security mode.
+     * @since 1.160
+     */
+    private SecurityMode security = SecurityMode.UNSECURED;
 
     /**
      * Message displayed in the top page.
@@ -790,11 +799,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     public boolean isUseSecurity() {
-        return useSecurity;
+        return security != SecurityMode.UNSECURED;
     }
 
+    @Deprecated
     public void setUseSecurity(boolean useSecurity) {
-        this.useSecurity = useSecurity;
+        this.security = useSecurity ? SecurityMode.LEGACY : SecurityMode.UNSECURED;
     }
 
     /**
@@ -1089,6 +1099,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                 slave.getAssignedLabels();
         }
 
+        // read in old data that doens't have the security field set
+        if(useSecurity!=null)
+            security = useSecurity ? SecurityMode.LEGACY : SecurityMode.UNSECURED;
+
         LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
     }
 
@@ -1142,11 +1156,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
             req.setCharacterEncoding("UTF-8");
 
-            useSecurity = req.getParameter("use_security")!=null;
+            security = req.getParameter("use_security")!=null ? SecurityMode.LEGACY : SecurityMode.UNSECURED;
 
             {
                 String v = req.getParameter("slaveAgentPortType");
-                if(!useSecurity || v==null || v.equals("random"))
+                if(security==SecurityMode.UNSECURED || v==null || v.equals("random"))
                     slaveAgentPort = 0;
                 else
                 if(v.equals("disable"))
