@@ -2,6 +2,7 @@ package hudson.security;
 
 import hudson.model.Hudson;
 import hudson.util.spring.BeanBuilder;
+import org.acegisecurity.AuthenticationManager;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -32,12 +33,18 @@ public class HudsonFilter implements Filter {
      */
     private Filter acegi;
 
+    /**
+     * {@link AuthenticationManager} proxy so that the acegi filter chain can be configured
+     * before {@link Hudson} instance is loaded.
+     */
+    public static final AuthenticationManagerProxy AUTHENTICATION_MANAGER = new AuthenticationManagerProxy();
+
     public void init(FilterConfig filterConfig) throws ServletException {
         legacy = new BasicAuthenticationFilter();
         legacy.init(filterConfig);
 
         BeanBuilder builder = new BeanBuilder();
-        builder.parse(getClass().getResourceAsStream("Filters.groovy"));
+        builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/SecurityFilters.groovy"));
         acegi = (Filter) builder.createApplicationContext().getBean("filter");
         acegi.init(filterConfig);
     }
