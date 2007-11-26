@@ -124,10 +124,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
     /**
      * False to enable anyone to do anything.
+     * Left as a field so that we can still read old data that uses this flag.
      * @deprecated as of 1.160.
      * @see #security
      */
-    private transient Boolean useSecurity;
+    private Boolean useSecurity;
 
     /**
      * Hudson's security mode.
@@ -798,13 +799,28 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return ClockDifference.ZERO;
     }
 
+    /**
+     * @deprecated
+     *  Use {@link #getSecurity()} instead.
+     */
     public boolean isUseSecurity() {
         return security != SecurityMode.UNSECURED;
     }
 
-    @Deprecated
+    /**
+     * @deprecated
+     *  Use {@link #setSecurity(SecurityMode)} instead.
+     */
     public void setUseSecurity(boolean useSecurity) {
         this.security = useSecurity ? SecurityMode.LEGACY : SecurityMode.UNSECURED;
+    }
+
+    public SecurityMode getSecurity() {
+        return security;
+    }
+
+    public void setSecurity(SecurityMode security) {
+        this.security = security;
     }
 
     /**
@@ -1156,6 +1172,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
             req.setCharacterEncoding("UTF-8");
 
+            useSecurity = null;
             security = req.getParameter("use_security")!=null ? SecurityMode.LEGACY : SecurityMode.UNSECURED;
 
             {
