@@ -16,6 +16,9 @@ public enum SecurityMode {
      * In this model, an user is either admin or not. An admin user
      * can do anything, and non-admin user can only browse.
      * Authentication is performed by the container.
+     * <p>
+     * This is the only secured mode of Hudson up to 1.160.
+     * This is maintained only for backward compatibility. 
      */
     LEGACY,
     /**
