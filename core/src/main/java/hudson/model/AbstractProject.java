@@ -692,7 +692,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.138
      */
     public final Set<AbstractProject> getTransitiveDownstreamProjects() {
-        return Hudson.getInstance().getDependencyGraph().getTransitiveUpstream(this);
+        return Hudson.getInstance().getDependencyGraph().getTransitiveDownstream(this);
     }
 
     /**
