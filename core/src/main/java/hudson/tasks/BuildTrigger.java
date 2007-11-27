@@ -11,6 +11,8 @@ import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.Project;
 import hudson.model.Result;
+import hudson.model.DependecyDeclarer;
+import hudson.model.DependencyGraph;
 import hudson.model.listeners.ItemListener;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -33,7 +35,7 @@ import net.sf.json.JSONObject;
  *
  * @author Kohsuke Kawaguchi
  */
-public class BuildTrigger extends Publisher {
+public class BuildTrigger extends Publisher implements DependecyDeclarer {
 
     /**
      * Comma-separated list of other projects to be scheduled.
@@ -106,6 +108,10 @@ public class BuildTrigger extends Publisher {
         }
 
         return true;
+    }
+
+    public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
+        graph.addDependency(owner,getChildProjects());
     }
 
     @Override

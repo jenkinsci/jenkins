@@ -1,9 +1,9 @@
 package hudson.model;
 
+import hudson.CopyOnWrite;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
-import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
@@ -15,6 +15,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,16 +33,19 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     /**
      * List of active {@link Builder}s configured for this project.
      */
+    @CopyOnWrite
     private volatile List<Builder> builders = new Vector<Builder>();
 
     /**
      * List of active {@link Publisher}s configured for this project.
      */
+    @CopyOnWrite
     private volatile List<Publisher> publishers = new Vector<Publisher>();
 
     /**
      * List of active {@link BuildWrapper}s configured for this project.
      */
+    @CopyOnWrite
     private volatile List<BuildWrapper> buildWrappers = new Vector<BuildWrapper>();
 
     /**
@@ -110,10 +114,19 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return null;
     }
 
+    private void _buildDependencyGraph(Collection<?> possibleDependecyDeclarers, DependencyGraph graph) {
+        for (Object o : possibleDependecyDeclarers) {
+            if (o instanceof DependecyDeclarer) {
+                DependecyDeclarer dd = (DependecyDeclarer) o;
+                dd.buildDependencyGraph(this,graph);
+            }
+        }
+    }
+
     protected void buildDependencyGraph(DependencyGraph graph) {
-        BuildTrigger buildTrigger = (BuildTrigger) getPublishers().get(BuildTrigger.DESCRIPTOR);
-        if(buildTrigger!=null)
-             graph.addDependency(this,buildTrigger.getChildProjects());
+        _buildDependencyGraph(publishers,graph);
+        _buildDependencyGraph(builders,graph);
+        _buildDependencyGraph(buildWrappers,graph);
     }
 
     @Override
