@@ -23,6 +23,7 @@ import java.io.IOException;
  * configuration.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.160
  */
 public class HudsonFilter implements Filter {
     /**
