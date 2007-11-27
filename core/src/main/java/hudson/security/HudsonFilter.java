@@ -1,5 +1,6 @@
 package hudson.security;
 
+import groovy.lang.Binding;
 import hudson.model.Hudson;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.AuthenticationManager;
@@ -43,8 +44,10 @@ public class HudsonFilter implements Filter {
         legacy = new BasicAuthenticationFilter();
         legacy.init(filterConfig);
 
+        Binding binding = new Binding();
+        binding.setVariable("authenticationManager", HudsonFilter.AUTHENTICATION_MANAGER);
         BeanBuilder builder = new BeanBuilder();
-        builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/SecurityFilters.groovy"));
+        builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/SecurityFilters.groovy"),binding);
         acegi = (Filter) builder.createApplicationContext().getBean("filter");
         acegi.init(filterConfig);
     }

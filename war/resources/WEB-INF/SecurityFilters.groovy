@@ -11,7 +11,7 @@ import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter
 import org.acegisecurity.context.HttpSessionContextIntegrationFilter
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint
-import hudson.security.HudsonFilter
+import hudson.security.ChainedServletFilter
 
 filter(ChainedServletFilter) {
     def entryPoint = bean(AuthenticationProcessingFilterEntryPoint) {
@@ -24,7 +24,7 @@ filter(ChainedServletFilter) {
         },
         // allow clients to submit basic authentication credential
         bean(BasicProcessingFilter) {
-            authenticationManager = HudsonFilter.AUTHENTICATION_MANAGER
+            authenticationManager = authenticationManager
             // if basic authentication fails (which only happens incorrect basic auth credential is sent),
             // respond with 401 with basic auth request, instead of redirecting the user to the login page,
             // since users of basic auth tends to be a program and won't see the redirection to the form
@@ -34,7 +34,7 @@ filter(ChainedServletFilter) {
             }
         },
         bean(AuthenticationProcessingFilter) {
-            authenticationManager = HudsonFilter.AUTHENTICATION_MANAGER
+            authenticationManager = authenticationManager
             authenticationFailureUrl = "/loginError"
             defaultTargetUrl = "/"
             filterProcessesUrl = "/j_acegi_security_check"
