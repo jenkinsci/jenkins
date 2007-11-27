@@ -7,7 +7,7 @@
 		<l:main-panel>
 		  <form method="post" action="doDeleteAllDisabledModules">
 		    Are you sure about deleting all the disabled modules?
-		    <input type="submit" value="Yes" />
+		    <f:submit value="Yes" />
 		  </form>
 		</l:main-panel>
 	</l:layout>
