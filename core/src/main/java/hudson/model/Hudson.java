@@ -230,6 +230,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     private transient Set<Label> labelSet;
     private transient Set<Label> dynamicLabels = null;
 
+    public transient final ServletContext servletContext;
+
     public static Hudson getInstance() {
         return theInstance;
     }
@@ -237,6 +239,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
     public Hudson(File root, ServletContext context) throws IOException {
         this.root = root;
+        this.servletContext = context;
         if(theInstance!=null)
             throw new IllegalStateException("second instance");
         theInstance = this;

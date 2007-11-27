@@ -4,26 +4,30 @@ import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
 import hudson.XmlFile;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.export.Exported;
 import hudson.model.Descriptor.FormException;
 import hudson.scm.ChangeLogSet;
 import hudson.util.RunList;
+import hudson.util.Scrambler;
 import hudson.util.XStream2;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.GrantedAuthorityImpl;
+import org.acegisecurity.userdetails.UserDetails;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +44,14 @@ public class User extends AbstractModelObject {
     private volatile String fullName;
 
     private volatile String description;
+
+    /**
+     * {@link Scrambler#scramble(String) Scrambled} password.
+     *
+     * This field is null if the user object doesn't have its password set,
+     * in which case no one can login. 
+     */
+    private volatile String scrambledPassword;
 
     /**
      * List of {@link UserProperty}s configured for this project.
@@ -260,6 +272,49 @@ public class User extends AbstractModelObject {
      */
     public Api getApi() {
         return new Api(this);
+    }
+
+    // TODO
+    private static final GrantedAuthority[] TEST_AUTHORITY = {new GrantedAuthorityImpl("authenticated")};
+
+    /**
+     * Returns the {@link UserDetails} view of the User object.
+     * <p>
+     * This interface is implemented by a separate object to avoid having confusing methods
+     * at the {@link User} class level.
+     */
+    public UserDetails asUserDetails() {
+        return new UserDetails() {
+            public GrantedAuthority[] getAuthorities() {
+                // TODO
+                return TEST_AUTHORITY;
+            }
+
+            public String getPassword() {
+                if(scrambledPassword==null) return "not enabled";
+                return Scrambler.descramble(scrambledPassword);
+            }
+
+            public String getUsername() {
+                return id;
+            }
+
+            public boolean isAccountNonExpired() {
+                return true;
+            }
+
+            public boolean isAccountNonLocked() {
+                return true;
+            }
+
+            public boolean isCredentialsNonExpired() {
+                return true;
+            }
+
+            public boolean isEnabled() {
+                return scrambledPassword!=null;
+            }
+        };
     }
 
     /**

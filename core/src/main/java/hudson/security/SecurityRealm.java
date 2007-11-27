@@ -3,6 +3,9 @@ package hudson.security;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import org.acegisecurity.AuthenticationManager;
+import org.springframework.context.ApplicationContext;
+
+import java.util.Map;
 
 /**
  * Pluggable security realm that connects external user database to Hudson.
@@ -23,4 +26,24 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * captured as instance variables of {@link SecurityRealm} implementation.
      */
     public abstract AuthenticationManager createAuthenticationManager();
+
+    /**
+     * Picks up the instance of the given type from the spring context.
+     * If there are multiple beans of the same type or if there are none,
+     * this method treats that as an {@link IllegalArgumentException}.
+     *
+     * This method is intended to be used to pick up a Acegi object from
+     * spring once the bean definition file is parsed.
+     */
+    protected static <T> T findBean(Class<T> type, ApplicationContext context) {
+        Map m = context.getBeansOfType(type);
+        switch(m.size()) {
+        case 0:
+            throw new IllegalArgumentException("No beans of "+type+" are defined");
+        case 1:
+            return type.cast(m.values().iterator().next());
+        default:
+            throw new IllegalArgumentException("Multiple beans of "+type+" are defined: "+m);            
+        }
+    }
 }
