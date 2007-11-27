@@ -48,7 +48,7 @@ public class HudsonFilter implements Filter {
         Binding binding = new Binding();
         binding.setVariable("authenticationManager", HudsonFilter.AUTHENTICATION_MANAGER);
         BeanBuilder builder = new BeanBuilder();
-        builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/SecurityFilters.groovy"),binding);
+        builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
         acegi = (Filter) builder.createApplicationContext().getBean("filter");
         acegi.init(filterConfig);
     }
