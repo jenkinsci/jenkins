@@ -1,7 +1,6 @@
 package hudson.util;
 
 import hudson.FilePath;
-import hudson.Functions;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.model.AbstractProject;
@@ -248,16 +247,32 @@ public abstract class FormFieldValidator {
      * the current workspace.
      * @since 1.116.
      */
-    public static class WorkspaceDirectory extends FormFieldValidator {
+    public static class WorkspaceDirectory extends WorkspaceFilePath {
         private final boolean errorIfNotExist;
 
         public WorkspaceDirectory(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist) {
-            super(request, response, false);
+            super(request, response, false, false);
             this.errorIfNotExist = errorIfNotExist;
         }
 
         public WorkspaceDirectory(StaplerRequest request, StaplerResponse response) {
             this(request, response, true);
+        }
+    }
+
+    /**
+     * Checks a valid file name or directory (specified in the 'value' query parameter) against
+     * the current workspace.
+     * @since 1.160
+     */
+    public static class WorkspaceFilePath extends FormFieldValidator {
+        private final boolean errorIfNotExist;
+        private final boolean expectingFile;
+
+        public WorkspaceFilePath(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist, boolean expectingFile) {
+            super(request, response, false);
+            this.errorIfNotExist = errorIfNotExist;
+            this.expectingFile = expectingFile;
         }
 
         protected void check() throws IOException, ServletException {
@@ -284,12 +299,19 @@ public abstract class FormFieldValidator {
                 }
 
                 if(ws.child(value).exists()) {
-                    if(ws.child(value).isDirectory())
-                        ok();
-                    else
-                        error(value+" is not a directory");
+                    if (expectingFile) {
+                        if(!ws.child(value).isDirectory())
+                            ok();
+                        else
+                            error(value+" is not a file");
+                    } else {
+                        if(ws.child(value).isDirectory())
+                            ok();
+                        else
+                            error(value+" is not a directory");
+                    }
                 } else {
-                    String msg = "No such directory: " + value;
+                    String msg = "No such "+(expectingFile?"file":"directory")+": " + value;
                     if(errorIfNotExist)     error(msg);
                     else                    warning(msg);
                 }
