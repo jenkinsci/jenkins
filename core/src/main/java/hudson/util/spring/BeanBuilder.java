@@ -119,7 +119,13 @@ public class BeanBuilder extends GroovyObjectSupport {
      * Parses the bean definition groovy script.
      */
     public void parse(InputStream script) {
-        Binding binding = new Binding();
+        parse(script,new Binding());
+    }
+
+    /**
+     * Parses the bean definition groovy script by first exporting the given {@link Binding}. 
+     */
+    public void parse(InputStream script, Binding binding) {
         CompilerConfiguration cc = new CompilerConfiguration();
         cc.setScriptBaseClass(ClosureScript.class.getName());
         GroovyShell shell = new GroovyShell(binding,cc);
