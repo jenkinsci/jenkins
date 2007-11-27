@@ -159,6 +159,15 @@ public class User extends AbstractModelObject {
         return get("unknown");
     }
 
+    /**
+     * Gets the {@link User} object by its id.
+     *
+     * @param create
+     *      If true, this method will never return null for valid input
+     *      (by creating a new {@link User} object if none exists.)
+     *      If false, this method will return null if {@link User} object
+     *      with the given name doesn't exist.
+     */
     public static User get(String id, boolean create) {
         if(id==null)
             return null;
