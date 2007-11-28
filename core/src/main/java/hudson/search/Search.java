@@ -35,11 +35,13 @@ public class Search {
 
                 SearchIndex index = smo.getSearchIndex();
                 String query = req.getParameter("q");
-                SuggestedItem target = find(index, query);
-                if(target!=null) {
-                    // found
-                    rsp.sendRedirect2(a.getUrl()+target.getUrl());
-                    return;
+                if(query!=null) {
+                    SuggestedItem target = find(index, query);
+                    if(target!=null) {
+                        // found
+                        rsp.sendRedirect2(a.getUrl()+target.getUrl());
+                        return;
+                    }
                 }
             }
         }
