@@ -430,9 +430,8 @@ function initOptionalBlock(sid, eid, cid) {
 function updateOptionalBlock(c,scroll) {
     // find the start TR
     var s = c;
-    while(!s.hasClassName("optional-block-start"))
+    while(!Element.hasClassName(s, "optional-block-start"))
         s = s.parentNode;
-
     var tbl = s.parentNode;
     var i = false;
     var o = false;
@@ -443,7 +442,7 @@ function updateOptionalBlock(c,scroll) {
     for (var j = 0; tbl.rows[j]; j++) {
         var n = tbl.rows[j];
 
-        if (i && n.hasClassName("optional-block-end"))
+        if (i && Element.hasClassName(n, "optional-block-end"))
             o = true;
 
         if (i && !o) {
