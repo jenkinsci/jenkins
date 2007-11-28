@@ -68,6 +68,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         if(pollingScheduled || Hudson.getInstance().isQuietingDown())
             return; // noop
         pollingScheduled = true;
+        LOGGER.fine("Scheduling a polling for "+job);
 
         if (DESCRIPTOR.synchronousPolling) {
         	LOGGER.fine("Running the trigger directly without threading, " +
