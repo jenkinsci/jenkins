@@ -1673,6 +1673,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Configure the logging level.
      */
     public void doConfigLogger( StaplerRequest req, StaplerResponse rsp, @QueryParameter("name") String name, @QueryParameter("level") String level) throws IOException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
         Logger.getLogger(name).setLevel(Level.parse(level.toUpperCase()));
         rsp.sendRedirect2("log");
     }
