@@ -373,7 +373,7 @@
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jexl</artifactId>
-      <version>1.1-hudson-20071021</version>
+      <version>1.1-hudson-20071129</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
