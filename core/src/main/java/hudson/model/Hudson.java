@@ -57,6 +57,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletContext;
@@ -1666,6 +1667,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         rsp.getWriter().println("GCed");
+    }
+
+    /**
+     * Configure the logging level.
+     */
+    public void doConfigLogger( StaplerRequest req, StaplerResponse rsp, @QueryParameter("name") String name, @QueryParameter("level") String level) throws IOException {
+        Logger.getLogger(name).setLevel(Level.parse(level.toUpperCase()));
+        rsp.sendRedirect2("log");
     }
 
     /**

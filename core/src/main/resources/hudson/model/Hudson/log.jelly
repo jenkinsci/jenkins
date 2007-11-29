@@ -1,7 +1,7 @@
 <!--
   Log view
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout title="Log" secured="true">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
@@ -9,6 +9,26 @@
     <j:forEach var="log" items="${h.logRecords}">
       <pre>${h.printLogRecord(log)}</pre>
     </j:forEach>
+
+    <h2>Logger Configuration</h2>
+    <form action="configLogger" method="post">
+      Name: <input type="text" name="name" width="40" />
+      Level:
+      <select name="level">
+        <option>inherit</option>
+        <option>off</option>
+        <option>severe</option>
+        <option>warning</option>
+        <option>info</option>
+        <option>config</option>
+        <option>fine</option>
+        <option>finer</option>
+        <option>finest</option>
+        <option>all</option>
+      </select>
+
+      <f:submit value="Submit"/>
+    </form>
 
     <!-- TODO: put this in the <head> tag. -->
     <div align="right" style="margin:1em">
