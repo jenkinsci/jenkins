@@ -57,11 +57,19 @@ public class ViewSVN extends SubversionRepositoryBrowser {
         return new QueryBuilder(url.getQuery());
     }
 
-    public Descriptor<RepositoryBrowser<?>> getDescriptor() {
-        return DESCRIPTOR;
+    public DescriptorImpl getDescriptor() {
+        return DescriptorImpl.INSTANCE;
     }
 
-    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new Descriptor<RepositoryBrowser<?>>(ViewSVN.class) {
+    private static final long serialVersionUID = 1L;
+
+    public static final class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
+        public static final DescriptorImpl INSTANCE = new DescriptorImpl();
+
+        private DescriptorImpl() {
+            super(ViewSVN.class);
+        }
+
         public String getDisplayName() {
             return "ViewSVN";
         }
@@ -69,7 +77,5 @@ public class ViewSVN extends SubversionRepositoryBrowser {
         public ViewSVN newInstance(StaplerRequest req) throws FormException {
             return req.bindParameters(ViewSVN.class,"viewsvn.");
         }
-    };
-
-    private static final long serialVersionUID = 1L;
+    }
 }

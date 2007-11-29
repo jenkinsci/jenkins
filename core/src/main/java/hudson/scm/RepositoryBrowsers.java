@@ -19,7 +19,7 @@ public class RepositoryBrowsers {
      */
     public static final List<Descriptor<RepositoryBrowser<?>>> LIST = Descriptor.toList(
         ViewCVS.DESCRIPTOR,
-        ViewSVN.DESCRIPTOR,
+        ViewSVN.DescriptorImpl.INSTANCE,
         FishEyeSVN.DESCRIPTOR,
         FishEyeCVS.DESCRIPTOR,
         WebSVN.DESCRIPTOR,
