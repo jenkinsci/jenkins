@@ -10,7 +10,12 @@
       <pre>${h.printLogRecord(log)}</pre>
     </j:forEach>
 
-    <h2>Logger Configuration</h2>
+    <h2>
+      Logger Configuration
+      <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Logger+Configuration">
+        <img src="${imagesURL}/16x16/help.gif" />
+      </a>
+    </h2>
     <form action="configLogger" method="post">
       Name: <input type="text" name="name" width="40" />
       Level:
@@ -26,7 +31,7 @@
         <option>finest</option>
         <option>all</option>
       </select>
-
+      <st:nbsp/>
       <f:submit value="Submit"/>
     </form>
 
