@@ -1,5 +1,5 @@
 <div>
-  If this option is enabled, all <a href="lastSuccessfulBuild/fingerprint">
+  If this option is enabled, all of <a href="lastSuccessfulBuild/fingerprint">
   the builds that are referenced</a> from builds of this project (via fingerprint)
   will be protected from log rotation.
 
@@ -7,9 +7,9 @@
   When your job depends on other jobs on Hudson and you occasionally need
   to tag your workspace, it's often convenient/necessary to also tag your
   dependencies on Hudson. The problem is that the log rotation could
-  interface with this, since the build your project is using might be already
-  log rotated (if there has been a lot of builds in your dependency), and
-  if that happens you won't be able to reliably tag you dependencies.
+  interfere with this, since the build your project is using might already be
+  log rotated (if there have been a lot of builds in your dependency), and
+  if that happens you won't be able to reliably tag your dependencies.
 
   <p>
   This feature fixes that problem by "locking" those builds that you depend on,
