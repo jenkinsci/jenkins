@@ -172,7 +172,17 @@ public class Ant extends Builder {
             return r==0;
         } catch (IOException e) {
             Util.displayIOException(e,listener);
-            e.printStackTrace( listener.fatalError("command execution failed") );
+
+            String errorMessage = "command execution failed";
+            if(ai==null) {
+                if(DESCRIPTOR.getInstallations()==null)
+                    // looks like the user didn't configure any Ant installation
+                    errorMessage += ". Maybe you need to configure where your Ant installations are?";
+                else
+                    // There are Ant installations configured but the project didn't pick it
+                    errorMessage += ". Maybe you need to configure the job to choose one of your Ant installations?";
+            }
+            e.printStackTrace( listener.fatalError(errorMessage) );
             return false;
         }
     }
