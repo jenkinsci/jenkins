@@ -11,10 +11,13 @@ import hudson.model.Result;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+
+import net.sf.json.JSONObject;
 
 /**
  * Copies the artifacts into an archive directory.
@@ -38,9 +41,10 @@ public class ArtifactArchiver extends Publisher {
      */
     private final boolean latestOnly;
 
+    @DataBoundConstructor
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
-        this.artifacts = artifacts;
-        this.excludes = excludes;
+        this.artifacts = artifacts.trim();
+        this.excludes = Util.fixEmptyAndTrim(excludes);
         this.latestOnly = latestOnly;
     }
 
@@ -125,11 +129,8 @@ public class ArtifactArchiver extends Publisher {
             new FormFieldValidator.WorkspaceFileMask(req,rsp).process();
         }
 
-        public Publisher newInstance(StaplerRequest req) {
-            return new ArtifactArchiver(
-                req.getParameter("artifacts").trim(),
-                Util.fixEmpty(req.getParameter("artifacts_excludes").trim()),
-                req.getParameter("artifacts_latest_only")!=null);
+        public ArtifactArchiver newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            return req.bindJSON(ArtifactArchiver.class,formData);
         }
     }
 }

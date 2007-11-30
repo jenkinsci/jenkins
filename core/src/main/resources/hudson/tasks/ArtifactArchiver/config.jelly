@@ -1,14 +1,14 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<f:entry title="Files to archive" help="/help/tasks/artifactArchiver/includes.html">
-	  <f:textbox name="artifacts" value="${instance.artifacts}"
+	  <f:textbox name="artifacts.artifacts" value="${instance.artifacts}"
                checkUrl="'${rootURL}/publisher/ArtifactArchiver/check?job=${it.fullName}&amp;value='+escape(this.value)" />
 	</f:entry>
   <f:advanced>
     <f:entry title="Excludes" help="/help/tasks/artifactArchiver/excludes.html">
-      <f:textbox name="artifacts_excludes" value="${instance.excludes}"/>
+      <f:textbox name="artifacts.excludes" value="${instance.excludes}"/>
     </f:entry>
     <f:entry title="">
-      <f:checkbox name="artifacts_latest_only" checked="${instance.latestOnly}" />
+      <f:checkbox name="artifacts.latestOnly" checked="${instance.latestOnly}" />
       <label class="attach-previous">Discard all but the last successful artifact to save disk space</label>
     </f:entry>
   </f:advanced>
