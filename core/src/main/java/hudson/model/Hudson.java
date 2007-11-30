@@ -1179,7 +1179,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             // keep using 'useSecurity' field as the main configuration setting
             // until we get the new security implementation working
             // useSecurity = null;
-            security = req.getParameter("use_security")!=null ? SecurityMode.LEGACY : SecurityMode.UNSECURED;
+            if (req.getParameter("use_security") != null) {
+                security = SecurityMode.LEGACY;
+                useSecurity = true;
+            } else {
+                security = SecurityMode.UNSECURED;
+                useSecurity = false;
+            }
 
             {
                 String v = req.getParameter("slaveAgentPortType");
