@@ -15,7 +15,7 @@
               <td><input type="password" name="j_password" /></td>
             </tr>
           </table>
-          <input type="submit" value="login" />
+          <f:submit value="login" />
           <script>
             $('j_username').focus();
           </script>
