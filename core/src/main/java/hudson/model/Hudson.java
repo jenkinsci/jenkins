@@ -126,13 +126,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * False to enable anyone to do anything.
      * Left as a field so that we can still read old data that uses this flag.
-     * @deprecated as of 1.160.
      * @see #security
      */
     private Boolean useSecurity;
 
     /**
      * Hudson's security mode.
+     * To supercede {@link #useSecurity} eventually.
      * @since 1.160
      */
     private SecurityMode security = SecurityMode.UNSECURED;
@@ -1176,7 +1176,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
             req.setCharacterEncoding("UTF-8");
 
-            useSecurity = null;
+            // keep using 'useSecurity' field as the main configuration setting
+            // until we get the new security implementation working
+            // useSecurity = null;
             security = req.getParameter("use_security")!=null ? SecurityMode.LEGACY : SecurityMode.UNSECURED;
 
             {
