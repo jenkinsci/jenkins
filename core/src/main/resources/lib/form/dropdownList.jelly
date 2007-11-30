@@ -14,7 +14,7 @@
       <d:invokeBody />
     </select>
     <script>
-        $$('${id}').forms = [];
+        $$('${id}').subForms = [];
     </script>
   </f:entry>
 

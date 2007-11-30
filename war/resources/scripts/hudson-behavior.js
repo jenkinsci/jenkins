@@ -656,9 +656,9 @@ Form.findMatchingInput = function(base, name) {
 // used witih <dropdownList> and <dropdownListBlock> to control visibility
 function updateDropDownList(sel) {
     // alert('Yay! '+sel.value+' '+sel.selectedIndex);
-    for (var i = 0; i < sel.forms.length; i++) {
+    for (var i = 0; i < sel.subForms.length; i++) {
         var show = sel.selectedIndex == i;
-        var f = sel.forms[i];
+        var f = sel.subForms[i];
         var td = f.start;
         while (true) {
             td.style.display = (show ? "" : "none");

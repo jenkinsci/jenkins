@@ -21,7 +21,7 @@
       <d:invokeBody />
       <tr id="${eid}" style="display:none" />
       <script>
-        $$('${id}').forms.push({
+        $$('${id}').subForms.push({
           start: $$('${sid}'),
           end: $$('${eid}')
         });
