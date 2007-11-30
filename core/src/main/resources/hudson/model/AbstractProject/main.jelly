@@ -28,7 +28,7 @@
       Workspace
     </t:summary>
 
-    <t:artifactList caption="Latest Artifacts"
+    <t:artifactList caption="Latest Successful Artifacts"
         build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/" />
 
     <t:summary icon="notepad.gif" href="changes">
