@@ -294,6 +294,17 @@
     <HUDSON_HOME>${basedir}/work</HUDSON_HOME>
   </properties>
 
+  <pluginRepositories>
+    <pluginRepository>
+      <id>java.net2</id>
+      <url>http://download.java.net/maven/2</url>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+
   <profiles>
     <profile>
       <id>hudson-libs-local</id>
