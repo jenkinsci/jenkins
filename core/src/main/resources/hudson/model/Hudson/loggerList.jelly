@@ -1,0 +1,47 @@
+<!--
+  List of loggers and their configurations.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="Log" secured="true">
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel>
+    <h1><img src="images/48x48/clipboard.gif" />Logger Configuration</h1>
+    <form>
+      <div id="tree" />
+      <script src="${rootURL}/scripts/yui/treeview/treeview-${yuiSuffix}.js"></script>
+      <link rel="stylesheet" href="${rootURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css" />
+      <script><![CDATA[
+        var tree = new YAHOO.widget.TreeView("tree");
+        var root = tree.getRoot();
+
+        var model = ${h.getLoggerTree('hudson')};
+
+        function build(parentNode,model) {
+          var node = new YAHOO.widget.TextNode(model.name,parentNode,true);
+          for( var i=0; i<model.children.length; i++ )
+            build(node,model.children[i]);
+        }
+
+        build(root,model);
+        tree.draw();
+      ]]></script>
+      <table>
+        <j:forEach var="logger" items="${h.getAllLoggers('hudson')}">
+          <tr>
+            <td>${logger.name}</td>
+            <td>
+              <select name="${logger.name}">
+                <f:option value="inherited" selected="${logger.level==null}">inherited</f:option>
+                <j:forEach var="level" items="${h.allLogLevels}">
+                  <f:option value="${level.name}" selected="${level==logger.level}">${level.name}</f:option>
+                </j:forEach>
+              </select>
+              ${logger.level}
+            </td>
+          </tr>
+        </j:forEach>
+      </table>
+    </form>
+  </l:main-panel>
+</l:layout>
+</j:jelly>
