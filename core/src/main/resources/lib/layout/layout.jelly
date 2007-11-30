@@ -80,7 +80,7 @@
 
               <!-- search box -->
               <j:set var="searchURL" value="${h.searchURL}"/>
-              <form action="${searchURL}" method="get" style="position:relative; top:0.5em;">
+              <form action="${searchURL}" method="get" style="position:relative;">
                 <!-- this div determines the minimum width -->
                 <div id="search-box-minWidth"/>
                 <!-- this div is used to calculate the width of the text box -->
