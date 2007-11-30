@@ -1,5 +1,10 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:section title="E-mail Notification">
+      <f:description>
+      <div align="right">
+        <a href="${rootURL}/publisher/Mailer/sendTestMail">Test configuration by sending e-mail to System Admin Address</a>
+      </div>
+    </f:description>
     <f:entry title="SMTP server"
              help="/help/tasks/mailer/smtp-server.html">
       <input class="setting-input" name="mailer_smtp_server"

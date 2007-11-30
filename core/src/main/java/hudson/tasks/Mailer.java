@@ -1,26 +1,42 @@
 package hudson.tasks;
 
 import hudson.Launcher;
+import hudson.Proc;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.model.Project;
+import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
+import hudson.util.ByteBuffer;
 import hudson.util.FormFieldValidator;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.StringWriter;
+import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.mail.Address;
 import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletException;
 
 import org.apache.tools.ant.types.selectors.SelectorUtils;
@@ -135,6 +151,11 @@ public class Mailer extends Publisher {
          * If true use SSL on port 465 (standard SMTPS).
          */
         private boolean useSsl;
+
+        /**
+         * Used to keep track of number test e-mails.
+         */
+        private static transient int testEmailCount = 0;
         
 
         public DescriptorImpl() {
@@ -272,6 +293,44 @@ public class Mailer extends Publisher {
                     }
                 }
             }.process();
+        }
+        
+        /**
+         * Send an email to the admin address
+         * @param req ignored request
+         * @param rsp used to write the result of the sending
+         * @throws IOException
+         * @throws ServletException
+         * @throws InterruptedException
+         */
+        public void doSendTestMail(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+            rsp.setContentType("text/plain");
+            PrintStream writer = new PrintStream(rsp.getOutputStream());            
+            try {
+                writer.println("Sending email to " + getAdminAddress());
+                writer.println();
+                writer.println("Email content ---------------------------------------------------------");
+                writer.flush();
+                
+                MimeMessage msg = new MimeMessage(createSession());
+                msg.setSubject("Test email #" + ++testEmailCount);
+                msg.setContent("This is test email #" + testEmailCount + " sent from Hudson Continuous Integration server.", "text/plain");
+                msg.setFrom(new InternetAddress(getAdminAddress()));
+                msg.setSentDate(new Date());
+                msg.setRecipient(Message.RecipientType.TO, new InternetAddress(getAdminAddress()));                
+                msg.writeTo(writer);
+                writer.println();                
+                writer.println("-----------------------------------------------------------------------");
+                writer.println();
+                writer.flush();
+                
+                Transport.send(msg);
+                
+                writer.println("Email was successfully sent");
+            } catch (MessagingException e) {
+                writer.println(e.getMessage());
+            }
+            writer.flush();
         }
     }
 
