@@ -45,19 +45,6 @@ public class SparseACL extends ACL {
         add(new Entry(sid,permission,allowed));
     }
 
-    /**
-     * Checks if the current security principal has this permission.
-     *
-     * @throws AccessDeniedException
-     *      if the user doesn't have the permission.
-     */
-    public void checkPermission(Permission p) {
-        Authentication a = SecurityContextHolder.getContext().getAuthentication();
-
-        if(!hasPermission(a,p))
-            throw new AccessDeniedException(a.toString()+" is missing "+p.name);
-    }
-
     public boolean hasPermission(Authentication a, Permission permission) {
         // ACL entries for this principal takes precedence
         Boolean b = hasPermission(new PrincipalSid(a),permission);
