@@ -1,12 +1,10 @@
 package hudson.security;
 
-import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
-import org.acegisecurity.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +63,7 @@ public class SparseACL extends ACL {
         if(parent!=null)
             return parent.hasPermission(a,permission);
 
+        // the ultimate default is to reject everything
         return false;
     }
 
@@ -78,11 +77,4 @@ public class SparseACL extends ACL {
         }
         return null;
     }
-
-    /**
-     * {@link Sid} that represents everyone, including anonymous users.
-     */
-    public static final Sid EVERYONE = new Sid() {};
-
-    public static final Sid ANONYMOUS = new PrincipalSid("anonymous");
 }
