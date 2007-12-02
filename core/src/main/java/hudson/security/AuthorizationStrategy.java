@@ -2,7 +2,11 @@ package hudson.security;
 
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
+import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import org.acegisecurity.Authentication;
+
+import java.io.Serializable;
 
 /**
  * Controls authorization throughout Hudson.
@@ -32,4 +36,39 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      * IOW, this ACL will have the ultimate say on the access control.
      */
     public abstract ACL getRootACL();
+
+    /**
+     * {@link AuthorizationStrategy} that implements the semantics
+     * of unsecured Hudson where everyone has full control.
+     */
+    public static final AuthorizationStrategy UNSECURED = new UnsecuredAuthorizationStrategy();
+
+    private static final class UnsecuredAuthorizationStrategy extends AuthorizationStrategy implements Serializable {
+        /**
+         * Maintains the singleton semantics.
+         */
+        private Object readResolve() {
+            return UNSECURED;
+        }
+
+        /**
+         * Thie {@link AuthorizationStrategy} is special
+         * in that it cannot be explicitly configured, hence there's no
+         * descriptor for this. 
+         */
+        public Descriptor<AuthorizationStrategy> getDescriptor() {
+            return null;
+        }
+
+        @Override
+        public ACL getRootACL() {
+            return UNSECURED_ACL;
+        }
+
+        private static final ACL UNSECURED_ACL = new ACL() {
+            public boolean hasPermission(Authentication a, Permission permission) {
+                return true;
+            }
+        };
+    }
 }
