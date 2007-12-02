@@ -56,7 +56,7 @@ public class Permission {
         ALL.add(this);
     }
 
-    public Permission(Class owner, String name) {
+    private Permission(Class owner, String name) {
         this(owner,name,null);
     }
 
