@@ -2,6 +2,7 @@ package hudson.security;
 
 import hudson.model.Hudson;
 import hudson.util.Scrambler;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -73,9 +74,12 @@ public class BasicAuthenticationFilter implements Filter {
         String authorization = req.getHeader("Authorization");
 
         String path = req.getServletPath();
-        if(authorization==null || req.getUserPrincipal()!=null || path.startsWith("/secured/")
+        if(authorization==null || req.getUserPrincipal() !=null || path.startsWith("/secured/")
         || !Hudson.getInstance().isUseSecurity()) {
             // normal requests, or security not enabled
+            // but before we route this request, integrate the container authentication
+            // to Acegi
+            SecurityContextHolder.getContext().setAuthentication(new ContainerAuthentication(req));
             chain.doFilter(request,response);
             return;
         }

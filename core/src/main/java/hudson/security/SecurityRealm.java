@@ -2,6 +2,8 @@ package hudson.security;
 
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
+import hudson.model.Descriptor;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
 import org.springframework.context.ApplicationContext;
 
@@ -46,4 +48,32 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
             throw new IllegalArgumentException("Multiple beans of "+type+" are defined: "+m);            
         }
     }
+
+    /**
+     * Singleton constant that represents "no authentication."
+     */
+    public static final SecurityRealm NO_AUTHENTICATION = new SecurityRealm() {
+        public AuthenticationManager createAuthenticationManager() {
+            return new AuthenticationManager() {
+                public Authentication authenticate(Authentication authentication) {
+                    return authentication;
+                }
+            };
+        }
+
+        /**
+         * This special instance is not configurable explicitly,
+         * so it doesn't have a descriptor.
+         */
+        public Descriptor<SecurityRealm> getDescriptor() {
+            return null;
+        }
+
+        /**
+         * Maintain singleton semantics.
+         */
+        private Object readResolve() {
+            return NO_AUTHENTICATION;
+        }
+    };
 }

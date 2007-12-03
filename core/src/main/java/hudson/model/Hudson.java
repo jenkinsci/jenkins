@@ -29,8 +29,15 @@ import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
+import hudson.security.ACL;
+import hudson.security.AuthorizationStrategy;
 import hudson.security.BasicAuthenticationFilter;
+import hudson.security.HudsonFilter;
+import hudson.security.LegacyAuthorizationStrategy;
+import hudson.security.LegacySecurityRealm;
+import hudson.security.Permission;
 import hudson.security.SecurityMode;
+import hudson.security.SecurityRealm;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -54,10 +61,10 @@ import hudson.widgets.Widget;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletContext;
@@ -126,16 +133,37 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * False to enable anyone to do anything.
      * Left as a field so that we can still read old data that uses this flag.
-     * @see #security
+     *
+     * @see #authorizationStrategy
+     * @see #securityRealm
      */
     private Boolean useSecurity;
 
     /**
-     * Hudson's security mode.
-     * To supercede {@link #useSecurity} eventually.
-     * @since 1.160
+     * Controls how the
+     * <a href="http://en.wikipedia.org/wiki/Authorization">authorization</a>
+     * is handled in Hudson.
+     * <p>
+     * This ultimately controls who has access to what.
+     *
+     * Never null.
      */
-    private SecurityMode security = SecurityMode.UNSECURED;
+    private volatile AuthorizationStrategy authorizationStrategy;
+
+    /**
+     * Controls a part of the
+     * <a href="http://en.wikipedia.org/wiki/Authentication">authentication</a>
+     * handling in Hudson.
+     * <p>
+     * Intuitively, this corresponds to the user database.
+     *
+     * See {@link HudsonFilter} for the concrete authentication protocol. 
+     *
+     * Never null.
+     *
+     * @see #getSecurity()
+     */
+    private volatile SecurityRealm securityRealm;
 
     /**
      * Message displayed in the top page.
@@ -804,27 +832,50 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
-     * @deprecated
-     *  Use {@link #getSecurity()} instead.
+     * A convenience method to check if there's some security
+     * restrictions in place.
      */
     public boolean isUseSecurity() {
-        return security != SecurityMode.UNSECURED;
+        return securityRealm!=SecurityRealm.NO_AUTHENTICATION;
     }
 
     /**
-     * @deprecated
-     *  Use {@link #setSecurity(SecurityMode)} instead.
+     * Returns the constant that captures the three basic security modes
+     * in Hudson.
      */
-    public void setUseSecurity(boolean useSecurity) {
-        this.security = useSecurity ? SecurityMode.LEGACY : SecurityMode.UNSECURED;
-    }
-
     public SecurityMode getSecurity() {
-        return security;
+        // fix the variable so that this code works under concurrent modification to securityRealm.
+        SecurityRealm realm = securityRealm;
+
+        if(realm==SecurityRealm.NO_AUTHENTICATION)
+            return SecurityMode.UNSECURED;
+        if(realm instanceof LegacySecurityRealm)
+            return SecurityMode.LEGACY;
+        return SecurityMode.SECURED;
     }
 
-    public void setSecurity(SecurityMode security) {
-        this.security = security;
+    /**
+     * Returns the root {@link ACL}.
+     *
+     * @see AuthorizationStrategy#getRootACL()
+     */
+    public ACL getACL() {
+        return authorizationStrategy.getRootACL();
+    }
+
+    /**
+     * Short for {@code getACL().checkPermission(p)}
+     */
+    public void checkPermission(Permission p) {
+        getACL().checkPermission(p);
+    }
+
+    /**
+     * @return
+     *      never null.
+     */
+    public AuthorizationStrategy getAuthorizationStrategy() {
+        return authorizationStrategy;
     }
 
     /**
@@ -1120,8 +1171,19 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         }
 
         // read in old data that doens't have the security field set
-        if(useSecurity!=null)
-            security = useSecurity ? SecurityMode.LEGACY : SecurityMode.UNSECURED;
+        if(authorizationStrategy==null) {
+            if(useSecurity==null || !useSecurity)
+                authorizationStrategy = AuthorizationStrategy.UNSECURED;
+            else
+                authorizationStrategy = new LegacyAuthorizationStrategy();
+        }
+        if(securityRealm==null) {
+            if(useSecurity==null || !useSecurity)
+                securityRealm = SecurityRealm.NO_AUTHENTICATION;
+            else
+                securityRealm = new LegacySecurityRealm();
+        }
+        
 
         LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
     }
@@ -1180,16 +1242,18 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             // until we get the new security implementation working
             // useSecurity = null;
             if (req.getParameter("use_security") != null) {
-                security = SecurityMode.LEGACY;
                 useSecurity = true;
+                securityRealm = new LegacySecurityRealm();
+                authorizationStrategy = new LegacyAuthorizationStrategy();
             } else {
-                security = SecurityMode.UNSECURED;
-                useSecurity = false;
+                useSecurity = null;
+                securityRealm = SecurityRealm.NO_AUTHENTICATION;
+                authorizationStrategy = AuthorizationStrategy.UNSECURED;
             }
 
             {
                 String v = req.getParameter("slaveAgentPortType");
-                if(security==SecurityMode.UNSECURED || v==null || v.equals("random"))
+                if(!isUseSecurity() || v==null || v.equals("random"))
                     slaveAgentPort = 0;
                 else
                 if(v.equals("disable"))
@@ -1692,8 +1756,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Run arbitrary Groovy script.
      */
     public void doScript( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!adminCheck(req,rsp))
-            return; // ability to run arbitrary script is dangerous
+        // ability to run arbitrary script is dangerous
+        checkPermission(ADMINISTER);
 
         String text = req.getParameter("script");
         if(text!=null) {
@@ -1956,6 +2020,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             return true;
         return false;
     }
+
+    /**
+     * Administrative access to Hudson.
+     */
+    public static final Permission ADMINISTER = new Permission(Hudson.class,"Administer", Permission.WRITE);
 
     /**
      * Live view of recent {@link LogRecord}s produced by Hudson.
