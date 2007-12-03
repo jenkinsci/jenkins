@@ -66,6 +66,8 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.ui.AbstractProcessingFilter;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -1552,10 +1554,20 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             rsp.sendRedirect2("noPrincipal");
 
         String from = req.getParameter("from");
-        if(from!=null && from.startsWith("/") && !from.equals("/loginError"))
+        if(from!=null && from.startsWith("/") && !from.equals("/loginError")) {
             rsp.sendRedirect2(from);    // I'm bit uncomfortable letting users redircted to other sites, make sure the URL falls into this domain
-        else
-            rsp.sendRedirect2(".");
+            return;
+        }
+
+        String url = AbstractProcessingFilter.obtainFullRequestUrl(req);
+        if(url!=null) {
+            // if the login redirect is initiated by Acegi
+            // this should send the user back to where s/he was from.
+            rsp.sendRedirect2(url);
+            return;
+        }
+
+        rsp.sendRedirect2(".");
     }
 
     /**
@@ -1565,6 +1577,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         HttpSession session = req.getSession(false);
         if(session!=null)
             session.invalidate();
+        SecurityContextHolder.clearContext();
         rsp.sendRedirect2(req.getContextPath()+"/");
     }
 

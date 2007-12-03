@@ -1,13 +1,14 @@
 package hudson.security;
 
 import javax.servlet.Filter;
+import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.FilterChain;
-import java.util.Collection;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Servlet {@link Filter} that chains multiple {@link Filter}s.
@@ -20,6 +21,10 @@ public class ChainedServletFilter implements Filter {
 
     public ChainedServletFilter() {
         filters = new Filter[0];
+    }
+
+    public ChainedServletFilter(Filter... filters) {
+        this(Arrays.asList(filters));
     }
 
     public ChainedServletFilter(Collection<? extends Filter> filters) {

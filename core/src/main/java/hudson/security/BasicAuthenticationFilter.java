@@ -2,6 +2,7 @@ package hudson.security;
 
 import hudson.model.Hudson;
 import hudson.util.Scrambler;
+import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -77,10 +78,18 @@ public class BasicAuthenticationFilter implements Filter {
         if(authorization==null || req.getUserPrincipal() !=null || path.startsWith("/secured/")
         || !Hudson.getInstance().isUseSecurity()) {
             // normal requests, or security not enabled
-            // but before we route this request, integrate the container authentication
-            // to Acegi
-            SecurityContextHolder.getContext().setAuthentication(new ContainerAuthentication(req));
-            chain.doFilter(request,response);
+            if(req.getUserPrincipal()!=null) {
+                // before we route this request, integrate the container authentication
+                // to Acegi. For anonymous users that doesn't have user principal,
+                // AnonymousProcessingFilter that follows this should create
+                // an Authentication object.
+                SecurityContextHolder.getContext().setAuthentication(new ContainerAuthentication(req));
+            }
+            try {
+                chain.doFilter(request,response);
+            } finally {
+                SecurityContextHolder.clearContext();
+            }
             return;
         }
 
@@ -131,4 +140,6 @@ public class BasicAuthenticationFilter implements Filter {
 
     public void destroy() {
     }
+
+    private static final GrantedAuthorityImpl[] EMPTY_AUTHORITIES = {new GrantedAuthorityImpl("")};
 }

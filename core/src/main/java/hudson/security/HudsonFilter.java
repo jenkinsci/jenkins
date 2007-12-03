@@ -4,6 +4,7 @@ import groovy.lang.Binding;
 import hudson.model.Hudson;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.AuthenticationManager;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -42,15 +43,18 @@ public class HudsonFilter implements Filter {
     public static final AuthenticationManagerProxy AUTHENTICATION_MANAGER = new AuthenticationManagerProxy();
 
     public void init(FilterConfig filterConfig) throws ServletException {
-        legacy = new BasicAuthenticationFilter();
-        legacy.init(filterConfig);
-
         Binding binding = new Binding();
         binding.setVariable("authenticationManager", HudsonFilter.AUTHENTICATION_MANAGER);
         BeanBuilder builder = new BeanBuilder();
         builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
-        acegi = (Filter) builder.createApplicationContext().getBean("filter");
+
+        WebApplicationContext context = builder.createApplicationContext();
+        
+        acegi = (Filter) context.getBean("filter");
         acegi.init(filterConfig);
+
+        legacy = (Filter) context.getBean("legacy");
+        legacy.init(filterConfig);
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
