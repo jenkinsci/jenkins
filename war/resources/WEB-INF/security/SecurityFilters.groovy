@@ -22,8 +22,6 @@ def commonProviders(redirectUrl) {
             userAttribute = "anonymous,"
         },
         bean(ExceptionTranslationFilter) {
-            // property can be created programatically/eagler like this,
-            // instead of doing everything as managed Spring beans
             accessDeniedHandler = new AccessDeniedHandlerImpl()
             authenticationEntryPoint = bean(AuthenticationProcessingFilterEntryPoint) {
                 loginFormUrl = redirectUrl;
