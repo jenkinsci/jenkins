@@ -52,7 +52,9 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     /**
      * Singleton constant that represents "no authentication."
      */
-    public static final SecurityRealm NO_AUTHENTICATION = new SecurityRealm() {
+    public static final SecurityRealm NO_AUTHENTICATION = new None();
+
+    private static class None extends SecurityRealm {
         public AuthenticationManager createAuthenticationManager() {
             return new AuthenticationManager() {
                 public Authentication authenticate(Authentication authentication) {
@@ -75,5 +77,5 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
         private Object readResolve() {
             return NO_AUTHENTICATION;
         }
-    };
+    }
 }

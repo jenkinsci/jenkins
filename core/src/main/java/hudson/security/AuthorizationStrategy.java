@@ -41,9 +41,9 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      * {@link AuthorizationStrategy} that implements the semantics
      * of unsecured Hudson where everyone has full control.
      */
-    public static final AuthorizationStrategy UNSECURED = new UnsecuredAuthorizationStrategy();
+    public static final AuthorizationStrategy UNSECURED = new Unsecured();
 
-    private static final class UnsecuredAuthorizationStrategy extends AuthorizationStrategy implements Serializable {
+    private static final class Unsecured extends AuthorizationStrategy implements Serializable {
         /**
          * Maintains the singleton semantics.
          */
