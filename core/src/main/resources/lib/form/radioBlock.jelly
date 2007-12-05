@@ -9,14 +9,22 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<j:set target="${requestScope}" property="rb_id" value="${rb_id+1}" />
 
-	<tr id="rb_s${rb_id}"><!-- this ID marks the beginning -->
+	<tr id="rb_s${rb_id}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
 	  <td colspan="3">
 	    <input type="radio" name="${name}" value="${value}"
              id="Rb${rb_id}" checked="${h.ifThenElse(checked,'true',null)}" />
       <st:nbsp/>
       <label for="Rb${rb_id}">${title}</label>
     </td>
+    <j:if test="${attrs.help!=null}">
+      <td>
+        <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.gif" alt="Help for feature: ${title}" /></a>
+      </td>
+    </j:if>
 	</tr>
+  <j:if test="${attrs.help!=null}">
+    <tr class="help-area"><td></td><td colspan="2"><div class="help">Loading...</div></td><td></td></tr>
+  </j:if>
 	<d:invokeBody />
 	<!-- end marker -->
 	<tr id="rb_e${rb_id}" style="display:none">
