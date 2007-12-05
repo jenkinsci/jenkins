@@ -5,6 +5,8 @@
 	<%@attribute name="value" required="true" %>
 	<%@attribute name="title" required="true" %>
 	<%@attribute name="checked" required="true" %>
+  @help (optional)
+    if present, URL of the help HTML page.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<j:set target="${requestScope}" property="rb_id" value="${rb_id+1}" />
