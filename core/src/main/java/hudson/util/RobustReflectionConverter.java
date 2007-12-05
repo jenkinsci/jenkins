@@ -201,14 +201,15 @@ public class RobustReflectionConverter implements Converter {
                 }
 
                 if (value != null && !type.isAssignableFrom(value.getClass())) {
-                    throw new ConversionException("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
-                }
-
-                if (fieldExistsInClass) {
-                    reflectionProvider.writeField(result, fieldName, value, classDefiningField);
-                    seenFields.add(classDefiningField, fieldName);
+                    LOGGER.warning("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
+                    // behave as if we didn't see this element
                 } else {
-                    implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
+                    if (fieldExistsInClass) {
+                        reflectionProvider.writeField(result, fieldName, value, classDefiningField);
+                        seenFields.add(classDefiningField, fieldName);
+                    } else {
+                        implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
+                    }
                 }
             } catch (CannotResolveClassException e) {
                 LOGGER.log(Level.WARNING,"Skipping a non-existend type",e);
