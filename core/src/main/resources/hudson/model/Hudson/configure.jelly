@@ -22,6 +22,16 @@
       </s:entry>
       <s:optionalBlock name="use_security" title="Enable security"
                        checked="${it.useSecurity}" help="/help/system-config/enableSecurity.html">
+        <j:if test="${app.newSecurity}">
+          <s:block>
+            <table style="width:100%">
+              <s:descriptorRadioList title="Security Realm" varName="realm"
+                                     instance="${it.securityRealm}"
+                                     descriptors="${h.securityRealms}"/>
+            </table>
+          </s:block>
+        </j:if>
+
         <s:entry title="TCP port for JNLP slave agents"
             help="/help/system-config/master-slave/slave-agent-port.html">
           <s:radio name="slaveAgentPortType" value="fixed" id="sat.fixed"

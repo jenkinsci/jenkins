@@ -24,6 +24,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import hudson.security.SecurityRealm;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.kohsuke.stapler.Ancestor;
@@ -441,6 +442,10 @@ public class Functions {
 
     public static List<Descriptor<BuildWrapper>> getBuildWrapperDescriptors(AbstractProject<?,?> project) {
         return BuildWrappers.getFor(project);
+    }
+
+    public static List<Descriptor<SecurityRealm>> getSecurityRealms() {
+        return SecurityRealm.LIST;
     }
 
     public static List<Descriptor<Builder>> getBuilderDescriptors(AbstractProject<?,?> project) {

@@ -6,6 +6,8 @@ import hudson.model.User;
 import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AuthenticationManager;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
@@ -29,6 +31,54 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
         return DescriptorImpl.INSTANCE;
     }
 
+    // TODO
+    private static final GrantedAuthority[] TEST_AUTHORITY = {new GrantedAuthorityImpl("authenticated")};
+
+    /**
+     * Returns the {@link UserDetails} view of the User object.
+     * <p>
+     * This interface is implemented by a separate object to avoid having confusing methods
+     * at the {@link User} class level.
+     */
+    private static final class UserDetailsImpl implements UserDetails {
+        private final User user;
+
+        private UserDetailsImpl(User user) {
+            this.user = user;
+        }
+
+        public GrantedAuthority[] getAuthorities() {
+            // TODO
+            return TEST_AUTHORITY;
+        }
+
+        public String getPassword() {
+            // TODO
+            return user.getId();
+        }
+
+        public String getUsername() {
+            return user.getId();
+        }
+
+        public boolean isAccountNonExpired() {
+            return true;
+        }
+
+        public boolean isAccountNonLocked() {
+            return true;
+        }
+
+        public boolean isCredentialsNonExpired() {
+            return true;
+        }
+
+        public boolean isEnabled() {
+            // TODO: if password is not set, don't allow login
+            return true;
+        }
+    }
+
     /**
      * {@link UserDetailsService} that loads user information from {@link User} object. 
      */
@@ -37,7 +87,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
             User u = User.get(username, false);
             if(u==null)
                 throw new UsernameNotFoundException("No such user: "+username);
-            return u.asUserDetails();
+            return new UserDetailsImpl(u);
         }
     }
 

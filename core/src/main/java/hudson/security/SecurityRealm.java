@@ -7,6 +7,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
 import org.springframework.context.ApplicationContext;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -78,4 +79,12 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
             return NO_AUTHENTICATION;
         }
     }
+
+    /**
+     * All registered instances.
+     */
+    public static final List<Descriptor<SecurityRealm>> LIST = Descriptor.toList(
+        HudsonPrivateSecurityRealm.DescriptorImpl.INSTANCE,
+        LDAPSecurityRealm.DESCRIPTOR
+    );
 }

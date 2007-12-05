@@ -1,0 +1,26 @@
+<!--
+  Generate config pages from a list of Descriptors into a section.
+
+  Attributes:
+    title         caption for the section (required)
+    descriptors   hudson.model.Descriptor collection to display  (required)
+    instance      Current instance that match this. (required)
+    varName       Used as a variable name as well as block name (required)
+    targetType    the type for which descriptors will be configured.
+                  default to ${it.class} (optional)
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
+  <f:section title="${attrs.title}">
+    <d:invokeBody />
+	  <j:forEach var="d" items="${descriptors}" varStatus="loop">
+      <f:radioBlock name="${varName}" help="${d.helpFile}" value="${loop.index}"
+        title="${d.displayName}" checked="${attrs.instance.descriptor==d}">
+
+	      <j:set var="descriptor" value="${d}" />
+	      <j:set var="instance" value="${h.ifThenElse(attrs.instance.descriptor==d,attrs.instance,null)}" />
+	      <st:include from="${d}" page="${d.configPage}" optional="true" />
+	    </f:radioBlock>
+	  </j:forEach>
+	</f:section>
+</j:jelly>

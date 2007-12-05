@@ -58,6 +58,8 @@ import hudson.util.HudsonIsLoading;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.XStream2;
 import hudson.widgets.Widget;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.ui.AbstractProcessingFilter;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -66,8 +68,6 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.ui.AbstractProcessingFilter;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -2079,6 +2079,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     public static String RESOURCE_PATH;
 
     public static boolean parallelLoad = Boolean.getBoolean(Hudson.class.getName()+".parallelLoad");
+
+    /**
+     * True to enable the new security implementation.
+     */
+    public static boolean newSecurity = Boolean.getBoolean("SECURITY");
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 
