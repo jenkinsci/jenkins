@@ -102,6 +102,10 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
             return "Hudson's own user database";
         }
 
+        public String getHelpFile() {
+            return "/help/security/private-realm.html"; 
+        }
+
         public HudsonPrivateSecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new HudsonPrivateSecurityRealm();
         }
