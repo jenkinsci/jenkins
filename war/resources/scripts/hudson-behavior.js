@@ -780,8 +780,11 @@ function addRadioBlock(id) {
                         n.style.display = "none";
                 }
 
-                if (n == blockStart)
+                if (n == blockStart) {
                     i = true;
+                    if (n.getAttribute('hasHelp') == 'true')
+                        j++;
+                }
             }
         }
     };
