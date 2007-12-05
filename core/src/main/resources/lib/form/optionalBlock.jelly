@@ -12,9 +12,6 @@
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set var="id" value="${h.generateId()}" />
-  <j:if test="${empty(help)}">
-    <j:set var="help" value="${null}" />
-  </j:if>
   <tr id="oe_s${id}" class="optional-block-start" hasHelp="${help!=null}"><!-- this ID marks the beginning -->
     <td colspan="3">
       <f:checkbox name="${name}" onclick="javascript:updateOptionalBlock(this,true)"
