@@ -1185,6 +1185,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
             else
                 securityRealm = new LegacySecurityRealm();
         }
+        if(useSecurity!=null && !useSecurity) {
+            // forced reset to the unsecure mode.
+            // this works as an escape hatch for people who locked themselves out.
+            authorizationStrategy = AuthorizationStrategy.UNSECURED;
+            securityRealm = SecurityRealm.NO_AUTHENTICATION;
+        }
         
 
         LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
