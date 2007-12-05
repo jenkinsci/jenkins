@@ -2,15 +2,17 @@ package hudson.tasks;
 
 import hudson.CopyOnWrite;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.StructuredForm;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormFieldValidator;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -19,12 +21,11 @@ import javax.servlet.ServletException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-import net.sf.json.JSONObject;
 
 /**
  * Ant launcher.
@@ -67,7 +68,7 @@ public class Ant extends Builder {
         this.buildFile = Util.fixEmptyAndTrim(buildFile);
         this.properties = Util.fixEmptyAndTrim(properties);
     }
-    
+
 	public String getBuildFile() {
 		return buildFile;
 	}
@@ -113,13 +114,11 @@ public class Ant extends Builder {
         String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
 
         AntInstallation ai = getAnt();
-        if(ai==null) {
+        if(ai==null)
             args.add(execName);
-        } else {
-            File exec = ai.getExecutable(launcher.isUnix());
-            args.add(exec.getPath());
-        }
-        
+        else
+            args.add(ai.getExecutable(launcher));
+
         if(buildFile!=null) {
         	args.add("-file", buildFile);
         }
@@ -258,7 +257,7 @@ public class Ant extends Builder {
         }
     }
 
-    public static final class AntInstallation {
+    public static final class AntInstallation implements Serializable {
         private final String name;
         private final String antHome;
 
@@ -282,7 +281,22 @@ public class Ant extends Builder {
             return name;
         }
 
-        public File getExecutable(boolean isUnix) {
+        /**
+         * Gets the executable path of this Ant on the given target system.
+         */
+        public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
+            final boolean isUnix = launcher.isUnix();
+            return launcher.getChannel().call(new Callable<String,IOException>() {
+                public String call() throws IOException {
+                    File exe = getExeFile(isUnix);
+                    if(exe.exists())
+                        return exe.getPath();
+                    return null;
+                }
+            });
+        }
+
+        private File getExeFile(boolean isUnix) {
             String execName;
             if(isUnix)
                 execName = "ant";
@@ -295,8 +309,10 @@ public class Ant extends Builder {
         /**
          * Returns true if the executable exists.
          */
-        public boolean getExists() {
-            return getExecutable(!Hudson.isWindows()).exists();
+        public boolean getExists() throws IOException, InterruptedException {
+            return getExecutable(new Launcher.LocalLauncher(TaskListener.NULL))!=null;
         }
-    }
+
+        private static final long serialVersionUID = 1L;
+     }
 }
