@@ -1172,7 +1172,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                 slave.getAssignedLabels();
         }
 
-        // read in old data that doens't have the security field set
+        // read in old data that doesn't have the security field set
         if(authorizationStrategy==null) {
             if(useSecurity==null || !useSecurity)
                 authorizationStrategy = AuthorizationStrategy.UNSECURED;
