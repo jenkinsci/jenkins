@@ -128,10 +128,10 @@ public abstract class Descriptor<T extends Describable<T>> {
      * to refer to Jelly script <tt>abc.jelly</tt> or a method <tt>EmmaPublisher.doAbc()</tt>.
      *
      * @return
-     *      "" to indicate that there's no help.
+     *      null to indicate that there's no help.
      */
     public String getHelpFile() {
-        return "";
+        return null;
     }
 
     /**
