@@ -166,6 +166,7 @@ public class Ant extends Builder {
             args = new ArgumentListBuilder().add("cmd.exe","/C").addQuoted(args.toStringWithQuote());
         }
 
+        long startTime = System.currentTimeMillis();
         try {
             int r = launcher.launch(args.toCommandArray(),env,listener.getLogger(),proj.getModuleRoot()).join();
             return r==0;
@@ -173,7 +174,7 @@ public class Ant extends Builder {
             Util.displayIOException(e,listener);
 
             String errorMessage = "command execution failed";
-            if(ai==null) {
+            if(ai==null && (System.currentTimeMillis()-startTime)<1000) {
                 if(DESCRIPTOR.getInstallations()==null)
                     // looks like the user didn't configure any Ant installation
                     errorMessage += ". Maybe you need to configure where your Ant installations are?";
