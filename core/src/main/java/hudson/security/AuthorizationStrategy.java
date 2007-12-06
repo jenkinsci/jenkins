@@ -42,6 +42,12 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
     public abstract ACL getRootACL();
 
     /**
+     * All registered {@link SecurityRealm} implementations.
+     */
+    public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(
+    );
+    
+    /**
      * {@link AuthorizationStrategy} that implements the semantics
      * of unsecured Hudson where everyone has full control.
      */
@@ -89,12 +95,9 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
             }
         };
 
+        static {
+            // can't do this in the constructor due to the initialization order
+            LIST.add(Unsecured.DESCRIPTOR);
+        }
     }
-
-    /**
-     * All registered {@link SecurityRealm} implementations.
-     */
-    public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(
-        Unsecured.DESCRIPTOR
-    );
 }

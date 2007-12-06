@@ -859,6 +859,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
+     * @return
+     *      never null.
+     */
+    public SecurityRealm getSecurityRealm() {
+        return securityRealm;
+    }
+
+    /**
      * Returns the root {@link ACL}.
      *
      * @see AuthorizationStrategy#getRootACL()
