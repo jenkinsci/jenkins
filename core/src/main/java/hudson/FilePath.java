@@ -447,7 +447,13 @@ public final class FilePath implements Serializable {
                         dir = null;
                     else
                         dir.mkdirs();
-                    File f = File.createTempFile(prefix, suffix, dir);
+
+                    File f;
+                    try {
+                        f = File.createTempFile(prefix, suffix, dir);
+                    } catch (IOException e) {
+                        throw new IOException2("Failed to create a temporary directory in "+dir,e);
+                    }
 
                     Writer w = new FileWriter(f);
                     w.write(contents);
