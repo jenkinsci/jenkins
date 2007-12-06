@@ -445,6 +445,8 @@ public final class FilePath implements Serializable {
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
                     if(!inThisDirectory)
                         dir = null;
+                    else
+                        dir.mkdirs();
                     File f = File.createTempFile(prefix, suffix, dir);
 
                     Writer w = new FileWriter(f);
