@@ -13,6 +13,9 @@ import java.util.Map;
 /**
  * Pluggable security realm that connects external user database to Hudson.
  *
+ * <p>
+ * New implementations should be registered to {@link #LIST}.
+ *
  * @author Kohsuke Kawaguchi
  * @sicne 1.160
  */
@@ -81,7 +84,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     }
 
     /**
-     * All registered instances.
+     * All registered {@link SecurityRealm} implementations.
      */
     public static final List<Descriptor<SecurityRealm>> LIST = Descriptor.toList(
         HudsonPrivateSecurityRealm.DescriptorImpl.INSTANCE,
