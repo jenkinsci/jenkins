@@ -4,6 +4,7 @@ import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.util.DescriptorList;
 import org.acegisecurity.Authentication;
 
 import java.io.Serializable;
@@ -57,7 +58,7 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
          * descriptor for this. 
          */
         public Descriptor<AuthorizationStrategy> getDescriptor() {
-            return null;
+            return DESCRIPTOR;
         }
 
         @Override
@@ -70,5 +71,19 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
                 return true;
             }
         };
+
+        private static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>(Unsecured.class) {
+            public String getDisplayName() {
+                return "Anyone can do anything";
+            }
+        };
+
     }
+
+    /**
+     * All registered {@link SecurityRealm} implementations.
+     */
+    public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(
+        Unsecured.DESCRIPTOR
+    );
 }

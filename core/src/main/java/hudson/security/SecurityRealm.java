@@ -3,11 +3,11 @@ package hudson.security;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.util.DescriptorList;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
 import org.springframework.context.ApplicationContext;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -86,7 +86,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     /**
      * All registered {@link SecurityRealm} implementations.
      */
-    public static final List<Descriptor<SecurityRealm>> LIST = Descriptor.toList(
+    public static final DescriptorList<SecurityRealm> LIST = new DescriptorList<SecurityRealm>(
         HudsonPrivateSecurityRealm.DescriptorImpl.INSTANCE,
         LDAPSecurityRealm.DESCRIPTOR
     );

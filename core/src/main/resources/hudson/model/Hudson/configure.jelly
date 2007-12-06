@@ -27,7 +27,10 @@
             <table style="width:100%">
               <s:descriptorRadioList title="Security Realm" varName="realm"
                                      instance="${it.securityRealm}"
-                                     descriptors="${h.securityRealms}"/>
+                                     descriptors="${h.securityRealmDescriptors}"/>
+              <s:descriptorRadioList title="Authorization" varName="authorization"
+                                     instance="${it.authorizationStrategy}"
+                                     descriptors="${h.authorizationStrategyDescriptors}"/>
             </table>
           </s:block>
         </j:if>

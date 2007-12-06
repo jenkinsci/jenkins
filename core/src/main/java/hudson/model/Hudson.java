@@ -10,6 +10,7 @@ import hudson.Launcher.LocalLauncher;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.StructuredForm;
 import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
@@ -58,6 +59,7 @@ import hudson.util.HudsonIsLoading;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.XStream2;
 import hudson.widgets.Widget;
+import net.sf.json.JSONObject;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.ui.AbstractProcessingFilter;
 import org.apache.commons.fileupload.FileItem;
@@ -1246,13 +1248,22 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
             req.setCharacterEncoding("UTF-8");
 
+            JSONObject json = StructuredForm.get(req);
+
             // keep using 'useSecurity' field as the main configuration setting
             // until we get the new security implementation working
             // useSecurity = null;
-            if (req.getParameter("use_security") != null) {
+            if (json.has("use_security")) {
                 useSecurity = true;
-                securityRealm = new LegacySecurityRealm();
-                authorizationStrategy = new LegacyAuthorizationStrategy();
+                if(newSecurity) {
+                    JSONObject security = json.getJSONObject("use_security");
+                    securityRealm = SecurityRealm.LIST.newInstanceFromRadioList(security,"realm");
+                    authorizationStrategy = AuthorizationStrategy.LIST.newInstanceFromRadioList(security,"authorization");
+                } else {
+                    // compatibility mode
+                    securityRealm = new LegacySecurityRealm();
+                    authorizationStrategy = new LegacyAuthorizationStrategy();
+                }
             } else {
                 useSecurity = null;
                 securityRealm = SecurityRealm.NO_AUTHENTICATION;
