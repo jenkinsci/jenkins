@@ -6,8 +6,11 @@ import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.util.DescriptorList;
 import org.acegisecurity.Authentication;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.Serializable;
+
+import net.sf.json.JSONObject;
 
 /**
  * Controls authorization throughout Hudson.
@@ -75,6 +78,10 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
         private static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>(Unsecured.class) {
             public String getDisplayName() {
                 return "Anyone can do anything";
+            }
+
+            public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+                return UNSECURED;
             }
         };
 
