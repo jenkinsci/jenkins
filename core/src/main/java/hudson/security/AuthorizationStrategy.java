@@ -83,6 +83,10 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
             public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
                 return UNSECURED;
             }
+
+            public String getHelpFile() {
+                return "/help/security/no-authorization.html";
+            }
         };
 
     }
