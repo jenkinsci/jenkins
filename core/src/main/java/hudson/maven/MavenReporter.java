@@ -2,16 +2,16 @@ package hudson.maven;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
-import hudson.model.Project;
-import hudson.model.Build;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Publisher;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -45,14 +45,14 @@ import java.io.Serializable;
  * The callback methods are invoked in the following order:
  *
  * <pre>
- * SEQUENCE := preBuild MODULE* postBuild
+ * SEQUENCE := preBuild MODULE* postBuild end
  * MODULE   := enterModule MOJO+ leaveModule
  * MOJO     := preExecute postExecute
  * </pre>
  *
  * <p>
  * When an error happens, the call sequence could be terminated at any point
- * and no further callback methods might not be invoked.
+ * and no further callback methods may be invoked.
  *
  *
  * <h2>Action</h2>
@@ -185,7 +185,7 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
     }
 
     /**
-     * Equivalent of {@link BuildStep#getProjectAction(Project)}
+     * Equivalent of {@link BuildStep#getProjectAction(AbstractProject)}
      * for {@link MavenReporter}.
      */
     public Action getProjectAction(MavenModule module) {
