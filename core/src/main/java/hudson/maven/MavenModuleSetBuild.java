@@ -364,6 +364,9 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
     /**
      * Runs Maven and builds the project.
+     *
+     * This is only used for
+     * {@link MavenModuleSet#isAggregatorStyleBuild() the aggregator style build}.
      */
     private static final class Builder extends MavenBuilder {
         private final Map<ModuleName,? extends MavenBuildProxy2> proxies;
