@@ -13,7 +13,6 @@ import hudson.model.Result;
 import hudson.model.AbstractProject;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
-import hudson.util.IOException2;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.execution.MavenSession;
@@ -235,53 +234,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         protected Result doRun(final BuildListener listener) throws Exception {
             PrintStream logger = listener.getLogger();
             try {
-                logger.println("Parsing POMs");
-                List<PomInfo> poms = project.getModuleRoot().act(new PomParser(listener,project.getRootPOM()));
-
-                // update the module list
-                Map<ModuleName,MavenModule> modules = project.modules;
-                synchronized(modules) {
-                    Map<ModuleName,MavenModule> old = new HashMap<ModuleName, MavenModule>(modules);
-                    List<MavenModule> sortedModules = new ArrayList<MavenModule>();
-
-                    modules.clear();
-                    if(debug)
-                        logger.println("Root POM is "+poms.get(0).name);
-                    project.reconfigure(poms.get(0));
-                    for (PomInfo pom : poms) {
-                        MavenModule mm = old.get(pom.name);
-                        if(mm!=null) {// found an existing matching module
-                            if(debug)
-                                logger.println("Reconfiguring "+mm);
-                            mm.reconfigure(pom);
-                            modules.put(pom.name,mm);
-                        } else {// this looks like a new module
-                            logger.println("Discovered a new module "+pom.name+" "+pom.displayName);
-                            mm = new MavenModule(project,pom,getNumber());
-                            modules.put(mm.getModuleName(),mm);
-                        }
-                        sortedModules.add(mm);
-                        mm.save();
-                    }
-                    // at this point the list contains all the live modules
-                    project.sortedActiveModules = sortedModules;
-
-                    // remaining modules are no longer active.
-                    old.keySet().removeAll(modules.keySet());
-                    for (MavenModule om : old.values()) {
-                        if(debug)
-                            logger.println("Disabling "+om);
-                        om.disable();
-                    }
-                    modules.putAll(old);
-                }
-
-                // we might have added new modules
-                Hudson.getInstance().rebuildDependencyGraph();
-
-                // module builds must start with this build's number
-                for (MavenModule m : modules.values())
-                    m.updateNextBuildNumber(getNumber());
+                parsePoms(listener, logger);
 
                 if(!project.isAggregatorStyleBuild()) {
                     // start module builds
@@ -331,6 +284,63 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 logger.println("project.getRootModule()="+project.getRootModule());
                 throw e;
             }
+        }
+
+        private void parsePoms(BuildListener listener, PrintStream logger) throws IOException, InterruptedException {
+            logger.println("Parsing POMs");
+            List<PomInfo> poms;
+            try {
+                poms = project.getModuleRoot().act(new PomParser(listener,project.getRootPOM()));
+            } catch (MavenExecutionException e) {
+                // Maven failed to parse POM
+                e.getCause().printStackTrace(listener.error("Failed to parse POM"));
+                throw new AbortException();
+            }
+
+            // update the module list
+            Map<ModuleName,MavenModule> modules = project.modules;
+            synchronized(modules) {
+                Map<ModuleName,MavenModule> old = new HashMap<ModuleName, MavenModule>(modules);
+                List<MavenModule> sortedModules = new ArrayList<MavenModule>();
+
+                modules.clear();
+                if(debug)
+                    logger.println("Root POM is "+poms.get(0).name);
+                project.reconfigure(poms.get(0));
+                for (PomInfo pom : poms) {
+                    MavenModule mm = old.get(pom.name);
+                    if(mm!=null) {// found an existing matching module
+                        if(debug)
+                            logger.println("Reconfiguring "+mm);
+                        mm.reconfigure(pom);
+                        modules.put(pom.name,mm);
+                    } else {// this looks like a new module
+                        logger.println("Discovered a new module "+pom.name+" "+pom.displayName);
+                        mm = new MavenModule(project,pom,getNumber());
+                        modules.put(mm.getModuleName(),mm);
+                    }
+                    sortedModules.add(mm);
+                    mm.save();
+                }
+                // at this point the list contains all the live modules
+                project.sortedActiveModules = sortedModules;
+
+                // remaining modules are no longer active.
+                old.keySet().removeAll(modules.keySet());
+                for (MavenModule om : old.values()) {
+                    if(debug)
+                        logger.println("Disabling "+om);
+                    om.disable();
+                }
+                modules.putAll(old);
+            }
+
+            // we might have added new modules
+            Hudson.getInstance().rebuildDependencyGraph();
+
+            // module builds must start with this build's number
+            for (MavenModule m : modules.values())
+                m.updateNextBuildNumber(getNumber());
         }
 
         protected void post2(BuildListener listener) throws Exception {
@@ -458,7 +468,22 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
         private static final long serialVersionUID = 1L;
     }
-    
+
+    /**
+     * Used to tunnel exception from Maven through remoting.
+     */
+    private static final class MavenExecutionException extends RuntimeException {
+        private MavenExecutionException(Exception cause) {
+            super(cause);
+        }
+
+        public Exception getCause() {
+            return (Exception)super.getCause();
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
     /**
      * Executed on the slave to parse POM and extract information into {@link PomInfo},
      * which will be then brought back to the master.
@@ -523,10 +548,9 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 embedder.stop();
                 return infos;
             } catch (MavenEmbedderException e) {
-                // TODO: better error handling needed
-                throw new IOException2(e);
+                throw new MavenExecutionException(e);
             } catch (ProjectBuildingException e) {
-                throw new IOException2(e);
+                throw new MavenExecutionException(e);
             }
         }
 
