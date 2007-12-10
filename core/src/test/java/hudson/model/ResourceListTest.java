@@ -4,7 +4,7 @@ import junit.framework.TestCase;
 import java.util.Random;
 
 /**
- * @author Kohsuke Kawaguchi
+ * @author Stephen Connolly
  */
 public class ResourceListTest extends TestCase {
     private Resource a1, a2, a3, a4, a;
