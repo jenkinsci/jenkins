@@ -1,6 +1,7 @@
 package hudson.model;
 
 import junit.framework.TestCase;
+
 import java.util.Random;
 
 /**
@@ -93,7 +94,7 @@ public class ResourceListTest extends TestCase {
         assertFalse(z.isCollidingWith(y));
         assertFalse(y.isCollidingWith(z));
 
-        ResourceList w = x.union(y);
+        ResourceList w = ResourceList.union(x,y);
         assertTrue(w.isCollidingWith(z));
         assertTrue(z.isCollidingWith(w));
 
@@ -158,7 +159,7 @@ public class ResourceListTest extends TestCase {
         assertFalse("Using less than the limit of child resources should not be a problem", z.isCollidingWith(y));
         assertFalse("Using less than the limit of child resources should not be a problem", y.isCollidingWith(z));
 
-        ResourceList w = x.union(y);
+        ResourceList w = ResourceList.union(x,y);
 
         assertFalse("Using less than the limit of child resources should not be a problem", w.isCollidingWith(z));
         assertFalse("Using less than the limit of child resources should not be a problem", z.isCollidingWith(w));
@@ -166,11 +167,11 @@ public class ResourceListTest extends TestCase {
         assertFalse("Total count = 2, limit is 3", w.isCollidingWith(x));
         assertFalse("Total count = 2, limit is 3", x.isCollidingWith(w));
 
-        ResourceList v = x.union(x);  // write count is two
+        ResourceList v = ResourceList.union(x,x);  // write count is two
         assertFalse("Total count = 3, limit is 3", v.isCollidingWith(x));
         assertFalse("Total count = 3, limit is 3", x.isCollidingWith(v));
 
-        v = v.union(x);  // write count is three
+        v = ResourceList.union(v,x);  // write count is three
         assertTrue("Total count = 4, limit is 3", v.isCollidingWith(x));
         assertTrue("Total count = 4, limit is 3", x.isCollidingWith(v));
     }
