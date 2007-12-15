@@ -178,10 +178,13 @@ public class ResourceListTest extends TestCase {
 
     public void testMultiWrite1() throws Exception {
         y.w(e);
+        assertFalse(x.isCollidingWith(y));
+        assertFalse(y.isCollidingWith(x));
+
         for (int i = 0; i < fWriteCount; i++) {
+            x.w(e);
             assertTrue("Total = W" + (i + 1) + ", Limit = W1", x.isCollidingWith(y));
             assertTrue("Total = W" + (i + 1) + ", Limit = W1", y.isCollidingWith(x));
-            x.w(e);
         }
         int j = entropy.nextInt(50) + 3;
         for (int i = 1; i < j; i++) {
