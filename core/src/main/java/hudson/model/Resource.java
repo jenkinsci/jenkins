@@ -66,10 +66,10 @@ public final class Resource {
     public boolean isCollidingWith(Resource that, int count) {
         assert that!=null;
         for(Resource r=that; r!=null; r=r.parent)
-            if(this.equals(r) && r.numConcurrentWrite>count)
+            if(this.equals(r) && r.numConcurrentWrite<count)
                 return true;
         for(Resource r=this; r!=null; r=r.parent)
-            if(that.equals(r) && r.numConcurrentWrite>count)
+            if(that.equals(r) && r.numConcurrentWrite<count)
                 return true;
         return false;
     }
