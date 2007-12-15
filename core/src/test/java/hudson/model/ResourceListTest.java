@@ -19,7 +19,7 @@ public class ResourceListTest extends TestCase {
     private ResourceList z;
 
     public void setUp() {
-        entropy = new Random();
+        entropy = new Random(0);
         a = new Resource("A" + entropy.nextLong());
         a1 = new Resource(a, "A" + entropy.nextLong());
         a2 = new Resource(a, "A" + entropy.nextLong());
@@ -196,9 +196,9 @@ public class ResourceListTest extends TestCase {
 
     public void testMultiWriteN() throws Exception {
         y.w(f);
-        for (int i = 0; i < fWriteCount; i++) {
-            assertFalse("Total = W" + (i + 1) + ", Limit = W" + fWriteCount, x.isCollidingWith(y));
-            assertFalse("Total = W" + (i + 1) + ", Limit = W" + fWriteCount, y.isCollidingWith(x));
+        for (int i=0; i<f.numConcurrentWrite; i++) {
+            assertFalse("Total = W" + i + ", Limit = W" + f.numConcurrentWrite, x.isCollidingWith(y));
+            assertFalse("Total = W" + i + ", Limit = W" + f.numConcurrentWrite, y.isCollidingWith(x));
             x.w(f);
         }
         int j = entropy.nextInt(50) + 3;
