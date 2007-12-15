@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -112,8 +113,68 @@ public class Channel implements VirtualChannel {
     private final Vector<Listener> listeners = new Vector<Listener>();
     private int gcCounter;
 
+    /**
+     * Communication mode.
+     * @since 1.161
+     */
+    public enum Mode {
+        /**
+         * Send binary data over the stream. Most efficient.
+         */
+        BINARY(new byte[]{0,0,0,0}),
+        /**
+         * Send ASCII over the stream. Uses base64, so the efficiency goes down by 33%,
+         * but this is useful where stream is binary-unsafe, such as telnet.
+         */
+        TEXT("<===[HUDSON TRANSMISSION BEGINS]===>") {
+            protected OutputStream wrap(OutputStream os) {
+                return BinarySafeStream.wrap(os);
+            }
+            protected InputStream wrap(InputStream is) {
+                return BinarySafeStream.wrap(is);
+            }
+        },
+        /**
+         * Let the remote peer decide the transmission mode and follow that.
+         * Note that if both ends use NEGOTIATE, it will dead lock.
+         */
+        NEGOTIATE(new byte[0]);
+
+        /**
+         * Preamble used to indicate the tranmission mode.
+         * Because of the algorithm we use to detect the preamble,
+         * the string cannot be any random string. For example,
+         * if the preamble is "AAB", we'll fail to find a preamble
+         * in "AAAB".
+         */
+        private final byte[] preamble;
+
+        Mode(String preamble) {
+            try {
+                this.preamble = preamble.getBytes("US-ASCII");
+            } catch (UnsupportedEncodingException e) {
+                throw new Error(e);
+            }
+        }
+
+        Mode(byte[] preamble) {
+            this.preamble = preamble;
+        }
+
+        protected OutputStream wrap(OutputStream os) { return os; }
+        protected InputStream wrap(InputStream is) { return is; }
+    }
+
     public Channel(String name, ExecutorService exec, InputStream is, OutputStream os) throws IOException {
-        this(name,exec,is,os,null);
+        this(name,exec,Mode.BINARY,is,os,null);
+    }
+
+    public Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os) throws IOException {
+        this(name,exec,mode,is,os,null);
+    }
+
+    public Channel(String name, ExecutorService exec, InputStream is, OutputStream os, OutputStream header) throws IOException {
+        this(name,exec,Mode.BINARY,is,os,header);
     }
 
     /**
@@ -123,6 +184,8 @@ public class Channel implements VirtualChannel {
      *      Human readable name of this channel. Used for debug/logging. Can be anything.
      * @param exec
      *      Commands sent from the remote peer will be executed by using this {@link Executor}.
+     * @param mode
+     *      The encoding to be used over the stream.
      * @param is
      *      Stream connected to the remote peer.
      * @param os
@@ -133,9 +196,10 @@ public class Channel implements VirtualChannel {
      *      when the established communication channel might include some data that might
      *      be useful for debugging/trouble-shooting.
      */
-    public Channel(String name, ExecutorService exec, InputStream is, OutputStream os, OutputStream header) throws IOException {
+    public Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header) throws IOException {
         this.name = name;
         this.executor = exec;
+        ObjectOutputStream oos = null;
 
         // write the magic preamble.
         // certain communication channel, such as forking JVM via ssh,
@@ -143,32 +207,52 @@ public class Channel implements VirtualChannel {
         // might print some warning before the program starts outputting its own data.)
         //
         // so use magic preamble and discard all the data up to that to improve robustness.
-        os.write(new byte[]{0,0,0,0}); // preamble
-        this.oos = new ObjectOutputStream(os);
-        oos.flush();    // make sure that stream header is sent to the other end. avoids dead-lock
-
-        {// read the input until we hit preamble
-            int ch;
-            int count=0;
-
-            while(true) {
-                ch = is.read();
-                if(ch==-1) {
-                    throw new EOFException("unexpected stream termination");
-                }
-                if(ch==0) {
-                    count++;
-                    if(count==4)    break;
-                } else {
-                    if(header!=null)
-                        header.write(ch);
-                    count=0;
-                }
-            }
+        if(mode!= Mode.NEGOTIATE) {
+            os.write(mode.preamble);
+            oos = new ObjectOutputStream(mode.wrap(os));
+            oos.flush();    // make sure that stream preamble is sent to the other end. avoids dead-lock
         }
 
-        this.ois = new ObjectInputStream(is);
-        new ReaderThread(name).start();
+        {// read the input until we hit preamble
+            int[] ptr=new int[2];
+            Mode[] modes={Mode.BINARY,Mode.TEXT};
+
+            while(true) {
+                int ch = is.read();
+                if(ch==-1)
+                    throw new EOFException("unexpected stream termination");
+
+                for(int i=0;i<2;i++) {
+                    byte[] preamble = modes[i].preamble;
+                    if(preamble[ptr[i]]==ch) {
+                        if(++ptr[i]==preamble.length) {
+                            // found preamble
+                            if(mode==Mode.NEGOTIATE) {
+                                // now we know what the other side wants, so send the consistent preamble
+                                mode = modes[i];
+                                os.write(mode.preamble);
+                                oos = new ObjectOutputStream(mode.wrap(os));
+                                oos.flush();
+                            } else {
+                                if(modes[i]!=mode)
+                                    throw new IOException("Protocol negotiation failure");
+                            }
+                            this.oos = oos;
+
+                            this.ois = new ObjectInputStream(mode.wrap(is));
+                            new ReaderThread(name).start();
+                            return;
+                        }
+                    } else {
+                        // didn't match.
+                        ptr[i]=0;
+                    }
+                }
+
+                if(header!=null)
+                    header.write(ch);
+            }
+        }
     }
 
     /**
