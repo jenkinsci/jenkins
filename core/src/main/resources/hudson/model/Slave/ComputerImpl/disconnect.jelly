@@ -5,7 +5,7 @@
     <l:main-panel>
       <form method="get" action="doDisconnect">
         Are you sure about disconnecting?
-        <input type="submit" value="Yes" />
+        <f:submit value="Yes" />
       </form>
     </l:main-panel>
   </l:layout>
