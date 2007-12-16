@@ -64,7 +64,7 @@ public class EnvVars extends TreeMap<String,String> {
     /**
      * Environmental variables that we've inherited.
      */
-    public static final Map<String,String> masterEnvVars = System.getenv();
+    public static final Map<String,String> masterEnvVars = new EnvVars(System.getenv());
 
     /**
      * Compares strings case insensitively.
