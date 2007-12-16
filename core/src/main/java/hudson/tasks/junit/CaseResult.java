@@ -5,6 +5,8 @@ import hudson.model.AbstractBuild;
 import org.dom4j.Element;
 
 import java.util.Comparator;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 
 /**
  * One test result.
@@ -34,7 +36,17 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     private static float parseTime(Element testCase) {
         String time = testCase.attributeValue("time");
         time = time.replace(",","");
-        if(time!=null)      return Float.parseFloat(time);
+        if(time!=null) {
+            try {
+                return Float.parseFloat(time);
+            } catch (NumberFormatException e) {
+                try {
+                    return new DecimalFormat().parse(time).floatValue();
+                } catch (ParseException x) {
+                    // hmm, don't know what this format is.
+                }
+            }
+        }
         return 0.0f;
     }
 
