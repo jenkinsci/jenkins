@@ -39,6 +39,10 @@ public class Launcher {
         System.exit(0);
     }
 
+    public static void main(InputStream is, OutputStream os) throws IOException, InterruptedException {
+        main(is,os, Mode.BINARY);
+    }
+
     public static void main(InputStream is, OutputStream os, Mode mode) throws IOException, InterruptedException {
         ExecutorService executor = Executors.newCachedThreadPool();
         Channel channel = new Channel("channel", executor, mode, is, os);
