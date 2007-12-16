@@ -2,6 +2,7 @@ package hudson.util;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.EnvVars;
 import static hudson.Util.fixEmpty;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
@@ -322,7 +323,15 @@ public abstract class FormFieldValidator {
     }
 
     /**
-     * Checks a valid executable binary (specified in the 'value' query parameter)
+     * Checks a valid executable binary (specified in the 'value' query parameter).
+     * It has to be either given as a full path to the executable, or else
+     * it will be searched in PATH.
+     *
+     * <p>
+     * This file also handles ".exe" omission in Windows --- I thought Windows
+     * has actually more generic mechanism for the executable extension omission,
+     * so perhaps this needs to be extended to handle that correctly. More info
+     * needed.
      *
      * @since 1.124
      */
@@ -344,12 +353,37 @@ public abstract class FormFieldValidator {
                 File f = new File(exe);
                 if(f.exists()) {
                     checkExecutable(f);
-                } else {
-                    error("There's no such file: "+exe);
+                    return;
                 }
+
+                File fexe = new File(exe+".exe");
+                if(fexe.exists()) {
+                    checkExecutable(fexe);
+                    return;
+                }
+
+                error("There's no such file: "+exe);
             } else {
-                // can't really check
-                ok();
+                // look in PATH
+                String path = EnvVars.masterEnvVars.get("PATH");
+                for (String _dir : Util.tokenize(path,File.pathSeparator)) {
+                    File dir = new File(_dir);
+
+                    File f = new File(dir,exe);
+                    if(f.exists()) {
+                        checkExecutable(f);
+                        return;
+                    }
+
+                    File fexe = new File(dir,exe+".exe");
+                    if(fexe.exists()) {
+                        checkExecutable(fexe);
+                        return;
+                    }
+                }
+
+                // didn't find it
+                error("There's no such executable "+exe+" in PATH:"+path);
             }
         }
 
