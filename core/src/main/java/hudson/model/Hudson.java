@@ -1780,6 +1780,25 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
+     * Shutdown the system.
+     * @since 1.161
+     */
+    public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        if(!Hudson.adminCheck(req,rsp))
+            return;
+        LOGGER.severe(String.format("Shutting down VM as requested by {0} from {1}",
+                SecurityContextHolder.getContext().getAuthentication(),
+                req.getRemoteAddr()));
+        rsp.setStatus(HttpServletResponse.SC_OK);
+        rsp.setContentType("text/plain");
+        PrintWriter w = rsp.getWriter();
+        w.println("Shutting down");
+        w.close();
+        
+        System.exit(0);
+    }
+
+    /**
      * Configure the logging level.
      */
     public void doConfigLogger( StaplerRequest req, StaplerResponse rsp, @QueryParameter("name") String name, @QueryParameter("level") String level) throws IOException {
