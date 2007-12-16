@@ -87,6 +87,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * All registered {@link SecurityRealm} implementations.
      */
     public static final DescriptorList<SecurityRealm> LIST = new DescriptorList<SecurityRealm>(
+        LegacySecurityRealm.DESCRIPTOR,
         HudsonPrivateSecurityRealm.DescriptorImpl.INSTANCE,
         LDAPSecurityRealm.DESCRIPTOR
     );

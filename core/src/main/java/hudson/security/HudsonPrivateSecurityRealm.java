@@ -16,7 +16,6 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
  *
- *
  * @author Kohsuke Kawaguchi
  */
 public class HudsonPrivateSecurityRealm extends SecurityRealm {

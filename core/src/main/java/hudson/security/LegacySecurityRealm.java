@@ -11,7 +11,7 @@ import hudson.model.Descriptor;
  * already authenticated by the container.)
  * @author Kohsuke Kawaguchi
  */
-public class LegacySecurityRealm extends SecurityRealm implements AuthenticationManager {
+public final class LegacySecurityRealm extends SecurityRealm implements AuthenticationManager {
     public AuthenticationManager createAuthenticationManager() {
         return this;
     }
@@ -27,9 +27,13 @@ public class LegacySecurityRealm extends SecurityRealm implements Authentication
         return DESCRIPTOR;
     }
 
-    private static final Descriptor<SecurityRealm> DESCRIPTOR = new Descriptor<SecurityRealm>(LegacySecurityRealm.class) {
+    public static final Descriptor<SecurityRealm> DESCRIPTOR = new Descriptor<SecurityRealm>(LegacySecurityRealm.class) {
         public String getDisplayName() {
-            return "Legacy mode"; // TODO
+            return "Delegate to servlet container";
+        }
+
+        public String getHelpFile() {
+            return "/help/security/container-realm.html";
         }
     };
 
