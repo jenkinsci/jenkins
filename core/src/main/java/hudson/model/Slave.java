@@ -348,7 +348,7 @@ public final class Slave implements Node, Serializable {
                 if(this.channel!=null)
                     throw new IllegalStateException("Already connected");
 
-                Channel channel = new Channel(nodeName,threadPoolForRemoting,
+                Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE, 
                     in,out, launchLog);
                 channel.addListener(new Listener() {
                     public void onClosed(Channel c,IOException cause) {
