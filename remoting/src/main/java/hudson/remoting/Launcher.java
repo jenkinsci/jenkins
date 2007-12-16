@@ -23,6 +23,7 @@ public class Launcher {
 
         for (String arg : args) {
             if(arg.equals("-text")) {
+                System.out.println("Running in text mode");
                 m = Mode.TEXT;
                 continue;
             }
