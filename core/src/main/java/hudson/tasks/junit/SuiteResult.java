@@ -8,7 +8,6 @@ import org.dom4j.io.SAXReader;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -43,7 +42,12 @@ public final class SuiteResult implements Serializable {
     }
 
     SuiteResult(File xmlReport) throws DocumentException {
-        Document result = new SAXReader().read(xmlReport);
+		SAXReader saxReader = new SAXReader();
+		// fix for problems related to testng-results.xml
+		// (see https://hudson.dev.java.net/servlets/ReadMsg?listName=users&msgNo=5530)
+		XMLEntityResolver resolver = new XMLEntityResolver();
+		saxReader.setEntityResolver(resolver);
+        Document result = saxReader.read(xmlReport);
         Element root = result.getRootElement();
         String name = root.attributeValue("name");
         if(name==null)
