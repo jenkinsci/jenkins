@@ -195,7 +195,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
                 // workspaceDir will not normally end with one;
                 // workspaceDir.toURI() will end with '/' if and only if workspaceDir.exists() at time of call
                 wsPattern = Pattern.compile("(" +
-                    quoteRegexp(ws.getRemote()) + "|" + quoteRegexp(ws.toURI().toString()) + ")[/\\\\]?([^:#\\s]*)");
+                    Pattern.quote(ws.getRemote()) + "|" + Pattern.quote(ws.toURI().toString()) + ")[/\\\\]?([^:#\\s]*)");
             }
             for (String line : lines) {
                 if (wsPattern != null) {
@@ -273,27 +273,6 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
 
     private String getSubject(B build, String caption) {
         return caption + build.getProject().getFullDisplayName() + " #" + build.getNumber();
-    }
-
-    /**
-     * Copied from JDK5, to avoid 5.0 dependency.
-     */
-    private static String quoteRegexp(String s) {
-        int slashEIndex = s.indexOf("\\E");
-        if (slashEIndex == -1)
-            return "\\Q" + s + "\\E";
-
-        StringBuilder sb = new StringBuilder(s.length() * 2);
-        sb.append("\\Q");
-        int current = 0;
-        while ((slashEIndex = s.indexOf("\\E", current)) != -1) {
-            sb.append(s.substring(current, slashEIndex));
-            current = slashEIndex + 2;
-            sb.append("\\E\\\\E\\Q");
-        }
-        sb.append(s.substring(current, s.length()));
-        sb.append("\\E");
-        return sb.toString();
     }
 
     /**
