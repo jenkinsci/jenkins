@@ -33,6 +33,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
 
     private static float parseTime(Element testCase) {
         String time = testCase.attributeValue("time");
+        time = time.replace(",","");
         if(time!=null)      return Float.parseFloat(time);
         return 0.0f;
     }
@@ -51,7 +52,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         String cn = parent.getName();
         className = safe(cn);
         testName = safe(testCaseName);
-        duration = Float.parseFloat( testCase.attributeValue( "time" ) ); 
+        duration = parseTime(testCase); 
         errorStackTrace = getError(testCase);
     }
 
