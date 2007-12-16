@@ -3,6 +3,7 @@
 */
 import org.acegisecurity.providers.ProviderManager
 import hudson.security.HudsonPrivateSecurityRealm.HudsonUserDetailsService
+import org.acegisecurity.providers.dao.DaoAuthenticationProvider
 
 
 authenticationManager(ProviderManager) {
