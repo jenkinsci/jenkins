@@ -3,11 +3,14 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.model.Descriptor;
 import static hudson.model.Hudson.isWindows;
-import org.kohsuke.stapler.StaplerRequest;
-
-import java.util.Map;
-
+import hudson.util.FormFieldValidator;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Executes a series of commands by using a shell.
@@ -70,7 +73,6 @@ public class Shell extends CommandInterpreter {
             load();
         }
 
-
         protected void convert(Map<String, Object> oldPropertyBag) {
             shell = (String)oldPropertyBag.get("shell");
         }
@@ -101,6 +103,13 @@ public class Shell extends CommandInterpreter {
         public boolean configure( StaplerRequest req ) {
             setShell(req.getParameter("shell"));
             return true;
+        }
+
+        /**
+         * Check the existence of sh in the given location.
+         */
+        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new FormFieldValidator.Executable(req,rsp).process();
         }
     }
 }
