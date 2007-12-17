@@ -6,6 +6,7 @@ import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.util.Scrambler;
+import hudson.util.Protector;
 import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -19,6 +20,7 @@ import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -93,7 +95,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
     }
 
     // TODO
-    private static final GrantedAuthority[] TEST_AUTHORITY = {new GrantedAuthorityImpl("authenticated")};
+    private static final GrantedAuthority[] TEST_AUTHORITY = {new GrantedAuthorityImpl("authenticated"),new GrantedAuthorityImpl("admin")};
 
     public static final class SignupInfo {
         public String username,password1,password2,fullname,email,captcha;
@@ -110,8 +112,13 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
      * <p>
      * When a {@link User} object has this property on it, it means the user is configured
      * for log-in.
+     *
+     * <p>
+     * When a {@link User} object is re-configured via the UI, the password
+     * is sent to the hidden input field by using {@link Protector}, so that
+     * the same password can be retained but without leaking information to the browser.
      */
-    private static final class Details extends UserProperty implements UserDetails {
+    public static final class Details extends UserProperty implements UserDetails {
         /**
          * Scrambled password.
          */
@@ -128,6 +135,11 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
 
         public String getPassword() {
             return Scrambler.descramble(password);
+        }
+
+        public String getProtectedPassword() {
+            // put session Id in it to prevent a replay attack.
+            return Protector.protect(Stapler.getCurrentRequest().getSession().getId()+':'+password);
         }
 
         public String getUsername() {
@@ -162,7 +174,17 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
         }
 
         public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new Details(formData.getString("password"));
+            try {
+                String data = formData.getString("password");
+                if(data==null)
+                    return null;
+                String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
+                if(!data.startsWith(prefix))
+                    throw new FormException("Invalid password","password");
+                return new Details(Protector.unprotect(data.substring(prefix.length())));
+            } catch (IOException e) {
+                throw new FormException("Invalid password",e,"password");
+            }
         }
 
         public UserProperty newInstance(User user) {

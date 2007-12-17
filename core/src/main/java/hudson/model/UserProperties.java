@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.tasks.Mailer;
+import hudson.security.HudsonPrivateSecurityRealm;
 
 import java.util.List;
 
@@ -9,7 +10,8 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class UserProperties {
-    public static final List<UserPropertyDescriptor> LIST = Descriptor.<UserPropertyDescriptor>toList(
-        Mailer.UserProperty.DESCRIPTOR
+    public static final List<UserPropertyDescriptor> LIST = Descriptor.toList(
+        Mailer.UserProperty.DESCRIPTOR,
+        HudsonPrivateSecurityRealm.DETAILS_DESCRIPTOR
     );
 }

@@ -1,0 +1,5 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <tr style="display:none"><td>
+    <input name="user.password" type="hidden" value="${instance.protectedPassword}" />
+  </td></tr>
+</j:jelly>
