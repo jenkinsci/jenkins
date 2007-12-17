@@ -1,0 +1,38 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout norefresh="true">
+    <st:include page="sidepanel.jelly" it="${app}" />
+    <l:main-panel>
+      <h1>Sign up</h1>
+      <div style="margin: 2em;">
+        <form action="securityRealm/createAccount" method="post" style="text-size:smaller">
+          <table>
+            <tr>
+              <td>Username:</td>
+              <td><input type="text" name="username" id="username" /></td>
+            </tr>
+            <tr>
+              <td>Password:</td>
+              <td><input type="password" name="password1" /></td>
+            </tr>
+            <tr>
+              <td>Confirm password:</td>
+              <td><input type="password" name="password2" /></td>
+            </tr>
+            <tr>
+              <td>Full name:</td>
+              <td><input type="text" name="fullname" /></td>
+            </tr>
+            <tr>
+              <td>E-mail address:</td>
+              <td><input type="text" name="email" /></td>
+            </tr>
+          </table>
+          <f:submit value="Sign up" />
+          <script>
+            $('username').focus();
+          </script>
+        </form>
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
