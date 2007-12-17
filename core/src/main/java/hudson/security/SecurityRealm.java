@@ -34,6 +34,14 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     public abstract AuthenticationManager createAuthenticationManager();
 
     /**
+     * Returns the URL to submit a form for the authentication.
+     * Normally there's no need to override this.
+     */
+    public String getLoginUrl() {
+        return "j_acegi_security_check";
+    }
+
+    /**
      * Picks up the instance of the given type from the spring context.
      * If there are multiple beans of the same type or if there are none,
      * this method treats that as an {@link IllegalArgumentException}.

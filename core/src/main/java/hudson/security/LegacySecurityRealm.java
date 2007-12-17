@@ -23,6 +23,15 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
             return null;
     }
 
+    /**
+     * To have the username/password authenticated by the container,
+     * submit the form to the URL defined by the servlet spec.
+     */
+    @Override
+    public String getLoginUrl() {
+        return "j_security_check";
+    }
+
     public Descriptor<SecurityRealm> getDescriptor() {
         return DESCRIPTOR;
     }
