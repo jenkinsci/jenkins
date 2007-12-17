@@ -9,8 +9,21 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
 import org.springframework.context.ApplicationContext;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.apache.tools.ant.types.resources.selectors.None;
+import org.apache.maven.plugin.logging.Log;
 
 import java.util.Map;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.io.IOException;
+
+import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
+import com.octo.captcha.service.CaptchaServiceException;
+
+import javax.imageio.ImageIO;
 
 /**
  * Pluggable security realm that connects external user database to Hudson.
@@ -64,6 +77,36 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     public final boolean allowsSignup() {
         Class clz = getClass();
         return clz.getClassLoader().getResource(clz.getName().replace('.','/')+"/signup.jelly")!=null;
+    }
+
+    /**
+     * {@link DefaultManageableImageCaptchaService} holder to defer initialization.
+     */
+    private static final class CaptchaService {
+        private static final DefaultManageableImageCaptchaService INSTANCE = new DefaultManageableImageCaptchaService();
+    }
+
+    /**
+     * Generates a captcha image.
+     */
+    public final void doCaptcha(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        String id = req.getSession().getId();
+        rsp.setContentType("image/png");
+        ImageIO.write( CaptchaService.INSTANCE.getImageChallengeForID(id), "PNG", rsp.getOutputStream() );
+    }
+
+    /**
+     * Validates the captcha.
+     */
+    protected final boolean validateCaptcha(String text) {
+        try {
+            String id = Stapler.getCurrentRequest().getSession().getId();
+            Boolean b = CaptchaService.INSTANCE.validateResponseForID(id, text);
+            return b!=null && b;
+        } catch (CaptchaServiceException e) {
+            LOGGER.log(Level.INFO, "Captcha validation had a problem",e);
+            return false;
+        }
     }
 
     /**
@@ -124,4 +167,6 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
         HudsonPrivateSecurityRealm.DescriptorImpl.INSTANCE,
         LDAPSecurityRealm.DESCRIPTOR
     );
+
+    private static final Logger LOGGER = Logger.getLogger(SecurityRealm.class.getName());
 }

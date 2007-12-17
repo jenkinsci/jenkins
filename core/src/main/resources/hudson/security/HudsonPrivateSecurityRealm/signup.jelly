@@ -1,5 +1,13 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout norefresh="true">
+    <l:header>
+      <style>
+        <!-- match width with captcha image -->
+        INPUT {
+          width:200px;
+        }
+      </style>
+    </l:header>
     <st:include page="sidepanel.jelly" it="${app}" />
     <l:main-panel>
       <h1>Sign up</h1>
@@ -25,6 +33,13 @@
             <tr>
               <td>E-mail address:</td>
               <td><input type="text" name="email" /></td>
+            </tr>
+            <tr>
+              <td>Enter text as shown:</td>
+              <td>
+                <input type="text" name="captcha" autocomplete="off" /><br />
+                <img src="securityRealm/captcha"/>
+              </td>
             </tr>
           </table>
           <f:submit value="Sign up" />

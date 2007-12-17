@@ -12,6 +12,10 @@ import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
@@ -28,6 +32,15 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
 
     public Descriptor<SecurityRealm> getDescriptor() {
         return DescriptorImpl.INSTANCE;
+    }
+
+    /**
+     * Creates an user account.
+     */
+    public void doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        rsp.getWriter().println(
+           validateCaptcha(req.getParameter("captcha"))
+        );
     }
 
     // TODO
