@@ -163,9 +163,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      *
      * See {@link HudsonFilter} for the concrete authentication protocol. 
      *
-     * Never null.
+     * Never null. Always use {@link #setSecurityRealm(SecurityRealm)} to
+     * update this field.
      *
      * @see #getSecurity()
+     * @see #setSecurityRealm(SecurityRealm)
      */
     private volatile SecurityRealm securityRealm;
 
@@ -866,6 +868,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return securityRealm;
     }
 
+    public void setSecurityRealm(SecurityRealm securityRealm) {
+        this.securityRealm = securityRealm;
+        HudsonFilter.AUTHENTICATION_MANAGER.setManager(securityRealm.createAuthenticationManager());
+    }
+
     /**
      * Returns the root {@link ACL}.
      *
@@ -1191,15 +1198,19 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         }
         if(securityRealm==null) {
             if(useSecurity==null || !useSecurity)
-                securityRealm = SecurityRealm.NO_AUTHENTICATION;
+                setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
             else
-                securityRealm = new LegacySecurityRealm();
+                setSecurityRealm(new LegacySecurityRealm());
+        } else {
+            // force the set to proxy
+            setSecurityRealm(securityRealm);
         }
+
         if(useSecurity!=null && !useSecurity) {
             // forced reset to the unsecure mode.
             // this works as an escape hatch for people who locked themselves out.
             authorizationStrategy = AuthorizationStrategy.UNSECURED;
-            securityRealm = SecurityRealm.NO_AUTHENTICATION;
+            setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
         }
         
 
@@ -1265,16 +1276,16 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
                 useSecurity = true;
                 if(newSecurity) {
                     JSONObject security = json.getJSONObject("use_security");
-                    securityRealm = SecurityRealm.LIST.newInstanceFromRadioList(security,"realm");
+                    setSecurityRealm(SecurityRealm.LIST.newInstanceFromRadioList(security,"realm"));
                     authorizationStrategy = AuthorizationStrategy.LIST.newInstanceFromRadioList(security,"authorization");
                 } else {
                     // compatibility mode
-                    securityRealm = new LegacySecurityRealm();
+                    setSecurityRealm(new LegacySecurityRealm());
                     authorizationStrategy = new LegacyAuthorizationStrategy();
                 }
             } else {
                 useSecurity = null;
-                securityRealm = SecurityRealm.NO_AUTHENTICATION;
+                setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
                 authorizationStrategy = AuthorizationStrategy.UNSECURED;
             }
 
