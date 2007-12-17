@@ -139,6 +139,7 @@ public class User extends AbstractModelObject {
         properties = ps;
         save();
     }
+    
     /**
      * Gets the specific property, or null.
      */
