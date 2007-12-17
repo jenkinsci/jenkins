@@ -12,33 +12,36 @@
     <l:main-panel>
       <h1>Sign up</h1>
       <div style="margin: 2em;">
-        <form action="securityRealm/createAccount" method="post" style="text-size:smaller">
+        <div class="error" style="margin-bottom:1em">
+          ${data.errorMessage}
+        </div>
+        <form action="${rootURL}/securityRealm/createAccount" method="post" style="text-size:smaller">
           <table>
             <tr>
               <td>Username:</td>
-              <td><input type="text" name="username" id="username" /></td>
+              <td><input type="text" name="username" id="username" value="${data.username}" /></td>
             </tr>
             <tr>
               <td>Password:</td>
-              <td><input type="password" name="password1" /></td>
+              <td><input type="password" name="password1" value="${data.password1}" /></td>
             </tr>
             <tr>
               <td>Confirm password:</td>
-              <td><input type="password" name="password2" /></td>
+              <td><input type="password" name="password2" value="${data.password2}" /></td>
             </tr>
             <tr>
               <td>Full name:</td>
-              <td><input type="text" name="fullname" /></td>
+              <td><input type="text" name="fullname" value="${data.fullname}" /></td>
             </tr>
             <tr>
               <td>E-mail address:</td>
-              <td><input type="text" name="email" /></td>
+              <td><input type="text" name="email" value="${data.email}" /></td>
             </tr>
             <tr>
               <td>Enter text as shown:</td>
               <td>
                 <input type="text" name="captcha" autocomplete="off" /><br />
-                <img src="securityRealm/captcha"/>
+                <img src="${rootURL}/securityRealm/captcha"/>
               </td>
             </tr>
           </table>

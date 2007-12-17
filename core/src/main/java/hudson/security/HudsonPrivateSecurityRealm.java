@@ -3,18 +3,24 @@ package hudson.security;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.User;
+import hudson.model.UserProperty;
+import hudson.model.UserPropertyDescriptor;
+import hudson.util.Scrambler;
 import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
+import org.acegisecurity.DisabledException;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
 import java.io.IOException;
 
 /**
@@ -37,26 +43,82 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
     /**
      * Creates an user account.
      */
-    public void doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        rsp.getWriter().println(
-           validateCaptcha(req.getParameter("captcha"))
-        );
+    public void doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        // form field validation
+        // this pattern needs to be generalized and moved to stapler
+        SignupInfo si = new SignupInfo();
+        req.bindParameters(si);
+
+        if(!validateCaptcha(si.captcha))
+            si.errorMessage = "Text didn't match the word shown in the image";
+
+        if(!si.password1.equals(si.password2))
+            si.errorMessage = "Password didn't match";
+
+        if(si.password1.length()==0)
+            si.errorMessage = "Password is required";
+
+        if(si.username.length()==0)
+            si.errorMessage = "User name is required";
+        else {
+            User user = User.get(si.username);
+            if(user.getProperty(Details.class)!=null)
+                si.errorMessage = "User name is already taken. Did you forget the password?";
+        }
+
+        if(si.fullname.length()==0)
+            si.fullname = si.username;
+
+        if(!si.email.contains("@"))
+            si.errorMessage = "Invalid e-mail address";
+
+
+        if(si.errorMessage!=null) {
+            // failed. ask the user to try again.
+            req.setAttribute("data",si);
+            req.getView(this,"signup.jelly").forward(req,rsp);
+            return;
+        }
+
+        // register the user
+        User.get(si.username).addProperty(new Details(si.password1));
+        // ... and let him login
+        Authentication a = new UsernamePasswordAuthenticationToken(si.username,si.password1);
+        a = HudsonFilter.AUTHENTICATION_MANAGER.authenticate(a);
+        SecurityContextHolder.getContext().setAuthentication(a);
+//        req.getSession().setAttribute(HttpSessionContextIntegrationFilter.ACEGI_SECURITY_CONTEXT_KEY,SecurityContextHolder.getContext());
+
+        // then back to top
+        req.getView(this,"success.jelly").forward(req,rsp);
     }
 
     // TODO
     private static final GrantedAuthority[] TEST_AUTHORITY = {new GrantedAuthorityImpl("authenticated")};
 
-    /**
-     * Returns the {@link UserDetails} view of the User object.
-     * <p>
-     * This interface is implemented by a separate object to avoid having confusing methods
-     * at the {@link User} class level.
-     */
-    private static final class UserDetailsImpl implements UserDetails {
-        private final User user;
+    public static final class SignupInfo {
+        public String username,password1,password2,fullname,email,captcha;
 
-        private UserDetailsImpl(User user) {
-            this.user = user;
+        /**
+         * To display an error message, set it here.
+         */
+        public String errorMessage;
+    }
+
+    /**
+     * {@link UserProperty} that provides the {@link UserDetails} view of the User object.
+     *
+     * <p>
+     * When a {@link User} object has this property on it, it means the user is configured
+     * for log-in.
+     */
+    private static final class Details extends UserProperty implements UserDetails {
+        /**
+         * Scrambled password.
+         */
+        private final String password;
+
+        Details(String password) {
+            this.password = Scrambler.scramble(password);
         }
 
         public GrantedAuthority[] getAuthorities() {
@@ -65,8 +127,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
         }
 
         public String getPassword() {
-            // TODO
-            return user.getId();
+            return Scrambler.descramble(password);
         }
 
         public String getUsername() {
@@ -86,20 +147,38 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
         }
 
         public boolean isEnabled() {
-            // TODO: if password is not set, don't allow login
             return true;
         }
+
+        public UserPropertyDescriptor getDescriptor() {
+            return DETAILS_DESCRIPTOR;
+        }
     }
+
+    public static final UserPropertyDescriptor DETAILS_DESCRIPTOR = new UserPropertyDescriptor(Details.class) {
+        public String getDisplayName() {
+            // don't display the configuration section for this.
+            return null;
+        }
+
+        public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            return new Details(formData.getString("password"));
+        }
+
+        public UserProperty newInstance(User user) {
+            return null;
+        }
+    };
 
     /**
      * {@link UserDetailsService} that loads user information from {@link User} object. 
      */
     public static final class HudsonUserDetailsService implements UserDetailsService {
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-            User u = User.get(username, false);
-            if(u==null)
-                throw new UsernameNotFoundException("No such user: "+username);
-            return new UserDetailsImpl(u);
+        public UserDetails loadUserByUsername(String username) {
+            Details p = User.get(username).getProperty(Details.class);
+            if(p==null)
+                throw new DisabledException("Password is not set: "+username);
+            return p;
         }
     }
 

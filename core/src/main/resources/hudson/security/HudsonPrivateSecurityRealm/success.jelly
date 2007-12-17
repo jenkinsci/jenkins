@@ -1,0 +1,11 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout norefresh="true">
+    <st:include page="sidepanel.jelly" it="${app}" />
+    <l:main-panel>
+      <h1>Success</h1>
+      <div>
+        You are now logged in. Go back to <a href="..">the top page</a>.
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
