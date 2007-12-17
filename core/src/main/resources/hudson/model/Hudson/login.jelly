@@ -11,7 +11,7 @@
               <td><input type="text" name="j_username" id="j_username" /></td>
             </tr>
             <tr>
-              <td>Password</td>
+              <td>Password:</td>
               <td><input type="password" name="j_password" /></td>
             </tr>
           </table>
@@ -20,6 +20,12 @@
             $('j_username').focus();
           </script>
         </form>
+
+        <j:if test="${it.securityRealm.allowsSignup()}">
+          <div style="margin-top:2em">
+            <a href="signup">Create an account</a> if you are not a member yet.
+          </div>
+        </j:if>
       </div>
     </l:main-panel>
   </l:layout>

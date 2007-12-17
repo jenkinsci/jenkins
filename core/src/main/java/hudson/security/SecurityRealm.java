@@ -3,10 +3,12 @@ package hudson.security;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.util.DescriptorList;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
 import org.springframework.context.ApplicationContext;
+import org.kohsuke.stapler.Stapler;
 
 import java.util.Map;
 
@@ -15,6 +17,11 @@ import java.util.Map;
  *
  * <p>
  * New implementations should be registered to {@link #LIST}.
+ *
+ * <p>
+ * If additional views/URLs need to be exposed,
+ * an active {@link SecurityRealm} is bound to <tt>CONTEXT_ROOT/securityRealm/</tt>
+ * through {@link Hudson#getSecurityRealm()}. 
  *
  * @author Kohsuke Kawaguchi
  * @sicne 1.160
@@ -35,10 +42,28 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
 
     /**
      * Returns the URL to submit a form for the authentication.
-     * Normally there's no need to override this.
+     * There's no need to override this, except for {@link LegacySecurityRealm}.
      */
     public String getLoginUrl() {
         return "j_acegi_security_check";
+    }
+
+    /**
+     * Returns true if this {@link SecurityRealm} allows online sign-up.
+     * This creates a hyperlink that redirects users to <tt>CONTEXT_ROOT/signUp</tt>,
+     * which will be served by the <tt>signup.jelly</tt> view of this class.
+     *
+     * <p>
+     * If the implementation needs to redirect the user to a different URL
+     * for signing up, use the following jelly script as <tt>signup.jelly</tt>
+     *
+     * <pre><xmp>
+     * <st:redirect url="http://www.sun.com/" xmlns:st="jelly:stapler"/>
+     * </xmp></pre>
+     */
+    public final boolean allowsSignup() {
+        Class clz = getClass();
+        return clz.getClassLoader().getResource(clz.getName().replace('.','/')+"/signup.jelly")!=null;
     }
 
     /**

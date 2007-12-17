@@ -1848,6 +1848,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
+     * Sign up for the user account.
+     */
+    public void doSignup( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        req.getView(getSecurityRealm(),"signup.jelly").forward(req,rsp);
+    }
+
+    /**
      * Changes the icon size by changing the cookie
      */
     public void doIconSize( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
