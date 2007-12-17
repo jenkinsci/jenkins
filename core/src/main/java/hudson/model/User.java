@@ -128,6 +128,18 @@ public class User extends AbstractModelObject {
     }
 
     /**
+     * Updates the user object by adding a property.
+     */
+    public synchronized void addProperty(UserProperty p) throws IOException {
+        UserProperty old = getProperty(p.getClass());
+        List<UserProperty> ps = new ArrayList<UserProperty>(properties);
+        if(old!=null)
+            ps.remove(old);
+        ps.add(p);
+        properties = ps;
+        save();
+    }
+    /**
      * Gets the specific property, or null.
      */
     public <T extends UserProperty> T getProperty(Class<T> clazz) {
