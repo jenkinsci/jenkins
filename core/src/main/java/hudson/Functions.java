@@ -32,6 +32,7 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -723,4 +724,11 @@ public class Functions {
     }
 
     private static final Pattern LINE_END = Pattern.compile("\r?\n");
+
+    /**
+     * Checks if the current user is anonymous.
+     */
+    public static boolean isAnonymous() {
+        return Hudson.getAuthentication() instanceof AnonymousAuthenticationToken;
+    }
 }

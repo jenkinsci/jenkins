@@ -62,6 +62,7 @@ import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.ui.AbstractProcessingFilter;
+import org.acegisecurity.Authentication;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -1798,8 +1799,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         if(!Hudson.adminCheck(req,rsp))
             return;
         LOGGER.severe(String.format("Shutting down VM as requested by {0} from {1}",
-                SecurityContextHolder.getContext().getAuthentication(),
-                req.getRemoteAddr()));
+                getAuthentication(), req.getRemoteAddr()));
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         PrintWriter w = rsp.getWriter();
@@ -1807,6 +1807,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         w.close();
         
         System.exit(0);
+    }
+
+    /**
+     * Gets the {@link Authentication} object that represents the user
+     * associated with the current request.
+     */
+    public static Authentication getAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
     }
 
     /**
