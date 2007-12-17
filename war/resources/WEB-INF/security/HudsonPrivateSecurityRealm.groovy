@@ -4,6 +4,7 @@
 import org.acegisecurity.providers.ProviderManager
 import hudson.security.HudsonPrivateSecurityRealm.HudsonUserDetailsService
 import org.acegisecurity.providers.dao.DaoAuthenticationProvider
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider
 
 
 authenticationManager(ProviderManager) {
