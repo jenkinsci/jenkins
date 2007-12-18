@@ -12,9 +12,11 @@
     <l:main-panel>
       <h1>Sign up</h1>
       <div style="margin: 2em;">
-        <div class="error" style="margin-bottom:1em">
-          ${data.errorMessage}
-        </div>
+        <j:if test="${data.errorMessage!=null}">
+          <div class="error" style="margin-bottom:1em">
+            ${data.errorMessage}
+          </div>
+        </j:if>
         <form action="${rootURL}/securityRealm/createAccount" method="post" style="text-size:smaller">
           <table>
             <tr>
