@@ -1263,8 +1263,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         try {
-            if(!Hudson.adminCheck(req,rsp))
-                return;
+            checkPermission(ADMINISTER);
 
             req.setCharacterEncoding("UTF-8");
 
@@ -1399,15 +1398,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     public synchronized void doQuietDown( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(ADMINISTER);
         isQuietingDown = true;
         rsp.sendRedirect2(".");
     }
 
     public synchronized void doCancelQuietDown( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(ADMINISTER);
         isQuietingDown = false;
         getQueue().scheduleMaintenance();
         rsp.sendRedirect2(".");
@@ -1668,8 +1665,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Reloads the configuration.
      */
     public synchronized void doReload( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(ADMINISTER);
 
         // engage "loading ..." UI and then run the actual task in a separate thread
         final ServletContext context = req.getServletContext();
@@ -1699,8 +1695,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public void doUploadPlugin( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         try {
-            if(!Hudson.adminCheck(req,rsp))
-                return;
+            checkPermission(ADMINISTER);
 
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
 
@@ -1796,8 +1791,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * @since 1.161
      */
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(ADMINISTER);
         LOGGER.severe(String.format("Shutting down VM as requested by {0} from {1}",
                 getAuthentication(), req.getRemoteAddr()));
         rsp.setStatus(HttpServletResponse.SC_OK);
@@ -1821,8 +1815,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Configure the logging level.
      */
     public void doConfigLogger( StaplerRequest req, StaplerResponse rsp, @QueryParameter("name") String name, @QueryParameter("level") String level) throws IOException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(ADMINISTER);
         Logger.getLogger(name).setLevel(Level.parse(level.toUpperCase()));
         rsp.sendRedirect2("log");
     }
@@ -2105,11 +2098,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
-     * Administrative access to Hudson.
-     */
-    public static final Permission ADMINISTER = new Permission(Hudson.class,"Administer", Permission.WRITE);
-
-    /**
      * Live view of recent {@link LogRecord}s produced by Hudson.
      */
     public static List<LogRecord> logRecords = Collections.emptyList(); // initialized to dummy value to avoid NPE
@@ -2152,6 +2140,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
+
+    /**
+     * Administrative access to Hudson.
+     */
+    public static final Permission ADMINISTER = new Permission(Hudson.class,"Administer", Permission.CONFIGURE);
 
     static {
         XSTREAM.alias("hudson",Hudson.class);
