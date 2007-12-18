@@ -61,11 +61,6 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
             return UNSECURED;
         }
 
-        /**
-         * Thie {@link AuthorizationStrategy} is special
-         * in that it cannot be explicitly configured, hence there's no
-         * descriptor for this. 
-         */
         public Descriptor<AuthorizationStrategy> getDescriptor() {
             return DESCRIPTOR;
         }
@@ -100,4 +95,5 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
             LIST.add(Unsecured.DESCRIPTOR);
         }
     }
+
 }
