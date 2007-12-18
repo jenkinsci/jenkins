@@ -6,6 +6,8 @@
    title : controls the HTML page title. Mandatory.
    norefresh : set to "true" to disable auto refresh for this page.
    secured : set to "true" to fail unless the caller is admin.
+             (deprecated: @permission should be used instead)
+   permission: if non-null, the page rendering fails unless the caller has the given permission
    css :
      specify path that starts from "/" for loading additional CSS stylesheet.
      path is interprted as relative to the context root. e.g.,
@@ -29,7 +31,7 @@
 <html>
   <head>
     <!-- if this page needs to be secured, make sure the user is admin -->
-    ${h.adminCheck(request,response,secured)}
+    ${h.adminCheck(request,response,secured,permission)}
 
     <title>${h.appendIfNotNull(title, ' [Hudson]', 'Hudson')}</title>
     <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />

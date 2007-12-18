@@ -23,9 +23,19 @@ public abstract class ACL {
      */
     public final void checkPermission(Permission p) {
         Authentication a = SecurityContextHolder.getContext().getAuthentication();
-
         if(!hasPermission(a,p))
             throw new AccessDeniedException(a.toString()+" is missing "+p.name);
+    }
+
+    /**
+     * Checks if the current security principal has this permission.
+     *
+     * @return false
+     *      if the user doesn't have the permission.
+     */
+    public final boolean hasPermission(Permission p) {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        return hasPermission(a,p);
     }
 
     /**
