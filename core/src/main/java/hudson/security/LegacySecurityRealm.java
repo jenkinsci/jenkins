@@ -28,7 +28,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
      * submit the form to the URL defined by the servlet spec.
      */
     @Override
-    public String getLoginUrl() {
+    public String getAuthenticationGatewayUrl() {
         return "j_security_check";
     }
 

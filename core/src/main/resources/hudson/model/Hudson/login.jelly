@@ -4,7 +4,7 @@
     <l:main-panel>
       <div style="margin: 2em;">
         <!-- login form -->
-        <form action="${it.securityRealm.loginUrl}" method="post" style="text-size:smaller">
+        <form action="${it.securityRealm.authenticationGatewayUrl}" method="post" style="text-size:smaller">
           <table>
             <tr>
               <td>User:</td>
@@ -15,6 +15,7 @@
               <td><input type="password" name="j_password" /></td>
             </tr>
           </table>
+          <input type="hidden" name="target" value="${request.getParameter('from')}" />
           <f:submit value="login" />
           <script>
             $('j_username').focus();

@@ -57,7 +57,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * Returns the URL to submit a form for the authentication.
      * There's no need to override this, except for {@link LegacySecurityRealm}.
      */
-    public String getLoginUrl() {
+    public String getAuthenticationGatewayUrl() {
         return "j_acegi_security_check";
     }
 
