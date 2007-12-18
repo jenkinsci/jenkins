@@ -26,6 +26,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.security.SecurityRealm;
 import hudson.security.AuthorizationStrategy;
+import hudson.security.Permission;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.kohsuke.stapler.Ancestor;
@@ -412,12 +413,25 @@ public class Functions {
         return Util.xmlEscape(s);
     }
 
-    public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required) throws IOException, ServletException {
-        if(required!=null && !Hudson.adminCheck(req,rsp)) {
+    public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, ServletException {
+        // this is legacy --- all views should be eventually converted to
+        // the permission based model.
+        if((required!=null || (permission!=null && !Hudson.newSecurity)) && !Hudson.adminCheck(req,rsp)) {
             // check failed. commit the FORBIDDEN response, then abort.
             rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
             rsp.getOutputStream().close();
             throw new ServletException("Unauthorized access");
+        }
+
+        // make sure the user owns the necessary permission to access this page.
+        if(permission!=null) {
+            if(!Hudson.getInstance().getACL().hasPermission(permission)) {
+                // check failed. commit the FORBIDDEN response, then abort.
+                // if we just throw an exception, JEXL will eat it so it won't have the effect.
+                rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                rsp.getOutputStream().close();
+                throw new ServletException("Unauthorized access");
+            }
         }
     }
 
