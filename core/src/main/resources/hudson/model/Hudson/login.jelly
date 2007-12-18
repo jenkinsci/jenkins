@@ -15,7 +15,7 @@
               <td><input type="password" name="j_password" /></td>
             </tr>
           </table>
-          <input type="hidden" name="target" value="${request.getParameter('from')}" />
+          <input type="hidden" name="from" value="${request.getParameter('from')}" />
           <f:submit value="login" />
           <script>
             $('j_username').focus();

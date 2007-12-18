@@ -7,12 +7,12 @@ import org.acegisecurity.providers.anonymous.AnonymousProcessingFilter
 import org.acegisecurity.ui.ExceptionTranslationFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
-import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter
 import org.acegisecurity.context.HttpSessionContextIntegrationFilter
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint
 import hudson.security.ChainedServletFilter
 import hudson.security.AccessDeniedHandlerImpl
 import hudson.security.BasicAuthenticationFilter
+import hudson.security.AuthenticationProcessingFilter2
 
 // providers that apply to both patterns
 def commonProviders(redirectUrl) {
@@ -46,7 +46,7 @@ filter(ChainedServletFilter) {
                 realmName = "Hudson"
             }
         },
-        bean(AuthenticationProcessingFilter) {
+        bean(AuthenticationProcessingFilter2) {
             authenticationManager = authenticationManager
             authenticationFailureUrl = "/loginError"
             defaultTargetUrl = "/"

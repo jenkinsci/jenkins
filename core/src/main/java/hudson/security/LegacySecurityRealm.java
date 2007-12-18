@@ -32,6 +32,11 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         return "j_security_check";
     }
 
+    @Override
+    public String getLoginUrl() {
+        return "loginEntry";
+    }
+
     public Descriptor<SecurityRealm> getDescriptor() {
         return DESCRIPTOR;
     }

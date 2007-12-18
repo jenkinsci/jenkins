@@ -62,6 +62,17 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     }
 
     /**
+     * Gets the target URL of the "login" link.
+     * There's no need to override this, except for {@link LegacySecurityRealm}.
+     * On legacy implementation this should point to "longinEntry", which
+     * is protected by <tt>web.xml</tt>, so that the user can be eventually authenticated
+     * by the container.
+     */
+    public String getLoginUrl() {
+        return "login";
+    }
+
+    /**
      * Returns true if this {@link SecurityRealm} allows online sign-up.
      * This creates a hyperlink that redirects users to <tt>CONTEXT_ROOT/signUp</tt>,
      * which will be served by the <tt>signup.jelly</tt> view of this class.
