@@ -115,4 +115,9 @@ public class Permission {
      * Generic delete access.
      */
     public static final Permission DELETE = new Permission(Permission.class,"Generic Delete",WRITE);
+
+    /**
+     * Generic configuration access.
+     */
+    public static final Permission CONFIGURE = new Permission(Permission.class,"Generic Configure",WRITE);
 }
