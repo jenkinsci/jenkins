@@ -3,7 +3,9 @@ package hudson.security;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
+import org.kohsuke.stapler.StaplerRequest;
 import hudson.model.Descriptor;
+import net.sf.json.JSONObject;
 
 /**
  * {@link SecurityRealm} that accepts {@link ContainerAuthentication} object
@@ -42,6 +44,10 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
     }
 
     public static final Descriptor<SecurityRealm> DESCRIPTOR = new Descriptor<SecurityRealm>(LegacySecurityRealm.class) {
+        public SecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            return new LegacySecurityRealm();
+        }
+
         public String getDisplayName() {
             return "Delegate to servlet container";
         }
