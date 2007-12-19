@@ -101,7 +101,11 @@
                 <st:nbsp/>
                 <j:choose>
                   <j:when test="${!h.isAnonymous()}">
-                    <a style="color:white" href="${rootURL}/logout"><b>logout</b></a>
+                    <span style="color:white; white-space:nowrap">
+                      <a style="color:white" href="${rootURL}/user/${app.authentication.name}"><b>${app.authentication.name}</b></a>
+                      |
+                      <a style="color:white" href="${rootURL}/logout"><b>logout</b></a>
+                    </span>
                   </j:when>
                   <j:otherwise>
                     <a style="color:white" href="${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}"><b>login</b></a>
