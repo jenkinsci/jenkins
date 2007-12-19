@@ -9,6 +9,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.PluginConfigurationException;
 import org.apache.maven.plugin.PluginManagerException;
+import org.apache.maven.plugin.Mojo;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.InvalidDependencyVersionException;
 import org.codehaus.classworlds.ClassRealm;
@@ -96,10 +97,11 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
         class MojoConfig {
             PlexusConfiguration config;
             ExpressionEvaluator eval;
+            Mojo mojo;
 
             void callPost(Exception exception) throws IOException, InterruptedException {
                 if(listener!=null)
-                    listener.postExecute(project,mojoExecution,config,eval,exception);
+                    listener.postExecute(project,mojoExecution, mojo, config,eval,exception);
             }
         }
 
@@ -113,9 +115,10 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
                 try {
                     config.config = configuration;
                     config.eval = expressionEvaluator;
-                    if(listener!=null)
-                        listener.preExecute(project,mojoExecution,configuration,expressionEvaluator);
+                    config.mojo = (Mojo)component;
                     super.configureComponent(component, configuration, expressionEvaluator, containerRealm, configListener);
+                    if(listener!=null)
+                        listener.preExecute(project,mojoExecution, (Mojo)component, configuration,expressionEvaluator);
                 } catch (IOException e) {
                     throw new ComponentConfigurationException(e);
                 } catch (InterruptedException e) {

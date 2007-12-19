@@ -1,6 +1,7 @@
 package hudson.maven;
 
 import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.Mojo;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.component.configurator.converters.lookup.ConverterLookup;
@@ -34,6 +35,11 @@ public final class MojoInfo {
     public final PluginName pluginName;
 
     /**
+     * Mojo object that carries out the actual execution.
+     */
+    public final Mojo mojo;
+
+    /**
      * Configuration of the mojo for the current execution.
      * This reflects the default values, as well as values configured from POM,
      * including inherited values.
@@ -52,7 +58,8 @@ public final class MojoInfo {
      */
     private final ConverterLookup converterLookup = new DefaultConverterLookup();
 
-    public MojoInfo(MojoExecution mojoExecution, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator) {
+    public MojoInfo(MojoExecution mojoExecution, Mojo mojo, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator) {
+        this.mojo = mojo;
         this.mojoExecution = mojoExecution;
         this.configuration = configuration;
         this.expressionEvaluator = expressionEvaluator;

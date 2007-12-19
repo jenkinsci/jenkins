@@ -19,6 +19,7 @@ import org.apache.maven.lifecycle.LifecycleExecutorInterceptor;
 import org.apache.maven.lifecycle.LifecycleExecutorListener;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.Mojo;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.classworlds.NoSuchRealmException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
@@ -167,18 +168,18 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
             fireLeaveModule();
         }
 
-        public void preExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException {
+        public void preExecute(MavenProject project, MojoExecution exec, Mojo mojo, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException {
             if(lastModule!=project) {
                 // module change
                 fireLeaveModule();
                 fireEnterModule(project);
             }
 
-            listener.preExecute(project, new MojoInfo(exec, mergedConfig, eval));
+            listener.preExecute(project, new MojoInfo(exec, mojo, mergedConfig, eval));
         }
 
-        public void postExecute(MavenProject project, MojoExecution exec, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException {
-            listener.postExecute(project, new MojoInfo(exec, mergedConfig, eval),exception);
+        public void postExecute(MavenProject project, MojoExecution exec, Mojo mojo, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException {
+            listener.postExecute(project, new MojoInfo(exec, mojo, mergedConfig, eval),exception);
         }
 
         private void fireEnterModule(MavenProject project) throws InterruptedException, IOException {
