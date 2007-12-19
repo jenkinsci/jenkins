@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.security.Permission;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -214,4 +215,9 @@ public abstract class View extends AbstractModelObject {
             return lhs.getViewName().compareTo(rhs.getViewName());
         }
     };
+
+    /**
+     * Permission to create new jobs.
+     */
+    public static final Permission CREATE = new Permission(View.class,"Create", Permission.CREATE);
 }

@@ -1388,8 +1388,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(ADMINISTER);
 
         req.setCharacterEncoding("UTF-8");
         systemMessage = req.getParameter("description");
@@ -1418,8 +1417,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     public synchronized Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return null;
+        checkPermission(Job.CREATE);
 
         TopLevelItem result;
 
@@ -1513,8 +1511,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(View.CREATE);
 
         req.setCharacterEncoding("UTF-8");
 
@@ -1619,8 +1616,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      * RSS feed for log entries.
      */
     public void doLogRss( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(ADMINISTER);
 
         List<LogRecord> logs = logRecords;
 
@@ -1792,7 +1788,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
      */
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(ADMINISTER);
-        LOGGER.severe(String.format("Shutting down VM as requested by {0} from {1}",
+        LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
                 getAuthentication(), req.getRemoteAddr()));
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
@@ -2069,10 +2065,18 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         public static final LocalChannel localChannel = new LocalChannel(threadPoolForRemoting);
     }
 
+    /**
+     * @deprecated
+     *      Use {@link #checkPermission(Permission)}
+     */
     public static boolean adminCheck() throws IOException {
         return adminCheck(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
     }
 
+    /**
+     * @deprecated
+     *      Use {@link #checkPermission(Permission)}
+     */
     public static boolean adminCheck(StaplerRequest req,StaplerResponse rsp) throws IOException {
         if (isAdmin(req)) return true;
 
@@ -2083,18 +2087,21 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * Checks if the current user (for which we are processing the current request)
      * has the admin access.
+     *
+     * @deprecated
+     *      Define a custom {@link Permission} and check against ACL.
      */
     public static boolean isAdmin() {
-        return isAdmin(Stapler.getCurrentRequest());
+        return !getInstance().isUseSecurity()
+            || Hudson.getInstance().getACL().hasPermission(Permission.FULL_CONTROL);
     }
 
+    /**
+     * @deprecated
+     *      Define a custom {@link Permission} and check against ACL.
+     */
     public static boolean isAdmin(StaplerRequest req) {
-        if(!getInstance().isUseSecurity())
-            return true;
-
-        if(req.isUserInRole("admin"))
-            return true;
-        return false;
+        return isAdmin();
     }
 
     /**

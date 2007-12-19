@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.StructuredForm;
 import hudson.Util;
+import hudson.security.Permission;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.search.QuickSilver;
@@ -916,4 +917,9 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
             runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
     }
+
+    /**
+     * Permission to create new jobs.
+     */
+    public static final Permission CREATE = new Permission(Job.class,"Create", Permission.CREATE);
 }
