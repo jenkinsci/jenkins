@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.security.Permission;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -81,9 +82,6 @@ public class ListView extends View {
     }
 
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return null;
-
         Item item = owner.doCreateItem(req, rsp);
         if(item!=null) {
             jobNames.add(item.getName());
@@ -100,8 +98,7 @@ public class ListView extends View {
      * Accepts submission from the configuration page.
      */
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(CONFIGURE);
 
         req.setCharacterEncoding("UTF-8");
         
@@ -124,8 +121,7 @@ public class ListView extends View {
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(CONFIGURE);
 
         req.setCharacterEncoding("UTF-8");
         description = req.getParameter("description");
@@ -137,10 +133,12 @@ public class ListView extends View {
      * Deletes this view.
      */
     public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(DELETE);
 
         owner.deleteView(this);
         rsp.sendRedirect2(req.getContextPath()+"/");
     }
+
+    public static final Permission DELETE = new Permission(Item.class,"Delete", Permission.DELETE);
+    public static final Permission CONFIGURE = new Permission(Item.class,"Configure", Permission.CONFIGURE);
 }

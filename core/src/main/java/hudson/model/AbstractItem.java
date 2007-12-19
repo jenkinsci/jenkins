@@ -3,6 +3,9 @@ package hudson.model;
 import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
+import hudson.security.Permission;
+import hudson.security.ACL;
+import hudson.security.AuthorizationStrategy;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -158,6 +161,21 @@ public abstract class AbstractItem extends Actionable implements Item {
     }
 
     /**
+     * Returns the {@link ACL} for this object.
+     */
+    public ACL getACL() {
+        // TODO: this object should have its own ACL
+        return Hudson.getInstance().getACL();
+    }
+
+    /**
+     * Short for {@code getACL().checkPermission(p)}
+     */
+    public void checkPermission(Permission p) {
+        getACL().checkPermission(p);
+    }
+
+    /**
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
@@ -172,8 +190,7 @@ public abstract class AbstractItem extends Actionable implements Item {
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(CONFIGURE);
 
         req.setCharacterEncoding("UTF-8");
         setDescription(req.getParameter("description"));
@@ -185,8 +202,7 @@ public abstract class AbstractItem extends Actionable implements Item {
      * Deletes this item.
      */
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(DELETE);
         delete();
         rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
     }

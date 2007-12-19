@@ -119,5 +119,5 @@ public class Permission {
     /**
      * Generic configuration access.
      */
-    public static final Permission CONFIGURE = new Permission(Permission.class,"Generic Configure",WRITE);
+    public static final Permission CONFIGURE = new Permission(Permission.class,"Generic Configure",UPDATE);
 }

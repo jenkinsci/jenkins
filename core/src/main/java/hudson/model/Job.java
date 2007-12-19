@@ -679,8 +679,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * Accepts submission from the configuration page.
      */
     public synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if (!Hudson.adminCheck(req, rsp))
-            return;
+        checkPermission(CONFIGURE);
 
         req.setCharacterEncoding("UTF-8");
 
@@ -889,8 +888,9 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * Renames this job.
      */
     public /*not synchronized. see renameTo()*/ void doDoRename( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        // rename is essentially delete followed by a create
+        checkPermission(CREATE);
+        checkPermission(DELETE);
 
         String newName = req.getParameter("newName");
         try {
@@ -917,9 +917,4 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
             runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
     }
-
-    /**
-     * Permission to create new jobs.
-     */
-    public static final Permission CREATE = new Permission(Job.class,"Create", Permission.CREATE);
 }

@@ -435,14 +435,12 @@ public final class PluginWrapper {
 //
 //
     public void doMakeEnabled(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+    Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         enable();
         rsp.setStatus(200);
     }
     public void doMakeDisabled(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         disable();
         rsp.setStatus(200);
     }

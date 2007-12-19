@@ -338,8 +338,7 @@ public abstract class Computer extends AbstractModelObject {
     }
 
     public void doToggleOffline( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
         setTemporarilyOffline(!temporarilyOffline);
         rsp.forwardToPreviousPage(req);
@@ -349,8 +348,8 @@ public abstract class Computer extends AbstractModelObject {
      * Dumps the contents of the export table.
      */
     public void doDumpExportTable( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp)) // this is a debug probe and may expose sensitive information
-            return;
+        // this is a debug probe and may expose sensitive information
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("UTF-8");

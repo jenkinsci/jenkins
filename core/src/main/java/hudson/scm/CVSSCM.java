@@ -1027,8 +1027,7 @@ public class CVSSCM extends SCM implements Serializable {
          * cvs does some tty magic to disable echo back or whatever.
          */
         public void doPostPassword(StaplerRequest req, StaplerResponse rsp) throws IOException, InterruptedException {
-            if(!Hudson.adminCheck(req,rsp))
-                return;
+            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
             String cvsroot = req.getParameter("cvsroot");
             String password = req.getParameter("password");

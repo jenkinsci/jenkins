@@ -884,13 +884,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     }
 
     /**
-     * Short for {@code getACL().checkPermission(p)}
-     */
-    public void checkPermission(Permission p) {
-        getACL().checkPermission(p);
-    }
-
-    /**
      * @return
      *      never null.
      */
@@ -2151,7 +2144,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
     /**
      * Administrative access to Hudson.
      */
-    public static final Permission ADMINISTER = new Permission(Hudson.class,"Administer", Permission.CONFIGURE);
+    public static final Permission ADMINISTER = new Permission(Hudson.class,"Administer", Permission.FULL_CONTROL);
 
     static {
         XSTREAM.alias("hudson",Hudson.class);

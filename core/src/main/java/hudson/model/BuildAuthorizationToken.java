@@ -27,20 +27,20 @@ public final class BuildAuthorizationToken {
             return null;
     }
 
-    public static boolean canStartBuild(BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public static void checkPermission(AbstractProject project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
         if (!Hudson.getInstance().isUseSecurity())
-            return true;    // everyone is authorized
+            return;    // everyone is authorized
 
         if(token!=null) {
             if(token.token != null) {
                 //check the provided token
                 String providedToken = req.getParameter("token");
                 if (providedToken != null && providedToken.equals(token.token))
-                    return true;
+                    return;
             }
         }
 
-        return Hudson.adminCheck(req, rsp);
+        project.checkPermission(AbstractProject.BUILD);
     }
 
     public String getToken() {

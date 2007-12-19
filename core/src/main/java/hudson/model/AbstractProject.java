@@ -5,6 +5,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.AbortException;
 import hudson.StructuredForm;
+import hudson.security.Permission;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.maven.MavenModule;
@@ -760,28 +761,25 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a new build command.
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-    if(BuildAuthorizationToken.canStartBuild(authToken, req, rsp)) {
+        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
         scheduleBuild();
         rsp.forwardToPreviousPage(req);
     }
-}
 
     /**
      * Schedules a new SCM polling command.
      */
     public void doPolling( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(BuildAuthorizationToken.canStartBuild(authToken, req, rsp)) {
-            schedulePolling();
-            rsp.forwardToPreviousPage(req);
-        }
+        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
+        schedulePolling();
+        rsp.forwardToPreviousPage(req);
     }
 
     /**
      * Cancels a scheduled build.
      */
     public void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(BUILD);
 
         Hudson.getInstance().getQueue().cancel(this);
         rsp.forwardToPreviousPage(req);
@@ -929,4 +927,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     };
 
     private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
+
+    public static final Permission BUILD = new Permission(AbstractProject.class,"Build", Permission.UPDATE);
 }

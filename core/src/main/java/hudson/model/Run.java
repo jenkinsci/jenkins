@@ -9,6 +9,7 @@ import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
+import hudson.security.Permission;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
@@ -562,6 +563,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return new Api(this);
     }
 
+    public void checkPermission(Permission p) {
+        // for now, don't maintain ACL per run, and do it at project level
+        getParent().checkPermission(p);
+    }
+
     /**
      * Deletes this build and its entire log
      *
@@ -906,8 +912,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public void doToggleLogKeep( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(UPDATE);
 
         keepLog = !keepLog;
         save();
@@ -926,9 +931,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Deletes the build when the button is pressed.
      */
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
-        
+        checkPermission(DELETE);
+
         // We should not simply delete the build if it has been explicitly
         // marked to be preserved, or if the build should not be deleted
         // due to dependencies!
@@ -946,8 +950,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(UPDATE);
 
         req.setCharacterEncoding("UTF-8");
         description = req.getParameter("description");
@@ -1043,4 +1046,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public String getUrlName() { return null; }
         public String getWhyKeepLog() { return Run.this.getWhyKeepLog(); }
     }
+
+    public static final Permission DELETE = new Permission(Item.class,"Delete", Permission.DELETE);
+    public static final Permission UPDATE = new Permission(Item.class,"Update", Permission.UPDATE);
 }

@@ -398,8 +398,7 @@ public final class Slave implements Node, Serializable {
         }
 
         public void doDoDisconnect(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            if(!Hudson.adminCheck(req,rsp))
-                return;
+            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
             closeChannel();
             rsp.sendRedirect(".");
         }

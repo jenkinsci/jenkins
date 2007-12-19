@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.security.Permission;
+import hudson.security.ACL;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -80,6 +81,21 @@ public abstract class View extends AbstractModelObject {
 
     public Api getApi(final StaplerRequest req) {
         return new Api(this);
+    }
+
+    /**
+     * Returns the {@link ACL} for this object.
+     */
+    public ACL getACL() {
+        // TODO: this object should have its own ACL
+        return Hudson.getInstance().getACL();
+    }
+
+    /**
+     * Short for {@code getACL().checkPermission(p)}
+     */
+    public void checkPermission(Permission p) {
+        getACL().checkPermission(p);
     }
 
     public static final class UserInfo implements Comparable<UserInfo> {

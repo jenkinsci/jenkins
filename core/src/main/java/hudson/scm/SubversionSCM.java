@@ -941,7 +941,7 @@ public class SubversionSCM extends SCM implements Serializable {
          * This code is fairly ugly because of the way SVNKit handles credentials.
          */
         public void doPostCredential(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            if(!Hudson.adminCheck(req,rsp)) return;
+            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
             MultipartFormDataParser parser = new MultipartFormDataParser(req);
 

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import hudson.search.SearchableModelObject;
+import hudson.security.Permission;
 
 /**
  * Basic configuration unit in Hudson.
@@ -153,4 +154,8 @@ public interface Item extends PersistenceRoot, SearchableModelObject {
      * to save the data.
      */
     public void save() throws IOException;
+
+    public static final Permission CREATE = new Permission(Item.class,"Create", Permission.CREATE);
+    public static final Permission DELETE = new Permission(Item.class,"Delete", Permission.DELETE);
+    public static final Permission CONFIGURE = new Permission(Item.class,"Configure", Permission.CONFIGURE);
 }
