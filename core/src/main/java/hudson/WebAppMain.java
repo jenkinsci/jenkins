@@ -26,6 +26,8 @@ import java.util.logging.Logger;
 import java.net.URLClassLoader;
 import java.net.URL;
 
+import org.kohsuke.stapler.Stapler;
+
 /**
  * Entry point when Hudson is used as a webapp.
  *
@@ -97,6 +99,8 @@ public class WebAppMain implements ServletContextListener {
                     logger.log(Level.SEVERE, "Failed to correct the problem.");
                 }
             }
+
+            Stapler.setExpressionFactory(event, new ExpressionFactory2());
 
             context.setAttribute(APP,new HudsonIsLoading());
 
@@ -222,4 +226,5 @@ public class WebAppMain implements ServletContextListener {
     }
 
     private static final Logger LOGGER = Logger.getLogger(WebAppMain.class.getName());
+
 }

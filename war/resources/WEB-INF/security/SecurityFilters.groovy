@@ -13,6 +13,7 @@ import hudson.security.ChainedServletFilter
 import hudson.security.AccessDeniedHandlerImpl
 import hudson.security.BasicAuthenticationFilter
 import hudson.security.AuthenticationProcessingFilter2
+import hudson.security.UnwrapSecurityExceptionFilter
 
 // providers that apply to both patterns
 def commonProviders(redirectUrl) {
@@ -26,7 +27,8 @@ def commonProviders(redirectUrl) {
             authenticationEntryPoint = bean(AuthenticationProcessingFilterEntryPoint) {
                 loginFormUrl = redirectUrl;
             }
-        }
+        },
+        bean(UnwrapSecurityExceptionFilter)
     ]
 }
 

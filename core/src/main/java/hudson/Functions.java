@@ -424,15 +424,8 @@ public class Functions {
         }
 
         // make sure the user owns the necessary permission to access this page.
-        if(permission!=null) {
-            if(!Hudson.getInstance().getACL().hasPermission(permission)) {
-                // check failed. commit the FORBIDDEN response, then abort.
-                // if we just throw an exception, JEXL will eat it so it won't have the effect.
-                rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                rsp.getOutputStream().close();
-                throw new ServletException("Unauthorized access");
-            }
-        }
+        if(permission!=null)
+            Hudson.getInstance().getACL().checkPermission(permission);
     }
 
     /**
