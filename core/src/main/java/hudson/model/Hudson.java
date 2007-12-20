@@ -70,6 +70,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletContext;
@@ -122,7 +123,7 @@ import java.util.regex.Pattern;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node {
+public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node, StaplerProxy {
     private transient final Queue queue = new Queue();
 
     /**
@@ -2014,6 +2015,17 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
         return widgets;
     }
 
+    public Object getTarget() {
+        String rest = Stapler.getCurrentRequest().getRestOfPath();
+        if(rest.startsWith("/login")
+        || rest.startsWith("/logout")
+        || rest.startsWith("/securityRealm"))
+            return this;    // URLs that are always visible without READ permission
+        
+        checkPermission(READ);
+        return this;
+    }
+
     public static final class MasterComputer extends Computer {
         private MasterComputer() {
             super(Hudson.getInstance());
@@ -2141,10 +2153,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node 
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
 
-    /**
-     * Administrative access to Hudson.
-     */
     public static final Permission ADMINISTER = new Permission(Hudson.class,"Administer", Permission.FULL_CONTROL);
+    public static final Permission READ = new Permission(Hudson.class,"Read", Permission.READ);
 
     static {
         XSTREAM.alias("hudson",Hudson.class);
