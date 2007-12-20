@@ -44,4 +44,8 @@ public class LDAPSecurityRealm extends SecurityRealm {
             return "LDAP";
         }
     }
+
+    static {
+        LIST.add(DESCRIPTOR);
+    }
 }

@@ -57,4 +57,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         }
     };
 
+    static {
+        LIST.add(DESCRIPTOR);
+    }
 }

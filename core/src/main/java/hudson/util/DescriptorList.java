@@ -37,4 +37,19 @@ public final class DescriptorList<T extends Describable<T>> extends CopyOnWriteA
     public T newInstanceFromRadioList(JSONObject parent, String name) throws FormException {
         return newInstanceFromRadioList(parent.getJSONObject(name));
     }
+
+    /**
+     * No-op method used to force the class initialization of the given class.
+     * The class initialization in turn is expected to put the descriptor
+     * into the {@link DescriptorList}.
+     *
+     * <p>
+     * This is necessary to resolve the class initialization order problem.
+     * Often a {@link DescriptorList} is defined in the base class, and
+     * when it tries to initialize itself by listing up descriptors of known
+     * sub-classes, they might not be available in time.
+     *
+     * @since 1.162
+     */
+    public void load(Class<? extends Describable> c) {}
 }

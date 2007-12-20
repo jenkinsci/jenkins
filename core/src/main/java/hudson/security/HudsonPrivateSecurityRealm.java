@@ -223,4 +223,8 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
             return new HudsonPrivateSecurityRealm();
         }
     }
+
+    static {
+        LIST.add(DescriptorImpl.INSTANCE);
+    }
 }

@@ -11,9 +11,6 @@ import org.springframework.context.ApplicationContext;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.apache.tools.ant.types.resources.selectors.None;
-import org.apache.maven.plugin.logging.Log;
 
 import java.util.Map;
 import java.util.logging.Logger;
@@ -173,11 +170,13 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     /**
      * All registered {@link SecurityRealm} implementations.
      */
-    public static final DescriptorList<SecurityRealm> LIST = new DescriptorList<SecurityRealm>(
-        LegacySecurityRealm.DESCRIPTOR,
-        HudsonPrivateSecurityRealm.DescriptorImpl.INSTANCE,
-        LDAPSecurityRealm.DESCRIPTOR
-    );
+    public static final DescriptorList<SecurityRealm> LIST = new DescriptorList<SecurityRealm>();
+
+    static {
+        LIST.load(LegacySecurityRealm.class);
+        LIST.load(HudsonPrivateSecurityRealm.class);
+        LIST.load(LDAPSecurityRealm.class);
+    }
 
     private static final Logger LOGGER = Logger.getLogger(SecurityRealm.class.getName());
 }
