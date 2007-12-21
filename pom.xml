@@ -53,6 +53,17 @@
           </descriptors>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.jvnet.fix1600</groupId>
+        <artifactId>fix1600</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>fix</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   
