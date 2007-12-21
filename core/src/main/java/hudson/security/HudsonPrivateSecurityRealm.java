@@ -8,6 +8,7 @@ import hudson.model.UserPropertyDescriptor;
 import hudson.util.Scrambler;
 import hudson.util.Protector;
 import hudson.util.spring.BeanBuilder;
+import hudson.Util;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
@@ -175,7 +176,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
 
         public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             try {
-                String data = formData.getString("password");
+                String data = Util.fixEmpty(req.getParameter("user.password"));
                 if(data==null)
                     return null;
                 String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
