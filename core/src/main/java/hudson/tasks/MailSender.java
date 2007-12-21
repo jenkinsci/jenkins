@@ -128,7 +128,17 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
     private MimeMessage createUnstableMail(B build, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, "Hudson build became unstable: "),"UTF-8");
+        String subject = "Hudson build is unstable: ";
+
+        B prev = build.getPreviousBuild();
+        if(prev!=null) {
+            if(prev.getResult()==Result.SUCCESS)
+                subject = "Hudson build became unstable: ";
+            if(prev.getResult()==Result.UNSTABLE)
+                subject = "Hudson build is still unstable: ";
+        }
+
+        msg.setSubject(getSubject(build, subject),"UTF-8");
         StringBuffer buf = new StringBuffer();
         appendBuildUrl(build, buf);
         msg.setText(buf.toString());
