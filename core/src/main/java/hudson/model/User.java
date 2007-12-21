@@ -139,6 +139,11 @@ public class User extends AbstractModelObject {
         properties = ps;
         save();
     }
+
+    @Exported(name="properties")
+    public List<UserProperty> getAllProperties() {
+        return Collections.unmodifiableList(properties);
+    }
     
     /**
      * Gets the specific property, or null.

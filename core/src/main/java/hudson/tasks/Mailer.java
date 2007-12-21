@@ -43,6 +43,8 @@ import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * {@link Publisher} that sends the build result in e-mail.
@@ -346,6 +348,7 @@ public class Mailer extends Publisher {
     /**
      * Per user property that is e-mail address.
      */
+    @ExportedBean(defaultVisibility=2)
     public static class UserProperty extends hudson.model.UserProperty {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
@@ -359,6 +362,7 @@ public class Mailer extends Publisher {
             this.emailAddress = emailAddress;
         }
 
+        @Exported
         public String getAddress() {
             if(emailAddress!=null)
                 return emailAddress;
