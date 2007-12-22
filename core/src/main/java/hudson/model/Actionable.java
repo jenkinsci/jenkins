@@ -80,7 +80,7 @@ public abstract class Actionable extends AbstractModelObject {
         for (Action a : getActions()) {
             String urlName = a.getUrlName();
             if(urlName==null)
-                throw new AssertionError("Action "+a+" returned null from the getUrlName() method");
+                continue;
             if(urlName.equals(token))
                 return a;
         }
