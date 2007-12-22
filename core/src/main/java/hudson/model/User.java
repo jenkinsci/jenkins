@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,6 +67,12 @@ public class User extends AbstractModelObject {
                 config.unmarshal(this);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to load "+config,e);
+        }
+
+        // remove nulls that have failed to load
+        for (Iterator<UserProperty> itr = properties.iterator(); itr.hasNext();) {
+            if(itr.next()==null)
+                itr.remove();            
         }
 
         // allocate default instances if needed.

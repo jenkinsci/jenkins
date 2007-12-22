@@ -45,7 +45,7 @@ public abstract class AbstractItem extends Actionable implements Item {
         doSetName(name);
     }
 
-    @Exported(visibility=2)
+    @Exported(visibility=999)
     public String getName() {
         return name;
     }
@@ -145,7 +145,7 @@ public abstract class AbstractItem extends Actionable implements Item {
         return getShortUrl();
     }
 
-    @Exported(visibility=2,name="url")
+    @Exported(visibility=999,name="url")
     public final String getAbsoluteUrl() {
         StaplerRequest request = Stapler.getCurrentRequest();
         if(request==null)

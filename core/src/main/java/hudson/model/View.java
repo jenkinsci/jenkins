@@ -98,6 +98,7 @@ public abstract class View extends AbstractModelObject {
         getACL().checkPermission(p);
     }
 
+    @ExportedBean(defaultVisibility=2)
     public static final class UserInfo implements Comparable<UserInfo> {
         private final User user;
         private Calendar lastChange;
@@ -109,14 +110,17 @@ public abstract class View extends AbstractModelObject {
             this.lastChange = lastChange;
         }
 
+        @Exported
         public User getUser() {
             return user;
         }
 
+        @Exported
         public Calendar getLastChange() {
             return lastChange;
         }
 
+        @Exported
         public AbstractProject getProject() {
             return project;
         }
@@ -166,35 +170,54 @@ public abstract class View extends AbstractModelObject {
     /**
      * Gets the users that show up in the changelog of this job collection.
      */
-    public final List<UserInfo> getPeople() {
-        Map<User,UserInfo> users = new HashMap<User,UserInfo>();
-        for (Item item : getItems()) {
-            for (Job job : item.getAllJobs()) {
-                if (job instanceof AbstractProject) {
-                    AbstractProject<?,?> p = (AbstractProject) job;
-                    for (AbstractBuild<?,?> build : p.getBuilds()) {
-                        for (Entry entry : build.getChangeSet()) {
-                            User user = entry.getAuthor();
+    public final People getPeople() {
+        return new People();
+    }
 
-                            UserInfo info = users.get(user);
-                            if(info==null)
-                                users.put(user,new UserInfo(user,p,build.getTimestamp()));
-                            else
-                            if(info.getLastChange().before(build.getTimestamp())) {
-                                info.project = p;
-                                info.lastChange = build.getTimestamp();
+    @ExportedBean
+    public final class People  {
+        @Exported
+        public final List<UserInfo> users;
+
+        public People() {
+            Map<User,UserInfo> users = new HashMap<User,UserInfo>();
+            for (Item item : getItems()) {
+                for (Job job : item.getAllJobs()) {
+                    if (job instanceof AbstractProject) {
+                        AbstractProject<?,?> p = (AbstractProject) job;
+                        for (AbstractBuild<?,?> build : p.getBuilds()) {
+                            for (Entry entry : build.getChangeSet()) {
+                                User user = entry.getAuthor();
+
+                                UserInfo info = users.get(user);
+                                if(info==null)
+                                    users.put(user,new UserInfo(user,p,build.getTimestamp()));
+                                else
+                                if(info.getLastChange().before(build.getTimestamp())) {
+                                    info.project = p;
+                                    info.lastChange = build.getTimestamp();
+                                }
                             }
                         }
                     }
                 }
             }
+
+            ArrayList<UserInfo> list = new ArrayList<UserInfo>();
+            list.addAll(users.values());
+            Collections.sort(list);
+            this.users = Collections.unmodifiableList(list);
         }
 
-        List<UserInfo> r = new ArrayList<UserInfo>(users.values());
-        Collections.sort(r);
+        public View getParent() {
+            return View.this;
+        }
 
-        return r;
+        public Api getApi() {
+            return new Api(this);
+        }
     }
+
 
     @Override
     public SearchIndexBuilder makeSearchIndex() {
