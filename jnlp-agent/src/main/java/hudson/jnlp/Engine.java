@@ -44,10 +44,9 @@ public class Engine extends Thread {
                     return;
                 }
 
-                listener.status("Connecting");
-                Socket s = new Socket(host, Integer.parseInt(port));
-                listener.status("Handshaking");
+                Socket s = connect(port);
 
+                listener.status("Handshaking");
                 DataOutputStream dos = new DataOutputStream(s.getOutputStream());
                 dos.writeUTF("Protocol:JNLP-connect");
                 dos.writeUTF(secretKey);
@@ -59,21 +58,45 @@ public class Engine extends Thread {
                 listener.status("Terminated");
 
                 // try to connect back to the server every 10 secs.
-                while(true) {
-                    Thread.sleep(1000*10);
-                    try {
-                        con = (HttpURLConnection)new URL(hudsonUrl).openConnection();
-                        con.connect();
-                        if(con.getResponseCode()!=200)
-                        continue;
-                    } catch (IOException e) {
-                        continue;
-                    }
-                    break;
-                }
+                waitForServerToBack();
             }
         } catch (Throwable e) {
             listener.error(e);
+        }
+    }
+
+    /**
+     * Connects to TCP slave port, with a few retries.
+     */
+    private Socket connect(String port) throws IOException, InterruptedException {
+        listener.status("Connecting");
+        int retry = 1;
+        while(true) {
+            try {
+                return new Socket(host, Integer.parseInt(port));
+            } catch (IOException e) {
+                if(retry++>10)
+                    throw e;
+                Thread.sleep(1000*10);
+                listener.status("Connecting (retrying:"+retry+")");
+            }
+        }
+    }
+
+    /**
+     * Waits for the server to come back.
+     */
+    private void waitForServerToBack() throws InterruptedException {
+        while(true) {
+            Thread.sleep(1000*10);
+            try {
+                HttpURLConnection con = (HttpURLConnection)new URL(hudsonUrl).openConnection();
+                con.connect();
+                if(con.getResponseCode()==200)
+                    return;
+            } catch (IOException e) {
+                // retry
+            }
         }
     }
 }
