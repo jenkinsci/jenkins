@@ -84,10 +84,12 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
 
     void freeze() {
         passCount=failCount=0;
+        duration=0;
         for (CaseResult r : cases) {
             r.setClass(this);
             if(r.isPassed())    passCount++;
             else                failCount++;
+            duration += r.getDuration();
         }
         Collections.sort(cases);
     }
