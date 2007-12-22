@@ -1,9 +1,9 @@
 package hudson.security;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Permission, which represents activity that requires a security privilege.
@@ -48,7 +48,7 @@ public class Permission {
         synchronized (PERMISSIONS) {
             List<Permission> ps = PERMISSIONS.get(owner);
             if(ps==null) {
-                ps = new ArrayList<Permission>();
+                ps = new CopyOnWriteArrayList<Permission>();
                 PERMISSIONS.put(owner,ps);
             }
             ps.add(this);
@@ -71,12 +71,12 @@ public class Permission {
     /**
      * All the permissions in the system, keyed by their owners.
      */
-    private static final Map<Class,List<Permission>> PERMISSIONS = new HashMap<Class,List<Permission>>();
+    private static final Map<Class,List<Permission>> PERMISSIONS = new ConcurrentHashMap<Class,List<Permission>>();
 
     /**
      * The same as {@link #PERMISSIONS} but in a single list.
      */
-    private static final List<Permission> ALL = new ArrayList<Permission>();
+    private static final List<Permission> ALL = new CopyOnWriteArrayList<Permission>();
 
 //
 //
