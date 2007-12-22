@@ -64,6 +64,9 @@ public interface Action extends Serializable, ModelObject {
      *
      * <p>
      * This method should return a string that's unique among other {@link Action}s.
+     *
+     * @return
+     *      null if this action object doesn't need to be bound to web.
      */
     String getUrlName();
 }
