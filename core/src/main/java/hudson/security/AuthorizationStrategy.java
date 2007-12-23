@@ -44,8 +44,7 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
     /**
      * All registered {@link SecurityRealm} implementations.
      */
-    public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(
-    );
+    public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>();
     
     /**
      * {@link AuthorizationStrategy} that implements the semantics
@@ -91,9 +90,11 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
         };
 
         static {
+            LIST.load(FullControlOnceLoggedInAuthorizationStrategy.class);
+            LIST.load(GlobalMatrixAuthorizationStrategy.class);
+
             // can't do this in the constructor due to the initialization order
             LIST.add(Unsecured.DESCRIPTOR);
-            new FullControlOnceLoggedInAuthorizationStrategy();
         }
     }
 

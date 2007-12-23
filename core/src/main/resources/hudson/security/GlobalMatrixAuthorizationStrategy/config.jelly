@@ -1,0 +1,15 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<f:block>
+	  <table>
+      <!-- The first row will show grouping -->
+      <tr>
+        <th />
+        <j:forEach var="g" items="${descriptor.allGroups}">
+          <th>
+            ${g.owner.name}
+          </th>
+        </j:forEach>
+      </tr>
+    </table>
+  </f:block>
+</j:jelly>
