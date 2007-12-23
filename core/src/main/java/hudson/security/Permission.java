@@ -1,11 +1,14 @@
 package hudson.security;
 
 import hudson.model.Hudson;
+import hudson.CopyOnWrite;
 import net.sf.json.util.JSONUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -54,12 +57,10 @@ public final class Permission {
         this.impliedBy = impliedBy;
 
         synchronized (PERMISSIONS) {
-            List<Permission> ps = PERMISSIONS.get(owner);
-            if(ps==null) {
-                ps = new CopyOnWriteArrayList<Permission>();
-                PERMISSIONS.put(owner,ps);
-            }
-            ps.add(this);
+            Group g = PERMISSIONS.get(owner);
+            if(g==null)
+                PERMISSIONS.put(owner,g = new Group(owner));
+            g.add(this);
         }
         ALL.add(this);
     }
@@ -96,14 +97,9 @@ public final class Permission {
         try {
             // force the initialization so that it will put all its permissions into the list.
             Class cl = Class.forName(id.substring(0,idx),true,Hudson.getInstance().getPluginManager().uberClassLoader);
-            List<Permission> list = PERMISSIONS.get(cl);
-            if(list==null)  return null;
-            String name = id.substring(idx+1);
-            for (Permission p : list) {
-                if(p.name.equals(name))
-                    return p;
-            }
-            return null;
+            Group g = PERMISSIONS.get(cl);
+            if(g ==null)  return null;
+            return g.find(id.substring(idx+1));
         } catch (ClassNotFoundException e) {
             return null;
         }
@@ -123,9 +119,18 @@ public final class Permission {
     }
 
     /**
+     * Returns all the {@link Group}s available in the system.
+     * @return
+     *      always non-null. Read-only.
+     */
+    public static List<Group> getAllGroups() {
+        return ALL_GROUPS;
+    }
+
+    /**
      * All the permissions in the system, keyed by their owners.
      */
-    private static final Map<Class,List<Permission>> PERMISSIONS = new ConcurrentHashMap<Class,List<Permission>>();
+    private static final Map<Class,Group> PERMISSIONS = new ConcurrentHashMap<Class,Group>();
 
     /**
      * The same as {@link #PERMISSIONS} but in a single list.
@@ -133,6 +138,64 @@ public final class Permission {
     private static final List<Permission> ALL = new CopyOnWriteArrayList<Permission>();
 
     private static final List<Permission> ALL_VIEW = Collections.unmodifiableList(ALL);
+
+    /**
+     * All groups. Sorted.
+     */
+    @CopyOnWrite
+    private static List<Group> ALL_GROUPS = Collections.emptyList();
+
+    /**
+     * Group of {@link Permission}s that share the same {@link Permission#owner owner}.
+     *
+     * Sortable by the owner class name.
+     */
+    public static final class Group implements Iterable<Permission>, Comparable<Group> {
+        private final List<Permission> permisisons = new CopyOnWriteArrayList<Permission>();
+        private final List<Permission> permisisonsView = Collections.unmodifiableList(permisisons);
+        public final Class owner;
+
+        protected Group(Class owner) {
+            this.owner = owner;
+
+            synchronized(Group.class) {
+                List<Group> allGroups = new ArrayList<Group>(ALL_GROUPS);
+                allGroups.add(this);
+                Collections.sort(allGroups);
+                ALL_GROUPS = Collections.unmodifiableList(allGroups);
+            }
+        }
+
+        public Iterator<Permission> iterator() {
+            return permisisons.iterator();
+        }
+
+        protected void add(Permission p) {
+            permisisons.add(p);
+        }
+
+        /**
+         * Lists up all the permissions in this group.
+         */
+        public List<Permission> getPermissions() {
+            return permisisonsView;
+        }
+
+        /**
+         * Finds a permission that has the given name.
+         */
+        public Permission find(String name) {
+            for (Permission p : permisisons) {
+                if(p.name.equals(name))
+                    return p;
+            }
+            return null;
+        }
+
+        public int compareTo(Group that) {
+            return this.owner.getName().compareTo(that.owner.getName());
+        }
+    }
 
 //
 //
