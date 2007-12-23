@@ -128,6 +128,15 @@ public final class Permission {
     }
 
     /**
+     * Gets the {@link Group} whose {@link Group#owner} is the given class.
+     *
+     * @return  null if not found.
+     */
+    public static Group getGroup(Class owner) {
+        return PERMISSIONS.get(owner);
+    }
+
+    /**
      * All the permissions in the system, keyed by their owners.
      */
     private static final Map<Class,Group> PERMISSIONS = new ConcurrentHashMap<Class,Group>();
@@ -194,6 +203,10 @@ public final class Permission {
 
         public int compareTo(Group that) {
             return this.owner.getName().compareTo(that.owner.getName());
+        }
+
+        public int size() {
+            return permisisons.size();
         }
     }
 
