@@ -26,7 +26,7 @@
         </j:forEach>
 
         <f:block>
-          <input type="submit" name="Submit" value="Save" />
+          <f:submit value="Save" />
         </f:block>
       </f:form>
     </l:main-panel>
