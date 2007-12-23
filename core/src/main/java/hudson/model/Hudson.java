@@ -2117,7 +2117,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /**
      * Thread-safe reusable {@link XStream}.
      */
-    private static final XStream XSTREAM = new XStream2();
+    public static final XStream XSTREAM = new XStream2();
 
     /**
      * Thread pool used to load configuration in parallel, to improve the start up time.
