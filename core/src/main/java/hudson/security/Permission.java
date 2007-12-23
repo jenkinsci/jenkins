@@ -1,10 +1,11 @@
 package hudson.security;
 
 import hudson.model.Hudson;
+import net.sf.json.util.JSONUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -20,11 +21,13 @@ public final class Permission {
     public final Class owner;
 
     /**
-     * Human readable name of the permission.
+     * Human readable ID of the permission.
      *
      * <p>
-     * This name should allow humans to uniquely identify a permission.
-     * The expected naming convention is something like "Browse Workspace".
+     * This name should uniquely determine a permission among
+     * its owner class. The name must be a valid Java identifier.
+     * <p>
+     * The expected naming convention is something like "BrowseWorkspace".
      */
     public final String name;
 
@@ -44,6 +47,8 @@ public final class Permission {
     public final Permission impliedBy;
 
     public Permission(Class owner, String name, Permission impliedBy) {
+        if(!JSONUtils.isJavaIdentifier(name))
+            throw new IllegalArgumentException(name+" is not a Java identifier");
         this.owner = owner;
         this.name = name;
         this.impliedBy = impliedBy;
@@ -140,35 +145,35 @@ public final class Permission {
     /**
      * Root of all permissions
      */
-    public static final Permission FULL_CONTROL = new Permission(Permission.class,"Full Control");
+    public static final Permission FULL_CONTROL = new Permission(Permission.class,"FullControl");
 
     /**
      * Generic read access.
      */
-    public static final Permission READ = new Permission(Permission.class,"Generic Read",FULL_CONTROL);
+    public static final Permission READ = new Permission(Permission.class,"GenericRead",FULL_CONTROL);
 
     /**
      * Generic write access.
      */
-    public static final Permission WRITE = new Permission(Permission.class,"Generic Write",FULL_CONTROL);
+    public static final Permission WRITE = new Permission(Permission.class,"GenericWrite",FULL_CONTROL);
 
     /**
      * Generic create access.
      */
-    public static final Permission CREATE = new Permission(Permission.class,"Generic Create",WRITE);
+    public static final Permission CREATE = new Permission(Permission.class,"GenericCreate",WRITE);
 
     /**
      * Generic update access.
      */
-    public static final Permission UPDATE = new Permission(Permission.class,"Generic Update",WRITE);
+    public static final Permission UPDATE = new Permission(Permission.class,"GenericUpdate",WRITE);
 
     /**
      * Generic delete access.
      */
-    public static final Permission DELETE = new Permission(Permission.class,"Generic Delete",WRITE);
+    public static final Permission DELETE = new Permission(Permission.class,"GenericDelete",WRITE);
 
     /**
      * Generic configuration access.
      */
-    public static final Permission CONFIGURE = new Permission(Permission.class,"Generic Configure",UPDATE);
+    public static final Permission CONFIGURE = new Permission(Permission.class,"GenericConfigure",UPDATE);
 }
