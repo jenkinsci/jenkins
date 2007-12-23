@@ -89,7 +89,8 @@ public final class Permission {
         if(idx<0)   return null;
 
         try {
-            Class cl = Hudson.getInstance().getPluginManager().uberClassLoader.loadClass(id.substring(0,idx));
+            // force the initialization so that it will put all its permissions into the list.
+            Class cl = Class.forName(id.substring(0,idx),true,Hudson.getInstance().getPluginManager().uberClassLoader);
             List<Permission> list = PERMISSIONS.get(cl);
             if(list==null)  return null;
             String name = id.substring(idx+1);
