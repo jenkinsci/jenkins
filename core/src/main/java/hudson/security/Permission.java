@@ -1,7 +1,10 @@
 package hudson.security;
 
+import hudson.model.Hudson;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -13,7 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Permission {
+public final class Permission {
     public final Class owner;
 
     /**
@@ -60,12 +63,57 @@ public class Permission {
         this(owner,name,null);
     }
 
+    /**
+     * Returns the string representation of this {@link Permission},
+     * which can be converted back to {@link Permission} via the
+     * {@link #fromId(String)} method.
+     *
+     * <p>
+     * This string representation is suitable for persistence.
+     *
+     * @see #fromId(String)
+     */
+    public String getId() {
+        return owner.getName()+'.'+name;
+    }
+
+    /**
+     * Convert the ID representation into {@link Permission} object.
+     *
+     * @return
+     *      null if the conversion failed.
+     * @see #getId()
+     */
+    public static Permission fromId(String id) {
+        int idx = id.lastIndexOf('.');
+        if(idx<0)   return null;
+
+        try {
+            Class cl = Hudson.getInstance().getPluginManager().uberClassLoader.loadClass(id.substring(0,idx));
+            List<Permission> list = PERMISSIONS.get(cl);
+            if(list==null)  return null;
+            String name = id.substring(idx+1);
+            for (Permission p : list) {
+                if(p.name.equals(name))
+                    return p;
+            }
+            return null;
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
     public String toString() {
         return "Permission["+owner+','+name+']';
     }
 
+    /**
+     * Returns all the {@link Permission}s available in the system.
+     * @return
+     *      always non-null. Read-only.
+     */
     public static List<Permission> getAll() {
-        return ALL;
+        return ALL_VIEW;
     }
 
     /**
@@ -77,6 +125,8 @@ public class Permission {
      * The same as {@link #PERMISSIONS} but in a single list.
      */
     private static final List<Permission> ALL = new CopyOnWriteArrayList<Permission>();
+
+    private static final List<Permission> ALL_VIEW = Collections.unmodifiableList(ALL);
 
 //
 //
