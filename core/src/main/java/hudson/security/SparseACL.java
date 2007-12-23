@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-public class SparseACL extends ACL {
+public class SparseACL extends SidACL {
     public static final class Entry {
         // Sid has value-equality semantics
         public final Sid sid;
@@ -44,20 +44,7 @@ public class SparseACL extends ACL {
     }
 
     public boolean hasPermission(Authentication a, Permission permission) {
-        // ACL entries for this principal takes precedence
-        Boolean b = hasPermission(new PrincipalSid(a),permission);
-        if(b!=null) return b;
-
-        // after that, we check if the groups this principal belongs to
-        // has any ACL entries.
-        // here we are using GrantedAuthority as a group
-        for(GrantedAuthority ga : a.getAuthorities()) {
-            b = hasPermission(new GrantedAuthoritySid(ga),permission);
-            if(b!=null) return b;
-        }
-
-        // finally everyone
-        b = hasPermission(EVERYONE,permission);
+        Boolean b = _hasPermission(a,permission);
         if(b!=null) return b;
 
         if(parent!=null)
@@ -67,8 +54,8 @@ public class SparseACL extends ACL {
         return false;
     }
 
-    // sub-routine used by the above method
-    private Boolean hasPermission(Sid p, Permission permission) {
+    @Override
+    protected Boolean hasPermission(Sid p, Permission permission) {
         for( ; permission!=null; permission=permission.impliedBy ) {
             for (Entry e : entries) {
                 if(e.permission==permission && e.sid.equals(p))
