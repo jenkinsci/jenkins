@@ -1,15 +1,66 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:block>
-	  <table>
+	<f:block xmlns:local="local">
+    <j:set var="groups" value="${descriptor.allGroups}"/>
+    <d:taglib uri="local">
+      <!-- generate one row for the sid name @sid -->
+      <d:tag name="row">
+        <td style="text-align:left">${sid}</td>
+        <j:forEach var="g" items="${groups}">
+          <j:forEach var="p" items="${g.permissions}">
+            <td>
+              <f:checkbox name="${p.id}" checked="${it.hasPermission(sid,p)}"/>
+            </td>
+          </j:forEach>
+        </j:forEach>
+      </d:tag>
+    </d:taglib>
+    <table class="center-align">
+
       <!-- The first row will show grouping -->
       <tr>
         <th />
-        <j:forEach var="g" items="${descriptor.allGroups}">
-          <th>
+        <j:forEach var="g" items="${groups}">
+          <th colspan="${g.size()}">
             ${g.owner.name}
           </th>
         </j:forEach>
       </tr>
+      <!-- The second row for individual permission -->
+      <tr>
+        <th />
+        <j:forEach var="g" items="${groups}">
+          <j:forEach var="p" items="${g.permissions}">
+            <th>
+              ${p.name}
+            </th>
+          </j:forEach>
+        </j:forEach>
+      </tr>
+
+      <tr name="anonymous">
+        <local:row sid="anonymous" />
+      </tr>
+
+      <!-- template row to be used for adding a new row -->
+      <j:var set="id" value="${h.generateId()}"/>
+      <tr id="${id}" style="display:none">
+        <local:row sid="${null}" />
+      </tr>
     </table>
+    <div>
+      User/group to add:
+      <input type="text" id="${id}text" />
+      <input type="button" value="Add" id="${id}button"/>
+    </div>
+    <script>
+      makeButton("${id}button", function (e) {
+        var master = document.getElementById('${id}');
+        var copy = document.importNode(master,true);
+        copy.removeAttribute("id");
+        copy.removeAttribute("style");
+        copy.firstChild.innerHTML = $$('${id}text').value;
+        master.parentNode.appendChild(copy);
+      });
+    </script>
   </f:block>
 </j:jelly>

@@ -50,12 +50,18 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         return this;
     }
 
+    public boolean hasPermission(String sid, Permission p) {
+        Set<String> set = grantedPermissions.get(p);
+        if(set==null)   return false;
+        return set.contains(sid);
+    }
+
     private final class AclImpl extends SidACL {
         protected Boolean hasPermission(Sid p, Permission permission) {
-            Set<String> set = grantedPermissions.get(permission);
-            if(set==null)       return null;
-            if(set.contains(toString(p)))   return true;
+            if(GlobalMatrixAuthorizationStrategy.this.hasPermission(toString(p),permission))
+                return true;
             return null;
+
         }
 
         private String toString(Sid p) {
@@ -145,7 +151,9 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public List<Group> getAllGroups() {
-            return Permission.getAllGroups();
+            List<Group> groups = new ArrayList<Group>(Permission.getAllGroups());
+            groups.remove(Permission.getGroup(Permission.class));
+            return groups;
         }
     }
 }
