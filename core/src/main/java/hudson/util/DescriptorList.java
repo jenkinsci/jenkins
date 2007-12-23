@@ -51,5 +51,11 @@ public final class DescriptorList<T extends Describable<T>> extends CopyOnWriteA
      *
      * @since 1.162
      */
-    public void load(Class<? extends Describable> c) {}
+    public void load(Class<? extends Describable> c) {
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);  // Can't happen
+        }
+    }
 }
