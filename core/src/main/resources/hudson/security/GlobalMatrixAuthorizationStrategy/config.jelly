@@ -8,13 +8,18 @@
         <j:forEach var="g" items="${groups}">
           <j:forEach var="p" items="${g.permissions}">
             <td>
-              <f:checkbox name="${p.id}" checked="${it.hasPermission(sid,p)}"/>
+              <!--
+                since '.' is handled in a special way, replace them by '-'
+                '-' is not a part of Java identifier, so this transformation
+                doesn't cause ambuguity.
+               -->
+              <f:checkbox name="${p.id.replace('.','-')}" checked="${it.hasPermission(sid,p)}"/>
             </td>
           </j:forEach>
         </j:forEach>
       </d:tag>
     </d:taglib>
-    <table class="center-align">
+    <table class="center-align" name="data">
 
       <!-- The first row will show grouping -->
       <tr>
@@ -53,14 +58,21 @@
       <input type="button" value="Add" id="${id}button"/>
     </div>
     <script>
-      makeButton("${id}button", function (e) {
+      (function() {
+        <!-- place master outside the DOM tree so that it won't creep into the submitted form -->
         var master = document.getElementById('${id}');
-        var copy = document.importNode(master,true);
-        copy.removeAttribute("id");
-        copy.removeAttribute("style");
-        copy.firstChild.innerHTML = $$('${id}text').value;
-        master.parentNode.appendChild(copy);
-      });
+        master.parentNode.removeChild(master);
+      
+        makeButton("${id}button", function (e) {
+          var copy = document.importNode(master,true);
+          copy.removeAttribute("id");
+          copy.removeAttribute("style");
+          var name = $$('${id}text').value;
+          copy.firstChild.innerHTML = name;
+          copy.setAttribute("name",name);
+          master.parentNode.appendChild(copy);
+        });
+      })();
     </script>
   </f:block>
 </j:jelly>

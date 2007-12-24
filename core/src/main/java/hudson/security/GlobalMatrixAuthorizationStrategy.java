@@ -23,6 +23,7 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper;
 
 /**
  * Role-based authorization via a matrix.
@@ -39,6 +40,28 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      * which is not distinguished.
      */
     private final Map<Permission,Set<String>> grantedPermissions = new HashMap<Permission, Set<String>>();
+
+    /**
+     * Adds to {@link #grantedPermissions}.
+     * Use of this method should be limited during construction,
+     * as this object itself is considered immutable once populated.
+     */
+    private void add(Permission p, String sid) {
+        Set<String> set = grantedPermissions.get(p);
+        if(set==null)
+            grantedPermissions.put(p,set = new HashSet<String>());
+        set.add(sid);
+
+    }
+
+    /**
+     * Works like {@link #add(Permission, String)} but takes both parameters
+     * from a single string of the form <tt>PERMISSIONID:sid</tt>
+     */
+    private void add(String shortForm) {
+        int idx = shortForm.indexOf(':');
+        add(Permission.fromId(shortForm.substring(0,idx)),shortForm.substring(idx+1));
+    }
 
     @Override
     public ACL getRootACL() {
@@ -85,11 +108,9 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      * represent {@link GlobalMatrixAuthorizationStrategy#grantedPermissions}.
      */
     public static final class ConverterImpl implements Converter {
-        private final Converter collectionConv; // used to convert ArrayList in it
-
-        public ConverterImpl(Converter collectionConv) {
-            this.collectionConv = collectionConv;
-        }
+        // used to convert ArrayList in it
+//        private final Converter collectionConv =
+//                new CollectionConverter(Hudson.XSTREAM.getClassMapper());
 
         public boolean canConvert(Class type) {
             return type== GlobalMatrixAuthorizationStrategy.class;
@@ -98,26 +119,25 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             GlobalMatrixAuthorizationStrategy strategy = (GlobalMatrixAuthorizationStrategy)source;
 
-            List<String> permissions = new ArrayList<String>();
             for (Entry<Permission, Set<String>> e : strategy.grantedPermissions.entrySet()) {
                 String p = e.getKey().getId();
-                for (String sid : e.getValue())
-                    permissions.add(p+':'+sid);
+                for (String sid : e.getValue()) {
+                    writer.startNode("permission");
+                    context.convertAnother(p+':'+sid);
+                    writer.endNode();
+                }
             }
 
-            collectionConv.marshal( permissions, writer, context );
         }
 
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
             GlobalMatrixAuthorizationStrategy as = new GlobalMatrixAuthorizationStrategy();
 
-            for( String id : (List<String>)(collectionConv.unmarshal(reader,context))) {
-                int idx = id.indexOf(':');
-                Permission p = Permission.fromId(id.substring(0,idx));
-                Set<String> set = as.grantedPermissions.get(p);
-                if(set==null)
-                    as.grantedPermissions.put(p,set = new HashSet<String>());
-                set.add(id.substring(idx+1));
+            while (reader.hasMoreChildren()) {
+                reader.moveDown();
+                String id = (String)context.convertAnother(as,String.class);
+                as.add(id);
+                reader.moveUp();
             }
 
             return as;
@@ -126,10 +146,6 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
     
     static {
         LIST.add(DESCRIPTOR);
-        Hudson.XSTREAM.registerConverter(
-            new GlobalMatrixAuthorizationStrategy.ConverterImpl(
-                new CollectionConverter(Hudson.XSTREAM.getClassMapper())
-            ),10);
     }
 
     public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
@@ -142,8 +158,17 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            // TODO: configure
-            return new GlobalMatrixAuthorizationStrategy();
+            GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy();
+            for(Map.Entry<String,JSONObject> r : (Set<Map.Entry<String,JSONObject>>)formData.getJSONObject("data").entrySet()) {
+                String sid = r.getKey();
+                for(Map.Entry<String,Boolean> e : (Set<Map.Entry<String,Boolean>>)r.getValue().entrySet()) {
+                    if(e.getValue()) {
+                        Permission p = Permission.fromId(e.getKey().replace('-','.'));
+                        gmas.add(p,sid);
+                    }
+                }
+            }
+            return gmas;
         }
 
         public String getHelpFile() {
