@@ -4,10 +4,10 @@
     <d:taglib uri="local">
       <!-- generate one row for the sid name @sid -->
       <d:tag name="row">
-        <td style="text-align:left">${title}</td>
+        <td class="left-most">${title}</td>
         <j:forEach var="g" items="${groups}">
           <j:forEach var="p" items="${g.permissions}">
-            <td>
+            <td width="*">
               <!--
                 since '.' is handled in a special way, replace them by '-'
                 '-' is not a part of Java identifier, so this transformation
@@ -19,11 +19,14 @@
         </j:forEach>
       </d:tag>
     </d:taglib>
-    <table class="center-align" name="data">
+    <link rel="stylesheet" href="${h.getViewResource(descriptor,'table.css')}" type="text/css" />
+    <table id="global-matrix-authorization-strategy-table" class="center-align" name="data" width="100%">
 
       <!-- The first row will show grouping -->
-      <tr>
-        <th />
+      <tr class="group-row">
+        <th rowspan="2" class="blank">
+          User/group
+        </th>
         <j:forEach var="g" items="${groups}">
           <th colspan="${g.size()}">
             ${g.owner.name}
@@ -31,8 +34,7 @@
         </j:forEach>
       </tr>
       <!-- The second row for individual permission -->
-      <tr>
-        <th />
+      <tr class="caption-row">
         <j:forEach var="g" items="${groups}">
           <j:forEach var="p" items="${g.permissions}">
             <th>
@@ -53,7 +55,7 @@
 
 
       <!-- template row to be used for adding a new row -->
-      <j:var set="id" value="${h.generateId()}"/>
+      <j:set var="id" value="${h.generateId()}"/>
       <tr id="${id}" style="display:none">
         <local:row sid="${null}" />
       </tr>
