@@ -1,29 +1,25 @@
 package hudson.security;
 
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
-import hudson.security.Permission.Group;
-import net.sf.json.JSONObject;
-import org.acegisecurity.acls.sid.Sid;
-import org.acegisecurity.acls.sid.GrantedAuthoritySid;
-import org.acegisecurity.acls.sid.PrincipalSid;
-import org.kohsuke.stapler.StaplerRequest;
-
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map.Entry;
-
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.converters.collections.CollectionConverter;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import hudson.model.Descriptor;
+import hudson.security.Permission.Group;
+import net.sf.json.JSONObject;
+import org.acegisecurity.acls.sid.GrantedAuthoritySid;
+import org.acegisecurity.acls.sid.PrincipalSid;
+import org.acegisecurity.acls.sid.Sid;
+import org.kohsuke.stapler.StaplerRequest;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Role-based authorization via a matrix.
@@ -75,8 +71,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
 
     public boolean hasPermission(String sid, Permission p) {
         Set<String> set = grantedPermissions.get(p);
-        if(set==null)   return false;
-        return set.contains(sid);
+        return set!=null && set.contains(sid);
     }
 
     private final class AclImpl extends SidACL {
@@ -108,10 +103,6 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      * represent {@link GlobalMatrixAuthorizationStrategy#grantedPermissions}.
      */
     public static final class ConverterImpl implements Converter {
-        // used to convert ArrayList in it
-//        private final Converter collectionConv =
-//                new CollectionConverter(Hudson.XSTREAM.getClassMapper());
-
         public boolean canConvert(Class type) {
             return type== GlobalMatrixAuthorizationStrategy.class;
         }
