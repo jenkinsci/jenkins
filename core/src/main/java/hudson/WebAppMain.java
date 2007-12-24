@@ -157,12 +157,15 @@ public class WebAppMain implements ServletContextListener {
         if(ver==null)   ver="?";
         Hudson.VERSION = ver;
         context.setAttribute("version",ver);
+        String verHash = Util.getDigestOf(ver).substring(0, 8);
 
         if(ver.equals("?"))
             Hudson.RESOURCE_PATH = "";
         else
-            Hudson.RESOURCE_PATH = "/static/"+Util.getDigestOf(ver).substring(0,8);
-	}
+            Hudson.RESOURCE_PATH = "/static/"+verHash;
+
+        Hudson.VIEW_RESOURCE_PATH = "/resources/"+ verHash;
+    }
 
 	/**
      * Installs log handler to monitor all Hudson logs.

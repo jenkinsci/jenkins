@@ -673,6 +673,22 @@ public class Functions {
         return Hudson.RESOURCE_PATH;
     }
 
+    public static String getViewResource(Object it, String path) {
+        Class clazz = it.getClass();
+
+        if(it instanceof Class)
+            clazz = (Class)it;
+        if(it instanceof Descriptor)
+            clazz = ((Descriptor)it).clazz;
+
+        StringBuilder buf = new StringBuilder();
+        buf.append(Hudson.VIEW_RESOURCE_PATH).append('/');
+        buf.append(clazz.getName().replace('.','/').replace('$','/'));
+        buf.append('/').append(path);
+
+        return buf.toString();
+    }
+
     /**
      * Can be used to check a checkbox by default.
      * Used from views like {@code h.defaultToTrue(scm.useUpdate)}.

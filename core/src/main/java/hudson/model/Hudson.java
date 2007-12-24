@@ -66,6 +66,7 @@ import org.acegisecurity.ui.AbstractProcessingFilter;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
@@ -85,9 +86,9 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1973,16 +1974,21 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * strategy here, though the current implementation is based on
      * file extensions.
      */
-    public void doResources(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doResources(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
+        // cut off the "..." portion of /resources/.../path/to/file
+        // as this is only used to make path unique (which in turn
+        // allows us to set a long expiration date
+        path = path.substring(1);
+        path = path.substring(path.indexOf('/')+1);
+
         int idx = path.lastIndexOf('.');
         String extension = path.substring(idx+1);
         if(ALLOWED_RESOURCE_EXTENSIONS.contains(extension)) {
-            InputStream in = pluginManager.uberClassLoader.getResourceAsStream(path);
-            if(in!=null) {
-                rsp.setContentType(servletContext.getMimeType("foo."+extension));
-                Util.copyStream(in,rsp.getOutputStream());
-                in.close();
+            URL url = pluginManager.uberClassLoader.getResource(path);
+            if(url!=null) {
+                long expires = MetaClass.NO_CACHE ? 0 : 365L * 24 * 60 * 60 * 1000; /*1 year*/
+                rsp.serveFile(req,url,expires);
                 return;
             }
         }
@@ -1994,7 +2000,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * This set is mutable to allow plugins to add additional extensions.
      */
     public static final Set<String> ALLOWED_RESOURCE_EXTENSIONS = new HashSet<String>(Arrays.asList(
-        "js|css|jpeg|jpg|png|gif|html|htm".split("|")
+        "js|css|jpeg|jpg|png|gif|html|htm".split("\\|")
     ));
 
 
@@ -2172,6 +2178,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * stale cache when the user upgrades to a different version. 
      */
     public static String RESOURCE_PATH;
+
+    /**
+     * Prefix to resources alongside view scripts.
+     * Strings like "/resources/VERSION", which avoids Hudson to pick up
+     * stale cache when the user upgrades to a different version.
+     */
+    public static String VIEW_RESOURCE_PATH;
 
     public static boolean parallelLoad = Boolean.getBoolean(Hudson.class.getName()+".parallelLoad");
 
