@@ -16,16 +16,6 @@
     <url-pattern>/</url-pattern>
   </servlet-mapping>
 
-  <servlet>
-    <servlet-name>JellyServlet</servlet-name>
-    <servlet-class>org.apache.commons.jelly.servlet.JellyServlet</servlet-class>
-  </servlet>
-
-  <servlet-mapping>
-    <servlet-name>JellyServlet</servlet-name>
-    <url-pattern>*.jelly</url-pattern>
-  </servlet-mapping>
-
   <filter>
     <filter-name>authentication-filter</filter-name>
     <filter-class>hudson.security.HudsonFilter</filter-class>
