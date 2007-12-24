@@ -161,7 +161,7 @@
         <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
         <groupId>org.jvnet.hudson.tools</groupId>
         <artifactId>maven-hudson-plugin</artifactId>
-        <version>6.1.5</version>
+        <version>6.1.7</version>
         <configuration>
           <contextPath>/</contextPath>
           <!--
@@ -169,10 +169,13 @@
             so that changes are picked up right away without running mvn.
           -->
           <classesDirectory>../core/target/classes</classesDirectory>
+          <!-- use the test classpath for loading resources, since this takes priority -->
+          <testClassesDirectory>../core/src/main/resources</testClassesDirectory>
+          <useTestClasspath>true</useTestClasspath>
           <!--
-            enable automatic reloading when some files change.
+            Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
-          <!--scanIntervalSeconds>1</scanIntervalSeconds-->
+          <consoleForceReload>true</consoleForceReload>
           <webAppSourceDirectory>${basedir}/resources</webAppSourceDirectory>
           <userRealms>
             <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
