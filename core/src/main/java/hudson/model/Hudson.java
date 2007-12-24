@@ -1761,10 +1761,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         String contentType = req.getServletContext().getMimeType(f.getPath());
         rsp.setContentType(contentType);
         rsp.setContentLength((int)f.length());
-        byte[] buf = new byte[1024];
-        int len;
-        while((len=in.read(buf))>0)
-            rsp.getOutputStream().write(buf,0,len);
+        Util.copyStream(in,rsp.getOutputStream());
         in.close();
     }
 
