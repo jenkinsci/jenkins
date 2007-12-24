@@ -66,6 +66,7 @@ final class ExpressionFactory2 implements ExpressionFactory {
 
         public Object evaluate(JellyContext context) {
             try {
+                CURRENT_CONTEXT.set(context);
                 JexlContext jexlContext = new JellyJexlContext( context );
                 return expression.evaluate(jexlContext);
             } catch (AcegiSecurityException e) {
@@ -74,6 +75,8 @@ final class ExpressionFactory2 implements ExpressionFactory {
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING,"Caught exception evaluating: " + expression + ". Reason: " + e, e);
                 return null;
+            } finally {
+                CURRENT_CONTEXT.set(null);
             }
         }
 
@@ -154,4 +157,12 @@ final class ExpressionFactory2 implements ExpressionFactory {
             return null;
         }
     }
+
+    /**
+     * When called from within the JEXL expression evaluation,
+     * retains the current {@link JellyContext}.
+     *
+     * @see Functions#getCurrentJellyContext()
+     */
+    protected static final ThreadLocal<JellyContext> CURRENT_CONTEXT = new ThreadLocal<JellyContext>();
 }

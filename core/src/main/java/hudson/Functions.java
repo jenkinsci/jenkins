@@ -29,6 +29,7 @@ import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
+import org.apache.commons.jelly.JellyContext;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -737,5 +738,18 @@ public class Functions {
      */
     public static boolean isAnonymous() {
         return Hudson.getAuthentication() instanceof AnonymousAuthenticationToken;
+    }
+
+    /**
+     * When called from within JEXL expression evaluation,
+     * this method returns the current {@link JellyContext} used
+     * to evaluate the script.
+     *
+     * @since 1.164
+     */
+    public static JellyContext getCurrentJellyContext() {
+        JellyContext context = ExpressionFactory2.CURRENT_CONTEXT.get();
+        assert context!=null;
+        return context;
     }
 }
