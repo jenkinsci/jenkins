@@ -4,7 +4,7 @@
     <d:taglib uri="local">
       <!-- generate one row for the sid name @sid -->
       <d:tag name="row">
-        <td style="text-align:left">${sid}</td>
+        <td style="text-align:left">${title}</td>
         <j:forEach var="g" items="${groups}">
           <j:forEach var="p" items="${g.permissions}">
             <td>
@@ -42,9 +42,15 @@
         </j:forEach>
       </tr>
 
+      <j:forEach var="sid" items="${instance.allSIDs}">
+        <tr name="${sid}">
+          <local:row title="${sid}"/>
+        </tr>
+      </j:forEach>
       <tr name="anonymous">
-        <local:row sid="anonymous" />
+        <local:row sid="anonymous" title="Anonymous" />
       </tr>
+
 
       <!-- template row to be used for adding a new row -->
       <j:var set="id" value="${h.generateId()}"/>
@@ -52,7 +58,7 @@
         <local:row sid="${null}" />
       </tr>
     </table>
-    <div>
+    <div style="margin-top:0.5em; margin-left: 2em;">
       User/group to add:
       <input type="text" id="${id}text" />
       <input type="button" value="Add" id="${id}button"/>

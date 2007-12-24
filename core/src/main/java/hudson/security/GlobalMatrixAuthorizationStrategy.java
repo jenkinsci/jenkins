@@ -14,6 +14,7 @@ import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -69,9 +70,29 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         return this;
     }
 
+    /**
+     * Checks if the given SID has the given permission.
+     */
     public boolean hasPermission(String sid, Permission p) {
         Set<String> set = grantedPermissions.get(p);
         return set!=null && set.contains(sid);
+    }
+
+    /**
+     * Returns all SIDs configured in this matrix, minus "anonymous"
+     *
+     * @return
+     *      Always non-null.
+     */
+    public List<String> getAllSIDs() {
+        Set<String> r = new HashSet<String>();
+        for (Set<String> set : grantedPermissions.values())
+            r.addAll(set);
+        r.remove("anonymous");
+
+        String[] data = r.toArray(new String[r.size()]);
+        Arrays.sort(data);
+        return Arrays.asList(data);
     }
 
     private final class AclImpl extends SidACL {
