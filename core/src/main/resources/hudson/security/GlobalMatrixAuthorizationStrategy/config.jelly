@@ -13,7 +13,7 @@
                 '-' is not a part of Java identifier, so this transformation
                 doesn't cause ambuguity.
                -->
-              <f:checkbox name="${p.id.replace('.','-')}" checked="${it.hasPermission(sid,p)}"/>
+              <f:checkbox name="${p.id.replace('.','-')}" checked="${instance.hasPermission(sid,p)}"/>
             </td>
           </j:forEach>
         </j:forEach>
