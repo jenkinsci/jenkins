@@ -60,17 +60,17 @@ import hudson.util.MultipartFormDataParser;
 import hudson.util.XStream2;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.ui.AbstractProcessingFilter;
-import org.acegisecurity.Authentication;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletContext;
@@ -78,12 +78,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.ParseException;
@@ -1744,7 +1746,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         File f = new File(req.getServletContext().getRealPath("/images"),path.substring(1));
         if(!f.exists()) {
-            rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            rsp.sendError(SC_NOT_FOUND);
             return;
         }
 
@@ -1966,6 +1968,38 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         }.process();
     }
 
+    /**
+     * Serves static resources placed along with Jelly view files.
+     * <p>
+     * This method can serve a lot of files, so care needs to be taken
+     * to make this method secure. It's not clear to me what's the best
+     * strategy here, though the current implementation is based on
+     * file extensions.
+     */
+    public void doResources(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        String path = req.getRestOfPath();
+        int idx = path.lastIndexOf('.');
+        String extension = path.substring(idx+1);
+        if(ALLOWED_RESOURCE_EXTENSIONS.contains(extension)) {
+            InputStream in = pluginManager.uberClassLoader.getResourceAsStream(path);
+            if(in!=null) {
+                rsp.setContentType(servletContext.getMimeType("foo."+extension));
+                Util.copyStream(in,rsp.getOutputStream());
+                in.close();
+                return;
+            }
+        }
+        rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+
+    /**
+     * Extension list that {@link #doResources(StaplerRequest, StaplerResponse)} can serve.
+     * This set is mutable to allow plugins to add additional extensions.
+     */
+    public static final Set<String> ALLOWED_RESOURCE_EXTENSIONS = new HashSet<String>(Arrays.asList(
+        "js|css|jpeg|jpg|png|gif|html|htm".split("|")
+    ));
+
 
     public static boolean isWindows() {
         return File.pathSeparatorChar==';';
@@ -2057,7 +2091,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             // this computer never returns null from channel, so
             // this method shall never be invoked.
-            rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            rsp.sendError(SC_NOT_FOUND);
         }
 
         public void launch() {
