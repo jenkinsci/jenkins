@@ -11,6 +11,7 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
+import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.ArrayList;
@@ -100,7 +101,13 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             if(GlobalMatrixAuthorizationStrategy.this.hasPermission(toString(p),permission))
                 return true;
             return null;
+        }
 
+        protected Boolean _hasPermission(Authentication a, Permission permission) {
+            Boolean b = super._hasPermission(a,permission);
+            // permissions granted to anonymous users are granted to everyone
+            if(b==null) b=hasPermission(ANONYMOUS,permission);
+            return b;
         }
 
         private String toString(Sid p) {
@@ -184,7 +191,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public String getHelpFile() {
-            return "/help/security/full-control-once-logged-in.html";
+            return "/help/security/global-matrix.html";
         }
 
         public List<Group> getAllGroups() {
