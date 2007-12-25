@@ -1,7 +1,6 @@
 package hudson.model;
 
 import hudson.Util;
-import hudson.security.Permission;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -138,7 +137,4 @@ public class ListView extends View {
         owner.deleteView(this);
         rsp.sendRedirect2(req.getContextPath()+"/");
     }
-
-    public static final Permission DELETE = new Permission(Item.class,"Delete", Permission.DELETE);
-    public static final Permission CONFIGURE = new Permission(Item.class,"Configure", Permission.CONFIGURE);
 }

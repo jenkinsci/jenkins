@@ -259,4 +259,6 @@ public abstract class View extends AbstractModelObject {
      * Permission to create new jobs.
      */
     public static final Permission CREATE = new Permission(View.class,"Create", Permission.CREATE);
+    public static final Permission DELETE = new Permission(View.class,"Delete", Permission.DELETE);
+    public static final Permission CONFIGURE = new Permission(View.class,"Configure", Permission.CONFIGURE);
 }
