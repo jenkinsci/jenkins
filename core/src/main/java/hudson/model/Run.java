@@ -1047,6 +1047,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public String getWhyKeepLog() { return Run.this.getWhyKeepLog(); }
     }
 
-    public static final Permission DELETE = new Permission(Item.class,"Delete", Permission.DELETE);
-    public static final Permission UPDATE = new Permission(Item.class,"Update", Permission.UPDATE);
+    public static final Permission DELETE = new Permission(Run.class,"Delete", Permission.DELETE);
+    public static final Permission UPDATE = new Permission(Run.class,"Update", Permission.UPDATE);
 }
