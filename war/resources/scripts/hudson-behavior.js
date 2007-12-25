@@ -54,6 +54,14 @@ var FormChecker = {
     }
 }
 
+// find the nearest ancestor node that has the given tag name
+function findAncestor(e, tagName) {
+    do {
+        e = e.parentNode;
+    } while(e.tagName!=tagName);
+    return e;
+}
+
 function findFollowingTR(input, className) {
     // identify the parent TR
     var tr = input;
