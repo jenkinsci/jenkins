@@ -81,10 +81,20 @@
         table.removeChild(master);
       
         makeButton("${id}button", function (e) {
+          <!-- when 'add' is clicked... -->
+          var name = $$('${id}text').value;
+          if(name=="") {
+            alert("Please enter an user name or a group name");
+            return;
+          }
+          if(findElementsBySelector(table,"TR").find(function(n){return n.getAttribute("name")==name;})!=null) {
+            alert("Entry for '"+name+"' already exists");
+            return;
+          }
+
           var copy = document.importNode(master,true);
           copy.removeAttribute("id");
           copy.removeAttribute("style");
-          var name = $$('${id}text').value;
           copy.firstChild.innerHTML = name;
           copy.setAttribute("name",name);
           table.appendChild(copy);
