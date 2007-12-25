@@ -136,7 +136,7 @@ function findElementsBySelector(startNode,selector) {
         return []; // not a descendant
 
       // Set currentContext to contain just this element
-      currentContext = $A(element);
+      currentContext = [element];
       continue; // Skip to next token
     }
     if (token.indexOf('.') > -1) {
