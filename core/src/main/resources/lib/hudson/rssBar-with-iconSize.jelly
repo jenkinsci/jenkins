@@ -15,7 +15,7 @@
         </d:tag>
       </d:taglib>
 
-      <td xmlns:local="local">Icon:
+      <td xmlns:local="local">${%Icon}:
         <local:iconSizeLink title="S" sz="16x16" />
         <local:iconSizeLink title="M" sz="24x24" />
         <local:iconSizeLink title="L" sz="32x32" />

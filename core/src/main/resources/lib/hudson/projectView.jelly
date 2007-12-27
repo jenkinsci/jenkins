@@ -24,10 +24,10 @@
         <tr style="border-top: 0px;">
           <th>S</th>
           <th>W</th>
-          <th initialSortDir="down">Job</th>
-          <th>Last Success</th>
-          <th>Last Failure</th>
-          <th>Last Duration</th>
+          <th initialSortDir="down">${%Job}</th>
+          <th>${%Last Success}</th>
+          <th>${%Last Failure}</th>
+          <th>${%Last Duration}</th>
           <th><st:nbsp/></th>
           <l:isAdmin><!-- build icon -->
             <th width="1"><st:nbsp/></th>
