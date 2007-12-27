@@ -21,13 +21,24 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>(LegacyAuthorizationStrategy.class) {
+    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new DescriptorImpl();
+
+    public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
+        private DescriptorImpl() {
+            super(LegacyAuthorizationStrategy.class);
+        }
+
         public String getDisplayName() {
             return Messages.LegacyAuthorizationStrategy_DisplayName();
         }
-    };
+
+        public String getHelpFile() {
+            return "/help/security/legacy-auth-strategy.html";
+        }
+    }
 
     static {
         LIST.add(DESCRIPTOR);
     }
+
 }
