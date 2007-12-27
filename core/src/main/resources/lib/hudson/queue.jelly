@@ -6,12 +6,12 @@
       Queue items to be displayed. Normally ${app.queue.items}
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:pane title="Build Queue" width="2" id="buildQueue">
+  <l:pane title="${%Build Queue}" width="2" id="buildQueue">
     <j:choose>
       <j:when test="${empty(items)}">
         <tr>
           <td class="pane" colspan="2">
-            No builds in the queue.
+            ${%No builds in the queue.}
           </td>
         </tr>
       </j:when>
@@ -19,10 +19,9 @@
         <j:if test="${app.quietingDown}">
           <tr>
             <td class="pane" colspan="2" style="white-space: normal;">
-              Hudson is going to shut down.
-              No further builds will be performed.
+              ${%Hudson is going to shut down. No further builds will be performed.}
               <l:isAdmin>
-                <a href="${rootURL}/cancelQuietDown">(cancel)</a>
+                <a href="${rootURL}/cancelQuietDown">(${%cancel})</a>
               </l:isAdmin>
             </td>
           </tr>
