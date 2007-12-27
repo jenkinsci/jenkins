@@ -1272,15 +1272,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             // useSecurity = null;
             if (json.has("use_security")) {
                 useSecurity = true;
-                if(newSecurity) {
-                    JSONObject security = json.getJSONObject("use_security");
-                    setSecurityRealm(SecurityRealm.LIST.newInstanceFromRadioList(security,"realm"));
-                    authorizationStrategy = AuthorizationStrategy.LIST.newInstanceFromRadioList(security,"authorization");
-                } else {
-                    // compatibility mode
-                    setSecurityRealm(new LegacySecurityRealm());
-                    authorizationStrategy = new LegacyAuthorizationStrategy();
-                }
+                JSONObject security = json.getJSONObject("use_security");
+                setSecurityRealm(SecurityRealm.LIST.newInstanceFromRadioList(security,"realm"));
+                authorizationStrategy = AuthorizationStrategy.LIST.newInstanceFromRadioList(security,"authorization");
             } else {
                 useSecurity = null;
                 setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
@@ -2187,11 +2181,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     public static String VIEW_RESOURCE_PATH;
 
     public static boolean parallelLoad = Boolean.getBoolean(Hudson.class.getName()+".parallelLoad");
-
-    /**
-     * True to enable the new security implementation.
-     */
-    public static boolean newSecurity = Boolean.getBoolean("SECURITY");
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 

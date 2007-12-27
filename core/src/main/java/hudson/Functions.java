@@ -417,7 +417,7 @@ public class Functions {
     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, ServletException {
         // this is legacy --- all views should be eventually converted to
         // the permission based model.
-        if((required!=null || (permission!=null && !Hudson.newSecurity)) && !Hudson.adminCheck(req,rsp)) {
+        if(required!=null && !Hudson.adminCheck(req,rsp)) {
             // check failed. commit the FORBIDDEN response, then abort.
             rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
             rsp.getOutputStream().close();
