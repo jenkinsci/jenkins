@@ -6,12 +6,11 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.model.Descriptor;
-import hudson.security.PermissionGroup;
 import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
-import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.ArrayList;

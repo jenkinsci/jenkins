@@ -10,6 +10,7 @@ import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
 import hudson.security.Permission;
+import hudson.security.PermissionGroup;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
@@ -1047,6 +1048,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public String getWhyKeepLog() { return Run.this.getWhyKeepLog(); }
     }
 
-    public static final Permission DELETE = new Permission(Run.class,"Delete", Permission.DELETE);
-    public static final Permission UPDATE = new Permission(Run.class,"Update", Permission.UPDATE);
+    public static final PermissionGroup PERMISSIONS = new PermissionGroup(Run.class);
+    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Permission.DELETE);
+    public static final Permission UPDATE = new Permission(PERMISSIONS,"Update", Permission.UPDATE);
 }

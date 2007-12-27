@@ -39,6 +39,7 @@ import hudson.security.LegacySecurityRealm;
 import hudson.security.Permission;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
+import hudson.security.PermissionGroup;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -2197,8 +2198,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
 
-    public static final Permission ADMINISTER = new Permission(Hudson.class,"Administer", Permission.FULL_CONTROL);
-    public static final Permission READ = new Permission(Hudson.class,"Read", Permission.READ);
+    public static final PermissionGroup PERMISSIONS = new PermissionGroup(Hudson.class);
+    public static final Permission ADMINISTER = new Permission(PERMISSIONS,"Administer", Permission.FULL_CONTROL);
+    public static final Permission READ = new Permission(PERMISSIONS,"Read", Permission.READ);
 
     static {
         XSTREAM.alias("hudson",Hudson.class);

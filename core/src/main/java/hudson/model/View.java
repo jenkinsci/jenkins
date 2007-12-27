@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.Util;
 import hudson.security.Permission;
 import hudson.security.ACL;
+import hudson.security.PermissionGroup;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -255,10 +256,11 @@ public abstract class View extends AbstractModelObject {
         }
     };
 
+    public static final PermissionGroup PERMISSIONS = new PermissionGroup(View.class);
     /**
      * Permission to create new jobs.
      */
-    public static final Permission CREATE = new Permission(View.class,"Create", Permission.CREATE);
-    public static final Permission DELETE = new Permission(View.class,"Delete", Permission.DELETE);
-    public static final Permission CONFIGURE = new Permission(View.class,"Configure", Permission.CONFIGURE);
+    public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Permission.CREATE);
+    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Permission.DELETE);
+    public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Permission.CONFIGURE);
 }

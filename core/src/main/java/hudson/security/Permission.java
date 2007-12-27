@@ -1,14 +1,11 @@
 package hudson.security;
 
 import hudson.model.Hudson;
-import hudson.CopyOnWrite;
 import net.sf.json.util.JSONUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Iterator;
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -22,6 +19,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public final class Permission {
     public final Class owner;
+
+    public final PermissionGroup group;
 
     /**
      * Human readable ID of the permission.
@@ -49,24 +48,25 @@ public final class Permission {
      */
     public final Permission impliedBy;
 
-    public Permission(Class owner, String name, Permission impliedBy) {
+    public Permission(PermissionGroup group, String name, Permission impliedBy) {
         if(!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name+" is not a Java identifier");
-        this.owner = owner;
+        this.owner = group.owner;
+        this.group = group;
         this.name = name;
         this.impliedBy = impliedBy;
 
         synchronized (PERMISSIONS) {
-            Group g = PERMISSIONS.get(owner);
+            PermissionGroup g = PERMISSIONS.get(owner);
             if(g==null)
-                PERMISSIONS.put(owner,g = new Group(owner));
+                PERMISSIONS.put(owner,g = new PermissionGroup(owner));
             g.add(this);
         }
         ALL.add(this);
     }
 
-    private Permission(Class owner, String name) {
-        this(owner,name,null);
+    private Permission(PermissionGroup group, String name) {
+        this(group,name,null);
     }
 
     /**
@@ -97,7 +97,7 @@ public final class Permission {
         try {
             // force the initialization so that it will put all its permissions into the list.
             Class cl = Class.forName(id.substring(0,idx),true,Hudson.getInstance().getPluginManager().uberClassLoader);
-            Group g = PERMISSIONS.get(cl);
+            PermissionGroup g = PERMISSIONS.get(cl);
             if(g ==null)  return null;
             return g.find(id.substring(idx+1));
         } catch (ClassNotFoundException e) {
@@ -119,27 +119,18 @@ public final class Permission {
     }
 
     /**
-     * Returns all the {@link Group}s available in the system.
-     * @return
-     *      always non-null. Read-only.
-     */
-    public static List<Group> getAllGroups() {
-        return ALL_GROUPS;
-    }
-
-    /**
-     * Gets the {@link Group} whose {@link Group#owner} is the given class.
+     * Gets the {@link PermissionGroup} whose {@link PermissionGroup#owner} is the given class.
      *
      * @return  null if not found.
      */
-    public static Group getGroup(Class owner) {
+    public static PermissionGroup getGroup(Class owner) {
         return PERMISSIONS.get(owner);
     }
 
     /**
      * All the permissions in the system, keyed by their owners.
      */
-    private static final Map<Class,Group> PERMISSIONS = new ConcurrentHashMap<Class,Group>();
+    private static final Map<Class, PermissionGroup> PERMISSIONS = new ConcurrentHashMap<Class, PermissionGroup>();
 
     /**
      * The same as {@link #PERMISSIONS} but in a single list.
@@ -147,68 +138,6 @@ public final class Permission {
     private static final List<Permission> ALL = new CopyOnWriteArrayList<Permission>();
 
     private static final List<Permission> ALL_VIEW = Collections.unmodifiableList(ALL);
-
-    /**
-     * All groups. Sorted.
-     */
-    @CopyOnWrite
-    private static List<Group> ALL_GROUPS = Collections.emptyList();
-
-    /**
-     * Group of {@link Permission}s that share the same {@link Permission#owner owner}.
-     *
-     * Sortable by the owner class name.
-     */
-    public static final class Group implements Iterable<Permission>, Comparable<Group> {
-        private final List<Permission> permisisons = new CopyOnWriteArrayList<Permission>();
-        private final List<Permission> permisisonsView = Collections.unmodifiableList(permisisons);
-        public final Class owner;
-
-        protected Group(Class owner) {
-            this.owner = owner;
-
-            synchronized(Group.class) {
-                List<Group> allGroups = new ArrayList<Group>(ALL_GROUPS);
-                allGroups.add(this);
-                Collections.sort(allGroups);
-                ALL_GROUPS = Collections.unmodifiableList(allGroups);
-            }
-        }
-
-        public Iterator<Permission> iterator() {
-            return permisisons.iterator();
-        }
-
-        protected void add(Permission p) {
-            permisisons.add(p);
-        }
-
-        /**
-         * Lists up all the permissions in this group.
-         */
-        public List<Permission> getPermissions() {
-            return permisisonsView;
-        }
-
-        /**
-         * Finds a permission that has the given name.
-         */
-        public Permission find(String name) {
-            for (Permission p : permisisons) {
-                if(p.name.equals(name))
-                    return p;
-            }
-            return null;
-        }
-
-        public int compareTo(Group that) {
-            return this.owner.getName().compareTo(that.owner.getName());
-        }
-
-        public int size() {
-            return permisisons.size();
-        }
-    }
 
 //
 //
@@ -218,38 +147,40 @@ public final class Permission {
 // The intention is to allow a simplified AuthorizationStrategy implementation agnostic to
 // specific permissions.
 
+    public static final PermissionGroup GROUP = new PermissionGroup(Permission.class);
+
     /**
      * Root of all permissions
      */
-    public static final Permission FULL_CONTROL = new Permission(Permission.class,"FullControl");
+    public static final Permission FULL_CONTROL = new Permission(GROUP,"FullControl");
 
     /**
      * Generic read access.
      */
-    public static final Permission READ = new Permission(Permission.class,"GenericRead",FULL_CONTROL);
+    public static final Permission READ = new Permission(GROUP,"GenericRead",FULL_CONTROL);
 
     /**
      * Generic write access.
      */
-    public static final Permission WRITE = new Permission(Permission.class,"GenericWrite",FULL_CONTROL);
+    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",FULL_CONTROL);
 
     /**
      * Generic create access.
      */
-    public static final Permission CREATE = new Permission(Permission.class,"GenericCreate",WRITE);
+    public static final Permission CREATE = new Permission(GROUP,"GenericCreate",WRITE);
 
     /**
      * Generic update access.
      */
-    public static final Permission UPDATE = new Permission(Permission.class,"GenericUpdate",WRITE);
+    public static final Permission UPDATE = new Permission(GROUP,"GenericUpdate",WRITE);
 
     /**
      * Generic delete access.
      */
-    public static final Permission DELETE = new Permission(Permission.class,"GenericDelete",WRITE);
+    public static final Permission DELETE = new Permission(GROUP,"GenericDelete",WRITE);
 
     /**
      * Generic configuration access.
      */
-    public static final Permission CONFIGURE = new Permission(Permission.class,"GenericConfigure",UPDATE);
+    public static final Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",UPDATE);
 }
