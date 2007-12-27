@@ -9,18 +9,15 @@
 }
 
 #global-matrix-authorization-strategy-table TD.blank {
-  border-left: 1px solid #D3D7CF;
-  border-bottom: 1px solid #D3D7CF;
   vertical-align: middle;
 }
 
 #global-matrix-authorization-strategy-table .caption-row TH {
   font-weight: bold;
-  border-left: 1px solid white;
 }
 
 #global-matrix-authorization-strategy-table TD {
-  border-left: 1px solid #D3D7CF;
+  border: 1px solid #D3D7CF;
 }
 
 #global-matrix-authorization-strategy-table TD.left-most {
