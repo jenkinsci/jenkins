@@ -44,18 +44,16 @@
           <label for="sat.disabled">Disable</label>
         </s:entry>
 
-        <j:if test="${app.newSecurity}">
-          <s:entry title="Access Control">
-            <table style="width:100%">
-              <s:descriptorRadioList title="Security Realm" varName="realm"
-                                     instance="${it.securityRealm}"
-                                     descriptors="${h.securityRealmDescriptors}"/>
-              <s:descriptorRadioList title="Authorization" varName="authorization"
-                                     instance="${it.authorizationStrategy}"
-                                     descriptors="${h.authorizationStrategyDescriptors}"/>
-            </table>
-          </s:entry>
-        </j:if>
+        <s:entry title="Access Control">
+          <table style="width:100%">
+            <s:descriptorRadioList title="Security Realm" varName="realm"
+                                   instance="${it.securityRealm}"
+                                   descriptors="${h.securityRealmDescriptors}"/>
+            <s:descriptorRadioList title="Authorization" varName="authorization"
+                                   instance="${it.authorizationStrategy}"
+                                   descriptors="${h.authorizationStrategyDescriptors}"/>
+          </table>
+        </s:entry>
       </s:optionalBlock>
 
 
