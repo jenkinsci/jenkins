@@ -6,7 +6,7 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.model.Descriptor;
-import hudson.security.Permission.Group;
+import hudson.security.PermissionGroup;
 import net.sf.json.JSONObject;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.PrincipalSid;
@@ -173,7 +173,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public String getDisplayName() {
-            return "Role-based security";
+            return Messages.GlobalMatrixAuthorizationStrategy_DisplayName();
         }
 
         public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
@@ -194,8 +194,8 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             return "/help/security/global-matrix.html";
         }
 
-        public List<Group> getAllGroups() {
-            List<Group> groups = new ArrayList<Group>(Permission.getAllGroups());
+        public List<PermissionGroup> getAllGroups() {
+            List<PermissionGroup> groups = new ArrayList<PermissionGroup>(PermissionGroup.getAll());
             groups.remove(Permission.getGroup(Permission.class));
             return groups;
         }

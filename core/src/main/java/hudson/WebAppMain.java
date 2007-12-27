@@ -21,12 +21,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URLClassLoader;
 import java.net.URL;
 
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.jvnet.localizer.LocaleProvider;
 
 /**
  * Entry point when Hudson is used as a webapp.
@@ -43,6 +46,19 @@ public class WebAppMain implements ServletContextListener {
     public void contextInitialized(ServletContextEvent event) {
         try {
             final ServletContext context = event.getServletContext();
+
+            // use the current request to determine the language
+            LocaleProvider.setProvider(new LocaleProvider() {
+                public Locale get() {
+                    Locale locale=null;
+                    StaplerRequest req = Stapler.getCurrentRequest();
+                    if(req!=null)
+                        locale = req.getLocale();
+                    if(locale==null)
+                        locale = Locale.getDefault();
+                    return locale;
+                }
+            });
 
             // quick check to see if we (seem to) have enough permissions to run. (see #719)
             JVM jvm;
