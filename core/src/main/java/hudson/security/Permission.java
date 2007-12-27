@@ -56,12 +56,7 @@ public final class Permission {
         this.name = name;
         this.impliedBy = impliedBy;
 
-        synchronized (PERMISSIONS) {
-            PermissionGroup g = PERMISSIONS.get(owner);
-            if(g==null)
-                PERMISSIONS.put(owner,g = new PermissionGroup(owner));
-            g.add(this);
-        }
+        group.add(this);
         ALL.add(this);
     }
 
