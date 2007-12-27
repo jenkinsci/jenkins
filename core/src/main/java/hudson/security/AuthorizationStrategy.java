@@ -92,6 +92,7 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
         static {
             LIST.load(FullControlOnceLoggedInAuthorizationStrategy.class);
             LIST.load(GlobalMatrixAuthorizationStrategy.class);
+            LIST.load(LegacyAuthorizationStrategy.class);
 
             // can't do this in the constructor due to the initialization order
             LIST.add(Unsecured.DESCRIPTOR);

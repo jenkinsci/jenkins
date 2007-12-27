@@ -26,4 +26,8 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
             return "Legacy mode";
         }
     };
+
+    static {
+        LIST.add(DESCRIPTOR);
+    }
 }
