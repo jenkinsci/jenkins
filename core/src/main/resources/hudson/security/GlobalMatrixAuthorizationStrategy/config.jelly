@@ -31,13 +31,13 @@
 
       <!-- The first row will show grouping -->
       <tr class="group-row">
-        <th rowspan="2" class="blank">
+        <td rowspan="2" class="pane-header blank">
           User/group
-        </th>
+        </td>
         <j:forEach var="g" items="${groups}">
-          <th colspan="${g.size()}">
+          <td class="pane-header" colspan="${g.size()}">
             ${g.title}
-          </th>
+          </td>
         </j:forEach>
         <td rowspan="2" class="stop" />
       </tr>
@@ -45,7 +45,7 @@
       <tr class="caption-row">
         <j:forEach var="g" items="${groups}">
           <j:forEach var="p" items="${g.permissions}">
-            <th>
+            <th class="pane">
               ${p.name}
             </th>
           </j:forEach>
