@@ -23,7 +23,7 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
 
     public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>(LegacyAuthorizationStrategy.class) {
         public String getDisplayName() {
-            return "Legacy mode";
+            return Messages.LegacyAuthorizationStrategy_DisplayName();
         }
     };
 
