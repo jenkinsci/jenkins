@@ -256,7 +256,7 @@ public abstract class View extends AbstractModelObject {
         }
     };
 
-    public static final PermissionGroup PERMISSIONS = new PermissionGroup(View.class);
+    public static final PermissionGroup PERMISSIONS = new PermissionGroup(View.class,Messages._View_Permissions_Title());
     /**
      * Permission to create new jobs.
      */

@@ -6,7 +6,11 @@ import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.jvnet.localizer.Localizable;
 
 /**
  * Group of {@link Permission}s that share the same {@link Permission#owner owner}.
@@ -18,8 +22,15 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
     private final List<Permission> permisisonsView = Collections.unmodifiableList(permisisons);
     public final Class owner;
 
-    public PermissionGroup(Class owner) {
+    /**
+     * Human readable title of this permission group.
+     * This should be short.
+     */
+    public final Localizable title;
+
+    public PermissionGroup(Class owner, Localizable title) {
         this.owner = owner;
+        this.title = title;
 
         synchronized(PermissionGroup.class) {
             List<PermissionGroup> allGroups = new ArrayList<PermissionGroup>(ALL);
@@ -27,6 +38,8 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
             Collections.sort(allGroups);
             ALL = Collections.unmodifiableList(allGroups);
         }
+
+        PERMISSIONS.put(owner,this);
     }
 
     public Iterator<Permission> iterator() {
@@ -77,4 +90,18 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
     public static List<PermissionGroup> getAll() {
         return ALL;
     }
+
+    /**
+     * Gets the {@link PermissionGroup} whose {@link PermissionGroup#owner} is the given class.
+     *
+     * @return  null if not found.
+     */
+    public static PermissionGroup get(Class owner) {
+        return PERMISSIONS.get(owner);
+    }
+
+    /**
+     * All the permissions in the system, keyed by their owners.
+     */
+    private static final Map<Class, PermissionGroup> PERMISSIONS = new ConcurrentHashMap<Class, PermissionGroup>();
 }

@@ -5,8 +5,6 @@ import net.sf.json.util.JSONUtils;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -92,7 +90,7 @@ public final class Permission {
         try {
             // force the initialization so that it will put all its permissions into the list.
             Class cl = Class.forName(id.substring(0,idx),true,Hudson.getInstance().getPluginManager().uberClassLoader);
-            PermissionGroup g = PERMISSIONS.get(cl);
+            PermissionGroup g = PermissionGroup.get(cl);
             if(g ==null)  return null;
             return g.find(id.substring(idx+1));
         } catch (ClassNotFoundException e) {
@@ -114,21 +112,7 @@ public final class Permission {
     }
 
     /**
-     * Gets the {@link PermissionGroup} whose {@link PermissionGroup#owner} is the given class.
-     *
-     * @return  null if not found.
-     */
-    public static PermissionGroup getGroup(Class owner) {
-        return PERMISSIONS.get(owner);
-    }
-
-    /**
-     * All the permissions in the system, keyed by their owners.
-     */
-    private static final Map<Class, PermissionGroup> PERMISSIONS = new ConcurrentHashMap<Class, PermissionGroup>();
-
-    /**
-     * The same as {@link #PERMISSIONS} but in a single list.
+     * All permissions in the system but in a single list.
      */
     private static final List<Permission> ALL = new CopyOnWriteArrayList<Permission>();
 
@@ -142,7 +126,7 @@ public final class Permission {
 // The intention is to allow a simplified AuthorizationStrategy implementation agnostic to
 // specific permissions.
 
-    public static final PermissionGroup GROUP = new PermissionGroup(Permission.class);
+    public static final PermissionGroup GROUP = new PermissionGroup(Permission.class,Messages._Permission_Permissions_Title());
 
     /**
      * Root of all permissions

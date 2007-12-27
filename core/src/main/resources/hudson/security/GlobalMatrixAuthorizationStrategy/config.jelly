@@ -36,7 +36,7 @@
         </th>
         <j:forEach var="g" items="${groups}">
           <th colspan="${g.size()}">
-            ${g.owner.name}
+            ${g.title}
           </th>
         </j:forEach>
         <td rowspan="2" class="stop" />

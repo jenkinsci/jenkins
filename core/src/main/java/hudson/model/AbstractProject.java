@@ -929,7 +929,5 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
 
-    public static final PermissionGroup PERMISSIONS = new PermissionGroup(AbstractProject.class);
-
     public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Permission.UPDATE);
 }
