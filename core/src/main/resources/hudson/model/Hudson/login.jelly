@@ -7,16 +7,16 @@
         <form action="${it.securityRealm.authenticationGatewayUrl}" method="post" style="text-size:smaller">
           <table>
             <tr>
-              <td>User:</td>
+              <td>${%User}:</td>
               <td><input type="text" name="j_username" id="j_username" /></td>
             </tr>
             <tr>
-              <td>Password:</td>
+              <td>${%Password}:</td>
               <td><input type="password" name="j_password" /></td>
             </tr>
           </table>
           <input type="hidden" name="from" value="${request.getParameter('from')}" />
-          <f:submit value="login" />
+          <f:submit value="${%login}" />
           <script>
             $('j_username').focus();
           </script>

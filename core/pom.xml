@@ -273,7 +273,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <version>1.53</version>
+      <version>1.54</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -460,11 +460,6 @@
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
       <version>3.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.localizer</groupId>
-      <artifactId>localizer</artifactId>
-      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>com.octo.captcha</groupId>

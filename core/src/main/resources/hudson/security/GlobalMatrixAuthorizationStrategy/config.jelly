@@ -32,7 +32,7 @@
       <!-- The first row will show grouping -->
       <tr class="group-row">
         <td rowspan="2" class="pane-header blank">
-          User/group
+          ${%User/group}
         </td>
         <j:forEach var="g" items="${groups}">
           <td class="pane-header" colspan="${g.size()}">
@@ -58,7 +58,7 @@
         </tr>
       </j:forEach>
       <tr name="anonymous">
-        <local:row sid="anonymous" title="Anonymous" />
+        <local:row sid="anonymous" title="${%Anonymous}" />
       </tr>
 
 
@@ -69,9 +69,9 @@
       </tr>
     </table>
     <div style="margin-top:0.5em; margin-left: 2em;">
-      User/group to add:
+      ${%User/group to add}:
       <input type="text" id="${id}text" />
-      <input type="button" value="Add" id="${id}button"/>
+      <input type="button" value="${%Add}" id="${id}button"/>
     </div>
     <script>
       (function() {

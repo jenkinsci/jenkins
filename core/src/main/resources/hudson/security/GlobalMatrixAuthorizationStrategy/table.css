@@ -10,6 +10,7 @@
 
 #global-matrix-authorization-strategy-table TD.blank {
   vertical-align: middle;
+  padding: 0.2em;
 }
 
 #global-matrix-authorization-strategy-table .caption-row TH {
