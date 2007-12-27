@@ -2135,8 +2135,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      *      Define a custom {@link Permission} and check against ACL.
      */
     public static boolean isAdmin() {
-        return !getInstance().isUseSecurity()
-            || Hudson.getInstance().getACL().hasPermission(Permission.FULL_CONTROL);
+        return Hudson.getInstance().getACL().hasPermission(ADMINISTER);
     }
 
     /**
