@@ -3,7 +3,7 @@
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <p:config-disableBuild/>
-  <f:section title="Advanced Project Options">
+  <f:section title="${%Advanced Project Options}">
     <f:advanced>
       <p:config-quietPeriod />
     </f:advanced>
@@ -13,7 +13,7 @@
     <p:config-upstream-pseudo-trigger />
   </p:config-trigger>
 
-  <f:section title="Configuration Matrix">
+  <f:section title="${%Configuration Matrix}">
     <!-- JDK config -->
     <j:set var="jdks" value="${app.JDKs}" />
     <j:if test="${!empty(jdks)}">
@@ -29,9 +29,9 @@
     <!-- master slave -->
     <j:if test="${!empty(app.slaves)}">
       <j:set var="labels" value="${it.labels}" />
-      <f:optionalBlock name="multipleNodes" title="Build on multiple nodes" checked="${!empty(labels)}"
+      <f:optionalBlock name="multipleNodes" title="${%Build on multiple nodes}" checked="${!empty(labels)}"
           help="/help/matrix/label.html">
-        <f:entry title="Node">
+        <f:entry title="${%Node}">
           <div id="nodeTree" class="yahooTree" style="border: 1px solid grey; height: 10em; overflow:auto;"></div>
           <script src="${rootURL}/scripts/yui/treeview/treeview-${yuiSuffix}.js"></script>
           <link rel="stylesheet" href="${rootURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css" />
@@ -65,16 +65,16 @@
       <f:entry>
         <f:repeatable var="axis" items="${userAxes}" noAddButton="true" minimum="1">
           <table>
-            <f:entry title="Name">
+            <f:entry title="${%Name}">
               <f:textbox name="axis.name" value="${axis.name}" />
             </f:entry>
-            <f:entry title="Values" help="/help/matrix/axis-value.html">
+            <f:entry title="${%Values}" help="/help/matrix/axis-value.html">
               <f:expandableTextbox name="axis.value" value="${axis.valueString}" />
             </f:entry>
             <f:entry>
               <div align="right">
-                <input type="button" value="Add more axis" class="repeatable-add show-if-last" />
-                <input type="button" value="Delete" class="repeatable-delete" style="margin-left: 1em;" />
+                <input type="button" value="${%Add more axis}" class="repeatable-add show-if-last" />
+                <input type="button" value="${%Delete}" class="repeatable-delete" style="margin-left: 1em;" />
               </div>
             </f:entry>
           </table>

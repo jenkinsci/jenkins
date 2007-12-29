@@ -6,16 +6,16 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:choose>
     <j:when test="${it.totalCount==0}">
-      (no tests)
+      (${%no tests})
     </j:when>
     <j:when test="${it.failCount==0}">
-      (no failures)
+      (${%no failures})
     </j:when>
     <j:when test="${it.failCount==1}">
-      (1 failure ${it.failureDiffString})
+      (${%1failure(it.failureDiffString)})
     </j:when>
     <j:otherwise>
-      (${it.failCount} failures ${it.failureDiffString})
+      (${%multifailures(it.failCount,it.failureDiffString)})
     </j:otherwise>
   </j:choose>
 </j:jelly>

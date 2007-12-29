@@ -2,7 +2,7 @@
   <l:layout title="${it.name}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>Project ${it.name}</h1>
+      <h1>${%Project} ${it.name}</h1>
       <t:editableDescription adminOnly="true"/>
 
       <st:include page="ajaxMatrix.jelly" />

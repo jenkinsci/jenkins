@@ -11,11 +11,11 @@
 	          <th class="pane">
               <j:choose>
                 <j:when test="${empty(app.slaves)}">
-                  Status
+                  ${%Status}
                 </j:when>
                 <j:otherwise>
-                  <a href="${rootURL}/computer/(master)/">Master</a>
-                  <j:if test="${c.offline}">(offline)</j:if>
+                  <a href="${rootURL}/computer/(master)/">${%Master}</a>
+                  <j:if test="${c.offline}">${%(offline)}</j:if>
                 </j:otherwise>
               </j:choose>
             </th>
@@ -26,7 +26,7 @@
 	        <tr>
 	          <th class="pane" colspan="3">
 	            <a href="${rootURL}/computer/${c.displayName}">${c.displayName}</a>
-	            <j:if test="${c.offline}">(offline) </j:if>
+	            <j:if test="${c.offline}">${%(offline)} </j:if>
               </th>
 	        </tr>
 	      </j:otherwise>
@@ -41,25 +41,25 @@
             <j:when test="${!e.alive}">
               <td class="pane" width="70%">
                 <a href="${rootURL}/computers/${cloop.index}/executors/${eloop.index}/causeOfDeath">
-                  <span class="error">Dead (!)</span>
+                  <span class="error">${%Dead} (!)</span>
                 </a>
               </td>
               <td class="pane"></td>
             </j:when>
             <j:when test="${e.idle}">
 	            <td class="pane" width="70%">
-	              Idle
+	              ${%Idle}
 	            </td>
 	            <td class="pane"></td>
 	          </j:when>
 	          <j:otherwise>
 	            <td class="pane" width="70%">
-	              <div nowrap="true">Building <a href="${rootURL}/${e.currentExecutable.url}">${e.currentExecutable}</a></div>
+	              <div nowrap="true">${%Building} <a href="${rootURL}/${e.currentExecutable.url}">${e.currentExecutable}</a></div>
                 <t:buildProgressBar build="${e.currentExecutable}"/>
 	            </td>
 	            <td class="pane" width="16" align="center" valign="middle">
                 <l:isAdmin>
-                  <a href="${rootURL}/computers/${cloop.index}/executors/${eloop.index}/stop"><img src="${imagesURL}/16x16/stop.gif" alt="terminate this build" /></a>
+                  <a href="${rootURL}/computers/${cloop.index}/executors/${eloop.index}/stop"><img src="${imagesURL}/16x16/stop.gif" alt="${%terminate this build}" /></a>
                 </l:isAdmin>
 	            </td>
 	          </j:otherwise>

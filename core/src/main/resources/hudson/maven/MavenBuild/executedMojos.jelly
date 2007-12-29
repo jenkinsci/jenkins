@@ -2,17 +2,17 @@
   <l:layout title="${it.project.displayName} #${it.number} Execution Record">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>Executed Mojos</h1>
+      <h1>${%Executed Mojos}</h1>
 
       <j:choose>
         <j:when test="${it.building}">
           <div>
-            Build in progress.
+            ${%Build in progress.}
           </div>
         </j:when>
         <j:when test="${empty(it.executedMojos)}">
           <div>
-            No mojos executed.
+            ${%No mojos executed.}
           </div>
         </j:when>
         <j:otherwise>
@@ -20,12 +20,12 @@
           
           <table class="middle-align">
             <tr>
-              <th>Plugin</th>
-              <th>Version</th>
-              <th>Goal</th>
-              <th>Execution</th>
-              <th>Duration</th>
-              <th>Fingerprint</th>
+              <th>${%Plugin}</th>
+              <th>${%Version}</th>
+              <th>${%Goal}</th>
+              <th>${%Execution}</th>
+              <th>${%Duration}</th>
+              <th>${%Fingerprint}</th>
             </tr>
 
             <j:forEach var="m" items="${it.executedMojos}">
@@ -45,7 +45,7 @@
                 <td align="center">${m.readableExecutionId}</td>
                 <td>${m.durationString}</td>
                 <td align="center">
-                  <a href="${rootURL}/fingerprint/${m.digest}/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="fingerprint" /></a>
+                  <a href="${rootURL}/fingerprint/${m.digest}/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="${%fingerprint}" /></a>
                 </td>
               </tr>
             </j:forEach>

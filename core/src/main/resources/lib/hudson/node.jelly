@@ -7,7 +7,7 @@
       <a href="${rootURL}/computer/${value.nodeName}">${value.nodeName}</a>
     </j:when>
     <j:otherwise>
-      (master)
+      ${%(master)}
     </j:otherwise>
   </j:choose>
 </j:jelly>

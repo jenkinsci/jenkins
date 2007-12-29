@@ -6,11 +6,11 @@
 
   <p:config-trigger/>
 
-  <f:section title="Build">
+  <f:section title="${%Build}">
     <j:set var="mavens" value="${it.descriptor.mavenDescriptor.installations}" />
     <j:if test="${empty(mavens)}">
       <!-- no maven installation is configured. this will be an error, so warn the user now -->
-      <f:entry title="Maven Version">
+      <f:entry title="${%Maven Version}">
         <span class="error">
           Hudson needs to know where your Maven2 is installed.&lt;br>
           Please do so from <a href="${rootURL}/configure">the system configuration</a>.
@@ -19,7 +19,7 @@
     </j:if>
     <j:if test="${mavens.size() &gt; 1}">
       <!-- choice not necessary if there's no choice -->
-      <f:entry title="Maven Version">
+      <f:entry title="${%Maven Version}">
         <select class="setting-input" name="maven_version">
           <j:forEach var="inst" items="${mavens}">
             <f:option selected="${inst.name==it.maven.name}">${inst.name}</f:option>
@@ -27,24 +27,24 @@
         </select>
       </f:entry>
     </j:if>
-    <f:entry title="Root POM" help="/help/maven/root-pom.html">
+    <f:entry title="${%Root POM}" help="/help/maven/root-pom.html">
       <f:textbox name="rootPOM" value="${it.rootPOM}"/>
     </f:entry>
-    <f:entry title="Goals" help="help-goals">
+    <f:entry title="${%Goals}" help="help-goals">
       <f:textbox name="goals" value="${it.userConfiguredGoals}"/>
     </f:entry>
     <f:advanced>
       <f:entry title="MAVEN_OPTS" help="/help/maven/maven-opts.html">
         <f:expandableTextbox name="mavenOpts" value="${it.mavenOpts}" />
       </f:entry>
-      <f:optionalBlock name="maven.perModuleBuild" title="Build modules in parallel" help="/help/maven/aggregator.html"
+      <f:optionalBlock name="maven.perModuleBuild" title="${%Build modules in parallel}" help="/help/maven/aggregator.html"
         checked="${!it.aggregatorStyleBuild}" />
     </f:advanced>
   </f:section>
 
   <j:invokeStatic var="reporters" className="hudson.maven.MavenReporters" method="getConfigurableList" />
   <j:if test="${!empty(reporters)}">
-    <f:descriptorList title="Build Settings"
+    <f:descriptorList title="${%Build Settings}"
                       descriptors="${reporters}"
                       instances="${it.reporters.toMap()}"
                       varName="reporter" />

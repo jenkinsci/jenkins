@@ -4,8 +4,8 @@
   @name : form field name
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:dropdownList name="${name}" title="Repository browser">
-    <f:dropdownListBlock value="auto" title="(Auto)" />
+  <f:dropdownList name="${name}" title="${%Repository browser}">
+    <f:dropdownListBlock value="auto" title="${%(Auto)}" />
     <j:set var="currentBrowser" value="${scm.browser}"/>
     <j:forEach var="d" items="${scmd.browserDescriptors}" varStatus="loop">
       <f:dropdownListBlock value="${loop.index}" title="${d.displayName}" selected="${currentBrowser.descriptor==d}">

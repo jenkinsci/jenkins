@@ -4,15 +4,15 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
   <p:config-trigger />
 
-  <f:section title="Build">
-    <f:entry title="Goals" help="/help/maven/module-goals.html">
+  <f:section title="${%Build}">
+    <f:entry title="${%Goals}" help="/help/maven/module-goals.html">
       <f:textbox name="goals" value="${it.userConfiguredGoals}"/>
     </f:entry>
   </f:section>
 
   <j:invokeStatic var="reporters" className="hudson.maven.MavenReporters" method="getConfigurableList" />
   <j:if test="${!empty(reporters)}">
-    <f:descriptorList title="Build Settings"
+    <f:descriptorList title="${%Build Settings}"
                       descriptors="${reporters}"
                       instances="${it.reporters.toMap()}"
                       varName="reporter" />
