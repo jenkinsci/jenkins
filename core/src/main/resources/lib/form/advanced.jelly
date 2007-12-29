@@ -6,7 +6,7 @@
 	<tr><td></td><td></td>
 	  <td>
 	    <div class="advancedLink">
-	      <input type="button" value="Advanced..." class="advancedButton" />
+	      <input type="button" value="${%Advanced}..." class="advancedButton" />
 	    </div>
 	    <table class="advancedBody"><tbody>
 	    <!-- this is the hidden portion that hosts the "advanced" part. Contents will be moved to the master table when "advanced..." is clicked -->

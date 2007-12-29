@@ -6,7 +6,7 @@
   <j:invokeStatic var="triggers" className="hudson.triggers.Triggers" method="getApplicableTriggers">
     <j:arg value="${it}" type="hudson.model.Item" />
   </j:invokeStatic>
-  <f:descriptorList title="Build Triggers"
+  <f:descriptorList title="${%Build Triggers}"
                     descriptors="${triggers}"
                     instances="${it.triggers}"
                     varName="trigger">

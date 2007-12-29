@@ -4,7 +4,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
   <j:set var="wrappers" value="${h.getBuildWrapperDescriptors(it)}" />
   <j:if test="${!empty(wrappers)}">
-    <f:descriptorList title="Build Environment"
+    <f:descriptorList title="${%Build Environment}"
                       descriptors="${wrappers}"
                       instances="${it.buildWrappers}"
                       varName="wrapper" />
