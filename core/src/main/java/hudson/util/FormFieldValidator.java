@@ -366,19 +366,21 @@ public abstract class FormFieldValidator {
             } else {
                 // look in PATH
                 String path = EnvVars.masterEnvVars.get("PATH");
-                for (String _dir : Util.tokenize(path,File.pathSeparator)) {
-                    File dir = new File(_dir);
+                if(path!=null) {
+                    for (String _dir : Util.tokenize(path,File.pathSeparator)) {
+                        File dir = new File(_dir);
 
-                    File f = new File(dir,exe);
-                    if(f.exists()) {
-                        checkExecutable(f);
-                        return;
-                    }
+                        File f = new File(dir,exe);
+                        if(f.exists()) {
+                            checkExecutable(f);
+                            return;
+                        }
 
-                    File fexe = new File(dir,exe+".exe");
-                    if(fexe.exists()) {
-                        checkExecutable(fexe);
-                        return;
+                        File fexe = new File(dir,exe+".exe");
+                        if(fexe.exists()) {
+                            checkExecutable(fexe);
+                            return;
+                        }
                     }
                 }
 
