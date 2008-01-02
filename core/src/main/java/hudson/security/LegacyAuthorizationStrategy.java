@@ -2,6 +2,8 @@ package hudson.security;
 
 import hudson.model.Descriptor;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
+import org.kohsuke.stapler.StaplerRequest;
+import net.sf.json.JSONObject;
 
 /**
  * {@link AuthorizationStrategy} implementation that emulates the legacy behavior.
@@ -34,6 +36,10 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
 
         public String getHelpFile() {
             return "/help/security/legacy-auth-strategy.html";
+        }
+
+        public LegacyAuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            return new LegacyAuthorizationStrategy();
         }
     }
 
