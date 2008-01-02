@@ -42,8 +42,8 @@ public final class ContainerAuthentication implements Authentication {
         return null;
     }
 
-    public Principal getPrincipal() {
-        return request.getUserPrincipal();
+    public String getPrincipal() {
+        return request.getUserPrincipal().getName();
     }
 
     public boolean isAuthenticated() {
@@ -55,7 +55,7 @@ public final class ContainerAuthentication implements Authentication {
     }
 
     public String getName() {
-        return getPrincipal().getName();
+        return getPrincipal();
     }
 
     private static final GrantedAuthority[] ADMIN_AUTHORITY = {new GrantedAuthorityImpl("admin")};
