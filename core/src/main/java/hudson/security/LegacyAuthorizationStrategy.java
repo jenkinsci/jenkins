@@ -1,7 +1,7 @@
 package hudson.security;
 
 import hudson.model.Descriptor;
-import org.acegisecurity.acls.sid.PrincipalSid;
+import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 
 /**
  * {@link AuthorizationStrategy} implementation that emulates the legacy behavior.
@@ -10,7 +10,7 @@ import org.acegisecurity.acls.sid.PrincipalSid;
 public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
     private static final ACL LEGACY_ACL = new SparseACL(null) {{
         add(EVERYONE,Permission.READ,true);
-        add(new PrincipalSid("admin"),Permission.FULL_CONTROL,true);
+        add(new GrantedAuthoritySid("admin"),Permission.FULL_CONTROL,true);
     }};
 
     public ACL getRootACL() {
