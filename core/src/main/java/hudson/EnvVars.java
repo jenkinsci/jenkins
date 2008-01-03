@@ -62,14 +62,14 @@ public class EnvVars extends TreeMap<String,String> {
     }
 
     /**
-     * Environmental variables that we've inherited.
-     */
-    public static final Map<String,String> masterEnvVars = new EnvVars(System.getenv());
-
-    /**
      * Compares strings case insensitively.
      */
     private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new CaseInsensitiveComparator();
+    
+    /**
+     * Environmental variables that we've inherited.
+     */
+    public static final Map<String,String> masterEnvVars = new EnvVars(System.getenv());
 
     private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
         public int compare(String lhs, String rhs) {
