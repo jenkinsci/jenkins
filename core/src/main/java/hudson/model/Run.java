@@ -947,15 +947,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         rsp.sendRedirect2(req.getContextPath()+'/' + getParent().getUrl());
     }
 
+    public void setDescription(String description) {
+        checkPermission(UPDATE);
+        this.description = description;
+    }
+    
     /**
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(UPDATE);
-
         req.setCharacterEncoding("UTF-8");
-        description = req.getParameter("description");
-        save();
+        setDescription(req.getParameter("description"));
         rsp.sendRedirect(".");  // go to the top page
     }
 
