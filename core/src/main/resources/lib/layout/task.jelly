@@ -1,29 +1,33 @@
 <!--
   see tasks.tag
 
-  <%@attribute name="href" required="true" %>
-  <%@attribute name="icon" required="true" %>
-  <%@attribute name="title" required="true" %>
+  Attributes:
+    href:       Link target (required)
+    icon:       URL to icon. (required)
+    title:      human readable caption text. (required)
+    permission: permission object. If specified, the link will be displayed only if you have a permission (optional)
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <div class="task">
-    <a href="${href}" onclick="${attrs.onclick}">
-      <img width="24" height="24" style="margin: 2px;" src="${rootURL}${h.ifThenElse(icon.startsWith('images/'),h.resourcePath,'')}/${icon}"/>
-    </a>
-    <st:nbsp />
-    <a href="${href}" onclick="${attrs.onclick}">
-      <j:choose>
-        <j:invokeStatic var="requestURL" className="java.net.URLDecoder" method="decode">
-          <j:arg value="${request.requestURL.toString()}"/>
-          <j:arg value="UTF-8"/>
-        </j:invokeStatic>
-        <j:when test="${size(href) gt 1 and requestURL.endsWith(href)}">
-          <b>${title}</b>
-        </j:when>
-        <j:otherwise>
-          ${title}
-        </j:otherwise>
-      </j:choose>
-    </a>
-  </div>
+  <j:if test="${h.hasPermission(attrs.permission)}">
+    <div class="task">
+      <a href="${href}" onclick="${attrs.onclick}">
+        <img width="24" height="24" style="margin: 2px;" src="${rootURL}${h.ifThenElse(icon.startsWith('images/'),h.resourcePath,'')}/${icon}"/>
+      </a>
+      <st:nbsp />
+      <a href="${href}" onclick="${attrs.onclick}">
+        <j:choose>
+          <j:invokeStatic var="requestURL" className="java.net.URLDecoder" method="decode">
+            <j:arg value="${request.requestURL.toString()}"/>
+            <j:arg value="UTF-8"/>
+          </j:invokeStatic>
+          <j:when test="${size(href) gt 1 and requestURL.endsWith(href)}">
+            <b>${title}</b>
+          </j:when>
+          <j:otherwise>
+            ${title}
+          </j:otherwise>
+        </j:choose>
+      </a>
+    </div>
+  </j:if>
 </j:jelly>
