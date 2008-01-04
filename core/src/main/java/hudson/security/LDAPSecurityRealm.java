@@ -5,7 +5,10 @@ import org.acegisecurity.MockAuthenticationManager;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
+import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
+import groovy.lang.Binding;
 
 /**
  * {@link SecurityRealm} implementation that uses LDAP for authentication.
@@ -13,6 +16,10 @@ import net.sf.json.JSONObject;
  * @author Kohsuke Kawaguchi
  */
 public class LDAPSecurityRealm extends SecurityRealm {
+    /**
+     * LDAP to connect to, and root DN.
+     * String like "ldap://monkeymachine:389/dc=acegisecurity,dc=org"
+     */
     public final String providerUrl;
 
     @DataBoundConstructor
@@ -21,8 +28,12 @@ public class LDAPSecurityRealm extends SecurityRealm {
     }
 
     public AuthenticationManager createAuthenticationManager() {
-        // TODO
-        return new MockAuthenticationManager(true);
+        Binding binding = new Binding();
+        binding.setVariable("it", this);
+
+        BeanBuilder builder = new BeanBuilder();
+        builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/LDAPBindSecurityRealm.groovy"),binding);
+        return findBean(AuthenticationManager.class,builder.createApplicationContext());
     }
 
     public DescriptorImpl getDescriptor() {
