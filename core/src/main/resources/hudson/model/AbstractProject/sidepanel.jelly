@@ -15,8 +15,8 @@
       <l:task icon="images/24x24/notepad.gif" href="${url}/changes" title="Changes" />
       <l:task icon="images/24x24/folder.gif"  href="${url}/ws/" title="Workspace" />
       <j:if test="${it.configurable}">
-        <j:if test="${!it.disabled and h.hasPermission(it.BUILD)}">
-          <l:task icon="images/24x24/clock.gif" href="${url}/build" title="Build Now" onclick="return build(this)" />
+        <j:if test="${!it.disabled}">
+          <l:task icon="images/24x24/clock.gif" href="${url}/build" title="Build Now" onclick="return build(this)" permission="${it.BUILD}" />
           <script>
             function build(a) {
               new Ajax.Request(a.href,{method:"post"});
@@ -25,10 +25,8 @@
             }
           </script>
         </j:if>
-        <l:isAdmin>
-          <l:task icon="images/24x24/edit-delete.gif" href="${url}/delete" title="Delete ${it.pronoun}" />
-          <l:task icon="images/24x24/setting.gif" href="${url}/configure" title="Configure" />
-        </l:isAdmin>
+        <l:task icon="images/24x24/edit-delete.gif" href="${url}/delete" title="Delete ${it.pronoun}" permission="${it.DELETE}" />
+        <l:task icon="images/24x24/setting.gif" href="${url}/configure" title="Configure" permission="${it.CONFIGURE}" />
       </j:if>
       <st:include page="actions.jelly" />
     </l:tasks>
