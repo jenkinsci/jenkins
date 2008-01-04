@@ -1,31 +1,35 @@
 package hudson.model;
 
+import hudson.AbortException;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.AbortException;
 import hudson.StructuredForm;
-import hudson.security.Permission;
-import hudson.security.PermissionGroup;
-import hudson.widgets.HistoryWidget;
-import hudson.widgets.BuildHistoryWidget;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
 import hudson.scm.ChangeLogSet;
+import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.SearchIndexBuilder;
+import hudson.security.Permission;
 import hudson.tasks.BuildTrigger;
+import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
-import hudson.triggers.SCMTrigger;
 import hudson.util.EditDistance;
+import hudson.widgets.BuildHistoryWidget;
+import hudson.widgets.HistoryWidget;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -43,13 +47,6 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.servlet.ServletException;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import net.sf.json.JSONObject;
 
 /**
  * Base implementation of {@link Job}s that build software.
