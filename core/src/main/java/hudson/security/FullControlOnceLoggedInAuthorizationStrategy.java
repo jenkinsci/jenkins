@@ -4,6 +4,9 @@ import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.util.List;
+import java.util.Collections;
+
 /**
  * {@link AuthorizationStrategy} that grants full-control to authenticated user
  * (other than anonymous users.)
@@ -14,6 +17,10 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
     @Override
     public ACL getRootACL() {
         return THE_ACL;
+    }
+
+    public List<String> getGroups() {
+        return Collections.emptyList();
     }
 
     private static final SparseACL THE_ACL = new SparseACL(null);

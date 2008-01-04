@@ -9,6 +9,9 @@ import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 
 import net.sf.json.JSONObject;
 
@@ -42,6 +45,18 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
     public abstract ACL getRootACL();
 
     /**
+     * Returns the list of all group/role names used in this authorization strategy,
+     * and the ACL returned from the {@link #getRootACL()} method.
+     * <p>
+     * This method is used by {@link ContainerAuthentication} to work around the servlet API issue
+     * that prevents us from enumerating roles that the user has.
+     *
+     * @return
+     *      never null.
+     */
+    public abstract Collection<String> getGroups();
+
+    /**
      * All registered {@link SecurityRealm} implementations.
      */
     public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>();
@@ -67,6 +82,10 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
         @Override
         public ACL getRootACL() {
             return UNSECURED_ACL;
+        }
+
+        public Collection<String> getGroups() {
+            return Collections.emptySet();
         }
 
         private static final ACL UNSECURED_ACL = new ACL() {

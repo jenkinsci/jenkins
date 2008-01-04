@@ -38,6 +38,8 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      */
     private final Map<Permission,Set<String>> grantedPermissions = new HashMap<Permission, Set<String>>();
 
+    private final Set<String> sids = new HashSet<String>();
+
     /**
      * Adds to {@link #grantedPermissions}.
      * Use of this method should be limited during construction,
@@ -48,7 +50,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         if(set==null)
             grantedPermissions.put(p,set = new HashSet<String>());
         set.add(sid);
-
+        sids.add(sid);
     }
 
     /**
@@ -63,6 +65,10 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
     @Override
     public ACL getRootACL() {
         return acl;
+    }
+
+    public Set<String> getGroups() {
+        return sids;
     }
 
     private Object readResolve() {

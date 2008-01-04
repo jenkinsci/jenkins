@@ -6,6 +6,10 @@ import org.acegisecurity.GrantedAuthorityImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
+import java.util.List;
+import java.util.ArrayList;
+
+import hudson.model.Hudson;
 
 /**
  * {@link Authentication} implementation for {@link Principal}
@@ -19,19 +23,24 @@ import java.security.Principal;
  */
 public final class ContainerAuthentication implements Authentication {
     private final HttpServletRequest request;
+    private GrantedAuthority[] authorities;
 
     public ContainerAuthentication(HttpServletRequest request) {
         this.request = request;
     }
 
     public GrantedAuthority[] getAuthorities() {
-        // Servlet API doesn't provide a way to list up all roles the current user
-        // has, so we are approximating the current user's capability by checking
-        // the 'admin' role.
-        if (request.isUserInRole("admin"))
-            return ADMIN_AUTHORITY;
-        else
-            return NO_AUTHORITY;
+        if(authorities==null) {
+            // Servlet API doesn't provide a way to list up all roles the current user
+            // has, so we need to ask AuthorizationStrategy what roles it is going to check against.
+            List<GrantedAuthority> l = new ArrayList<GrantedAuthority>();
+            for( String g : Hudson.getInstance().getAuthorizationStrategy().getGroups()) {
+                if(request.isUserInRole(g))
+                    l.add(new GrantedAuthorityImpl(g));
+            }
+            authorities = l.toArray(new GrantedAuthority[l.size()]);
+        }
+        return authorities;
     }
 
     public Object getCredentials() {

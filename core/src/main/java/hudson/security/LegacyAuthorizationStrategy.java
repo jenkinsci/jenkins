@@ -5,6 +5,9 @@ import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.kohsuke.stapler.StaplerRequest;
 import net.sf.json.JSONObject;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * {@link AuthorizationStrategy} implementation that emulates the legacy behavior.
  * @author Kohsuke Kawaguchi
@@ -17,6 +20,10 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
 
     public ACL getRootACL() {
         return LEGACY_ACL;
+    }
+
+    public Collection<String> getGroups() {
+        return Collections.singleton("admin");
     }
 
     public Descriptor<AuthorizationStrategy> getDescriptor() {
