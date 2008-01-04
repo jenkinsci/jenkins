@@ -414,6 +414,17 @@ public class Functions {
         return Util.xmlEscape(s);
     }
 
+    public static void checkPermission(Permission permission) throws IOException, ServletException {
+        Hudson.getInstance().getACL().checkPermission(permission);
+    }
+
+    /**
+     * Returns true if the current user has the given permission.
+     */
+    public static boolean hasPermission(Permission permission) throws IOException, ServletException {
+        return Hudson.getInstance().getACL().hasPermission(permission);
+    }
+
     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, ServletException {
         // this is legacy --- all views should be eventually converted to
         // the permission based model.
@@ -426,7 +437,7 @@ public class Functions {
 
         // make sure the user owns the necessary permission to access this page.
         if(permission!=null)
-            Hudson.getInstance().getACL().checkPermission(permission);
+            checkPermission(permission);
     }
 
     /**
