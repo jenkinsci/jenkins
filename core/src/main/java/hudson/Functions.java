@@ -420,9 +420,12 @@ public class Functions {
 
     /**
      * Returns true if the current user has the given permission.
+     *
+     * @param permission
+     *      If null, returns true. This defaulting is convenient in making the use of this method terse.
      */
     public static boolean hasPermission(Permission permission) throws IOException, ServletException {
-        return Hudson.getInstance().getACL().hasPermission(permission);
+        return permission==null || Hudson.getInstance().getACL().hasPermission(permission);
     }
 
     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, ServletException {
