@@ -57,6 +57,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
     }
 
     static {
-//        LIST.add(DESCRIPTOR);
+        if(Boolean.getBoolean("LDAP"))
+            LIST.add(DESCRIPTOR);
     }
 }
