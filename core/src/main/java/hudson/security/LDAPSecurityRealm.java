@@ -99,7 +99,11 @@ public class LDAPSecurityRealm extends SecurityRealm {
         try {
             DirContext ctx = LdapCtxFactory.getLdapCtxInstance("ldap://"+server+'/', new Hashtable());
             Attributes atts = ctx.getAttributes("");
-            Attribute a = atts.get("namingcontexts");
+            Attribute a = atts.get("defaultNamingContext");
+            if(a!=null) // this entry is available on Active Directory. See http://msdn2.microsoft.com/en-us/library/ms684291(VS.85).aspx
+                return a.toString();
+            
+            a = atts.get("namingcontexts");
             if(a==null) {
                 LOGGER.warning("namingcontexts attribute not found in root DSE of "+server);
                 return null;
