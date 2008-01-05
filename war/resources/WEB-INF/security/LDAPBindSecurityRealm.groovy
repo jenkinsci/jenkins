@@ -4,14 +4,16 @@ import org.acegisecurity.providers.ldap.LdapAuthenticationProvider
 import org.acegisecurity.providers.ldap.authenticator.BindAuthenticator
 import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator
 import org.acegisecurity.ldap.DefaultInitialDirContextFactory
+import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
 
 /*
     Configure LDAP as the authentication realm.
 
     Authentication is performed by doing LDAP bind.
+    The 'instance' object refers to the instance of LDAPSecurityRealm
 */
 
-initialDirContextFactory(DefaultInitialDirContextFactory,it.providerUrl) {
+initialDirContextFactory(DefaultInitialDirContextFactory, instance.getLDAPURL() ) {
 
   // if anonymous bind is not allowed --- but what is the use of anonymous bind?
   // managerDn = "..."
@@ -19,9 +21,14 @@ initialDirContextFactory(DefaultInitialDirContextFactory,it.providerUrl) {
 }
 
 bindAuthenticator(BindAuthenticator,initialDirContextFactory) {
-  userDnPatterns = [
-    "uid={0},ou=people"
-  ]
+    // this is when you the user name can be translated into DN.
+//  userDnPatterns = [
+//    "uid={0},ou=people"
+//  ]
+    // this is when we need to find it.
+    userSearch = bean(FilterBasedLdapUserSearch, instance.userSearchBase, instance.userSearch, initialDirContextFactory) {
+        searchSubtree=true
+    }
 }
 authoritiesPopulator(DefaultLdapAuthoritiesPopulator,initialDirContextFactory,"ou=groups") {
   // groupRoleAttribute = "ou";

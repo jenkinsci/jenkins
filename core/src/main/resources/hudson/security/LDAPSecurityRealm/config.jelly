@@ -1,5 +1,17 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:entry title="Server URL" >
-	  <f:textbox name="ldap.providerUrl" value="${instance.providerUrl}" />
+	<f:entry title="${%Server}" help="/help/security/ldap/server.html">
+	  <f:textbox name="ldap.server" value="${instance.server}"
+            checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?server='+escape(this.value)"/>
 	</f:entry>
+  <f:advanced>
+    <f:entry title="${%root DN}" help="/help/security/ldap/rootDN.html">
+      <f:textbox name="ldap.rootDN" value="${instance.rootDN}" />
+    </f:entry>
+    <f:entry title="${%User search base}" help="/help/security/ldap/userSearchBase.html">
+      <f:textbox name="ldap.userSearchBase" value="${instance.userSearchBase}" />
+    </f:entry>
+    <f:entry title="${%User search filter}" help="/help/security/ldap/userSearchFilter.html">
+      <f:textbox name="ldap.userSearch" value="${instance.userSearch}" />
+    </f:entry>
+  </f:advanced>
 </j:jelly>

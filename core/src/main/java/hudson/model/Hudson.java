@@ -392,6 +392,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     /**
+     * Gets the {@link SecurityRealm} descriptors by name. Primarily used for making them web-visible.
+     */
+    public Descriptor<SecurityRealm> getSecurityRealms(String shortClassName) {
+        return findDescriptor(shortClassName,SecurityRealm.LIST);
+    }
+
+    /**
      * Finds a descriptor that has the specified name.
      */
     private <T extends Describable<T>>
