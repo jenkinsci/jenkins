@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
  * {@link SecurityRealm} implementation that uses LDAP for authentication.
  * 
  * @author Kohsuke Kawaguchi
+ * @since 1.166
  */
 public class LDAPSecurityRealm extends SecurityRealm {
     /**
