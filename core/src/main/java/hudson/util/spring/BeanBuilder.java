@@ -89,7 +89,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     private BeanConfiguration currentBeanConfig;
     private Map<String,DeferredProperty> deferredProperties = new HashMap<String,DeferredProperty>();
     private ApplicationContext parentCtx;
-    private Map binding = Collections.EMPTY_MAP;
+    private Map binding = new HashMap();
     private ClassLoader classLoader = null;
 
 
@@ -545,7 +545,9 @@ public class BeanBuilder extends GroovyObjectSupport {
 				}
 			}
             currentBeanConfig.addProperty(name, value);
-		}
+		} else {
+            binding.put(name,value);
+        }
 	}
 
 	/**
