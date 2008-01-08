@@ -76,21 +76,20 @@ public class Api extends AbstractModelObject {
                 rsp.getWriter().print("XPath "+xpath+" didn't match");
                 return;
             }
-            if(list.size()>2) {
+            if(list.size()>1) {
                 if(wrapper!=null) {
                     Element root = DocumentFactory.getInstance().createElement(wrapper);
                     for (Object o : list) {
-                        if(o instanceof String) {
+                        if(o instanceof String)
                             root.addText(o.toString());
-                        } else {
-                            root.add((org.dom4j.Node)o);
-                        }
+                        else
+                            root.add(((org.dom4j.Node)o).detach());
                     }
                     result = root;
                 } else {
                     // XPath didn't match
                     rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    rsp.getWriter().print("XPath "+xpath+" matched "+list.size()+" nodes. Create XPath that only matches one");
+                    rsp.getWriter().print(Messages._Api_MultipleMatch(xpath,list.size()));
                     return;
                 }
             } else
