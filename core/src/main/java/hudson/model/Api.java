@@ -4,6 +4,8 @@ import hudson.util.IOException2;
 import org.dom4j.CharacterData;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.DocumentFactory;
+import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.kohsuke.stapler.QueryParameter;
@@ -50,7 +52,7 @@ public class Api extends AbstractModelObject {
     /**
      * Exposes the bean as XML.
      */
-    public void doXml(StaplerRequest req, StaplerResponse rsp, @QueryParameter("xpath") String xpath) throws IOException, ServletException {
+    public void doXml(StaplerRequest req, StaplerResponse rsp, @QueryParameter("xpath") String xpath, @QueryParameter("wrapper") String wrapper) throws IOException, ServletException {
         if(xpath==null) {
             // serve the whole thing
             rsp.serveExposedBean(req,bean,Flavor.XML);
@@ -75,13 +77,24 @@ public class Api extends AbstractModelObject {
                 return;
             }
             if(list.size()>2) {
-                // XPath didn't match
-                rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                rsp.getWriter().print("XPath "+xpath+" matched "+list.size()+" nodes. Create XPath that only matches one");
-                return;
-            }
-
-            result = list.get(0);
+                if(wrapper!=null) {
+                    Element root = DocumentFactory.getInstance().createElement(wrapper);
+                    for (Object o : list) {
+                        if(o instanceof String) {
+                            root.addText(o.toString());
+                        } else {
+                            root.add((org.dom4j.Node)o);
+                        }
+                    }
+                    result = root;
+                } else {
+                    // XPath didn't match
+                    rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    rsp.getWriter().print("XPath "+xpath+" matched "+list.size()+" nodes. Create XPath that only matches one");
+                    return;
+                }
+            } else
+                result = list.get(0);
         } catch (DocumentException e) {
             throw new IOException2(e);
         }
