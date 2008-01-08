@@ -17,6 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.List;
 
 /**
  * Used to expose remote access API for ".../api/"
@@ -63,23 +64,37 @@ public class Api extends AbstractModelObject {
         p.writeTo(bean,Flavor.XML.createDataWriter(bean,sw));
 
         // apply XPath
-        org.dom4j.Node result;
+        Object result;
         try {
             Document dom = new SAXReader().read(new StringReader(sw.toString()));
-            result = dom.selectSingleNode(xpath);
+            List list = dom.selectNodes(xpath);
+            if(list.isEmpty()) {
+                // XPath didn't match
+                rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                rsp.getWriter().print("XPath "+xpath+" didn't match");
+                return;
+            }
+            if(list.size()>2) {
+                // XPath didn't match
+                rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                rsp.getWriter().print("XPath "+xpath+" matched "+list.size()+" nodes. Create XPath that only matches one");
+                return;
+            }
+
+            result = list.get(0);
         } catch (DocumentException e) {
             throw new IOException2(e);
         }
 
-        if(result==null) {
-            // XPath didn't match
-            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            rsp.getWriter().print("XPath "+xpath+" didn't match");
-            return;
-        }
         if(result instanceof CharacterData) {
             rsp.setContentType("text/plain");
-            rsp.getWriter().print(result.getText());
+            rsp.getWriter().print(((CharacterData)result).getText());
+            return;
+        }
+
+        if(result instanceof String) {
+            rsp.setContentType("text/plain");
+            rsp.getWriter().print(result.toString());
             return;
         }
 
