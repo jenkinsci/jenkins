@@ -263,4 +263,9 @@ public abstract class View extends AbstractModelObject {
     public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Permission.CREATE);
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Permission.DELETE);
     public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Permission.CONFIGURE);
+
+    // to simplify access from Jelly
+    public static Permission getItemCreatePermission() {
+        return Item.CREATE;
+    }
 }
