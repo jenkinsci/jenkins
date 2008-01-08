@@ -207,7 +207,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     private transient final List<Widget> widgets = new CopyOnWriteArrayList<Widget>();
 
-    private transient volatile DependencyGraph dependencyGraph = DependencyGraph.EMPTY;
+    private transient volatile DependencyGraph dependencyGraph;
 
     /**
      * Set of installed cluster nodes.
@@ -284,6 +284,15 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         if(theInstance!=null)
             throw new IllegalStateException("second instance");
         theInstance = this;
+
+        try {
+            dependencyGraph = DependencyGraph.EMPTY;
+        } catch (InternalError e) {
+            if(e.getMessage().contains("window server")) {
+                throw new Error("Looks like the server runs without X. Please specify -Djava.awt.headless=true as JVM option",e);
+            }
+            throw e;
+        }
 
         // load plugins.
         pluginManager = new PluginManager(context);
