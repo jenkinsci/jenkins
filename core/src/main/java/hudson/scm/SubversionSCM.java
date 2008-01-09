@@ -1,10 +1,9 @@
 package hudson.scm;
 
-import ch.ethz.ssh2.SCPClient;
 import hudson.FilePath;
-import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -19,6 +18,39 @@ import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.Scrambler;
+import hudson.util.StreamCopyThread;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.StringTokenizer;
+import java.util.Map.Entry;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
+import javax.servlet.ServletException;
+import javax.xml.transform.stream.StreamResult;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
@@ -53,32 +85,7 @@ import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
-import javax.servlet.ServletException;
-import javax.xml.transform.stream.StreamResult;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.ConsoleHandler;
-import java.util.regex.Pattern;
+import ch.ethz.ssh2.SCPClient;
 
 /**
  * Subversion SCM.
@@ -373,7 +380,7 @@ public class SubversionSCM extends SCM implements Serializable {
                         try {
                             listener.getLogger().println("Updating "+ l.remote);
 
-                            svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
+                            svnuc.setEventHandler(new SubversionUpdateEventHandler(listener.getLogger(), externals, l.local));
                             svnuc.doUpdate(new File(ws, l.local).getCanonicalFile(), revision, true);
 
                         } catch (final SVNException e) {
@@ -387,13 +394,18 @@ public class SubversionSCM extends SCM implements Serializable {
                     }
                 } else {
                     Util.deleteContentsRecursive(ws);
+                    
+                    PipedOutputStream pos = new PipedOutputStream();
+                    PipedInputStream pis = new PipedInputStream(pos);
+                    StreamCopyThread sct = new StreamCopyThread("svn log copier", pis, listener.getLogger());
+                    sct.start();
 
                     for (final ModuleLocation l : locations) {
                         try {
                             final SVNURL url = SVNURL.parseURIEncoded(l.remote);
                             listener.getLogger().println("Checking out "+url);
 
-                            svnuc.setEventHandler(new SubversionUpdateEventHandler(listener, externals, l.local));
+                            svnuc.setEventHandler(new SubversionUpdateEventHandler(new PrintStream(pos), externals, l.local));
                             svnuc.doCheckout(url, new File(ws, l.local).getCanonicalFile(), SVNRevision.HEAD, revision, true);
 
                         } catch (final SVNException e) {
@@ -401,7 +413,15 @@ public class SubversionSCM extends SCM implements Serializable {
                             return null;
                         }
                     }
+                    
+                    pos.close();
+                    try {
+						sct.join(); // wait for all data to be piped.
+					} catch (InterruptedException e) {
+					} 
+                    
                 }
+                
                 return externals;
             } finally {
                 manager.dispose();

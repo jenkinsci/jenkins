@@ -11,7 +11,6 @@
  */
 package hudson.scm;
 
-import hudson.model.TaskListener;
 import org.tmatesoft.svn.core.SVNCancelException;
 import org.tmatesoft.svn.core.wc.ISVNEventHandler;
 import org.tmatesoft.svn.core.wc.SVNEvent;
@@ -37,8 +36,8 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
     private final List<String> externals;
     private final String modulePath;
     
-    public SubversionUpdateEventHandler(TaskListener listener, List<String> externals, String modulePath) {
-        this.out = listener.getLogger();
+    public SubversionUpdateEventHandler(PrintStream out, List<String> externals, String modulePath) {
+        this.out = out;
         this.externals = externals;
         this.modulePath = modulePath;
     }
