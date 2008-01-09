@@ -115,6 +115,14 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return getItem(name);
     }
 
+    protected void updateTransientActions() {
+        super.updateTransientActions();
+        // Fix for ISSUE-1149
+        for (MavenModule module: modules.values()) {
+            module.updateTransientActions();
+        }
+    }
+
     protected void addTransientActionsFromBuild(MavenModuleSetBuild build, Set<Class> added) {
         if(build==null)    return;
 
