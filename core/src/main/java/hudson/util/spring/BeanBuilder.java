@@ -129,7 +129,7 @@ public class BeanBuilder extends GroovyObjectSupport {
         setBinding(binding);
         CompilerConfiguration cc = new CompilerConfiguration();
         cc.setScriptBaseClass(ClosureScript.class.getName());
-        GroovyShell shell = new GroovyShell(binding,cc);
+        GroovyShell shell = new GroovyShell(classLoader,binding,cc);
 
         ClosureScript s = (ClosureScript)shell.parse(script);
         s.setDelegate(this);
