@@ -85,25 +85,6 @@
     </profile>
   </profiles>
   
-  <pluginRepositories>
-    <pluginRepository>
-      <id>central</id>
-      <url>http://repo1.maven.org/maven2</url>
-      <releases>
-        <enabled>true</enabled>
-        <!-- only look for jars here when they are not present locally -->
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </pluginRepository>
-    <pluginRepository>
-      <id>java.net2</id>
-      <url>http://download.java.net/maven/2/</url>
-    </pluginRepository>
-  </pluginRepositories>
-  
   <repositories>
     <repository>
       <id>java.net2</id>
