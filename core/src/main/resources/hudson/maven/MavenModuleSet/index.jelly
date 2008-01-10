@@ -2,8 +2,9 @@
   <l:layout title="${it.name}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>${it.name} modules</h1>
+      <h1>${it.pronoun} ${it.displayName}</h1>
       <t:editableDescription adminOnly="true"/>
+      <h2>Modules</h2>
 
       <j:choose>
         <j:when test="${empty(it.modules)}">
@@ -33,7 +34,43 @@
         </j:otherwise>
       </j:choose>
 
+      <h2>${it.pronoun} Overview</h2>
       <p:projectActionFloatingBox />
+
+      <table style="margin-top: 1em; margin-left:1em;">
+
+        <j:forEach var="act" items="${it.prominentActions}">
+          <t:summary icon="${act.iconFileName}" href="${act.urlName}">
+            ${act.displayName}
+          </t:summary>
+        </j:forEach>
+        <t:summary icon="folder.gif" href="ws/">
+          Workspace
+        </t:summary>
+
+        <t:artifactList caption="Last Successful Artifacts"
+            build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/" />
+
+        <t:summary icon="notepad.gif" href="changes">
+          Recent Changes
+        </t:summary>
+
+        <j:set var="tr" value="${it.lastBuild.testResultAction}"/>
+        <j:if test="${tr!=null}">
+          <t:summary icon="clipboard.gif">
+            <a href="lastBuild/testReport/">Latest Test Result</a>
+            <t:test-result it="${tr}" />
+          </t:summary>
+        </j:if>
+      </table>
+
+      <h2>Permalinks</h2>
+      <ul>
+        <p:build-permalink property="lastBuild"           title="Last build" />
+        <p:build-permalink property="lastStableBuild"     title="Last stable build" />
+        <p:build-permalink property="lastSuccessfulBuild" title="Last successful build" />
+        <p:build-permalink property="lastFailedBuild"     title="Last failed build" />
+      </ul>
     </l:main-panel>
   </l:layout>
 </j:jelly>
