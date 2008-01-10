@@ -51,6 +51,16 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     public abstract AuthenticationManager createAuthenticationManager();
 
     /**
+     * {@inheritDoc}
+     *
+     * <p>
+     * {@link SecurityRealm} is a singleton resource in Hudson, and therefore
+     * it's always configured through <tt>config.jelly</tt> and never with
+     * <tt>global.jelly</tt>. 
+     */
+    public abstract Descriptor<SecurityRealm> getDescriptor();
+
+    /**
      * Returns the URL to submit a form for the authentication.
      * There's no need to override this, except for {@link LegacySecurityRealm}.
      */
