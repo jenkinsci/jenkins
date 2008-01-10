@@ -184,16 +184,6 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         }
     }
 
-    public List<ProminentProjectAction> getProminentActions() {
-        List<Action> a = getActions();
-        List<ProminentProjectAction> pa = new Vector<ProminentProjectAction>();
-        for (Action action : a) {
-            if(action instanceof ProminentProjectAction)
-                pa.add((ProminentProjectAction) action);
-        }
-        return pa;
-    }
-
     /**
      * @deprecated
      *      left for legacy config file compatibility
