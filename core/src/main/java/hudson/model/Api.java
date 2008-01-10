@@ -52,7 +52,10 @@ public class Api extends AbstractModelObject {
     /**
      * Exposes the bean as XML.
      */
-    public void doXml(StaplerRequest req, StaplerResponse rsp, @QueryParameter("xpath") String xpath, @QueryParameter("wrapper") String wrapper) throws IOException, ServletException {
+    public void doXml(StaplerRequest req, StaplerResponse rsp,
+                      @QueryParameter("xpath") String xpath,
+                      @QueryParameter("wrapper") String wrapper,
+                      @QueryParameter("depth") int depth) throws IOException, ServletException {
         if(xpath==null) {
             // serve the whole thing
             rsp.serveExposedBean(req,bean,Flavor.XML);
@@ -63,7 +66,7 @@ public class Api extends AbstractModelObject {
 
         // first write to String
         Model p = MODEL_BUILDER.get(bean.getClass());
-        p.writeTo(bean,Flavor.XML.createDataWriter(bean,sw));
+        p.writeTo(bean,depth,Flavor.XML.createDataWriter(bean,sw));
 
         // apply XPath
         Object result;
