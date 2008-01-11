@@ -6,10 +6,10 @@
       <div style="float:right">
         <form method="get" action="toggleOffline">
           <j:if test="${it.temporarilyOffline}">
-            <input type="submit" value="This node is back online"  />
+            <f:submit value="This node is back online"  />
           </j:if>
           <j:if test="${!it.temporarilyOffline}">
-            <input type="submit" value="Mark this node temporarily offline"  />
+            <f:submit value="Mark this node temporarily offline"  />
           </j:if>
         </form>
       </div>
@@ -58,7 +58,7 @@
             </p>
             <l:isAdmin>
               <form method="get" action="launchSlaveAgent">
-                <input type="submit" value="Launch slave agent"  />
+                <f:submit value="Launch slave agent" />
               </form>
             </l:isAdmin>
           </j:if>
