@@ -7,7 +7,7 @@
 cvs -q update -Pd
 
 tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
-mvn -B -Dtag=$tag release:prepare || mvn install release:prepare
+mvn -B -Dtag=$tag release:prepare || mvn -B -Dtag=$tag install release:prepare
 mvn release:perform
 
 id=$(show-pom-version target/checkout/pom.xml)
