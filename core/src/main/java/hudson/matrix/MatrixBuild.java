@@ -110,8 +110,16 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                         if(b!=null && !b.isBuilding())
                             buildResult = b.getResult();
                         if(b==null && !c.isInQueue()) {
-                            logger.println(c.getDisplayName()+" appears to be cancelled");
-                            buildResult = Result.ABORTED;
+                            // there's conceivably a race condition here, sine b is set early on,
+                            // and we are checking c.isInQueue() later. A build might have started
+                            // after we computed b but before we checked c.isInQueue(). So
+                            // double-check 'b' to see if it's really not there. Possibly related to
+                            // http://www.nabble.com/Master-slave-problem-tt14710987.html
+                            b = c.getBuildByNumber(n);
+                            if(b==null) {
+                                logger.println(c.getDisplayName()+" appears to be cancelled");
+                                buildResult = Result.ABORTED;
+                            }
                         }
 
                         if(buildResult!=null) {
