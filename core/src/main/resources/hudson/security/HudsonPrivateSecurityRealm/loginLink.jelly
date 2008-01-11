@@ -1,0 +1,5 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+  <st:include page="/hudson/security/SecurityRealm/loginLink.jelly" />
+  |
+  <a href="${rootURL}/signup"><b>${%sign up}</b></a>  
+</j:jelly>

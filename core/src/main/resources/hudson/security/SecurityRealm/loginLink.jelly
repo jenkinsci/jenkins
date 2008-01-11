@@ -1,0 +1,1 @@
+<a style="color:inherit" href="${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}"><b>${%login}</b></a>

@@ -357,6 +357,19 @@ th.pane {
   background-position: right;
 }
 
+#login-field {
+    vertical-align: middle;
+    padding-right: 1em;
+    width:1px;
+    white-space:nowrap;
+    color: white;
+}
+
+#login-field A {
+    /* link inside login field should be always white */
+    color: inherit;
+}
+
 /* ======================== error/warning message (mainly in the form) ======================== */
 .error {
     color: #CC0000;

@@ -33,6 +33,16 @@ import javax.imageio.ImageIO;
  * an active {@link SecurityRealm} is bound to <tt>CONTEXT_ROOT/securityRealm/</tt>
  * through {@link Hudson#getSecurityRealm()}. 
  *
+ * <h3>Supported Views</h3>
+ * <dl>
+ * <dt>loginLink.jelly</dt>
+ * <dd>
+ * This view renders the login link on the top right corner of every page, when the user
+ * is anonymous. For {@link SecurityRealm}s that support user sign-up, this is a good place
+ * to show a "sign up" link. See {@link HudsonPrivateSecurityRealm} implementation
+ * for an example of this.
+ * </dl>
+ *
  * @author Kohsuke Kawaguchi
  * @sicne 1.160
  */
