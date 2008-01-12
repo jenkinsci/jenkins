@@ -58,9 +58,9 @@
                 <t:buildProgressBar build="${e.currentExecutable}"/>
 	            </td>
 	            <td class="pane" width="16" align="center" valign="middle">
-                <l:isAdmin>
+                <j:if test="${e.hasStopPermission()}">
                   <a href="${rootURL}/computers/${cloop.index}/executors/${eloop.index}/stop"><img src="${imagesURL}/16x16/stop.gif" alt="${%terminate this build}" /></a>
-                </l:isAdmin>
+                </j:if>
 	            </td>
 	          </j:otherwise>
 	        </j:choose>

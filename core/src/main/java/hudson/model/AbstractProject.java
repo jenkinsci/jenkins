@@ -937,4 +937,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
 
     public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Permission.UPDATE);
+    /**
+     * Permission to abort a build. For now, let's make it the same as {@link #BUILD}
+     */
+    public static final Permission ABORT = BUILD;
 }

@@ -8,6 +8,7 @@ import javax.servlet.ServletException;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.acegisecurity.AccessDeniedException;
 
 
 /**
@@ -160,6 +161,18 @@ public class Executor extends Thread implements ModelObject {
         executable.checkAbortPermission();
         interrupt();
         rsp.forwardToPreviousPage(req);
+    }
+
+    /**
+     * Checks if the current user has a permission to stop this build. 
+     */
+    public boolean hasStopPermission() {
+        try {
+            executable.checkAbortPermission();
+            return true;
+        } catch (AccessDeniedException e) {
+            return false;
+        }
     }
 
     public Computer getOwner() {

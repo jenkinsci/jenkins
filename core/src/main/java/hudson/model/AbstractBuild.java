@@ -586,11 +586,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
     }
 
-    /**
-     * People can stop a build if they can start a build.
-     */
     public void checkAbortPermission() {
-        getParent().getACL().checkPermission(AbstractProject.BUILD);
+        getParent().getACL().checkPermission(AbstractProject.ABORT);
     }
 
 //
