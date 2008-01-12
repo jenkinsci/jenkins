@@ -84,7 +84,11 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
         }
 
         // register the user
-        User.get(si.username).addProperty(new Details(si.password1));
+        User user = User.get(si.username);
+        user.addProperty(new Details(si.password1));
+        user.setFullName(si.fullname);
+        user.save();
+        
         // ... and let him login
         Authentication a = new UsernamePasswordAuthenticationToken(si.username,si.password1);
         a = HudsonFilter.AUTHENTICATION_MANAGER.authenticate(a);
