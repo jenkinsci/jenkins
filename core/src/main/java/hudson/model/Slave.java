@@ -173,28 +173,36 @@ public final class Slave implements Node, Serializable {
      *
      * @todo make less hacky
      * @see hudson.tasks.LabelFinder
+     *
+     * @return
+     *      never null.
      */
     public Set<Label> getDynamicLabels() {
-        if (dynamicLabels == null) {
-            synchronized (this) {
-                if (dynamicLabels == null) {
-                    dynamicLabels = new HashSet<Label>();
-                    Computer computer = getComputer();
-                    VirtualChannel channel;
-                    if (computer != null && (channel = computer.getChannel()) != null) {
-                        dynamicLabelsInstanceHash = computer.hashCode();
-                        for (DynamicLabeler labeler : LabelFinder.LABELERS) {
-                            for (String label : labeler.findLabels(channel)) {
-                                dynamicLabels.add(Hudson.getInstance().getLabel(label));
-                            }
-                        }
-                    } else {
-                        dynamicLabelsInstanceHash = 0;
+        // another thread may preempt and set dynamicLabels field to null,
+        // so a care needs to be taken to avoid race conditions under all circumstances.
+        Set<Label> labels = dynamicLabels;
+        if (labels != null)     return labels;
+
+        synchronized (this) {
+            labels = dynamicLabels;
+            if (labels != null)     return labels;
+
+            dynamicLabels = labels = new HashSet<Label>();
+            Computer computer = getComputer();
+            VirtualChannel channel;
+            if (computer != null && (channel = computer.getChannel()) != null) {
+                dynamicLabelsInstanceHash = computer.hashCode();
+                for (DynamicLabeler labeler : LabelFinder.LABELERS) {
+                    for (String label : labeler.findLabels(channel)) {
+                        labels.add(Hudson.getInstance().getLabel(label));
                     }
                 }
+            } else {
+                dynamicLabelsInstanceHash = 0;
             }
+
+            return labels;
         }
-        return dynamicLabels;
     }
 
     public Label getSelfLabel() {
