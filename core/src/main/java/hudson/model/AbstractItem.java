@@ -176,6 +176,13 @@ public abstract class AbstractItem extends Actionable implements Item {
     }
 
     /**
+     * Short for {@code getACL().hasPermission(p)}
+     */
+    public boolean hasPermission(Permission p) {
+        return getACL().hasPermission(p);
+    }
+
+    /**
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
