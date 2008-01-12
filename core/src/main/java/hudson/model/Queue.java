@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.Util;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
+import org.acegisecurity.AccessDeniedException;
 import hudson.model.Node.Mode;
 import hudson.util.OneShotEvent;
 
@@ -590,6 +591,14 @@ public class Queue extends ResourceController {
          * Called by {@link Executor} to perform the task
          */
         void run();
+
+        /**
+         * Checks the permission to see if the current user can abort this executable.
+         * Returns normally from this method if it's OK.
+         *
+         * @throws AccessDeniedException if the permission is not granted.
+         */
+        void checkAbortPermission();
     }
 
     /**

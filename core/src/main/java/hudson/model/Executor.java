@@ -157,9 +157,7 @@ public class Executor extends Thread implements ModelObject {
      * Stops the current build.
      */
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
-
+        executable.checkAbortPermission();
         interrupt();
         rsp.forwardToPreviousPage(req);
     }
