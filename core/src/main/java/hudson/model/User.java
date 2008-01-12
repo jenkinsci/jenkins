@@ -143,6 +143,7 @@ public class User extends AbstractModelObject {
         if(old!=null)
             ps.remove(old);
         ps.add(p);
+        p.setUser(this);
         properties = ps;
         save();
     }
