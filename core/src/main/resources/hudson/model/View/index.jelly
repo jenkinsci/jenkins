@@ -20,9 +20,9 @@
               <j:forEach var="v" items="${app.views}">
                 <l:tab name="${v.viewName}" active="${v==it}" href="${rootURL}/${v.url}" />
               </j:forEach>
-              <l:isAdmin>
+              <j:if test="${h.hasPermission(it.CREATE)}">
                 <l:tab name="+" href="${rootURL}/newView" active="false" />
-              </l:isAdmin>
+              </j:if>
             </l:tabBar>
           </t:projectView>
         </j:otherwise>
