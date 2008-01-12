@@ -2,5 +2,24 @@
   <!--
     This is a good place to add "welcome" materials, like pointers to the website and etc
   -->
-  Welcome to Hudson! Please <a href="newJob">create new jobs</a> to get started.
+  Welcome to Hudson!
+  <j:choose xmlns:j="jelly:core">
+    <!-- Only show the create new jobs link to those users that have permission to use it. -->
+    <j:when test="${h.hasPermission(it.CREATE)}">
+      Please <a href="newJob">create new jobs</a> to get started.
+    </j:when>
+    <j:otherwise>
+      <!-- Offer anonymous users the chance to login, then they can create jobs. -->
+      <j:if test="${h.isAnonymous()}">
+        <a style="color:inherit" href="${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}">Login</a>
+        to create new jobs.
+      </j:if>
+      <!-- Also offer them the opportunity to sign-up for an account, if this facility is available. -->
+      <j:if test="${it.securityRealm.allowsSignup()}">
+        If you don't already have an account, you can
+        <a style="color:inherit" href="signup">sign-up</a> now.
+      </j:if>
+    </j:otherwise>
+  </j:choose>
+
 </div>
