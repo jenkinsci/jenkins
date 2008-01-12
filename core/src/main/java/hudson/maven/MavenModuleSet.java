@@ -356,6 +356,21 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     /**
+     * If the list of configured goals contain the "-P" option,
+     * return the configured profiles. Otherwise null.
+     */
+    public String getProfiles() {
+        boolean switchFound=false;
+        for (String t : Util.tokenize(getGoals())) {
+            if(switchFound)
+                return t;
+            if(t.equals("-P"))
+                switchFound=true;
+        }
+        return null;
+    }
+
+    /**
      * Possibly null, whitespace-separated (including TAB, NL, etc) VM options
      * to be used to launch Maven process.
      */

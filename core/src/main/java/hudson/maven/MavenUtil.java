@@ -24,8 +24,10 @@ public class MavenUtil {
      *
      * @param listener
      *      This is where the log messages from Maven will be recorded.
+     * @param profiles
+     *      Profiles to activate/deactivate. Can be null.
      */
-    public static MavenEmbedder createEmbedder(TaskListener listener) throws MavenEmbedderException, IOException {
+    public static MavenEmbedder createEmbedder(TaskListener listener, String profiles) throws MavenEmbedderException, IOException {
         MavenEmbedder maven = new MavenEmbedder();
 
         ClassLoader cl = MavenUtil.class.getClassLoader();
@@ -41,6 +43,7 @@ public class MavenUtil {
             throw new AbortException();
         }
 
+        maven.setProfiles(profiles);
         maven.start();
 
         return maven;

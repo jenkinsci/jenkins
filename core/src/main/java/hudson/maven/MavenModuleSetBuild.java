@@ -290,7 +290,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             logger.println("Parsing POMs");
             List<PomInfo> poms;
             try {
-                poms = project.getModuleRoot().act(new PomParser(listener,project.getRootPOM()));
+                poms = project.getModuleRoot().act(new PomParser(listener,project.getRootPOM(),project.getProfiles()));
             } catch (MavenExecutionException e) {
                 // Maven failed to parse POM
                 e.getCause().printStackTrace(listener.error("Failed to parse POM"));
@@ -499,10 +499,12 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
          * takes an effect even when {@link PomParser} runs in a slave.
          */
         private final boolean versbose = debug;
+        private final String profiles;
 
-        public PomParser(BuildListener listener, String rootPOM) {
+        public PomParser(BuildListener listener, String rootPOM, String profiles) {
             this.listener = listener;
             this.rootPOM = rootPOM;
+            this.profiles = profiles;
         }
 
         /**
@@ -532,7 +534,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 logger.println("Parsing "+pom);
 
             try {
-                MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
+                MavenEmbedder embedder = MavenUtil.createEmbedder(listener, profiles);
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
                 MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener);

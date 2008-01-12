@@ -83,6 +83,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import hudson.Util;
+
 /**
  * Class intended to be used by clients who wish to embed Maven into their applications
  *
@@ -151,6 +153,8 @@ public class MavenEmbedder
 
     private String globalChecksumPolicy;
 
+    private String profiles;
+
     /**
      * This option determines whether the embedder is to be aligned to the user
      * installation.
@@ -199,6 +203,16 @@ public class MavenEmbedder
     public void setAlignWithUserInstallation( boolean alignWithUserInstallation )
     {
         this.alignWithUserInstallation = alignWithUserInstallation;
+    }
+
+    /**
+     * Activates/deactivates profiles.
+     * ','-separated profile list, or null. This works exactly like the CLI "-P" option.
+     *
+     * This method needs to be called before the embedder is {@link #start() started}.
+     */
+    public void setProfiles(String profiles) {
+        this.profiles = profiles;
     }
 
     /**
@@ -615,6 +629,7 @@ public class MavenEmbedder
             pluginDescriptorBuilder = new PluginDescriptorBuilder();
 
             profileManager = new DefaultProfileManager( embedder.getContainer() );
+            activeProfiles();
 
             mavenProjectBuilder = (MavenProjectBuilder) embedder.lookup( MavenProjectBuilder.ROLE );
 
@@ -767,5 +782,28 @@ public class MavenEmbedder
      */
     public PlexusContainer getContainer() {
         return embedder.getContainer();
+    }
+
+    /**
+     * Actives profiles, as if the "-P" command line option is used.
+     *
+     * <p>
+     * In Maven CLI this is done before the {@link ProfileManager#loadSettingsProfiles(Settings)}
+     * is called. I don't know if that's a hard requirement or just a coincidence,
+     * but since I can't be sure, I'm following the exact call order that Maven CLI does,
+     * and not allowing this method to be called afterward.
+     */
+    private void activeProfiles() {
+        if(Util.fixEmptyAndTrim(profiles)==null)    return; // noop
+        for (String token : Util.tokenize(profiles, ",")) {
+            if (token.startsWith("-")) {
+                profileManager.explicitlyDeactivate(token.substring(1));
+            } else if (token.startsWith("+")) {
+                profileManager.explicitlyActivate(token.substring(1));
+            } else {
+                // TODO: deprecate this eventually!
+                profileManager.explicitlyActivate(token);
+            }
+        }
     }
 }

@@ -88,7 +88,7 @@ public class MavenArtifactArchiver extends MavenReporter {
                         // install files on the master
                         if(installed && builtOnSlave) {
                             try {
-                                MavenEmbedder embedder = MavenUtil.createEmbedder(listener);
+                                MavenEmbedder embedder = MavenUtil.createEmbedder(listener,null);
                                 ArtifactInstaller installer = (ArtifactInstaller) embedder.getContainer().lookup(ArtifactInstaller.class.getName());
                                 ArtifactFactory factory = (ArtifactFactory) embedder.getContainer().lookup(ArtifactFactory.class.getName());
                                 for (ArtifactInfo a : archivedFiles) {
