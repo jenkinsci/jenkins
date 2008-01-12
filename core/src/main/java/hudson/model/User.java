@@ -4,6 +4,7 @@ import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
 import hudson.XmlFile;
+import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.scm.ChangeLogSet;
 import hudson.util.RunList;
@@ -120,6 +121,14 @@ public class User extends AbstractModelObject {
     @Exported(visibility=999)
     public String getFullName() {
         return fullName;
+    }
+
+    /**
+     * Sets the human readable name of thie user.
+     */
+    public void setFullName(String name) {
+        if(Util.fixEmptyAndTrim(name)==null)    name=id;
+        this.fullName = name;
     }
 
     @Exported
