@@ -120,6 +120,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     public final void doCaptcha(StaplerRequest req, StaplerResponse rsp) throws IOException {
         String id = req.getSession().getId();
         rsp.setContentType("image/png");
+        rsp.addHeader("Cache-Control","no-cache");
         ImageIO.write( CaptchaService.INSTANCE.getImageChallengeForID(id), "PNG", rsp.getOutputStream() );
     }
 
