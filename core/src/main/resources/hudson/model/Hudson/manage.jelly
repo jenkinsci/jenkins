@@ -30,7 +30,7 @@
         ${%Displays various environmental information to assist trouble-shooting.}
       </local:feature>
       <local:feature icon="clipboard.gif"    href="log"         title="${%System Log}">
-        System log captures output from <tt>java.util.logging</tt> output related to Hudson.
+        ${%System.Log.Text}
       </local:feature>
       <local:feature icon="notepad.gif"      href="script"      title="${%Script Console}">
         ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}
