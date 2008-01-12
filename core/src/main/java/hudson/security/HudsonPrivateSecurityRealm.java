@@ -9,6 +9,7 @@ import hudson.util.Scrambler;
 import hudson.util.Protector;
 import hudson.util.spring.BeanBuilder;
 import hudson.Util;
+import hudson.tasks.Mailer;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
@@ -86,6 +87,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
         // register the user
         User user = User.get(si.username);
         user.addProperty(new Details(si.password1));
+        user.addProperty(new Mailer.UserProperty(si.email));
         user.setFullName(si.fullname);
         user.save();
         
