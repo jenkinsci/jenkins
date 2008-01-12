@@ -587,6 +587,12 @@ public class Queue extends ResourceController {
          * @throws AccessDeniedException if the permission is not granted.
          */
         void checkAbortPermission();
+
+        /**
+         * Works just like {@link #checkAbortPermission()} except it indicates the status by a return value,
+         * instead of exception.
+         */
+        boolean hasAbortPermission();
     }
 
     public interface Executable extends Runnable {
@@ -694,12 +700,7 @@ public class Queue extends ResourceController {
         }
 
         public boolean hasCancelPermission() {
-            try {
-                task.checkAbortPermission();
-                return true;
-            } catch (AccessDeniedException e) {
-                return false;
-            }
+            return task.hasAbortPermission();
         }
 
         public int compareTo(Item that) {

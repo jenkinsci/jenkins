@@ -167,12 +167,7 @@ public class Executor extends Thread implements ModelObject {
      * Checks if the current user has a permission to stop this build. 
      */
     public boolean hasStopPermission() {
-        try {
-            executable.getParent().checkAbortPermission();
-            return true;
-        } catch (AccessDeniedException e) {
-            return false;
-        }
+        return executable.getParent().hasAbortPermission();
     }
 
     public Computer getOwner() {

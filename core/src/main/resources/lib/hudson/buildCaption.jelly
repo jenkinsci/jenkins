@@ -11,9 +11,9 @@
 	        </td><td>
 	          <t:buildProgressBar build="${it}"/>
 	        </td><td>
-            <l:isAdmin>
-	            <a href="stop"><img src="${imagesURL}/16x16/stop.gif" alt="[${%cancel}]" /></a>
-            </l:isAdmin>
+            <j:if test="${parent.}">
+              <a href="stop"><img src="${imagesURL}/16x16/stop.gif" alt="[${%cancel}]" /></a>
+            </j:if>
 	        </td>
 	      </tr></table>
 	    </div>
