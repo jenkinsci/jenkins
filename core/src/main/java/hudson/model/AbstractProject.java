@@ -507,6 +507,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return newBuild();
     }
 
+    public void checkAbortPermission() {
+        checkPermission(AbstractProject.ABORT);
+    }
+
     /**
      * Gets the {@link Resource} that represents the workspace of this project.
      */

@@ -579,6 +579,14 @@ public class Queue extends ResourceController {
          * Creates {@link Executable}, which performs the actual execution of the task.
          */
         Executable createExecutable() throws IOException;
+
+        /**
+         * Checks the permission to see if the current user can abort this executable.
+         * Returns normally from this method if it's OK.
+         *
+         * @throws AccessDeniedException if the permission is not granted.
+         */
+        void checkAbortPermission();
     }
 
     public interface Executable extends Runnable {
@@ -591,14 +599,6 @@ public class Queue extends ResourceController {
          * Called by {@link Executor} to perform the task
          */
         void run();
-
-        /**
-         * Checks the permission to see if the current user can abort this executable.
-         * Returns normally from this method if it's OK.
-         *
-         * @throws AccessDeniedException if the permission is not granted.
-         */
-        void checkAbortPermission();
     }
 
     /**
@@ -691,6 +691,15 @@ public class Queue extends ResourceController {
             }
 
             return "???";
+        }
+
+        public boolean hasCancelPermission() {
+            try {
+                task.checkAbortPermission();
+                return true;
+            } catch (AccessDeniedException e) {
+                return false;
+            }
         }
 
         public int compareTo(Item that) {

@@ -158,7 +158,7 @@ public class Executor extends Thread implements ModelObject {
      * Stops the current build.
      */
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        executable.checkAbortPermission();
+        executable.getParent().checkAbortPermission();
         interrupt();
         rsp.forwardToPreviousPage(req);
     }
@@ -168,7 +168,7 @@ public class Executor extends Thread implements ModelObject {
      */
     public boolean hasStopPermission() {
         try {
-            executable.checkAbortPermission();
+            executable.getParent().checkAbortPermission();
             return true;
         } catch (AccessDeniedException e) {
             return false;

@@ -586,10 +586,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
     }
 
-    public void checkAbortPermission() {
-        getParent().getACL().checkPermission(AbstractProject.ABORT);
-    }
-
 //
 //
 // web methods

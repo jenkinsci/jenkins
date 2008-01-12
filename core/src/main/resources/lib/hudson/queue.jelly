@@ -20,9 +20,9 @@
           <tr>
             <td class="pane" colspan="2" style="white-space: normal;">
               ${%Hudson is going to shut down. No further builds will be performed.}
-              <l:isAdmin>
+              <j:if test="${h.checkPermission(app.ADMINISTER)">
                 <a href="${rootURL}/cancelQuietDown">(${%cancel})</a>
-              </l:isAdmin>
+              </j:if>
             </td>
           </tr>
         </j:if>
@@ -34,9 +34,9 @@
               </a>
             </td>
             <td class="pane" width="16" align="center" valign="middle">
-              <l:isAdmin>
+              <j:if test="${item.hasCancelPermission()}">
                 <a href="${rootURL}/${item.task.url}cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
-              </l:isAdmin>
+              </j:if>
              </td>
           </tr>
         </j:forEach>
