@@ -29,9 +29,7 @@
           <th>${%Last Failure}</th>
           <th>${%Last Duration}</th>
           <th><st:nbsp/></th>
-          <l:isAdmin><!-- build icon -->
-            <th width="1"><st:nbsp/></th>
-          </l:isAdmin>
+          <th width="1"><st:nbsp/></th>
         </tr>
 
         <j:forEach var="job" items="${jobs}">
@@ -118,14 +116,12 @@
             <td>
               <st:nbsp/>
             </td>
-            <l:isAdmin>
-              <td>
-                <j:if test="${job.buildable}">
-                  <a href="${jobBaseUrl}${job.shortUrl}build">
-                    <img src="${imagesURL}/${subIconSize}/clock.gif" title="Schedule a build" border="0" /></a>
-                </j:if>
-              </td>
-            </l:isAdmin>
+            <td>
+              <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
+                <a href="${jobBaseUrl}${job.shortUrl}build">
+                  <img src="${imagesURL}/${subIconSize}/clock.gif" title="Schedule a build" border="0" /></a>
+              </j:if>
+            </td>
           </tr>
         </j:forEach>
       </x:element>
