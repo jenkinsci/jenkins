@@ -11,13 +11,13 @@
     <j:otherwise>
       <!-- Offer anonymous users the chance to login, then they can create jobs. -->
       <j:if test="${h.isAnonymous()}">
-        <a style="color:inherit" href="${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}">Login</a>
+        <a href="${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}">Login</a>
         to create new jobs.
       </j:if>
       <!-- Also offer them the opportunity to sign-up for an account, if this facility is available. -->
       <j:if test="${it.securityRealm.allowsSignup()}">
         If you don't already have an account, you can
-        <a style="color:inherit" href="signup">sign-up</a> now.
+        <a href="signup">sign-up</a> now.
       </j:if>
     </j:otherwise>
   </j:choose>
