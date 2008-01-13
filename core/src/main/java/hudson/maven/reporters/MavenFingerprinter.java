@@ -8,7 +8,6 @@ import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
-import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
@@ -21,10 +20,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Records fingerprints of the builds to keep track of dependencies.
@@ -46,52 +44,49 @@ public class MavenFingerprinter extends MavenReporter {
      */
     private transient Map<String,String> produced;
 
-    public boolean preBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
+    public boolean enterModule(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         files = new HashSet<File>();
         used = new HashMap<String,String>();
         produced = new HashMap<String,String>();
         return true;
     }
 
+    /**
+     * Mojos perform different dependency resolution, so we need to check this for each mojo.
+     */
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        boolean updated = false;
+        record(pom.getArtifacts(),used);
+        record(pom.getArtifact(),produced);
+        record(pom.getAttachedArtifacts(),produced);
 
-        // really nice if we can do this in preExecute,
-        // but dependency resolution only happens after preExecute.
-        updated |= record(pom.getArtifacts(),used);
+        return true;
+    }
 
-        // try to pick up artifacts as soon as they are found.
-        updated |= record(pom.getArtifact(),produced);
-        updated |= record(pom.getAttachedArtifacts(),produced);
+    /**
+     * Sends the collected fingerprints over to the master and record them.
+     */
+    public boolean leaveModule(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
+        build.execute(new BuildCallable<Void,IOException>() {
+            // record is transient, so needs to make a copy first
+            private final Map<String,String> u = used;
+            private final Map<String,String> p = produced;
 
-        if(updated) {
-            build.execute(new BuildCallable<Void,IOException>() {
-                // record is transient, so needs to make a copy first
-                private final Map<String,String> u = used;
-                private final Map<String,String> p = produced;
+            public Void call(MavenBuild build) throws IOException, InterruptedException {
+                FingerprintMap map = Hudson.getInstance().getFingerprintMap();
 
-                public Void call(MavenBuild build) throws IOException, InterruptedException {
-                    FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+                for (Entry<String, String> e : p.entrySet())
+                    map.getOrCreate(build, e.getKey(), e.getValue()).add(build);
+                for (Entry<String, String> e : u.entrySet())
+                    map.getOrCreate(null, e.getKey(), e.getValue()).add(build);
 
-                    for (Entry<String, String> e : p.entrySet())
-                        map.getOrCreate(build, e.getKey(), e.getValue()).add(build);
-                    for (Entry<String, String> e : u.entrySet())
-                        map.getOrCreate(null, e.getKey(), e.getValue()).add(build);
+                Map<String,String> all = new HashMap<String, String>(u);
+                all.putAll(p);
 
-                    Map<String,String> all = new HashMap<String, String>(u);
-                    all.putAll(p);
-
-                    // update the build action with new fingerprints
-                    FingerprintAction a = build.getAction(FingerprintAction.class);
-                    List<Action> actions = build.getActions();
-                    if(a!=null)
-                        actions.remove(a);
-                    actions.add(new FingerprintAction(build,all));
-                    return null;
-                }
-            });
-        }
-
+                // add action
+                build.getActions().add(new FingerprintAction(build,all));
+                return null;
+            }
+        });
         return true;
     }
 
