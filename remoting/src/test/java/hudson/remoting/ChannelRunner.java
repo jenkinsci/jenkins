@@ -20,7 +20,7 @@ interface ChannelRunner {
 
     Class<? extends ChannelRunner>[] LIST = new Class[] {
         InProcess.class,
-        // Fork.class
+        Fork.class
     };
 
 
