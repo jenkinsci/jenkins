@@ -128,8 +128,20 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
         public Builder(BuildListener listener,MavenBuildProxy buildProxy,MavenReporter[] reporters, List<String> goals, Map<String,String> systemProps) {
             super(listener,goals,systemProps);
-            this.buildProxy = buildProxy;
+            this.buildProxy = new FilterImpl(buildProxy);
             this.reporters = reporters;
+        }
+
+        private class FilterImpl extends MavenBuildProxy.Filter<MavenBuildProxy> implements Serializable {
+            public FilterImpl(MavenBuildProxy buildProxy) {
+                super(buildProxy);
+            }
+
+            public void executeAsync(final BuildCallable<?,?> program) throws IOException {
+                futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
+            }
+
+            private static final long serialVersionUID = 1L;
         }
 
         @Override
@@ -186,6 +198,17 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     class ProxyImpl implements MavenBuildProxy, Serializable {
         public <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException {
             return program.call(MavenBuild.this);
+        }
+
+        /**
+         * This method is implemented by the remote proxy before the invocation
+         * gets to this. So correct code shouldn't be invoking this method on the master ever.
+         *
+         * @deprecated
+         *      This helps IDE find coding mistakes when someone tries to call this method.
+         */
+        public final void executeAsync(BuildCallable<?,?> program) throws IOException {
+            throw new AssertionError();
         }
 
         public FilePath getRootDir() {

@@ -25,4 +25,27 @@ interface MavenBuildProxy2 extends MavenBuildProxy {
      * output of the module.
      */
     void appendLastLog();
+
+    /**
+     * Filter for {@link MavenBuildProxy2}.
+     *
+     * Meant to be useful as the base class for other filters.
+     */
+    /*package*/ static abstract class Filter<CORE extends MavenBuildProxy2> extends MavenBuildProxy.Filter<CORE> implements MavenBuildProxy2 {
+        protected Filter(CORE core) {
+            super(core);
+        }
+
+        public void start() {
+            core.start();
+        }
+
+        public void end() {
+            core.end();
+        }
+
+        public void appendLastLog() {
+            core.appendLastLog();
+        }
+    }
 }

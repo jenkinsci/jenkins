@@ -66,7 +66,7 @@ public class MavenFingerprinter extends MavenReporter {
      * Sends the collected fingerprints over to the master and record them.
      */
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
-        build.execute(new BuildCallable<Void,IOException>() {
+        build.executeAsync(new BuildCallable<Void,IOException>() {
             // record is transient, so needs to make a copy first
             private final Map<String,String> u = used;
             private final Map<String,String> p = produced;

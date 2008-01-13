@@ -12,6 +12,7 @@ import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.AbstractProject;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.Channel;
 import hudson.util.ArgumentListBuilder;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedderException;
@@ -25,6 +26,7 @@ import org.apache.maven.project.ProjectBuildingException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -369,29 +371,49 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
      * {@link MavenModuleSet#isAggregatorStyleBuild() the aggregator style build}.
      */
     private static final class Builder extends MavenBuilder {
-        private final Map<ModuleName,? extends MavenBuildProxy2> proxies;
+        private final Map<ModuleName,MavenBuildProxy2> proxies;
         private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
         private final Map<ModuleName,List<ExecutedMojo>> executedMojos = new HashMap<ModuleName,List<ExecutedMojo>>();
         private long mojoStartTime;
 
         private MavenBuildProxy2 lastProxy;
 
-        public Builder(BuildListener listener,Map<ModuleName,? extends MavenBuildProxy2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps) {
+        /**
+         * Kept so that we can finalize them in the end method.
+         */
+        private final transient Map<ModuleName,ProxyImpl2> sourceProxies;
+
+        public Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps) {
             super(listener,goals,systemProps);
-            this.proxies = proxies;
+            this.sourceProxies = proxies;
+            this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
+            for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
+                e.setValue(new FilterImpl(e.getValue()));
 
             for (MavenModule m : modules)
                 reporters.put(m.getModuleName(),m.createReporters());
+        }
+
+        private class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
+            public FilterImpl(MavenBuildProxy2 core) {
+                super(core);
+            }
+
+            public void executeAsync(final BuildCallable<?,?> program) throws IOException {
+                futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
+            }
+
+            private static final long serialVersionUID = 1L;
         }
 
         /**
          * Invoked after the maven has finished running, and in the master, not in the maven process.
          */
         void end(Launcher launcher) throws IOException, InterruptedException {
-            for (Map.Entry<ModuleName,? extends MavenBuildProxy2> e : proxies.entrySet()) {
-                ProxyImpl2 p = (ProxyImpl2) e.getValue();
+            for (Map.Entry<ModuleName,ProxyImpl2> e : sourceProxies.entrySet()) {
+                ProxyImpl2 p = e.getValue();
                 for (MavenReporter r : reporters.get(e.getKey())) {
-                    // we'd loe to do this when the module build ends, but do so requires
+                    // we'd love to do this when the module build ends, but doing so requires
                     // we know how many task segments are in the current build.
                     r.end(p.owner(),launcher,listener);
                     p.appendLastLog();

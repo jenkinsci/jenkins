@@ -11,6 +11,7 @@ import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Channel;
+import hudson.remoting.Future;
 import hudson.util.IOException2;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.execution.MavenSession;
@@ -31,6 +32,8 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 import java.text.NumberFormat;
 
 /**
@@ -66,6 +69,12 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
      * the setting at master.
      */
     private final boolean profile = MavenProcessFactory.profile;
+
+    /**
+     * Record all asynchronous executions as they are scheduled,
+     * to make sure they are all completed before we finish.
+     */
+    protected transient /*final*/ List<Future<?>> futures;
 
     protected MavenBuilder(BuildListener listener, List<String> goals, Map<String, String> systemProps) {
         this.listener = listener;
@@ -108,6 +117,7 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
      */
     public Result call() throws IOException {
         try {
+            futures = new ArrayList<Future<?>>();
             Adapter a = new Adapter(this);
             PluginManagerInterceptor.setListener(a);
             LifecycleExecutorInterceptor.setListener(a);
@@ -117,6 +127,27 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
             System.getProperties().putAll(systemProps);
 
             int r = Main.launch(goals.toArray(new String[goals.size()]));
+
+            // now check the completion status of async ops
+            boolean messageReported = false;
+            for (Future<?> f : futures) {
+                try {
+                    if(!f.isDone() && !messageReported) {
+                        messageReported = true;
+                        listener.getLogger().println("Waiting for Hudson to finish collecting data");
+                    }
+                    f.get();
+                } catch (InterruptedException e) {
+                    // attempt to cancel all asynchronous tasks
+                    for (Future<?> g : futures)
+                        g.cancel(true);
+                    listener.getLogger().println("Aborted");
+                    return Result.ABORTED;
+                } catch (ExecutionException e) {
+                    e.printStackTrace(listener.error("Asynchronous execution failure"));
+                }
+            }
+            futures.clear();
 
             if(profile) {
                 NumberFormat n = NumberFormat.getInstance();
