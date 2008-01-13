@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * Records fingerprints of the builds to keep track of dependencies.
@@ -37,13 +38,18 @@ public class MavenFingerprinter extends MavenReporter {
      */
     private transient Set<File> files;
     /**
-     * Recorded fingerprints.
+     * Fingerprints for files that were used.
      */
-    private transient Map<String,String> record;
+    private transient Map<String,String> used;
+    /**
+     * Fingerprints for files that were produced.
+     */
+    private transient Map<String,String> produced;
 
     public boolean preBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         files = new HashSet<File>();
-        record = new HashMap<String,String>();
+        used = new HashMap<String,String>();
+        produced = new HashMap<String,String>();
         return true;
     }
 
@@ -52,24 +58,35 @@ public class MavenFingerprinter extends MavenReporter {
 
         // really nice if we can do this in preExecute,
         // but dependency resolution only happens after preExecute.
-        updated |= record(build,false,pom.getArtifacts());
+        updated |= record(pom.getArtifacts(),used);
 
         // try to pick up artifacts as soon as they are found.
-        updated |= record(build,true,pom.getArtifact());
-        updated |= record(build,true,pom.getAttachedArtifacts());
+        updated |= record(pom.getArtifact(),produced);
+        updated |= record(pom.getAttachedArtifacts(),produced);
 
         if(updated) {
             build.execute(new BuildCallable<Void,IOException>() {
                 // record is transient, so needs to make a copy first
-                private final Map<String, String> r = record;
+                private final Map<String,String> u = used;
+                private final Map<String,String> p = produced;
 
                 public Void call(MavenBuild build) throws IOException, InterruptedException {
+                    FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+
+                    for (Entry<String, String> e : p.entrySet())
+                        map.getOrCreate(build, e.getKey(), e.getValue()).add(build);
+                    for (Entry<String, String> e : u.entrySet())
+                        map.getOrCreate(null, e.getKey(), e.getValue()).add(build);
+
+                    Map<String,String> all = new HashMap<String, String>(u);
+                    all.putAll(p);
+
                     // update the build action with new fingerprints
                     FingerprintAction a = build.getAction(FingerprintAction.class);
                     List<Action> actions = build.getActions();
                     if(a!=null)
                         actions.remove(a);
-                    actions.add(new FingerprintAction(build,r));
+                    actions.add(new FingerprintAction(build,all));
                     return null;
                 }
             });
@@ -78,10 +95,10 @@ public class MavenFingerprinter extends MavenReporter {
         return true;
     }
 
-    private boolean record(MavenBuildProxy build, boolean produced, Collection<Artifact> artifacts) throws IOException, InterruptedException {
+    private boolean record(Collection<Artifact> artifacts, Map<String,String> record) throws IOException, InterruptedException {
         boolean updated = false;
         for (Artifact a : artifacts)
-            updated |= record(build,produced,a);
+            updated |= record(a,record);
         return updated;
     }
 
@@ -92,7 +109,7 @@ public class MavenFingerprinter extends MavenReporter {
      * This method contains the logic to avoid doubly recording the fingerprint
      * of the same file.
      */
-    private boolean record(MavenBuildProxy build, final boolean produced, Artifact a) throws IOException, InterruptedException {
+    private boolean record(Artifact a, Map<String,String> record) throws IOException, InterruptedException {
         File f = a.getFile();
         if(f==null || !f.exists() || f.isDirectory() || !files.add(f))
             return false;
@@ -102,13 +119,6 @@ public class MavenFingerprinter extends MavenReporter {
         final String name = a.getGroupId()+':'+f.getName();
         record.put(name,digest);
 
-        build.execute(new BuildCallable<Void,IOException>() {
-            public Void call(MavenBuild build) throws IOException, InterruptedException {
-                FingerprintMap map = Hudson.getInstance().getFingerprintMap();
-                map.getOrCreate(produced?build:null, name, digest).add(build);
-                return null;
-            }
-        });
         return true;
     }
 
