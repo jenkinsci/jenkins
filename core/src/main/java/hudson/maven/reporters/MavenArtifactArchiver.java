@@ -78,7 +78,7 @@ public class MavenArtifactArchiver extends MavenReporter {
             final boolean builtOnSlave = archivedPom.isRemote();
 
             if(!archivedFiles.isEmpty()) {
-                build.execute(new BuildCallable<Void,IOException>() {
+                build.executeAsync(new BuildCallable<Void,IOException>() {
                     public Void call(MavenBuild build) throws IOException, InterruptedException {
                         // record fingerprints
                         FingerprintMap map = Hudson.getInstance().getFingerprintMap();

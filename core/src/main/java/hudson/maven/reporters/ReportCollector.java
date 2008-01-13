@@ -52,7 +52,7 @@ public class ReportCollector extends MavenReporter {
     public boolean leaveModule(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         if(action!=null) {
             // TODO: archive pom.getReporting().getOutputDirectory()
-            build.execute(new AddActionTask(action));
+            build.executeAsync(new AddActionTask(action));
         }
         action = null;
         return super.leaveModule(build, pom, listener);
