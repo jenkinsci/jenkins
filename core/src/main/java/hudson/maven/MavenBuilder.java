@@ -10,6 +10,7 @@ import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;
+import hudson.remoting.Channel;
 import hudson.util.IOException2;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.execution.MavenSession;
@@ -26,9 +27,12 @@ import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+
+import com.ibm.icu.text.NumberFormat;
 
 /**
  * {@link Callable} that invokes Maven CLI (in process) and drives a build.
@@ -57,6 +61,12 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
      * Where error messages and so on are sent.
      */
     protected final BuildListener listener;
+
+    /**
+     * Flag needs to be set at the constructor, so that this reflects
+     * the setting at master.
+     */
+    private final boolean profile = MavenProcessFactory.profile;
 
     protected MavenBuilder(BuildListener listener, List<String> goals, Map<String, String> systemProps) {
         this.listener = listener;
@@ -109,6 +119,15 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
 
             int r = Main.launch(goals.toArray(new String[goals.size()]));
 
+            if(profile) {
+                NumberFormat n = NumberFormat.getInstance();
+                PrintStream logger = listener.getLogger();
+                logger.println("Total over head was "+format(n,a.overheadTime)+"ms");
+                Channel ch = Channel.current();
+                logger.println("Class loading "   +format(n,ch.classLoadingTime.get())   +"ms, "+ch.classLoadingCount+" classes");
+                logger.println("Resource loading "+format(n,ch.resourceLoadingTime.get())+"ms, "+ch.resourceLoadingCount+" times");                
+            }
+
             if(r==0)    return Result.SUCCESS;
 
             if(markAsSuccess) {
@@ -133,6 +152,10 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
         }
     }
 
+    private String format(NumberFormat n, long nanoTime) {
+        return n.format(nanoTime/1000000);
+    }
+
     // since reporters might be from plugins, use the uberjar to resolve them.
     public ClassLoader getClassLoader() {
         return Hudson.getInstance().getPluginManager().uberClassLoader;
@@ -150,25 +173,36 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
 
         private final MavenBuilder listener;
 
+        /**
+         * Number of total nanoseconds {@link MavenBuilder} spent.
+         */
+        long overheadTime;
+
         public Adapter(MavenBuilder listener) {
             this.listener = listener;
         }
 
         public void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
+            long startTime = System.nanoTime();
             listener.preBuild(session, rm, dispatcher);
+            overheadTime += System.nanoTime()-startTime;
         }
 
-
         public void postBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
+            long startTime = System.nanoTime();
             fireLeaveModule();
             listener.postBuild(session, rm, dispatcher);
+            overheadTime += System.nanoTime()-startTime;
         }
 
         public void endModule() throws InterruptedException, IOException {
+            long startTime = System.nanoTime();
             fireLeaveModule();
+            overheadTime += System.nanoTime()-startTime;
         }
 
         public void preExecute(MavenProject project, MojoExecution exec, Mojo mojo, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException {
+            long startTime = System.nanoTime();
             if(lastModule!=project) {
                 // module change
                 fireLeaveModule();
@@ -176,10 +210,13 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
             }
 
             listener.preExecute(project, new MojoInfo(exec, mojo, mergedConfig, eval));
+            overheadTime += System.nanoTime()-startTime;
         }
 
         public void postExecute(MavenProject project, MojoExecution exec, Mojo mojo, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException {
+            long startTime = System.nanoTime();
             listener.postExecute(project, new MojoInfo(exec, mojo, mergedConfig, eval),exception);
+            overheadTime += System.nanoTime()-startTime;
         }
 
         private void fireEnterModule(MavenProject project) throws InterruptedException, IOException {

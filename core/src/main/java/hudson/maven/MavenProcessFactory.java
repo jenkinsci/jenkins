@@ -202,8 +202,10 @@ final class MavenProcessFactory implements ProcessCache.Factory {
      */
     public static int debugPort;
 
+    public static boolean profile = Boolean.getBoolean("hudson.maven.profile");
+
     static {
-        String port = System.getProperty(MavenBuild.class.getName() + ".debugPort");
+        String port = System.getProperty("hudson.maven.debugPort");
         if(port!=null)
             debugPort = Integer.parseInt(port);
     }
