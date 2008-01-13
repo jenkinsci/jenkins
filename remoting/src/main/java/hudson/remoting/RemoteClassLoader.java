@@ -21,6 +21,10 @@ import java.util.ArrayList;
  */
 final class RemoteClassLoader extends ClassLoader {
     private final IClassLoader proxy;
+    /**
+     * Remote peer that the {@link #proxy} is connected to.
+     */
+    private final Channel channel;
 
     private final Map<String,URL> resourceMap = new HashMap<String,URL>();
     private final Map<String,Vector<URL>> resourcesMap = new HashMap<String,Vector<URL>>();
@@ -38,10 +42,14 @@ final class RemoteClassLoader extends ClassLoader {
     private RemoteClassLoader(ClassLoader parent, IClassLoader proxy) {
         super(parent);
         this.proxy = proxy;
+        this.channel = RemoteInvocationHandler.unwrap(proxy);
     }
 
     protected Class<?> findClass(String name) throws ClassNotFoundException {
+        long startTime = System.nanoTime();
         byte[] bytes = proxy.fetch(name);
+        channel.classLoadingTime.addAndGet(System.nanoTime()-startTime);
+        channel.classLoadingCount.incrementAndGet();
         return defineClass(name, bytes, 0, bytes.length);
     }
 
@@ -50,7 +58,10 @@ final class RemoteClassLoader extends ClassLoader {
             return resourceMap.get(name);
 
         try {
+            long startTime = System.nanoTime();
             byte[] image = proxy.getResource(name);
+            channel.resourceLoadingTime.addAndGet(System.nanoTime()-startTime);
+            channel.resourceLoadingCount.incrementAndGet();
             if(image==null) {
                 resourceMap.put(name,null);
                 return null;
@@ -69,7 +80,10 @@ final class RemoteClassLoader extends ClassLoader {
         if(urls!=null)
             return urls.elements();
 
+        long startTime = System.nanoTime();
         byte[][] images = proxy.getResources(name);
+        channel.resourceLoadingTime.addAndGet(System.nanoTime()-startTime);
+        channel.resourceLoadingCount.incrementAndGet();
 
         urls = new Vector<URL>();
         for( byte[] image: images )

@@ -18,6 +18,8 @@ import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -112,6 +114,40 @@ public class Channel implements VirtualChannel {
      */
     private final Vector<Listener> listeners = new Vector<Listener>();
     private int gcCounter;
+
+    /**
+     * Total number of nanoseconds spent for remote class loading.
+     * <p>
+     * Remote code execution often results in classloading activity
+     * (more precisely, when the remote peer requests some computation
+     * on this channel, this channel often has to load necessary
+     * classes from the remote peer.)
+     * <p>
+     * This counter represents the total amount of time this channel
+     * had to spend loading classes from the remote peer. The time
+     * measurement doesn't include the time locally spent to actually
+     * define the class (as the local classloading would have incurred
+     * the same cost.)
+     */
+    public final AtomicLong classLoadingTime = new AtomicLong();
+
+    /**
+     * Total counts of remote classloading activities. Used in a pair
+     * with {@link #classLoadingTime}.
+     */
+    public final AtomicInteger classLoadingCount = new AtomicInteger();
+
+    /**
+     * Total number of nanoseconds spent for remote resource loading.
+     * @see #classLoadingTime
+     */
+    public final AtomicLong resourceLoadingTime = new AtomicLong();
+
+    /**
+     * Total count of remote resource loading.
+     * @see #classLoadingCount
+     */
+    public final AtomicInteger resourceLoadingCount = new AtomicInteger();
 
     /**
      * Communication mode.
@@ -476,6 +512,16 @@ public class Channel implements VirtualChannel {
             initCause(cause);
         }
         private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * Resets all the performance counters.
+     */
+    public void resetPerformanceCounters() {
+        classLoadingCount.set(0);
+        classLoadingTime.set(0);
+        resourceLoadingCount.set(0);
+        resourceLoadingTime.set(0);
     }
 
     /**
