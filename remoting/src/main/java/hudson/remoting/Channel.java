@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
@@ -361,8 +360,7 @@ public class Channel implements VirtualChannel {
 
         // proxy will unexport this instance when it's GC-ed on the remote machine.
         final int id = export(instance);
-        return type.cast(Proxy.newProxyInstance( type.getClassLoader(), new Class[]{type},
-            new RemoteInvocationHandler(id,userProxy)));
+        return RemoteInvocationHandler.wrap(null,id,type,userProxy);
     }
 
     /*package*/ int export(Object instance) {

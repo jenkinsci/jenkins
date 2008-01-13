@@ -3,6 +3,8 @@ package hudson.remoting;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -35,6 +37,15 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
      */
     private final boolean userProxy;
 
+    /**
+     * If true, indicates that this proxy object is being sent back
+     * to where it came from. If false, indicate sthat this proxy
+     * is being sent to the remote peer.
+     *
+     * Only used in the serialized form of this class.
+     */
+    private boolean goingHome;
+
     RemoteInvocationHandler(int id, boolean userProxy) {
         this.oid = id;
         this.userProxy = userProxy;
@@ -53,7 +64,7 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
      * Wraps an OID to the typed wrapper.
      */
     public static <T> T wrap(Channel channel, int id, Class<T> type, boolean userProxy) {
-        return type.cast(Proxy.newProxyInstance( type.getClassLoader(), new Class[]{type},
+        return type.cast(Proxy.newProxyInstance( type.getClassLoader(), new Class[]{type,IReadResolve.class},
             new RemoteInvocationHandler(channel,id,userProxy)));
     }
 
@@ -88,6 +99,13 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
     }
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if(method.getDeclaringClass()==IReadResolve.class) {
+            // readResolve on the proxy.
+            // if we are going back to where we came from, replace the proxy by the real object
+            if(goingHome)   return channel.getExportedObject(oid);
+            else            return proxy;
+        }
+
         if(channel==null)
             throw new IllegalStateException("proxy is not connected to a channel");
 
@@ -113,6 +131,11 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         channel = Channel.current();
         ois.defaultReadObject();
+    }
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        goingHome = channel!=null;
+        oos.defaultWriteObject();
     }
 
     /**

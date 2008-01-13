@@ -56,6 +56,30 @@ public class SimpleTest extends RmiTestBase {
         }
     }
 
+    /**
+     * Makes sure that proxied object can be sent back to the origin and resolve correctly.
+     */
+    public void test3() throws Exception {
+        Foo c = new Foo() {};
+
+        Foo r = channel.call(new Echo<Foo>(channel.export(Foo.class,c)));
+        assertSame(c,r);
+    }
+
+    public static interface Foo {}
+
+    private static class Echo<T> implements Callable<T,RuntimeException> {
+        private final T t;
+
+        Echo(T t) {
+            this.t = t;
+        }
+
+        public T call() throws RuntimeException {
+            return t;
+        }
+    }
+
     public static Test suite() throws Exception {
         return buildSuite(SimpleTest.class);
     }
