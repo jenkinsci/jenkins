@@ -31,8 +31,7 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
-
-import com.ibm.icu.text.NumberFormat;
+import java.text.NumberFormat;
 
 /**
  * {@link Callable} that invokes Maven CLI (in process) and drives a build.
