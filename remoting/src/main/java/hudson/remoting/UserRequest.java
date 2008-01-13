@@ -82,7 +82,7 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
                 try {
                     response = serialize(e, channel);
                 } catch (NotSerializableException x) {
-                    // perhaps the thrown runtime exception is of time we can't handle
+                    // perhaps the thrown runtime exception is of type we can't handle
                     response = serialize(new ProxyException(e), channel);
                 }
                 return new UserResponse<RSP,EXC>(response,true);
