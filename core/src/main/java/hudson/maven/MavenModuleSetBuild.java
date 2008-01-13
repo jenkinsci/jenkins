@@ -346,7 +346,10 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         }
 
         protected void post2(BuildListener listener) throws Exception {
-            // no op
+            // asynchronous executions from the build might have left some unsaved state,
+            // so just to be safe, save them all.
+            for (MavenBuild b : getModuleLastBuilds().values())
+                b.save();
         }
 
         @Override
