@@ -74,6 +74,19 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
         return -1;
     }
 
+    /**
+     * If the given object is a proxy object, return the {@link Channel}
+     * object that it's associated with. Otherwise null.
+     */
+    public static Channel unwrap(Object proxy) {
+        InvocationHandler h = Proxy.getInvocationHandler(proxy);
+        if (h instanceof RemoteInvocationHandler) {
+            RemoteInvocationHandler rih = (RemoteInvocationHandler) h;
+            return rih.channel;
+        }
+        return null;
+    }
+
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if(channel==null)
             throw new IllegalStateException("proxy is not connected to a channel");
