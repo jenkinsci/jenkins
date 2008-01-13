@@ -130,6 +130,7 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
 
             // now check the completion status of async ops
             boolean messageReported = false;
+            long startTime = System.nanoTime();
             for (Future<?> f : futures) {
                 try {
                     if(!f.isDone() && !messageReported) {
@@ -147,12 +148,13 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
                     e.printStackTrace(listener.error("Asynchronous execution failure"));
                 }
             }
+            a.overheadTime += System.nanoTime()-startTime;
             futures.clear();
 
             if(profile) {
                 NumberFormat n = NumberFormat.getInstance();
                 PrintStream logger = listener.getLogger();
-                logger.println("Total over head was "+format(n,a.overheadTime)+"ms");
+                logger.println("Total overhead was "+format(n,a.overheadTime)+"ms");
                 Channel ch = Channel.current();
                 logger.println("Class loading "   +format(n,ch.classLoadingTime.get())   +"ms, "+ch.classLoadingCount+" classes");
                 logger.println("Resource loading "+format(n,ch.resourceLoadingTime.get())+"ms, "+ch.resourceLoadingCount+" times");                
