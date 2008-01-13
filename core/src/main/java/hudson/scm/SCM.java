@@ -3,6 +3,8 @@ package hudson.scm;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.security.PermissionGroup;
+import hudson.security.Permission;
 import hudson.tasks.Builder;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -250,4 +252,11 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         if(s.trim().length()==0)    return null;
         return s;
     }
+
+    public static final PermissionGroup PERMISSIONS = new PermissionGroup(SCM.class, Messages._SCM_Permissions_Title());
+    /**
+     * Permission to create new tags.
+     * @since 1.171
+     */
+    public static final Permission TAG = new Permission(PERMISSIONS,"Tag", Permission.CREATE);
 }

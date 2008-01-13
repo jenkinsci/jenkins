@@ -1062,7 +1062,7 @@ public class CVSSCM extends SCM implements Serializable {
         }
 
         public String getIconFileName() {
-            if(tagName==null && !Hudson.isAdmin())
+            if(tagName==null && !build.getParent().getACL().hasPermission(TAG))
                 return null;
             return "save.gif";
         }
@@ -1102,8 +1102,7 @@ public class CVSSCM extends SCM implements Serializable {
          * Invoked to actually tag the workspace.
          */
         public synchronized void doSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            if(!Hudson.adminCheck(req,rsp))
-                return;
+            build.getParent().getACL().checkPermission(TAG);
 
             Map<AbstractBuild,String> tagSet = new HashMap<AbstractBuild,String>();
 
