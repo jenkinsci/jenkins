@@ -6,7 +6,7 @@
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
 		  <s:form method="post" action="createItem">
-        <s:entry title="Job name">
+        <s:entry title="${%Job name}">
 		      <s:textbox id="name" name="name" checkUrl="'${rootURL}/itemExistsCheck?value='+escape(this.value)" onchange="updateOk(this.form)" />
           <script>$('name').focus();</script>
         </s:entry>
@@ -27,10 +27,10 @@
           <j:set var="id" value="${h.generateId()}"/>
           <input type="radio" name="mode" value="copyJob" onchange="updateOk(this.form)" onclick="updateOk(this.form)" id="${id}"/>
           <st:nbsp/>
-          <label for="${id}"><b>Copy existing job</b></label>
+          <label for="${id}"><b>${%Copy existing job}</b></label>
         </s:block>
         <s:entry>
-          Copy from
+          ${%Copy from}
           <s:editableComboBox id="from" name="from" items="${app.topLevelItemNames}" />
         </s:entry>
 

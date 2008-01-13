@@ -42,7 +42,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
         }
 
         public String getDisplayName() {
-            return "Build a free-style software project";
+            return Messages.FreeStyleProject_DisplayName();
         }
 
         public FreeStyleProject newInstance(String name) {

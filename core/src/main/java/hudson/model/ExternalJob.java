@@ -84,7 +84,7 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
         }
 
         public String getDisplayName() {
-            return "Monitor an external job";
+            return Messages.ExternalJob_DisplayName();
         }
 
         public ExternalJob newInstance(String name) {

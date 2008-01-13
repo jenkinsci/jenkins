@@ -466,7 +466,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         }
 
         public String getDisplayName() {
-            return "Build a maven2 project (beta)";
+            return Messages.MavenModuleSet_DiplayName();
         }
 
         public MavenModuleSet newInstance(String name) {

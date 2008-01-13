@@ -416,7 +416,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         }
 
         public String getDisplayName() {
-            return "Build multi-configuration project (alpha)";
+            return Messages.MatrixProject_DisplayName();
         }
 
         public MatrixProject newInstance(String name) {
