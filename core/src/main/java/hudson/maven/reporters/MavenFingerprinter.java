@@ -44,7 +44,7 @@ public class MavenFingerprinter extends MavenReporter {
      */
     private transient Map<String,String> produced;
 
-    public boolean enterModule(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
+    public boolean preBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         files = new HashSet<File>();
         used = new HashMap<String,String>();
         produced = new HashMap<String,String>();
@@ -65,7 +65,7 @@ public class MavenFingerprinter extends MavenReporter {
     /**
      * Sends the collected fingerprints over to the master and record them.
      */
-    public boolean leaveModule(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
+    public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         build.execute(new BuildCallable<Void,IOException>() {
             // record is transient, so needs to make a copy first
             private final Map<String,String> u = used;
@@ -90,11 +90,9 @@ public class MavenFingerprinter extends MavenReporter {
         return true;
     }
 
-    private boolean record(Collection<Artifact> artifacts, Map<String,String> record) throws IOException, InterruptedException {
-        boolean updated = false;
+    private void record(Collection<Artifact> artifacts, Map<String,String> record) throws IOException, InterruptedException {
         for (Artifact a : artifacts)
-            updated |= record(a,record);
-        return updated;
+            record(a,record);
     }
 
     /**
@@ -104,17 +102,17 @@ public class MavenFingerprinter extends MavenReporter {
      * This method contains the logic to avoid doubly recording the fingerprint
      * of the same file.
      */
-    private boolean record(Artifact a, Map<String,String> record) throws IOException, InterruptedException {
+    private void record(Artifact a, Map<String,String> record) throws IOException, InterruptedException {
         File f = a.getFile();
+        if(files==null)
+            throw new InternalError();
         if(f==null || !f.exists() || f.isDirectory() || !files.add(f))
-            return false;
+            return;
 
         // new file
-        final String digest = new FilePath(f).digest();
-        final String name = a.getGroupId()+':'+f.getName();
+        String name = a.getGroupId()+':'+f.getName();
+        String digest = new FilePath(f).digest();
         record.put(name,digest);
-
-        return true;
     }
 
     public DescriptorImpl getDescriptor() {
