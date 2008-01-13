@@ -108,7 +108,7 @@
         File: <input type="file" name="name" class="setting-input" style="width:80%" size='40' />
       </s:block>
       <s:block><div>
-        <input type="submit" name="Submit" value="Upload" />
+        <s:submit value="Upload" />
       </div></s:block>
     </s:form>
 

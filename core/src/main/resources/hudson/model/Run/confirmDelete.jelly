@@ -10,7 +10,7 @@
 		  <j:if test="${msg==null}">
 		    <form method="get" action="doDelete">
 		      Are you sure about deleting the build?
-		      <input type="submit" value="Yes" />
+		      <f:submit value="Yes" />
 		    </form>
 		  </j:if>
 		</l:main-panel>

@@ -28,7 +28,7 @@
           </j:if>
 
           <f:entry>
-            <input type="submit" />
+            <f:submit />
           </f:entry>
         </table>
       </form>

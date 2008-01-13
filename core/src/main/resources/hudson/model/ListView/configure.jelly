@@ -21,7 +21,7 @@
         </f:entry>
 
         <f:block>
-          <input type="submit" name="Submit" value="OK" />
+          <f:submit value="OK" />
         </f:block>
       </f:form>
     </l:main-panel>

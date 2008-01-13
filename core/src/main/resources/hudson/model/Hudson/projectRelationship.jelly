@@ -22,7 +22,7 @@
           </tr>
           <tr>
             <td colspan="3" style="text-align:right">
-              <input type="submit" value="${%Compare}" />
+              <f:submit value="${%Compare}" />
               <a href="projectRelationship-help"><img src="${imagesURL}/16x16/help.gif" /></a>
             </td>
           </tr>

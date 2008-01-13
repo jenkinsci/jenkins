@@ -21,7 +21,7 @@
           <input type="file" name="name" class="setting-input" />
         </f:entry>
         <f:block>
-          <input type="submit" name="Submit" value="Check" />
+          <f:submit name="Submit" value="Check" />
         </f:block>
       </f:form>
     </l:main-panel>
