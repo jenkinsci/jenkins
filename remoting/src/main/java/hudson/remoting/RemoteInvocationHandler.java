@@ -31,7 +31,7 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
     private transient Channel channel;
 
     /**
-     * True if we are proxying the user object.
+     * True if we are proxying an user object.
      */
     private final boolean userProxy;
 
