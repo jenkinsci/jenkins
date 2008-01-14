@@ -100,6 +100,8 @@ final class MavenProcessFactory implements ProcessCache.Factory {
 
         if(debugPort!=0)
             args.add("-Xrunjdwp:transport=dt_socket,server=y,address="+debugPort);
+        if(yjp)
+            args.add("-agentlib:yjpagent=tracing");
 
         args.addTokenized(getMavenOpts());
 
@@ -203,6 +205,11 @@ final class MavenProcessFactory implements ProcessCache.Factory {
     public static int debugPort;
 
     public static boolean profile = Boolean.getBoolean("hudson.maven.profile");
+    
+    /**
+     * If true, launch Maven with YJP offline profiler agent.
+     */
+    public static boolean yjp = Boolean.getBoolean("hudson.maven.yjp");
 
     static {
         String port = System.getProperty("hudson.maven.debugPort");
