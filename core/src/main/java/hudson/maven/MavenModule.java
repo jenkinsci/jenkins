@@ -216,7 +216,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
     @Override
     public String getPronoun() {
-        return "Module";
+        return Messages.MavenModule_Pronoun();
     }
 
     @Override

@@ -25,7 +25,7 @@
             }
           </script>
         </j:if>
-        <l:task icon="images/24x24/edit-delete.gif" href="${url}/delete" title="Delete ${it.pronoun}" permission="${it.DELETE}" />
+        <l:task icon="images/24x24/edit-delete.gif" href="${url}/delete" title="${%sidepanel.delete(it.pronoun)}" permission="${it.DELETE}" />
         <l:task icon="images/24x24/setting.gif" href="${url}/configure" title="${%Configure}" permission="${it.CONFIGURE}" />
       </j:if>
       <st:include page="actions.jelly" />

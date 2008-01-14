@@ -185,7 +185,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Override
     public String getPronoun() {
-        return "Project";
+        return Messages.AbstractProject_Pronoun();
     }
 
     /**
