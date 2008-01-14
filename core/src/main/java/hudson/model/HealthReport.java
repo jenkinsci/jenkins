@@ -1,5 +1,8 @@
 package hudson.model;
 
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -11,6 +14,7 @@ import java.util.List;
  * @author connollys
  * @since 1.115
  */
+@ExportedBean(defaultVisibility=2) // this is always exported as a part of Job and never on its own, so start with 2.
 public class HealthReport implements Serializable, Comparable<HealthReport> {
     private static final String HEALTH_OVER_80 = "health-80plus.gif";
     private static final String HEALTH_60_TO_79 = "health-60to79.gif";
@@ -91,6 +95,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      *
      * @return The percentage health score (from 0 to 100 inclusive).
      */
+    @Exported
     public int getScore() {
         return score;
     }
@@ -142,6 +147,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      *
      * @return Value for property 'description'.
      */
+    @Exported
     public String getDescription() {
         return description;
     }

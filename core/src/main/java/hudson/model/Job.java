@@ -575,6 +575,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         return reports.isEmpty() ? new HealthReport() : reports.get(0);
     }
 
+    @Exported(name="healthReport")
     public List<HealthReport> getBuildHealthReports() {
         List<HealthReport> reports = new ArrayList<HealthReport>();
         RunT lastBuild = getLastBuild();
