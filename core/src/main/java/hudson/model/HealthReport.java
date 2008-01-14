@@ -161,7 +161,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * @return Value for property 'aggregatedReports'.
      */
     public List<HealthReport> getAggregatedReports() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     /**
