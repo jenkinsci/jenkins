@@ -3,6 +3,8 @@ package hudson;
 import hudson.model.TaskListener;
 import hudson.util.IOException2;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 
@@ -565,6 +567,30 @@ public class Util {
         return buf.toString();
     }
 
+    /**
+     * Creates Ant {@link FileSet} with the base dir and include pattern.
+     *
+     * <p>
+     * The difference with this and using {@link FileSet#setIncludes(String)}
+     * is that this method doesn't treat whitespace as a pattern separator,
+     * which makes it impossible to use space in the file path.
+     *
+     * @param includes
+     *      String like "foo/bar/*.xml" Multiple patterns can be separated
+     *      by ',', and whitespace can surround ',' (so that you can write
+     *      "abc, def" and "abc,def" to mean the same thing.
+     */
+    public static FileSet createFileSet(File baseDir, String includes) {
+        FileSet fs = new FileSet();
+        fs.setDir(baseDir);
+        fs.setProject(new Project());
+        StringTokenizer tokens = new StringTokenizer(includes,",");
+        while(tokens.hasMoreTokens()) {
+            String token = tokens.nextToken().trim();
+            fs.createInclude().setName(token);
+        }
+        return fs;
+    }
 
     public static final SimpleDateFormat XS_DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
