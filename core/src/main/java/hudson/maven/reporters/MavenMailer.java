@@ -12,6 +12,8 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 
+import net.sf.json.JSONObject;
+
 /**
  * Sends out an e-mail notification for Maven build result.
  * @author Kohsuke Kawaguchi
@@ -54,9 +56,10 @@ public class MavenMailer extends MavenReporter {
             return getViewPage(Mailer.class,"config.jelly");
         }
 
-        public MavenMailer newInstance(StaplerRequest req) {
+        public MavenReporter newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             MavenMailer m = new MavenMailer();
             req.bindParameters(m,"mailer_");
+            m.dontNotifyEveryUnstableBuild = req.getParameter("mailer_notifyEveryUnstableBuild")==null;
             return m;
         }
     }
