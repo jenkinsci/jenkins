@@ -579,18 +579,34 @@ public class Util {
      *      String like "foo/bar/*.xml" Multiple patterns can be separated
      *      by ',', and whitespace can surround ',' (so that you can write
      *      "abc, def" and "abc,def" to mean the same thing.
+     * @param excludes
+     *      Exclusion pattern. Can be null.
      * @since 1.172
      */
-    public static FileSet createFileSet(File baseDir, String includes) {
+    public static FileSet createFileSet(File baseDir, String includes, String excludes) {
         FileSet fs = new FileSet();
         fs.setDir(baseDir);
         fs.setProject(new Project());
-        StringTokenizer tokens = new StringTokenizer(includes,",");
+
+        StringTokenizer tokens;
+
+        tokens = new StringTokenizer(includes,",");
         while(tokens.hasMoreTokens()) {
             String token = tokens.nextToken().trim();
             fs.createInclude().setName(token);
         }
+        if(excludes!=null) {
+            tokens = new StringTokenizer(excludes,",");
+            while(tokens.hasMoreTokens()) {
+                String token = tokens.nextToken().trim();
+                fs.createExclude().setName(token);
+            }
+        }
         return fs;
+    }
+
+    public static FileSet createFileSet(File baseDir, String includes) {
+        return createFileSet(baseDir,includes,null);
     }
 
     public static final SimpleDateFormat XS_DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
