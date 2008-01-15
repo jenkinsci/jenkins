@@ -38,6 +38,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Various utility methods that don't have more proper home.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Util {
