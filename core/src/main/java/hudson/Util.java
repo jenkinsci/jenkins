@@ -580,7 +580,8 @@ public class Util {
      *      by ',', and whitespace can surround ',' (so that you can write
      *      "abc, def" and "abc,def" to mean the same thing.
      * @param excludes
-     *      Exclusion pattern. Can be null.
+     *      Exclusion pattern. Follows the same format as the 'includes' parameter.
+     *      Can be null.
      * @since 1.172
      */
     public static FileSet createFileSet(File baseDir, String includes, String excludes) {
