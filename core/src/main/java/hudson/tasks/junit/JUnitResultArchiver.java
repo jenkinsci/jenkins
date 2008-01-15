@@ -2,6 +2,7 @@ package hudson.tasks.junit;
 
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
@@ -16,7 +17,6 @@ import hudson.tasks.test.TestResultAggregator;
 import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.FormFieldValidator;
 import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -51,12 +51,8 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
 
             TestResult result = build.getProject().getWorkspace().act(new FileCallable<TestResult>() {
                 public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
-                    FileSet fs = new FileSet();
-                    Project p = new Project();
-                    fs.setProject(p);
-                    fs.setDir(ws);
-                    fs.setIncludes(testResults);
-                    DirectoryScanner ds = fs.getDirectoryScanner(p);
+                    FileSet fs = Util.createFileSet(ws,testResults);
+                    DirectoryScanner ds = fs.getDirectoryScanner();
 
                     String[] files = ds.getIncludedFiles();
                     if(files.length==0) {

@@ -577,10 +577,7 @@ public final class FilePath implements Serializable {
      * Runs Ant glob expansion.
      */
     private static String[] glob(File dir, String includes) {
-        FileSet fs = new FileSet();
-        fs.setDir(dir);
-        fs.setIncludes(includes);
-
+        FileSet fs = Util.createFileSet(dir,includes);
         DirectoryScanner ds = fs.getDirectoryScanner(new Project());
         String[] files = ds.getIncludedFiles();
         return files;
@@ -751,11 +748,7 @@ public final class FilePath implements Serializable {
 
                         CopyImpl copyTask = new CopyImpl();
                         copyTask.setTodir(new File(target.remote));
-                        FileSet src = new FileSet();
-                        src.setDir(base);
-                        src.setIncludes(fileMask);
-                        src.setExcludes(excludes);
-                        copyTask.addFileset(src);
+                        copyTask.addFileset(Util.createFileSet(base,fileMask,excludes));
 
                         copyTask.execute();
                         return copyTask.getNumCopied();
@@ -830,11 +823,7 @@ public final class FilePath implements Serializable {
      *      number of files/directories that are written.
      */
     private Integer writeToTar(File baseDir, String fileMask, String excludes, Pipe pipe) throws IOException {
-        FileSet fs = new FileSet();
-        fs.setDir(baseDir);
-        fs.setIncludes(fileMask);
-        if(excludes!=null)
-            fs.setExcludes(excludes);
+        FileSet fs = Util.createFileSet(baseDir,fileMask,excludes);
 
         byte[] buf = new byte[8192];
 
@@ -922,9 +911,7 @@ public final class FilePath implements Serializable {
                     String pattern = fileMask;
 
                     while(true) {
-                        FileSet fs = new FileSet();
-                        fs.setDir(dir);
-                        fs.setIncludes(pattern);
+                        FileSet fs = Util.createFileSet(dir,pattern);
 
                         DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
 

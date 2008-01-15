@@ -1,5 +1,6 @@
 package hudson.maven.reporters;
 
+import hudson.Util;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
@@ -16,7 +17,6 @@ import hudson.tasks.test.TestResultProjectAction;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
@@ -60,12 +60,8 @@ public class SurefireArchiver extends MavenReporter {
         if(reportsDir.exists()) {
             // surefire:test just skips itself when the current project is not a java project
 
-            FileSet fs = new FileSet();
-            Project p = new Project();
-            fs.setProject(p);
-            fs.setDir(reportsDir);
-            fs.setIncludes("*.xml");
-            DirectoryScanner ds = fs.getDirectoryScanner(p);
+            FileSet fs = Util.createFileSet(reportsDir,"*.xml");
+            DirectoryScanner ds = fs.getDirectoryScanner();
 
             if(ds.getIncludedFiles().length==0)
                 // no test in this module

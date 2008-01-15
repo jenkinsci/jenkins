@@ -3,6 +3,7 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -135,11 +136,9 @@ public class Fingerprinter extends Publisher implements Serializable {
             public List<Record> invoke(File baseDir, VirtualChannel channel) throws IOException {
                 List<Record> results = new ArrayList<Record>();
 
-                FileSet src = new FileSet();
-                src.setDir(baseDir);
-                src.setIncludes(targets);
+                FileSet src = Util.createFileSet(baseDir,targets);
 
-                DirectoryScanner ds = src.getDirectoryScanner(new org.apache.tools.ant.Project());
+                DirectoryScanner ds = src.getDirectoryScanner();
                 for( String f : ds.getIncludedFiles() ) {
                     File file = new File(baseDir,f);
 

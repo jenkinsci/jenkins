@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.FilePath;
+import hudson.Util;
 import hudson.FilePath.FileCallable;
 import hudson.remoting.VirtualChannel;
 import org.kohsuke.stapler.StaplerRequest;
@@ -365,11 +366,8 @@ public final class DirectoryBrowserSupport {
         }
 
         public List<List<Path>> invoke(File baseDir, VirtualChannel channel) throws IOException {
-            FileSet fs = new FileSet();
-            fs.setDir(baseDir);
-            fs.setIncludes(pattern);
-
-            DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+            FileSet fs = Util.createFileSet(baseDir,pattern);
+            DirectoryScanner ds = fs.getDirectoryScanner();
             String[] files = ds.getIncludedFiles();
 
             if (files.length > 0) {
