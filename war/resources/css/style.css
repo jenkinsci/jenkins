@@ -361,8 +361,11 @@ th.pane {
     vertical-align: middle;
     padding-right: 1em;
     width:1px;
-    white-space:nowrap;
-    color: white;
+}
+
+#login-field SPAN {
+  white-space:nowrap;
+  color: white;
 }
 
 #login-field A {
@@ -371,7 +374,6 @@ th.pane {
       If I set this to inherit, it won't work in IE7
      */
     color: white;
-    white-space: nowrap; /* necessary for IE */
 }
 
 /* ======================== error/warning message (mainly in the form) ======================== */

@@ -96,7 +96,7 @@
                   <script>createSearchBox("${searchURL}");</script>
                 </div>
               </form>
-            </td><td id="login-field">
+            </td><td id="login-field"><span>
               <!-- login field -->
               <j:if test="${app.useSecurity}">
                 <st:nbsp/>
@@ -113,7 +113,7 @@
                   </j:otherwise>
                 </j:choose>
               </j:if>
-            </td></tr>
+            </span></td></tr>
           </table>
         </td>
       </tr>
