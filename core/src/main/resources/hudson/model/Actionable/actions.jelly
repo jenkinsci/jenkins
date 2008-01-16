@@ -2,9 +2,5 @@
   Action list
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<j:forEach var="action" items="${it.actions}">
-    <j:if test="${action.iconFileName!=null}">
-      <l:task icon="${h.getIconFilePath(action)}" href="${rootURL}/${it.url}${action.urlName}/" title="${action.displayName}" />
-    </j:if>
-	</j:forEach>
+  <t:actions />
 </j:jelly>
