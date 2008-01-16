@@ -65,6 +65,9 @@ public abstract class View extends AbstractModelObject {
 
     /**
      * Returns the path relative to the context root.
+     *
+     * Doesn't start with '/' but ends with '/'. (except when this is
+     * Hudson, 
      */
     public abstract String getUrl();
 
