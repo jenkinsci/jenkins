@@ -1291,6 +1291,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         threadPoolForLoad.shutdown();
     }
 
+    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        for (Action a : getActions())
+            if(a.getUrlName().equals(token))
+                return a;
+        return null;
+    }
 
 
 //

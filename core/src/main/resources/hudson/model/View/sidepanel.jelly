@@ -16,6 +16,7 @@
         <l:task icon="images/24x24/user.gif" href="${rootURL}/people/" title="${%People}" />
       </j:if>
       <st:include page="sidepanel2.jelly" />
+      <t:actions />
     </l:tasks>
     <t:queue items="${app.queue.items}" />
     <t:executors />
