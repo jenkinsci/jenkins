@@ -366,8 +366,11 @@ th.pane {
 }
 
 #login-field A {
-    /* link inside login field should be always white */
-    color: inherit;
+    /*
+      link inside login field should be always white.
+      If I set this to inherit, it won't work in IE7
+     */
+    color: white;
 }
 
 /* ======================== error/warning message (mainly in the form) ======================== */
