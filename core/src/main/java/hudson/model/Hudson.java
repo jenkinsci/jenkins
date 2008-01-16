@@ -273,6 +273,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     public transient final ServletContext servletContext;
 
+    /**
+     * Transient action list. Useful for adding navigation items to the navigation bar
+     * on the left.
+     */
+    private transient final List<Action> actions = new CopyOnWriteArrayList<Action>();
+
     public static Hudson getInstance() {
         return theInstance;
     }
@@ -540,6 +546,26 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     public String getFullDisplayName() {
         return "";
+    }
+
+    /**
+     * Returns the transient {@link Action}s associated with the top page.
+     *
+     * <p>
+     * Adding {@link Action} is primarily useful for plugins to contribute
+     * an item to the navigation bar of the top page. See existing {@link Action}
+     * implementation for it affects the GUI.
+     *
+     * <p>
+     * To register an {@link Action}, write code like
+     * {@code Hudson.getInstance().getActions().add(...)}
+     *
+     * @return
+     *      Live list where the changes can be made. Can be empty but never null.
+     * @since 1.172
+     */
+    public List<Action> getActions() {
+        return actions;
     }
 
     /**
