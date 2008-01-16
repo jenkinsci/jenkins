@@ -371,6 +371,7 @@ th.pane {
       If I set this to inherit, it won't work in IE7
      */
     color: white;
+    white-space: nowrap; /* necessary for IE */
 }
 
 /* ======================== error/warning message (mainly in the form) ======================== */
