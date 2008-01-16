@@ -2,9 +2,9 @@
   <j:if test="${!empty(descriptor.installations)}">
     <f:entry title="Ant Version">
       <select class="setting-input" name="ant.antName">
-        <option>(Default)</option>
+        <option value="(Default)">(Default)</option>
         <j:forEach var="inst" items="${descriptor.installations}">
-          <f:option selected="${inst.name==instance.ant.name}">${inst.name}</f:option>
+          <f:option selected="${inst.name==instance.ant.name}" value="${inst.name}">${inst.name}</f:option>
         </j:forEach>
       </select>
     </f:entry>
