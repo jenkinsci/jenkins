@@ -41,10 +41,21 @@ final class MavenProcessFactory implements ProcessCache.Factory {
      */
     private final Map<String,String> envVars;
 
-    MavenProcessFactory(MavenModuleSet mms, Launcher launcher, Map<String, String> envVars) {
+    /**
+     * Optional working directory. Because of the process reuse, we can't always guarantee
+     * that the returned Maven process has this as the working directory. But for the
+     * aggregator style build, the process reuse is disabled, so in practice this always works.
+     *
+     * Also, Maven is supposed to work correctly regardless of the process current directory,
+     * so a good behaving maven project shouldn't rely on the current project.
+     */
+    private final FilePath workDir;
+
+    MavenProcessFactory(MavenModuleSet mms, Launcher launcher, Map<String, String> envVars, FilePath workDir) {
         this.mms = mms;
         this.launcher = launcher;
         this.envVars = envVars;
+        this.workDir = workDir;
     }
 
     /**
@@ -55,7 +66,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             listener.getLogger().println("Using env variables: "+ envVars);
         try {
             return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
-                out, null, envVars);
+                out, workDir, envVars);
         } catch (IOException e) {
             if(fixNull(e.getMessage()).contains("java: not found")) {
                 // diagnose issue #659

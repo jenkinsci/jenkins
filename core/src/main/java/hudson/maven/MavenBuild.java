@@ -346,7 +346,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             Map<String,String> envVars = getEnvVars();
 
             ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener,
-                new MavenProcessFactory(getParent().getParent(),launcher,envVars));
+                new MavenProcessFactory(getParent().getParent(),launcher,envVars,null));
 
             ArgumentListBuilder margs = new ArgumentListBuilder();
             margs.add("-N").add("-B");

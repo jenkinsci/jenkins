@@ -2,6 +2,7 @@ package hudson.maven;
 
 import hudson.AbortException;
 import hudson.Launcher;
+import hudson.FilePath;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
@@ -250,13 +251,14 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(MavenModuleSetBuild.this,slistener));
 
                     // run the complete build here
+                    FilePath pom = project.getModuleRoot().child(project.getRootPOM());
                     Map<String,String> envVars = getEnvVars();
 
                     ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
-                        new MavenProcessFactory(project,launcher,envVars));
+                        new MavenProcessFactory(project,launcher,envVars,pom.getParent()));
 
                     ArgumentListBuilder margs = new ArgumentListBuilder();
-                    margs.add("-B").add("-f",project.getModuleRoot().child(project.getRootPOM()).getRemote());
+                    margs.add("-B").add("-f", pom.getRemote());
                     margs.addTokenized(project.getGoals());
 
                     Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
