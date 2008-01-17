@@ -28,7 +28,8 @@
       </f:entry>
     </j:if>
     <f:entry title="${%Root POM}" help="/help/maven/root-pom.html">
-      <f:textbox name="rootPOM" value="${it.rootPOM}"/>
+      <f:textbox name="rootPOM" value="${it.rootPOM}"
+              checkUrl="'checkRootPOM?value='+escape(this.value)" />
     </f:entry>
     <f:entry title="${%Goals}" help="help-goals">
       <f:textbox name="goals" value="${it.userConfiguredGoals}"/>

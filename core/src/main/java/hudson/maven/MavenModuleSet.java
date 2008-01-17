@@ -5,6 +5,7 @@ import hudson.FilePath;
 import hudson.Indenter;
 import hudson.Util;
 import hudson.StructuredForm;
+import static hudson.Util.fixNull;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.CollectionSearchIndex;
 import hudson.model.*;
@@ -17,8 +18,10 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.Function1;
+import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -452,6 +455,17 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         for( MavenModule m : getDisabledModules(true))
             m.delete();
         rsp.sendRedirect2(".");
+    }
+
+    /**
+     * Check the location of POM.
+     */
+    public void doCheckRootPOM(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        new FormFieldValidator.WorkspaceFilePath(req,rsp,true,true) {
+            protected AbstractProject<?, ?> getProject() {
+                return MavenModuleSet.this;
+            }
+        }.process();
     }
 
     public TopLevelItemDescriptor getDescriptor() {
