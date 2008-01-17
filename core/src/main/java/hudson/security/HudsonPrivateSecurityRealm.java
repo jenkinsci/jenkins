@@ -9,6 +9,7 @@ import hudson.util.Scrambler;
 import hudson.util.Protector;
 import hudson.util.spring.BeanBuilder;
 import hudson.Util;
+import hudson.security.HudsonPrivateSecurityRealm.Details;
 import hudson.tasks.Mailer;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -146,7 +147,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
 
         public String getProtectedPassword() {
             // put session Id in it to prevent a replay attack.
-            return Protector.protect(Stapler.getCurrentRequest().getSession().getId()+':'+password);
+            return Protector.protect(Stapler.getCurrentRequest().getSession().getId()+':'+getPassword());
         }
 
         public String getUsername() {
@@ -176,22 +177,18 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
 
     public static final UserPropertyDescriptor DETAILS_DESCRIPTOR = new UserPropertyDescriptor(Details.class) {
         public String getDisplayName() {
-            // don't display the configuration section for this.
-            return null;
+            return Messages.HudsonPrivateSecurityRealm_Details_DisplayName();
         }
 
         public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            try {
-                String data = Util.fixEmpty(req.getParameter("user.password"));
-                if(data==null)
-                    return null;
+            String pwd = Util.fixEmpty(req.getParameter("user.password"));
+            String data = Protector.unprotect(pwd);
+            if(data!=null) {
                 String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
-                if(!data.startsWith(prefix))
-                    throw new FormException("Invalid password","password");
-                return new Details(Protector.unprotect(data.substring(prefix.length())));
-            } catch (IOException e) {
-                throw new FormException("Invalid password",e,"password");
+                if(data.startsWith(prefix))
+                    return new Details(data.substring(prefix.length()));
             }
+            return new Details(pwd);
         }
 
         public UserProperty newInstance(User user) {
