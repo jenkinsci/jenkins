@@ -2,8 +2,11 @@ package hudson.util;
 
 import hudson.Util;
 import hudson.model.Node;
+import hudson.model.Hudson;
 
 import java.io.IOException;
+
+import org.kohsuke.stapler.Stapler;
 
 /**
  * Represents a clock difference. Immutable.
@@ -57,7 +60,8 @@ public final class ClockDifference {
     
     public String toHtml() {
         String s = toString();
-        if(isDangerous())   s = "<span class=error>"+s+"</span>";
+        if(isDangerous())
+            s = Util.wrapToErrorSpan(s);
         return s;
     }
 

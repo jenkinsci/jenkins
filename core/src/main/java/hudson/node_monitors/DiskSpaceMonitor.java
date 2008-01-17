@@ -1,6 +1,7 @@
 package hudson.node_monitors;
 
 import hudson.FilePath;
+import hudson.Util;
 import hudson.FilePath.FileCallable;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
@@ -35,7 +36,7 @@ public class DiskSpaceMonitor extends NodeMonitor {
         space/=1024L;   // convert to MB
         if(space<1024) {
             // less than a GB
-            return "<span class=error>"+new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString()+"GB<span>";
+            return Util.wrapToErrorSpan(new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString());
         }
 
         return space/1024+"GB";

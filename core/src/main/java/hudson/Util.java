@@ -1,12 +1,14 @@
 package hudson;
 
 import hudson.model.TaskListener;
+import hudson.model.Hudson;
 import hudson.util.IOException2;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
+import org.kohsuke.stapler.Stapler;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -608,6 +610,17 @@ public class Util {
 
     public static FileSet createFileSet(File baseDir, String includes) {
         return createFileSet(baseDir,includes,null);
+    }
+
+    /**
+     * Wraps with the error icon and the CSS class to render error message.
+     * @since 1.173 
+     */
+    public static String wrapToErrorSpan(String s) {
+        s = "<span class=error><img src='"+
+            Stapler.getCurrentRequest().getContextPath()+ Hudson.RESOURCE_PATH+
+            "/images/none.gif' height=16 width=1>"+s+"</span>";
+        return s;
     }
 
     public static final SimpleDateFormat XS_DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
