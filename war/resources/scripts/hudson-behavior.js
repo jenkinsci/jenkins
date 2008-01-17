@@ -410,7 +410,7 @@ function replaceDescription() {
     new Ajax.Request(
         "./descriptionForm",
         {
-          method : 'get',
+          method : 'post',
           onComplete : function(x) {
             d.innerHTML = x.responseText;
             Behaviour.applySubtree(d);
