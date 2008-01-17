@@ -63,6 +63,7 @@ import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.ui.AbstractProcessingFilter;
@@ -1848,9 +1849,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         // that we have filters. Looking at the stack trace, Tomcat doesn't seem to
         // run the request through filters when this is the login request.
         // see http://www.nabble.com/Matrix-authorization-problem-tp14602081p14886312.html
-        if(a==null) {
-            a = new AnonymousAuthenticationToken("anonymous","anonymous",new GrantedAuthority[0]);
-        }
+        if(a==null)
+            a = new AnonymousAuthenticationToken("anonymous","anonymous",new GrantedAuthority[]{new GrantedAuthorityImpl("anonymous")});
         return a;
     }
 
