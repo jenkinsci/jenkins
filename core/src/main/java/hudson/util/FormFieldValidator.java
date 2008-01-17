@@ -278,7 +278,7 @@ public abstract class FormFieldValidator {
 
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
-            AbstractProject<?,?> p = Hudson.getInstance().getItemByFullName(request.getParameter("job"),AbstractProject.class);
+            AbstractProject<?, ?> p = getProject();
 
             if(value==null || p==null) {
                 ok(); // none entered yet, or something is seriously wrong
@@ -319,6 +319,10 @@ public abstract class FormFieldValidator {
             } catch (InterruptedException e) {
                 ok(); // coundn't check
             }
+        }
+
+        protected AbstractProject<?,?> getProject() {
+            return Hudson.getInstance().getItemByFullName(request.getParameter("job"),AbstractProject.class);
         }
     }
 
