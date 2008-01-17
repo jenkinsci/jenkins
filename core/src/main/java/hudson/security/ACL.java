@@ -5,6 +5,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
 import org.acegisecurity.context.SecurityContextHolder;
+import hudson.model.Hudson;
 
 /**
  * Gate-keeper that controls access to Hudson's model objects.
@@ -22,7 +23,7 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final void checkPermission(Permission p) {
-        Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        Authentication a = Hudson.getAuthentication();
         if(!hasPermission(a,p))
             throw new AccessDeniedException(a.toString()+" is missing "+p.name);
     }
@@ -34,8 +35,7 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final boolean hasPermission(Permission p) {
-        Authentication a = SecurityContextHolder.getContext().getAuthentication();
-        return hasPermission(a,p);
+        return hasPermission(Hudson.getAuthentication(),p);
     }
 
     /**
