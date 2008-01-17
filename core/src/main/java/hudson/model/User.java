@@ -14,6 +14,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -226,6 +228,18 @@ public class User extends AbstractModelObject {
      */
     public static User get(String id) {
         return get(id,true);
+    }
+
+    /**
+     * Gets the {@link User} object representing the currently logged-in user, or null
+     * if the current user is anonymous.
+     * @since 1.172
+     */
+    public static User current() {
+        Authentication a = Hudson.getAuthentication();
+        if(a instanceof AnonymousAuthenticationToken)
+            return null;
+        return get(a.getPrincipal().toString());
     }
 
     /**
