@@ -95,6 +95,10 @@ public final class ProcessCache {
             }
         }
 
+        /**
+         * Discards this maven process.
+         * It won't be reused in future builds.
+         */
         public void discard() {
             try {
                 channel.close();
