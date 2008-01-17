@@ -276,8 +276,8 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 e.printStackTrace(listener.error("Failed to parse POMs"));
                 return Result.FAILURE;
             } catch (InterruptedException e) {
-                e.printStackTrace(listener.error("Aborted"));
-                return Result.FAILURE;
+                listener.error("Aborted");
+                return Result.ABORTED;
             } catch (RuntimeException e) {
                 // bug in the code.
                 e.printStackTrace(listener.error("Processing failed due to a bug in the code. Please report thus to users@hudson.dev.java.net"));
