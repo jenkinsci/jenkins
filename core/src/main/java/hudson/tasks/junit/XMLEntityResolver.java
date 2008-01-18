@@ -1,11 +1,11 @@
 package hudson.tasks.junit;
 
+import hudson.model.Hudson;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.Logger;
 
@@ -32,32 +32,15 @@ class XMLEntityResolver implements EntityResolver {
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 		if (systemId != null) {
 			LOGGER.fine("Will try to resolve systemId [" + systemId + "]");
-			/*
-			 TestNG system-ids
-			 */
+			// TestNG system-ids
 			if ( systemId.startsWith( TESTNG_NAMESPACE ) ) {
 				LOGGER.fine( "It's a TestNG document, will try to lookup DTD in classpath" );
 				String dtdFileName = systemId.substring( TESTNG_NAMESPACE.length() );
-				//This ClassLoader will be the basis for loading the .dtd
-				ClassLoader classLoader = getClass().getClassLoader();
-				LOGGER.finer( "Ok, creating input stream now - if it fails the dtd is not available" );
-				InputStream dtdFileStream = classLoader.getResourceAsStream( dtdFileName );
-				/*
-				 In the case of Tomcat, the classLoaderPath should be $TOMCAT_HOME/common/classes
-				 */
-				URL classLoaderPath = classLoader.getResource("");
-				if ( dtdFileStream == null ) { // eg. if testng-versionXYZ is not available
-					LOGGER.fine( "Unable to find '" + dtdFileName + "' in directory " + classLoaderPath
-							+ ", falling back to online lookup" );
-					return null; // fallback to online resolvning, better hope we have internet connectivity...
-				}
-				else {	// It's all good, give the XML parser something sweet to chew on
-					InputSource source = new InputSource( dtdFileStream );
-					source.setPublicId( publicId );
-					source.setSystemId( systemId );
-					return source;
-				}
-			}
+
+                URL url = Hudson.getInstance().servletContext.getResource(dtdFileName);
+                if(url!=null)
+                    return new InputSource(url.toString());
+            }
 		}
 		// Default fallback
 		return null;

@@ -1,0 +1,144 @@
+<!-- ====================================================== -->
+<!-- DTD for TestNG 1.0                                     -->
+<!--                                                        -->
+<!-- A suite is made of tests and parameters.               -->
+<!--                                                        -->
+<!-- A test is made of three parts:                         -->
+<!-- * Parameters, which override the Suite parameters      -->
+<!-- * Groups, made of two parts                            -->
+<!-- * Classes, defining which classes are going to be part -->
+<!--   of this test run                                     -->
+<!--                                                        -->
+<!-- In turn, groups are made of two parts:                 -->
+<!-- * Definitions, which allow you to group groups into    -->
+<!--   bigger groups                                        -->
+<!-- * Runs, which defines the groups that the methods      -->
+<!--   must belong to in order to be run during this test   -->
+<!--                                                        -->
+<!-- Full documentation:  http://testng.org                 -->
+<!--                                                        -->
+<!-- Cedric Beust                                           -->
+<!-- ====================================================== -->
+
+
+<!-- A suite is the top-level element of a testng.xml file                  -->
+<!ELEMENT suite (packages|test|parameter|method-selectors|suite-files)* >
+
+<!-- Attributes: -->
+<!-- name:  The name of this suite (as it will appear in the reports)       -->
+<!-- verbose:  (0-10) How verbose the output on the console                 -->
+<!--           will be.  This setting has no impact on the HTML reports     -->
+<!-- parallel:  (methods|tests) Whether TestNG should use different threads -->
+<!-- to run your tests (might speed up the process)                         -->
+<!-- thread-count:  An integer giving the size of the thread pool to use    -->
+<!--                if you set parallel      (default is 5)                 -->
+<!-- annotations:   (javadoc|JDK5)  If "javadoc", TestNG will look for      -->
+<!--                JavaDoc annotations in your sources, otherwise it will  -->
+<!--                use JDK5 annotations                                    -->
+<!-- time-out:  the time to wait in milliseconds before aborting            -->
+<!--       the method (if parallel="methods") or the test                   -->
+<!--       (if parallel="tests")                                            -->
+<!ATTLIST suite
+    name CDATA #REQUIRED
+    verbose CDATA #IMPLIED
+    parallel CDATA #IMPLIED
+    thread-count CDATA #IMPLIED
+    annotations CDATA #IMPLIED
+    time-out CDATA #IMPLIED
+>
+
+<!-- A list of XML files that contain more suite descriptions -->
+<!ELEMENT suite-files (suite-file)* >
+
+<!ELEMENT suite-file ANY >
+<!ATTLIST suite-file
+    path CDATA #REQUIRED
+>
+
+<!-- Parameters can be defined at the <suite> or at the <test> level        -->
+<!-- Parameters defined at the <test> level override parameters of the      -->
+<!-- same name in <suite>.                                                  -->
+<!-- Parameters are used to link Java method parameters to their actual     -->
+<!-- value, defined here.                                                   -->
+<!ELEMENT parameter ANY>
+<!ATTLIST parameter
+    name CDATA #REQUIRED
+    value CDATA #REQUIRED >
+
+<!-- Method selectors define user classes used to select which methods to   -->
+<!-- run.  They need to implement org.testng.IMethodSelector                -->
+<!ELEMENT method-selectors (method-selector*) >
+<!ELEMENT method-selector ((selector-class)*|script) >
+<!ELEMENT selector-class ANY>
+<!ATTLIST selector-class
+    name CDATA #REQUIRED
+	priority CDATA #IMPLIED
+>
+<!ELEMENT script ANY>
+<!ATTLIST script
+    language CDATA #REQUIRED
+>
+
+<!-- A test contains parameters and classes.  Additionally, you can define  -->
+<!-- additional groups ("groups of groups")                                 -->
+<!ELEMENT test (method-selectors?,parameter*,groups?,packages?,classes?) >
+
+<!-- Attributes:                                                            -->
+<!-- name:  The name of this test (as it will appear in the reports)        -->
+<!-- junit:  (true|false) Whether to run in JUnit mode                      -->
+<!-- verbose:  (0-10) How verbose the output on the console                 -->
+<!--           will be.  This setting has no impact on the HTML reports     -->
+<!-- parallel:  (methods)       Whether TestNG should use different threads -->
+<!-- to run your tests (might speed up the process)                         -->
+<!-- annotations:   (javadoc|JDK5)  If "javadoc", TestNG will look for      -->
+<!--                JavaDoc annotations in your sources, otherwise it will  -->
+<!--                use JDK5 annotations                                    -->
+<!-- timeout:  the time to wait in milliseconds before aborting -->
+<!--       the method (if parallel="methods") or the test (if parallel="tests") -->
+<!ATTLIST test
+    name CDATA #REQUIRED
+    junit CDATA #IMPLIED
+    verbose CDATA #IMPLIED
+    parallel CDATA #IMPLIED
+    annotations CDATA #IMPLIED
+    time-out CDATA #IMPLIED
+>
+
+<!-- Defines additional groups ("groups of groups") and also which groups   -->
+<!-- to include in this test run                                            -->
+<!ELEMENT groups (define*,run?) >
+
+<!ELEMENT define (include*)>
+<!ATTLIST define
+    name CDATA #REQUIRED>
+
+<!-- Defines which groups to include in the current group of groups         -->
+<!ELEMENT include ANY>
+<!ATTLIST include
+    name CDATA #REQUIRED>
+
+<!-- Defines which groups to exclude from the current group of groups       -->
+<!ELEMENT exclude ANY>
+<!ATTLIST exclude
+    name CDATA #REQUIRED>
+
+<!-- The subtag of groups used to define which groups should be run         -->
+<!ELEMENT run (include?,exclude?)* >
+
+<!-- The list of classes to include in this test                            -->
+<!ELEMENT classes (class*) >
+<!ELEMENT class (methods*) >
+<!ATTLIST class
+    name CDATA #REQUIRED >
+
+<!-- The list of packages to include in this test                           -->
+<!ELEMENT packages (package*) >
+<!ELEMENT package (include?,exclude?)*>
+<!ATTLIST package
+    name CDATA #REQUIRED >
+
+<!-- The list of methodes to include/exclude from this test                 -->
+<!ELEMENT methods (include?,exclude?)* >
+
+
+
