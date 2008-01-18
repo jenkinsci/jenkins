@@ -84,6 +84,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileFilter;
@@ -1464,7 +1465,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         TopLevelItem result;
 
-        boolean isXmlSubmission = req.getContentType().startsWith("application/xml") || req.getContentType().startsWith("text/xml");
+        String requestContentType = req.getContentType();
+        if(requestContentType==null) {
+            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST,"No Content-Type header set");
+            return null;
+        }
+        boolean isXmlSubmission = requestContentType.startsWith("application/xml") || requestContentType.startsWith("text/xml");
         if(!isXmlSubmission) {
             // containers often implement RFCs incorrectly in that it doesn't interpret query parameter
             // decoding with UTF-8. This will ensure we get it right.
@@ -1479,13 +1485,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         try {
             checkGoodName(name);
         } catch (ParseException e) {
-            rsp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            rsp.setStatus(SC_BAD_REQUEST);
             sendError(e,req,rsp);
             return null;
         }
 
         if(getItem(name)!=null) {
-            rsp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            rsp.setStatus(SC_BAD_REQUEST);
             sendError("A job already exists with the name '"+name+"'",req,rsp);
             return null;
         }
@@ -1493,7 +1499,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         if(mode!=null && mode.equals("copyJob")) {
             TopLevelItem src = getItem(req.getParameter("from"));
             if(src==null) {
-                rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                rsp.sendError(SC_BAD_REQUEST);
                 return null;
             }
 
@@ -1532,7 +1538,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             } else {
                 // create empty job and redirect to the project config screen
                 if(mode==null) {
-                    rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    rsp.sendError(SC_BAD_REQUEST);
                     return null;
                 }
                 result = createProject(Items.getDescriptor(mode), name);
@@ -1787,7 +1793,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         if(path.indexOf("..")!=-1 || path.length()<1) {
             // don't serve anything other than files in the artifacts dir
-            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            rsp.sendError(SC_BAD_REQUEST);
             return;
         }
 
