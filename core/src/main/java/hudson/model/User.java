@@ -328,8 +328,11 @@ public class User extends AbstractModelObject {
             description = req.getParameter("description");
 
             List<UserProperty> props = new ArrayList<UserProperty>();
-            for (Descriptor<UserProperty> d : UserProperties.LIST)
-                props.add(d.newInstance(req,null));
+            for (Descriptor<UserProperty> d : UserProperties.LIST) {
+                UserProperty p = d.newInstance(req, null);
+                p.setUser(this);
+                props.add(p);
+            }
             this.properties = props;
 
             save();
