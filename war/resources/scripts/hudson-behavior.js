@@ -955,11 +955,15 @@ function buildFormTree(form) {
         var doms = []; // DOMs that we added 'formDom' for.
         doms.push(form);
 
-        function addProperty(parent,name,value) {
-            // abc.def.ghi -> ghi
+        // abc.def.ghi -> ghi
+        function shortenName(name) {
             var idx = name.lastIndexOf('.');
             if(idx>=0)  name = name.substring(idx+1);
+            return name;
+        }
 
+        function addProperty(parent,name,value) {
+            name = shortenName(name);
             if(parent[name]!=null) {
                 if(parent[name].push==null) // is this array?
                     parent[name] = [ parent[name] ];
@@ -1010,6 +1014,17 @@ function buildFormTree(form) {
             }
             if(e.tagName=="FIELDSET")
                 continue;
+            if(e.tagName=="SELECT" && e.multiple) {
+                var values = [];
+                for( var o=0; o<e.options.length; o++ ) {
+                    var opt = e.options.item(o);
+                    if(opt.selected)
+                        values.push(opt.value);
+                }
+                addProperty(findParent(e),e.name,values);
+                continue;
+            }
+                
             var p;
             var type = e.getAttribute("type");
             if(type==null)  type="";
