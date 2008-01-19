@@ -69,6 +69,8 @@ import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
+import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
+import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -79,6 +81,7 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -1690,6 +1693,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         if(session!=null)
             session.invalidate();
         SecurityContextHolder.clearContext();
+
+        // reset remember-me cookie
+        Cookie cookie = new Cookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY,"");
+        cookie.setPath(req.getContextPath().length()>0 ? req.getContextPath() : "/");
+        rsp.addCookie(cookie);
+
         rsp.sendRedirect2(req.getContextPath()+"/");
     }
 
