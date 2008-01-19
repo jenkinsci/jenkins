@@ -52,7 +52,7 @@ public class HudsonFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         Binding binding = new Binding();
         binding.setVariable("authenticationManagerProxy", AUTHENTICATION_MANAGER);
-        binding.setVariable("UserDetailsServiceProxy", USER_DETAILS_SERVICE_PROXY);
+        binding.setVariable("userDetailsServiceProxy", USER_DETAILS_SERVICE_PROXY);
         binding.setVariable("app", Hudson.getInstance());
         BeanBuilder builder = new BeanBuilder();
         builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
@@ -87,7 +87,10 @@ public class HudsonFilter implements Filter {
     }
 
     public void destroy() {
-        legacy.destroy();
-        acegi.destroy();
+        // these fields can be null if HudsonFilter.init() fails in the middle
+        if(legacy!=null)
+            legacy.destroy();
+        if(acegi!=null)
+            acegi.destroy();
     }
 }

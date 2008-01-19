@@ -6,6 +6,7 @@ import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulato
 import org.acegisecurity.ldap.DefaultInitialDirContextFactory
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
+import hudson.model.Hudson
 
 /*
     Configure LDAP as the authentication realm.
@@ -42,7 +43,7 @@ authenticationManager(ProviderManager) {
 
     // these providers apply everywhere
         bean(RememberMeAuthenticationProvider) {
-            key = app.getSecretKey();
+            key = Hudson.getInstance().getSecretKey();
         },
         // this doesn't mean we allow anonymous access.
         // we just authenticate anonymous users as such,
