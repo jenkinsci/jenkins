@@ -4,16 +4,13 @@ import hudson.model.Hudson;
 import hudson.model.Slave.ComputerImpl;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
-import hudson.util.TextFile;
 
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,7 +25,7 @@ import java.util.logging.Logger;
  * unauthorized remote slaves.
  *
  * <p>
- * The approach here is to have {@link #secretKey a secret key} on the master.
+ * The approach here is to have {@link Hudson#getSecretKey() a secret key} on the master.
  * This key is sent to the slave inside the <tt>.jnlp</tt> file
  * (this file itself is protected by HTTP form-based authentication that
  * we use everywhere else in Hudson), and the slave sends this
@@ -48,7 +45,6 @@ public class TcpSlaveAgentListener extends Thread {
 
     private final ServerSocket serverSocket;
     private volatile boolean shuttingDown;
-    private final String secretKey;
 
     public final int configuredPort;
 
@@ -63,18 +59,6 @@ public class TcpSlaveAgentListener extends Thread {
 
         LOGGER.info("JNLP slave agent listener started on TCP port "+getPort());
 
-        // get or create the secret
-        TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key"));
-        if(secretFile.exists()) {
-            secretKey = secretFile.readTrim();
-        } else {
-            SecureRandom sr = new SecureRandom();
-            byte[] random = new byte[32];
-            sr.nextBytes(random);
-            secretKey = Util.toHexString(random);
-            secretFile.write(secretKey);
-        }
-
         start();
     }
 
@@ -85,8 +69,8 @@ public class TcpSlaveAgentListener extends Thread {
         return serverSocket.getLocalPort();
     }
 
-    public String getSecretKey() {
-        return secretKey;
+    private String getSecretKey() {
+        return Hudson.getInstance().getSecretKey();
     }
 
     public void run() {
@@ -169,7 +153,7 @@ public class TcpSlaveAgentListener extends Thread {
          * Handles JNLP slave agent connection request.
          */
         private void runJnlpConnect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
-            if(!secretKey.equals(in.readUTF())) {
+            if(!getSecretKey().equals(in.readUTF())) {
                 error(out, "Unauthorized access");
                 return;
             }

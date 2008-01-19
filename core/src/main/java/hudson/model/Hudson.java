@@ -37,9 +37,9 @@ import hudson.security.HudsonFilter;
 import hudson.security.LegacyAuthorizationStrategy;
 import hudson.security.LegacySecurityRealm;
 import hudson.security.Permission;
+import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
-import hudson.security.PermissionGroup;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -58,14 +58,15 @@ import hudson.util.DaemonThreadFactory;
 import hudson.util.FormFieldValidator;
 import hudson.util.HudsonIsLoading;
 import hudson.util.MultipartFormDataParser;
+import hudson.util.TextFile;
 import hudson.util.XStream2;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -83,8 +84,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileFilter;
@@ -94,6 +95,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -287,6 +289,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return theInstance;
     }
 
+    /**
+     * Secrete key generated once and used for a long time, beyond
+     * container start/stop.
+     */
+    private final String secretKey;
+
 
     public Hudson(File root, ServletContext context) throws IOException {
         this.root = root;
@@ -302,6 +310,18 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 throw new Error("Looks like the server runs without X. Please specify -Djava.awt.headless=true as JVM option",e);
             }
             throw e;
+        }
+
+        // get or create the secret
+        TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key"));
+        if(secretFile.exists()) {
+            secretKey = secretFile.readTrim();
+        } else {
+            SecureRandom sr = new SecureRandom();
+            byte[] random = new byte[32];
+            sr.nextBytes(random);
+            secretKey = Util.toHexString(random);
+            secretFile.write(secretKey);
         }
 
         // load plugins.
@@ -357,6 +377,15 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     public PluginManager getPluginManager() {
         return pluginManager;
+    }
+
+    /**
+     * Returns a secret key that survives across container start/stop.
+     * <p>
+     * This value is useful for implementing some of the security features. 
+     */
+    public String getSecretKey() {
+        return  secretKey;
     }
 
     /**
