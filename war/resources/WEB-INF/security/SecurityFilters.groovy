@@ -34,6 +34,11 @@ def commonProviders(redirectUrl) {
     ]
 }
 
+rememberMeServices(TokenBasedRememberMeServices) {
+    userDetailsService = userDetailsServiceProxy;
+    key = app.getSecretKey();
+}
+
 filter(ChainedServletFilter) {
     filters = [
         // this persists the authentication across requests by using session
@@ -51,13 +56,12 @@ filter(ChainedServletFilter) {
             }
         },
         bean(RememberMeProcessingFilter) {
-            rememberMeServices = bean(TokenBasedRememberMeServices) {
-                userDetailsService = userDetailsServiceProxy;
-                key = app.getSecretKey();
-            }
+            rememberMeServices = rememberMeServices;
+            authenticationManager = authenticationManagerProxy;
         },
         bean(AuthenticationProcessingFilter2) {
             authenticationManager = authenticationManagerProxy
+            rememberMeServices = rememberMeServices;
             authenticationFailureUrl = "/loginError"
             defaultTargetUrl = "/"
             filterProcessesUrl = "/j_acegi_security_check"
