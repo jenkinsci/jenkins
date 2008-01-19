@@ -40,6 +40,7 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
+import hudson.security.SecurityRealm.SecurityComponents;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -951,7 +952,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     public void setSecurityRealm(SecurityRealm securityRealm) {
         this.securityRealm = securityRealm;
-        HudsonFilter.AUTHENTICATION_MANAGER.setManager(securityRealm.createAuthenticationManager());
+        SecurityComponents sc = securityRealm.createSecurityComponents();
+        HudsonFilter.AUTHENTICATION_MANAGER.setDelegate(sc.manager);
+        HudsonFilter.USER_DETAILS_SERVICE_PROXY.setDelegate(sc.userDetails);
     }
 
     /**

@@ -14,8 +14,8 @@ import net.sf.json.JSONObject;
  * @author Kohsuke Kawaguchi
  */
 public final class LegacySecurityRealm extends SecurityRealm implements AuthenticationManager {
-    public AuthenticationManager createAuthenticationManager() {
-        return this;
+    public SecurityComponents createSecurityComponents() {
+        return new SecurityComponents(this);
     }
 
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {

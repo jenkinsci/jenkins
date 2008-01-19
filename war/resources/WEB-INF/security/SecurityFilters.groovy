@@ -14,6 +14,8 @@ import hudson.security.AccessDeniedHandlerImpl
 import hudson.security.BasicAuthenticationFilter
 import hudson.security.AuthenticationProcessingFilter2
 import hudson.security.UnwrapSecurityExceptionFilter
+import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
+import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices
 
 // providers that apply to both patterns
 def commonProviders(redirectUrl) {
@@ -39,7 +41,7 @@ filter(ChainedServletFilter) {
         },
         // allow clients to submit basic authentication credential
         bean(BasicProcessingFilter) {
-            authenticationManager = authenticationManager
+            authenticationManager = authenticationManagerProxy
             // if basic authentication fails (which only happens incorrect basic auth credential is sent),
             // respond with 401 with basic auth request, instead of redirecting the user to the login page,
             // since users of basic auth tends to be a program and won't see the redirection to the form
@@ -48,8 +50,14 @@ filter(ChainedServletFilter) {
                 realmName = "Hudson"
             }
         },
+        bean(RememberMeProcessingFilter) {
+            rememberMeServices = bean(TokenBasedRememberMeServices) {
+                userDetailsService = userDetailsServiceProxy;
+                key = app.getSecretKey();
+            }
+        },
         bean(AuthenticationProcessingFilter2) {
-            authenticationManager = authenticationManager
+            authenticationManager = authenticationManagerProxy
             authenticationFailureUrl = "/loginError"
             defaultTargetUrl = "/"
             filterProcessesUrl = "/j_acegi_security_check"

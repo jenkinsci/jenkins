@@ -4,6 +4,7 @@ import groovy.lang.Binding;
 import hudson.model.Hudson;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.AuthenticationManager;
+import org.acegisecurity.userdetails.UserDetailsService;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.Filter;
@@ -37,14 +38,22 @@ public class HudsonFilter implements Filter {
     private Filter acegi;
 
     /**
-     * {@link AuthenticationManager} proxy so that the acegi filter chain can be configured
-     * before {@link Hudson} instance is loaded.
+     * {@link AuthenticationManager} proxy so that the acegi filter chain can stay the same
+     * even when security setting is reconfigured.
      */
     public static final AuthenticationManagerProxy AUTHENTICATION_MANAGER = new AuthenticationManagerProxy();
 
+    /**
+     * {@link UserDetailsService} proxy so that the acegi filter chain can stay the same
+     * even when security setting is reconfigured.
+     */
+    public static final UserDetailsServiceProxy USER_DETAILS_SERVICE_PROXY = new UserDetailsServiceProxy();
+
     public void init(FilterConfig filterConfig) throws ServletException {
         Binding binding = new Binding();
-        binding.setVariable("authenticationManager", HudsonFilter.AUTHENTICATION_MANAGER);
+        binding.setVariable("authenticationManagerProxy", AUTHENTICATION_MANAGER);
+        binding.setVariable("UserDetailsServiceProxy", USER_DETAILS_SERVICE_PROXY);
+        binding.setVariable("app", Hudson.getInstance());
         BeanBuilder builder = new BeanBuilder();
         builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
 

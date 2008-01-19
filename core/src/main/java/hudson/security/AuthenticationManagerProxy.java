@@ -16,10 +16,10 @@ import org.acegisecurity.DisabledException;
  * @author Kohsuke Kawaguchi
  */
 public class AuthenticationManagerProxy implements AuthenticationManager {
-    private volatile AuthenticationManager manager;
+    private volatile AuthenticationManager delegate;
 
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        AuthenticationManager m = manager; // fix the reference we are working with
+        AuthenticationManager m = delegate; // fix the reference we are working with
 
         if(m ==null)
             throw new DisabledException("Authentication service is still not ready yet");
@@ -27,7 +27,7 @@ public class AuthenticationManagerProxy implements AuthenticationManager {
             return m.authenticate(authentication);
     }
 
-    public void setManager(AuthenticationManager manager) {
-        this.manager = manager;
+    public void setDelegate(AuthenticationManager manager) {
+        this.delegate = manager;
     }
 }

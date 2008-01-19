@@ -7,6 +7,7 @@ import hudson.model.Hudson;
 import hudson.util.DescriptorList;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
+import org.acegisecurity.userdetails.UserDetailsService;
 import org.springframework.context.ApplicationContext;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -58,7 +59,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * depends on the user configuration), and such configuration is expected to be
      * captured as instance variables of {@link SecurityRealm} implementation.
      */
-    public abstract AuthenticationManager createAuthenticationManager();
+    public abstract SecurityComponents createSecurityComponents();
 
     /**
      * {@inheritDoc}
@@ -164,12 +165,12 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     public static final SecurityRealm NO_AUTHENTICATION = new None();
 
     private static class None extends SecurityRealm {
-        public AuthenticationManager createAuthenticationManager() {
-            return new AuthenticationManager() {
+        public SecurityComponents createSecurityComponents() {
+            return new SecurityComponents(new AuthenticationManager() {
                 public Authentication authenticate(Authentication authentication) {
                     return authentication;
                 }
-            };
+            });
         }
 
         /**
@@ -185,6 +186,22 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
          */
         private Object readResolve() {
             return NO_AUTHENTICATION;
+        }
+    }
+
+    public static final class SecurityComponents {
+        public AuthenticationManager manager;
+        public UserDetailsService userDetails;
+
+        public SecurityComponents() {}
+
+        public SecurityComponents(AuthenticationManager manager) {
+            this.manager = manager;
+        }
+
+        public SecurityComponents(AuthenticationManager manager, UserDetailsService userDetails) {
+            this.manager = manager;
+            this.userDetails = userDetails;
         }
     }
 

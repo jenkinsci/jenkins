@@ -9,11 +9,13 @@ import hudson.util.FormFieldValidator;
 import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AuthenticationManager;
+import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -119,13 +121,16 @@ public class LDAPSecurityRealm extends SecurityRealm {
         return "ldap://"+server+'/'+rootDN;
     }
 
-    public AuthenticationManager createAuthenticationManager() {
+    public SecurityComponents createSecurityComponents() {
         Binding binding = new Binding();
         binding.setVariable("instance", this);
 
         BeanBuilder builder = new BeanBuilder();
         builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/LDAPBindSecurityRealm.groovy"),binding);
-        return findBean(AuthenticationManager.class,builder.createApplicationContext());
+        WebApplicationContext appContext = builder.createApplicationContext();
+        return new SecurityComponents(
+            findBean(AuthenticationManager.class, appContext),
+            findBean(UserDetailsService.class, appContext));
     }
 
     public DescriptorImpl getDescriptor() {

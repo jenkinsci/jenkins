@@ -9,7 +9,6 @@ import hudson.util.Scrambler;
 import hudson.util.Protector;
 import hudson.util.spring.BeanBuilder;
 import hudson.Util;
-import hudson.security.HudsonPrivateSecurityRealm.Details;
 import hudson.tasks.Mailer;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -24,6 +23,7 @@ import org.acegisecurity.userdetails.UserDetailsService;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -35,10 +35,13 @@ import java.io.IOException;
  */
 public class HudsonPrivateSecurityRealm extends SecurityRealm {
     @Override
-    public AuthenticationManager createAuthenticationManager() {
+    public SecurityComponents createSecurityComponents() {
         BeanBuilder builder = new BeanBuilder();
         builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/HudsonPrivateSecurityRealm.groovy"));
-        return findBean(AuthenticationManager.class,builder.createApplicationContext());
+        WebApplicationContext context = builder.createApplicationContext();
+        return new SecurityComponents(
+                findBean(AuthenticationManager.class, context),
+                findBean(UserDetailsService.class, context));
     }
 
     public Descriptor<SecurityRealm> getDescriptor() {

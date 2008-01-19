@@ -5,6 +5,7 @@ import org.acegisecurity.providers.ldap.authenticator.BindAuthenticator
 import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator
 import org.acegisecurity.ldap.DefaultInitialDirContextFactory
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
+import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
 
 /*
     Configure LDAP as the authentication realm.
@@ -38,6 +39,11 @@ authenticationManager(ProviderManager) {
     providers = [
         // talk to LDAP
         bean(LdapAuthenticationProvider,bindAuthenticator,authoritiesPopulator),
+
+    // these providers apply everywhere
+        bean(RememberMeAuthenticationProvider) {
+            key = app.getSecretKey();
+        },
         // this doesn't mean we allow anonymous access.
         // we just authenticate anonymous users as such,
         // so that later authorization can reject them if so configured
