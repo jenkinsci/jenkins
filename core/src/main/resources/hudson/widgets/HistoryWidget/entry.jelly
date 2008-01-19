@@ -36,7 +36,7 @@
     </td></tr>
   </j:if>
   <j:if test="${!empty build.description}">
-    <tr>
+    <tr class="${h.ifThenElse(build.building,'transitive',null)}">
       <td></td>
       <td style="padding:0;white-space:normal">
         ${build.truncatedDescription}
