@@ -14,6 +14,10 @@
               <td>${%Password}:</td>
               <td><input type="password" name="j_password" /></td>
             </tr>
+            <tr>
+              <td><input type="checkbox" name="remember_me" /></td>
+              <td>${%Remember me on this computer}</td>
+            </tr>
           </table>
           <input type="hidden" name="from" value="${request.getParameter('from')}" />
           <f:submit value="${%login}" />

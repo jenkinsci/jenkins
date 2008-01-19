@@ -37,6 +37,7 @@ def commonProviders(redirectUrl) {
 rememberMeServices(TokenBasedRememberMeServices) {
     userDetailsService = userDetailsServiceProxy;
     key = app.getSecretKey();
+    parameter = "remember_me"; // this is the form field name in login.jelly
 }
 
 filter(ChainedServletFilter) {
