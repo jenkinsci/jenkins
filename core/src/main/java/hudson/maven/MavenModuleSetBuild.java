@@ -262,10 +262,14 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     margs.addTokenized(project.getGoals());
 
                     Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
+                    MavenProbeAction mpa=null;
                     try {
+                        mpa = new MavenProbeAction(project,process.channel);
+                        addAction(mpa);
                         return process.channel.call(builder);
                     } finally {
                         builder.end(launcher);
+                        getActions().remove(mpa);
                         process.discard();
                     }
                 }

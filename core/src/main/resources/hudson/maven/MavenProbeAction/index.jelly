@@ -1,0 +1,11 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:test="/lib/test">
+  <l:layout>
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <div>
+        Obtain information about the running Maven process by clicking
+        links from the left. Often useful for trouble-shooting problems.
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

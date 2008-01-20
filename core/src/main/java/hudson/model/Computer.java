@@ -1,13 +1,12 @@
 package hudson.model;
 
 import hudson.EnvVars;
-import hudson.Functions;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
-import hudson.tasks.Publisher;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
+import hudson.util.RemotingDiagnostics;
 import hudson.util.RunList;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -15,13 +14,9 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.management.ThreadInfo;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -257,14 +252,7 @@ public abstract class Computer extends AbstractModelObject {
      * If this is the master, it returns the system property of the master computer.
      */
     public Map<Object,Object> getSystemProperties() throws IOException, InterruptedException {
-        return getChannel().call(new GetSystemProperties());
-    }
-
-    private static final class GetSystemProperties implements Callable<Map<Object,Object>,RuntimeException> {
-        public Map<Object,Object> call() {
-            return new TreeMap<Object,Object>(System.getProperties());
-        }
-        private static final long serialVersionUID = 1L;
+        return RemotingDiagnostics.getSystemProperties(getChannel());
     }
 
     /**
@@ -281,33 +269,8 @@ public abstract class Computer extends AbstractModelObject {
      *      key is the thread name, and the value is the pre-formatted dump.
      */
     public Map<String,String> getThreadDump() throws IOException, InterruptedException {
-        VirtualChannel channel = getChannel();
-        if(channel==null)
-            return Collections.singletonMap("N/A","N/A");
-        return channel.call(new GetThreadDump());
+        return RemotingDiagnostics.getThreadDump(getChannel());
     }
-
-    private static final class GetThreadDump implements Callable<Map<String,String>,RuntimeException> {
-        public Map<String,String> call() {
-            Map<String,String> r = new LinkedHashMap<String,String>();
-            try {
-                for (ThreadInfo ti : Functions.getThreadInfos())
-                    r.put(ti.getThreadName(),Functions.dumpThreadInfo(ti));
-            } catch (LinkageError _) {
-                // not in JDK6. fall back to JDK5
-                r.clear();
-                for (Map.Entry<Thread,StackTraceElement[]> t : Thread.getAllStackTraces().entrySet()) {
-                    StringBuffer buf = new StringBuffer();
-                    for (StackTraceElement e : t.getValue())
-                        buf.append(e).append('\n');
-                    r.put(t.getKey().getName(),buf.toString());
-                }
-            }
-            return r;
-        }
-        private static final long serialVersionUID = 1L;
-    }
-
 
     public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new DaemonThreadFactory());
 
