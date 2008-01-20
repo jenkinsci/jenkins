@@ -103,6 +103,9 @@ public final class Slave implements Node, Serializable {
         //    throw new FormException("Invalid slave configuration for " + name + ". No such directory exists: " + localFS, null);
         if (remoteFS.equals(""))
             throw new FormException("Invalid slave configuration for " + name + ". No remote directory given", null);
+
+        if (numExecutors<=0)
+            throw new FormException("Invalid slave configuration for " + name + ". Invalid # of executors.", null);
     }
 
     public String getCommand() {
