@@ -272,17 +272,7 @@ public abstract class Computer extends AbstractModelObject {
      * If this is the master, it returns the system property of the master computer.
      */
     public Map<String,String> getEnvVars() throws IOException, InterruptedException {
-        VirtualChannel channel = getChannel();
-        if(channel==null)
-            return Collections.singletonMap("N/A","N/A");
-        return channel.call(new GetEnvVars());
-    }
-
-    private static final class GetEnvVars implements Callable<Map<String,String>,RuntimeException> {
-        public Map<String,String> call() {
-            return new TreeMap<String,String>(EnvVars.masterEnvVars);
-        }
-        private static final long serialVersionUID = 1L;
+        return EnvVars.getRemote(getChannel());
     }
 
     /**

@@ -1,10 +1,15 @@
 package hudson;
 
+import hudson.remoting.VirtualChannel;
+import hudson.remoting.Callable;
+
 import java.io.File;
 import java.io.Serializable;
+import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Comparator;
+import java.util.Collections;
 
 /**
  * Environment variables.
@@ -60,6 +65,26 @@ public class EnvVars extends TreeMap<String,String> {
             override(e.getKey(),e.getValue());
         }
     }
+
+    /**
+     * Obtains the environment variables of a remote peer.
+     *
+     * @param channel
+     *      Can be null, in which case the map indicating "N/A" will be returned.
+     */
+    public static Map<String,String> getRemote(VirtualChannel channel) throws IOException, InterruptedException {
+        if(channel==null)
+            return Collections.singletonMap("N/A","N/A");
+        return new EnvVars(channel.call(new GetEnvVars()));
+    }
+
+    private static final class GetEnvVars implements Callable<Map<String,String>,RuntimeException> {
+        public Map<String,String> call() {
+            return new TreeMap<String,String>(EnvVars.masterEnvVars);
+        }
+        private static final long serialVersionUID = 1L;
+    }
+
 
     /**
      * Compares strings case insensitively.
