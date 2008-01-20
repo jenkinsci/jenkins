@@ -15,7 +15,7 @@ import hudson.security.BasicAuthenticationFilter
 import hudson.security.AuthenticationProcessingFilter2
 import hudson.security.UnwrapSecurityExceptionFilter
 import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
-import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices
+import hudson.security.TokenBasedRememberMeServices2
 
 // providers that apply to both patterns
 def commonProviders(redirectUrl) {
@@ -34,7 +34,7 @@ def commonProviders(redirectUrl) {
     ]
 }
 
-rememberMeServices(TokenBasedRememberMeServices) {
+rememberMeServices(TokenBasedRememberMeServices2) {
     userDetailsService = userDetailsServiceProxy;
     key = app.getSecretKey();
     parameter = "remember_me"; // this is the form field name in login.jelly
