@@ -28,7 +28,7 @@
 
         <j:if test="${it.securityRealm.allowsSignup()}">
           <div style="margin-top:2em">
-            <a href="signup">Create an account</a> if you are not a member yet.
+            ${%signUp}
           </div>
         </j:if>
       </div>
