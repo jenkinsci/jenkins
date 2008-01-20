@@ -15,8 +15,8 @@
               <td><input type="password" name="j_password" /></td>
             </tr>
             <tr>
-              <td><input type="checkbox" name="remember_me" /></td>
-              <td>${%Remember me on this computer}</td>
+              <td align="right"><input id="remember_me" type="checkbox" name="remember_me" /></td>
+              <td><label for="remember_me">${%Remember me on this computer}</label></td>
             </tr>
           </table>
           <input type="hidden" name="from" value="${request.getParameter('from')}" />
