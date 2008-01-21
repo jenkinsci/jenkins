@@ -79,7 +79,7 @@
 
     <div class="repeatable-insertion-point" />
     <j:if test="${!attrs.noAddButton}">
-      <input type="button" value="Add" class="repeatable-add" />
+      <input type="button" value="${%Add}" class="repeatable-add" />
     </j:if>
   </div>
 </j:jelly>
