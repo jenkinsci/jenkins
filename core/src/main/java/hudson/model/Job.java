@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.StructuredForm;
 import hudson.Util;
-import hudson.security.Permission;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.search.QuickSilver;
@@ -43,8 +42,7 @@ import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.Color;
-import java.awt.Paint;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -819,7 +817,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         DataSetBuilder<String,ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
         for( Run r : getBuilds() ) {
             if(r.isBuilding())  continue;
-            data.add( ((double)r.getDuration())/(1000*60), "mins", new ChartLabel(r));
+            data.add( ((double)r.getDuration())/(1000*60), Messages.Job_minutes(), new ChartLabel(r));
         }
 
         final CategoryDataset dataset = data.build();

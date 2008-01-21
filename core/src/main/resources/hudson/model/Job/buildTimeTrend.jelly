@@ -1,6 +1,6 @@
 <!-- Displays the chart that show how long builds are taking -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName} Build time trend">
+  <l:layout title="${%title(it.displayName)}">
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
       <j:choose>
@@ -14,10 +14,10 @@
             <table class="sortable" style="margin-top:1em;">
               <tr>
                 <th><st:nbsp/></th>
-                <th initialSortDir="up">Build</th>
-                <th>Duration</th>
+                <th initialSortDir="up">${%Build}</th>
+                <th>${%Duration}</th>
                 <j:if test="${isMasterSlaveEnabled}">
-                  <th>Slave</th>
+                  <th>${%Slave}</th>
                 </j:if>
               </tr>
               <j:forEach var="r" items="${it.builds}">
@@ -42,7 +42,7 @@
           </div>
         </j:when>
         <j:otherwise>
-          More than 1 builds are needed for the trend report.
+          ${%More than 1 builds are needed for the trend report.}
         </j:otherwise>
       </j:choose>
     </l:main-panel>
