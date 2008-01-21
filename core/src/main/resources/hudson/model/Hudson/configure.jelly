@@ -46,10 +46,10 @@
 
         <s:entry title="${%Access Control}">
           <table style="width:100%">
-            <s:descriptorRadioList title="Security Realm" varName="realm"
+            <s:descriptorRadioList title="${%Security Realm}" varName="realm"
                                    instance="${it.securityRealm}"
                                    descriptors="${h.securityRealmDescriptors}"/>
-            <s:descriptorRadioList title="Authorization" varName="authorization"
+            <s:descriptorRadioList title="${%Authorization}" varName="authorization"
                                    instance="${it.authorizationStrategy}"
                                    descriptors="${h.authorizationStrategyDescriptors}"/>
           </table>
@@ -57,36 +57,33 @@
       </s:optionalBlock>
 
 
-      <s:section title="Master/Slave Support">
-        <s:entry title="Slaves"
-          description="
-            List of slave nodes registered to this master Hudson. Jobs can be configured to
-            execute on slave nodes to handle a large number of jobs.
-          ">
+      <s:section title="${%Master/Slave Support}">
+        <s:entry title="${%Slaves}"
+          description="${%slaves.description}">
           <s:repeatable var="s" items="${it.slaves}" name="slaves">
             <table width="100%">
-              <s:entry title="name" help="/help/system-config/master-slave/name.html">
+              <s:entry title="${%name}" help="/help/system-config/master-slave/name.html">
                 <s:textbox name="slave.name" value="${s.nodeName}" />
               </s:entry>
 
-              <s:entry title="launch command" help="/help/system-config/master-slave/command.html">
+              <s:entry title="${%launch command}" help="/help/system-config/master-slave/command.html">
                 <s:textbox name="slave.command" value="${s.command}"/>
               </s:entry>
 
-              <s:entry title="description" help="/help/system-config/master-slave/description.html">
+              <s:entry title="${%description}" help="/help/system-config/master-slave/description.html">
                 <s:textbox name="slave.description" value="${s.nodeDescription}" />
               </s:entry>
 
-              <s:entry title="# of executors" help="/help/system-config/master-slave/numExecutors.html">
+              <s:entry title="${%# of executors}" help="/help/system-config/master-slave/numExecutors.html">
                 <input class="setting-input number" name="slave.numExecutors"
                   type="text" value="${s.numExecutors}" />
               </s:entry>
 
-              <s:entry title="remote FS root" help="/help/system-config/master-slave/remoteFS.html">
+              <s:entry title="${%remote FS root}" help="/help/system-config/master-slave/remoteFS.html">
                 <s:textbox name="slave.remoteFS" value="${s.remoteFS}" />
               </s:entry>
 
-              <s:entry title="usage" help="/help/system-config/master-slave/usage.html">
+              <s:entry title="${%usage}" help="/help/system-config/master-slave/usage.html">
                 <select class="setting-input" name="slave.mode">
                   <j:forEach var="m" items="${h.getNodeModes()}">
                     <s:option value="${m.name}" selected="${m==s.mode}">${m.description}</s:option>
@@ -94,7 +91,7 @@
                 </select>
               </s:entry>
 
-              <s:entry title="labels" help="/help/system-config/master-slave/label.html">
+              <s:entry title="${%labels}" help="/help/system-config/master-slave/label.html">
                 <s:textbox name="slave.label" value="${s.labelString}" />
               </s:entry>
 
@@ -108,19 +105,19 @@
         </s:entry>
       </s:section>
 
-      <s:section title="JDKs">
-        <s:entry title="JDK installations"
-                 description="List of JDK installations on this system">
+      <s:section title="${%JDKs}">
+        <s:entry title="${%JDK installations}"
+                 description="${%List of JDK installations on this system}">
           <s:repeatable var="inst" items="${it.JDKs}" name="jdks">
             <table width="100%">
-              <s:entry title="name">
+              <s:entry title="${%name}">
                 <input class="setting-input" name="jdk_name"
                   type="text" value="${inst.name}" />
               </s:entry>
 
               <j:set var="status" value="${null}" />
               <j:if test="${inst!=null and !inst.exists and inst.name!=''}">
-                <j:set var="status" value="&lt;span class=error>No such JDK exists&lt;/span>" />
+                <j:set var="status" value="${%no.such.JDK}" />
               </j:if>
               <s:entry title="JAVA_HOME" description="${status}">
                 <input class="setting-input validated" name="jdk_home"
@@ -156,7 +153,7 @@
       <local:globalConfig className="hudson.model.Jobs" field="PROPERTIES" />
 
       <s:block>
-        <s:submit value="Save" />
+        <s:submit value="${%Save}" />
       </s:block>
     </s:form>
   </l:main-panel>

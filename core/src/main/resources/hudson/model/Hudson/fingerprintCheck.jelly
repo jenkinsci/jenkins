@@ -7,7 +7,7 @@
     <l:main-panel>
       <h1>
         <img src="${imagesURL}/48x48/fingerprint.gif" />
-        Check File Fingerprint
+        ${%Check File Fingerprint}
       </h1>
       <f:form method="post" action="doFingerprintCheck" enctype="multipart/form-data">
         <f:block>
@@ -17,11 +17,11 @@
           the database in Hudson (<a href="https://hudson.dev.java.net/fingerprint.html">more details</a>)
           </div>
         </f:block>
-        <f:entry title="File to check">
+        <f:entry title="${%File to check}">
           <input type="file" name="name" class="setting-input" />
         </f:entry>
         <f:block>
-          <f:submit name="Submit" value="Check" />
+          <f:submit value="${%Check}" />
         </f:block>
       </f:form>
     </l:main-panel>

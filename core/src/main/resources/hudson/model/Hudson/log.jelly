@@ -11,14 +11,14 @@
     </j:forEach>
 
     <h2>
-      Logger Configuration
+      ${%Logger Configuration}
       <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Logger+Configuration">
         <img src="${imagesURL}/16x16/help.gif" />
       </a>
     </h2>
     <form action="configLogger" method="post">
-      Name: <input type="text" name="name" width="40" />
-      Level:
+      ${%Name}: <input type="text" name="name" width="40" />
+      ${%Level}:
       <select name="level">
         <option>inherit</option>
         <option>off</option>
@@ -32,18 +32,18 @@
         <option>all</option>
       </select>
       <st:nbsp/>
-      <f:submit value="Submit"/>
+      <f:submit value="${%Submit}"/>
     </form>
 
     <!-- TODO: put this in the <head> tag. -->
     <div align="right" style="margin:1em">
       <img src="${imagesURL}/atom.gif" border="0"/>
       <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
-      <a href="logRss">All</a>
+      <a href="logRss">${%All}</a>
       <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
-      <a href="logRss?level=SEVERE">&gt; SEVERE</a>
+      <a href="logRss?level=SEVERE">${%&gt; SEVERE}</a>
       <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
-      <a href="logRss?level=WARNING">&gt; WARNING</a>
+      <a href="logRss?level=WARNING">${%&gt; WARNING}</a>
     </div>
   </l:main-panel>
 </l:layout>
