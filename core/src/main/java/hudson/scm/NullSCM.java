@@ -43,7 +43,7 @@ public class NullSCM extends SCM {
         }
 
         public String getDisplayName() {
-            return "None";
+            return Messages.NullSCM_DisplayName();
         }
 
         public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {

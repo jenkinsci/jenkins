@@ -93,7 +93,7 @@ public class Shell extends CommandInterpreter {
         }
 
         public String getDisplayName() {
-            return "Execute shell";
+            return Messages.Shell_DisplayName();
         }
 
         public Builder newInstance(StaplerRequest req, JSONObject data) {

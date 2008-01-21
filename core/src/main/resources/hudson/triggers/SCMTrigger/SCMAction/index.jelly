@@ -2,11 +2,11 @@
   <l:layout>
     <st:include it="${it.owner}" page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>Last ${it.displayName}</h1>
+      <h1>${%title(it.displayName)}</h1>
       <j:set var="log" value="${it.log}" />
       <j:choose>
         <j:when test="${empty(log)}">
-          Polling has not run yet.
+          ${%Polling has not run yet.}
         </j:when>
         <j:otherwise>
           <pre>${it.log}</pre>

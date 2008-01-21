@@ -43,7 +43,7 @@ public class BatchFile extends CommandInterpreter {
         }
 
         public String getDisplayName() {
-            return "Execute Windows batch command";
+            return Messages.BatchFile_DisplayName();
         }
 
         public Builder newInstance(StaplerRequest req, JSONObject data) {

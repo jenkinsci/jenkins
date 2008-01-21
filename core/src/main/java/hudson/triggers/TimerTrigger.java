@@ -45,7 +45,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
         }
 
         public String getDisplayName() {
-            return "Build periodically";
+            return Messages.TimerTrigger_DisplayName();
         }
 
         public String getHelpFile() {

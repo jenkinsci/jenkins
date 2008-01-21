@@ -150,7 +150,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public String getDisplayName() {
-            return "Poll SCM";
+            return Messages.SCMTrigger_DisplayName();
         }
 
         public String getHelpFile() {
