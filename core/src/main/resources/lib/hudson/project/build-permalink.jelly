@@ -10,7 +10,7 @@
   <j:set var="b" value="${it[property]}"/>
   <j:if test="${b!=null}">
     <li>
-      <a href="${property}/">${title} (#${b.number}), ${b.timestampString}</a>
+      <a href="${property}/">${%format(title,b.number,b.timestampString)}</a>
     </li>
   </j:if>
 </j:jelly>
