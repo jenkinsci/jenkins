@@ -1,10 +1,10 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:section title="Maven">
-    <f:entry title="Maven installation"
-      description="List of Maven installations on this system. Both maven 1 and 2 are supported.">
+  <f:section title="${%Maven}">
+    <f:entry title="${%Maven installation}"
+      description="${%List of Maven installations on this system. Both maven 1 and 2 are supported.}">
       <f:repeatable var="maven" items="${descriptor.installations}">
         <table width="100%">
-          <f:entry title="name">
+          <f:entry title="${%name}">
             <input class="setting-input" name="maven.name"
               type="text" value="${maven.name}"/>
           </f:entry>
