@@ -212,7 +212,7 @@ public class Ant extends Builder {
         }
 
         public String getDisplayName() {
-            return "Invoke Ant";
+            return Messages.Ant_DisplayName();
         }
 
         public AntInstallation[] getInstallations() {
