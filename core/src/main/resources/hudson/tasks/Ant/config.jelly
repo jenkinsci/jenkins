@@ -1,6 +1,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${!empty(descriptor.installations)}">
-    <f:entry title="Ant Version">
+    <f:entry title="${%Ant Version}">
       <select class="setting-input" name="ant.antName">
         <option value="(Default)">(${%Default})</option>
         <j:forEach var="inst" items="${descriptor.installations}">
