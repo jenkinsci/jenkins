@@ -3,8 +3,7 @@
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <div>
-        Obtain information about the running Maven process by clicking
-        links from the left. Often useful for trouble-shooting problems.
+        ${%description}
       </div>
     </l:main-panel>
   </l:layout>

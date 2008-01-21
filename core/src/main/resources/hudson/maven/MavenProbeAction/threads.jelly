@@ -2,7 +2,7 @@
   <l:layout permission="${app.ADMINISTER}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>Thread Dump</h1>
+      <h1>${%Thread Dump}</h1>
       <j:forEach var="t" items="${it.threadDump.entrySet()}">
         <h2>${t.key}</h2>
         <pre>${t.value}</pre>
