@@ -5,11 +5,11 @@
 		<l:main-panel>
       <j:set var="msg" value="${it.whyKeepLog}"/>
       <j:if test="${msg!=null}">
-		    <b>Warning</b>: Cannot delete this build, because it is ${msg}
+		    <b>${%Warning}</b>: ${%cannotMsg(msg)}
 		  </j:if>		  
 		  <j:if test="${msg==null}">
 		    <form method="get" action="doDelete">
-		      Are you sure about deleting the build?
+		      ${%Are you sure about deleting the build?}
 		      <f:submit value="Yes" />
 		    </form>
 		  </j:if>

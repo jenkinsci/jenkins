@@ -8,7 +8,7 @@
           <st:include page="delete.jelly" />
         </l:isAdmin>
         <div style="margin-top:1em">
-          Started ${it.timestampString} ago
+          ${%startedAgo(it.timestampString)}
           </div><div>
           <j:if test="${!it.building}">
             Took <a href="${rootURL}/${it.parent.url}buildTimeTrend">${it.durationString}</a>
@@ -17,7 +17,7 @@
       </div>
 
       <t:buildCaption>
-        Build #${it.number}
+        ${%Build} #${it.number}
         (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)
       </t:buildCaption>
 
@@ -37,7 +37,7 @@
               <!-- dependency changes -->
               <j:set var="depChanges" value="${it.getDependencyChanges(it.previousBuild)}"/>
               <j:if test="${!empty(depChanges)}">
-                Changes in dependency
+                ${%Changes in dependency}
                 <ol>
                   <j:forEach var="dep" items="${depChanges.values()}">
                     <li>
@@ -60,17 +60,17 @@
                         <img src="${imagesURL}/16x16/${dep.to.buildStatusUrl}"
                              alt="${dep.to.iconColor.description}" />${dep.to.displayName}</a>
 
-                      (<a href="${rootURL}/${dep.project.url}changes?from=${dep.fromId}&amp;to=${dep.toId}">detail</a>)
+                      (<a href="${rootURL}/${dep.project.url}changes?from=${dep.fromId}&amp;to=${dep.toId}">${%detail}</a>)
                     </li>
                   </j:forEach>
                 </ol>
               </j:if>
             </j:when>
             <j:when test="${it.building}">
-              Not yet determined
+              ${%Not yet determined}
             </j:when>
             <j:otherwise>
-              Failed to determine (<a href="console">log</a>)
+              ${%Failed to determine} (<a href="console">${%log}</a>)
             </j:otherwise>
           </j:choose>
         </t:summary>
@@ -86,7 +86,7 @@
       <!-- upstream/downstream builds -->
       <j:set var="upstream" value="${it.upstreamBuilds}" />
       <j:if test="${!empty(upstream)}">
-        <h2>Upstream Builds</h2>
+        <h2>${%Upstream Builds}</h2>
         <ul style="list-style-type: none;">
           <j:forEach var="item" items="${upstream}">
             <li>
@@ -98,14 +98,14 @@
       </j:if>
       <j:set var="downstream" value="${it.downstreamBuilds}" />
       <j:if test="${!empty(downstream)}">
-        <h2>Downstream Builds</h2>
+        <h2>${%Downstream Builds}</h2>
         <ul style="list-style-type: none;">
           <j:forEach var="item" items="${downstream}">
             <li>
               <a href="${rootURL}/${item.key.url}">${item.key.displayName}</a>
               <j:choose>
                 <j:when test="${item.value.isEmpty()}">
-                  (none)
+                  (${%none})
                 </j:when>
                 <j:otherwise>
                   <t:buildRangeLink job="${item.key}" range="${item.value}"/>
@@ -117,9 +117,9 @@
       </j:if>
 
 
-      <h2>Permalinks</h2>
+      <h2>${%Permalinks}</h2>
       <ul>
-        <li><a href="buildNumber">Build number</a></li>
+        <li><a href="buildNumber">${%Build number}</a></li>
       </ul>
     </l:main-panel>
   </l:layout>

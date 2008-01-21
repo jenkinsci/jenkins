@@ -6,11 +6,11 @@
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <t:buildCaption>
-        Console Output
+        ${%Console Output}
       </t:buildCaption>
       <l:rightspace>
         <a href="consoleText">
-          <img src="${imagesURL}/24x24/document.gif" alt="" />View as plain text
+          <img src="${imagesURL}/24x24/document.gif" alt="" />${%View as plain text}
         </a>
       </l:rightspace>
       <j:choose>

@@ -5,9 +5,11 @@
     </l:header>
     <l:side-panel />
     <l:main-panel>
-      <h1 style="margin-top:4em">Please wait while Hudson is getting ready to work<span id="progress">...</span></h1>
+      <h1 style="margin-top:4em">
+        ${%Please wait while Hudson is getting ready to work}<span id="progress">...</span>
+      </h1>
       <p style="color:grey">
-        Your browser will reload automatically when Hudson is ready.
+        ${%Your browser will reload automatically when Hudson is ready.}
       </p>
 
       <script><![CDATA[
