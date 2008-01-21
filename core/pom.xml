@@ -39,6 +39,7 @@
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
+        <version>1.3</version>
         <executions>
           <execution>
             <goals>
