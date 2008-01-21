@@ -372,21 +372,21 @@ public class Util {
     public static String getTimeSpanString(long duration) {
         duration /= 1000;
         if(duration<60)
-            return combine(duration,"second");
+            return Messages.Util_second(duration);
         duration /= 60;
         if(duration<60)
-            return combine(duration,"minute");
+            return Messages.Util_minute(duration);
         duration /= 60;
         if(duration<24)
-            return combine(duration,"hour");
+            return Messages.Util_hour(duration);
         duration /= 24;
         if(duration<30)
-            return combine(duration,"day");
+            return Messages.Util_day(duration);
         duration /= 30;
         if(duration<12)
-            return combine(duration,"month");
+            return Messages.Util_month(duration);
         duration /= 12;
-        return combine(duration,"year");
+        return Messages.Util_year(duration);
     }
 
     /**

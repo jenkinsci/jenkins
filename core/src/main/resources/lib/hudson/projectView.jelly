@@ -85,7 +85,7 @@
                   (<a href="${jobBaseUrl}${job.shortUrl}lastSuccessfulBuild/">#${lsBuild.number}</a>)
                 </j:when>
                 <j:otherwise>
-                  N/A
+                  ${%N/A}
                 </j:otherwise>
               </j:choose>
             </td>
@@ -96,7 +96,7 @@
                   (<a href="${jobBaseUrl}${job.shortUrl}lastFailedBuild/">#${lfBuild.number}</a>)
                 </j:when>
                 <j:otherwise>
-                  N/A
+                  ${%N/A}
                 </j:otherwise>
               </j:choose>
             </td>
@@ -109,7 +109,7 @@
                   ${lfBuild.durationString}
                 </j:when>
                 <j:otherwise>
-                  N/A
+                  ${%N/A}
                 </j:otherwise>
               </j:choose>
             </td>
