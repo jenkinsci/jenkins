@@ -4,13 +4,13 @@
     <l:main-panel>
       <h1>${it.pronoun} ${it.displayName}</h1>
       <t:editableDescription adminOnly="true"/>
-      <h2>Modules</h2>
+      <h2>${%Modules}</h2>
 
       <j:choose>
         <j:when test="${empty(it.modules)}">
           <j:choose>
             <j:when test="${it.inQueue or it.building}">
-              A build is in progress to parse the list of modules from POM.
+              ${%A build is in progress to parse the list of modules from POM.}
             </j:when>
             <j:otherwise>
               <div>
@@ -45,31 +45,31 @@
           </t:summary>
         </j:forEach>
         <t:summary icon="folder.gif" href="ws/">
-          Workspace
+          ${%Workspace}
         </t:summary>
 
         <t:artifactList caption="Last Successful Artifacts"
             build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/" />
 
         <t:summary icon="notepad.gif" href="changes">
-          Recent Changes
+          ${%Recent Changes}
         </t:summary>
 
         <j:set var="tr" value="${it.lastBuild.testResultAction}"/>
         <j:if test="${tr!=null}">
           <t:summary icon="clipboard.gif">
-            <a href="lastBuild/testReport/">Latest Test Result</a>
+            <a href="lastBuild/testReport/">${%Latest Test Result}</a>
             <t:test-result it="${tr}" />
           </t:summary>
         </j:if>
       </table>
 
-      <h2>Permalinks</h2>
+      <h2>${%Permalinks}</h2>
       <ul>
-        <p:build-permalink property="lastBuild"           title="Last build" />
-        <p:build-permalink property="lastStableBuild"     title="Last stable build" />
-        <p:build-permalink property="lastSuccessfulBuild" title="Last successful build" />
-        <p:build-permalink property="lastFailedBuild"     title="Last failed build" />
+        <p:build-permalink property="lastBuild"           title="${%Last build}" />
+        <p:build-permalink property="lastStableBuild"     title="${%Last stable build}" />
+        <p:build-permalink property="lastSuccessfulBuild" title="${%Last successful build}" />
+        <p:build-permalink property="lastFailedBuild"     title="${%Last failed build}" />
       </ul>
     </l:main-panel>
   </l:layout>

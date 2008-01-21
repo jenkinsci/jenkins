@@ -25,20 +25,20 @@
       </t:summary>
     </j:forEach>
     <t:summary icon="folder.gif" href="ws/">
-      Workspace
+      ${%Workspace}
     </t:summary>
 
     <t:artifactList caption="Last Successful Artifacts"
         build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/" />
 
     <t:summary icon="notepad.gif" href="changes">
-      Recent Changes
+      ${%Recent Changes}
     </t:summary>
 
     <j:set var="tr" value="${it.lastBuild.testResultAction}"/>
     <j:if test="${tr!=null}">
       <t:summary icon="clipboard.gif">
-        <a href="lastBuild/testReport/">Latest Test Result</a>
+        <a href="lastBuild/testReport/">${%Latest Test Result}</a>
         <t:test-result it="${tr}" />
       </t:summary>
     </j:if>
@@ -47,7 +47,7 @@
   <!-- upstream/downstream projects -->
   <j:set var="upstream" value="${it.upstreamProjects}" />
   <j:if test="${!empty(upstream)}">
-    <h2>Upstream Projects</h2>
+    <h2>${%Upstream Projects}</h2>
     <ul style="list-style-type: none;">
       <j:forEach var="item" items="${upstream}">
         <li>
@@ -59,7 +59,7 @@
   </j:if>
   <j:set var="downstream" value="${it.downstreamProjects}" />
   <j:if test="${!empty(downstream)}">
-    <h2>Downstream Projects</h2>
+    <h2>${%Downstream Projects}</h2>
     <ul style="list-style-type: none;">
       <j:forEach var="item" items="${downstream}">
         <li>
