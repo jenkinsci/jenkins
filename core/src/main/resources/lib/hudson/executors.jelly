@@ -15,7 +15,7 @@
                 </j:when>
                 <j:otherwise>
                   <a href="${rootURL}/computer/(master)/">${%Master}</a>
-                  <j:if test="${c.offline}">${%(offline)}</j:if>
+                  <j:if test="${c.offline}">(${%offline})</j:if>
                 </j:otherwise>
               </j:choose>
             </th>
