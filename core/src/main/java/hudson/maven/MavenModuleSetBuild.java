@@ -299,6 +299,10 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             List<PomInfo> poms;
             try {
                 poms = project.getModuleRoot().act(new PomParser(listener,project.getRootPOM(),project.getProfiles()));
+            } catch (IOException e) {
+                if (e.getCause() instanceof AbortException)
+                    throw (AbortException) e.getCause();
+                throw e;
             } catch (MavenExecutionException e) {
                 // Maven failed to parse POM
                 e.getCause().printStackTrace(listener.error("Failed to parse POM"));
