@@ -345,7 +345,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public String getTimestampString() {
         long duration = new GregorianCalendar().getTimeInMillis()-timestamp.getTimeInMillis();
-        return Util.getTimeSpanString(duration);
+        return Util.getPastTimeString(duration);
     }
 
     /**

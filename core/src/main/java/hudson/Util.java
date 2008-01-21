@@ -9,6 +9,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.kohsuke.stapler.Stapler;
+import org.jvnet.localizer.Localizable;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -365,6 +366,7 @@ public class Util {
 
     /**
      * Returns a human readable text of the time duration.
+     * This version should be used for representing a duration of some activity (like build)
      *
      * @param duration
      *      number of milliseconds.
@@ -387,6 +389,14 @@ public class Util {
             return Messages.Util_month(duration);
         duration /= 12;
         return Messages.Util_year(duration);
+    }
+
+    /**
+     * Get a human readable string representing strings like "xxx days ago",
+     * which should be used to point to the occurence of an event in the past. 
+     */
+    public static String getPastTimeString(long duration) {
+        return Messages.Util_pastTime(getTimeSpanString(duration));
     }
 
     /**
