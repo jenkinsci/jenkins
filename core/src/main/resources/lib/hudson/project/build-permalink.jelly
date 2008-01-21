@@ -10,8 +10,7 @@
   <j:set var="b" value="${it[property]}"/>
   <j:if test="${b!=null}">
     <li>
-      <a href="${property}/">${title}
-        (#${b.number}), ${b.timestampString} ago</a>
+      <a href="${property}/">${title} (#${b.number}), ${b.timestampString}</a>
     </li>
   </j:if>
 </j:jelly>

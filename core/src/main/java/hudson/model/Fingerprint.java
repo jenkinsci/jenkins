@@ -440,12 +440,11 @@ public class Fingerprint implements ModelObject {
      * Gets the string that says how long since this build has scheduled.
      *
      * @return
-     *      string like "3 minutes" "1 day" etc.
+     *      string like "3 minutes ago" "1 day ago" etc.
      */
     public String getTimestampString() {
         long duration = System.currentTimeMillis()-timestamp.getTime();
-        return Util.getTimeSpanString(duration);
-
+        return Util.getPastTimeString(duration);
     }
 
     /**

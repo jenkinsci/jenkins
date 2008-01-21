@@ -17,10 +17,10 @@
         MD5: ${it.hashString}
       </div>
       <div>
-        Introduced ${it.timestampString} ago
+        ${%introduced(it.timestampString)}
         <j:choose>
           <j:when test="${it.original==null}">
-            outside Hudson
+            ${%outside Hudson}
           </j:when>
           <j:otherwise>
             <t:buildLink job="${it.original.job}" number="${it.original.number}" jobName="${it.original.name}" />
@@ -32,12 +32,12 @@
       <j:choose>
         <j:when test="${empty(jobs)}">
           <p>
-            This file has not been used anywhere else.
+            ${%This file has not been used anywhere else.}
           </p>
         </j:when>
         <j:otherwise>
           <p>
-            This file has been used in the following places:
+            ${%This file has been used in the following places}:
           </p>
           <table class="fingerprint-summary">
             <j:forEach var="j" items="${it.jobs}">
