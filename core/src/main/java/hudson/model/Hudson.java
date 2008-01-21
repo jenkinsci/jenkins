@@ -1514,7 +1514,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         }
 
         String name = req.getParameter("name");
-        if(name==null)
+        if(name==null) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST,"Query parameter 'name' is required");
             return null;
         }
