@@ -7,22 +7,22 @@
   <l:main-panel>
     <s:form method="post" action="configSubmit">
       <s:block>
-        <h1>Installed Plugins</h1>
+        <h1>${%Installed Plugins}</h1>
         <j:if test="${app.isPluginUploaded()}">
           <div style="margin: 1em; height: 1em">
             <div class="error">
-              New plugins will take effect once you restart Hudson
+              ${%New plugins will take effect once you restart Hudson}
             </div>
           </div>
         </j:if>
         <div style="margin: 1em; height: 1em">
           <div class="error" id="needRestart" style="display:none">
-            Changes will take effect when you restart Hudson
+            ${%Changes will take effect when you restart Hudson}
           </div>
         </div>
         <j:choose>
           <j:when test="${empty(it.pluginManager.plugins) &amp;&amp; empty(it.pluginManager.failedPlugins)}">
-            No plugins installed.
+            ${%No plugins installed.}
             <span id="pluginList" style="display:none"/><!-- dummy to keep JavaScript happy -->
           </j:when>
           <j:otherwise>
@@ -97,18 +97,17 @@
 
     <s:form method="post" action="uploadPlugin" enctype="multipart/form-data">
       <s:block>
-        <h1>Upload Plugin</h1>
+        <h1>${%Upload Plugin}</h1>
         <div style="margin-bottom: 1em;">
-          Upload a plugin from your computer by using the form below, or
-          place your plugin at <tt>$HUDSON_HOME/plugins</tt> on the server.
+         ${%uploadtext}
         </div>
       </s:block>
       <s:block>
         <!-- @size is for other browsers, @style is for IE -->
-        File: <input type="file" name="name" class="setting-input" style="width:80%" size='40' />
+        ${%File}: <input type="file" name="name" class="setting-input" style="width:80%" size='40' />
       </s:block>
       <s:block><div>
-        <s:submit value="Upload" />
+        <s:submit value="${%Upload}" />
       </div></s:block>
     </s:form>
 
