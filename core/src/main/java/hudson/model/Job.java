@@ -817,7 +817,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         DataSetBuilder<String,ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
         for( Run r : getBuilds() ) {
             if(r.isBuilding())  continue;
-            data.add( ((double)r.getDuration())/(1000*60), Messages.Job_minutes(), new ChartLabel(r));
+            data.add( ((double)r.getDuration())/(1000*60), "min", new ChartLabel(r));
         }
 
         final CategoryDataset dataset = data.build();
@@ -825,7 +825,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         final JFreeChart chart = ChartFactory.createStackedAreaChart(
             null,                   // chart title
             null,                   // unused
-            "min",                  // range axis label
+            Messages.Job_minutes(),   // range axis label
             dataset,                  // data
             PlotOrientation.VERTICAL, // orientation
             false,                     // include legend
