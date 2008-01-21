@@ -1512,8 +1512,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             // "text/xml;charset=xxx"
             req.setCharacterEncoding("UTF-8");
         }
-        
-        String name = req.getParameter("name").trim();
+
+        String name = req.getParameter("name");
+        if(name==null)
+            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST,"Query parameter 'name' is required");
+            return null;
+        }
+        name = name.trim();
         String mode = req.getParameter("mode");
 
         try {
