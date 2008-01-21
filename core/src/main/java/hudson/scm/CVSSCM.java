@@ -110,10 +110,12 @@ public class CVSSCM extends SCM implements Serializable {
 
     private CVSRepositoryBrowser repositoryBrowser;
 
+    private boolean isTag;
+
     /**
      * @stapler-constructor
      */
-    public CVSSCM(String cvsroot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy) {
+    public CVSSCM(String cvsroot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy, boolean isTag) {
         if(fixNull(branch).equals("HEAD"))
             branch = null;
 
@@ -123,6 +125,7 @@ public class CVSSCM extends SCM implements Serializable {
         this.cvsRsh = nullify(cvsRsh);
         this.canUseUpdate = canUseUpdate;
         this.flatten = !legacy && new StringTokenizer(module).countTokens()==1;
+        this.isTag = isTag;
     }
 
     @Override
@@ -146,6 +149,15 @@ public class CVSSCM extends SCM implements Serializable {
 
     public String getCvsRoot() {
         return cvsroot;
+    }
+
+    /**
+     * Returns true if {@link #getBranch()} represents a tag.
+     * <p>
+     * This causes Hudson to stop using "-D" option while check out and update.
+     */
+    public boolean isTag() {
+        return isTag;
     }
 
     /**
@@ -214,6 +226,7 @@ public class CVSSCM extends SCM implements Serializable {
     }
 
     private void configureDate(ArgumentListBuilder cmd, Date date) { // #192
+        if(isTag)   return; // don't use the -D option.
         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US);
         df.setTimeZone(TimeZone.getTimeZone("UTC")); // #209
         cmd.add("-D", df.format(date));
