@@ -18,6 +18,7 @@ import hudson.model.ModelObject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
+import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.AbstractScmTagAction.AbstractTagWorkerThread;
@@ -25,6 +26,7 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.ByteBuffer;
 import hudson.util.ForkOutputStream;
 import hudson.util.FormFieldValidator;
+import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.zip.ZipEntry;
@@ -65,6 +67,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -191,6 +194,9 @@ public class CVSSCM extends SCM implements Serializable {
         return module;
     }
 
+    /**
+     * List up all modules to check out.
+     */
     private String[] getAllModulesNormalized() {
         // split by whitespace, except "\ "
         String[] r = module.split("(?<!\\\\)[ \\r\\n]+");
@@ -307,7 +313,18 @@ public class CVSSCM extends SCM implements Serializable {
         configureDate(cmd,dt);
         cmd.add(getAllModulesNormalized());
 
-        return run(launcher,cmd,listener, flatten ? dir.getParent() : dir);
+        if(!run(launcher,cmd,listener, flatten ? dir.getParent() : dir))
+            return false;
+
+        // clean up the sticky tag
+        if(flatten)
+            dir.act(new StickyDateCleanUpTask());
+        else {
+            for (String module : getAllModulesNormalized()) {
+                dir.child(module).act(new StickyDateCleanUpTask());
+            }
+        }
+        return true;
     }
 
     /**
@@ -406,7 +423,10 @@ public class CVSSCM extends SCM implements Serializable {
                 new ForkOutputStream(baos,listener.getLogger())))
                 return null;
 
+            // asynchronously start cleaning up the sticky tag while we work on parsing the result
+            Future<Void> task = workspace.actAsync(new StickyDateCleanUpTask());
             parseUpdateOutput("",baos, changedFileNames);
+            join(task);
         } else {
             @SuppressWarnings("unchecked") // StringTokenizer oddly has the wrong type
             final Set<String> moduleNames = new TreeSet(Arrays.asList(getAllModulesNormalized()));
@@ -460,13 +480,26 @@ public class CVSSCM extends SCM implements Serializable {
                     new ForkOutputStream(baos,listener.getLogger())))
                     return null;
 
+                // asynchronously start cleaning up the sticky tag while we work on parsing the result
+                Future<Void> task = modulePath.actAsync(new StickyDateCleanUpTask());
+
                 // we'll run one "cvs log" command with workspace as the base,
                 // so use path names that are relative to moduleName.
                 parseUpdateOutput(baseName+'/',baos, changedFileNames);
+
+                join(task);
             }
         }
 
         return changedFileNames;
+    }
+
+    private void join(Future<Void> task) throws InterruptedException, IOException {
+        try {
+            task.get();
+        } catch (ExecutionException e) {
+            throw new IOException(e);
+        }
     }
 
     // see http://www.network-theory.co.uk/docs/cvsmanual/cvs_153.html for the output format.
@@ -793,6 +826,58 @@ public class CVSSCM extends SCM implements Serializable {
             env.putAll(EnvVars.masterEnvVars);
         buildEnvVars(null/*TODO*/,env);
         return env;
+    }
+
+    /**
+     * Recursively visits directories and get rid of the sticky date in <tt>CVS/Entries</tt> folder.
+     */
+    private static final class StickyDateCleanUpTask implements FileCallable<Void> {
+        public Void invoke(File f, VirtualChannel channel) throws IOException {
+            process(f);
+            return null;
+        }
+
+        private void process(File f) throws IOException {
+            File entries = new File(f,"CVS/Entries");
+            if(!entries.exists())
+                return; // not a CVS-controlled directory. No point in recursing
+
+            boolean modified = false;
+            String contents = FileUtils.readFileToString(entries);
+            StringBuilder newContents = new StringBuilder(contents.length());
+            String[] lines = contents.split("\n");
+            
+            for (String line : lines) {
+                int idx = line.lastIndexOf('/');
+                if(idx==-1) continue;       // something is seriously wrong with this line. just skip.
+
+                String date = line.substring(idx+1);
+                if(STICKY_DATE.matcher(date.trim()).matches()) {
+                    // the format is like "D2008.01.21.23.30.44"
+                    line = line.substring(0,idx+1);
+                    modified = true;
+                }
+
+                newContents.append(line).append('\n');
+            }
+
+            if(modified) {
+                // write it back
+                File tmp = new File(f, "CVS/Entries.tmp");
+                FileUtils.writeStringToFile(tmp,newContents.toString());
+                entries.delete();
+                tmp.renameTo(entries);
+            }
+
+            // recursively process children
+            File[] children = f.listFiles();
+            if(children!=null) {
+                for (File child : children)
+                    process(child);
+            }
+        }
+
+        private static final Pattern STICKY_DATE = Pattern.compile("D\\d\\d\\d\\d\\.\\d\\d\\.\\d\\d\\.\\d\\d\\.\\d\\d\\.\\d\\d");
     }
 
     public static final class DescriptorImpl extends SCMDescriptor<CVSSCM> implements ModelObject {
