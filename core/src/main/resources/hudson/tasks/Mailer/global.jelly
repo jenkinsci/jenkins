@@ -1,26 +1,28 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:section title="E-mail Notification">
+  <f:section title="${%E-mail Notification}">
       <f:description>
       <div align="right">
-        <a href="${rootURL}/publisher/Mailer/sendTestMail">Test configuration by sending e-mail to System Admin Address</a>
+        <a href="${rootURL}/publisher/Mailer/sendTestMail">
+          ${%Test configuration by sending e-mail to System Admin Address}
+        </a>
       </div>
     </f:description>
-    <f:entry title="SMTP server"
+    <f:entry title="${%SMTP server}"
              help="/help/tasks/mailer/smtp-server.html">
       <input class="setting-input" name="mailer_smtp_server"
         type="text" value="${descriptor.smtpServer}"/>
     </f:entry>
-    <f:entry title="Default user e-mail suffix"
+    <f:entry title="${%Default user e-mail suffix}"
              help="/help/tasks/mailer/default-suffix.html">
       <input class="setting-input" name="mailer_default_suffix"
         type="text" value="${descriptor.defaultSuffix}"/>
     </f:entry>
-    <f:entry title="System Admin E-mail Address"
+    <f:entry title="${%System Admin E-mail Address}"
              help="/help/tasks/mailer/admin-address.html">
       <f:textbox name="mailer_admin_address" value="${descriptor.adminAddress}"
           checkUrl="'${rootURL}/publisher/Mailer/addressCheck?value='+encode(this.value)"/>
     </f:entry>
-    <f:entry title="Hudson URL"
+    <f:entry title="${%Hudson URL}"
              help="/help/tasks/mailer/url.html">
       <input class="setting-input" name="mailer_hudson_url"
         type="text" value="${h.ifThenElse(descriptor.url!=null,descriptor.url,h.inferHudsonURL(request))}"/>
@@ -28,16 +30,16 @@
     <f:advanced>
       <f:optionalBlock name="mailer.useSMTPAuth" title="Use SMTP Authentication" checked="${descriptor.smtpAuthUserName!=null}"
           help="/help/tasks/mailer/smtpAuth.html">
-        <f:entry title="User Name">
+        <f:entry title="${%User Name}">
           <input class="setting-input" name="mailer.SMTPAuth.userName"
                  type="text" value="${descriptor.smtpAuthUserName}"/>
         </f:entry>
-        <f:entry title="Password">
+        <f:entry title="${%Password}">
           <input class="setting-input" name="mailer.SMTPAuth.password"
                  type="password" value="${descriptor.smtpAuthPassword}"/>
         </f:entry>
       </f:optionalBlock>
-      <f:entry title="Use SSL"
+      <f:entry title="${%Use SSL}"
                help="/help/tasks/mailer/smtp-use-ssl.html">
         <f:checkbox name="mailer_smtp_use_ssl" checked="${descriptor.useSsl}" />
       </f:entry>
