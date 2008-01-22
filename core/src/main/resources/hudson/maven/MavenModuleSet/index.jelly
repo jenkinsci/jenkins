@@ -14,8 +14,7 @@
             </j:when>
             <j:otherwise>
               <div>
-                Please <a href="build">perform a build</a> so that Hudson can
-                parse the list of modules from POM.
+                ${%text}
               </div>
             </j:otherwise>
           </j:choose>

@@ -8,12 +8,12 @@
       <!-- inject main part here -->
       <st:include page="main.jelly" />
 
-      <h2>Permalinks</h2>
+      <h2>${%Permalinks}</h2>
       <ul>
-        <p:build-permalink property="lastBuild"           title="Last build" />
-        <p:build-permalink property="lastStableBuild"     title="Last stable build" />
-        <p:build-permalink property="lastSuccessfulBuild" title="Last successful build" />
-        <p:build-permalink property="lastFailedBuild"     title="Last failed build" />
+        <p:build-permalink property="lastBuild"           title="${%Last build}" />
+        <p:build-permalink property="lastStableBuild"     title="${%Last stable build}" />
+        <p:build-permalink property="lastSuccessfulBuild" title="${%Last successful build}" />
+        <p:build-permalink property="lastFailedBuild"     title="${%Last failed build}" />
       </ul>
     </l:main-panel>
   </l:layout>
