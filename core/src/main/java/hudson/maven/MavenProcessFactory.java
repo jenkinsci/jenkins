@@ -135,7 +135,14 @@ final class MavenProcessFactory implements ProcessCache.Factory {
     }
 
     public String getMavenOpts() {
-        return mms.getMavenOpts();
+        String opts = mms.getMavenOpts();
+        if (opts == null)
+            return null;
+
+        for (String key : envVars.keySet())
+            opts = opts.replace("$" + key, envVars.get(key));
+        
+        return opts;
     }
 
     public MavenInstallation getMavenInstallation() {
