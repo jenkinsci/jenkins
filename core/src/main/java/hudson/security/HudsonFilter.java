@@ -49,11 +49,15 @@ public class HudsonFilter implements Filter {
      */
     public static final UserDetailsServiceProxy USER_DETAILS_SERVICE_PROXY = new UserDetailsServiceProxy();
 
+    public static final RememberMeServicesProxy REMEMBER_ME_SERVICES_PROXY = new RememberMeServicesProxy();
+
     public void init(FilterConfig filterConfig) throws ServletException {
         Binding binding = new Binding();
         binding.setVariable("authenticationManagerProxy", AUTHENTICATION_MANAGER);
         binding.setVariable("userDetailsServiceProxy", USER_DETAILS_SERVICE_PROXY);
-        binding.setVariable("app", Hudson.getInstance());
+        binding.setVariable("rememberMeServicesProxy", REMEMBER_ME_SERVICES_PROXY);
+        // on some containers this is not ready yet
+        // binding.setVariable("app", Hudson.getInstance());
         BeanBuilder builder = new BeanBuilder();
         builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
 

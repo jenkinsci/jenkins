@@ -40,6 +40,8 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
+import hudson.security.RememberMeServicesProxy;
+import hudson.security.TokenBasedRememberMeServices2;
 import hudson.security.SecurityRealm.SecurityComponents;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
@@ -349,6 +351,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         for (ItemListener l : itemListeners)
             l.onLoaded();
+
+        // create TokenBasedRememberMeServices, which depends on the availability of the secret key
+        TokenBasedRememberMeServices2 rms = new TokenBasedRememberMeServices2();
+        rms.setUserDetailsService(HudsonFilter.USER_DETAILS_SERVICE_PROXY);
+        rms.setKey(getSecretKey());
+        rms.setParameter("remember_me"); // this is the form field name in login.jelly
+        HudsonFilter.REMEMBER_ME_SERVICES_PROXY.setDelegate(rms);
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
