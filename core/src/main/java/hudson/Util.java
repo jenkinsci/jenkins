@@ -49,6 +49,14 @@ import java.util.regex.Pattern;
  */
 public class Util {
 
+    // Constant number of milliseconds in various time units.
+    private static final long ONE_SECOND_MS = 1000;
+    private static final long ONE_MINUTE_MS = 60 * ONE_SECOND_MS;
+    private static final long ONE_HOUR_MS = 60 * ONE_MINUTE_MS;
+    private static final long ONE_DAY_MS = 24 * ONE_HOUR_MS;
+    private static final long ONE_MONTH_MS = 30 * ONE_DAY_MS;
+    private static final long ONE_YEAR_MS = 365 * ONE_DAY_MS;
+
     /**
      * Creates a filtered sublist.
      */
@@ -70,7 +78,7 @@ public class Util {
      * Replaces the occurrence of '$key' by <tt>properties.get('key')</tt>.
      *
      * <p>
-     * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.) 
+     * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)
      *
      */
     public static String replaceMacro(String s, Map<String,String> properties) {
@@ -341,7 +349,7 @@ public class Util {
             throw new IOException2("MD5 not installed",e);    // impossible
         }
     }
-    
+
     public static String getDigestOf(String text) {
         try {
             return getDigestOf(new ByteArrayInputStream(text.getBytes("UTF-8")));
@@ -372,32 +380,63 @@ public class Util {
      *      number of milliseconds.
      */
     public static String getTimeSpanString(long duration) {
-        duration /= 1000;
-        if(duration<60)
-            return Messages.Util_second(duration);
-        duration /= 60;
-        if(duration<60)
-            return Messages.Util_minute(duration);
-        duration /= 60;
-        if(duration<24)
-            return Messages.Util_hour(duration);
-        duration /= 24;
-        if(duration<30)
-            return Messages.Util_day(duration);
-        duration /= 30;
-        if(duration<12)
-            return Messages.Util_month(duration);
-        duration /= 12;
-        return Messages.Util_year(duration);
+        // Break the duration up in to units.
+        long years = duration / ONE_YEAR_MS;
+        duration %= ONE_YEAR_MS;
+        long months = duration / ONE_MONTH_MS;
+        duration %= ONE_MONTH_MS;
+        long days = duration / ONE_DAY_MS;
+        duration %= ONE_DAY_MS;
+        long hours = duration / ONE_HOUR_MS;
+        duration %= ONE_HOUR_MS;
+        long minutes = duration / ONE_MINUTE_MS;
+        duration %= ONE_MINUTE_MS;
+        long seconds = duration / ONE_SECOND_MS;
+
+        if (years > 0)
+            return makeTimeSpanString(years, "year", months, "month");
+        else if (months > 0)
+            return makeTimeSpanString(months, "month", days, "day");
+        else if (days > 0)
+            return makeTimeSpanString(days, "day", hours, "hour");
+        else if (hours > 0)
+            return makeTimeSpanString(hours, "hour", minutes, "minute");
+        else if (minutes > 0)
+            return makeTimeSpanString(minutes, "minute", seconds, "second");
+        else
+            // Durations less than a minute are only expressed in seconds (no ms).
+            return combine(seconds, "second");
     }
+
+
+    /**
+     * Create a string representation of a time duration.  If the quanity of
+     * the most significant unit is big (>=10), then we use only that most
+     * significant unit in the string represenation. If the quantity of the
+     * most significant unit is small (a single-digit value), then we also
+     * use a secondary, smaller unit for increased precision.
+     * So 13 minutes and 43 seconds returns just "13 minutes", but 3 minutes
+     * and 43 seconds is "3 minutes 43 seconds".
+     */
+    private static String makeTimeSpanString(long bigUnit,
+                                             String bigLabel,
+                                             long smallUnit,
+                                             String smallLabel) {
+        String text = combine(bigUnit, bigLabel);
+        if (bigUnit < 10)
+            text += ' ' + combine(smallUnit, smallLabel);
+        return text;
+    }
+
 
     /**
      * Get a human readable string representing strings like "xxx days ago",
-     * which should be used to point to the occurence of an event in the past. 
+     * which should be used to point to the occurence of an event in the past.
      */
     public static String getPastTimeString(long duration) {
         return Messages.Util_pastTime(getTimeSpanString(duration));
     }
+
 
     /**
      * Combines number and unit, with a plural suffix if needed.
@@ -624,7 +663,7 @@ public class Util {
 
     /**
      * Wraps with the error icon and the CSS class to render error message.
-     * @since 1.173 
+     * @since 1.173
      */
     public static String wrapToErrorSpan(String s) {
         s = "<span class=error><img src='"+
