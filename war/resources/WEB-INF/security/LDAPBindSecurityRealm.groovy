@@ -22,6 +22,10 @@ initialDirContextFactory(DefaultInitialDirContextFactory, instance.getLDAPURL() 
   // managerPassword="..."
 }
 
+ldapUserSearch(FilterBasedLdapUserSearch, instance.userSearchBase, instance.userSearch, initialDirContextFactory) {
+    searchSubtree=true
+}
+
 bindAuthenticator(BindAuthenticator,initialDirContextFactory) {
     // this is when you the user name can be translated into DN.
 //  userDnPatterns = [
@@ -30,11 +34,6 @@ bindAuthenticator(BindAuthenticator,initialDirContextFactory) {
     // this is when we need to find it.
     userSearch = ldapUserSearch;
 }
-
-ldapUserSearch(FilterBasedLdapUserSearch, instance.userSearchBase, instance.userSearch, initialDirContextFactory) {
-    searchSubtree=true
-}
-
 
 authoritiesPopulator(DefaultLdapAuthoritiesPopulator,initialDirContextFactory,"ou=groups") {
   // groupRoleAttribute = "ou";
