@@ -64,6 +64,7 @@ import hudson.util.MultipartFormDataParser;
 import hudson.util.TextFile;
 import hudson.util.XStream2;
 import hudson.util.RemotingDiagnostics;
+import hudson.util.CaseInsensitiveComparator;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -201,7 +202,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /**
      * All {@link Item}s keyed by their {@link Item#getName() name}s.
      */
-    /*package*/ transient final Map<String,TopLevelItem> items = new CopyOnWriteMap.Tree<String,TopLevelItem>();
+    /*package*/ transient final Map<String,TopLevelItem> items = new CopyOnWriteMap.Tree<String,TopLevelItem>(CaseInsensitiveComparator.INSTANCE);
 
     /**
      * The sole instance.

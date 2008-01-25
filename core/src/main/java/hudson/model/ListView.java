@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.util.CaseInsensitiveComparator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -23,7 +24,7 @@ public class ListView extends View {
     /**
      * List of job names. This is what gets serialized.
      */
-    /*package*/ final Set<String> jobNames = new TreeSet<String>();
+    /*package*/ final Set<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
 
     /**
      * Name of this view.

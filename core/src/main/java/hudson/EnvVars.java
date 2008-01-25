@@ -1,15 +1,14 @@
 package hudson;
 
-import hudson.remoting.VirtualChannel;
 import hudson.remoting.Callable;
+import hudson.remoting.VirtualChannel;
+import hudson.util.CaseInsensitiveComparator;
 
 import java.io.File;
-import java.io.Serializable;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Comparator;
-import java.util.Collections;
 
 /**
  * Environment variables.
@@ -27,11 +26,11 @@ import java.util.Collections;
 public class EnvVars extends TreeMap<String,String> {
 
     public EnvVars() {
-        super(CASE_INSENSITIVE_COMPARATOR);
+        super(CaseInsensitiveComparator.INSTANCE);
     }
 
     public EnvVars(Map<String,String> m) {
-        super(CASE_INSENSITIVE_COMPARATOR);
+        super(CaseInsensitiveComparator.INSTANCE);
         putAll(m);
     }
 
@@ -85,21 +84,8 @@ public class EnvVars extends TreeMap<String,String> {
         private static final long serialVersionUID = 1L;
     }
 
-
-    /**
-     * Compares strings case insensitively.
-     */
-    private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new CaseInsensitiveComparator();
-    
     /**
      * Environmental variables that we've inherited.
      */
     public static final Map<String,String> masterEnvVars = new EnvVars(System.getenv());
-
-    private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
-        public int compare(String lhs, String rhs) {
-            return lhs.compareToIgnoreCase(rhs);
-        }
-        private static final long serialVersionUID = 1L;
-    }
 }
