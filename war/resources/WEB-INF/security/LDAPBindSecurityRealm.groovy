@@ -28,10 +28,14 @@ bindAuthenticator(BindAuthenticator,initialDirContextFactory) {
 //    "uid={0},ou=people"
 //  ]
     // this is when we need to find it.
-    userSearch = bean(FilterBasedLdapUserSearch, instance.userSearchBase, instance.userSearch, initialDirContextFactory) {
-        searchSubtree=true
-    }
+    userSearch = ldapUserSearch;
 }
+
+ldapUserSearch(FilterBasedLdapUserSearch, instance.userSearchBase, instance.userSearch, initialDirContextFactory) {
+    searchSubtree=true
+}
+
+
 authoritiesPopulator(DefaultLdapAuthoritiesPopulator,initialDirContextFactory,"ou=groups") {
   // groupRoleAttribute = "ou";
 }

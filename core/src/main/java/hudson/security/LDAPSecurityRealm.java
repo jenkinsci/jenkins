@@ -10,12 +10,16 @@ import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.userdetails.UserDetailsService;
+import org.acegisecurity.userdetails.UserDetails;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch;
+import org.acegisecurity.ldap.LdapUserSearch;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.dao.DataAccessException;
 
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -127,10 +131,16 @@ public class LDAPSecurityRealm extends SecurityRealm {
 
         BeanBuilder builder = new BeanBuilder();
         builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/LDAPBindSecurityRealm.groovy"),binding);
-        WebApplicationContext appContext = builder.createApplicationContext();
+        final WebApplicationContext appContext = builder.createApplicationContext();
+
         return new SecurityComponents(
             findBean(AuthenticationManager.class, appContext),
-            findBean(UserDetailsService.class, appContext));
+            new UserDetailsService() {
+                final LdapUserSearch ldapSerach = findBean(LdapUserSearch.class, appContext);
+                public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+                    return ldapSerach.searchForUser(username);
+                }
+            });
     }
 
     public DescriptorImpl getDescriptor() {
