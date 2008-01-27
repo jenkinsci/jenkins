@@ -1,0 +1,6 @@
+<!-- Configuration for CollabNet SVN browser. -->
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <f:entry title="URL" help="/help/scm-browsers/collabnet-svn/url.html">
+    <f:textbox name="collabnet.svn.url" value="${browser.url}"/>
+  </f:entry>
+</j:jelly>

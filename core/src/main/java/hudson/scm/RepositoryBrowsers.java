@@ -23,7 +23,8 @@ public class RepositoryBrowsers {
         FishEyeSVN.DESCRIPTOR,
         FishEyeCVS.DESCRIPTOR,
         WebSVN.DESCRIPTOR,
-        Sventon.DESCRIPTOR
+        Sventon.DESCRIPTOR,
+        CollabNetSVN.DESCRIPTOR
     );
 
     /**
