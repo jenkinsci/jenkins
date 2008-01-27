@@ -33,7 +33,7 @@
     </f:optionalBlock>
   </j:if>
 
-  <f:section title="Advanced Project Options">
+  <f:section title="${%Advanced Project Options}">
     <f:advanced>
       <p:config-quietPeriod />
       <st:include page="configure-advanced.jelly" optional="true" />
