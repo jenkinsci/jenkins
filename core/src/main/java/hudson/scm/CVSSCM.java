@@ -22,10 +22,7 @@ import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.AbstractScmTagAction.AbstractTagWorkerThread;
-import hudson.util.ArgumentListBuilder;
-import hudson.util.ByteBuffer;
-import hudson.util.ForkOutputStream;
-import hudson.util.FormFieldValidator;
+import hudson.util.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Expand;
@@ -64,7 +61,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
@@ -127,7 +123,7 @@ public class CVSSCM extends SCM implements Serializable {
         this.branch = nullify(branch);
         this.cvsRsh = nullify(cvsRsh);
         this.canUseUpdate = canUseUpdate;
-        this.flatten = !legacy && new StringTokenizer(module).countTokens()==1;
+        this.flatten = !legacy && getAllModulesNormalized().length==1;
         this.isTag = isTag;
     }
 
@@ -498,7 +494,7 @@ public class CVSSCM extends SCM implements Serializable {
         try {
             task.get();
         } catch (ExecutionException e) {
-            throw new IOException(e);
+            throw new IOException2(e);
         }
     }
 
