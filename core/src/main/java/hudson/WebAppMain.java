@@ -208,15 +208,15 @@ public class WebAppMain implements ServletContextListener {
             // ignore
         }
 
-        // look at the env var next
-        String env = EnvVars.masterEnvVars.get("HUDSON_HOME");
-        if(env!=null)
-            return new File(env.trim()).getAbsoluteFile();
-
         // finally check the system property
         String sysProp = System.getProperty("HUDSON_HOME");
         if(sysProp!=null)
             return new File(sysProp.trim());
+        
+        // look at the env var next
+        String env = EnvVars.masterEnvVars.get("HUDSON_HOME");
+        if(env!=null)
+            return new File(env.trim()).getAbsoluteFile();
 
         // otherwise pick a place by ourselves
 
