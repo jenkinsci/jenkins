@@ -189,7 +189,6 @@ public class Mailer extends Publisher {
             	 * and thats done in mail sender, and it would be a bit of a hack to get it all to
             	 * coordinate, and we can make it work through setting mail.smtp properties.
             	 */
-            	props.put("mail.smtp.auth","true");
             	if (props.getProperty("mail.smtp.socketFactory.port") == null) {
 				    props.put("mail.smtp.port", "465");
     				props.put("mail.smtp.socketFactory.port", "465");
@@ -199,6 +198,8 @@ public class Mailer extends Publisher {
             	}
 				props.put("mail.smtp.socketFactory.fallback", "false");
 			}
+            if(getSmtpAuthUserName()!=null)
+                props.put("mail.smtp.auth","true");
             return Session.getInstance(props,getAuthenticator());
         }
 
