@@ -79,7 +79,6 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return Descriptor.toMap(buildWrappers);
     }
 
-    /** {@inheritDoc} */
     @Override
     protected Set<ResourceActivity> getResourceActivities() {
         final Set<ResourceActivity> activities = new HashSet<ResourceActivity>();
@@ -114,6 +113,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return null;
     }
 
+    // TODO: move these lists to DescribableList
     private void _buildDependencyGraph(Collection<?> possibleDependecyDeclarers, DependencyGraph graph) {
         for (Object o : possibleDependecyDeclarers) {
             if (o instanceof DependecyDeclarer) {
