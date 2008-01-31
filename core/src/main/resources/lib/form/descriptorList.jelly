@@ -4,7 +4,7 @@
   Attributes:
     title         caption for the section (required)
     descriptors   hudson.model.Descriptor collection to display  (required)
-    instances     Map<Descriptor,Describable>. Instances to display as current settings (required)
+    instances     Map<Descriptor,Describable>, or a class that defines Describable get(Descriptor). Instances to display as current settings (required)
     varName       Used as a variable name as well as block name (required)
     targetType    the type for which descriptors will be configured.
                   default to ${it.class} (optional)
@@ -15,10 +15,10 @@
     <d:invokeBody />
 	  <j:forEach var="d" items="${descriptors}" varStatus="loop">
       <f:optionalBlock name="${varName}${loop.index}" help="${d.helpFile}"
-	      title="${d.displayName}" checked="${instances[d]!=null}">
+	      title="${d.displayName}" checked="${instances.get(d)!=null}">
 
 	      <j:set var="descriptor" value="${d}" />
-	      <j:set var="instance" value="${instances[d]}" />
+	      <j:set var="instance" value="${instances.get(d)}" />
 	      <st:include from="${d}" page="${d.configPage}" optional="true" />
 	    </f:optionalBlock>
 	  </j:forEach>
