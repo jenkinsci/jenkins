@@ -2,6 +2,7 @@ package hudson.triggers;
 
 import hudson.DependencyRunner;
 import hudson.ExtensionPoint;
+import hudson.util.DoubleLaunchChecker;
 import hudson.DependencyRunner.ProjectRunnable;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -202,6 +203,8 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
     public static void init() {
         timer.scheduleAtFixedRate(new Cron(), 1000*60, 1000*60/*every minute*/);
+
+        new DoubleLaunchChecker().schedule();
 
         // clean up fingerprint once a day
         long HOUR = 1000*60*60;

@@ -7,11 +7,11 @@ import com.thoughtworks.xstream.converters.collections.AbstractCollectionConvert
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
+import hudson.model.*;
 import hudson.model.Descriptor.FormException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.apache.maven.model.Dependency;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -111,6 +111,18 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         data.replaceBy(newList);
     }
 
+    /**
+     * Picks up {@link DependecyDeclarer}s and allow it to build dependencies.
+     */
+    public void buildDependencyGraph(AbstractProject owner,DependencyGraph graph) {
+        for (Object o : this) {
+            if (o instanceof DependecyDeclarer) {
+                DependecyDeclarer dd = (DependecyDeclarer) o;
+                dd.buildDependencyGraph(owner,graph);
+            }
+        }
+    }
+
     public interface Owner {
         /**
          * Called whenever the list is changed, so that it can be saved.
@@ -120,6 +132,8 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
 
     /**
      * {@link Converter} implementation for XStream.
+     *
+     * Serializaion form is compatible with plain {@link List}.
      */
     public static final class ConverterImpl extends AbstractCollectionConverter {
         CopyOnWriteList.ConverterImpl copyOnWriteListConverter;
