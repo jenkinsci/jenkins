@@ -2,15 +2,14 @@ package hudson.node_monitors;
 
 import hudson.ExtensionPoint;
 import hudson.Functions;
+import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
-import hudson.model.Descriptor;
 import hudson.model.Node;
+import hudson.util.DescriptorList;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Extension point for managing and monitoring {@link Node}s.
@@ -38,16 +37,24 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
         return getDescriptor().getDisplayName();
     }
 
+    public abstract AbstractNodeMonitorDescriptor<?> getDescriptor();
+
+    public Object data(Computer c) {
+        return getDescriptor().get(c);
+    }
+
+
     /**
      * All registered {@link NodeMonitor}s.
      */
-    public static final List<Descriptor<NodeMonitor>> LIST = new ArrayList<Descriptor<NodeMonitor>>();
+    public static final DescriptorList<NodeMonitor> LIST = new DescriptorList<NodeMonitor>();
 
     static {
         try {
-            LIST.add(ClockMonitor.DESCRIPTOR);
+            LIST.load(ClockMonitor.class);
             if(Functions.isMustangOrAbove())
-                LIST.add(DiskSpaceMonitor.DESCRIPTOR);
+                LIST.load(DiskSpaceMonitor.class);
+            LIST.load(ArchitectureMonitor.class);
         } catch (Throwable e) {
             Logger.getLogger(NodeMonitor.class.getName()).log(Level.SEVERE, "Failed to load built-in monitors",e);
         }

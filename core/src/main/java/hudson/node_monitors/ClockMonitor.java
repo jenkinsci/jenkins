@@ -16,7 +16,7 @@ import java.io.IOException;
  * @since 1.123
  */
 public class ClockMonitor extends NodeMonitor {
-    public Descriptor<NodeMonitor> getDescriptor() {
+    public AbstractNodeMonitorDescriptor getDescriptor() {
         return DESCRIPTOR;
     }
 
@@ -32,11 +32,15 @@ public class ClockMonitor extends NodeMonitor {
         }
 
         public String getDisplayName() {
-            return "Clock Difference";
+            return Messages.ClockMonitor_displayName();
         }
 
         public NodeMonitor newInstance(StaplerRequest req) throws FormException {
             return new ClockMonitor();
         }
     };
+
+    static {
+        LIST.add(DESCRIPTOR);
+    }
 }

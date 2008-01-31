@@ -24,6 +24,7 @@
           <td><a href="${rootURL}/${c.url}">${c.displayName}</a></td>
           <j:forEach var="m" items="${monitors}">
             <j:if test="${m.columnCaption!=null}">
+              <j:set var="data" value="${m.data(c)}"/>
               <st:include page="column.jelly" from="${m}" />
             </j:if>
           </j:forEach>

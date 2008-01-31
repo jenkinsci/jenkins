@@ -20,7 +20,7 @@ import java.math.BigDecimal;
  * @since 1.123
  */
 public class DiskSpaceMonitor extends NodeMonitor {
-    public Descriptor<NodeMonitor> getDescriptor() {
+    public AbstractNodeMonitorDescriptor getDescriptor() {
         return DESCRIPTOR;
     }
 
@@ -51,7 +51,7 @@ public class DiskSpaceMonitor extends NodeMonitor {
         }
 
         public String getDisplayName() {
-            return "Free Disk Space";
+            return Messages.DiskSpaceMonitor_displayName();
         }
 
         public NodeMonitor newInstance(StaplerRequest req) throws FormException {
@@ -64,5 +64,9 @@ public class DiskSpaceMonitor extends NodeMonitor {
             return f.getUsableSpace();
         }
         private static final long serialVersionUID = 1L;
+    }
+
+    static {
+        LIST.add(DESCRIPTOR);
     }
 }
