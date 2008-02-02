@@ -9,7 +9,7 @@
         <j:set var="trendQueryString2" value="&amp;failureOnly=${mode}" />
       </j:if>
       <div class="test-trend-caption">
-        Test Result Trend
+        ${%Test Result Trend}
       </div>
       <div>
         <img src="test/trend${trendQueryString1}" lazymap="test/trendMap${trendQueryString1}"/>
@@ -18,14 +18,14 @@
         <a href="test/flipTrend">
           <j:choose>
             <j:when test="${mode}">
-              (show test # and failure #)
+              (${%show test # and failure #})
             </j:when>
             <j:otherwise>
-              (just show failures)
+              (${%just show failures})
             </j:otherwise>
           </j:choose>
         </a> <st:nbsp/>
-        <a href="test/?width=800&amp;height=600${trendQueryString2}">enlarge</a>
+        <a href="test/?width=800&amp;height=600${trendQueryString2}">${%enlarge}</a>
       </div>
     </div>
   </j:if>
