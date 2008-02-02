@@ -185,6 +185,11 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
 
         public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             String pwd = Util.fixEmpty(req.getParameter("user.password"));
+            String pwd2= Util.fixEmpty(req.getParameter("user.password2"));
+
+            if(!Util.fixNull(pwd).equals(Util.fixNull(pwd2)))
+                throw new FormException("Please confirm the password by typing it twice","user.password2");
+
             String data = Protector.unprotect(pwd);
             if(data!=null) {
                 String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';

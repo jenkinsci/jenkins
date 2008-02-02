@@ -2,4 +2,7 @@
   <f:entry title="${%Password}:">
     <input name="user.password" type="password" value="${instance.protectedPassword}" />
   </f:entry>
+  <f:entry title="${%Confirm Password}:">
+    <input name="user.password2" type="password" value="${instance.protectedPassword}" />
+  </f:entry>
 </j:jelly>
