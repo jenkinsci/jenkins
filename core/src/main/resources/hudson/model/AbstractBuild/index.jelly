@@ -26,7 +26,7 @@
       </div>
 
       <table style="margin-top: 1em; margin-left:1em;">
-        <t:artifactList build="${it}" caption="Build Artifacts" />
+        <t:artifactList build="${it}" caption="${%Build Artifacts}" />
 
         <j:set var="set" value="${it.changeSet}" />
         <t:summary icon="notepad.gif">
