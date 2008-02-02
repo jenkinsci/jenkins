@@ -1,12 +1,8 @@
 package hudson.tasks;
 
 import hudson.Launcher;
-import hudson.model.Build;
-import hudson.model.BuildListener;
-import hudson.model.Descriptor;
-import hudson.model.Project;
-import hudson.model.User;
-import hudson.model.UserPropertyDescriptor;
+import hudson.maven.AbstractMavenProject;
+import hudson.model.*;
 import hudson.util.FormFieldValidator;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.stapler.QueryParameter;
@@ -108,7 +104,7 @@ public class Mailer extends Publisher {
 
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static final class DescriptorImpl extends Descriptor<Publisher> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         /**
          * The default e-mail address suffix appended to the user name found from changelog,
          * to send e-mails. Null if not configured.
@@ -322,6 +318,11 @@ public class Mailer extends Publisher {
                 writer.println(e.getMessage());
             }
             writer.flush();
+        }
+
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            // for historical reasons, Maven uses MavenMailer
+            return !AbstractMavenProject.class.isAssignableFrom(jobType);
         }
     }
 

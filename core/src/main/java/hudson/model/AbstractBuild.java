@@ -14,8 +14,10 @@ import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.SCM;
+import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
+import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
@@ -28,17 +30,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -263,6 +255,23 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         public void cleanUp(BuildListener listener) throws Exception {
             // default is no-op
+        }
+
+        protected final void performAllBuildStep(BuildListener listener, Map<?,? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+            performAllBuildStep(listener,buildSteps.values(),phase);
+        }
+
+        /**
+         * Runs all the given build steps, even if one of them fail.
+         *
+         * @param phase
+         *      true for the post build processing, and false for the final "run after finished" execution.
+         */
+        protected final void performAllBuildStep(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+            for( BuildStep bs : buildSteps ) {
+                if( (bs instanceof Publisher && ((Publisher)bs).needsToRunAfterFinalized()) ^ phase)
+                    bs.perform(AbstractBuild.this, launcher, listener);
+            }
         }
     }
 

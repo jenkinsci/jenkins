@@ -3,15 +3,9 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractItem;
-import hudson.model.Action;
-import hudson.model.BuildListener;
-import hudson.model.Descriptor;
-import hudson.model.DirectoryBrowserSupport;
-import hudson.model.Project;
-import hudson.model.ProminentProjectAction;
-import hudson.model.Result;
+import hudson.maven.MavenModuleSet;
+import hudson.maven.AbstractMavenProject;
+import hudson.model.*;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -112,7 +106,7 @@ public class JavadocArchiver extends Publisher {
         }
     }
 
-    public static class DescriptorImpl extends Descriptor<Publisher> {
+    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         private DescriptorImpl() {
             super(JavadocArchiver.class);
         }
@@ -130,6 +124,11 @@ public class JavadocArchiver extends Publisher {
          */
         public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             new FormFieldValidator.WorkspaceDirectory(req,rsp).process();
+        }
+
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            // for Maven, javadoc archiving kicks in automatically
+            return !AbstractMavenProject.class.isAssignableFrom(jobType);
         }
     }
 }

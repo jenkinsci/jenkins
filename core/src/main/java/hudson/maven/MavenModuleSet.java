@@ -1,32 +1,28 @@
 package hudson.maven;
 
-import hudson.CopyOnWrite;
-import hudson.FilePath;
-import hudson.Indenter;
-import hudson.Util;
-import hudson.StructuredForm;
-import static hudson.Util.fixNull;
-import hudson.search.SearchIndexBuilder;
-import hudson.search.CollectionSearchIndex;
+import hudson.*;
 import hudson.model.*;
 import hudson.model.Descriptor.FormException;
 import static hudson.model.ItemGroupMixIn.loadChildren;
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
-import hudson.tasks.Maven;
+import hudson.search.CollectionSearchIndex;
+import hudson.search.SearchIndexBuilder;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.*;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
-import hudson.util.Function1;
 import hudson.util.FormFieldValidator;
+import hudson.util.Function1;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+
+import net.sf.json.JSONObject;
 
 /**
  * Group of {@link MavenModule}s.
@@ -77,7 +73,9 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private String mavenOpts;
 
     /**
-     * If true, the build will be aggregator style. False otherwise.
+     * If true, the build will be aggregator style, meaning
+     * all the modules are executed in a single Maven invocation, as in CLI.
+     * False otherwise, meaning each module is built separately and possibly in parallel.
      *
      * @since 1.133
      */
@@ -88,6 +86,14 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      */
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
         new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
+
+    /**
+     * List of active {@link Publisher}s configured for this project.
+     * @since 1.176
+     */
+    private DescribableList<Publisher,Descriptor<Publisher>> publishers =
+        new DescribableList<Publisher,Descriptor<Publisher>>(this);
+
 
     public MavenModuleSet(String name) {
         super(Hudson.getInstance(),name);
@@ -123,6 +129,11 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         // Fix for ISSUE-1149
         for (MavenModule module: modules.values()) {
             module.updateTransientActions();
+        }
+        for (BuildStep step : publishers) {
+            Action a = step.getProjectAction(this);
+            if(a!=null)
+                transientActions.add(a);
         }
     }
 
@@ -188,6 +199,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      */
     public DescribableList<MavenReporter, Descriptor<MavenReporter>> getReporters() {
         return reporters;
+    }
+
+    /**
+     * List of active {@link Publisher}s. Can be empty but never null.
+     */
+    public DescribableList<Publisher, Descriptor<Publisher>> getPublishers() {
+        return publishers;
     }
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
@@ -279,6 +297,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
+        if(publishers==null)
+            publishers = new DescribableList<Publisher,Descriptor<Publisher>>(this);
 
         updateTransientActions();
     }
@@ -327,12 +347,22 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
-        // no dependency for this.
+        publishers.buildDependencyGraph(this,graph);
     }
 
     public MavenModule getRootModule() {
         if(rootModule==null)    return null;
         return modules.get(rootModule);
+    }
+
+    @Override
+    protected Set<ResourceActivity> getResourceActivities() {
+        final Set<ResourceActivity> activities = new HashSet<ResourceActivity>();
+
+        activities.addAll(super.getResourceActivities());
+        activities.addAll(Util.filter(publishers,ResourceActivity.class));
+
+        return activities;
     }
 
     /**
@@ -444,7 +474,11 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         mavenName = req.getParameter("maven_version");
         aggregatorStyleBuild = req.getParameter("maven.perModuleBuild")==null;
 
-        reporters.rebuild(req, StructuredForm.get(req),MavenReporters.getConfigurableList(),"reporter");
+        JSONObject json = StructuredForm.get(req);
+        reporters.rebuild(req,json,MavenReporters.getConfigurableList(),"reporter");
+        publishers.rebuild(req,json,BuildStepDescriptor.filter(BuildStep.PUBLISHERS,getClass()),"publisher");
+
+        updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }
 
     /**

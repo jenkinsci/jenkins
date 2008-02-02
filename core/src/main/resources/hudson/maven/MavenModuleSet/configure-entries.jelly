@@ -50,4 +50,6 @@
                       instances="${it.reporters.toMap()}"
                       varName="reporter" />
   </j:if>
+
+  <p:config-publishers />
 </j:jelly>

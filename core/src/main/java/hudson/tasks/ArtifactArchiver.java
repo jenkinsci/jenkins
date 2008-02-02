@@ -3,6 +3,7 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.maven.AbstractMavenProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -109,7 +110,7 @@ public class ArtifactArchiver extends Publisher {
 
     public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
-    public static class DescriptorImpl extends Descriptor<Publisher> {
+    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public DescriptorImpl() {
             super(ArtifactArchiver.class);
         }
@@ -131,6 +132,12 @@ public class ArtifactArchiver extends Publisher {
 
         public ArtifactArchiver newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(ArtifactArchiver.class,formData);
+        }
+
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            // for Maven, this happens automatically.
+            // TODO: we should still consider enabling this for additional controls?
+            return !AbstractMavenProject.class.isAssignableFrom(jobType);
         }
     }
 }

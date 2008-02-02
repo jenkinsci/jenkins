@@ -4,6 +4,8 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.maven.MavenModuleSet;
+import hudson.maven.AbstractMavenProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -177,7 +179,7 @@ public class Fingerprinter extends Publisher implements Serializable {
 
     public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
-    public static class DescriptorImpl extends Descriptor<Publisher> {
+    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public DescriptorImpl() {
             super(Fingerprinter.class);
         }
@@ -201,6 +203,11 @@ public class Fingerprinter extends Publisher implements Serializable {
             return new Fingerprinter(
                 req.getParameter("fingerprint_targets").trim(),
                 req.getParameter("fingerprint_artifacts")!=null);
+        }
+
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            // for Maven, fingerprinting kicks in automatically.
+            return !AbstractMavenProject.class.isAssignableFrom(jobType);
         }
     }
 

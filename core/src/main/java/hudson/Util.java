@@ -59,14 +59,22 @@ public class Util {
 
     /**
      * Creates a filtered sublist.
+     * @since 1.176
      */
-    public static <T> List<T> filter( List<?> base, Class<T> type ) {
+    public static <T> List<T> filter( Iterable<?> base, Class<T> type ) {
         List<T> r = new ArrayList<T>();
         for (Object i : base) {
             if(type.isInstance(i))
                 r.add(type.cast(i));
         }
         return r;
+    }
+
+    /**
+     * Creates a filtered sublist.
+     */
+    public static <T> List<T> filter( List<?> base, Class<T> type ) {
+        return filter((Iterable)base,type);
     }
 
     /**

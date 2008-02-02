@@ -1,19 +1,19 @@
 package hudson.maven;
 
 import hudson.AbortException;
-import hudson.Launcher;
 import hudson.FilePath;
-import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.FilePath.FileCallable;
+import hudson.Launcher;
+import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Result;
-import hudson.model.AbstractProject;
-import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
+import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedderException;
@@ -284,6 +284,8 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             } catch (InterruptedException e) {
                 listener.error("Aborted");
                 return Result.ABORTED;
+            } catch (RunnerAbortedException e) {
+                return Result.FAILURE;
             } catch (RuntimeException e) {
                 // bug in the code.
                 e.printStackTrace(listener.error("Processing failed due to a bug in the code. Please report thus to users@hudson.dev.java.net"));
@@ -360,6 +362,8 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             // so just to be safe, save them all.
             for (MavenBuild b : getModuleLastBuilds().values())
                 b.save();
+
+            performAllBuildStep(listener, project.getPublishers(),true);
         }
 
         @Override
@@ -374,6 +378,8 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         p.owner().scheduleDownstreamBuilds(listener,downstreams);
                 }
             }
+
+            performAllBuildStep(listener, project.getPublishers(),false);
         }
     }
 
