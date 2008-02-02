@@ -21,6 +21,7 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public abstract class AbstractTestResultAction<T extends AbstractTestResultAction> implements HealthReportingAction {
     public final AbstractBuild<?,?> owner;
 
@@ -89,6 +91,25 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         }
         return new HealthReport(score, description.toString());
     }
+
+    /**
+     * Exposes this object to the remote API.
+     */
+    public Api getApi() {
+        return new Api(this);
+    }
+
+    /**
+     * Returns the object that represents the actual test result.
+     * This method is used by the remote API so that the XML/JSON
+     * that we are sending won't contain unnecessary indirection
+     * (that is, {@link AbstractTestResultAction} in between.
+     *
+     * <p>
+     * If such a concept doesn't make sense for a particular subtype,
+     * return <tt>this</tt>.
+     */
+    public abstract Object getResult();
 
     /**
      * Gets the test result of the previous build, if it's recorded, or null.

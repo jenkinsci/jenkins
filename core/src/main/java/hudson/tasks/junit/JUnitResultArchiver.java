@@ -3,16 +3,15 @@ package hudson.tasks.junit;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.maven.MavenModuleSet;
+import hudson.maven.AbstractMavenProject;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
-import hudson.model.AbstractBuild;
-import hudson.model.Action;
-import hudson.model.BuildListener;
-import hudson.model.Descriptor;
-import hudson.model.Result;
+import hudson.model.*;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.test.TestResultAggregator;
 import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.FormFieldValidator;
@@ -106,7 +105,7 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
 
     private static final long serialVersionUID = 1L;
 
-    public static class DescriptorImpl extends Descriptor<Publisher> {
+    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
         public DescriptorImpl() {
@@ -130,6 +129,11 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
 
         public Publisher newInstance(StaplerRequest req) {
             return new JUnitResultArchiver(req.getParameter("junitreport_includes"));
+        }
+
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            // for Maven we have SurefireArchiver that automatically kicks in.
+            return !AbstractMavenProject.class.isAssignableFrom(jobType);
         }
     }
 }

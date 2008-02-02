@@ -7,6 +7,7 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.dom4j.DocumentException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.IOException;
@@ -157,26 +158,31 @@ public final class TestResult extends MetaTabulatedResult {
         return "Package";
     }
 
+    // TODO once stapler 1.60 is released: @Exported
     public float getDuration() {
         return duration; 
     }
     
+    @Exported(visibility=999)
     @Override
     public int getPassCount() {
         return totalTests-getFailCount();
     }
 
+    @Exported(visibility=999)
     @Override
     public int getFailCount() {
         return failedTests.size();
     }
 
+    @Exported
     @Override
     public List<CaseResult> getFailedTests() {
         return failedTests;
     }
 
     @Override
+    @Exported(name="child")
     public Collection<PackageResult> getChildren() {
         return byPackages.values();
     }

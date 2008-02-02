@@ -1,8 +1,8 @@
 package hudson.tasks.junit;
 
-import hudson.Util;
 import hudson.model.AbstractBuild;
 import org.dom4j.Element;
+import org.kohsuke.stapler.export.Exported;
 
 import java.util.Comparator;
 import java.text.DecimalFormat;
@@ -96,6 +96,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      * <p>
      * Note that this may contain any URL-unfriendly character.
      */
+    @Exported
     public String getName() {
         return testName;
     }
@@ -103,6 +104,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     /**
      * Gets the duration of the test, in seconds
      */
+    // TODO: wait for stapler 1.60 to do this : @Exported
     public float getDuration() {
         return duration;
     }
@@ -123,6 +125,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     /**
      * Gets the class name of a test class.
      */
+    @Exported
     public String getClassName() {
         return className;
     }
@@ -160,6 +163,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      * Gets the number of consecutive builds (including this)
      * that this test case has been failing.
      */
+    @Exported
     public int getAge() {
         if(isPassed())
             return 0;
@@ -177,6 +181,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     /**
      * If there was an error or a failure, this is the stack trace, or otherwise null.
      */
+    @Exported
     public String getErrorStackTrace() {
         return errorStackTrace;
     }
@@ -233,6 +238,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         return this.getFullName().compareTo(that.getFullName());
     }
 
+    @Exported(name="status") // because stapler notices suffix 's' and remove it
     public Status getStatus() {
         CaseResult pr = getPreviousResult();
         if(pr==null) {

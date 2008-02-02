@@ -5,10 +5,10 @@ import hudson.maven.MavenBuild;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.Action;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
 import hudson.tasks.test.TestResultProjectAction;
-import hudson.model.Action;
 
 import java.util.List;
 import java.util.Map;
@@ -41,7 +41,7 @@ public class SurefireAggregatedReport extends AggregatedTestResultAction impleme
     }
 
     @Override
-    protected MavenBuild resolveChild(Child child) {
+    public MavenBuild resolveChild(Child child) {
         MavenModuleSet mms = (MavenModuleSet) owner.getProject();
         MavenModule m = mms.getModule(child.name);
         if(m!=null)

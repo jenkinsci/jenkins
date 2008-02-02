@@ -3,6 +3,7 @@ package hudson.tasks.junit;
 import hudson.model.AbstractBuild;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +35,7 @@ public final class PackageResult extends MetaTabulatedResult {
         this.parent = parent;
     }
 
+    @Exported
     public String getName() {
         return packageName;
     }
@@ -56,14 +58,17 @@ public final class PackageResult extends MetaTabulatedResult {
         return "Class";
     }
 
+    // TODO: wait until stapler 1.60 to do this @Exported
     public float getDuration() {
         return duration; 
     }
     
+    @Exported
     public int getPassCount() {
         return passCount;
     }
 
+    @Exported
     public int getFailCount() {
         return failCount;
     }
@@ -72,6 +77,7 @@ public final class PackageResult extends MetaTabulatedResult {
         return classes.get(name);
     }
 
+    @Exported(name="child")
     public Collection<ClassResult> getChildren() {
         return classes.values();
     }

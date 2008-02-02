@@ -2,7 +2,10 @@ package hudson.tasks.test;
 
 import hudson.maven.MavenBuild;
 import hudson.model.AbstractBuild;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +15,7 @@ import java.util.List;
  * 
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public abstract class AggregatedTestResultAction extends AbstractTestResultAction {
     private int failCount,totalCount;
 
@@ -53,14 +57,65 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
         this.children.add(new Child(getChildName(child),child.owner.number));
     }
 
+    @Exported
     public int getFailCount() {
         return failCount;
     }
 
+    @Exported
     public int getTotalCount() {
         return totalCount;
     }
 
+    public List<ChildReport> getResult() {
+        // I think this is a reasonable default.
+        return getChildReports();
+    }
+
+    /**
+     * Data-binding bean for the remote API.
+     */
+    @ExportedBean(defaultVisibility=2)
+    public static final class ChildReport {
+        @Exported
+        public final AbstractBuild<?,?> child;
+        @Exported
+        public final Object result;
+
+        public ChildReport(AbstractBuild<?, ?> child, AbstractTestResultAction result) {
+            this.child = child;
+            this.result = result.getResult();
+        }
+    }
+
+    /**
+     * Mainly for the remote API. Expose results from children.
+     */
+    @Exported
+    public List<ChildReport> getChildReports() {
+        return new AbstractList<ChildReport>() {
+            public ChildReport get(int index) {
+                return new ChildReport(
+                        resolveChild(children.get(index)),
+                        getChildReport(children.get(index)));
+            }
+
+            public int size() {
+                return children.size();
+            }
+        };
+    }
+
     protected abstract String getChildName(AbstractTestResultAction tr);
-    protected abstract AbstractBuild<?,?> resolveChild(Child child);
+    public abstract AbstractBuild<?,?> resolveChild(Child child);
+
+    /**
+     * Uses {@link #resolveChild(Child)} and obtain the
+     * {@link AbstractTestResultAction} object for the given child.
+     */
+    protected AbstractTestResultAction getChildReport(Child child) {
+        AbstractBuild<?,?> b = resolveChild(child);
+        if(b==null) return null;
+        return b.getAction(AbstractTestResultAction.class);
+    }
 }

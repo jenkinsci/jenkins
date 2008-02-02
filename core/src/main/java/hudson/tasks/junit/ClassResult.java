@@ -3,6 +3,7 @@ package hudson.tasks.junit;
 import hudson.model.AbstractBuild;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +48,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         return "Test Result : "+getName();
     }
 
+    @Exported
     public String getName() {
         int idx = className.lastIndexOf('.');
         if(idx<0)       return className;
@@ -62,18 +64,22 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     }
 
 
+    @Exported(name="child")
     public List<CaseResult> getChildren() {
         return cases;
     }
 
+    // TODO: wait for stapler 1.60     @Exported
     public float getDuration() {
         return duration; 
     }
     
+    @Exported
     public int getPassCount() {
         return passCount;
     }
 
+    @Exported
     public int getFailCount() {
         return failCount;
     }

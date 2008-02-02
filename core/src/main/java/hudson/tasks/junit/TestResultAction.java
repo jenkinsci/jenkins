@@ -9,6 +9,7 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.StringConverter2;
 import hudson.util.XStream2;
 import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.IOException;
@@ -83,6 +84,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     }
 
     @Override
+    @Exported
     public int getFailCount() {
         if(totalCount==null)
             getResult();    // this will compute the result
@@ -90,6 +92,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     }
 
     @Override
+    @Exported
     public int getTotalCount() {
         if(totalCount==null)
             getResult();    // this will compute the result

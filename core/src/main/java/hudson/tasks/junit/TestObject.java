@@ -2,15 +2,19 @@ package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
 import hudson.model.ModelObject;
+import hudson.model.Api;
 import hudson.Util;
 
 import java.io.Serializable;
+
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Base class for all test result objects.
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public abstract class TestObject implements ModelObject, Serializable {
     public abstract AbstractBuild<?,?> getOwner();
 
@@ -33,6 +37,13 @@ public abstract class TestObject implements ModelObject, Serializable {
      */
     public String getDurationString() {
         return Util.getTimeSpanString((long)(getDuration()*1000));
+    }
+
+    /**
+     * Exposes this object through the remote API.
+     */
+    public Api getApi() {
+        return new Api(this);
     }
 
     /**

@@ -25,7 +25,7 @@ public class MatrixTestResult extends AggregatedTestResultAction {
     }
 
     @Override
-    protected AbstractBuild<?,?> resolveChild(Child child) {
+    public AbstractBuild<?,?> resolveChild(Child child) {
         MatrixBuild b = (MatrixBuild)owner;
         return b.getRun(Combination.fromString(child.name));
     }

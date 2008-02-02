@@ -20,7 +20,11 @@
             <j:set var="p" value="${it.getChildReport(c)}"/>
             <j:set var="prev" value="${p.previousResult}" />
             <tr>
-              <td class="pane">${c.name}</td> <!-- TODO: hyperlink -->
+              <td class="pane">
+                <a href="${rootURL}/${it.resolveChild(c).url}testReport/">
+                  ${c.name}
+                </a>
+              </td>
               <td class="pane" style="text-align:right">${p.failCount}</td>
               <td class="pane" style="text-align:right">
                 ${h.getDiffString2(p.failCount-prev.failCount)}
