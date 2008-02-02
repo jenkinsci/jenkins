@@ -2,6 +2,7 @@ package hudson.tasks;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
+import hudson.maven.MavenReporter;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -15,6 +16,18 @@ import hudson.model.AbstractBuild;
  * <p>
  * To register a custom {@link Publisher} from a plugin,
  * add it to {@link BuildStep#PUBLISHERS}.
+ *
+ * <p>
+ * Starting 1.178, publishers are exposed to all kinds of different
+ * project type, not just the freestyle project type (in particular,
+ * the native maven2 job type.) This is convenient default for
+ * {@link Publisher}s in particular initially, but we encourage advanced
+ * plugins to consider writing {@link MavenReporter}, as it offers the
+ * potential of reducing the amount of configuration needed to run the plugin.
+ *
+ * For those plugins that don't want {@link Publisher} to show up in
+ * different job type, use {@link BuildStepDescriptor} for the base type
+ * of your descriptor to control which job type it supports.
  *
  * @author Kohsuke Kawaguchi
  */
