@@ -7,11 +7,11 @@
     <l:main-panel>
       <f:form method="post" action="configSubmit">
         <j:if test="${it.isNameEditable()}">
-          <f:entry title="${it.pronoun} name">
+          <f:entry title="${%name(it.pronoun)}">
             <f:textbox name="name" value="${it.name}" />
           </f:entry>
         </j:if>
-        <f:entry title="Description" help="/help/project-config/description.html">
+        <f:entry title="${%Description}" help="/help/project-config/description.html">
           <f:textarea name="description" value="${it.description}"/>
         </f:entry>
 
@@ -19,7 +19,7 @@
           <!-- log rotator -->
           <f:optionalBlock name="logrotate"
             help="/help/project-config/log-rotation.html"
-            title="Discard Old Builds" checked="${it.logRotator!=null}">
+            title="${%Discard Old Builds}" checked="${it.logRotator!=null}">
             <st:include page="/hudson/tasks/LogRotator/config.jelly"/>
           </f:optionalBlock>
         </j:if>
@@ -40,7 +40,7 @@
 
         <f:block>
           <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
-          <f:submit value="Save" />
+          <f:submit value="${%Save}" />
         </f:block>
       </f:form>
     </l:main-panel>
