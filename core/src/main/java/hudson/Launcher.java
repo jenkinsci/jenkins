@@ -299,7 +299,7 @@ public abstract class Launcher {
 
             final Process proc = Runtime.getRuntime().exec(cmd, Util.mapToEnv(Launcher.inherit(envVars)), toFile(workDir));
 
-            Thread t2 = new StreamCopyThread(cmd+": stderr copier", proc.getErrorStream(), out);
+            final Thread t2 = new StreamCopyThread(cmd+": stderr copier", proc.getErrorStream(), out);
             t2.start();
 
             return new Channel("locally launched channel on "+ Arrays.toString(cmd),
@@ -311,6 +311,17 @@ public abstract class Launcher {
                 protected synchronized void terminate(IOException e) {
                     super.terminate(e);
                     proc.destroy();
+                }
+
+                public synchronized void close() throws IOException {
+                    super.close();
+                    // wait for all the output from the process to be picked up
+                    try {
+                        t2.join();
+                    } catch (InterruptedException e) {
+                        // process the interrupt later
+                        Thread.currentThread().interrupt();
+                    }
                 }
             };
         }
