@@ -52,7 +52,7 @@
                   <div style="margin-top: 1em;">
                     <a href="${backPath}${pattern}/*zip*/${dir.name}.zip">
                       <img src="${imagesURL}/16x16/package.gif"/>
-                      (all files in zip)
+                      (${%all files in zip})
                     </a>
                   </div>
                 </td>
