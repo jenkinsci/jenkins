@@ -48,8 +48,10 @@ public final class TestResult extends MetaTabulatedResult {
      * Number of all tests.
      */
     private transient int totalTests;
+
+    private transient int skippedTests;
     
-    private float duration; 
+    private float duration;
     
     /**
      * Number of failed/error tests.
@@ -166,7 +168,7 @@ public final class TestResult extends MetaTabulatedResult {
     @Exported(visibility=999)
     @Override
     public int getPassCount() {
-        return totalTests-getFailCount();
+        return totalTests-getFailCount()-getSkipCount();
     }
 
     @Exported(visibility=999)
@@ -176,6 +178,11 @@ public final class TestResult extends MetaTabulatedResult {
     }
 
     @Exported
+    @Override
+    public int getSkipCount() {
+        return skippedTests;
+    }
+
     @Override
     public List<CaseResult> getFailedTests() {
         return failedTests;
@@ -225,7 +232,9 @@ public final class TestResult extends MetaTabulatedResult {
 
             totalTests += s.getCases().size();
             for(CaseResult cr : s.getCases()) {
-                if(!cr.isPassed())
+                if(cr.isSkipped())
+                    skippedTests++;
+                else if(!cr.isPassed())
                     failedTests.add(cr);
 
                 String pkg = cr.getPackageName();

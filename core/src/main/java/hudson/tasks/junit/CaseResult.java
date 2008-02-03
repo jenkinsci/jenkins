@@ -17,6 +17,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     private final float duration; 
     private final String className;
     private final String testName;
+    private final boolean skipped;
     private final String errorStackTrace;
     private transient SuiteResult parent;
 
@@ -30,7 +31,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     private /*final*/ int failedSince;
 
     CaseResult(SuiteResult parent, Element testCase) {
-        this(parent,testCase.attributeValue("name"), getError(testCase), parseTime(testCase));
+        this(parent,testCase.attributeValue("name"), getError(testCase), parseTime(testCase), isMarkedAsSkipped(testCase));
     }
 
     private static float parseTime(Element testCase) {
@@ -66,17 +67,19 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         testName = safe(testCaseName);
         duration = parseTime(testCase); 
         errorStackTrace = getError(testCase);
+        skipped = isMarkedAsSkipped(testCase);
     }
 
     CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
-        this( parent, testName, errorStackTrace, 0.0f ); 
+        this( parent, testName, errorStackTrace, 0.0f, false ); 
     }
-    CaseResult(SuiteResult parent, String testName, String errorStackTrace, float duration) {
+    CaseResult(SuiteResult parent, String testName, String errorStackTrace, float duration, boolean skipped) {
         this.className = parent.getName();
         this.testName = testName;
         this.errorStackTrace = errorStackTrace;
         this.parent = parent;
-        this.duration = duration; 
+        this.duration = duration;
+        this.skipped = skipped;
     }
 
     private static String getError(Element testCase) {
@@ -84,6 +87,14 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         if(msg!=null)
             return msg;
         return testCase.elementText("failure");
+    }
+
+    /**
+     * If the testCase element includes the skipped element (as output by TestNG), then
+     * the test has neither passed nor failed, it was never run.
+     */
+    private static boolean isMarkedAsSkipped(Element testCase) {
+        return testCase.element("skipped") != null;
     }
 
     public String getDisplayName() {
@@ -186,8 +197,21 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         return errorStackTrace;
     }
 
+    /**
+     * @return true if the test was not skipped and did not fail, false otherwise.
+     */
     public boolean isPassed() {
-        return errorStackTrace==null;
+        return !skipped && errorStackTrace==null;
+    }
+
+    /**
+     * Tests whether the test was skipped or not.  TestNG allows tests to be
+     * skipped if their dependencies fail or they are part of a group that has
+     * been configured to be skipped.
+     * @return true if the test was not executed, false otherwise.
+     */
+    public boolean isSkipped() {
+        return skipped;
     }
 
     public SuiteResult getParent() {
@@ -240,6 +264,9 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
 
     @Exported(name="status") // because stapler notices suffix 's' and remove it
     public Status getStatus() {
+        if (skipped) {
+            return Status.SKIPPED;
+        }
         CaseResult pr = getPreviousResult();
         if(pr==null) {
             return isPassed() ? Status.PASSED : Status.FAILED;
@@ -264,6 +291,11 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
          * This test runs OK, just like its previous run.
          */
         PASSED("result-passed","Passed",true),
+        /**
+         * This test was skipped due to configuration or the
+         * failure or skipping of a method that it depends on.
+         */
+        SKIPPED("result-skipped","Skipped",false),
         /**
          * This test failed, just like its previous run.
          */

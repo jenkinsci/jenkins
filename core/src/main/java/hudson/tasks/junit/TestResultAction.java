@@ -32,6 +32,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     // Hudson < 1.25 didn't set these fields, so use Integer
     // so that we can distinguish between 0 tests vs not-computed-yet.
     private int failCount;
+    private int skipCount;
     private Integer totalCount;
 
 
@@ -48,6 +49,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
 
         totalCount = result.getTotalCount();
         failCount = result.getFailCount();
+        skipCount = result.getSkipCount();
 
         // persist the data
         try {
@@ -71,7 +73,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         } else {
             r = result.get();
         }
-        
+
         if(r==null) {
             r = load();
             result = new WeakReference<TestResult>(r);
@@ -79,6 +81,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         if(totalCount==null) {
             totalCount = r.getTotalCount();
             failCount = r.getFailCount();
+            skipCount = r.getSkipCount();
         }
         return r;
     }
@@ -89,6 +92,14 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         if(totalCount==null)
             getResult();    // this will compute the result
         return failCount;
+    }
+
+    @Override
+    @Exported
+    public int getSkipCount() {
+        if(totalCount==null)
+            getResult();    // this will compute the result
+        return skipCount;
     }
 
     @Override

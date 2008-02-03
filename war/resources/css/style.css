@@ -536,6 +536,10 @@ TABLE.fileList TD.fileSize {
   color: #3465a4;
 }
 
+.result-skipped {
+  color: #ddbb00;
+}
+
 .result-fixed {
   color: #3465a4;
   font-weight: bold;

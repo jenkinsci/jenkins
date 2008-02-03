@@ -25,7 +25,7 @@ public final class PackageResult extends MetaTabulatedResult {
      */
     private final Map<String,ClassResult> classes = new TreeMap<String,ClassResult>();
 
-    private int passCount,failCount;
+    private int passCount,failCount,skipCount;
 
     private final TestResult parent;
     private float duration; 
@@ -73,6 +73,11 @@ public final class PackageResult extends MetaTabulatedResult {
         return failCount;
     }
 
+    @Exported
+    public int getSkipCount() {
+        return skipCount;
+    }
+
     public ClassResult getDynamic(String name, StaplerRequest req, StaplerResponse rsp) {
         return classes.get(name);
     }
@@ -86,7 +91,7 @@ public final class PackageResult extends MetaTabulatedResult {
         List<CaseResult> r = new ArrayList<CaseResult>();
         for (ClassResult clr : classes.values()) {
             for (CaseResult cr : clr.getChildren()) {
-                if(!cr.isPassed())
+                if(!cr.isPassed() && !cr.isSkipped())
                     r.add(cr);
             }
         }
@@ -109,6 +114,7 @@ public final class PackageResult extends MetaTabulatedResult {
             cr.freeze();
             passCount += cr.getPassCount();
             failCount += cr.getFailCount();
+            skipCount += cr.getSkipCount();
         }
     }
 

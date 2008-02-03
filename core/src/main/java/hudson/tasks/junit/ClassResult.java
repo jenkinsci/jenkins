@@ -19,7 +19,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
 
     private final List<CaseResult> cases = new ArrayList<CaseResult>();
 
-    private int passCount,failCount;
+    private int passCount,failCount,skipCount;
     
     private float duration; 
 
@@ -84,17 +84,29 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         return failCount;
     }
 
+    @Exported
+    public int getSkipCount() {
+        return skipCount;
+    }
+
     public void add(CaseResult r) {
         cases.add(r);
     }
 
     void freeze() {
-        passCount=failCount=0;
+        passCount=failCount=skipCount=0;
         duration=0;
         for (CaseResult r : cases) {
             r.setClass(this);
-            if(r.isPassed())    passCount++;
-            else                failCount++;
+            if (r.isSkipped()) {
+                skipCount++;
+            }
+            else if(r.isPassed()) {
+                passCount++;
+            }
+            else {
+                failCount++;
+            }
             duration += r.getDuration();
         }
         Collections.sort(cases);

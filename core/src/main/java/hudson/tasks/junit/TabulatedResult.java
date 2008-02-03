@@ -25,10 +25,15 @@ public abstract class TabulatedResult extends TestObject {
     public abstract int getFailCount();
 
     /**
+     * Gets the total number of skipped tests.
+     */
+    public abstract int getSkipCount();
+
+    /**
      * Gets the total number of tests.
      */
     public final int getTotalCount() {
-        return getPassCount()+getFailCount();
+        return getPassCount()+getFailCount()+getSkipCount();
     }
 
     /**

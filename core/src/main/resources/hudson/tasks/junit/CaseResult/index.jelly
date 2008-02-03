@@ -11,7 +11,14 @@
       </p>
       <j:if test="${!it.passed}">
         <div style="text-align:right;">
-          Failing for the past
+          <j:choose>
+            <j:when test="${it.skipped}">
+              Skipped for the past
+            </j:when>
+            <j:otherwise>
+              Failing for the past
+            </j:otherwise>
+          </j:choose>
           ${h.addSuffix(it.age,'build','builds')}
           (since <t:buildLink job="${it.owner.project}" number="${it.failedSince}"/>)
         </div>

@@ -49,6 +49,18 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     public abstract int getFailCount();
 
     /**
+     * Gets the number of skipped tests.
+     */
+    public int getSkipCount() {
+        // Not all sub-classes will understand the concept of skipped tests.
+        // This default implementation is for them, so that they don't have
+        // to implement it (this avoids breaking existing plug-ins - i.e. those
+        // written before this method was added in 1.178).
+        // Sub-classes that do support skipped tests should over-ride this method.
+        return 0;
+    }
+
+    /**
      * Gets the total number of tests.
      */
     public abstract int getTotalCount();
@@ -162,8 +174,10 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
 
         for( AbstractTestResultAction<?> a=this; a!=null; a=a.getPreviousResult(AbstractTestResultAction.class) ) {
             dsb.add( a.getFailCount(), "failed", new NumberOnlyBuildLabel(a.owner));
-            if(!failureOnly)
-                dsb.add( a.getTotalCount()-a.getFailCount(),"total", new NumberOnlyBuildLabel(a.owner));
+            if(!failureOnly) {
+                dsb.add( a.getSkipCount(), "skipped", new NumberOnlyBuildLabel(a.owner));
+                dsb.add( a.getTotalCount()-a.getFailCount()-a.getSkipCount(),"total", new NumberOnlyBuildLabel(a.owner));
+            }
         }
         return dsb.build();
     }
@@ -224,15 +238,20 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
             public String generateToolTip(CategoryDataset dataset, int row, int column) {
                 NumberOnlyBuildLabel label = (NumberOnlyBuildLabel) dataset.getColumnKey(column);
                 AbstractTestResultAction a = label.build.getAction(AbstractTestResultAction.class);
-                if(row==0)
-                    return String.valueOf(Util.combine(a.getFailCount(),"failure"));
-                else
-                    return String.valueOf(Util.combine(a.getTotalCount(),"test"));
+                switch (row) {
+                    case 0:
+                        return String.valueOf(Util.combine(a.getFailCount(), "failure"));
+                    case 1:
+                        return String.valueOf(Util.combine(a.getSkipCount(), "skip"));
+                    default:
+                        return String.valueOf(Util.combine(a.getTotalCount(), "test"));
+                }
             }
         };
         plot.setRenderer(ar);
-        ar.setSeriesPaint(0,ColorPalette.RED);
-        ar.setSeriesPaint(1,ColorPalette.BLUE);
+        ar.setSeriesPaint(0,ColorPalette.RED); // Failures.
+        ar.setSeriesPaint(1,ColorPalette.YELLOW); // Skips.
+        ar.setSeriesPaint(2,ColorPalette.BLUE); // Total.
 
         // crop extra space around the graph
         plot.setInsets(new RectangleInsets(0,0,0,5.0));

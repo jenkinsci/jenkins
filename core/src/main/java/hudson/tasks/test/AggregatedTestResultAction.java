@@ -12,12 +12,12 @@ import java.util.List;
 /**
  * {@link AbstractTestResultAction} that aggregates all the test results
  * from the corresponding {@link AbstractBuild}s.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
 public abstract class AggregatedTestResultAction extends AbstractTestResultAction {
-    private int failCount,totalCount;
+    private int failCount,skipCount,totalCount;
 
     public static final class Child {
         /**
@@ -45,7 +45,7 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
     }
 
     protected void update(List<? extends AbstractTestResultAction> children) {
-        failCount = totalCount = 0;
+        failCount = skipCount = totalCount = 0;
         this.children.clear();
         for (AbstractTestResultAction tr : children)
             add(tr);
@@ -53,6 +53,7 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
 
     protected void add(AbstractTestResultAction child) {
         failCount += child.getFailCount();
+        skipCount += child.getSkipCount();
         totalCount += child.getTotalCount();
         this.children.add(new Child(getChildName(child),child.owner.number));
     }
