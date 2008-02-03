@@ -13,30 +13,29 @@
         <div style="text-align:right;">
           <j:choose>
             <j:when test="${it.skipped}">
-              Skipped for the past
+              ${%skippedFor(it.age)}
             </j:when>
             <j:otherwise>
-              Failing for the past
+              ${%failingFor(it.age)}
             </j:otherwise>
           </j:choose>
-          ${h.addSuffix(it.age,'build','builds')}
-          (since <t:buildLink job="${it.owner.project}" number="${it.failedSince}"/>)
+          (${%since.before}<t:buildLink job="${it.owner.project}" number="${it.failedSince}"/>${%since.after})
         </div>
       </j:if>
 
         <div style="text-align:right;">
-          Took ${it.durationString}. 
+          ${%took(it.durationString)}
         </div>
       
       <pre><st:out value="${it.errorStackTrace}"/></pre>
 
       <j:if test="${!empty(it.parent.stdout)}">
-        <h3>Standard Output</h3>
+        <h3>${%Standard Output}</h3>
         <pre><st:out value="${it.parent.stdout}" /></pre>
       </j:if>
 
       <j:if test="${!empty(it.parent.stderr)}">
-        <h3>Standard Error</h3>
+        <h3>${%Standard Error}</h3>
         <pre><st:out value="${it.parent.stderr}" /></pre>
       </j:if>
     </l:main-panel>
