@@ -31,7 +31,7 @@
       <application-desc main-class="hudson.jnlp.Main">
         <argument>${request.serverName}</argument>
         <argument>${rootURL}/tcpSlaveAgentListener/</argument>
-        <argument>${app.tcpSlaveAgentListener.secretKey}</argument>
+        <argument>${app.secretKey}</argument>
         <argument>${it.node.nodeName}</argument>
       </application-desc>
     </jnlp>
