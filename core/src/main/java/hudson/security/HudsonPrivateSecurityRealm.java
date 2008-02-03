@@ -1,28 +1,28 @@
 package hudson.security;
 
+import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
-import hudson.util.Scrambler;
-import hudson.util.Protector;
-import hudson.util.spring.BeanBuilder;
-import hudson.Util;
 import hudson.tasks.Mailer;
+import hudson.util.Protector;
+import hudson.util.Scrambler;
+import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
-import org.acegisecurity.DisabledException;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletException;
@@ -211,7 +211,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
         public UserDetails loadUserByUsername(String username) {
             Details p = User.get(username).getProperty(Details.class);
             if(p==null)
-                throw new DisabledException("Password is not set: "+username);
+                throw new UsernameNotFoundException("Password is not set: "+username);
             return p;
         }
     }
