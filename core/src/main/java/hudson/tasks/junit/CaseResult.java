@@ -30,8 +30,16 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      */
     private /*final*/ int failedSince;
 
+    CaseResult(SuiteResult parent, String testClassName, Element testCase) {
+        this(parent,testClassName,testCase.attributeValue("name"), getError(testCase), parseTime(testCase), isMarkedAsSkipped(testCase));
+    }
+
     CaseResult(SuiteResult parent, Element testCase) {
-        this(parent,testCase.attributeValue("name"), getError(testCase), parseTime(testCase), isMarkedAsSkipped(testCase));
+        // reports in http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
+        // indicates that in certain situations, using the test suite name is better.
+        // note however in other situations, this seems not to be the case
+        // https://hudson.dev.java.net/issues/show_bug.cgi?id=1233
+        this(parent, parent.getName(), testCase);
     }
 
     private static float parseTime(Element testCase) {
@@ -70,11 +78,15 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         skipped = isMarkedAsSkipped(testCase);
     }
 
+    /**
+     * Used to create a fake failure, when Hudson fails to load data from XML files.
+     */
     CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
-        this( parent, testName, errorStackTrace, 0.0f, false ); 
+        this( parent, parent.getName(), testName, errorStackTrace, 0.0f, false );
     }
-    CaseResult(SuiteResult parent, String testName, String errorStackTrace, float duration, boolean skipped) {
-        this.className = parent.getName();
+
+    CaseResult(SuiteResult parent, String testClassName, String testName, String errorStackTrace, float duration, boolean skipped) {
+        this.className = testClassName;
         this.testName = testName;
         this.errorStackTrace = errorStackTrace;
         this.parent = parent;
