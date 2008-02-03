@@ -307,7 +307,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Exported
     public Calendar getTimestamp() {
-        return timestamp;
+        return (Calendar)timestamp.clone();
     }
 
     @Exported

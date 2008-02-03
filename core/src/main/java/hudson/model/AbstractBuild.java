@@ -331,7 +331,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     public Calendar due() {
-        return timestamp;
+        return (Calendar)timestamp.clone();
     }
 
     /**
