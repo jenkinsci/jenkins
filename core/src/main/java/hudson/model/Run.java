@@ -48,6 +48,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -914,7 +915,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("US-ASCII");
         rsp.setStatus(HttpServletResponse.SC_OK);
-        SimpleDateFormat df = format==null ? new SimpleDateFormat() : new SimpleDateFormat(format);
+        DateFormat df = format==null ?
+                DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, Locale.ENGLISH) :
+                new SimpleDateFormat(format,req.getLocale());
         rsp.getWriter().print(df.format(getTimestamp().getTime()));
     }
 

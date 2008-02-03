@@ -1,0 +1,18 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <h2>Other Useful URLs</h2>
+  <dl>
+    <dt><a href="../buildNumber">build number</a></dt>
+    <dd>
+      This URL returns the build number in the <tt>text/plain</tt> format.
+    </dd>
+    <dt><a href="../buildTimestamp">build timestamp</a></dt>
+    <dd>
+      This URL returns the build timestamp. You can also use the <tt>format</tt> query parameter
+      to control the date format, which follows
+      <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/text/SimpleDateFormat.html">the <tt>SimpleDateFormat</tt> format pattern</a>.
+      (<a href="../buildTimestamp?format=yyyy/MM/dd">example</a>)
+      You can also use the <tt>Accept-Language</tt> HTTP header to control the locale
+      in which the date is formatted.
+    </dd>
+  </dl>
+</j:jelly>
