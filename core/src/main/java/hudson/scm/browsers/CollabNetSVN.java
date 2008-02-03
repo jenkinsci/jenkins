@@ -34,7 +34,7 @@ public class CollabNetSVN extends SubversionRepositoryBrowser
     };
 
 
-    private final URL baseURL;
+    public final URL url;
 
 
     /**
@@ -44,7 +44,7 @@ public class CollabNetSVN extends SubversionRepositoryBrowser
      */
     @DataBoundConstructor
     public CollabNetSVN(URL url) {
-        this.baseURL = normalizeToEndWithSlash(url);
+        this.url = normalizeToEndWithSlash(url);
     }
 
 
@@ -52,8 +52,7 @@ public class CollabNetSVN extends SubversionRepositoryBrowser
      * {@inheritDoc}
      */
     public URL getDiffLink(SubversionChangeLogSet.Path path) throws IOException {
-        if (path.getEditType() != EditType.EDIT)
-        {
+        if (path.getEditType() != EditType.EDIT) {
             // No diff if the file is being added or deleted.
             return null;
         }
@@ -62,7 +61,7 @@ public class CollabNetSVN extends SubversionRepositoryBrowser
         QueryBuilder query = new QueryBuilder(null);
         query.add("r1=" + (revision - 1));
         query.add("r2=" + revision);
-        return new URL(baseURL, trimHeadSlash(path.getValue()) + query);
+        return new URL(url, trimHeadSlash(path.getValue()) + query);
     }
 
 
@@ -74,7 +73,7 @@ public class CollabNetSVN extends SubversionRepositoryBrowser
         QueryBuilder query = new QueryBuilder(null);
         query.add("rev=" + revision);
         query.add("view=log");
-        return new URL(baseURL, trimHeadSlash(path.getValue()) + query);
+        return new URL(url, trimHeadSlash(path.getValue()) + query);
     }
 
 
@@ -86,7 +85,7 @@ public class CollabNetSVN extends SubversionRepositoryBrowser
         QueryBuilder query = new QueryBuilder(null);
         query.add("rev=" + revision);
         query.add("view=rev");
-        return new URL(baseURL, query.toString());
+        return new URL(url, query.toString());
     }
 
 
