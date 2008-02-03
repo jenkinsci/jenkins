@@ -106,7 +106,10 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
 
                 for( Computer c : Hudson.getInstance().getComputers() ) {
                     try {
-                        data.put(c,monitor(c));
+                        if(c.isOffline())
+                            data.put(c,null);
+                        else
+                            data.put(c,monitor(c));
                     } catch (IOException e) {
                         LOGGER.log(Level.WARNING, "Failed to monitor "+c+" for "+getDisplayName(), e);
                     }
