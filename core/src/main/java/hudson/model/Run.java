@@ -22,6 +22,7 @@ import hudson.util.IOException2;
 import hudson.util.XStream2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -37,6 +38,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -903,6 +905,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         rsp.setCharacterEncoding("US-ASCII");
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.getWriter().print(number);
+    }
+
+    /**
+     * Returns the build time stamp in the body.
+     */
+    public void doBuildTimestamp( StaplerRequest req, StaplerResponse rsp, @QueryParameter("format") String format) throws IOException {
+        rsp.setContentType("text/plain");
+        rsp.setCharacterEncoding("US-ASCII");
+        rsp.setStatus(HttpServletResponse.SC_OK);
+        SimpleDateFormat df = format==null ? new SimpleDateFormat() : new SimpleDateFormat(format);
+        rsp.getWriter().print(df.format(getTimestamp().getTime()));
     }
 
     /**
