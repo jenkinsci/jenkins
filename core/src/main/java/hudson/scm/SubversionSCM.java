@@ -422,8 +422,8 @@ public class SubversionSCM extends SCM implements Serializable {
                     try {
 						sct.join(); // wait for all data to be piped.
 					} catch (InterruptedException e) {
-					} 
-                    
+                        throw new IOException2("interrupted",e);
+                    }
                 }
                 
                 return externals;
