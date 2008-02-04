@@ -353,6 +353,9 @@ public class SubversionSCM extends SCM implements Serializable {
         return workspace.act(new CheckOutTask(this, build.getTimestamp().getTime(), isUpdatable, listener));
     }
 
+    /**
+     * Either run "svn co" or "svn up" equivalent.
+     */
     private static class CheckOutTask implements FileCallable<List<String>> {
         private final ISVNAuthenticationProvider authProvider;
         private final Date timestamp;
