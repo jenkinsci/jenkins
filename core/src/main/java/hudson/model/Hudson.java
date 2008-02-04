@@ -1,7 +1,6 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
-import groovy.lang.GroovyShell;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Functions;
@@ -40,7 +39,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
-import hudson.security.RememberMeServicesProxy;
 import hudson.security.TokenBasedRememberMeServices2;
 import hudson.security.SecurityRealm.SecurityComponents;
 import hudson.tasks.BuildStep;
@@ -99,7 +97,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.text.ParseException;
@@ -2163,6 +2160,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         String rest = Stapler.getCurrentRequest().getRestOfPath();
         if(rest.startsWith("/login")
         || rest.startsWith("/logout")
+        || rest.startsWith("/accessDenied")
         || rest.startsWith("/securityRealm"))
             return this;    // URLs that are always visible without READ permission
         
