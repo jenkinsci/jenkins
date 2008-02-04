@@ -169,6 +169,10 @@ public final class FilePath implements Serializable {
      * Checks if the remote path is Unix.
      */
     private boolean isUnix() {
+        // if the path represents a local path, there' no need to guess.
+        if(!isRemote())
+            return File.pathSeparatorChar!=';';
+            
         // note that we can't use the usual File.pathSeparator and etc., as the OS of
         // the machine where this code runs and the OS that this FilePath refers to may be different.
 
