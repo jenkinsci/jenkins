@@ -397,7 +397,9 @@ public class SubversionSCM extends SCM implements Serializable {
                     }
                 } else {
                     Util.deleteContentsRecursive(ws);
-                    
+
+                    // buffer the output by a separate thread so that the update operation
+                    // won't be blocked by the remoting of the data
                     PipedOutputStream pos = new PipedOutputStream();
                     StreamCopyThread sct = new StreamCopyThread("svn log copier", new PipedInputStream(pos), listener.getLogger());
                     sct.start();
