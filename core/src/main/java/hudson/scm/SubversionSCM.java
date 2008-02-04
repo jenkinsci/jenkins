@@ -411,8 +411,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
                             svnuc.setEventHandler(new SubversionUpdateEventHandler(new PrintStream(pos), externals, l.local));
                             svnuc.doCheckout(url, new File(ws, l.local).getCanonicalFile(), SVNRevision.HEAD, revision, true);
-
-                        } catch (final SVNException e) {
+                        } catch (SVNException e) {
                             e.printStackTrace(listener.error("Failed to check out "+l.remote));
                             return null;
                         }
@@ -425,7 +424,20 @@ public class SubversionSCM extends SCM implements Serializable {
                         throw new IOException2("interrupted",e);
                     }
                 }
-                
+
+                try {
+                    for (final ModuleLocation l : locations) {
+                        final SVNURL url = SVNURL.parseURIEncoded(l.remote);
+                        SVNDirEntry dir = manager.createRepository(url,true).info("/",-1);
+                        if(dir!=null) {// I don't think this can ever be null, but be defensive
+                            if(dir.getDate().after(new Date()))
+                                listener.getLogger().println(Messages.SubversionSCM_ClockOutOfSync());
+                        }
+                    }
+                } catch (SVNException e) {
+                    LOGGER.log(Level.INFO,"Failed to estimate the remote time stamp",e);
+                }
+
                 return externals;
             } finally {
                 manager.dispose();
