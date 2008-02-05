@@ -140,7 +140,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             return null;
 
         for (String key : envVars.keySet())
-            opts = opts.replace("$" + key, envVars.get(key));
+            opts = opts.replace("${" + key + "}", envVars.get(key));
         
         return opts;
     }
