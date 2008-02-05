@@ -180,6 +180,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
 
     public static final UserPropertyDescriptor DETAILS_DESCRIPTOR = new UserPropertyDescriptor(Details.class) {
         public String getDisplayName() {
+            // this feature is only when HudsonPrivateSecurityRealm is enabled
             if(isEnabled())
                 return Messages.HudsonPrivateSecurityRealm_Details_DisplayName();
             else
