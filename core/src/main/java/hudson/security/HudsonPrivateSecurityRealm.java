@@ -180,7 +180,10 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
 
     public static final UserPropertyDescriptor DETAILS_DESCRIPTOR = new UserPropertyDescriptor(Details.class) {
         public String getDisplayName() {
-            return Messages.HudsonPrivateSecurityRealm_Details_DisplayName();
+            if(isEnabled())
+                return Messages.HudsonPrivateSecurityRealm_Details_DisplayName();
+            else
+                return null;
         }
 
         public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
@@ -197,6 +200,10 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
                     return new Details(data.substring(prefix.length()));
             }
             return new Details(pwd);
+        }
+
+        public boolean isEnabled() {
+            return Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
         }
 
         public UserProperty newInstance(User user) {
