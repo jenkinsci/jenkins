@@ -200,7 +200,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
                 if(data.startsWith(prefix))
                     return new Details(data.substring(prefix.length()));
             }
-            return new Details(pwd);
+            return new Details(Util.fixNull(pwd));
         }
 
         public boolean isEnabled() {
