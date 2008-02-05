@@ -44,6 +44,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -912,45 +914,116 @@ public final class FilePath implements Serializable {
             public String invoke(File dir, VirtualChannel channel) throws IOException {
                 StringTokenizer tokens = new StringTokenizer(fileMasks,",");
 
-                OUTER:
                 while(tokens.hasMoreTokens()) {
                     final String fileMask = tokens.nextToken().trim();
-                    String previous = null;
-                    String pattern = fileMask;
+                    if(hasMatch(dir,fileMask))
+                        continue;   // no error on this portion
 
-                    while(true) {
-                        FileSet fs = Util.createFileSet(dir,pattern);
+                    // in 1.172 we introduced an incompatible change to stop using ' ' as the separator
+                    // so see if we can match by using ' ' as the separator
+                    if(fileMask.contains(" ")) {
+                        boolean matched = true;
+                        for (String token : Util.tokenize(fileMask))
+                            matched &= hasMatch(dir,token);
+                        if(matched)
+                            return Messages.FilePath_validateAntFileMask_whitespaceSeprator();
+                    }
 
-                        DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+                    // a common mistake is to assume the wrong base dir, and there are two variations
+                    // to this: (1) the user gave us aa/bb/cc/dd where cc/dd was correct
+                    // and (2) the user gave us cc/dd where aa/bb/cc/dd was correct.
 
-                        if(ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0) {
-                            // found a match
-                            if(pattern.equals(fileMask))
-                                continue OUTER;    // no error
-                            if(previous==null)
-                                return String.format("'%s' doesn't match anything, although '%s' exists",
-                                    fileMask, pattern );
-                            else
-                                return String.format("'%s' doesn't match anything: '%s' exists but not '%s'",
-                                    fileMask, pattern, previous );
+                    {// check the (1) above first
+                        String f=fileMask;
+                        while(true) {
+                            int idx = findSeparator(f);
+                            if(idx==-1)     break;
+                            f=f.substring(idx+1);
+
+                            if(hasMatch(dir,f))
+                                return Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest(fileMask,f);
                         }
+                    }
 
-                        int idx = Math.max(pattern.lastIndexOf('\\'),pattern.lastIndexOf('/'));
-                        if(idx<0) {
-                            if(pattern.equals(fileMask))
-                                return String.format("'%s' doesn't match anything", fileMask );
-                            else
-                                return String.format("'%s' doesn't match anything: even '%s' doesn't exist",
-                                    fileMask, pattern );
+                    {// check the (1) above next as this is more expensive.
+                        // Try prepending "**/" to see if that results in a match
+                        FileSet fs = Util.createFileSet(dir,"**/"+fileMask);
+                        DirectoryScanner ds = fs.getDirectoryScanner(new Project());
+                        if(ds.getIncludedFilesCount()!=0) {
+                            // try shorter name first so that the suggestion results in least amount of changes
+                            String[] names = ds.getIncludedFiles();
+                            Arrays.sort(names,SHORTER_STRING_FIRST);
+                            for( String f : names) {
+                                // now we want to decompose f to the leading portion that matched "**"
+                                // and the trailing portion that matched the file mask, so that
+                                // we can suggest the user error.
+                                //
+                                // this is not a very efficient/clever way to do it, but it's relatively simple
+
+                                String prefix="";
+                                while(true) {
+                                    int idx = findSeparator(f);
+                                    if(idx==-1)     break;
+
+                                    prefix+=f.substring(0,idx)+'/';
+                                    f=f.substring(idx+1);
+                                    if(hasMatch(dir,prefix+fileMask))
+                                        return Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest(fileMask, prefix+fileMask);
+                                }
+                            }
                         }
+                    }
 
-                        // cut off the trailing component and try again
-                        previous = pattern;
-                        pattern = pattern.substring(0,idx);
+                    {// finally, see if we can identify any sub portion that's valid. Otherwise bail out
+                        String previous = null;
+                        String pattern = fileMask;
+
+                        while(true) {
+                            if(hasMatch(dir,pattern)) {
+                                // found a match
+                                if(previous==null)
+                                    return String.format("'%s' doesn't match anything, although '%s' exists",
+                                        fileMask, pattern );
+                                else
+                                    return String.format("'%s' doesn't match anything: '%s' exists but not '%s'",
+                                        fileMask, pattern, previous );
+                            }
+
+                            int idx = findSeparator(pattern);
+                            if(idx<0) {// no more path component left to go back
+                                if(pattern.equals(fileMask))
+                                    return String.format("'%s' doesn't match anything", fileMask );
+                                else
+                                    return String.format("'%s' doesn't match anything: even '%s' doesn't exist",
+                                        fileMask, pattern );
+                            }
+
+                            // cut off the trailing component and try again
+                            previous = pattern;
+                            pattern = pattern.substring(0,idx);
+                        }
                     }
                 }
 
                 return null; // no error
+            }
+
+            private boolean hasMatch(File dir, String pattern) {
+                FileSet fs = Util.createFileSet(dir,pattern);
+                DirectoryScanner ds = fs.getDirectoryScanner(new Project());
+
+                return ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0;
+            }
+
+            /**
+             * Finds the position of the first path separator.
+             */
+            private int findSeparator(String pattern) {
+                int idx1 = pattern.indexOf('\\');
+                int idx2 = pattern.indexOf('/');
+                if(idx1==-1)    return idx2;
+                if(idx2==-1)    return idx1;
+                return Math.min(idx1,idx2);
             }
         });
     }
@@ -1017,4 +1090,10 @@ public final class FilePath implements Serializable {
 
         private static final long serialVersionUID = 1L;
     }
+
+    private static final Comparator<String> SHORTER_STRING_FIRST = new Comparator<String>() {
+        public int compare(String o1, String o2) {
+            return o1.length()-o2.length();
+        }
+    };
 }

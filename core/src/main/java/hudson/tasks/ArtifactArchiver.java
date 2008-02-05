@@ -68,8 +68,12 @@ public class ArtifactArchiver extends Publisher {
         dir.mkdirs();
 
         try {
-            if(p.getWorkspace().copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
+            FilePath ws = p.getWorkspace();
+            if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
                 listener.error("No artifacts found that match the file pattern \""+artifacts+"\". Configuration error?");
+                String msg = ws.validateAntFileMask(artifacts);
+                if(msg!=null)
+                    listener.error(msg);
                 build.setResult(Result.FAILURE);
                 return true;
             }
