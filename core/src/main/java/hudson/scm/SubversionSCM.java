@@ -71,6 +71,8 @@ import org.tmatesoft.svn.core.auth.SVNSSHAuthentication;
 import org.tmatesoft.svn.core.auth.SVNSSLAuthentication;
 import org.tmatesoft.svn.core.auth.SVNUserNameAuthentication;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
+import org.tmatesoft.svn.core.internal.io.dav.http.IHTTPConnectionFactory;
+import org.tmatesoft.svn.core.internal.io.dav.http.DefaultHTTPConnectionFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
@@ -1245,7 +1247,10 @@ public class SubversionSCM extends SCM implements Serializable {
 
     private static final class Initializer {
         static {
-            DAVRepositoryFactory.setup();   // http, https
+            if(Boolean.getBoolean("hudson.spool-svn"))
+                DAVRepositoryFactory.setup(new DefaultHTTPConnectionFactory(null,true,null));
+            else
+                DAVRepositoryFactory.setup();   // http, https
             SVNRepositoryFactoryImpl.setup();   // svn, svn+xxx
             FSRepositoryFactory.setup();    // file
 
