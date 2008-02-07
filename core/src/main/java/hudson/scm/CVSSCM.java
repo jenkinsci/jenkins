@@ -222,6 +222,11 @@ public class CVSSCM extends SCM implements Serializable {
     }
 
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException, InterruptedException {
+        if(!isUpdatable(dir)) {
+            listener.getLogger().println("Workspace is inconsistent with configuration. Scheduling a new build");
+            return true;
+        }
+
         List<String> changedFiles = update(true, launcher, dir, listener, new Date());
 
         return changedFiles!=null && !changedFiles.isEmpty();
