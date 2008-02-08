@@ -132,6 +132,13 @@ public class MavenArtifactArchiver extends MavenReporter {
         }
         if(classifier!=null)
             name += '-'+classifier;
+        if(debug) {
+            // probe to trouble-shoot http://www.nabble.com/Possible-regression%3A-Hudson-not-honoring-the-finalname-tt15264715.html#a15264715
+            System.out.println(
+                String.format("getSeed(%s,%s,%s,%s) = %s",pom,artifactId,version,classifier,name));
+            System.out.println(
+                String.format("pom.artifactId=%s, pom.version=%s",pom.getArtifactId(),pom.getVersion()));
+        }
         return name;
     }
 
@@ -219,4 +226,6 @@ public class MavenArtifactArchiver extends MavenReporter {
     }
 
     private static final long serialVersionUID = 1L;
+
+    private static final boolean debug = Boolean.getBoolean(MavenArtifactArchiver.class.getName()+".probe");
 }
