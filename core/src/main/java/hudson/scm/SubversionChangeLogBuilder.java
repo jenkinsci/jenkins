@@ -57,7 +57,7 @@ public final class SubversionChangeLogBuilder {
 
     }
 
-    public boolean run(Collection<String> externals, Result changeLog) throws IOException, InterruptedException {
+    public boolean run(Collection<SubversionSCM.External> externals, Result changeLog) throws IOException, InterruptedException {
         boolean changelogFileCreated = false;
 
         final SVNClientManager manager = SubversionSCM.createSvnClientManager(createAuthenticationProvider());
@@ -73,9 +73,9 @@ public final class SubversionChangeLogBuilder {
             for (ModuleLocation l : scm.getLocations()) {
                 changelogFileCreated |= buildModule(l.remote, svnlc, logHandler);
             }
-            for(String path : externals) {
+            for(SubversionSCM.External ext : externals) {
                 changelogFileCreated |= buildModule(
-                        getUrlForPath(build.getProject().getWorkspace().child(path)), svnlc, logHandler);
+                        getUrlForPath(build.getProject().getWorkspace().child(ext.path)), svnlc, logHandler);
             }
 
             if(changelogFileCreated) {

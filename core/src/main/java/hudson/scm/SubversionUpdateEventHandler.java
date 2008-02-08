@@ -12,13 +12,18 @@
 package hudson.scm;
 
 import org.tmatesoft.svn.core.SVNCancelException;
+import org.tmatesoft.svn.core.internal.wc.SVNExternalInfo;
 import org.tmatesoft.svn.core.wc.ISVNEventHandler;
 import org.tmatesoft.svn.core.wc.SVNEvent;
 import org.tmatesoft.svn.core.wc.SVNEventAction;
 import org.tmatesoft.svn.core.wc.SVNStatusType;
 
 import java.io.PrintStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+
+import hudson.remoting.Which;
 
 /**
  * Just prints out the progress of svn update/checkout operation in a way similar to
@@ -31,12 +36,13 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
     private final PrintStream out;
     
     /**
-     * to record external urls
+     * External urls that are fetched through svn:externals.
+     * We add to this collection as we find them.
      */
-    private final List<String> externals;
+    private final List<SubversionSCM.External> externals;
     private final String modulePath;
     
-    public SubversionUpdateEventHandler(PrintStream out, List<String> externals, String modulePath) {
+    public SubversionUpdateEventHandler(PrintStream out, List<SubversionSCM.External> externals, String modulePath) {
         this.out = out;
         this.externals = externals;
         this.modulePath = modulePath;
@@ -91,11 +97,22 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
                 pathChangeType = "G";
             }
         } else if (action == SVNEventAction.UPDATE_EXTERNAL) {
-            /*for externals definitions*/
-            out.println("Fetching external item into '"
-                    + event.getFile().getAbsolutePath() + "'");
-            out.println("External at revision " + event.getRevision());
-            externals.add(modulePath + "/" + event.getPath());
+            // for externals definitions
+            SVNExternalInfo ext = event.getExternalInfo();
+            if(ext==null) {
+                // prepare for the situation where the user created their own svnkit
+                File path = null;
+                try {
+                    path = Which.jarFile(SVNEvent.class);
+                } catch (IOException e) {
+                    // ignore this failure
+                }
+                out.println("AssertionError: appears to be using unpatched svnkit at "+ path);
+            } else {
+                out.println(Messages.SubversionUpdateEventHandler_FetchExternal(
+                        ext.getNewURL(), ext.getNewRevision(), event.getFile()));
+                externals.add(new SubversionSCM.External(modulePath,ext));
+            }
             return;
         } else if (action == SVNEventAction.UPDATE_COMPLETED) {
             /*

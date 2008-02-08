@@ -251,7 +251,7 @@
 	    <dependency>
 	      <groupId>org.jvnet.hudson.svnkit</groupId>
 	      <artifactId>svnkit</artifactId>
-	      <version>1.1.4-hudson-3</version>
+	      <version>1.1.4-hudson-5</version>
 	      <exclusions>
 		<!-- replaced by out patched version -->
 		<exclusion>

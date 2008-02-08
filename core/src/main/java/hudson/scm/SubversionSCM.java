@@ -1,9 +1,12 @@
 package hudson.scm;
 
+import ch.ethz.ssh2.SCPClient;
+import com.thoughtworks.xstream.XStream;
 import hudson.FilePath;
+import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.FilePath.FileCallable;
+import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -19,38 +22,7 @@ import hudson.util.IOException2;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.Scrambler;
 import hudson.util.StreamCopyThread;
-
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.StringTokenizer;
-import java.util.Map.Entry;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
-import javax.servlet.ServletException;
-import javax.xml.transform.stream.StreamResult;
-
+import hudson.util.XStream2;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
@@ -78,6 +50,7 @@ import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
 import org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.wc.SVNErrorManager;
+import org.tmatesoft.svn.core.internal.wc.SVNExternalInfo;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
@@ -87,7 +60,36 @@ import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
-import ch.ethz.ssh2.SCPClient;
+import javax.servlet.ServletException;
+import javax.xml.transform.stream.StreamResult;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.StringTokenizer;
+import java.util.Collections;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Subversion SCM.
@@ -211,7 +213,7 @@ public class SubversionSCM extends SCM implements Serializable {
     /**
      * Called after checkout/update has finished to compute the changelog.
      */
-    private boolean calcChangeLog(AbstractBuild<?,?> build, File changelogFile, BuildListener listener, List<String> externals) throws IOException, InterruptedException {
+    private boolean calcChangeLog(AbstractBuild<?,?> build, File changelogFile, BuildListener listener, List<External> externals) throws IOException, InterruptedException {
         if(build.getPreviousBuild()==null) {
             // nothing to compare against
             return createEmptyChangeLog(changelogFile, listener, "log");
@@ -273,32 +275,29 @@ public class SubversionSCM extends SCM implements Serializable {
     /**
      * Parses the file that stores the locations in the workspace where modules loaded by svn:external
      * is placed.
+     *
+     * <p>
+     * Note that the format of the file has changed in 1.180 from simple text file to XML.
+     *
+     * @return
+     *      immutable list. Can be empty but never null.
      */
-    /*package*/ static List<String> parseExternalsFile(AbstractProject project) throws IOException {
-        List<String> ext = new ArrayList<String>(); // workspace-relative path
-
-        {// read the revision file of the last build
-            File file = getExternalsFile(project);
-            if(!file.exists())
-                // nothing to compare against
-                return ext;
-
-            BufferedReader br = new BufferedReader(new FileReader(file));
+    /*package*/ static List<External> parseExternalsFile(AbstractProject project) throws IOException {
+        File file = getExternalsFile(project);
+        if(file.exists()) {
             try {
-                String line;
-                while((line=br.readLine())!=null) {
-                    ext.add(line);
-                }
-            } finally {
-                br.close();
+                return (List<External>)new XmlFile(External.XSTREAM,file).read();
+            } catch (IOException e) {
+                // in < 1.180 this file was a text file, so it may fail to parse as XML,
+                // in which case let's just fall back
             }
         }
 
-        return ext;
+        return Collections.emptyList();
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, final BuildListener listener, File changelogFile) throws IOException, InterruptedException {
-        List<String> externals = checkout(build,workspace,listener);
+        List<External> externals = checkout(build,workspace,listener);
 
         if(externals==null)
             return false;
@@ -316,14 +315,7 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         // write out the externals info
-        w = new PrintWriter(new FileOutputStream(getExternalsFile(build.getProject())));
-        try {
-            for (String p : externals) {
-                w.println( p );
-            }
-        } finally {
-            w.close();
-        }
+        new XmlFile(External.XSTREAM,getExternalsFile(build.getProject())).write(externals);
 
         return calcChangeLog(build, changelogFile, listener, externals);
     }
@@ -339,7 +331,7 @@ public class SubversionSCM extends SCM implements Serializable {
      *      if the operation failed. Otherwise the set of local workspace paths
      *      (relative to the workspace root) that has loaded due to svn:external.
      */
-    private List<String> checkout(AbstractBuild build, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+    private List<External> checkout(AbstractBuild build, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         try {
             if (!repositoryLocationsExist()) {
                 // Disable this project, see issue #763
@@ -358,7 +350,7 @@ public class SubversionSCM extends SCM implements Serializable {
     /**
      * Either run "svn co" or "svn up" equivalent.
      */
-    private static class CheckOutTask implements FileCallable<List<String>> {
+    private static class CheckOutTask implements FileCallable<List<External>> {
         private final ISVNAuthenticationProvider authProvider;
         private final Date timestamp;
         // true to "svn update", false to "svn checkout".
@@ -374,11 +366,11 @@ public class SubversionSCM extends SCM implements Serializable {
             this.locations = parent.getLocations();
         }
 
-        public List<String> invoke(File ws, VirtualChannel channel) throws IOException {
+        public List<External> invoke(File ws, VirtualChannel channel) throws IOException {
             final SVNClientManager manager = createSvnClientManager(authProvider);
             try {
                 final SVNUpdateClient svnuc = manager.getUpdateClient();
-                final List<String> externals = new ArrayList<String>(); // store discovered externals to here
+                final List<External> externals = new ArrayList<External>(); // store discovered externals to here
                 final SVNRevision revision = SVNRevision.create(timestamp);
                 if(update) {
                     for (final ModuleLocation l : locations) {
@@ -521,6 +513,53 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     /**
+     * Information about svn:external
+     */
+    static final class External implements Serializable {
+        /**
+         * Relative path within the workspace where this <tt>svn:exteranls</tt> exist. 
+         */
+        final String path;
+
+        /**
+         * External SVN URL to be fetched.
+         */
+        final String url;
+
+        /**
+         * If the svn:external link is with the -r option, its number.
+         * Otherwise -1 to indicate that the head revision of the external repository should be fetched.
+         */
+        final long revision;
+
+        /**
+         * @param modulePath
+         *      The root of the current module that svn was checking out when it hits 'ext'.
+         *      Since we call svnkit multiple times in general case to check out from multiple locations,
+         *      we use this to make the path relative to the entire workspace, not just the particular module.
+         */
+        External(String modulePath,SVNExternalInfo ext) {
+            this.path = modulePath+'/'+ext.getPath();
+            this.url = ext.getNewURL().toDecodedString();
+            this.revision = ext.getNewRevision();
+        }
+
+        /**
+         * Returns true if this reference is to a fixed revision.
+         */
+        boolean isRevisionFixed() {
+            return revision!=-1;
+        }
+
+        private static final long serialVersionUID = 1L;
+
+        private static final XStream XSTREAM = new XStream2();
+        static {
+            XSTREAM.alias("external",External.class);
+        }
+    }
+
+    /**
      * Gets the SVN metadata for the given local workspace.
      *
      * @param workspace
@@ -562,10 +601,10 @@ public class SubversionSCM extends SCM implements Serializable {
     private static class BuildRevisionMapTask implements FileCallable<Map<String,SvnInfo>> {
         private final ISVNAuthenticationProvider authProvider;
         private final TaskListener listener;
-        private final List<String> externals;
+        private final List<External> externals;
         private final ModuleLocation[] locations;
 
-        public BuildRevisionMapTask(SubversionSCM parent, TaskListener listener, List<String> externals) {
+        public BuildRevisionMapTask(SubversionSCM parent, TaskListener listener, List<External> externals) {
             this.authProvider = parent.getDescriptor().createAuthenticationProvider();
             this.listener = listener;
             this.externals = externals;
@@ -587,12 +626,12 @@ public class SubversionSCM extends SCM implements Serializable {
                         e.printStackTrace(listener.error("Failed to parse svn info for "+module.remote));
                     }
                 }
-                for(String local : externals){
+                for(External ext : externals){
                     try {
-                        SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws, local),SVNRevision.WORKING));
+                        SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws,ext.path),SVNRevision.WORKING));
                         revisions.put(info.url,info);
                     } catch (SVNException e) {
-                        e.printStackTrace(listener.error("Failed to parse svn info for external "+local));
+                        e.printStackTrace(listener.error("Failed to parse svn info for external "+ext.url+" at "+ext.path));
                     }
 
                 }
@@ -683,21 +722,30 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         // current workspace revision
-        Map<String, Long> wsRev = parseRevisionFile(lastBuild);
+        Map<String,Long> wsRev = parseRevisionFile(lastBuild);
+        List<External> externals = parseExternalsFile(project);
 
         ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
 
         // check the corresponding remote revision
+        OUTER:
         for (Map.Entry<String,Long> localInfo : wsRev.entrySet()) {
+            // skip if this is an external reference to a fixed revision
+            String url = localInfo.getKey();
+
+            for (External ext : externals)
+                if(ext.url.equals(url) && ext.isRevisionFixed())
+                    continue OUTER;
+
             try {
-                SvnInfo remoteInfo = new SvnInfo(parseSvnInfo(SVNURL.parseURIDecoded(localInfo.getKey()),authProvider));
-                listener.getLogger().println("Revision:"+remoteInfo.revision);
+                SvnInfo remoteInfo = new SvnInfo(parseSvnInfo(SVNURL.parseURIDecoded(url),authProvider));
+                listener.getLogger().println(Messages.SubversionSCM_pollChanges_remoteRevisionAt(url,remoteInfo.revision));
                 if(remoteInfo.revision > localInfo.getValue()) {
-                    listener.getLogger().println("  (changed from "+localInfo.getValue()+")");
+                    listener.getLogger().println(Messages.SubversionSCM_pollChanges_changedFrom(localInfo.getValue()));
                     return true;    // change found
                 }
             } catch (SVNException e) {
-                e.printStackTrace(listener.error("Failed to check repository revision for "+localInfo.getKey()));
+                e.printStackTrace(listener.error("Failed to check repository revision for "+ url));
                 return false;
             }
         }
