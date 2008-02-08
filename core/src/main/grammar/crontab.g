@@ -20,6 +20,34 @@ throws ANTLRException
     table.bits[3]=mnth;
     table.dayOfWeek=(int)dow;
   }
+  | "@yearly"
+  {
+    table.set("0 0 1 1 *");
+  }
+  | "@annually"
+  {
+    table.set("0 0 1 1 *");
+  }
+  | "@monthly"
+  {
+    table.set("0 0 1 * *");
+  }
+  | "@weekly"
+  {
+    table.set("0 0 * * 0");
+  }
+  | "@daily"
+  {
+    table.set("0 0 * * *");
+  }
+  | "@midnight"
+  {
+    table.set("0 0 * * *");
+  }
+  | "@hourly"
+  {
+    table.set("0 * * * *");
+  }
   ;
 
 expr [int field]

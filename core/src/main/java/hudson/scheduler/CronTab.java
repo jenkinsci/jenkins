@@ -28,6 +28,10 @@ public final class CronTab {
     }
 
     public CronTab(String format, int line) throws ANTLRException {
+        set(format, line);
+    }
+
+    private void set(String format, int line) throws ANTLRException {
         CrontabLexer lexer = new CrontabLexer(new StringReader(format));
         lexer.setLine(line);
         CrontabParser parser = new CrontabParser(lexer);
@@ -54,6 +58,10 @@ public final class CronTab {
             return false;
 
         return true;
+    }
+
+    void set(String format) throws ANTLRException {
+        set(format,1);
     }
 
     /**
