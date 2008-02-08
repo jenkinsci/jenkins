@@ -4,9 +4,18 @@ import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider
 import com.thoughtworks.xstream.core.JVM;
 import hudson.model.Hudson;
 import hudson.model.User;
-import hudson.triggers.Trigger;
 import hudson.triggers.SafeTimerTask;
-import hudson.util.*;
+import hudson.triggers.Trigger;
+import hudson.util.HudsonIsLoading;
+import hudson.util.IncompatibleServletVersionDetected;
+import hudson.util.IncompatibleVMDetected;
+import hudson.util.InsufficientPermissionDetected;
+import hudson.util.NoHomeDir;
+import hudson.util.RingBufferLogHandler;
+import hudson.util.NoTempDir;
+import org.jvnet.localizer.LocaleProvider;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -20,16 +29,12 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.net.URLClassLoader;
-import java.net.URL;
-
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.jvnet.localizer.LocaleProvider;
 
 /**
  * Entry point when Hudson is used as a webapp.
@@ -94,6 +99,17 @@ public class WebAppMain implements ServletContextListener {
                 ServletResponse.class.getMethod("setCharacterEncoding",String.class);
             } catch (NoSuchMethodException e) {
                 context.setAttribute(APP,new IncompatibleServletVersionDetected(ServletResponse.class));
+                return;
+            }
+
+            // some containers (in particular Tomcat) doesn't abort a launch
+            // even if the temp directory doesn't exist.
+            // check that and report an error
+            try {
+                File f = File.createTempFile("test", "test");
+                f.delete();
+            } catch (IOException e) {
+                context.setAttribute(APP,new NoTempDir(e));
                 return;
             }
 
