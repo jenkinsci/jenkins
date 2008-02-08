@@ -17,6 +17,7 @@ import hudson.tasks.LabelFinder;
 import hudson.util.*;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.jvnet.winp.WinProcess;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -315,7 +316,10 @@ public final class Slave implements Node, Serializable {
                                 public void onClosed(Channel channel, IOException cause) {
                                     if(cause!=null)
                                         cause.printStackTrace(listener.error("%s slave agent was terminated\n",getTimestamp()));
-                                    proc.destroy();
+                                    if(Hudson.isWindows())
+                                        new WinProcess(proc).killRecursively();
+                                    else
+                                        proc.destroy();
                                 }
                             });
 

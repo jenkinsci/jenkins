@@ -21,6 +21,8 @@ import java.io.BufferedOutputStream;
 import java.util.Map;
 import java.util.Arrays;
 
+import org.jvnet.winp.WinProcess;
+
 /**
  * Starts a process.
  *
@@ -310,7 +312,10 @@ public abstract class Launcher {
                  */
                 protected synchronized void terminate(IOException e) {
                     super.terminate(e);
-                    proc.destroy();
+                    if(Hudson.isWindows())
+                        new WinProcess(proc).killRecursively();
+                    else
+                        proc.destroy();
                 }
 
                 public synchronized void close() throws IOException {

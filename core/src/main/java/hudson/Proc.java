@@ -3,6 +3,7 @@ package hudson;
 import hudson.remoting.Channel;
 import hudson.util.IOException2;
 import hudson.util.StreamCopyThread;
+import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +14,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.jvnet.winp.WinProcess;
 
 /**
  * External process wrapper.
@@ -144,15 +147,25 @@ public abstract class Proc {
                 return r;
             } catch (InterruptedException e) {
                 // aborting. kill the process
-                proc.destroy();
+                destroy();
                 throw e;
             }
         }
 
         @Override
         public void kill() throws InterruptedException, IOException {
-            proc.destroy();
+            destroy();
             join();
+        }
+
+        /**
+         * Destroys the child process without join.
+         */
+        private void destroy() {
+            if(Hudson.isWindows())
+                new WinProcess(proc).killRecursively();
+            else
+                proc.destroy();
         }
 
         private static class ByteCopier extends Thread {
