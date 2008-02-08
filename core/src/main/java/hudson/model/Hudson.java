@@ -39,8 +39,8 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
-import hudson.security.TokenBasedRememberMeServices2;
 import hudson.security.SecurityRealm.SecurityComponents;
+import hudson.security.TokenBasedRememberMeServices2;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -52,6 +52,7 @@ import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
+import hudson.util.CaseInsensitiveComparator;
 import hudson.util.ClockDifference;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
@@ -59,12 +60,12 @@ import hudson.util.DaemonThreadFactory;
 import hudson.util.FormFieldValidator;
 import hudson.util.HudsonIsLoading;
 import hudson.util.MultipartFormDataParser;
+import hudson.util.RemotingDiagnostics;
 import hudson.util.TextFile;
 import hudson.util.XStream2;
-import hudson.util.RemotingDiagnostics;
-import hudson.util.CaseInsensitiveComparator;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
@@ -2157,14 +2158,17 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     public Object getTarget() {
-        String rest = Stapler.getCurrentRequest().getRestOfPath();
-        if(rest.startsWith("/login")
-        || rest.startsWith("/logout")
-        || rest.startsWith("/accessDenied")
-        || rest.startsWith("/securityRealm"))
-            return this;    // URLs that are always visible without READ permission
-        
-        checkPermission(READ);
+        try {
+            checkPermission(READ);
+        } catch (AccessDeniedException e) {
+            String rest = Stapler.getCurrentRequest().getRestOfPath();
+            if(rest.startsWith("/login")
+            || rest.startsWith("/logout")
+            || rest.startsWith("/accessDenied")
+            || rest.startsWith("/securityRealm"))
+                return this;    // URLs that are always visible without READ permission
+            throw e;
+        }
         return this;
     }
 
