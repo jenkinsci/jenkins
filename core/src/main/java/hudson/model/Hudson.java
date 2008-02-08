@@ -2165,6 +2165,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             if(rest.startsWith("/login")
             || rest.startsWith("/logout")
             || rest.startsWith("/accessDenied")
+            || rest.startsWith("/signup")
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
             throw e;
