@@ -234,7 +234,7 @@
 		  <groupId>org.apache.maven.wagon</groupId>
 		  <artifactId>wagon-file</artifactId>
 		</exclusion>
-		<exclusion>
+		<exclusion>t r  
 		  <groupId>org.apache.maven.wagon</groupId>
 		  <artifactId>wagon-http-lightweight</artifactId>
 		</exclusion>
@@ -347,9 +347,9 @@
       <version>1.1</version>
     </dependency>
     <dependency>
-      <groupId>dom4j</groupId>
+      <groupId>org.jvnet.hudson.dom4j</groupId>
       <artifactId>dom4j</artifactId>
-      <version>1.6.1</version>
+      <version>1.6.1-hudson-1</version>
     </dependency>
     <dependency>
       <groupId>jaxen</groupId>
