@@ -598,6 +598,7 @@ public class Queue extends ResourceController {
     public interface Executable extends Runnable {
         /**
          * Task from which this executable was created.
+         * Never null.
          */
         Task getParent();
 
