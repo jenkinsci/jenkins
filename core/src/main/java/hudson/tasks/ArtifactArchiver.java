@@ -70,7 +70,7 @@ public class ArtifactArchiver extends Publisher {
         try {
             FilePath ws = p.getWorkspace();
             if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
-                listener.error("No artifacts found that match the file pattern \""+artifacts+"\". Configuration error?");
+                listener.error(Messages.ArtifactArchiver_NoMatchFound(artifacts));
                 String msg = ws.validateAntFileMask(artifacts);
                 if(msg!=null)
                     listener.error(msg);
@@ -79,7 +79,8 @@ public class ArtifactArchiver extends Publisher {
             }
         } catch (IOException e) {
             Util.displayIOException(e,listener);
-            e.printStackTrace(listener.error("Failed to archive artifacts: "+artifacts));
+            e.printStackTrace(listener.error(
+                    Messages.ArtifactArchiver_FailedToArchive(artifacts)));
             return true;
         }
 
@@ -93,7 +94,7 @@ public class ArtifactArchiver extends Publisher {
                     // remove old artifacts
                     File ad = b.getArtifactsDir();
                     if(ad.exists()) {
-                        listener.getLogger().println("Deleting old artifacts from "+b.getDisplayName());
+                        listener.getLogger().println(Messages.ArtifactArchiver_DeletingOld(b.getDisplayName()));
                         try {
                             Util.deleteRecursive(ad);
                         } catch (IOException e) {
@@ -120,7 +121,7 @@ public class ArtifactArchiver extends Publisher {
         }
 
         public String getDisplayName() {
-            return "Archive the artifacts";
+            return Messages.ArtifactArchiver_DisplayName();
         }
 
         public String getHelpFile() {
