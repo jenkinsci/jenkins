@@ -135,7 +135,9 @@ public class Executor extends Thread implements ModelObject {
      *      if it's impossible to estimate the progress.
      */
     public int getProgress() {
-        long d = executable.getParent().getEstimatedDuration();
+        Queue.Executable e = executable;
+        if(e==null)     return -1;
+        long d = e.getParent().getEstimatedDuration();
         if(d<0)         return -1;
 
         int num = (int)((System.currentTimeMillis()-startTime)*100/d);
@@ -148,7 +150,10 @@ public class Executor extends Thread implements ModelObject {
      * until the build completes.
      */
     public String getEstimatedRemainingTime() {
-        long d = executable.getParent().getEstimatedDuration();
+        Queue.Executable e = executable;
+        if(e==null)     return "N/A";
+
+        long d = e.getParent().getEstimatedDuration();
         if(d<0)         return "N/A";
 
         long eta = d-(System.currentTimeMillis()-startTime);
