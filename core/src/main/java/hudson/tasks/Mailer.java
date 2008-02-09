@@ -162,7 +162,7 @@ public class Mailer extends Publisher {
         }
 
         public String getDisplayName() {
-            return "E-mail Notification";
+            return Messages.Mailer_DisplayName();
         }
 
         public String getHelpFile() {
@@ -382,7 +382,7 @@ public class Mailer extends Publisher {
             }
 
             public String getDisplayName() {
-                return "E-mail";
+                return Messages.Mailer_UserProperty_DisplayName();
             }
 
             public UserProperty newInstance(User user) {

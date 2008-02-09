@@ -4,7 +4,6 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.maven.MavenModuleSet;
 import hudson.maven.AbstractMavenProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -72,7 +71,7 @@ public class Fingerprinter extends Publisher implements Serializable {
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         try {
-            listener.getLogger().println("Recording fingerprints");
+            listener.getLogger().println(Messages.Fingerprinter_Recording());
 
             Map<String,String> record = new HashMap<String,String>();
 
@@ -84,7 +83,7 @@ public class Fingerprinter extends Publisher implements Serializable {
                 ArtifactArchiver aa = (ArtifactArchiver) ((Build<?,?>)build).getProject().getPublishers().get(ArtifactArchiver.DESCRIPTOR);
                 if(aa==null) {
                     // configuration error
-                    listener.error("Build artifacts are supposed to be fingerprinted, but build artifact archiving is not configured");
+                    listener.error(Messages.Fingerprinter_NoArchiving());
                     build.setResult(Result.FAILURE);
                     return true;
                 }
@@ -94,7 +93,7 @@ public class Fingerprinter extends Publisher implements Serializable {
             build.getActions().add(new FingerprintAction(build,record));
 
         } catch (IOException e) {
-            e.printStackTrace(listener.error("Failed to record fingerprints"));
+            e.printStackTrace(listener.error(Messages.Fingerprinter_Failed()));
             build.setResult(Result.FAILURE);
         }
 
@@ -129,7 +128,7 @@ public class Fingerprinter extends Publisher implements Serializable {
 
         FilePath ws = p.getWorkspace();
         if(ws==null) {
-            listener.error("Unable to record fingerprints because there's no workspace");
+            listener.error(Messages.Fingerprinter_NoWorkspace());
             build.setResult(Result.FAILURE);
             return;
         }
@@ -152,9 +151,9 @@ public class Fingerprinter extends Publisher implements Serializable {
                     try {
                         results.add(new Record(produced,f,file.getName(),new FilePath(file).digest()));
                     } catch (IOException e) {
-                        throw new IOException2("Failed to compute digest for "+file,e);
+                        throw new IOException2(Messages.Fingerprinter_DigestFailed(file),e);
                     } catch (InterruptedException e) {
-                        throw new IOException2("Aborted",e);
+                        throw new IOException2(Messages.Fingerprinter_Aborted(),e);
                     }
                 }
 
@@ -165,7 +164,7 @@ public class Fingerprinter extends Publisher implements Serializable {
         for (Record r : records) {
             Fingerprint fp = r.addRecord(build);
             if(fp==null) {
-                listener.error("failed to record fingerprint for "+r.relativePath);
+                listener.error(Messages.Fingerprinter_FailedFor(r.relativePath));
                 continue;
             }
             fp.add(build);
@@ -185,7 +184,7 @@ public class Fingerprinter extends Publisher implements Serializable {
         }
 
         public String getDisplayName() {
-            return "Record fingerprints of files to track usage";
+            return Messages.Fingerprinter_DisplayName();
         }
 
         public String getHelpFile() {
@@ -234,7 +233,7 @@ public class Fingerprinter extends Publisher implements Serializable {
         }
 
         public String getDisplayName() {
-            return "See fingerprints";
+            return Messages.Fingerprinter_Action_DisplayName();
         }
 
         public String getUrlName() {

@@ -92,7 +92,7 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer {
             PrintStream logger = listener.getLogger();
             for (AbstractProject p : getChildProjects()) {
                 if(p.isDisabled()) {
-                    logger.println(p.getName()+" is disabled. Triggering skipped");
+                    logger.println(Messages.BuildTrigger_Disabled(p.getName()));
                     continue;
                 }
 
@@ -100,9 +100,9 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer {
                 // between these calls
                 String name = p.getName()+" #"+p.getNextBuildNumber();
                 if(p.scheduleBuild()) {
-                    logger.println("Triggering a new build of "+name);
+                    logger.println(Messages.BuildTrigger_Triggering(name));
                 } else {
-                    logger.println(name+" is already in the queue");
+                    logger.println(Messages.BuildTrigger_InQueue(name));
                 }
             }
         }
@@ -186,7 +186,7 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer {
         }
 
         public String getDisplayName() {
-            return "Build other projects";
+            return Messages.BuildTrigger_DisplayName();
         }
 
         public String getHelpFile() {
@@ -222,12 +222,11 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer {
                         String projectName = tokens.nextToken().trim();
                         Item item = Hudson.getInstance().getItemByFullName(projectName,Item.class);
                         if(item==null) {
-                            error("No such project '"+projectName+"'. Did you mean '"+
-                                AbstractProject.findNearest(projectName).getName()+"'?");
+                            error(Messages.BuildTrigger_NoSuchProject(projectName,AbstractProject.findNearest(projectName).getName()));
                             return;
                         }
                         if(!(item instanceof AbstractProject)) {
-                            error(projectName+" is not buildable");
+                            error(Messages.BuildTrigger_NotBuildable(projectName));
                             return;
                         }
                     }

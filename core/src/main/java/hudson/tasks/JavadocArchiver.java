@@ -41,7 +41,7 @@ public class JavadocArchiver extends Publisher {
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
-        listener.getLogger().println("Publishing Javadoc");
+        listener.getLogger().println(Messages.JavadocArchiver_Publishing());
 
         FilePath javadoc = build.getParent().getWorkspace().child(javadocDir);
         FilePath target = new FilePath(getJavadocDir(build.getParent()));
@@ -56,7 +56,7 @@ public class JavadocArchiver extends Publisher {
             javadoc.copyRecursiveTo("**/*",target);
         } catch (IOException e) {
             Util.displayIOException(e,listener);
-            e.printStackTrace(listener.fatalError("Unable to copy Javadoc from "+javadoc+" to "+target));
+            e.printStackTrace(listener.fatalError(Messages.JavadocArchiver_UnableToCopy(javadoc,target)));
             build.setResult(Result.FAILURE);
         }
 
@@ -87,9 +87,9 @@ public class JavadocArchiver extends Publisher {
 
         public String getDisplayName() {
             if(new File(getJavadocDir(project),"help-doc.html").exists())
-                return "Javadoc";
+                return Messages.JavadocArchiver_DisplayName_Javadoc();
             else
-                return "Document";
+                return Messages.JavadocArchiver_DisplayName_Generic();
         }
 
         public String getIconFileName() {
@@ -112,7 +112,7 @@ public class JavadocArchiver extends Publisher {
         }
 
         public String getDisplayName() {
-            return "Publish Javadoc";
+            return Messages.JavadocArchiver_DisplayName();
         }
 
         public Publisher newInstance(StaplerRequest req) {

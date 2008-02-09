@@ -143,7 +143,7 @@ public class Maven extends Builder {
             } else {
                 String exec = ai.getExecutable(launcher);
                 if(exec==null) {
-                    listener.fatalError("Couldn't find any executable in "+ai.getMavenHome());
+                    listener.fatalError(Messages.Maven_NoExecutable(ai.getMavenHome()));
                     return false;
                 }
                 args.add(exec);
@@ -173,7 +173,7 @@ public class Maven extends Builder {
                 }
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError("command execution failed") );
+                e.printStackTrace( listener.fatalError(Messages.Maven_ExecFailed()) );
                 return false;
             }
             startIndex = endIndex + 1;
@@ -207,7 +207,7 @@ public class Maven extends Builder {
         }
 
         public String getDisplayName() {
-            return "Invoke top-level Maven targets";
+            return Messages.Maven_DisplayName();
         }
 
         public MavenInstallation[] getInstallations() {
@@ -238,11 +238,11 @@ public class Maven extends Builder {
                 public void check() throws IOException, ServletException {
                     File f = getFileParameter("value");
                     if(f.getPath().equals("")) {
-                        error("MAVEN_HOME is required");
+                        error(Messages.Maven_MavenHomeRequired());
                         return;
                     }
                     if(!f.isDirectory()) {
-                        error(f+" is not a directory");
+                        error(Messages.Maven_NotADirectory(f));
                         return;
                     }
 

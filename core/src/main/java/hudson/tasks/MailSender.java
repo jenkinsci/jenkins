@@ -75,8 +75,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
 
                     build.addAction(new MailMessageIdAction(mail.getMessageID()));
                 } else {
-                    listener.getLogger().println("An attempt to send an e-mail"
-                        + " to empty list of recipients, ignored.");
+                    listener.getLogger().println(Messages.MailSender_ListEmpty());
                 }
             }
         } catch (MessagingException e) {
@@ -263,7 +262,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
                 if (adrs != null)
                     rcp.add(new InternetAddress(adrs));
                 else {
-                    listener.getLogger().println("Failed to send e-mail to " + a.getFullName() + " because no e-mail address is known, and no default e-mail domain is configured");
+                    listener.getLogger().println(Messages.MailSender_NoAddress(a.getFullName()));
                 }
             }
         }
@@ -291,7 +290,6 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
     protected boolean artifactMatches(String path, B build) {
         return false;
     }
-
 
     private static final Logger LOGGER = Logger.getLogger(MailSender.class.getName());
 
