@@ -5,7 +5,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.TaskListener;
 
@@ -44,7 +43,7 @@ public abstract class CommandInterpreter extends Builder {
                 script = ws.createTextTempFile("hudson", getFileExtension(), getContents(), false);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError("Unable to produce a script file") );
+                e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_UnableToProduceScript()));
                 return false;
             }
 
@@ -61,7 +60,7 @@ public abstract class CommandInterpreter extends Builder {
                 r = launcher.launch(cmd,envVars,listener.getLogger(),ws).join();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError("command execution failed") );
+                e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_CommandFailed()));
                 r = -1;
             }
             return r==0;
@@ -71,7 +70,7 @@ public abstract class CommandInterpreter extends Builder {
                 script.delete();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError("Unable to delete script file "+script) );
+                e.printStackTrace( listener.fatalError(Messages.CommandInterpreter_UnableToDelete(script)) );
             }
         }
     }

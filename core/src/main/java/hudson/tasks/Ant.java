@@ -242,13 +242,13 @@ public class Ant extends Builder {
                 public void check() throws IOException, ServletException {
                     File f = getFileParameter("value");
                     if(!f.isDirectory()) {
-                        error(f+" is not a directory");
+                        error(Messages.Ant_NotADirectory(f));
                         return;
                     }
 
                     File antJar = new File(f,"lib/ant.jar");
                     if(!antJar.exists()) {
-                        error(f+" doesn't look like an Ant directory");
+                        error(Messages.Ant_NotAntDirectory(f));
                         return;
                     }
 
