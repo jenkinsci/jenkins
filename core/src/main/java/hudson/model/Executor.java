@@ -1,14 +1,11 @@
 package hudson.model;
 
 import hudson.Util;
-
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.acegisecurity.AccessDeniedException;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
 
 
 /**
@@ -151,13 +148,13 @@ public class Executor extends Thread implements ModelObject {
      */
     public String getEstimatedRemainingTime() {
         Queue.Executable e = executable;
-        if(e==null)     return "N/A";
+        if(e==null)     return Messages.Executor_NotAvailable();
 
         long d = e.getParent().getEstimatedDuration();
-        if(d<0)         return "N/A";
+        if(d<0)         return Messages.Executor_NotAvailable();
 
         long eta = d-(System.currentTimeMillis()-startTime);
-        if(eta<=0)      return "N/A";
+        if(eta<=0)      return Messages.Executor_NotAvailable();
 
         return Util.getTimeSpanString(eta);
     }

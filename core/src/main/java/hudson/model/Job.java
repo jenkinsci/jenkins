@@ -153,7 +153,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * Must start with a capital letter.
      */
     public String getPronoun() {
-        return "Project";
+        return Messages.Job_Pronoun();
     }
 
     /**
@@ -650,21 +650,18 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
                 score--;
             }
 
-            StringBuilder description = new StringBuilder("Build stability: ");
+            String description;
             if (failCount == 0) {
-                description.append("No recent builds failed.");
+                description = Messages.Job_NoRecentBuildFailed();
             } else if (totalCount == failCount) {
                 // this should catch the case where totalCount == 1
                 // as failCount must be between 0 and totalCount
                 // and we can't get here if failCount == 0
-                description.append("All recent builds failed.");
+                description = Messages.Job_AllRecentBuildFailed();
             } else {
-                description.append(failCount);
-                description.append(" out of the last ");
-                description.append(totalCount);
-                description.append(" builds failed.");
+                description = Messages.Job_NOfMFailed(failCount,totalCount);
             }
-            return new HealthReport(score,  description.toString());
+            return new HealthReport(score, Messages.Job_BuildStability(description));
         }
         return null;
     }

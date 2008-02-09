@@ -723,7 +723,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     public String getViewName() {
-        return "All";
+        return Messages.Hudson_ViewName();
     }
 
     /**
@@ -794,7 +794,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     public String getDisplayName() {
-        return "Hudson";
+        return Messages.Hudson_DisplayName();
     }
 
     public List<JDK> getJDKs() {
@@ -1386,7 +1386,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                     try {
                         slaveAgentPort = Integer.parseInt(req.getParameter("slaveAgentPort"));
                     } catch (NumberFormatException e) {
-                        throw new FormException("Bad port number "+req.getParameter("slaveAgentPort"),"slaveAgentPort");
+                        throw new FormException(Messages.Hudson_BadPortNumber(req.getParameter("slaveAgentPort")),"slaveAgentPort");
                     }
                 }
 
@@ -1539,7 +1539,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         if(getItem(name)!=null) {
             rsp.setStatus(SC_BAD_REQUEST);
-            sendError("A job already exists with the name '"+name+"'",req,rsp);
+            sendError(Messages.Hudson_JobAlreadyExists(name),req,rsp);
             return null;
         }
 
@@ -1639,14 +1639,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     public static void checkGoodName(String name) throws ParseException {
         if(name==null || name.length()==0)
-            throw new ParseException("No name is specified",0);
+            throw new ParseException(Messages.Hudson_NoName(),0);
 
         for( int i=0; i<name.length(); i++ ) {
             char ch = name.charAt(i);
             if(Character.isISOControl(ch))
-                throw new ParseException("No control code is allowed",i);
+                throw new ParseException(Messages.Hudson_ControlCodeNotAllowed(),i);
             if("?*()/\\%!@#$^&|<>[]:;".indexOf(ch)!=-1)
-                throw new ParseException("'"+ch+"' is an unsafe character",i);
+                throw new ParseException(Messages.Hudson_UnsafeChar(ch),i);
         }
 
         // looks good
@@ -1801,7 +1801,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             FileItem fileItem = (FileItem) upload.parseRequest(req).get(0);
             String fileName = Util.getFileName(fileItem.getName());
             if(!fileName.endsWith(".hpi")) {
-                sendError(fileName+" is not a Hudson plugin",req,rsp);
+                sendError(Messages.Hudson_NotAPlugin(fileName),req,rsp);
                 return;
             }
             fileItem.write(new File(getPluginManager().rootDir, fileName));
@@ -1984,20 +1984,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     public void doCheckLocalFSRoot( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // this can be used to check the existence of a file on the server, so needs to be protected
-        new FormFieldValidator(req,rsp,true) {
-            public void check() throws IOException, ServletException {
-                File f = getFileParameter("value");
-                if(f.isDirectory()) {// OK
-                    ok();
-                } else {// nope
-                    if(f.exists()) {
-                        error(f+" is not a directory");
-                    } else {
-                        error("No such directory: "+f);
-                    }
-                }
-            }
-        }.process();
+        new FormFieldValidator.WorkspaceDirectory(req,rsp,true).process();
     }
 
     /**
@@ -2009,14 +1996,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             public void check() throws IOException, ServletException {
                 File f = getFileParameter("value");
                 if(!f.isDirectory()) {
-                    error(f+" is not a directory");
+                    error(Messages.Hudson_NotADirectory(f));
                     return;
                 }
 
                 File toolsJar = new File(f,"lib/tools.jar");
                 File mac = new File(f,"lib/dt.jar");
                 if(!toolsJar.exists() && !mac.exists()) {
-                    error(f+" doesn't look like a JDK directory");
+                    error(Messages.Hudson_NotJDKDir(f));
                     return;
                 }
 
@@ -2041,9 +2028,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                     if(JDK.isDefaultJDKValid(Hudson.this))
                         ok();
                     else
-                        errorWithMarkup(
-                            "java is not in your PATH. Maybe you need to" +
-                            "<a href='"+request.getContextPath()+"/configure'>configure JDKs</a>?");
+                        errorWithMarkup(Messages.Hudson_NoJavaInPath(request.getContextPath()));
                 }
             }
         }.process();
@@ -2066,7 +2051,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 if(getItem(job)==null)
                     ok();
                 else
-                    error("Job named "+job+" already exists");
+                    error(Messages.Hudson_JobAlreadyExists(job));
             }
         }.process();
     }
@@ -2180,12 +2165,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         @Override
         public String getDisplayName() {
-            return "master";
+            return Messages.Hudson_Computer_DisplayName();
         }
 
         @Override
         public String getCaption() {
-            return "Master";
+            return Messages.Hudson_Computer_Caption();
         }
 
         public String getUrl() {

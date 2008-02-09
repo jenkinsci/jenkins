@@ -686,18 +686,18 @@ public class Queue extends ResourceController {
                 ResourceActivity r = getBlockingActivity(task);
                 if(r!=null) {
                     if(r==task) // blocked by itself, meaning another build is in progress
-                        return "A build is already in progress";
-                    return "Blocked by "+r.getDisplayName();
+                        return Messages.Queue_InProgress();
+                    return Messages.Queue_BlockedBy(r.getDisplayName());
                 }
                 return task.getWhyBlocked();
             }
 
             long diff = timestamp.getTimeInMillis() - System.currentTimeMillis();
             if(diff>0) {
-                return "In the quiet period. Expires in "+ Util.getTimeSpanString(diff);
+                return Messages.Queue_InQuietPeriod(Util.getTimeSpanString(diff));
             }
 
-            return "???";
+            return Messages.Queue_Unknown();
         }
 
         public boolean hasCancelPermission() {

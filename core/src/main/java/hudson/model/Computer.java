@@ -158,7 +158,7 @@ public abstract class Computer extends AbstractModelObject {
     }
 
     public String getCaption() {
-        return "Slave "+nodeName;
+        return Messages.Computer_Caption(nodeName);
     }
 
     public String getUrl() {

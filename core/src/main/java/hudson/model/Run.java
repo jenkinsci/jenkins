@@ -291,7 +291,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public String getWhyKeepLog() {
         if(keepLog)
-            return "explicitly marked to keep the record";
+            return Messages.Run_MarkedExplicitly();
         return null;    // not marked at all
     }
 
@@ -666,7 +666,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 } catch( InterruptedException e) {
                     // aborted
                     result = Result.ABORTED;
-                    listener.getLogger().println("Build was aborted");
+                    listener.getLogger().println(Messages.Run_BuildAborted());
                     LOGGER.log(Level.INFO,toString()+" aborted",e);
                 } catch( Throwable e ) {
                     handleFatalBuildProblem(listener,e);
@@ -955,7 +955,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // due to dependencies!
         String why = getWhyKeepLog();
         if (why!=null) {
-            sendError("Unable to delete "+toString()+": "+why,req,rsp);
+            sendError(Messages.Run_UnableToDelete(toString(),why),req,rsp);
             return;
         }
 

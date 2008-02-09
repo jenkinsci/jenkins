@@ -75,7 +75,7 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
 
     @Override
     public String getPronoun() {
-        return "Job";
+        return Messages.ExternalJob_Pronoun();
     }
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {

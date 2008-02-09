@@ -95,7 +95,7 @@ public final class Slave implements Node, Serializable {
         getAssignedLabels();    // compute labels now
 
         if (name.equals(""))
-            throw new FormException("Invalid slave configuration. Name is empty", null);
+            throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
 
         // this prevents the config from being saved when slaves are offline.
         // on a large deployment with a lot of slaves, some slaves are bound to be offline,
@@ -103,10 +103,10 @@ public final class Slave implements Node, Serializable {
         //if (!localFS.exists())
         //    throw new FormException("Invalid slave configuration for " + name + ". No such directory exists: " + localFS, null);
         if (remoteFS.equals(""))
-            throw new FormException("Invalid slave configuration for " + name + ". No remote directory given", null);
+            throw new FormException(Messages.Slave_InvalidConfig_NoRemoteDir(name), null);
 
         if (numExecutors<=0)
-            throw new FormException("Invalid slave configuration for " + name + ". Invalid # of executors.", null);
+            throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
 
     public String getCommand() {
@@ -303,7 +303,7 @@ public final class Slave implements Node, Serializable {
                     public void run() {
                         final StreamTaskListener listener = new StreamTaskListener(launchLog);
                         try {
-                            listener.getLogger().printf("%s Launching slave agent\n",getTimestamp());
+                            listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
                             listener.getLogger().println("$ "+slave.agentCommand);
                             final Process proc = Runtime.getRuntime().exec(slave.agentCommand);
 
@@ -315,7 +315,7 @@ public final class Slave implements Node, Serializable {
                             setChannel(proc.getInputStream(),proc.getOutputStream(),launchLog,new Listener() {
                                 public void onClosed(Channel channel, IOException cause) {
                                     if(cause!=null)
-                                        cause.printStackTrace(listener.error("%s slave agent was terminated\n",getTimestamp()));
+                                        cause.printStackTrace(listener.error(Messages.Slave_Terminated(getTimestamp())));
                                     if(Hudson.isWindows())
                                         new WinProcess(proc).killRecursively();
                                     else
@@ -333,7 +333,7 @@ public final class Slave implements Node, Serializable {
                             String msg = Util.getWin32ErrorMessage(e);
                             if(msg==null)   msg="";
                             else            msg=" : "+msg;
-                            msg = "Unable to launch the slave agent for " + slave.getNodeName() + msg;
+                            msg = Messages.Slave_UnableToLaunch(slave.getNodeName(),msg);
                             logger.log(Level.SEVERE,msg,e);
                             e.printStackTrace(listener.error(msg));
                         }
@@ -384,7 +384,7 @@ public final class Slave implements Node, Serializable {
                 }
 
                 isUnix = channel.call(new DetectOS());
-                log.println(isUnix?"This is a Unix slave":"This is a Windows slave");
+                log.println(isUnix?Messages.Slave_UnixSlave():Messages.Slave_WindowsSlave());
 
                 // install log handler
                 channel.call(new LogInstaller());
