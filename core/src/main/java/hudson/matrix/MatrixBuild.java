@@ -91,7 +91,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
             try {
                 for(MatrixConfiguration c : activeConfigurations) {
-                    logger.println("Triggering "+c.getName());
+                    logger.println(Messages.MatrixBuild_Triggering(c.getName()));
                     c.scheduleBuild();
                 }
 
@@ -117,7 +117,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                             // http://www.nabble.com/Master-slave-problem-tt14710987.html
                             b = c.getBuildByNumber(n);
                             if(b==null) {
-                                logger.println(c.getDisplayName()+" appears to be cancelled");
+                                logger.println(Messages.MatrixBuild_AppearsCancelled(c.getDisplayName()));
                                 buildResult = Result.ABORTED;
                             }
                         }
@@ -141,12 +141,12 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 synchronized(q) {// avoid micro-locking in q.cancel.
                     for (MatrixConfiguration c : activeConfigurations) {
                         if(q.cancel(c))
-                            logger.println("Cancelled "+c.getDisplayName());
+                            logger.println(Messages.MatrixBuild_Cancelled(c.getDisplayName()));
                         MatrixRun b = c.getBuildByNumber(n);
                         if(b!=null) {
                             Executor exe = b.getExecutor();
                             if(exe!=null) {
-                                logger.println("Interrupting "+b.getDisplayName());
+                                logger.println(Messages.MatrixBuild_Interrupting(b.getDisplayName()));
                                 exe.interrupt();
                             }
                         }

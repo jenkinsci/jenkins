@@ -166,7 +166,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     public String getPronoun() {
-        return "Configuration";
+        return Messages.MatrixConfiguration_Pronoun();
     }
 
     @Override
