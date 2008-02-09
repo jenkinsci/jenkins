@@ -26,7 +26,10 @@ public class Executor extends Thread implements ModelObject {
      * Executor number that identifies it among other executors for the same {@link Computer}.
      */
     private int number;
-    private Queue.Executable executable;
+    /**
+     * {@link Queue.Executable} being executed right now, or null if the executor is idle.
+     */
+    private volatile Queue.Executable executable;
 
     private Throwable causeOfDeath;
 
@@ -167,7 +170,8 @@ public class Executor extends Thread implements ModelObject {
      * Checks if the current user has a permission to stop this build. 
      */
     public boolean hasStopPermission() {
-        return executable.getParent().hasAbortPermission();
+        Queue.Executable e = executable;
+        return e!=null && e.getParent().hasAbortPermission();
     }
 
     public Computer getOwner() {
