@@ -76,7 +76,7 @@ public class Api extends AbstractModelObject {
             if(list.isEmpty()) {
                 // XPath didn't match
                 rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                rsp.getWriter().print("XPath "+xpath+" didn't match");
+                rsp.getWriter().print(Messages.Api_NoXPathMatch(xpath));
                 return;
             }
             if(list.size()>1) {
@@ -92,7 +92,7 @@ public class Api extends AbstractModelObject {
                 } else {
                     // XPath didn't match
                     rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    rsp.getWriter().print(Messages._Api_MultipleMatch(xpath,list.size()));
+                    rsp.getWriter().print(Messages.Api_MultipleMatch(xpath,list.size()));
                     return;
                 }
             } else

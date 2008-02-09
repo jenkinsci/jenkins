@@ -176,7 +176,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             launcher = node.createLauncher(listener);
             if(node instanceof Slave)
-                listener.getLogger().println("Building remotely on "+node.getNodeName());
+                listener.getLogger().println(Messages.AbstractBuild_BuildingRemotely(node.getNodeName()));
 
             if(checkout(listener))
                 return Result.FAILURE;
@@ -378,7 +378,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             // is there any active build that depends on us?
             for (AbstractBuild build : p.getBuilds()) {
                 if(e.getValue().includes(build.getNumber()))
-                    return "kept because of "+build;
+                    return Messages.AbstractBuild_KeptBecause(build);
             }
         }
 

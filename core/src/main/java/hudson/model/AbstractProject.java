@@ -488,9 +488,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         Executor e = build.getExecutor();
         String eta="";
         if(e!=null)
-            eta = " (ETA:"+e.getEstimatedRemainingTime()+")";
+            eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
         int lbn = build.getNumber();
-        return "Build #"+lbn+" is already in progress"+eta;
+        return Messages.AbstractProject_BuildInProgress(lbn,eta);
     }
 
     public final long getEstimatedDuration() {
@@ -557,7 +557,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
             return scm.checkout(build, launcher, workspace, listener, changelogFile);
         } catch (InterruptedException e) {
-            listener.getLogger().println("SCM check out aborted");
+            listener.getLogger().println(Messages.AbstractProject_ScmAborted());
             LOGGER.log(Level.INFO,build.toString()+" aborted",e);
             return false;
         }
@@ -573,11 +573,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public boolean pollSCMChanges( TaskListener listener ) {
         SCM scm = getScm();
         if(scm==null) {
-            listener.getLogger().println("No SCM");
+            listener.getLogger().println(Messages.AbstractProject_NoSCM());
             return false;
         }
         if(isDisabled()) {
-            listener.getLogger().println("Build disabled");
+            listener.getLogger().println(Messages.AbstractProject_Disabled());
             return false;
         }
 
@@ -585,26 +585,24 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             FilePath workspace = getWorkspace();
             if(workspace==null) {
                 // workspace offline. build now, or nothing will ever be built
-                listener.getLogger().println("Workspace is offline.");
-                listener.getLogger().println("Scheduling a new build to get a workspace.");
+                listener.getLogger().println(Messages.AbstractProject_WorkspaceOffline());
                 return true;
             }
             if(!workspace.exists()) {
                 // no workspace. build now, or nothing will ever be built
-                listener.getLogger().println("No workspace is available, so can't check for updates.");
-                listener.getLogger().println("Scheduling a new build to get a workspace.");
+                listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
                 return true;
             }
 
             return scm.pollChanges(this, workspace.createLauncher(listener), workspace, listener );
         } catch (AbortException e) {
-            listener.fatalError("Aborted");
+            listener.fatalError(Messages.AbstractProject_Aborted());
             return false;
         } catch (IOException e) {
             e.printStackTrace(listener.fatalError(e.getMessage()));
             return false;
         } catch (InterruptedException e) {
-            e.printStackTrace(listener.fatalError("SCM polling aborted"));
+            e.printStackTrace(listener.fatalError(Messages.AbstractProject_PollingABorted()));
             return false;
         }
     }
