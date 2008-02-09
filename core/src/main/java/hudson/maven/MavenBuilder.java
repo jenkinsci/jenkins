@@ -135,17 +135,17 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
                 try {
                     if(!f.isDone() && !messageReported) {
                         messageReported = true;
-                        listener.getLogger().println("Waiting for Hudson to finish collecting data");
+                        listener.getLogger().println(Messages.MavenBuilder_Waiting());
                     }
                     f.get();
                 } catch (InterruptedException e) {
                     // attempt to cancel all asynchronous tasks
                     for (Future<?> g : futures)
                         g.cancel(true);
-                    listener.getLogger().println("Aborted");
+                    listener.getLogger().println(Messages.MavenBuilder_Aborted());
                     return Result.ABORTED;
                 } catch (ExecutionException e) {
-                    e.printStackTrace(listener.error("Asynchronous execution failure"));
+                    e.printStackTrace(listener.error(Messages.MavenBuilder_AsyncFailed()));
                 }
             }
             a.overheadTime += System.nanoTime()-startTime;
@@ -163,7 +163,7 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
             if(r==0)    return Result.SUCCESS;
 
             if(markAsSuccess) {
-                listener.getLogger().println("Maven failed with error.");
+                listener.getLogger().println(Messages.MavenBuilder_Failed());
                 return Result.SUCCESS;
             }
 

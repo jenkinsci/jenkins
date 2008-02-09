@@ -99,13 +99,13 @@ public class MavenArtifactArchiver extends MavenReporter {
                                 }
                                 embedder.stop();
                             } catch (MavenEmbedderException e) {
-                                e.printStackTrace(listener.error("Failed to install artifact to the master"));
+                                e.printStackTrace(listener.error(Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
                                 build.setResult(Result.FAILURE);
                             } catch (ComponentLookupException e) {
-                                e.printStackTrace(listener.error("Failed to install artifact to the master"));
+                                e.printStackTrace(listener.error(Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
                                 build.setResult(Result.FAILURE);
                             } catch (ArtifactInstallationException e) {
-                                e.printStackTrace(listener.error("Failed to install artifact to the master"));
+                                e.printStackTrace(listener.error(Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
                                 build.setResult(Result.FAILURE);
                             }
                         }
@@ -184,7 +184,7 @@ public class MavenArtifactArchiver extends MavenReporter {
         }
 
         public String getDisplayName() {
-            return "Archive the artifacts";
+            return Messages.MavenArtifactArchiver_DisplayName();
         }
 
         public MavenReporter newAutoInstance(MavenModule module) {

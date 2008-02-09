@@ -127,7 +127,7 @@ public class MavenFingerprinter extends MavenReporter {
         }
 
         public String getDisplayName() {
-            return "Record fingerprints";
+            return Messages.MavenFingerprinter_DisplayName();
         }
 
         public MavenReporter newAutoInstance(MavenModule module) {

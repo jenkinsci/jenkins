@@ -46,13 +46,13 @@ public class SurefireArchiver extends MavenReporter {
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, final BuildListener listener, Throwable error) throws InterruptedException, IOException {
         if (!isSurefireTest(mojo)) return true;
 
-        listener.getLogger().println("[HUDSON] Recording test results");
+        listener.getLogger().println(Messages.SurefireArchiver_Recording());
 
         File reportsDir;
         try {
             reportsDir = mojo.getConfigurationValue("reportsDirectory", File.class);
         } catch (ComponentConfigurationException e) {
-            e.printStackTrace(listener.fatalError("Unable to obtain the reportsDirectory from surefire:test mojo"));
+            e.printStackTrace(listener.fatalError(Messages.SurefireArchiver_NoReportsDir()));
             build.setResult(Result.FAILURE);
             return true;
         }
@@ -117,7 +117,7 @@ public class SurefireArchiver extends MavenReporter {
         }
 
         public String getDisplayName() {
-            return "Publish surefire reports";
+            return Messages.SurefireArchiver_DisplayName();
         }
 
         public SurefireArchiver newAutoInstance(MavenModule module) {

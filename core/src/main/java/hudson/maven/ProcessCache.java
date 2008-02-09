@@ -157,7 +157,7 @@ public final class ProcessCache {
                         continue;
                     }
 
-                    listener.getLogger().println("Reusing existing maven process");
+                    listener.getLogger().println(Messages.ProcessCache_Reusing());
                     itr.remove();
                     p.age++;
                     p.output.set(listener.getLogger());

@@ -37,7 +37,7 @@ public class MavenJavadocArchiver extends MavenReporter {
             if(destDir==null)
                 destDir = mojo.getConfigurationValue("outputDirectory", File.class);
         } catch (ComponentConfigurationException e) {
-            e.printStackTrace(listener.fatalError("Unable to obtain the destDir from javadoc mojo"));
+            e.printStackTrace(listener.fatalError(Messages.MavenJavadocArchiver_NoDestDir()));
             build.setResult(Result.FAILURE);
             return true;
         }
@@ -51,7 +51,7 @@ public class MavenJavadocArchiver extends MavenReporter {
                 new FilePath(destDir).copyRecursiveTo("**/*",target);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
-                e.printStackTrace(listener.fatalError("Unable to copy Javadoc from "+destDir+" to "+target));
+                e.printStackTrace(listener.fatalError(Messages.MavenJavadocArchiver_FailedToCopy(destDir,target)));
                 build.setResult(Result.FAILURE);
             }
 
@@ -78,7 +78,7 @@ public class MavenJavadocArchiver extends MavenReporter {
         }
 
         public String getDisplayName() {
-            return "Publish javadoc";
+            return Messages.MavenJavadocArchiver_DisplayName();
         }
 
         public MavenJavadocArchiver newAutoInstance(MavenModule module) {

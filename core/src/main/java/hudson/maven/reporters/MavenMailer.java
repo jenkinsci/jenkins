@@ -43,7 +43,7 @@ public class MavenMailer extends MavenReporter {
         }
 
         public String getDisplayName() {
-            return "E-mail Notification";
+            return Messages.MavenMailer_DisplayName();
         }
 
         public String getHelpFile() {

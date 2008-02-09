@@ -32,7 +32,7 @@ public class ReportCollector extends MavenReporter {
         String projectReportPath = pom.getReporting().getOutputDirectory();
         if(!reportPath.startsWith(projectReportPath)) {
             // report is placed outside site. Can't record it.
-            listener.getLogger().println("Maven report output goes to "+reportPath+", which is outside project reporting path"+projectReportPath);
+            listener.getLogger().println(Messages.ReportCollector_OutsideSite(reportPath,projectReportPath));
             return true;
         }
 
@@ -85,7 +85,7 @@ public class ReportCollector extends MavenReporter {
         }
 
         public String getDisplayName() {
-            return "Record Maven reports";
+            return Messages.ReportCollector_DisplayName();
         }
 
         public ReportCollector newAutoInstance(MavenModule module) {

@@ -40,7 +40,7 @@ public final class ReportAction implements Action {
     }
 
     public String getDisplayName() {
-        return "Maven reports";
+        return Messages.ReportAction_DisplayName();
     }
 
     public String getUrlName() {

@@ -279,7 +279,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 // error should have been already reported.
                 return Result.FAILURE;
             } catch (IOException e) {
-                e.printStackTrace(listener.error("Failed to parse POMs"));
+                e.printStackTrace(listener.error(Messages.MavenModuleSetBuild_FailedToParsePom()));
                 return Result.FAILURE;
             } catch (InterruptedException e) {
                 listener.error("Aborted");
@@ -307,7 +307,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 throw e;
             } catch (MavenExecutionException e) {
                 // Maven failed to parse POM
-                e.getCause().printStackTrace(listener.error("Failed to parse POM"));
+                e.getCause().printStackTrace(listener.error(Messages.MavenModuleSetBuild_FailedToParsePom()));
                 throw new AbortException();
             }
 
@@ -329,7 +329,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         mm.reconfigure(pom);
                         modules.put(pom.name,mm);
                     } else {// this looks like a new module
-                        logger.println("Discovered a new module "+pom.name+" "+pom.displayName);
+                        logger.println(Messages.MavenModuleSetBuild_DiscoveredModule(pom.name,pom.displayName));
                         mm = new MavenModule(project,pom,getNumber());
                         modules.put(mm.getModuleName(),mm);
                     }
@@ -566,8 +566,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             PrintStream logger = listener.getLogger();
 
             if(!pom.exists()) {
-                logger.println("No such file "+pom);
-                logger.println("Perhaps you need to specify the correct POM file path in the project configuration?");
+                logger.println(Messages.MavenModuleSetBuild_NoSuchFile(pom));
                 throw new AbortException();
             }
 

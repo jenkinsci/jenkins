@@ -307,7 +307,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 // failed before it didn't even get to this module.
                 run(new Runner() {
                     public Result run(BuildListener listener) {
-                        listener.getLogger().println("Build failed before it gets to this module");
+                        listener.getLogger().println(Messages.MavenBuild_FailedEarlier());
                         return Result.NOT_BUILT;
                     }
 
@@ -460,7 +460,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             }
 
             if(trigger) {
-                listener.getLogger().println("Triggering a new build of "+down.getName());
+                listener.getLogger().println(Messages.MavenBuild_Triggering(down.getName()));
                 downstreams.add(down);
                 down.scheduleBuild();
             }

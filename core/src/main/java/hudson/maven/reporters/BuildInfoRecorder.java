@@ -74,7 +74,7 @@ public class BuildInfoRecorder extends MavenReporter {
         }
 
         public String getDisplayName() {
-            return "Record build information";
+            return Messages.BuildInfoRecorder_DisplayName();
         }
 
 
