@@ -118,7 +118,7 @@
             </td>
             <td>
               <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
-                <a href="${jobBaseUrl}${job.shortUrl}build">
+                <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
                   <img src="${imagesURL}/${subIconSize}/clock.gif" title="${%Schedule a build}" border="0" /></a>
               </j:if>
             </td>

@@ -58,7 +58,7 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem {
 
-    /**
+	/**
      * {@link SCM} associated with the project.
      * To allow derived classes to link {@link SCM} config to elsewhere,
      * access to this variable should always go through {@link #getScm()}.
@@ -776,7 +776,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
-        scheduleBuild();
+
+        String delay = req.getParameter("delay");
+        if (delay!=null) {
+            if (!isDisabled()) {
+                try {
+                    // TODO: more unit handling
+                    if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
+                    if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
+                    Hudson.getInstance().getQueue().add(this, Integer.parseInt(delay));
+                } catch (NumberFormatException e) {
+                    throw new ServletException("Invalid delay parameter value: "+delay);
+                }
+            }
+        } else {
+            scheduleBuild();
+        }
         rsp.forwardToPreviousPage(req);
     }
 

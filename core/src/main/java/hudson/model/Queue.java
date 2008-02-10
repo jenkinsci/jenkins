@@ -187,16 +187,22 @@ public class Queue extends ResourceController {
      * @since 1.114
      */
     public synchronized boolean add( Task p, int quietPeriod ) {
-        if(contains(p))
-            return false; // no double queueing
+    	Item item = getItem(p);
+    	Calendar due = new GregorianCalendar();
+    	due.add(Calendar.SECOND, quietPeriod);
+        if (item != null) {
+            if (item.timestamp.before(due))
+                return false; // no double queueing
 
-        LOGGER.fine(p.getName()+" added to queue");
+            // allow the due date to be pulled in
+            item.timestamp = due;
+        } else {
+            LOGGER.fine(p.getName() + " added to queue");
 
-        // put the item in the queue
-        Calendar due = new GregorianCalendar();
-        due.add(Calendar.SECOND, quietPeriod);
-        queue.add(new Item(due,p));
+            // put the item in the queue
+            queue.add(new Item(due, p));
 
+        }
         scheduleMaintenance();   // let an executor know that a new item is in the queue.
         return true;
     }
@@ -617,7 +623,7 @@ public class Queue extends ResourceController {
          * This item can be run after this time.
          */
         @Exported
-        public final Calendar timestamp;
+        public Calendar timestamp;
 
         /**
          * Project to be built.
