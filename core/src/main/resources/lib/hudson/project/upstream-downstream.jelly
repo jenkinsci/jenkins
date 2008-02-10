@@ -1,0 +1,44 @@
+<!--
+  Display upstream/downstream projects
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+  <d:taglib uri="local">
+    <d:tag name="showItem">
+      <img src="${imagesURL}/16x16/${item.buildStatusUrl}" alt="${item.iconColor.description}"/>
+      <a href="${h.getRelativeLinkTo(item)}">${item.displayName}</a>
+    </d:tag>
+    <d:tag name="relationship">
+      <j:if test="${lhs.fingerprintConfigured and rhs.fingerprintConfigured}">
+        <st:nbsp/>
+        <a href="${rootURL}/projectRelationship?lhs=${lhs.name}&amp;rhs=${rhs.name}">
+          <img src="${imagesURL}/16x16/fingerprint.gif" alt="check relationship"/>
+        </a>
+      </j:if>
+    </d:tag>
+  </d:taglib>
+
+  <j:set var="upstream" value="${it.upstreamProjects}" />
+  <j:if test="${!empty(upstream)}">
+    <h2>${%Upstream Projects}</h2>
+    <ul style="list-style-type: none;">
+      <j:forEach var="item" items="${upstream}">
+        <li>
+          <local:showItem />
+          <local:relationship lhs="${item}" rhs="${it}"/>
+        </li>
+      </j:forEach>
+    </ul>
+  </j:if>
+  <j:set var="downstream" value="${it.downstreamProjects}" />
+  <j:if test="${!empty(downstream)}">
+    <h2>${%Downstream Projects}</h2>
+    <ul style="list-style-type: none;">
+      <j:forEach var="item" items="${downstream}">
+        <li>
+          <local:showItem />
+          <local:relationship lhs="${it}" rhs="${item}"/>
+        </li>
+      </j:forEach>
+    </ul>
+  </j:if>
+</j:jelly>

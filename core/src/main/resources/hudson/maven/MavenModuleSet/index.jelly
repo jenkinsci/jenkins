@@ -63,6 +63,8 @@
         </j:if>
       </table>
 
+      <p:upstream-downstream />
+      
       <h2>${%Permalinks}</h2>
       <ul>
         <p:build-permalink property="lastBuild"           title="${%Last build}" />
