@@ -372,10 +372,10 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 // schedule downstream builds. for non aggregator style builds,
                 // this is done by each module
                 if(getResult().isBetterOrEqualTo(Result.SUCCESS)) {
-                    HashSet<AbstractProject> downstreams = new HashSet<AbstractProject>(project.modules.values());
-                    downstreams.add(project);
-                    for (ProxyImpl2 p : proxies.values())
-                        p.owner().scheduleDownstreamBuilds(listener,downstreams);
+                    for(AbstractProject down : Hudson.getInstance().getDependencyGraph().getDownstream(getProject())) {
+                        listener.getLogger().println(Messages.MavenBuild_Triggering(down.getName()));
+                        down.scheduleBuild();
+                    }
                 }
             }
 
