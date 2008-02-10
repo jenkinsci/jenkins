@@ -49,6 +49,7 @@ import java.awt.image.BufferedImage;
  * there's a change (which is relatively rare), a new instance
  * will be created. This eliminates the need of synchronization.
  *
+ * @see Hudson#getDependencyGraph() 
  * @author Kohsuke Kawaguchi
  */
 public final class DependencyGraph {
