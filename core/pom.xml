@@ -273,8 +273,8 @@
 	    <dependency>
 	      <groupId>org.kohsuke.stapler</groupId>
 	      <artifactId>stapler</artifactId>
-	      <version>1.59</version>
-    </dependency>
+	      <version>1.61</version>
+    </dependency>   
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>graph-layouter</artifactId>

@@ -189,7 +189,7 @@ public final class TestResult extends MetaTabulatedResult {
     }
 
     @Override
-    @Exported(name="child")
+    @Exported(name="child",inline=true)
     public Collection<PackageResult> getChildren() {
         return byPackages.values();
     }

@@ -82,7 +82,7 @@ public final class PackageResult extends MetaTabulatedResult {
         return classes.get(name);
     }
 
-    @Exported(name="child")
+    @Exported(name="child",inline=true)
     public Collection<ClassResult> getChildren() {
         return classes.values();
     }

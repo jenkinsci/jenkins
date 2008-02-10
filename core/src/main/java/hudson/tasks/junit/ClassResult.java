@@ -64,7 +64,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     }
 
 
-    @Exported(name="child")
+    @Exported(name="child",inline=true)
     public List<CaseResult> getChildren() {
         return cases;
     }

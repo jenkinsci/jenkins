@@ -92,7 +92,7 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
     /**
      * Mainly for the remote API. Expose results from children.
      */
-    @Exported
+    @Exported(inline=true)
     public List<ChildReport> getChildReports() {
         return new AbstractList<ChildReport>() {
             public ChildReport get(int index) {
