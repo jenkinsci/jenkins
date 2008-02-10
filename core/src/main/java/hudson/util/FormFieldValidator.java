@@ -249,11 +249,8 @@ public abstract class FormFieldValidator {
      * @since 1.116.
      */
     public static class WorkspaceDirectory extends WorkspaceFilePath {
-        private final boolean errorIfNotExist;
-
         public WorkspaceDirectory(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist) {
-            super(request, response, false, false);
-            this.errorIfNotExist = errorIfNotExist;
+            super(request, response, errorIfNotExist, false);
         }
 
         public WorkspaceDirectory(StaplerRequest request, StaplerResponse response) {
