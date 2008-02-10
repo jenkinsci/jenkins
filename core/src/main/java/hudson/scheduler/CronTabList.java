@@ -37,7 +37,7 @@ public final class CronTabList {
             try {
                 r.add(new CronTab(line,lineNumber));
             } catch (ANTLRException e) {
-                throw new ANTLRException("Invalid input: \""+line+"\": "+e.toString(),e);
+                throw new ANTLRException(Messages.CronTabList_InvalidInput(line,e.toString()),e);
             }
         }
         return new CronTabList(r);

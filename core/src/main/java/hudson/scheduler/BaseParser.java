@@ -36,9 +36,9 @@ abstract class BaseParser extends LLkParser {
         rangeCheck(start, field);
         rangeCheck(end, field);
         if (step <= 0)
-            error("step must be positive, but found " + step);
+            error(Messages.BaseParser_MustBePositive(step));
         if (start>end)
-            error("You mean "+end+'-'+start+'?');
+            error(Messages.BaseParser_StartEndReversed(end,start));
 
         long bits = 0;
         for (int i = start; i <= end; i += step) {
@@ -53,8 +53,7 @@ abstract class BaseParser extends LLkParser {
 
     protected void rangeCheck(int value, int field) throws ANTLRException {
         if( value<LOWER_BOUNDS[field] || UPPER_BOUNDS[field]<value ) {
-            error(value +" is an invalid value. Must be within "+
-            LOWER_BOUNDS[field]+" and "+UPPER_BOUNDS[field]);
+            error(Messages.BaseParser_OutOfRange(value,LOWER_BOUNDS[field],UPPER_BOUNDS[field]));
         }
     }
 
