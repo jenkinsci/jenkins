@@ -10,7 +10,7 @@
       <j:set var="browser" value="${it.scm.effectiveBrowser}"/>
 
       <h1>
-        Changes
+        ${%Changes}
         <j:if test="${from!=null}"> from #${from}</j:if>
         <j:if test="${to!=null}"> to #${to}</j:if>
       </h1>
