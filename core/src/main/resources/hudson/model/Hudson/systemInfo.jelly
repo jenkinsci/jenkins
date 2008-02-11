@@ -6,9 +6,9 @@
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <l:isAdmin>
-        <h1>System Properties</h1>
+        <h1>${%System Properties}</h1>
         <t:propertyTable items="${h.systemProperties}" />
-        <h1>Environment Variables</h1>
+        <h1>${%Environment Variables}</h1>
         <t:propertyTable items="${h.envVars}" />
       </l:isAdmin>
     </l:main-panel>
