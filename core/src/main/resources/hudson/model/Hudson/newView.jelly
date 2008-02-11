@@ -7,7 +7,7 @@
 
     <l:main-panel>
       <f:form method="post" action="createView">
-        <f:entry title="View name">
+        <f:entry title="${%View name}">
           <input type="text" name="name" class="setting-input" id="box" />
           <script>
             document.getElementById('box').focus();
