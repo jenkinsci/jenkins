@@ -3,32 +3,32 @@
   <l:layout>
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1><img src="${imagesURL}/48x48/error.gif"/>Error: no workspace</h1>
+      <h1><img src="${imagesURL}/48x48/error.gif"/>${%Error: no workspace}</h1>
       <j:choose>
         <j:when test="${it.lastBuild==null}">
           <p>
-            A project won't have any workspace until at least one build is performed.
+            ${%A project won't have any workspace until at least one build is performed.}
           </p>
         </j:when>
         <j:otherwise>
           <p>
-            There's no workspace for this project. Possible reasons are:
+            ${%There's no workspace for this project. Possible reasons are:}
           </p>
           <ol>
             <li>
-              The project was renamed recently and no build was done under the new name
+              ${%The project was renamed recently and no build was done under the new name.}
             </li>
             <li>
-              The slave this project has run on for the las time was removed
+              ${%The slave this project has run on for the last time was removed.}
             </li>
             <li>
-              The workspace directory (${it.workspace.local}) is removed outside Hudson.
+              ${%li3(it.workspace.local)}
             </li>
           </ol>
         </j:otherwise>
       </j:choose>
       <p>
-        <a href="${rootURL}/${it.url}build">Run a build</a> to have Hudson create a workspace.
+        ${%text(rootURL,it.url)}
       </p>
     </l:main-panel>
   </l:layout>
