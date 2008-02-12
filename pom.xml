@@ -54,15 +54,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <inherited>true</inherited>
-        <configuration>
-          <includes>
-            <include>../LICENSE.txt</include>
-          </includes>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-remote-resources-plugin</artifactId>
         <executions>
           <execution>
