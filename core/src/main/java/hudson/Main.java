@@ -3,9 +3,12 @@ package hudson;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
 
-import java.io.OutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -74,11 +77,11 @@ public class Main {
             }
         }
 
-        // start a remote connection
-        HttpURLConnection con = (HttpURLConnection) new URL(home+"job/"+projectNameEnc+"/postBuildResult").openConnection();
-        con.setDoOutput(true);
-        con.connect();
-        OutputStream os = con.getOutputStream();
+        // write the output to a temporary file first.
+        File tmpFile = File.createTempFile("hudson","log");
+        tmpFile.deleteOnExit();
+        FileOutputStream os = new FileOutputStream(tmpFile);
+
         Writer w = new OutputStreamWriter(os,"UTF-8");
         w.write("<?xml version='1.0' encoding='UTF-8'?>");
         w.write("<run><log encoding='hexBinary'>");
@@ -98,10 +101,34 @@ public class Main {
         w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
         w.close();
 
-        if(con.getResponseCode()!=200) {
-            Util.copyStream(con.getErrorStream(),System.err);
-        }
+        String location = home+"job/"+projectNameEnc+"/postBuildResult";
+        while(true) {
+            try {
+                // start a remote connection
+                HttpURLConnection con = (HttpURLConnection) new URL(location).openConnection();
+                con.setDoOutput(true);
+                // this tells HttpURLConnection not to buffer the whole thing
+                con.setFixedLengthStreamingMode((int)tmpFile.length());
+                con.connect();
+                // send the data
+                FileInputStream in = new FileInputStream(tmpFile);
+                Util.copyStream(in,con.getOutputStream());
+                in.close();
 
-        return ret;
+                if(con.getResponseCode()!=200) {
+                    Util.copyStream(con.getErrorStream(),System.err);
+                }
+
+                return ret;
+            } catch (HttpRetryException e) {
+                if(e.getLocation()!=null) {
+                    // retry with the new location
+                    location = e.getLocation();
+                    continue;
+                }
+                // otherwise failed for reasons beyond us.
+                throw e;
+            }
+        }
     }
 }
