@@ -112,6 +112,8 @@ public final class DependencyGraph {
     public void addDependency(AbstractProject from, AbstractProject to) {
         if(built)
             throw new IllegalStateException();
+        if(from==to)
+            return;
         add(forward,from,to);
         add(backward,to,from);
     }
