@@ -5,9 +5,9 @@
       <table class="sortable pane" id="projectstatus">
         <tr>
           <th />
-          <th>Name</th>
-          <th initialSortDir="up">Last Active</th>
-          <th>On</th>
+          <th>${%Name}</th>
+          <th initialSortDir="up">${%Last Active}</th>
+          <th>${%On}</th>
         </tr>
         <j:forEach var="p" items="${it.users}">
           <tr>
