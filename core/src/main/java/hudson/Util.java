@@ -402,18 +402,18 @@ public class Util {
         long seconds = duration / ONE_SECOND_MS;
 
         if (years > 0)
-            return makeTimeSpanString(years, "year", months, "month");
+            return makeTimeSpanString(years, Messages.Util_year(), months, Messages.Util_month());
         else if (months > 0)
-            return makeTimeSpanString(months, "month", days, "day");
+            return makeTimeSpanString(months, Messages.Util_month(), days, Messages.Util_day());
         else if (days > 0)
-            return makeTimeSpanString(days, "day", hours, "hour");
+            return makeTimeSpanString(days, Messages.Util_day(), hours, Messages.Util_hour());
         else if (hours > 0)
-            return makeTimeSpanString(hours, "hour", minutes, "minute");
+            return makeTimeSpanString(hours, Messages.Util_hour(), minutes, Messages.Util_minute());
         else if (minutes > 0)
-            return makeTimeSpanString(minutes, "minute", seconds, "second");
+            return makeTimeSpanString(minutes, Messages.Util_minute(), seconds, Messages.Util_second());
         else
             // Durations less than a minute are only expressed in seconds (no ms).
-            return combine(seconds, "second");
+            return combine(seconds, Messages.Util_second());
     }
 
 
@@ -452,7 +452,7 @@ public class Util {
     public static String combine(long n, String suffix) {
         String s = Long.toString(n)+' '+suffix;
         if(n!=1)
-            s += 's';
+            s += Messages.Util_timeSuffix();
         return s;
     }
 
