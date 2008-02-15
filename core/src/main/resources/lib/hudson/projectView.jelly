@@ -53,7 +53,7 @@
                       <thead>
                         <tr>
                           <th align="left">W</th>
-                          <th align="left">Description</th>
+                          <th align="left">${%Description}</th>
                           <th align="right">%</th>
                         </tr>
                       </thead>
