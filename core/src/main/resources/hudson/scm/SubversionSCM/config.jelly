@@ -1,8 +1,8 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="Modules">
+  <f:entry title="${%Modules}">
     <f:repeatable var="loc" items="${scm.locations}" noAddButton="true" minimum="1">
       <table width="100%">
-        <f:entry title="Repository URL" help="/scm/SubversionSCM/url-help">
+        <f:entry title="${%Repository URL}" help="/scm/SubversionSCM/url-help">
           <f:textbox name="svn.location_remote" value="${loc.remote}"
             checkUrl="'${rootURL}/scm/SubversionSCM/svnRemoteLocationCheck?value='+encode(this.value)"/>
         </f:entry>
@@ -12,14 +12,14 @@
         </f:entry>
         <f:entry>
           <div align="right">
-            <input type="button" value="Add more locations..." class="repeatable-add show-if-last" />
-            <input type="button" value="Delete" class="repeatable-delete show-if-not-only" style="margin-left: 1em;" />
+            <input type="button" value="${%Add more locations...}" class="repeatable-add show-if-last" />
+            <input type="button" value="${%Delete}" class="repeatable-delete show-if-not-only" style="margin-left: 1em;" />
           </div>
         </f:entry>
       </table>
     </f:repeatable>
   </f:entry>
-  <f:entry title="Use update"
+  <f:entry title="${%Use update}"
     description="
       If checked, Hudson will use 'svn update' whenever possible, making the build faster.
       But this causes the artifacts from the previous build to remain when a new build starts.">
