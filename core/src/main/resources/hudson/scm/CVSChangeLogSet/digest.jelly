@@ -4,7 +4,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:choose>
     <j:when test="${it.emptySet}">
-      No changes.
+      ${%No changes.}
     </j:when>
     <j:otherwise>
       Changes

@@ -25,7 +25,7 @@
   </j:choose>
   <j:choose>
     <j:when test="${it.emptySet}">
-      No changes.
+      ${%No changes.}
     </j:when>
     <j:otherwise>
       Changes
