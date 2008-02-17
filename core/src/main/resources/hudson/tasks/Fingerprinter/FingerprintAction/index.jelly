@@ -9,13 +9,13 @@
     <l:main-panel>
       <h1>
         <img src="${imagesURL}/48x48/fingerprint.gif" />
-        Recorded Fingerprints
+        ${%Recorded Fingerprints}
       </h1>
       <table class="fingerprint-in-build sortable">
         <tr>
-          <th initialSortDir="down">File</th>
-          <th>Original owner</th>
-          <th>Age</th>
+          <th initialSortDir="down">${%File}</th>
+          <th>${%Original owner}</th>
+          <th>${%Age}</th>
           <th></th>
         </tr>
         <j:forEach var="e" items="${it.fingerprints}">
@@ -42,7 +42,7 @@
             </td>
             <td>
               <a href="${rootURL}/fingerprint/${f.hashString}/">
-                <img src="${imagesURL}/16x16/fingerprint.gif" /> more details
+                <img src="${imagesURL}/16x16/fingerprint.gif" /> ${%more details}
               </a>
             </td>
           </tr>
