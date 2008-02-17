@@ -6,7 +6,7 @@
           <f:textbox name="svn.location_remote" value="${loc.remote}"
             checkUrl="'${rootURL}/scm/SubversionSCM/svnRemoteLocationCheck?value='+encode(this.value)"/>
         </f:entry>
-        <f:entry title="Local module directory (optional)" help="/help/subversion/local.html">
+        <f:entry title="${%Local module directory} (${%optional})" help="/help/subversion/local.html">
           <f:textbox name="svn.location_local" value="${loc.local}"
             checkUrl="'${rootURL}/scm/SubversionSCM/svnLocalLocationCheck?value='+escape(this.value)"/>
         </f:entry>
