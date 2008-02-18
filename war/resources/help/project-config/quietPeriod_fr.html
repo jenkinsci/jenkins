@@ -1,0 +1,27 @@
+<div>
+  Si cette valeur est positionnée, un build attendre le nombre de secondes 
+  spéficié avant de réellement s'exécuter.
+  Cela est utile pour:
+  <ul>
+    <li>
+      Agréger de multiples emails de notification de changements CVS dans
+      un seul (certains scripts de génération d'email relatifs aux
+      changements dans CVS génèrent de multiples emails rapidement les uns
+      après les autres, quand un commit touche plusieurs répertoires).
+    </li>
+    <li>
+      Selon votre style de codage, vous introduisez peut-être une erreur de
+      logique dans certaines opérations cvs/svn. Dans ce cas, une période
+      d'attente plus longue évitera que Hudson lance un build
+      prématurement et indique un échec.
+    </li>
+    <li>
+      Gestion des ressources. Si votre installation de Hudson est
+      surchargée par de nombreux builds, une période d'attente plus longue
+      pourra réduire le nombre de builds.
+    </li>
+  </ul>
+  Si cette valeur n'est pas positionnée explicitement au niveau du projet,
+  une valeur par défaut pour toute l'installation d'Hudson sera
+  utilisée.
+    </div>
