@@ -402,18 +402,18 @@ public class Util {
         long seconds = duration / ONE_SECOND_MS;
 
         if (years > 0)
-            return makeTimeSpanString(years, Messages.Util_year(), months, Messages.Util_month());
+            return makeTimeSpanString(years, Messages.Util_year(years), months, Messages.Util_month(months));
         else if (months > 0)
-            return makeTimeSpanString(months, Messages.Util_month(), days, Messages.Util_day());
+            return makeTimeSpanString(months, Messages.Util_month(months), days, Messages.Util_day(days));
         else if (days > 0)
-            return makeTimeSpanString(days, Messages.Util_day(), hours, Messages.Util_hour());
+            return makeTimeSpanString(days, Messages.Util_day(days), hours, Messages.Util_hour(hours));
         else if (hours > 0)
-            return makeTimeSpanString(hours, Messages.Util_hour(), minutes, Messages.Util_minute());
+            return makeTimeSpanString(hours, Messages.Util_hour(hours), minutes, Messages.Util_minute(minutes));
         else if (minutes > 0)
-            return makeTimeSpanString(minutes, Messages.Util_minute(), seconds, Messages.Util_second());
+            return makeTimeSpanString(minutes, Messages.Util_minute(minutes), seconds, Messages.Util_second(seconds));
         else
             // Durations less than a minute are only expressed in seconds (no ms).
-            return combine(seconds, Messages.Util_second());
+            return Messages.Util_second(seconds);
     }
 
 
@@ -430,9 +430,9 @@ public class Util {
                                              String bigLabel,
                                              long smallUnit,
                                              String smallLabel) {
-        String text = combine(bigUnit, bigLabel);
+        String text = bigLabel;
         if (bigUnit < 10)
-            text += ' ' + combine(smallUnit, smallLabel);
+            text += ' ' + smallLabel;
         return text;
     }
 
@@ -452,7 +452,7 @@ public class Util {
     public static String combine(long n, String suffix) {
         String s = Long.toString(n)+' '+suffix;
         if(n!=1)
-            s += Messages.Util_timeSuffix();
+            s += Messages.Util_countSuffix();
         return s;
     }
 

@@ -37,18 +37,18 @@ public class UtilTest extends TestCase {
         // We're still working on the assumption that a month is 30 days, so there will
         // be 5 days at the end of the year that will be "12 months" but not "1 year".
         // First check 359 days.
-        assertEquals("11 " + Messages.Util_month() + Messages.Util_timeSuffix(), Util.getTimeSpanString(31017600000L));
+        assertEquals(Messages.Util_month(11), Util.getTimeSpanString(31017600000L));
         // And 362 days.
-        assertEquals("12 " + Messages.Util_month() + Messages.Util_timeSuffix(), Util.getTimeSpanString(31276800000L));
+        assertEquals(Messages.Util_month(12), Util.getTimeSpanString(31276800000L));
 
         // 11.25 years - Check that if the first unit has 2 or more digits, a second unit isn't used.
-        assertEquals("11 " + Messages.Util_year() + Messages.Util_timeSuffix(), Util.getTimeSpanString(354780000000L));
+        assertEquals(Messages.Util_year(11), Util.getTimeSpanString(354780000000L));
         // 9.25 years - Check that if the first unit has only 1 digit, a second unit is used.
-        assertEquals("9 " + Messages.Util_year() + Messages.Util_timeSuffix() + " 3 " + Messages.Util_month() + Messages.Util_timeSuffix(), Util.getTimeSpanString(291708000000L));
+        assertEquals(Messages.Util_year(9)+ " " + Messages.Util_month(3), Util.getTimeSpanString(291708000000L));
         // 67 seconds
-        assertEquals("1 " + Messages.Util_minute() + " 7 " + Messages.Util_second() + Messages.Util_timeSuffix(), Util.getTimeSpanString(67000L));
+        assertEquals(Messages.Util_minute(1) + " " + Messages.Util_second(7), Util.getTimeSpanString(67000L));
         // 17 seconds - Check that times less than a minute only use seconds.
-        assertEquals("17 " + Messages.Util_second() + Messages.Util_timeSuffix(), Util.getTimeSpanString(17000L));
+        assertEquals(Messages.Util_second(17), Util.getTimeSpanString(17000L));
     }
 
 }
