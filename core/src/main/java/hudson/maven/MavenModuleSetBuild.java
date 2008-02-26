@@ -364,6 +364,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 b.save();
 
             performAllBuildStep(listener, project.getPublishers(),true);
+	    performAllBuildStep(listener, project.getProperties(),true);
         }
 
         @Override
