@@ -16,6 +16,7 @@ public abstract class SidACL extends ACL {
 
     @Override
     public boolean hasPermission(Authentication a, Permission permission) {
+        if(a==SYSTEM)   return true;
         Boolean b = _hasPermission(a,permission);
         if(b==null) b=false;    // default to rejection
         return b;

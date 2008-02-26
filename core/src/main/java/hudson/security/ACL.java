@@ -2,6 +2,7 @@ package hudson.security;
 
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -40,6 +41,10 @@ public abstract class ACL {
 
     /**
      * Checks if the given principle has the given permission.
+     *
+     * <p>
+     * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
+     * in which case you should probably just assume it has every permission.
      */
     public abstract boolean hasPermission(Authentication a, Permission permission);
 
@@ -64,4 +69,18 @@ public abstract class ACL {
      * regardless of the current {@link SecurityRealm} in use.
      */
     public static final Sid ANONYMOUS = new PrincipalSid("anonymous");
+
+    /**
+     * {@link Sid} that represents the Hudson itself.
+     * <p>
+     * This is used when Hudson is performing computation for itself, instead
+     * of acting on behalf of an user, such as doing builds.
+     *
+     * <p>
+     * Technically speaking, this is probably a broken concept, because Hudson never
+     * does anything on its own; for example, it builds a project because someone
+     * configures it or someone triggers it, so ideally Hudson should be impersonating
+     * that user when executing things.
+     */
+    public static final Authentication SYSTEM = new UsernamePasswordAuthenticationToken("SYSTEM","SYSTEM");
 }

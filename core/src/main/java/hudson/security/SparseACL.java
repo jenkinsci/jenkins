@@ -44,6 +44,7 @@ public class SparseACL extends SidACL {
     }
 
     public boolean hasPermission(Authentication a, Permission permission) {
+        if(a==SYSTEM)   return true;
         Boolean b = _hasPermission(a,permission);
         if(b!=null) return b;
 
