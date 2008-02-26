@@ -1,8 +1,11 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContextHolder;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -39,6 +42,9 @@ public class Executor extends Thread implements ModelObject {
     }
 
     public void run() {
+        // run as the system user. see ACL.SYSTEM for more discussion about why this is somewhat broken
+        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+
         try {
             while(true) {
                 if(Hudson.getInstance().isTerminating())
