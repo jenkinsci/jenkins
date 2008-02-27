@@ -963,9 +963,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         rsp.sendRedirect2(req.getContextPath()+'/' + getParent().getUrl());
     }
 
-    public void setDescription(String description) {
+    public void setDescription(String description) throws IOException {
         checkPermission(UPDATE);
         this.description = description;
+        save();
     }
     
     /**
