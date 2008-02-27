@@ -187,7 +187,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 String sid = r.getKey();
                 for(Map.Entry<String,Boolean> e : (Set<Map.Entry<String,Boolean>>)r.getValue().entrySet()) {
                     if(e.getValue()) {
-                        Permission p = Permission.fromId(e.getKey().replace('-','.'));
+                        Permission p = Permission.fromId(e.getKey());
                         gmas.add(p,sid);
                     }
                 }

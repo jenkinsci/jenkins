@@ -955,8 +955,12 @@ function buildFormTree(form) {
         var doms = []; // DOMs that we added 'formDom' for.
         doms.push(form);
 
-        // abc.def.ghi -> ghi
         function shortenName(name) {
+            // [abc.def.ghi] -> abc.def.ghi
+            if(name.startsWith('['))
+                return name.substring(1,name.length-1);
+
+            // abc.def.ghi -> ghi
             var idx = name.lastIndexOf('.');
             if(idx>=0)  name = name.substring(idx+1);
             return name;

@@ -8,12 +8,7 @@
         <j:forEach var="g" items="${groups}">
           <j:forEach var="p" items="${g.permissions}">
             <td width="*">
-              <!--
-                since '.' is handled in a special way, replace them by '-'
-                '-' is not a part of Java identifier, so this transformation
-                doesn't cause ambuguity.
-               -->
-              <f:checkbox name="${p.id.replace('.','-')}" checked="${instance.hasPermission(attrs.sid,p)}"/>
+              <f:checkbox name="[${p.id}]" checked="${instance.hasPermission(attrs.sid,p)}"/>
             </td>
           </j:forEach>
         </j:forEach>
@@ -53,7 +48,7 @@
       </tr>
 
       <j:forEach var="sid" items="${instance.allSIDs}">
-        <tr name="${sid}">
+        <tr name="[${sid}]">
           <local:row title="${sid}" sid="${sid}"/>
         </tr>
       </j:forEach>
@@ -96,7 +91,7 @@
           copy.removeAttribute("id");
           copy.removeAttribute("style");
           copy.firstChild.innerHTML = name;
-          copy.setAttribute("name",name);
+          copy.setAttribute("name",'['+name+']');
           table.appendChild(copy);
           Behaviour.applySubtree(findAncestor(table,"TABLE"));
         });
