@@ -64,6 +64,12 @@ public class ArtifactArchiver extends Publisher {
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         AbstractProject<?,?> p = build.getProject();
 
+        if(artifacts.length()==0) {
+            listener.error(Messages.ArtifactArchiver_NoIncludes());
+            build.setResult(Result.FAILURE);
+            return true;
+        }
+
         File dir = build.getArtifactsDir();
         dir.mkdirs();
 
