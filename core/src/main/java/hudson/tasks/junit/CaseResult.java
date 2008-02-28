@@ -44,8 +44,8 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
 
     private static float parseTime(Element testCase) {
         String time = testCase.attributeValue("time");
-        time = time.replace(",","");
         if(time!=null) {
+            time = time.replace(",","");
             try {
                 return Float.parseFloat(time);
             } catch (NumberFormatException e) {
