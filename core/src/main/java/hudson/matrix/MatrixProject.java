@@ -3,6 +3,7 @@ package hudson.matrix;
 import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.XmlFile;
+import hudson.triggers.Trigger;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
@@ -18,6 +19,7 @@ import hudson.model.Node;
 import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.model.Action;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -92,6 +94,28 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     public AxisList getAxes() {
         return axes;
+    }
+
+    protected void updateTransientActions() {
+        synchronized(transientActions) {
+            super.updateTransientActions();
+
+            for (BuildStep step : builders) {
+                Action a = step.getProjectAction(this);
+                if(a!=null)
+                    transientActions.add(a);
+            }
+            for (BuildStep step : publishers) {
+                Action a = step.getProjectAction(this);
+                if(a!=null)
+                    transientActions.add(a);
+            }
+            for (Trigger trigger : triggers) {
+                Action a = trigger.getProjectAction();
+                if(a!=null)
+                    transientActions.add(a);
+            }
+        }
     }
 
     /**
