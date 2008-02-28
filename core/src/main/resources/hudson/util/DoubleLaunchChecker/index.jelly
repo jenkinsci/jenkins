@@ -9,6 +9,16 @@
       <p>
         ${%message(it.home)}
       </p>
+      <table>
+        <tr>
+          <td>${%This Hudson}:</td>
+          <td>${it.id}</td>
+        </tr>
+        <tr>
+          <td>${%Other Hudson}:</td>
+          <td>${it.collidingId}</td>
+        </tr>
+      </table>
       <div>
         <form action="${rootURL}/ignore">
           <f:submit value="Ignore this problem and keep using Hudson anyway" />

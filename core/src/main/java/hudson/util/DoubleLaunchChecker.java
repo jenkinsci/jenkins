@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.lang.management.ManagementFactory;
 
 /**
  * Makes sure that no other Hudson uses our <tt>HUDSON_HOME</tt> directory,
@@ -52,6 +54,12 @@ public class DoubleLaunchChecker {
 
     public final File home;
 
+    /**
+     * ID string of the other Hudson that we are colliding with. 
+     * Can be null.
+     */
+    private String collidingId;
+
     public DoubleLaunchChecker() {
         home = Hudson.getInstance().getRootDir();
     }
@@ -61,6 +69,11 @@ public class DoubleLaunchChecker {
 
         long t = timestampFile.lastModified();
         if(t!=0 && lastWriteTime!=0 && t!=lastWriteTime && !ignore) {
+            try {
+                collidingId = FileUtils.readFileToString(timestampFile);
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to read collision file", e);
+            }
             // we noticed that someone else have updated this file.
             // switch GUI to display this error.
             Hudson.getInstance().servletContext.setAttribute("app",this);
@@ -69,7 +82,7 @@ public class DoubleLaunchChecker {
         }
 
         try {
-            FileUtils.writeStringToFile(timestampFile,"This file is used to make sure only one Hudson instance uses this directory");
+            FileUtils.writeStringToFile(timestampFile, getId());
             lastWriteTime = timestampFile.lastModified();
         } catch (IOException e) {
             // if failed to write, err on the safe side and assume things are OK.
@@ -77,6 +90,20 @@ public class DoubleLaunchChecker {
         }
 
         schedule();
+    }
+
+    /**
+     * Figures out a string that identifies this instance of Hudson.
+     */
+    public String getId() {
+        // FIXME: is there any way for us to obtain a servlet context path, so that
+        // we can help people distinguish two webapps running in the same container?
+
+        return Hudson.getInstance().hashCode()+" at "+ManagementFactory.getRuntimeMXBean().getName();
+    }
+
+    public String getCollidingId() {
+        return collidingId;
     }
 
     /**
@@ -89,7 +116,7 @@ public class DoubleLaunchChecker {
             protected void doRun() {
                 execute();
             }
-        },(random.nextInt(30*MINUTE)+60*MINUTE));
+        },(random.nextInt(30)+60)*MINUTE);
     }
 
     /**
