@@ -13,9 +13,11 @@ import hudson.util.InsufficientPermissionDetected;
 import hudson.util.NoHomeDir;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.NoTempDir;
+import hudson.util.IncompatibleAntVersionDetected;
 import org.jvnet.localizer.LocaleProvider;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.apache.tools.ant.types.FileSet;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -99,6 +101,14 @@ public class WebAppMain implements ServletContextListener {
                 ServletResponse.class.getMethod("setCharacterEncoding",String.class);
             } catch (NoSuchMethodException e) {
                 context.setAttribute(APP,new IncompatibleServletVersionDetected(ServletResponse.class));
+                return;
+            }
+
+            // make sure that we see Ant 1.7
+            try {
+                FileSet.class.getMethod("getDirectoryScanner");
+            } catch (NoSuchMethodException e) {
+                context.setAttribute(APP,new IncompatibleAntVersionDetected(FileSet.class));
                 return;
             }
 
