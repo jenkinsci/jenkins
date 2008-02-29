@@ -38,7 +38,7 @@ public final class ComputerSet implements ModelObject {
         return "nodes";
     }
 
-    public List<NodeMonitor> get_monitors() {
+    public static List<NodeMonitor> get_monitors() {
         return monitors;
     }
 
