@@ -4,6 +4,7 @@ import hudson.CopyOnWrite;
 import hudson.Launcher;
 import hudson.StructuredForm;
 import hudson.Util;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -119,8 +120,15 @@ public class Ant extends Builder {
         else
             args.add(ai.getExecutable(launcher));
 
+
+        FilePath buildFilePath;
+        if(buildFile!=null)
+            buildFilePath = proj.getModuleRoot().child(buildFile);
+        else
+            buildFilePath = proj.getModuleRoot().child("build.xml");
+
         if(buildFile!=null) {
-        	args.add("-file", buildFile);
+        	args.add("-file", buildFilePath.getName());
         }
 
         args.addKeyValuePairs("-D",build.getBuildVariables());
@@ -168,7 +176,7 @@ public class Ant extends Builder {
 
         long startTime = System.currentTimeMillis();
         try {
-            int r = launcher.launch(args.toCommandArray(),env,listener.getLogger(),proj.getModuleRoot()).join();
+            int r = launcher.launch(args.toCommandArray(),env,listener.getLogger(),buildFilePath.getParent()).join();
             return r==0;
         } catch (IOException e) {
             Util.displayIOException(e,listener);
