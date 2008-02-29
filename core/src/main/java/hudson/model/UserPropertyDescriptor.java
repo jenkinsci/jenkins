@@ -18,4 +18,12 @@ public abstract class UserPropertyDescriptor extends Descriptor<UserProperty> {
      *      if the implementation choose not to add any property object for such user.
      */
     public abstract UserProperty newInstance(User user);
+
+    /**
+     * Whether or not the described property is enabled in the current context.
+     * Defaults to true.  Over-ride in sub-classes as required.
+     */
+    public boolean isEnabled() {
+        return true;
+    }
 }
