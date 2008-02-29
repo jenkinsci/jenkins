@@ -10,6 +10,7 @@ import hudson.util.DescriptorList;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.List;
 
 /**
  * Extension point for managing and monitoring {@link Node}s.
@@ -43,6 +44,13 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
         return getDescriptor().get(c);
     }
 
+    /**
+     * Obtains all the instances of {@link NodeMonitor}s that are alive.
+     * @since 1.187
+     */
+    public static List<NodeMonitor> getAll() {
+        return ComputerSet.get_monitors();
+    }
 
     /**
      * All registered {@link NodeMonitor}s.
