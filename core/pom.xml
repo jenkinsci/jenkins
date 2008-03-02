@@ -97,18 +97,18 @@
 		</executions>
 	      </plugin>
 	      <!-- set main class -->
-	      <plugin>
-		<artifactId>maven-jar-plugin</artifactId>
-		<configuration>
-		  <archive>
-		    <manifest>
-		      <mainClass>hudson.Main</mainClass>
-		      <addClasspath>true</addClasspath>
-		      <classpathPrefix />
-		    </manifest>
-		  </archive>
-		</configuration>
-	      </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <configuration>
+            <archive>
+              <manifest>
+                <mainClass>hudson.Main</mainClass>
+                <addClasspath>true</addClasspath>
+                <classpathPrefix />
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
 	    </plugins>
 	  </build>
 
