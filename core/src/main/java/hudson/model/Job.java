@@ -241,6 +241,14 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     /**
+     * Adds {@link JobProperty}.
+     * @since 1.188
+     */
+    public void addProperty(JobProperty<? super JobT> jobProp) throws IOException {
+        properties.add(jobProp);
+        save();
+    }
+    /**
      * Gets all the job properties configured for this job.
      */
     @SuppressWarnings("unchecked")
