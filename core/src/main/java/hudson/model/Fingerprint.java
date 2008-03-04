@@ -666,5 +666,5 @@ public class Fingerprint implements ModelObject {
     }
 
     private static final Logger logger = Logger.getLogger(Fingerprint.class.getName());
-    private static boolean tryNewFormat =false;
+    private static boolean tryNewFormat = Boolean.getBoolean(Fingerprint.class.getName()+".tryNewFormat");
 }
