@@ -546,7 +546,15 @@ public class Fingerprint implements ModelObject {
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
-        getConfigFile(getFingerprintFile(md5sum)).write(this);
+        long start=0;
+        if(logger.isLoggable(Level.FINE))
+            start = System.currentTimeMillis();
+
+        File file = getFingerprintFile(md5sum);
+        getConfigFile(file).write(this);
+
+        if(logger.isLoggable(Level.FINE))
+            logger.fine("Saving fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
     }
 
     public Api getApi() {
@@ -579,8 +587,16 @@ public class Fingerprint implements ModelObject {
         XmlFile configFile = getConfigFile(file);
         if(!configFile.exists())
             return null;
+
+        long start=0;
+        if(logger.isLoggable(Level.FINE))
+            start = System.currentTimeMillis();
+
         try {
-            return (Fingerprint)configFile.read();
+            Fingerprint f = (Fingerprint) configFile.read();
+            if(logger.isLoggable(Level.FINE))
+                logger.fine("Loading fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
+            return f;
         } catch (IOException e) {
             logger.log(Level.WARNING, "Failed to load "+configFile,e);
             throw e;
