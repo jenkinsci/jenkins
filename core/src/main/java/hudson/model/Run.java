@@ -995,6 +995,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         env.put("BUILD_ID",getId());
         env.put("BUILD_TAG","hudson-"+getParent().getName()+"-"+number);
         env.put("JOB_NAME",getParent().getFullName());
+        String rootUrl = Hudson.getInstance().getRootUrl();
+        if(rootUrl!=null)
+            env.put("HUDSON_URL", rootUrl);
 
         Thread t = Thread.currentThread();
         if (t instanceof Executor) {
