@@ -193,7 +193,7 @@ public class CVSSCM extends SCM implements Serializable {
     /**
      * List up all modules to check out.
      */
-    private String[] getAllModulesNormalized() {
+    public String[] getAllModulesNormalized() {
         // split by whitespace, except "\ "
         String[] r = module.split("(?<!\\\\)[ \\r\\n]+");
         // now replace "\ " to " ".
