@@ -12,10 +12,12 @@
         #${it.owner.nextBuildNumber}
       </td>
       <td nowrap="nowrap" tooltip="${pending.why}">
+        <div style="float:right">
+          <j:if test="${pending.hasCancelPermission()}">
+            <a href="${rootURL}/${pending.task.url}cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
+          </j:if>
+        </div>
         (pending)
-        <j:if test="${pending.hasCancelPermission()}">
-          <a href="${rootURL}/${pending.task.url}cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
-        </j:if>
       </td>
     </tr>
   </j:if>
