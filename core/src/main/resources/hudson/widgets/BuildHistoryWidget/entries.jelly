@@ -13,6 +13,9 @@
       </td>
       <td nowrap="nowrap" tooltip="${pending.why}">
         (pending)
+        <j:if test="${pending.hasCancelPermission()}">
+          <a href="${rootURL}/${pending.task.url}cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
+        </j:if>
       </td>
     </tr>
   </j:if>
