@@ -1,0 +1,44 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:local="local" xmlns:test="/lib/test">
+  <l:layout title="Test">
+    <st:include page="sidepanel.jelly" it="${it.owner}" />
+    <l:main-panel>
+        <h1>Test Result</h1>
+        <test:bar />
+        <j:forEach var="report" items="${it.childReports}">
+            <br/>
+            <h2><a href="${report.child.absoluteUrl}">${report.child.project.name}</a></h2>
+            <ul style="list-style-type: none;margin: 0; padding: 0;">
+            <li><b>All tests: </b>${report.result.totalCount}</li>
+            <li><b>Failed tests: </b>${report.result.failCount}</li>
+            <j:if test="${report.result.skipCount!=0}">
+                <li><b>Skipped tests: </b>${report.result.skipCount}</li>
+            </j:if>
+            <li><b>Duration: </b>${report.result.durationString}</li>
+            </ul>
+            <j:if test="${report.result.failCount!=0}">
+                <h3>Failed Tests</h3>
+                <table class="pane sortable">
+                  <tr>
+                    <td class="pane-header">Test Name</td>
+                    <td class="pane-header" style="width:4em">Duration</td>
+                    <td class="pane-header" style="width:4em">Age</td>
+                  </tr>
+                <j:forEach var="f" items="${report.result.failedTests}" varStatus="i">
+                    <tr>
+                        <td class="pane">
+                            <a href="${f.getRelativePathFrom(it)}"><st:out value="${f.fullName}"/></a>
+                        </td>
+                        <td class="pane" style="text-align:right;">
+                            ${f.duration}
+                        </td>
+                        <td class="pane" style="text-align:right;">
+                            ${f.age}
+                        </td>
+                    </tr>
+                </j:forEach>
+                </table>
+            </j:if>
+        </j:forEach>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
