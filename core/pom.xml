@@ -1,280 +1,281 @@
-	<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	  <modelVersion>4.0.0</modelVersion>
-	  <parent>
-	    <groupId>org.jvnet.hudson.main</groupId>
-	    <artifactId>pom</artifactId>
-	    <version>1.188-SNAPSHOT</version>
-	    <relativePath>../pom.xml</relativePath>
-	  </parent>
-	  
-	  <artifactId>hudson-core</artifactId>
-	  <packaging>stapler-jar</packaging>
-	  <name>Hudson core</name>
-	  
-	  <build>
-	    <plugins>
-	      <!--plugin>
-		<artifactId>maven-enforcer-plugin</artifactId>
-		<executions>
-		  <execution>
-		    <goals>
-		      <goal>enforce</goal>
-		    </goals>
-		    <configuration>
-		      <rules>
-			- There is a bug in JDK 1.5's compiler therefore need to compile with 1.6 -
-			<requireJavaVersion>
-			  <version>[1.6.0,]</version>
-			</requireJavaVersion>
-		      </rules>
-		    </configuration>
-		  </execution>
-		</executions>
-	      </plugin-->
-	      <plugin>
-		<groupId>org.kohsuke.stapler</groupId>
-		<artifactId>maven-stapler-plugin</artifactId>
-		<extensions>true</extensions>
-	      </plugin>
-	      <plugin>
-		<groupId>org.jvnet.localizer</groupId>
-		<artifactId>maven-localizer-plugin</artifactId>
-		<version>1.4</version>
-		<executions>
-		  <execution>
-		    <goals>
-		      <goal>generate</goal>
-		    </goals>
-		    <configuration>
-		      <fileMask>Messages.properties</fileMask>
-		      <outputDirectory>target/generated-sources/localizer</outputDirectory>
-		    </configuration>
-		  </execution>
-		</executions>
-	      </plugin>
-	      <plugin>
-		<artifactId>maven-antlr-plugin</artifactId>
-		<configuration>
-		  <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
-		  <grammars>crontab.g</grammars>
-		</configuration>
-		<executions>
-		  <execution>
-		    <goals>
-		      <goal>generate</goal>
-		    </goals>
-		  </execution>
-		</executions>
-	      </plugin>
-	      <!--
-		Generate retrotranslated 1.4 jar "on the side". I tried various approaches like
-		"profile" (like http://testng.googlecode.com/svn/trunk/pom.xml), but in the
-		end using Ant seems to be the easiest.
-	      -->
-	      <plugin>
-		<groupId>org.apache.maven.plugins</groupId>
-		<artifactId>maven-antrun-plugin</artifactId>
-		<executions>
-		  <execution>
-		    <phase>generate-resources</phase>
-		    <configuration>
-		      <tasks>
-			<tstamp>
-			  <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour" />
-			</tstamp>
-			<property name="build.version" value="${version} (private-${now}-${user.name})" /><!-- default to release version -->
-			<!-- put the version file -->
-			<echo message="The build id is: ${build.version}" />
-			<mkdir dir="target/classes/hudson" />
-			<echo file="target/classes/hudson/hudson-version.properties">version=${build.version}
-			</echo>
-		      </tasks>
-		    </configuration>
-		    <goals>
-		      <goal>run</goal>
-		    </goals>
-		  </execution>
-		</executions>
-	      </plugin>
-	      <!-- set main class -->
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <configuration>
-            <archive>
-              <manifest>
-                <mainClass>hudson.Main</mainClass>
-                <addClasspath>true</addClasspath>
-                <classpathPrefix />
-              </manifest>
-            </archive>
-          </configuration>
-        </plugin>
-	    </plugins>
-	  </build>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jvnet.hudson.main</groupId>
+    <artifactId>pom</artifactId>
+    <version>1.188-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-	  <profiles>
-	    <profile>
-	      <id>debug</id>
-	      <activation>
-		<activeByDefault>true</activeByDefault>
-	      </activation>
-	    </profile>
-	    <profile>
-	      <id>release</id>
-	      <properties>
-		<!-- for releases, just use the POM version. See above ant-run plugin for how this gets used. -->
-		<build.version>${version}</build.version>
-	      </properties>
-	    </profile>
-	    <profile>
-	      <id>hudson-libs-local</id>
-	      <!-- if we have the libs checked out of CVS, use them directly -->
-	      <activation>
-		<file>
-		  <exists>main/lib</exists>
-		  <!-- this is relative to the current directory where you start
-		       maven.  Most likely if building for the first time
-		       you will be in ../.. relative to this pom.xml. So we 
-		       use that path in order to speed you up.
-		  -->
-		</file>
-	      </activation>
-	      <repositories>
-		<!-- checking the file system is fastest of all -->
-		<repository>
-		  <id>hudson-libs</id>
-		  <url>file:main/lib</url>
-		  <layout>legacy</layout>
-		  <releases>
-		    <enabled>true</enabled>
-		    <updatePolicy>always</updatePolicy>
-		  </releases>
-		  <snapshots>
-		    <enabled>false</enabled>
-		  </snapshots>
-		</repository>
-		<!-- put central second to speed majority artifact resolution -->
-		<repository>
-		  <id>central</id>
-		  <url>http://repo1.maven.org/maven2</url>
-		  <releases>
-		    <enabled>true</enabled>
-		    <!-- only look for jars here when they are not present locally -->
-		    <updatePolicy>never</updatePolicy>
-		  </releases>
-		  <snapshots>
-		    <enabled>false</enabled>
-		  </snapshots>
-		</repository>
-		<!-- last, but not least -->
-		<repository>
-		  <id>java.net2</id>
-		  <url>http://download.java.net/maven/2/</url>
-		  <releases>
-		    <enabled>true</enabled>
-		    <updatePolicy>never</updatePolicy>
-		  </releases>
-		  <snapshots>
-		    <enabled>false</enabled>
-		  </snapshots>
-		</repository>
-	      </repositories>
-	    </profile>
-	    <profile>
-	      <id>hudson-libs-remote</id>
-	      <!-- otherwise, we'll have to use the slower route -->
-	      <activation>
-		<file>
-		  <missing>main/lib</missing>
-		</file>
-	      </activation>
-	      <repositories>
-		<!-- put central first to speed majority artifact resolution -->
-		<repository>
-		  <id>central</id>
-		  <url>http://repo1.maven.org/maven2</url>
-		  <releases>
-		    <enabled>true</enabled>
-		    <!-- only look for jars here when they are not present locally -->
-		    <updatePolicy>never</updatePolicy>
-		  </releases>
-		  <snapshots>
-		    <enabled>false</enabled>
-		  </snapshots>
-		</repository>
-		<!-- put hudson-libs last as it is the slowest to access -->
-		<repository>
-		  <id>hudson-libs</id>
-		  <url>https://hudson.dev.java.net/source/browse/*checkout*/hudson/hudson/main/lib</url>
-		  <layout>legacy</layout>
-		  <releases>
-		    <enabled>true</enabled>
-		    <updatePolicy>never</updatePolicy>
-		  </releases>
-		  <snapshots>
-		    <enabled>false</enabled>
-		  </snapshots>
-		</repository>
-	      </repositories>
-	    </profile>
-	  </profiles>
+  <artifactId>hudson-core</artifactId>
+  <packaging>stapler-jar</packaging>
+  <name>Hudson core</name>
 
-	  <dependencies>
-	    <dependency>
-	      <groupId>org.jvnet.hudson.main</groupId>
-	      <artifactId>remoting</artifactId>
-	      <version>${project.version}</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.apache.maven</groupId>
-	      <artifactId>maven-embedder</artifactId>
-	      <version>${maven.version}</version>
-	      <!--exclusions>   These are needed for Maven embedder to resolve parent POMs in remote repositories
-		<exclusion>
-		  <groupId>org.apache.maven.wagon</groupId>
-		  <artifactId>wagon-file</artifactId>
-		</exclusion>
-		<exclusion>t r  
-		  <groupId>org.apache.maven.wagon</groupId>
-		  <artifactId>wagon-http-lightweight</artifactId>
-		</exclusion>
-		<exclusion>
-		  <groupId>org.apache.maven.wagon</groupId>
-		  <artifactId>wagon-ssh-external</artifactId>
-		</exclusion>
-		<exclusion>
-		  <groupId>org.apache.maven.wagon</groupId>
-		  <artifactId>wagon-ssh</artifactId>
-		</exclusion>
-	      </exclusions-->
-	    </dependency>
-	    <dependency>
-	      <groupId>org.jvnet.hudson.svnkit</groupId>
-	      <artifactId>svnkit</artifactId>
-	      <version>1.1.4-hudson-6</version>
-	      <exclusions>
-		<!-- replaced by out patched version -->
-		<exclusion>
-		  <groupId>ch.ethz.ganymed</groupId>
-		  <artifactId>ganymed-ssh2</artifactId>
-		</exclusion>
-	      </exclusions>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.jvnet.hudson</groupId>
-	      <artifactId>ganymed-ssh2</artifactId>
-	      <version>build210-hudson-1</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>${groupId}</groupId>
-	      <artifactId>maven-agent</artifactId>
-	      <version>${project.version}</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>org.kohsuke.stapler</groupId>
-	      <artifactId>stapler</artifactId>
-	      <version>1.61</version>
-    </dependency>   
+  <build>
+    <plugins>
+      <!--plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+          - There is a bug in JDK 1.5's compiler therefore need to compile with 1.6 -
+          <requireJavaVersion>
+            <version>[1.6.0,]</version>
+          </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin-->
+      <plugin>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>maven-stapler-plugin</artifactId>
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <groupId>org.jvnet.localizer</groupId>
+        <artifactId>maven-localizer-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <fileMask>Messages.properties</fileMask>
+              <outputDirectory>target/generated-sources/localizer</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antlr-plugin</artifactId>
+        <configuration>
+          <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
+          <grammars>crontab.g</grammars>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!--
+        Generate retrotranslated 1.4 jar "on the side". I tried various approaches like
+        "profile" (like http://testng.googlecode.com/svn/trunk/pom.xml), but in the
+        end using Ant seems to be the easiest.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-resources</phase>
+            <configuration>
+              <tasks>
+                <tstamp>
+                  <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour"/>
+                </tstamp>
+                <property name="build.version" value="${version} (private-${now}-${user.name})"/>
+                <!-- default to release version -->
+                <!-- put the version file -->
+                <echo message="The build id is: ${build.version}"/>
+                <mkdir dir="target/classes/hudson"/>
+                <echo file="target/classes/hudson/hudson-version.properties">version=${build.version}
+                </echo>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- set main class -->
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>hudson.Main</mainClass>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix/>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>debug</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
+    <profile>
+	    <id>release</id>
+      <properties>
+        <!-- for releases, just use the POM version. See above ant-run plugin for how this gets used. -->
+        <build.version>${version}</build.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>hudson-libs-local</id>
+      <!-- if we have the libs checked out of CVS, use them directly -->
+      <activation>
+        <file>
+          <exists>main/lib</exists>
+          <!-- this is relative to the current directory where you start
+             maven.  Most likely if building for the first time
+             you will be in ../.. relative to this pom.xml. So we
+             use that path in order to speed you up.
+        -->
+        </file>
+      </activation>
+      <repositories>
+        <!-- checking the file system is fastest of all -->
+        <repository>
+          <id>hudson-libs</id>
+          <url>file:main/lib</url>
+          <layout>legacy</layout>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+        <!-- put central second to speed majority artifact resolution -->
+        <repository>
+          <id>central</id>
+          <url>http://repo1.maven.org/maven2</url>
+          <releases>
+            <enabled>true</enabled>
+            <!-- only look for jars here when they are not present locally -->
+            <updatePolicy>never</updatePolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+        <!-- last, but not least -->
+        <repository>
+          <id>java.net2</id>
+          <url>http://download.java.net/maven/2/</url>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>never</updatePolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
+    <profile>
+      <id>hudson-libs-remote</id>
+      <!-- otherwise, we'll have to use the slower route -->
+      <activation>
+        <file>
+          <missing>main/lib</missing>
+        </file>
+      </activation>
+      <repositories>
+        <!-- put central first to speed majority artifact resolution -->
+        <repository>
+          <id>central</id>
+          <url>http://repo1.maven.org/maven2</url>
+          <releases>
+            <enabled>true</enabled>
+            <!-- only look for jars here when they are not present locally -->
+            <updatePolicy>never</updatePolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+        <!-- put hudson-libs last as it is the slowest to access -->
+        <repository>
+          <id>hudson-libs</id>
+          <url>https://hudson.dev.java.net/source/browse/*checkout*/hudson/hudson/main/lib</url>
+          <layout>legacy</layout>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>never</updatePolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jvnet.hudson.main</groupId>
+      <artifactId>remoting</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-embedder</artifactId>
+      <version>${maven.version}</version>
+      <!--exclusions>   These are needed for Maven embedder to resolve parent POMs in remote repositories
+        <exclusion>
+          <groupId>org.apache.maven.wagon</groupId>
+          <artifactId>wagon-file</artifactId>
+        </exclusion>
+        <exclusion>t r
+          <groupId>org.apache.maven.wagon</groupId>
+          <artifactId>wagon-http-lightweight</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.maven.wagon</groupId>
+          <artifactId>wagon-ssh-external</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.maven.wagon</groupId>
+          <artifactId>wagon-ssh</artifactId>
+        </exclusion>
+      </exclusions-->
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson.svnkit</groupId>
+      <artifactId>svnkit</artifactId>
+      <version>1.1.4-hudson-6</version>
+      <exclusions>
+        <!-- replaced by out patched version -->
+        <exclusion>
+          <groupId>ch.ethz.ganymed</groupId>
+          <artifactId>ganymed-ssh2</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>ganymed-ssh2</artifactId>
+      <version>build210-hudson-1</version>
+    </dependency>
+    <dependency>
+      <groupId>${groupId}</groupId>
+      <artifactId>maven-agent</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler</artifactId>
+      <version>1.61</version>
+    </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>graph-layouter</artifactId>
