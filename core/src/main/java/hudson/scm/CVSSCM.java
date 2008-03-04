@@ -82,7 +82,7 @@ import java.util.regex.Pattern;
  */
 public class CVSSCM extends SCM implements Serializable {
     /**
-     * CVSSCM connection string.
+     * CVSSCM connection string, like ":pserver:me@host:/cvs"
      */
     private String cvsroot;
 
