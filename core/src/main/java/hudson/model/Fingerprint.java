@@ -171,6 +171,13 @@ public class Fingerprint implements ModelObject {
         }
 
         /**
+         * Returns true if this range only represents a single number.
+         */
+        public boolean isSingle() {
+            return end-1==start;
+        }
+
+        /**
          * Returns the {@link Range} that combines two ranges.
          */
         public Range combine(Range that) {
@@ -358,11 +365,51 @@ public class Fingerprint implements ModelObject {
             }
 
             public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-                collectionConv.marshal( ((RangeSet)source).getRanges(), writer, context );
+                RangeSet src = (RangeSet) source;
+                if(!tryNewFormat) {
+                    collectionConv.marshal( src.ranges, writer, context );
+                } else {
+                    StringBuilder buf = new StringBuilder(src.ranges.size()*10);
+                    for (Range r : src.ranges) {
+                        if(buf.length()>0)  buf.append(',');
+                        if(r.isSingle())
+                            buf.append(r.start);
+                        else
+                            buf.append(r.start).append('-').append(r.end-1);
+                    }
+                    writer.setValue(buf.toString());
+                }
             }
 
             public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
-                return new RangeSet((List<Range>)(collectionConv.unmarshal(reader,context)));
+                if(reader.hasMoreChildren()) {
+                    /* old format where <range> elements are nested like
+                            <range>
+                              <start>1337</start>
+                              <end>1479</end>
+                            </range>
+                     */
+                    return new RangeSet((List<Range>)(collectionConv.unmarshal(reader,context)));
+                } else {
+                    RangeSet rs = new RangeSet();
+                    for (String s : Util.tokenize(reader.getValue(),",")) {
+                        s = s.trim();
+                        // s is either single number or range "x-y".
+                        // note that the end range is inclusive in this notation, but not in the Range class
+                        try {
+                            if(s.contains("-")) {
+                                String[] tokens = Util.tokenize(s,"-");
+                                rs.ranges.add(new Range(Integer.parseInt(tokens[0]),Integer.parseInt(tokens[1])+1));
+                            } else {
+                                int n = Integer.parseInt(s);
+                                rs.ranges.add(new Range(n,n+1));
+                            }
+                        } catch (NumberFormatException e) {
+                            // ignore malformed text
+                        }
+                    }
+                    return rs;
+                }
             }
         }
     }
@@ -619,4 +666,5 @@ public class Fingerprint implements ModelObject {
     }
 
     private static final Logger logger = Logger.getLogger(Fingerprint.class.getName());
+    private static boolean tryNewFormat =false;
 }
