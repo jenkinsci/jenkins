@@ -247,6 +247,10 @@ public abstract class View extends AbstractModelObject {
     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         rss(req, rsp, " failed builds", new RunList(this).failureOnly());
     }
+    
+    public RunList getBuilds() {
+    	return new RunList(this);
+    }
 
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
         RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),

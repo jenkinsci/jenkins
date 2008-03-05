@@ -15,6 +15,7 @@
       <j:if test="${it.hasPeople()}">
         <l:task icon="images/24x24/user.gif" href="${rootURL}/people/" title="${%People}" />
       </j:if>
+      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}builds" title="Build History"/>
       <st:include page="sidepanel2.jelly" />
       <t:actions />
     </l:tasks>

@@ -171,6 +171,10 @@ public abstract class Computer extends AbstractModelObject {
     public List<AbstractProject> getTiedJobs() {
         return getNode().getSelfLabel().getTiedJobs();
     }
+    
+    public RunList getBuilds() {
+    	return new RunList(Hudson.getInstance().getAllItems(Job.class)).node(getNode());
+    }
 
     /**
      * Called to notify {@link Computer} that its corresponding {@link Node}

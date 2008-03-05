@@ -1,10 +1,12 @@
 package hudson.util;
 
+import hudson.model.AbstractBuild;
+import hudson.model.Item;
 import hudson.model.Job;
+import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.View;
-import hudson.model.Item;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -55,6 +57,21 @@ public class RunList extends ArrayList<Run> {
             Run r = itr.next();
             if(r.getResult()==Result.SUCCESS)
                 itr.remove();
+        }
+        return this;
+    }
+
+    /**
+     * Filter the list to builds on a single node only
+     */
+    public RunList node(Node node) {
+        for (Iterator<Run> itr = iterator(); itr.hasNext();) {
+            Run r = itr.next();
+            if (r instanceof AbstractBuild) {
+            	if (!((AbstractBuild) r).getBuiltOn().equals(node)) {
+                    itr.remove();
+            	}
+            }
         }
         return this;
     }
