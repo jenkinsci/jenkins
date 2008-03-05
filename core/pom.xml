@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.188-SNAPSHOT</version>
+    <version>1.188</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -80,13 +80,13 @@
             <configuration>
               <tasks>
                 <tstamp>
-                  <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour"/>
+                  <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour" />
                 </tstamp>
-                <property name="build.version" value="${version} (private-${now}-${user.name})"/>
+                <property name="build.version" value="${version} (private-${now}-${user.name})" />
                 <!-- default to release version -->
                 <!-- put the version file -->
-                <echo message="The build id is: ${build.version}"/>
-                <mkdir dir="target/classes/hudson"/>
+                <echo message="The build id is: ${build.version}" />
+                <mkdir dir="target/classes/hudson" />
                 <echo file="target/classes/hudson/hudson-version.properties">version=${build.version}
                 </echo>
               </tasks>
@@ -105,7 +105,7 @@
             <manifest>
               <mainClass>hudson.Main</mainClass>
               <addClasspath>true</addClasspath>
-              <classpathPrefix/>
+              <classpathPrefix />
             </manifest>
           </archive>
         </configuration>
