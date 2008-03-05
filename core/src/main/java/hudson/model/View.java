@@ -241,11 +241,11 @@ public abstract class View extends AbstractModelObject {
     public abstract Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " all builds", new RunList(this));
+        rss(req, rsp, " all builds", getBuilds());
     }
 
     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " failed builds", new RunList(this).failureOnly());
+        rss(req, rsp, " failed builds", getBuilds().failureOnly());
     }
     
     public RunList getBuilds() {
