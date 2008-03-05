@@ -859,6 +859,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         domainAxis.setCategoryMargin(0.0);
 
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+        ChartUtil.adjustChebyshev(dataset,rangeAxis);
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
         StackedAreaRenderer ar = new StackedAreaRenderer2() {
