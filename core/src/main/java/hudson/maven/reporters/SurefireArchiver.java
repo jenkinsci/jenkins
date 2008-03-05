@@ -60,7 +60,7 @@ public class SurefireArchiver extends MavenReporter {
         if(reportsDir.exists()) {
             // surefire:test just skips itself when the current project is not a java project
 
-            FileSet fs = Util.createFileSet(reportsDir,"*.xml");
+            FileSet fs = Util.createFileSet(reportsDir,"*.xml","testng-results.xml,testng-failed.xml");
             DirectoryScanner ds = fs.getDirectoryScanner();
 
             if(ds.getIncludedFiles().length==0)
