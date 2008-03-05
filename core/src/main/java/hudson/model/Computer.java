@@ -284,10 +284,10 @@ public abstract class Computer extends AbstractModelObject {
 //
 //
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " all builds", new RunList(getTiedJobs()));
+        rss(req, rsp, " all builds", getBuilds());
     }
     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " failed builds", new RunList(getTiedJobs()).failureOnly());
+        rss(req, rsp, " failed builds", getBuilds().failureOnly());
     }
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
         RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
