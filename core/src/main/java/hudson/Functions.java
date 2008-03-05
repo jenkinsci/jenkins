@@ -766,4 +766,14 @@ public class Functions {
         assert context!=null;
         return context;
     }
+
+    /**
+     * Returns a sub-list if the given list is bigger than the specified 'maxSize'
+     */
+    public static <T> List<T> subList(List<T> base, int maxSize) {
+        if(maxSize<base.size())
+            return base.subList(0,maxSize);
+        else
+            return base;
+    }
 }

@@ -14,7 +14,8 @@
       <th>${%Status}</th>
       <th><st:nbsp/></th>
     </tr>
-    <j:forEach var="b" items="${attrs.builds}">
+    <!-- TODO: support gradual expansion of the list -->
+    <j:forEach var="b" items="${h.subList(attrs.builds,50)}">
       <tr>
         <td data="${b.iconColor.ordinal()}">
           <a href="${rootURL}/${b.url}">
