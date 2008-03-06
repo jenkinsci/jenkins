@@ -227,7 +227,7 @@ public abstract class FormFieldValidator {
             }
 
             try {
-                FilePath ws = p.getWorkspace();
+                FilePath ws = getBaseDirectory(p);
 
                 if(ws==null || !ws.exists()) {// no workspace. can't check
                     ok();
@@ -240,6 +240,13 @@ public abstract class FormFieldValidator {
             } catch (InterruptedException e) {
                 ok(); // coundn't check
             }
+        }
+
+        /**
+         * The base directory from which the path name is resolved.
+         */
+        protected FilePath getBaseDirectory(AbstractProject<?,?> p) {
+            return p.getWorkspace();
         }
     }
 
@@ -289,7 +296,7 @@ public abstract class FormFieldValidator {
             }
 
             try {
-                FilePath ws = p.getWorkspace();
+                FilePath ws = getBaseDirectory(p);
 
                 if(!ws.exists()) {// no workspace. can't check
                     ok();
@@ -316,6 +323,13 @@ public abstract class FormFieldValidator {
             } catch (InterruptedException e) {
                 ok(); // coundn't check
             }
+        }
+
+        /**
+         * The base directory from which the path name is resolved.
+         */
+        protected FilePath getBaseDirectory(AbstractProject<?,?> p) {
+            return p.getWorkspace();
         }
 
         protected AbstractProject<?,?> getProject() {

@@ -500,6 +500,9 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             protected AbstractProject<?, ?> getProject() {
                 return MavenModuleSet.this;
             }
+            protected FilePath getBaseDirectory(AbstractProject<?,?> p) {
+                return p.getModuleRoot();
+            }
         }.process();
     }
 
