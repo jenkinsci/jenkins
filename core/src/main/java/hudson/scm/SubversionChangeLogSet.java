@@ -196,6 +196,13 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             return entry;
         }
 
+        /**
+         * Sets the {@link LogEntry} of which this path is a member.
+         */
+        public void setLogEntry(LogEntry entry) {
+            this.entry = entry;
+        }
+
         public void setAction(String action) {
             this.action = action.charAt(0);
         }
