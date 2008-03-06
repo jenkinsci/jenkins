@@ -63,6 +63,12 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
         return failCount;
     }
 
+    @Override
+    @Exported
+    public int getSkipCount() {
+        return skipCount;
+    }
+
     @Exported
     public int getTotalCount() {
         return totalCount;
