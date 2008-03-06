@@ -271,6 +271,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
+    @Override
+    public void addProperty(JobProperty<? super P> jobProp) throws IOException {
+        super.addProperty(jobProp);
+        updateTransientActions();
+    }
+
     public List<ProminentProjectAction> getProminentActions() {
         List<Action> a = getActions();
         List<ProminentProjectAction> pa = new Vector<ProminentProjectAction>();
