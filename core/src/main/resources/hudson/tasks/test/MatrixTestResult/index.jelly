@@ -4,19 +4,49 @@
     <l:main-panel>
         <h1>Test Result</h1>
         <test:bar />
+
+        <table class="pane sortable">
+        <tr>
+            <td class="pane-header">Configuration Name</td>
+            <td class="pane-header" style="width:4em">Duration</td>
+            <td class="pane-header" style="width:4em">All</td>
+            <td class="pane-header" style="width:4em">Failed</td>
+            <td class="pane-header" style="width:4em">Skipped</td>
+        </tr>
+
         <j:forEach var="report" items="${it.childReports}">
-            <br/>
-            <h2><a href="${report.child.absoluteUrl}">${report.child.project.name}</a></h2>
-            <ul style="list-style-type: none;margin: 0; padding: 0;">
-            <li><b>All tests: </b>${report.result.totalCount}</li>
-            <li><b>Failed tests: </b>${report.result.failCount}</li>
-            <j:if test="${report.result.skipCount!=0}">
-                <li><b>Skipped tests: </b>${report.result.skipCount}</li>
-            </j:if>
-            <li><b>Duration: </b>${report.result.durationString}</li>
-            </ul>
+        <tr>
+            <td class="pane">
+                <a href="${report.child.absoluteUrl}">${report.child.project.name}</a>
+            </td>
+            <td class="pane" style="text-align:right;">
+                ${report.result.durationString}
+            </td>
+            <td class="pane" style="text-align:right;">
+                ${report.result.totalCount}
+            </td>
+            <td class="pane" style="text-align:right;">
+                <!-- This is not a breathtaking construct, but h.ifThenElse didn't work for some reason -->
+                <j:if test="${report.result.failCount!=0}"> <a href="#${report.child.project.name}">${report.result.failCount}</a> </j:if>
+                <j:if test="${report.result.failCount==0}">0 </j:if>
+
+                
+            </td>
+            <td class="pane" style="text-align:right;">
+                ${report.result.skipCount}
+            </td>
+        </tr>
+        </j:forEach>
+
+        </table>
+        <br/>
+        <h2>Failed Tests</h2>
+
+        <j:forEach var="report" items="${it.childReports}">
             <j:if test="${report.result.failCount!=0}">
-                <h3>Failed Tests</h3>
+
+            <h3><a name="${report.child.project.name}"/><a href="${report.child.absoluteUrl}">${report.child.project.name}</a></h3>            
+                
                 <table class="pane sortable">
                   <tr>
                     <td class="pane-header">Test Name</td>
@@ -26,7 +56,7 @@
                 <j:forEach var="f" items="${report.result.failedTests}" varStatus="i">
                     <tr>
                         <td class="pane">
-                            <a href="${f.getRelativePathFrom(it)}"><st:out value="${f.fullName}"/></a>
+                            <a href="${report.child.absoluteUrl}/testReport/${f.getRelativePathFrom(report.result)}"><st:out value="${f.fullName}"/></a>
                         </td>
                         <td class="pane" style="text-align:right;">
                             ${f.duration}
