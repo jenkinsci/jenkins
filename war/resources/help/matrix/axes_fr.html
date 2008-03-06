@@ -1,23 +1,23 @@
 <div>
-  Si votre matrice de configuration a besoin d'axes supplémentaires, vous pouvez les spécifiez ici.
+  Si votre matrice de configuration a besoin d'axes supplÃ©mentaires, vous pouvez les spÃ©cifiez ici.
   <p>
   Par exemple, supposons que vous voulez lancer un test pour une application de base
-  de données et que vous devez la tester avec trois bases: MySQL, PostgreSQL et Oracle.
-  Votre script de build est conçu de façon à spécifier la base à tester ainsi:
+  de donnÃ©es et que vous devez la tester avec trois bases: MySQL, PostgreSQL et Oracle.
+  Votre script de build est conÃ§u de faÃ§on Ã  spÃ©cifier la base Ã  tester ainsi:
   <tt>ant -Ddatabase=mysql</tt>.
   <p>
   C'est exactement ce qu'est un axe. Vous pouvez avoir une variable "database",
   qui prend trois valeurs possibles. Quand vous configurez l'axe, Hudson lancera 3 builds,
-  avec les 3 valeurs possibles assignées à la variable "database" afin de couvrir
+  avec les 3 valeurs possibles assignÃ©es Ã  la variable "database" afin de couvrir
   toutes combinaisons de configurations possibles (la matrice des configurations).
   <p>
-  Les variables spéficiées ici sont disponibles pour le build comme variables d'environnement.
-  De plus, pour Ant et Maven, les variables sont également exposées en tant que propriétés, comme
-  si elles étaient passées avec
+  Les variables spÃ©ficiÃ©es ici sont disponibles pour le build comme variables d'environnement.
+  De plus, pour Ant et Maven, les variables sont Ã©galement exposÃ©es en tant que propriÃ©tÃ©s, comme
+  si elles Ã©taient passÃ©es avec
   <tt>-D<i>nomVariable</i>=<i>valeur</i></tt> en ligne de commande.
   <p>
-  Quand plusieurs axes sont spécifiés, toutes les combinaisons possibles des axes sont
-  construites de façon exhaustive. Les valeurs multiples pour les labels et les JDKs sont
-  traitées de la même façon. Par exemple, si vous spécifiez jdk=[JDK5,JDK6], database=[mysql,postgresql,oracle], container=[jetty,tomcat],
-  alors chaque build exhaustif consistera en 2x3x2=12 sous-builds différents.
+  Quand plusieurs axes sont spÃ©cifiÃ©s, toutes les combinaisons possibles des axes sont
+  construites de faÃ§on exhaustive. Les valeurs multiples pour les labels et les JDKs sont
+  traitÃ©es de la mÃªme faÃ§on. Par exemple, si vous spÃ©cifiez jdk=[JDK5,JDK6], database=[mysql,postgresql,oracle], container=[jetty,tomcat],
+  alors chaque build exhaustif consistera en 2x3x2=12 sous-builds diffÃ©rents.
 </div>

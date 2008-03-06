@@ -1,34 +1,34 @@
 <div>
-  La commande à utiliser pour lancer un agent esclave, qui contrôle la
-  machine esclave et communique avec la machine maître.
+  La commande Ã  utiliser pour lancer un agent esclave, qui contrÃ´le la
+  machine esclave et communique avec la machine maÃ®tre.
 
   <h3>Les agents esclaves JNLP</h3>
   <p>
   Laissez ce champ vide si vous souhaitez lancer les esclaves par JNLP.
   Avec cette configuration, la page d'information sur les esclaves
-  (hudson/computer/***/) aura une icône de lancement JNLP. Vous pouvez
+  (hudson/computer/***/) aura une icÃ´ne de lancement JNLP. Vous pouvez
   cliquer sur ce lien pour lancer un agent esclave par JNLP.
   <p>
-  Ce mode est utile pour les esclaves Windows qui n'ont généralement pas
-  de mécanisme d'exécution à distance.
+  Ce mode est utile pour les esclaves Windows qui n'ont gÃ©nÃ©ralement pas
+  de mÃ©canisme d'exÃ©cution Ã  distance.
 
   <h3>Les agents esclaves ssh/rsh</h3>
   <p>
-  Quand une commande est spécifiée dans ce champ, elle est est exécutée
-  sur le maître et Hudson suppose que le programme exécuté lance le
+  Quand une commande est spÃ©cifiÃ©e dans ce champ, elle est est exÃ©cutÃ©e
+  sur le maÃ®tre et Hudson suppose que le programme exÃ©cutÃ© lance le
   programme <tt>slave.jar</tt> sur la bonne machine esclave.
 
   <p>
-  Une copie du <tt>slave.jar</tt> est disponible dans le répertoire <tt>WEB-INF</tt> du fichier <tt>hudson.war</tt>.
+  Une copie du <tt>slave.jar</tt> est disponible dans le rÃ©pertoire <tt>WEB-INF</tt> du fichier <tt>hudson.war</tt>.
 
   <p>
-  Pour un cas simple, cette commande pourrait être du type
+  Pour un cas simple, cette commande pourrait Ãªtre du type
   "ssh <i>hostname</i> java -jar ~/bin/slave.jar".
 
-  Cela dit, il est général préférable d'écrire un petit script sur
-  l'esclave, comme ce qui suit, afin de gérer le répertoire d'installation
+  Cela dit, il est gÃ©nÃ©ral prÃ©fÃ©rable d'Ã©crire un petit script sur
+  l'esclave, comme ce qui suit, afin de gÃ©rer le rÃ©pertoire d'installation
   de Java et/ou de slave.jar. Vous pourriez aussi positionner des
-  variables d'environnement spécifiques à cette machine esclave, comme
+  variables d'environnement spÃ©cifiques Ã  cette machine esclave, comme
   le PATH.
   
 <pre>
@@ -37,18 +37,18 @@ exec java -jar ~/bin/slave.jar
 </pre>
 
   <p>
-  Vous pouvez utiliser n'importe quelle commande d'exécution d'un
+  Vous pouvez utiliser n'importe quelle commande d'exÃ©cution d'un
   process sur la machine esclave, comme RSH, du moment que les
-  sorties stdin/stdout de ce process sont au final connectées
+  sorties stdin/stdout de ce process sont au final connectÃ©es
   sur "java -jar ~/bin/slave.jar".
 
   <p>
-  Dans un déploiement à plus grande échelle, on peut envisager de charger
-  <tt>slave.jar</tt> à partir d'une location commune montée par NFS, afin
-  de ne pas nécessiter la mise à jour de ce fichier à chaque mise à jour
+  Dans un dÃ©ploiement Ã  plus grande Ã©chelle, on peut envisager de charger
+  <tt>slave.jar</tt> Ã  partir d'une location commune montÃ©e par NFS, afin
+  de ne pas nÃ©cessiter la mise Ã  jour de ce fichier Ã  chaque mise Ã  jour
   de Hudson.
 
   <p>
-  Mettre la valeur "ssh -v <i>hostname</i>" dans ce champ peut être
-  utile pour débugger les problèmes de connexion.
+  Mettre la valeur "ssh -v <i>hostname</i>" dans ce champ peut Ãªtre
+  utile pour dÃ©bugger les problÃ¨mes de connexion.
 </div>

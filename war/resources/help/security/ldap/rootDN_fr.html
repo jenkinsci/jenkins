@@ -1,22 +1,22 @@
 <div>
-    Pour authentifier les utilisateurs et déterminer leurs rôles,
-    Hudson exécute de multiples requêtes LDAP.
+    Pour authentifier les utilisateurs et dÃ©terminer leurs rÃ´les,
+    Hudson exÃ©cute de multiples requÃªtes LDAP.
 
     Comme une base LDAP peut se voir comme une structure arborescente
-    et que la recherche se fait de façon récursive, en théorie, si nous
-    pouvons commencer une recherche à partir d'un sous-noeud (plutôt
-    qu'à partir de la racine), les performances seront meilleures, puisque
-    le périmètre de la recherche est plus petit.
+    et que la recherche se fait de faÃ§on rÃ©cursive, en thÃ©orie, si nous
+    pouvons commencer une recherche Ã  partir d'un sous-noeud (plutÃ´t
+    qu'Ã  partir de la racine), les performances seront meilleures, puisque
+    le pÃ©rimÃ¨tre de la recherche est plus petit.
     
-    Ce champ spécifie le DN de ce sous-arbre.
+    Ce champ spÃ©cifie le DN de ce sous-arbre.
 
     <p>
-    En pratique, les serveurs LDAP conservent un index très complet sur les
-    données, donc peupler ce champ est rarement nécessaire &mdash;
-    vous devriez laisser Hudson déterminer cela lors des communications
+    En pratique, les serveurs LDAP conservent un index trÃ¨s complet sur les
+    donnÃ©es, donc peupler ce champ est rarement nÃ©cessaire &mdash;
+    vous devriez laisser Hudson dÃ©terminer cela lors des communications
     avec LDAP.
 
     <p>
-    Si vous spécifiez cette valeur, le champ sera du type
+    Si vous spÃ©cifiez cette valeur, le champ sera du type
     <tt>"dc=sun,dc=com"</tt>.
 </div>
