@@ -174,7 +174,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
                 bootDir = new File(home, "boot");
                 classworlds = bootDir.listFiles(CLASSWORLDS_FILTER);
                 if(classworlds==null || classworlds.length==0) {
-                    listener.error("No classworlds*.jar found in "+home+" -- Is this a valid maven2 directory?");
+                    listener.error(Messages.MavenProcessFactory_ClassWorldsNotFound(home));
                     throw new RunnerAbortedException();
                 }
             }
