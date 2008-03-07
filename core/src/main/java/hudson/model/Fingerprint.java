@@ -109,6 +109,28 @@ public class Fingerprint implements ModelObject {
         public boolean is(Job job) {
             return job.getFullName().equals(name);
         }
+
+        /**
+         * Returns true if {@link BuildPtr} points to the given job
+         * or one of its subordinates.
+         */
+        public boolean belongsTo(Job job) {
+            Item p = Hudson.getInstance().getItemByFullName(name);
+            while(p!=null) {
+                if(p==job)
+                    return true;
+
+                // go up the chain while we
+                ItemGroup<? extends Item> parent = p.getParent();
+                if (!(parent instanceof Item)) {
+                    return false;
+                }
+
+                p = (Item) parent;
+            }
+
+            return false;
+        }
     }
 
     /**
