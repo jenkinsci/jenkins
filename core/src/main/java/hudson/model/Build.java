@@ -103,8 +103,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
     
     protected class RunnerImpl extends AbstractRunner {
         protected Result doRun(BuildListener listener) throws Exception {
-            if(!preBuild(listener,project.getProperties()))
-                return Result.FAILURE;
             if(!preBuild(listener,project.getBuilders()))
                 return Result.FAILURE;
             if(!preBuild(listener,project.getPublishers()))
@@ -145,13 +143,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         private boolean build(BuildListener listener, Map<?, Builder> steps) throws IOException, InterruptedException {
             for( BuildStep bs : steps.values() )
                 if(!bs.perform(Build.this, launcher, listener))
-                    return false;
-            return true;
-        }
-
-        private boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) {
-            for( BuildStep bs : steps.values() )
-                if(!bs.prebuild(Build.this,listener))
                     return false;
             return true;
         }

@@ -181,6 +181,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if(checkout(listener))
                 return Result.FAILURE;
 
+            if(!preBuild(listener,project.getProperties()))
+                return Result.FAILURE;
+
             Result result = doRun(listener);
             if(result!=null)
                 return result;  // abort here
@@ -272,6 +275,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 if( (bs instanceof Publisher && ((Publisher)bs).needsToRunAfterFinalized()) ^ phase)
                     bs.perform(AbstractBuild.this, launcher, listener);
             }
+        }
+
+        protected final boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) {
+            for( BuildStep bs : steps.values() )
+                if(!bs.prebuild(AbstractBuild.this,listener))
+                    return false;
+            return true;
         }
     }
 
