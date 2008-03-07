@@ -4,8 +4,10 @@ import hudson.model.Fingerprint;
 import hudson.model.FingerprintMap;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
+import java.text.MessageFormat;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Convenient base class for implementing data storage.
@@ -30,9 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class KeyedDataStorage<T,P> {
     /**
-     * The value is either {@code WeakReference<Fingerprint>} or {@link Loading}.
+     * The value is either {@code SoftReference<Fingerprint>} or {@link Loading}.
      *
-     * If it's {@link WeakReference}, that represents the currently available value.
+     * If it's {@link SoftReference}, that represents the currently available value.
      * If it's {@link Loading}, then that indicates the fingerprint is being loaded.
      * The thread can wait on this object to be notified when the loading completes.
      */
@@ -96,13 +98,17 @@ public abstract class KeyedDataStorage<T,P> {
      */
     protected T get(String key, boolean createIfNotExist, P createParams) throws IOException {
         while(true) {
+            totalQuery.incrementAndGet();
             Object value = core.get(key);
 
-            if(value instanceof WeakReference) {
-                WeakReference<T> wfp = (WeakReference<T>) value;
+            if(value instanceof SoftReference) {
+                SoftReference<T> wfp = (SoftReference<T>) value;
                 T t = wfp.get();
-                if(t!=null)
+                if(t!=null) {
+                    cacheHit.incrementAndGet();
                     return t;  // found it
+                }
+                weakRefLost.incrementAndGet();
             }
             if(value instanceof Loading) {
                 // another thread is loading it. get the value from there.
@@ -128,6 +134,9 @@ public abstract class KeyedDataStorage<T,P> {
                     if(t==null)
                         throw new IllegalStateException(); // bug in the derived classes
                 }
+            } catch(IOException e) {
+                loadFailure.incrementAndGet();
+                throw e;
             } finally {
                 // let other threads know that the value is available now.
                 // when the original thread failed to load, this should set it to null.
@@ -136,7 +145,7 @@ public abstract class KeyedDataStorage<T,P> {
 
             // the map needs to be updated to reflect the result of loading
             if(t!=null)
-                core.put(key,new WeakReference<T>(t));
+                core.put(key,new SoftReference<T>(t));
             else
                 core.remove(key);
 
@@ -182,4 +191,44 @@ public abstract class KeyedDataStorage<T,P> {
      */
     protected abstract T create(String key, P createParams) throws IOException;
 
+    public void resetPerformanceStats() {
+        totalQuery.set(0);
+        cacheHit.set(0);
+        weakRefLost.set(0);
+        loadFailure.set(0);
+    }
+
+    /**
+     * Gets the short summary of performance statistics.
+     */
+    public String getPerformanceStats() {
+        int total = totalQuery.get();
+        int hit = cacheHit.get();
+        int weakRef = weakRefLost.get();
+        int failure = loadFailure.get();
+        int miss = total-hit-weakRef;
+
+        return MessageFormat.format("total={0} hit={1}% lostRef={2}% failure={3}% miss={4}%",
+                total,hit,weakRef,failure,miss);
+    }
+
+    /**
+     * Total number of queries into this storage.
+     */
+    public final AtomicInteger totalQuery = new AtomicInteger();
+    /**
+     * Number of cache hits (of all the total queries.)
+     */
+    public final AtomicInteger cacheHit = new AtomicInteger();
+    /**
+     * Among cache misses, number of times when we had {@link SoftReference}
+     * but lost its value due to GC.
+     *
+     * <tt>totalQuery-cacheHit-weakRefLost</tt> means cache miss.
+     */
+    public final AtomicInteger weakRefLost = new AtomicInteger();
+    /**
+     * Number of failures in loading data.
+     */
+    public final AtomicInteger loadFailure = new AtomicInteger();
 }
