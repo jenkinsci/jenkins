@@ -1,6 +1,14 @@
 package hudson.matrix;
 
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Executor;
+import hudson.model.Fingerprint;
+import hudson.model.Hudson;
+import hudson.model.JobProperty;
+import hudson.model.Queue;
+import hudson.model.Result;
 import hudson.tasks.Publisher;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -49,6 +57,16 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         return config.getBuildByNumber(getNumber());
     }
 
+    /**
+     * Returns all {@link MatrixRun}s for this {@link MatrixBuild}.
+     */
+    public List<MatrixRun> getRuns() {
+        List<MatrixRun> r = new ArrayList<MatrixRun>();
+        for(MatrixConfiguration c : getParent().getItems())
+            r.add(c.getBuildByNumber(getNumber()));
+        return r;
+    }
+
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         try {
             MatrixRun item = getRun(Combination.fromString(token));
@@ -63,6 +81,14 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     @Override
     public void run() {
         run(new RunnerImpl());
+    }
+
+    @Override
+    public Fingerprint.RangeSet getDownstreamRelationship(AbstractProject that) {
+        Fingerprint.RangeSet rs = super.getDownstreamRelationship(that);
+        for(MatrixRun run : getRuns())
+            rs.add(run.getDownstreamRelationship(that));
+        return rs;
     }
 
     private class RunnerImpl extends AbstractRunner {

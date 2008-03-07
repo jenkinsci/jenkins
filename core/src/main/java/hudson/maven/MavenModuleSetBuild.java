@@ -10,6 +10,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
+import hudson.model.Fingerprint;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.Channel;
@@ -173,6 +174,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
     public void run() {
         run(new RunnerImpl());
         getProject().updateTransientActions();
+    }
+
+    @Override
+    public Fingerprint.RangeSet getDownstreamRelationship(AbstractProject that) {
+        Fingerprint.RangeSet rs = super.getDownstreamRelationship(that);
+        for(List<MavenBuild> builds : getModuleBuilds().values())
+            for (MavenBuild b : builds)
+                rs.add(b.getDownstreamRelationship(that));
+        return rs;
     }
 
     /**

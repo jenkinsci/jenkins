@@ -30,7 +30,17 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -460,7 +470,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         // look for fingerprints that point to the given project as the source, and merge them all
         for (Fingerprint e : f.getFingerprints().values()) {
             BuildPtr o = e.getOriginal();
-            if(o!=null && o.is(that))
+            if(o!=null && o.belongsTo(that))
                 n = Math.max(n,o.getNumber());
         }
 
