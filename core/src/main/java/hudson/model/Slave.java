@@ -259,6 +259,12 @@ public final class Slave implements Node, Serializable {
     public static final class ComputerImpl extends Computer {
         private volatile Channel channel;
         private Boolean isUnix;
+        /**
+         * Number of failed attempts to reconnect to this node
+         * (so that if we keep failing to reconnect, we can stop
+         * trying.)
+         */
+        private transient int numRetryAttempt;
 
         /**
          * This is where the log from the remote agent goes.
@@ -324,7 +330,7 @@ public final class Slave implements Node, Serializable {
                             });
 
                             logger.info("slave agent launched for "+slave.getNodeName());
-
+                            numRetryAttempt=0;
                         } catch (InterruptedException e) {
                             e.printStackTrace(listener.error("aborted"));
                         } catch (IOException e) {
@@ -429,6 +435,15 @@ public final class Slave implements Node, Serializable {
             // TODO: would be nice to redirect the user to "launching..." wait page,
             // then spend a few seconds there and poll for the completion periodically.
             rsp.sendRedirect("log");
+        }
+
+        public void tryReconnect() {
+            numRetryAttempt++;
+            if(numRetryAttempt<6 || (numRetryAttempt%12)==0) {
+                // initially retry several times quickly, and after that, do it infrequently.
+                logger.info("Attempting to reconnect "+nodeName);
+                launch();
+            }
         }
 
         public void launch() {

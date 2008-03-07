@@ -13,6 +13,7 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.WorkspaceCleanupThread;
+import hudson.model.SlaveReconnectionWork;
 import hudson.scheduler.CronTab;
 import hudson.scheduler.CronTabList;
 
@@ -207,9 +208,11 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         new DoubleLaunchChecker().schedule();
 
         // clean up fingerprint once a day
-        long HOUR = 1000*60*60;
-        long DAY = HOUR*24;
+        long MIN = 1000*60;
+        long HOUR =60*MIN;
+        long DAY = 24*HOUR;
         timer.scheduleAtFixedRate(new FingerprintCleanupThread(),DAY,DAY);
         timer.scheduleAtFixedRate(new WorkspaceCleanupThread(),DAY+4*HOUR,DAY);
+        timer.scheduleAtFixedRate(new SlaveReconnectionWork(),15*MIN,5*MIN);
     }
 }
