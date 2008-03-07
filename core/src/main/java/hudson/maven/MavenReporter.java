@@ -157,7 +157,7 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
     }
 
     /**
-     * Called after the actual maven2 execution completed.
+     * Called after a build of one maven2 module is completed.
      *
      * <p>
      * Note that at this point the build result is still not determined.
