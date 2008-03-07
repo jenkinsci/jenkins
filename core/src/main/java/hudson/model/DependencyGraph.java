@@ -129,6 +129,18 @@ public final class DependencyGraph {
     }
 
     /**
+     * Lists up {@link DependecyDeclarer} from the collection and let them builds dependencies.
+     */
+    public void addDependencyDeclarers(AbstractProject from, Collection<?> possibleDependecyDeclarers) {
+        for (Object o : possibleDependecyDeclarers) {
+            if (o instanceof DependecyDeclarer) {
+                DependecyDeclarer dd = (DependecyDeclarer) o;
+                dd.buildDependencyGraph(from,this);
+            }
+        }
+    }
+
+    /**
      * Returns true if a project has a non-direct dependency to another project.
      * <p>
      * A non-direct dependency is a path of dependency "edge"s from the source to the destination,

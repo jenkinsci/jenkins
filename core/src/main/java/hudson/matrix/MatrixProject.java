@@ -381,7 +381,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
-        // TODO: perhaps support downstream build triggering
+        graph.addDependencyDeclarers(this,publishers);
     }
 
     public MatrixProject asProject() {

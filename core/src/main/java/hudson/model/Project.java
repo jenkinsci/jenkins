@@ -113,20 +113,10 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return null;
     }
 
-    // TODO: move these lists to DescribableList
-    private void _buildDependencyGraph(Collection<?> possibleDependecyDeclarers, DependencyGraph graph) {
-        for (Object o : possibleDependecyDeclarers) {
-            if (o instanceof DependecyDeclarer) {
-                DependecyDeclarer dd = (DependecyDeclarer) o;
-                dd.buildDependencyGraph(this,graph);
-            }
-        }
-    }
-
     protected void buildDependencyGraph(DependencyGraph graph) {
-        _buildDependencyGraph(publishers,graph);
-        _buildDependencyGraph(builders,graph);
-        _buildDependencyGraph(buildWrappers,graph);
+        graph.addDependencyDeclarers(this,publishers);
+        graph.addDependencyDeclarers(this,builders);
+        graph.addDependencyDeclarers(this,buildWrappers);
     }
 
     @Override
