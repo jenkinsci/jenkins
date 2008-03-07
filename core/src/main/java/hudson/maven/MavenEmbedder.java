@@ -806,4 +806,12 @@ public class MavenEmbedder
             }
         }
     }
+
+    public Settings getSettings() {
+        return settings;
+    }
+
+    public Object lookup(String role) throws ComponentLookupException {
+        return getContainer().lookup(role);
+    }
 }
