@@ -1,9 +1,15 @@
 package hudson.tasks;
 
 import hudson.Launcher;
+import hudson.matrix.MatrixAggregatable;
+import hudson.matrix.MatrixAggregator;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.DependecyDeclarer;
+import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -11,10 +17,9 @@ import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.Project;
 import hudson.model.Result;
-import hudson.model.DependecyDeclarer;
-import hudson.model.DependencyGraph;
 import hudson.model.listeners.ItemListener;
 import hudson.util.FormFieldValidator;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -28,14 +33,12 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.json.JSONObject;
-
 /**
  * Triggers builds of other projects.
  *
  * @author Kohsuke Kawaguchi
  */
-public class BuildTrigger extends Publisher implements DependecyDeclarer {
+public class BuildTrigger extends Publisher implements DependecyDeclarer, MatrixAggregatable {
 
     /**
      * Comma-separated list of other projects to be scheduled.
@@ -88,6 +91,13 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer {
     }
 
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
+        if (build instanceof MatrixRun)
+            return true;    // when configured for a matrix project, run against MatrixBuild, not MatrixRun
+
+        return execute(build, listener);
+    }
+
+    private boolean execute(AbstractBuild build, BuildListener listener) {
         if(!build.getResult().isWorseThan(getThreshold())) {
             PrintStream logger = listener.getLogger();
             for (AbstractProject p : getChildProjects()) {
@@ -117,6 +127,15 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer {
     @Override
     public boolean needsToRunAfterFinalized() {
         return true;
+    }
+
+    public MatrixAggregator createAggregator(MatrixBuild build, Launcher launcher, BuildListener listener) {
+        return new MatrixAggregator(build, launcher, listener) {
+            @Override
+            public boolean endBuild() throws InterruptedException, IOException {
+                return execute(build,listener);
+            }
+        };
     }
 
     /**
