@@ -77,6 +77,8 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
                 embedder.stop();
             }
         }.start();
+
+        rsp.sendRedirect(".");
     }
 
     /**
