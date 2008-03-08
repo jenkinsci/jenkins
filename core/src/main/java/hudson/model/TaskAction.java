@@ -54,15 +54,14 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
      * Handles incremental log output.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if(log==null) {
-            rsp.setStatus(HttpServletResponse.SC_OK);
-        } else {
+        if (log != null) {
             LargeText text = log.get();
-            if(text!=null)
+            if(text!=null) {
                 text.doProgressText(req,rsp);
-            else
-                rsp.setStatus(HttpServletResponse.SC_OK);
+                return;
+            }
         }
+        rsp.setStatus(HttpServletResponse.SC_OK);
     }
 
     /**
