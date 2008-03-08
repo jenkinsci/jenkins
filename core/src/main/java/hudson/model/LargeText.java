@@ -15,6 +15,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Writer;
+import java.io.Reader;
+import java.io.InputStreamReader;
 
 /**
  * Represents a large text data.
@@ -77,6 +79,29 @@ public class LargeText {
 
     public boolean isComplete() {
         return completed;
+    }
+
+    /**
+     * Returns {@link Reader} for reading the raw bytes.
+     */
+    public Reader readAll() throws IOException {
+        return new InputStreamReader(new InputStream() {
+            final Session session = source.open();
+            public int read() throws IOException {
+                byte[] buf = new byte[1];
+                int n = session.read(buf);
+                if(n==1)    return buf[0];
+                else        return -1; // EOF
+            }
+
+            public int read(byte[] buf, int off, int len) throws IOException {
+                return session.read(buf,off,len);
+            }
+
+            public void close() throws IOException {
+                session.close();
+            }
+        });
     }
 
     /**
