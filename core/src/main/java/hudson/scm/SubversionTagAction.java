@@ -4,9 +4,10 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
-import hudson.model.LargeText;
+import hudson.model.TaskThread;
 import hudson.scm.SubversionSCM.SvnInfo;
 import hudson.util.CopyOnWriteMap;
+import hudson.security.Permission;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.tmatesoft.svn.core.SVNException;
@@ -18,16 +19,15 @@ import org.tmatesoft.svn.core.wc.SVNRevision;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.lang.ref.WeakReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * {@link Action} that lets people create tag for the given build.
@@ -111,8 +111,7 @@ public class SubversionTagAction extends AbstractScmTagAction {
      * Invoked to actually tag the workspace.
      */
     public synchronized void doSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        getBuild().checkPermission(getPermission());
 
         Map<SvnInfo,String> newTags = new HashMap<SvnInfo,String>();
 
@@ -129,20 +128,19 @@ public class SubversionTagAction extends AbstractScmTagAction {
         rsp.sendRedirect(".");
     }
 
+    protected Permission getPermission() {
+        return SubversionSCM.TAG;
+    }
+
     /**
      * The thread that performs tagging operation asynchronously.
      */
-    public final class TagWorkerThread extends AbstractTagWorkerThread {
+    public final class TagWorkerThread extends TaskThread {
         private final Map<SvnInfo,String> tagSet;
 
-        public TagWorkerThread(Map<SvnInfo, String> tagSet) {
+        public TagWorkerThread(Map<SvnInfo,String> tagSet) {
+            super(SubversionTagAction.this);
             this.tagSet = tagSet;
-        }
-
-        public synchronized void start() {
-            SubversionTagAction.this.workerThread = this;
-            SubversionTagAction.this.log = new WeakReference<LargeText>(text);
-            super.start();
         }
 
         @Override

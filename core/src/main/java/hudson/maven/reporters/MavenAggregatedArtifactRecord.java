@@ -29,7 +29,7 @@ public class MavenAggregatedArtifactRecord extends MavenAbstractArtifactRecord<M
         this.parent = build;
     }
 
-    public MavenModuleSetBuild getParent() {
+    public MavenModuleSetBuild getBuild() {
         return parent;
     }
 

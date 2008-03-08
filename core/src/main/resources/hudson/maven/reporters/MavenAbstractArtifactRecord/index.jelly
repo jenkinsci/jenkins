@@ -7,29 +7,38 @@
         Redeploy Artifacts
       </h1>
 
-      <p>
-        This page allows you to redeploy the build artifacts to a repository after the fact.
-      </p>
+      <j:choose>
+        <!-- A deployment is in progress -->
+        <j:when test="${it.workerThread!=null}">
+          <st:include page="log.jelly" />
+        </j:when>
 
-      <f:form method="post" action="redeploy">
-        <f:entry title="Repository URL">
-          <f:textbox name="url" />
-        </f:entry>
-        <f:advanced>
-          <f:entry title="Repository ID">
-            <f:textbox name="id" />
-          </f:entry>
-          <f:entry>
-            <f:checkbox name="uniqueVersion"/>
-            <label class="attach-previous">Assign unique versions to snapshots</label>
-          </f:entry>
-        </f:advanced>
+        <!-- No deployment is in progress. Display the form. -->
+        <j:otherwise>
+          <p>
+            This page allows you to redeploy the build artifacts to a repository after the fact.
+          </p>
 
-        <f:block>
-          <f:submit value="OK" style="margin-top:1em;" />
-        </f:block>
-      </f:form>
+          <f:form method="post" action="redeploy">
+            <f:entry title="Repository URL">
+              <f:textbox name="url" />
+            </f:entry>
+            <f:advanced>
+              <f:entry title="Repository ID">
+                <f:textbox name="id" />
+              </f:entry>
+              <f:entry>
+                <f:checkbox name="uniqueVersion"/>
+                <label class="attach-previous">Assign unique versions to snapshots</label>
+              </f:entry>
+            </f:advanced>
 
+            <f:block>
+              <f:submit value="OK" style="margin-top:1em;" />
+            </f:block>
+          </f:form>
+        </j:otherwise>
+      </j:choose>
     </l:main-panel>
   </l:layout>
 </j:jelly>

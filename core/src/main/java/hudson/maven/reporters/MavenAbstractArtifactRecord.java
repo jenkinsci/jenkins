@@ -1,22 +1,22 @@
 package hudson.maven.reporters;
 
-import hudson.model.Action;
-import hudson.model.AbstractProject;
-import hudson.model.AbstractBuild;
-import hudson.model.TaskListener;
-import hudson.security.Permission;
-import hudson.util.StreamTaskListener;
 import hudson.maven.MavenEmbedder;
 import hudson.maven.MavenUtil;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
-import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
-import org.apache.maven.artifact.repository.ArtifactRepository;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.TaskListener;
+import hudson.model.TaskThread;
+import hudson.model.TaskAction;
+import hudson.security.Permission;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
+import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -30,12 +30,11 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> implements Action  {
-
+public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> extends TaskAction {
     /**
      * Gets the parent build object to which this record is registered.
      */
-    public abstract T getParent();
+    public abstract T getBuild();
 
     public final String getIconFileName() {
         return "redo.gif";
@@ -49,33 +48,35 @@ abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> impleme
         return "redeploy";
     }
 
+    protected Permission getPermission() {
+        return REDEPLOY;
+    }
+
     /**
      * Performs a redeployment.
      */
     public final void doRedeploy(StaplerRequest req, StaplerResponse rsp,
-                           @QueryParameter("id") String id,
-                           @QueryParameter("url") String repositoryUrl,
-                           @QueryParameter("uniqueVersion") boolean uniqueVersion) throws ServletException, IOException {
-        getParent().checkPermission(REDEPLOY);
+                           @QueryParameter("id") final String id,
+                           @QueryParameter("url") final String repositoryUrl,
+                           @QueryParameter("uniqueVersion") final boolean uniqueVersion) throws ServletException, IOException {
+        getBuild().checkPermission(REDEPLOY);
 
-        try {
-            StreamTaskListener listener = new StreamTaskListener(rsp.getOutputStream());
-            MavenEmbedder embedder = MavenUtil.createEmbedder(listener, null);
-            ArtifactRepositoryLayout layout =
-                (ArtifactRepositoryLayout) embedder.getContainer().lookup( ArtifactRepositoryLayout.ROLE,"default");
-            ArtifactRepositoryFactory factory =
-                (ArtifactRepositoryFactory) embedder.lookup(ArtifactRepositoryFactory.ROLE);
+        new TaskThread(this) {
+            protected void perform(TaskListener listener) throws Exception {
+                MavenEmbedder embedder = MavenUtil.createEmbedder(listener, null);
+                ArtifactRepositoryLayout layout =
+                    (ArtifactRepositoryLayout) embedder.getContainer().lookup( ArtifactRepositoryLayout.ROLE,"default");
+                ArtifactRepositoryFactory factory =
+                    (ArtifactRepositoryFactory) embedder.lookup(ArtifactRepositoryFactory.ROLE);
 
-            ArtifactRepository repository = factory.createDeploymentArtifactRepository(
-                    id, repositoryUrl, layout, uniqueVersion);
+                ArtifactRepository repository = factory.createDeploymentArtifactRepository(
+                        id, repositoryUrl, layout, uniqueVersion);
 
-            deploy(embedder,repository,listener);
+                deploy(embedder,repository,listener);
 
-            embedder.stop();
-        } catch (Throwable e) {
-            // TODO
-            throw new ServletException(e);
-        }
+                embedder.stop();
+            }
+        }.start();
     }
 
     /**

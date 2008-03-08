@@ -6,6 +6,7 @@ import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
+import hudson.security.Permission;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
 import hudson.model.AbstractBuild;
@@ -13,15 +14,14 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Job;
-import hudson.model.LargeText;
 import hudson.model.ModelObject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.model.TaskThread;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
-import hudson.scm.AbstractScmTagAction.AbstractTagWorkerThread;
 import hudson.util.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.BuildException;
@@ -48,7 +48,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1197,11 +1196,16 @@ public class CVSSCM extends SCM implements Serializable {
             }.check();
         }
 
+        @Override
+        protected Permission getPermission() {
+            return TAG;
+        }
+
         /**
          * Invoked to actually tag the workspace.
          */
         public synchronized void doSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            build.getParent().getACL().checkPermission(TAG);
+            build.checkPermission(TAG);
 
             Map<AbstractBuild,String> tagSet = new HashMap<AbstractBuild,String>();
 
@@ -1239,7 +1243,7 @@ public class CVSSCM extends SCM implements Serializable {
                 }
             }
 
-            new TagWorkerThread(tagSet).start();
+            new TagWorkerThread(this,tagSet).start();
 
             doIndex(req,rsp);
         }
@@ -1336,7 +1340,6 @@ public class CVSSCM extends SCM implements Serializable {
                 // completed successfully
                 onTagCompleted(tagName);
                 build.save();
-
             } catch (Throwable e) {
                 e.printStackTrace(listener.fatalError(e.getMessage()));
             } finally {
@@ -1363,20 +1366,19 @@ public class CVSSCM extends SCM implements Serializable {
         }
     }
 
-    public static final class TagWorkerThread extends AbstractTagWorkerThread {
+    public static final class TagWorkerThread extends TaskThread {
         private final Map<AbstractBuild,String> tagSet;
 
-        public TagWorkerThread(Map<AbstractBuild,String> tagSet) {
+        public TagWorkerThread(TagAction owner,Map<AbstractBuild,String> tagSet) {
+            super(owner);
             this.tagSet = tagSet;
         }
 
         public synchronized void start() {
             for (Entry<AbstractBuild, String> e : tagSet.entrySet()) {
                 TagAction ta = e.getKey().getAction(TagAction.class);
-                if(ta!=null) {
-                    ta.workerThread = this;
-                    ta.log = new WeakReference<LargeText>(text);
-                }
+                if(ta!=null)
+                    associateWith(ta);
             }
 
             super.start();

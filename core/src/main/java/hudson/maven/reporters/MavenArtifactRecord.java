@@ -68,7 +68,7 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         this.attachedArtifacts = attachedArtifacts;
     }
 
-    public MavenBuild getParent() {
+    public MavenBuild getBuild() {
         return parent;
     }
 
