@@ -1,0 +1,35 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:test="/lib/test">
+  <l:layout permission="${it.REDEPLOY}">
+    <st:include it="${it.parent}" page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>
+        <img src="${imagesURL}/48x48/redo.gif" width="48" height="48" />
+        Redeploy Artifacts
+      </h1>
+
+      <p>
+        This page allows you to redeploy the build artifacts to a repository after the fact.
+      </p>
+
+      <f:form method="post" action="redeploy">
+        <f:entry title="Repository URL">
+          <f:textbox name="url" />
+        </f:entry>
+        <f:advanced>
+          <f:entry title="Repository ID">
+            <f:textbox name="id" />
+          </f:entry>
+          <f:entry>
+            <f:checkbox name="uniqueVersion"/>
+            <label class="attach-previous">Assign unique versions to snapshots</label>
+          </f:entry>
+        </f:advanced>
+
+        <f:block>
+          <f:submit value="OK" style="margin-top:1em;" />
+        </f:block>
+      </f:form>
+
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

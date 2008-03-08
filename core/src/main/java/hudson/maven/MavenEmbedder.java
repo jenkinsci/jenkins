@@ -814,4 +814,8 @@ public class MavenEmbedder
     public Object lookup(String role) throws ComponentLookupException {
         return getContainer().lookup(role);
     }
+
+    public Object lookup(String role,String hint) throws ComponentLookupException {
+        return getContainer().lookup(role,hint);
+    }
 }

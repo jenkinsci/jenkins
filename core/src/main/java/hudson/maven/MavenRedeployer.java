@@ -7,6 +7,7 @@ import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.Launcher;
+import hudson.maven.reporters.MavenArtifactRecord;
 
 import java.io.IOException;
 
