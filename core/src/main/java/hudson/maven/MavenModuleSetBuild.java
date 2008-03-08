@@ -214,16 +214,13 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 }
 
                 // see if the new build has any new aggregatable action that we haven't seen.
-                for (Action a : newBuild.getActions()) {
-                    if (a instanceof AggregatableAction) {
-                        AggregatableAction aa = (AggregatableAction) a;
-                        if(individuals.add(aa.getClass())) {
-                            // new AggregatableAction
-                            MavenAggregatedReport mar = aa.createAggregatedAction(this, moduleBuilds);
-                            mar.update(moduleBuilds,newBuild);
-                            actions.add(mar);
-                            modified = true;
-                        }
+                for (AggregatableAction aa : newBuild.getActions(AggregatableAction.class)) {
+                    if(individuals.add(aa.getClass())) {
+                        // new AggregatableAction
+                        MavenAggregatedReport mar = aa.createAggregatedAction(this, moduleBuilds);
+                        mar.update(moduleBuilds,newBuild);
+                        actions.add(mar);
+                        modified = true;
                     }
                 }
 
