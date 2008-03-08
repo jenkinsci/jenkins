@@ -1,6 +1,7 @@
 package hudson.tasks;
 
 import hudson.Launcher;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
@@ -93,6 +94,8 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
         if (build instanceof MatrixRun)
             return true;    // when configured for a matrix project, run against MatrixBuild, not MatrixRun
+        if (build instanceof MavenModuleSetBuild)
+            return true;    // because Maven sets up dependencies on its own, that triggers any downstreams that we configured.
 
         return execute(build, listener);
     }
