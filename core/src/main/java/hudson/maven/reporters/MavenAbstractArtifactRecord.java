@@ -32,6 +32,9 @@ import java.io.IOException;
  */
 abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> implements Action  {
 
+    /**
+     * Gets the parent build object to which this record is registered.
+     */
     public abstract T getParent();
 
     public final String getIconFileName() {
