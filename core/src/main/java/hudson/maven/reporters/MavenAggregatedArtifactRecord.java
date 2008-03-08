@@ -45,7 +45,10 @@ public class MavenAggregatedArtifactRecord extends MavenAbstractArtifactRecord<M
     }
 
     public void deploy(MavenEmbedder embedder, ArtifactRepository deploymentRepository, TaskListener listener) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactDeploymentException {
-        // TODO
-        throw new UnsupportedOperationException();
+        for (MavenBuild build : parent.getModuleLastBuilds().values()) {
+            MavenArtifactRecord mar = build.getAction(MavenArtifactRecord.class);
+            if(mar!=null)
+                mar.deploy(embedder,deploymentRepository,listener);
+        }
     }
 }
