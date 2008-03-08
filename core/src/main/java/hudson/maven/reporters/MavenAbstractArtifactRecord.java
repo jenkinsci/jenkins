@@ -26,6 +26,7 @@ import java.io.IOException;
  *
  * <p>
  * There are two types &mdash; one for the module, the other for the whole project.
+ * The semantics specific to these cases are defined in subtypes.
  *
  * @author Kohsuke Kawaguchi
  */
