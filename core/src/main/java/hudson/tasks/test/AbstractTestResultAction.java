@@ -76,7 +76,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     }
 
     public String getDisplayName() {
-        return "Test Result";
+        return Messages.AbstractTestResultAction_getDisplayName();
     }
 
     public String getUrlName() {
