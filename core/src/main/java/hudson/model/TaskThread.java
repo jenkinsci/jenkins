@@ -4,6 +4,8 @@ import hudson.util.ByteBuffer;
 import hudson.util.StreamTaskListener;
 
 import java.lang.ref.WeakReference;
+import java.io.Reader;
+import java.io.IOException;
 
 /**
  * {@link Thread} for performing one-off task.
@@ -23,9 +25,9 @@ public abstract class TaskThread extends Thread {
         this.owner = owner;
     }
 
-    public String getLog() {
+    public Reader readAll() throws IOException {
         // this method can be invoked from another thread.
-        return log.toString();
+        return text.readAll();
     }
 
     /**
