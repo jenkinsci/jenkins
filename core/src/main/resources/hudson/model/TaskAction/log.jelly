@@ -15,7 +15,7 @@
     <j:otherwise>
       <pre><st:out value="${it.workerThread.log}"/></pre>
       <form method="get" action="clearError">
-        <f:submit value="Clear error to retry" />
+        <f:submit value="${%Clear error to retry}" />
       </form>
     </j:otherwise>
   </j:choose>
