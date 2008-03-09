@@ -4,8 +4,6 @@ import hudson.model.Hudson;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 
-import java.util.List;
-
 /**
  * Displays the build history on the side panel.
  *

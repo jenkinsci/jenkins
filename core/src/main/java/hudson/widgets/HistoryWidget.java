@@ -56,6 +56,13 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         this.owner = owner;
     }
 
+    /**
+     * Title of the widget.
+     */
+    public String getDisplayName() {
+        return Messages.BuildHistoryWidget_DisplayName();
+    }
+
     public String getUrlName() {
         return "buildHistory";
     }

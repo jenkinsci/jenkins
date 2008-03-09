@@ -1,8 +1,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:set target="${it}" property="trimmed" value="${all==null}"/>
   <l:pane width="2" title="
-    &lt;div style='float:right'>(&lt;a href='${it.baseUrl}/buildTimeTrend'>${%trend}&lt;/a>)&lt;/div>${%Build History}
-  " id="buildHistory">
+    &lt;div style='float:right'>(&lt;a href='${it.baseUrl}/buildTimeTrend'>${%trend}&lt;/a>)&lt;/div>${it.displayName}" id="buildHistory">
 
     <!-- build history -->
     <st:include page="entries.jelly" />
