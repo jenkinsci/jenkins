@@ -10,6 +10,7 @@ import hudson.model.Result;
 import hudson.model.TaskAction;
 import hudson.model.TaskListener;
 import hudson.model.TaskThread;
+import hudson.model.BuildBadgeAction;
 import hudson.model.TaskThread.ListenerAndText;
 import hudson.security.Permission;
 import hudson.util.Iterators;
@@ -41,7 +42,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> extends TaskAction {
+public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> extends TaskAction implements BuildBadgeAction {
     public final class Record {
         /**
          * Repository URL that artifacts were deployed.
@@ -134,6 +135,10 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
 
     protected Permission getPermission() {
         return REDEPLOY;
+    }
+
+    public boolean hasBadge() {
+        return !records.isEmpty();
     }
 
     public HistoryWidgetImpl getHistoryWidget() {
