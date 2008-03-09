@@ -17,6 +17,10 @@ import java.util.List;
 /**
  * Displays the history of records (normally {@link Run}s) on the side panel.
  *
+ * @param <O>
+ *      Owner of the widget.
+ * @param <T>
+ *      Type individual record.
  * @author Kohsuke Kawaguchi
  */
 public class HistoryWidget<O extends ModelObject,T> extends Widget {

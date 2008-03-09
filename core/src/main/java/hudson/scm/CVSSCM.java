@@ -1370,7 +1370,7 @@ public class CVSSCM extends SCM implements Serializable {
         private final Map<AbstractBuild,String> tagSet;
 
         public TagWorkerThread(TagAction owner,Map<AbstractBuild,String> tagSet) {
-            super(owner);
+            super(owner,ListenerAndText.forMemory());
             this.tagSet = tagSet;
         }
 

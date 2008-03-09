@@ -139,7 +139,7 @@ public class SubversionTagAction extends AbstractScmTagAction {
         private final Map<SvnInfo,String> tagSet;
 
         public TagWorkerThread(Map<SvnInfo,String> tagSet) {
-            super(SubversionTagAction.this);
+            super(SubversionTagAction.this,ListenerAndText.forMemory());
             this.tagSet = tagSet;
         }
 
