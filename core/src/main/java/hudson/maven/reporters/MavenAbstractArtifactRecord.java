@@ -102,6 +102,12 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
             else
                 return result.color;
         }
+
+        // TODO: Eventually provide a better UI
+        public final void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
+            rsp.setContentType("text/plain;charset=UTF-8");
+            getLog().writeLogTo(0,rsp.getWriter());
+        }
     }
 
     /**
@@ -132,6 +138,10 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
 
     public HistoryWidgetImpl getHistoryWidget() {
         return new HistoryWidgetImpl();
+    }
+
+    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        return records.get(Integer.valueOf(token));
     }
 
     /**
@@ -190,6 +200,10 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
     private final class HistoryWidgetImpl extends HistoryWidget<MavenAbstractArtifactRecord,Record> {
         private HistoryWidgetImpl() {
             super(MavenAbstractArtifactRecord.this, Iterators.reverse(records), ADAPTER);
+        }
+
+        public String getDisplayName() {
+            return "Deployment History";
         }
     }
 
