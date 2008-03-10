@@ -50,6 +50,7 @@ public class RedeployPublisher extends Publisher {
             return true;
         }
 
+        listener.getLogger().println("Deploying artifacts to "+url);
         try {
             MavenEmbedder embedder = MavenUtil.createEmbedder(listener, null);
             ArtifactRepositoryLayout layout =
