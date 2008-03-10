@@ -357,10 +357,15 @@ public class Mailer extends Publisher {
             if(emailAddress!=null)
                 return emailAddress;
 
-        	String extractedAddress = extractAddressFromId(user.getId());
-        	if (extractedAddress != null)
-        		return extractedAddress;
+            String extractedAddress = extractAddressFromId(user.getId());
+            if (extractedAddress != null)
+                    return extractedAddress;
 
+            // try the inference logic
+            String address = MailAddressResolver.resolve(user);
+            if(address!=null)
+                return address;
+            
             if(user.getId().contains("@"))
                 // this already looks like an e-mail ID
                 return user.getId();
@@ -387,7 +392,7 @@ public class Mailer extends Publisher {
 
             public UserProperty newInstance(User user) {
                 
-                return new UserProperty(MailAddressResolver.resolve(user));
+                return new UserProperty(null);
             }
 
             public UserProperty newInstance(StaplerRequest req) throws FormException {
