@@ -24,6 +24,8 @@ import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -119,6 +121,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         }
 
         return r;
+    }
+
+    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        // map corresponding module build under this object
+        if(token.indexOf('$')>0) {
+            MavenModule m = getProject().getModule(token);
+            if(m!=null) return m.getBuildByNumber(getNumber());
+        }
+        return super.getDynamic(token,req,rsp);
     }
 
     /**

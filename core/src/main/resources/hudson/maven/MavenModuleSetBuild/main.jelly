@@ -1,25 +1,46 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <h2>Module Builds</h2>
-  <j:set var="builds" value="${it.moduleBuilds}" />
-  <table>
-    <j:forEach var="m" items="${builds}">
-      <tr>
-        <td style="white-space:nowrap;">
-          <a href="${rootURL}/${m.key.url}">${m.key.displayName}</a>
-        </td>
-        <td>
-          <j:choose>
-            <j:when test="${empty(m.value)}">
-              (none)
-            </j:when>
-            <j:otherwise>
-              <j:forEach var="b" items="${m.value}">
-                <t:buildLink job="${m.key}" number="${b.number}" />
-              </j:forEach>
-            </j:otherwise>
-          </j:choose>
-        </td>
-      </tr>
-    </j:forEach>
-  </table>
+  <j:choose>
+    <!-- there's 1:1 relationship between modules and the module set -->
+    <j:when test="${it.project.aggregatorStyleBuild}">
+      <j:forEach var="m" items="${it.project.modules}">
+        <div>
+          <a href="${m.shortUrl}">
+            <j:set var="mb" value="${m.getBuildByNumber(it.number)}"/>
+            <img src="${imagesURL}/16x16/${mb.buildStatusUrl}"
+                 alt="${mb.iconColor.description}"/>
+          </a>
+          <st:nbsp/>
+          <a href="${m.shortUrl}">
+            ${m.displayName}
+          </a>
+        </div>
+      </j:forEach>
+    </j:when>
+    <!-- there might be multiple module builds for this job, so use a different format -->
+    <j:otherwise>
+      <j:set var="builds" value="${it.moduleBuilds}" />
+      <table>
+        <j:forEach var="m" items="${builds}">
+          <tr>
+            <td style="white-space:nowrap;">
+              <a href="${rootURL}/${m.key.url}">${m.key.displayName}</a>
+            </td>
+            <td>
+              <j:choose>
+                <j:when test="${empty(m.value)}">
+                  (none)
+                </j:when>
+                <j:otherwise>
+                  <j:forEach var="b" items="${m.value}">
+                    <t:buildLink job="${m.key}" number="${b.number}" />
+                  </j:forEach>
+                </j:otherwise>
+              </j:choose>
+            </td>
+          </tr>
+        </j:forEach>
+      </table>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
