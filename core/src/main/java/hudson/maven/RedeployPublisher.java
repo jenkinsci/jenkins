@@ -1,27 +1,24 @@
 package hudson.maven;
 
-import hudson.maven.MavenModuleSetBuild;
-import hudson.maven.MavenEmbedder;
-import hudson.maven.MavenUtil;
-import hudson.maven.MavenModuleSet;
+import hudson.Launcher;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
-import hudson.model.AbstractProject;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
-import hudson.Launcher;
-
-import java.io.IOException;
-
-import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
-import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
-import org.apache.maven.artifact.repository.ArtifactRepository;
+import net.sf.json.JSONObject;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
+import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.IOException;
 
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
@@ -98,6 +95,14 @@ public class RedeployPublisher extends Publisher {
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return jobType==MavenModuleSet.class;
+        }
+
+        public String getHelpFile() {
+            return "/help/maven/redeploy.html";
+        }
+
+        public RedeployPublisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            return req.bindJSON(RedeployPublisher.class,formData);
         }
 
         public String getDisplayName() {
