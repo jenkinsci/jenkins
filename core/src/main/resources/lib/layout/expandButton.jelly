@@ -1,0 +1,16 @@
+<!--
+  Expandable section that shows "advanced..." button by default.
+  Upon clicking it, a section unfolds.
+
+  Attributes:
+  @title :   title of the button. required.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div class="advancedLink">
+    <input type="button" value="${attrs.title}" class="expandButton" />
+  </div>
+  <div style="display:none">
+    <!-- this is the hidden portion to be expanded -->
+    <d:invokeBody/>
+  </div>
+</j:jelly>
