@@ -3,19 +3,18 @@ package hudson.model;
 import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
-import hudson.XmlFile;
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
-import hudson.scm.ChangeLogSet;
 import hudson.util.RunList;
 import hudson.util.XStream2;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -25,9 +24,11 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Iterator;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -275,17 +276,23 @@ public class User extends AbstractModelObject {
      */
     public List<AbstractBuild> getBuilds() {
         List<AbstractBuild> r = new ArrayList<AbstractBuild>();
-        for (AbstractProject<?,?> p : Hudson.getInstance().getAllItems(AbstractProject.class)) {
-            for (AbstractBuild<?,?> b : p.getBuilds()) {
-                for (ChangeLogSet.Entry e : b.getChangeSet()) {
-                    if(e.getAuthor()==this) {
-                        r.add(b);
-                        break;
-                    }
-                }
-            }
-        }
+        for (AbstractProject<?,?> p : Hudson.getInstance().getAllItems(AbstractProject.class))
+            for (AbstractBuild<?,?> b : p.getBuilds())
+                if(b.hasParticipant(this))
+                    r.add(b);
         Collections.sort(r,Run.ORDER_BY_DATE);
+        return r;
+    }
+
+    /**
+     * Gets all the {@link AbstractProject}s that this user has committed to.
+     * @since 1.191
+     */
+    public Set<AbstractProject<?,?>> getProjects() {
+        Set<AbstractProject<?,?>> r = new HashSet<AbstractProject<?,?>>();
+        for (AbstractProject<?,?> p : Hudson.getInstance().getAllItems(AbstractProject.class))
+            if(p.hasParticipant(this))
+                r.add(p);
         return r;
     }
 
