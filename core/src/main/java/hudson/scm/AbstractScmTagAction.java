@@ -2,6 +2,9 @@ package hudson.scm;
 
 import hudson.model.AbstractBuild;
 import hudson.model.TaskAction;
+import hudson.model.Hudson;
+import hudson.model.AbstractProject;
+import hudson.security.Permission;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -28,6 +31,13 @@ public abstract class AbstractScmTagAction extends TaskAction {
     public final String getUrlName() {
         // to make this consistent with CVSSCM, even though the name is bit off
         return "tagBuild";
+    }
+
+    /**
+     * Defaults to {@link SCM#TAG}.
+     */
+    protected Permission getPermission() {
+        return SCM.TAG;
     }
 
     public AbstractBuild getBuild() {
