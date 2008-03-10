@@ -3,7 +3,13 @@ package hudson.maven;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.agent.AbortException;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.DependencyGraph;
+import hudson.model.Hudson;
+import hudson.model.Result;
+import hudson.model.Run;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -14,9 +20,24 @@ import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -48,6 +69,23 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
     public MavenBuild(MavenModule project, File buildDir) throws IOException {
         super(project, buildDir);
+    }
+
+    @Override
+    public String getDisplayName() {
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if(req!=null) {
+            List<Ancestor> ancs = req.getAncestors();
+            for( int i=1; i<ancs.size(); i++) {
+                if(ancs.get(i).getObject()==this) {
+                    if(ancs.get(i-1).getObject() instanceof MavenModuleSetBuild) {
+                        // if under MavenModuleSetBuild, display the module name
+                        return getParent().getDisplayName();
+                    }
+                }
+            }
+        }
+        return super.getDisplayName();
     }
 
     /**
