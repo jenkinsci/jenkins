@@ -2,8 +2,6 @@ package hudson.scm;
 
 import hudson.model.AbstractBuild;
 import hudson.model.TaskAction;
-import hudson.model.Hudson;
-import hudson.model.AbstractProject;
 import hudson.security.Permission;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
