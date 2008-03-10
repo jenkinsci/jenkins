@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.text.ParseException;
 
 /**
  * Displays {@link Job}s in a flat list view.
@@ -97,7 +98,7 @@ public class ListView extends View {
     /**
      * Accepts submission from the configuration page.
      */
-    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
         req.setCharacterEncoding("UTF-8");
@@ -110,11 +111,18 @@ public class ListView extends View {
 
         description = Util.nullify(req.getParameter("description"));
 
-        name = req.getParameter("name");
+        try {
+            String n = req.getParameter("name");
+            Hudson.checkGoodName(n);
+            name = n;
+        } catch (ParseException e) {
+            sendError(e, req, rsp);
+            return;
+        }
 
         owner.save();
 
-        rsp.sendRedirect("../"+ req.getParameter("name"));
+        rsp.sendRedirect("../"+name);
     }
 
     /**
