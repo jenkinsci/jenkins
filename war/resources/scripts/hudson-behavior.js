@@ -230,6 +230,17 @@ var hudsonRules = {
         e = null; // avoid memory leak
     },
 
+    "INPUT.expandButton" : function(e) {
+        makeButton(e,function(e) {
+            var link = e.target;
+            while(!Element.hasClassName(link,"advancedLink"))
+                link = link.parentNode;
+            link.style.display = "none";
+            link.nextSibling.style.display="block";
+        });
+        e = null; // avoid memory leak
+    },
+
 // scripting for having default value in the input field
     "INPUT.has-default-text" : function(e) {
         var defaultValue = e.value;
