@@ -28,14 +28,17 @@ import java.io.IOException;
  * @since 1.191
  */
 public class RedeployPublisher extends Publisher {
-    private final String id;
-    private final String repositoryUrl;
-    private final boolean uniqueVersion;
+    public final String id;
+    /**
+     * Repository URL to deploy artifacts to.
+     */
+    public final String url;
+    public final boolean uniqueVersion;
 
     @DataBoundConstructor
     public RedeployPublisher(String id, String url, boolean uniqueVersion) {
         this.id = id;
-        this.repositoryUrl = url;
+        this.url = url;
         this.uniqueVersion = uniqueVersion;
     }
 
@@ -55,7 +58,7 @@ public class RedeployPublisher extends Publisher {
                 (ArtifactRepositoryFactory) embedder.lookup(ArtifactRepositoryFactory.ROLE);
 
             ArtifactRepository repository = factory.createDeploymentArtifactRepository(
-                    id, repositoryUrl, layout, uniqueVersion);
+                    id, url, layout, uniqueVersion);
 
             mar.deploy(embedder,repository,listener);
 
@@ -88,9 +91,13 @@ public class RedeployPublisher extends Publisher {
 
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public DescriptorImpl() {
             super(RedeployPublisher.class);
+        }
+
+        protected DescriptorImpl(Class<? extends Publisher> clazz) {
+            super(clazz);
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
