@@ -1,12 +1,12 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="Repository URL">
+  <f:entry title="Repository URL" help="/help/maven/redeploy-url.html">
     <f:textbox name="redeploy.url" />
   </f:entry>
   <f:advanced>
-    <f:entry title="Repository ID">
+    <f:entry title="Repository ID" help="/help/maven/redeploy-id.html">
       <f:textbox name="redeploy.id" />
     </f:entry>
-    <f:entry>
+    <f:entry help="/help/maven/redeploy-uniqueVersion.html">
       <f:checkbox name="redeploy.uniqueVersion"/>
       <label class="attach-previous">Assign unique versions to snapshots</label>
     </f:entry>
