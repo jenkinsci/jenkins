@@ -23,19 +23,7 @@
           </p>
 
           <f:form method="post" action="redeploy">
-            <f:entry title="Repository URL">
-              <f:textbox name="url" />
-            </f:entry>
-            <f:advanced>
-              <f:entry title="Repository ID">
-                <f:textbox name="id" />
-              </f:entry>
-              <f:entry>
-                <f:checkbox name="uniqueVersion"/>
-                <label class="attach-previous">Assign unique versions to snapshots</label>
-              </f:entry>
-            </f:advanced>
-
+            <st:include page="/hudson/maven/RedeployPublisher/config.jelly" />
             <f:block>
               <f:submit value="OK" style="margin-top:1em;" />
             </f:block>

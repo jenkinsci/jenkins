@@ -1,6 +1,7 @@
 package hudson.tasks;
 
 import hudson.Launcher;
+import hudson.maven.RedeployPublisher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -116,6 +117,7 @@ public interface BuildStep {
         JavadocArchiver.DESCRIPTOR,
         JUnitResultArchiver.DescriptorImpl.DESCRIPTOR,
         BuildTrigger.DESCRIPTOR,
+        RedeployPublisher.DESCRIPTOR,
         Mailer.DESCRIPTOR
     ));
 

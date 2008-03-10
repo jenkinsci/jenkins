@@ -153,9 +153,9 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
      * Performs a redeployment.
      */
     public final void doRedeploy(StaplerRequest req, StaplerResponse rsp,
-                           @QueryParameter("id") final String id,
-                           @QueryParameter("url") final String repositoryUrl,
-                           @QueryParameter("uniqueVersion") final boolean uniqueVersion) throws ServletException, IOException {
+                           @QueryParameter("redeploy.id") final String id,
+                           @QueryParameter("redeploy.url") final String repositoryUrl,
+                           @QueryParameter("redeploy.uniqueVersion") final boolean uniqueVersion) throws ServletException, IOException {
         getBuild().checkPermission(REDEPLOY);
 
         File logFile = new File(getBuild().getRootDir(),"maven-deployment."+records.size()+".log");
