@@ -386,7 +386,8 @@ public class Mailer extends Publisher {
             }
 
             public UserProperty newInstance(User user) {
-                return new UserProperty(null);
+                
+                return new UserProperty(MailAddressResolver.resolve(user));
             }
 
             public UserProperty newInstance(StaplerRequest req) throws FormException {
