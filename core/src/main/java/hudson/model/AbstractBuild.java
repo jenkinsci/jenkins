@@ -1,11 +1,10 @@
 package hudson.model;
 
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc.LocalProc;
 import hudson.Util;
-import hudson.Functions;
 import hudson.matrix.MatrixConfiguration;
-import hudson.matrix.MatrixRun;
 import hudson.maven.MavenBuild;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
@@ -23,9 +22,9 @@ import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.Exported;
 import org.xml.sax.SAXException;
 
@@ -44,8 +43,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import sun.misc.Request;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -183,6 +180,18 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 return culprits.size();
             }
         };
+    }
+
+    /**
+     * Returns true if this user has made a commit to this build.
+     *
+     * @since 1.191
+     */
+    public boolean hasParticipant(User user) {
+        for (ChangeLogSet.Entry e : getChangeSet())
+            if(e.getAuthor()==user)
+                return true;
+        return false;
     }
 
     protected abstract class AbstractRunner implements Runner {

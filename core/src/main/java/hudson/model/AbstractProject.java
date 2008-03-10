@@ -613,6 +613,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
+    /**
+     * Returns true if this user has made a commit to this project.
+     *
+     * @since 1.191
+     */
+    public boolean hasParticipant(User user) {
+        for( R build = getLastBuild(); build!=null; build=build.getPreviousBuild())
+            if(build.hasParticipant(user))
+                return true;
+        return false;
+    }
+
     public SCM getScm() {
         return scm;
     }
