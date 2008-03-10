@@ -1,6 +1,7 @@
 <!--
-  Expandable section that shows "advanced..." button by default.
-  Upon clicking it, a section unfolds.
+  Start off as a button, but upon clicking, it replaces itself
+  with the body of the tag. This works like <f:advancedButton />
+  but it is designed to be used outside a config form.
 
   Attributes:
   @title :   title of the button. required.
