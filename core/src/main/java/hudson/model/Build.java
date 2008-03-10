@@ -111,7 +111,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             buildEnvironments = new ArrayList<Environment>();
             try {
                 for( BuildWrapper w : project.getBuildWrappers().values() ) {
-                    Environment e = w.setUp(Build.this, launcher, listener);
+                    Environment e = w.setUp((AbstractBuild)Build.this, launcher, listener);
                     if(e==null)
                         return Result.FAILURE;
                     buildEnvironments.add(e);
