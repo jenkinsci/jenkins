@@ -20,7 +20,7 @@
             <j:otherwise><!-- module build non-existent, so no link -->
               <img src="${imagesURL}/16x16/grey.gif" />
               <st:nbsp/>
-              ${m.displayName}
+              ${m.displayName} (didn't run)
             </j:otherwise>
           </j:choose>
         </div>
