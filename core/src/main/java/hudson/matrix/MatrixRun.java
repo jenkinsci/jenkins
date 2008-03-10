@@ -31,6 +31,20 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
         super(project, buildDir);
     }
 
+    public String getUpUrl() {
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if(req!=null) {
+            List<Ancestor> ancs = req.getAncestors();
+            for( int i=1; i<ancs.size(); i++) {
+                if(ancs.get(i).getObject()==this) {
+                    if(ancs.get(i-1).getObject() instanceof MatrixBuild) {
+                        return ancs.get(i-1).getUrl()+'/';
+                    }
+                }
+            }
+        }
+        return super.getDisplayName();
+    }
 
     public String getDisplayName() {
         StaplerRequest req = Stapler.getCurrentRequest();

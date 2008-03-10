@@ -3,7 +3,9 @@ package hudson.model;
 import hudson.Launcher;
 import hudson.Proc.LocalProc;
 import hudson.Util;
+import hudson.Functions;
 import hudson.matrix.MatrixConfiguration;
+import hudson.matrix.MatrixRun;
 import hudson.maven.MavenBuild;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
@@ -23,6 +25,7 @@ import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.Exported;
 import org.xml.sax.SAXException;
 
@@ -41,6 +44,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import sun.misc.Request;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -121,6 +126,22 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Exported(name="builtOn")
     public String getBuiltOnStr() {
         return builtOn;
+    }
+
+    /**
+     * Used to render the side panel "Back to project" link.
+     *
+     * <p>
+     * In a rare situation where a build can be reached from multiple paths,
+     * returning different URLs from this method based on situations might
+     * be desirable.
+     *
+     * <p>
+     * If you override this method, you'll most likely also want to override
+     * {@link #getDisplayName()}.
+     */
+    public String getUpUrl() {
+        return Functions.getNearestAncestorUrl(Stapler.getCurrentRequest(),getParent())+'/';
     }
 
     /**

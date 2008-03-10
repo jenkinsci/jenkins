@@ -72,6 +72,23 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     }
 
     @Override
+    public String getUpUrl() {
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if(req!=null) {
+            List<Ancestor> ancs = req.getAncestors();
+            for( int i=1; i<ancs.size(); i++) {
+                if(ancs.get(i).getObject()==this) {
+                    if(ancs.get(i-1).getObject() instanceof MavenModuleSetBuild) {
+                        // if under MavenModuleSetBuild, "up" means MMSB
+                        return ancs.get(i-1).getUrl()+'/';
+                    }
+                }
+            }
+        }
+        return super.getUpUrl();
+    }
+
+    @Override
     public String getDisplayName() {
         StaplerRequest req = Stapler.getCurrentRequest();
         if(req!=null) {
