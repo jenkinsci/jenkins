@@ -446,6 +446,7 @@ th.pane {
   vertical-align:middle;
   background-color: rgb(240,240,240);
   font-weight: bold;
+  white-space: nowrap;
 }
 #viewList td.filler {
   border: none;
