@@ -33,9 +33,9 @@ public class RedeployPublisher extends Publisher {
     private final boolean uniqueVersion;
 
     @DataBoundConstructor
-    public RedeployPublisher(String id, String repositoryUrl, boolean uniqueVersion) {
+    public RedeployPublisher(String id, String url, boolean uniqueVersion) {
         this.id = id;
-        this.repositoryUrl = repositoryUrl;
+        this.repositoryUrl = url;
         this.uniqueVersion = uniqueVersion;
     }
 
