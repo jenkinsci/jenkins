@@ -138,7 +138,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
     }
 
     public boolean hasBadge() {
-        return !records.isEmpty();
+        return records!=null && !records.isEmpty();
     }
 
     public HistoryWidgetImpl getHistoryWidget() {
