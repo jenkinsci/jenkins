@@ -1,0 +1,14 @@
+﻿<div>
+  Si cette option est positionnée, Hudson lancera CVS avec <tt>-r</tt> pour
+  construire une branche particulière.
+  Si cette option est laissée vide, Hudson construira la branche principale
+  (trunk).
+
+  <p>
+  Normalement, Hudson lance cvs check-out et update avec l'option
+  <tt>-D date</tt> pour être sûr de récupérer une image cohérente du
+  repository et assurer une meilleure reproductibilité. Cela peut causer
+  des problèmes sur le nom de la branche spécifié ici est en réalité le
+  nom d'un tag. Indiquer à Hudson que ce nom est un tag corrigerait ce
+  problème.
+</div>

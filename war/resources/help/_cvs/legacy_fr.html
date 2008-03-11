@@ -1,0 +1,12 @@
+﻿<div>
+  Hudson 1.20 et les versions précédentes créaient des répertoires vides
+  dans le workspace.
+  Par exemple, si le module CVS est "foo/bar", Hudson créait "foo/bar",
+  puis plaçait tout en dessous. Avec cette option décochée, il n'y aura
+  plus de ces répertoires intermédiaires inutiles.
+
+  <p>
+  Cela a un impact sur d'autres définitions de chemin, comme sur les
+  archiveurs d'artefacts --- you devez maintenant spécifier
+  "build/foo.jar" plutôt que "foo/build/foo.jar".
+</div>
