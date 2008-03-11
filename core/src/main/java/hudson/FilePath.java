@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -160,12 +161,18 @@ public final class FilePath implements Serializable {
 
     public FilePath(FilePath base, String rel) {
         this.channel = base.channel;
+        if(rel.startsWith("/") || DRIVE_PATTERN.matcher(rel).matches()) {
+            // absolute
+            this.remote = rel;
+        } else 
         if(base.isUnix()) {
             this.remote = base.remote+'/'+rel;
         } else {
             this.remote = base.remote+'\\'+rel;
         }
     }
+
+    private static final Pattern DRIVE_PATTERN = Pattern.compile("[A-Za-z]:\\\\.+");
 
     /**
      * Checks if the remote path is Unix.
