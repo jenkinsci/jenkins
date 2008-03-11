@@ -107,8 +107,8 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                         aggregators.add(a);
                 }
             }
-	    
-	    //let properties do their job
+
+            //let properties do their job
             for (JobProperty prop : p.getProperties().values()) {
                 if (prop instanceof MatrixAggregatable) {
                     MatrixAggregatable ma = (MatrixAggregatable) prop;
