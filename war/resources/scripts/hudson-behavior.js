@@ -1,4 +1,4 @@
-//
+replaceDescription//
 // JavaScript for Hudson
 //     See http://www.ibm.com/developerworks/web/library/wa-memleak/?ca=dgr-lnxw97JavascriptLeaks
 //     for memory leak patterns and how to prevent them.
@@ -393,6 +393,10 @@ var hudsonRules = {
     },
 
     "INPUT.submit-button" : function(e) {
+        makeButton(e);
+    },
+
+    "INPUT.yui-button" : function(e) {
         makeButton(e);
     }
 };
