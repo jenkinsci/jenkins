@@ -128,7 +128,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             try {
                 for(MatrixConfiguration c : activeConfigurations) {
                     logger.println(Messages.MatrixBuild_Triggering(c.getName()));
-                    c.scheduleBuild(0); // start with no delay
+                    c.scheduleBuild();
                 }
 
                 // this occupies an executor unnecessarily.

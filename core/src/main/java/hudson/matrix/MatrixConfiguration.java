@@ -124,6 +124,15 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
             return ws.child(getCombination().toString('/','/'));
     }
 
+    /**
+     * Since {@link MatrixConfiguration} is always invoked from {@link MatrixRun}
+     * once and just once, there's no point in having a quiet period.
+     */
+    @Override
+    public int getQuietPeriod() {
+        return 0;
+    }
+
     @Override
     public boolean isConfigurable() {
         return false;
