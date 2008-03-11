@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.HttpURLConnection;
 
 /**
  * Base class that provides the framework for doing on-the-fly form field validation.
@@ -197,6 +198,41 @@ public abstract class FormFieldValidator {
             // (1) it's compatible with US-ASCII
             // (2) a well-written web applications tend to use UTF-8
             return "UTF-8";
+        }
+    }
+
+    /**
+     * Checks if the given value is an URL to some Hudson's top page.
+     * @since 1.192
+     */
+    public static class HudsonURL extends URLCheck {
+        public HudsonURL(StaplerRequest request, StaplerResponse response) {
+            super(request, response);
+        }
+
+        protected void check() throws IOException, ServletException {
+            String value = fixEmpty(request.getParameter("value"));
+            if(value==null) {// nothing entered yet
+                ok();
+                return;
+            }
+
+            if(!value.endsWith("/")) value+='/';
+
+            try {
+                URL url = new URL(value);
+                HttpURLConnection con = (HttpURLConnection)url.openConnection();
+                con.connect();
+                if(con.getResponseCode()!=200
+                || con.getHeaderField("X-Hudson")==null) {
+                    error(value+" is not Hudson ("+con.getResponseMessage()+")");
+                    return;
+                }
+
+                ok();
+            } catch (IOException e) {
+                handleIOException(value,e);
+            }
         }
     }
 
