@@ -279,7 +279,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     private transient final ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<String,Label>();
     private transient Set<Label> labelSet;
-    private transient Set<Label> dynamicLabels = null;
+    private transient volatile Set<Label> dynamicLabels = null;
 
     public transient final ServletContext servletContext;
 
@@ -1189,22 +1189,22 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     public Set<Label> getDynamicLabels() {
         if (dynamicLabels == null) {
-            synchronized (this) {
-                Computer comp = getComputer("");
-                if (dynamicLabels == null) {
-                    dynamicLabels = new HashSet<Label>();
-                    if (comp != null) {
-                        VirtualChannel channel = comp.getChannel();
-                        if (channel != null) {
-                            for (DynamicLabeler labeler : LabelFinder.LABELERS) {
-                                for (String label : labeler.findLabels(channel)) {
-                                    dynamicLabels.add(getLabel(label));
-                                }
-                            }
+            // in the worst cast, two threads end up doing the same computation twice,
+            // but that won't break the semantics.
+            // OTOH, not locking prevents dead-lock. See #1390
+            Set<Label> r = new HashSet<Label>();
+            Computer comp = getComputer("");
+            if (comp != null) {
+                VirtualChannel channel = comp.getChannel();
+                if (channel != null) {
+                    for (DynamicLabeler labeler : LabelFinder.LABELERS) {
+                        for (String label : labeler.findLabels(channel)) {
+                            r.add(getLabel(label));
                         }
                     }
                 }
             }
+            dynamicLabels = r;
         }
         return dynamicLabels;
     }
