@@ -1,12 +1,10 @@
 package hudson.tasks;
 
-import hudson.model.Describable;
-import hudson.model.Node;
-import hudson.model.Descriptor;
 import hudson.ExtensionPoint;
 import hudson.remoting.VirtualChannel;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,6 +21,6 @@ public abstract class DynamicLabeler implements LabelFinder, ExtensionPoint {
      * @return a set of labels.
      */
     public Set<String> findLabels(VirtualChannel channel) {
-        return new HashSet<String>();
+        return Collections.emptySet();
     }
 }
