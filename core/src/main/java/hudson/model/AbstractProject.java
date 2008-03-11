@@ -347,6 +347,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return Hudson.getInstance().getQueue().add(this);
     }
 
+    public boolean scheduleBuild(int quietPeriod) {
+        if(isDisabled())    return false;
+        return Hudson.getInstance().getQueue().add(this,quietPeriod);
+    }
+
     /**
      * Schedules a polling of this project.
      */
