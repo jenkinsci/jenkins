@@ -23,28 +23,28 @@ import java.util.logging.Logger;
  */
 class XMLEntityResolver implements EntityResolver {
 
-	private static final String TESTNG_NAMESPACE = "http://testng.org/";
+    private static final String TESTNG_NAMESPACE = "http://testng.org/";
 
-	/**
-	 * Intercepts the lookup of publicId, systemId
-	 */
+    /**
+     * Intercepts the lookup of publicId, systemId
+     */
     @Override
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-		if (systemId != null) {
-			LOGGER.fine("Will try to resolve systemId [" + systemId + "]");
-			// TestNG system-ids
-			if ( systemId.startsWith( TESTNG_NAMESPACE ) ) {
-				LOGGER.fine( "It's a TestNG document, will try to lookup DTD in classpath" );
-				String dtdFileName = systemId.substring( TESTNG_NAMESPACE.length() );
+        if (systemId != null) {
+            LOGGER.fine("Will try to resolve systemId [" + systemId + "]");
+            // TestNG system-ids
+            if (systemId.startsWith(TESTNG_NAMESPACE)) {
+                LOGGER.fine("It's a TestNG document, will try to lookup DTD in classpath");
+                String dtdFileName = systemId.substring(TESTNG_NAMESPACE.length());
 
-                URL url = Hudson.getInstance().servletContext.getResource('/'+dtdFileName);
-                if(url!=null)
+                URL url = Hudson.getInstance().servletContext.getResource('/' + dtdFileName);
+                if (url != null)
                     return new InputSource(url.toString());
             }
-		}
-		// Default fallback
-		return null;
-	}
+        }
+        // Default fallback
+        return null;
+    }
 
-	private static final Logger LOGGER = Logger.getLogger( XMLEntityResolver.class.getName() );
+    private static final Logger LOGGER = Logger.getLogger(XMLEntityResolver.class.getName() );
 }
