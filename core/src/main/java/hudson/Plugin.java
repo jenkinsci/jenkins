@@ -30,6 +30,10 @@ import java.net.URL;
  * in src/main/webapp are visible from this URL, and you can also define Jelly
  * views against your Plugin class, and those are visible in this URL, too.
  *
+ * <p>
+ * Up until Hudson 1.150 or something, subclasses of {@link Plugin} required
+ * <tt>@plugin</tt> javadoc annotation, but that is no longer a requirement.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.42
  */
