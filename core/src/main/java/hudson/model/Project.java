@@ -9,13 +9,13 @@ import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.triggers.Trigger;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -146,9 +146,9 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
         req.setCharacterEncoding("UTF-8");
 
-        buildWrappers = buildDescribable(req, BuildWrappers.WRAPPERS, "wrapper");
-        builders = buildDescribable(req, BuildStep.BUILDERS, "builder");
-        publishers = buildDescribable(req, BuildStep.PUBLISHERS, "publisher");
+        buildWrappers = buildDescribable(req, BuildWrappers.getFor(this), "wrapper");
+        builders = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.BUILDERS, getClass()), "builder");
+        publishers = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.PUBLISHERS, getClass()), "publisher");
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }
 
