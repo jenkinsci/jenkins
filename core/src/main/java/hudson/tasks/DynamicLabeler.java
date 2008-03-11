@@ -15,11 +15,11 @@ import java.util.*;
  * @since 25-May-2007 14:30:15
  */
 public abstract class DynamicLabeler implements LabelFinder, ExtensionPoint {
-
     /**
      * Find the labels that the node supports.
      *
-     * @param node The Node
+     * @param channel
+     *      Connection that represents the node.
      * @return a set of labels.
      */
     public Set<String> findLabels(VirtualChannel channel) {
