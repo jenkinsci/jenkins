@@ -2,14 +2,19 @@ package hudson.tasks;
 
 import hudson.Launcher;
 import hudson.maven.AbstractMavenProject;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Build;
+import hudson.model.BuildListener;
+import hudson.model.Descriptor;
+import hudson.model.Project;
+import hudson.model.User;
+import hudson.model.UserPropertyDescriptor;
 import hudson.util.FormFieldValidator;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
@@ -338,7 +343,6 @@ public class Mailer extends Publisher {
     /**
      * Per user property that is e-mail address.
      */
-    @ExportedBean(defaultVisibility=2)
     public static class UserProperty extends hudson.model.UserProperty {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 

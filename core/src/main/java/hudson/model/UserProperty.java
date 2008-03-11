@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.Plugin;
 import hudson.tasks.Mailer;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Extensible property of {@link User}.
@@ -22,6 +23,7 @@ import hudson.tasks.Mailer;
  * @author Kohsuke Kawaguchi
  * @see UserProperties#LIST
  */
+@ExportedBean
 public abstract class UserProperty implements Describable<UserProperty>, ExtensionPoint {
     /**
      * The user object that owns this property.

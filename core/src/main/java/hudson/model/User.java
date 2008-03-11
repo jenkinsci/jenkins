@@ -163,7 +163,7 @@ public class User extends AbstractModelObject {
     /**
      * List of all {@link UserProperties} exposed primarily for the remoting API.
      */
-    @Exported(name="property")
+    @Exported(name="property",inline=true)
     public List<UserProperty> getAllProperties() {
         return Collections.unmodifiableList(properties);
     }
