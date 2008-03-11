@@ -1,15 +1,10 @@
 package hudson.tasks.labelers;
 
-import hudson.Launcher;
-import hudson.model.Node;
-import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.DynamicLabeler;
-import hudson.util.StreamTaskListener;
 
-import java.io.IOException;
-import java.io.Writer;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,28 +21,11 @@ public class OSLabeler extends DynamicLabeler {
     private OSLabeler() {
     }
 
-    /**
-     * Find the labels that the node supports.
-     *
-     * @param node The Node
-     * @return a set of labels.
-     */
     public Set<String> findLabels(VirtualChannel channel) {
         try {
             return channel.call(new OSLabelFinder());
         } catch (Exception e) {
-            return new HashSet<String>();
-        }
-    }
-
-    private static class NullWriter extends Writer {
-        public void write(char cbuf[], int off, int len) throws IOException {
-        }
-
-        public void flush() throws IOException {
-        }
-
-        public void close() throws IOException {
+            return Collections.emptySet();
         }
     }
 
