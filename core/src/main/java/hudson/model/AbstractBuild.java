@@ -2,13 +2,11 @@ package hudson.model;
 
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.Proc.LocalProc;
 import hudson.Util;
 import hudson.matrix.MatrixConfiguration;
 import hudson.maven.MavenBuild;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
-import static hudson.model.Hudson.isWindows;
 import hudson.model.listeners.SCMListener;
 import hudson.scm.CVSChangeLogParser;
 import hudson.scm.ChangeLogParser;
@@ -31,7 +29,6 @@ import org.xml.sax.SAXException;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -225,7 +222,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 return Result.FAILURE;
 
             Result result = doRun(listener);
-            if(result!=null)
+
+            // the two if statements here are a real mess.
+            // the "return null to mean success" convention is not very consistent
+            // so we should probably get rid of that. And in the mean time
+            // this check will allows us to create symlinks
+            if(result!=null && result!=Result.SUCCESS)
                 return result;  // abort here
 
             if(getResult()==null || getResult()==Result.SUCCESS)
