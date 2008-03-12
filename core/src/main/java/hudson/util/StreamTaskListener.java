@@ -47,6 +47,13 @@ public final class StreamTaskListener implements TaskListener, Serializable {
         this(new WriterOutputStream(w));
     }
 
+    /**
+     * Creates {@link StreamTaskListener} that swallows the result.
+     */
+    public StreamTaskListener() {
+        this(new NullStream());
+    }
+
     public PrintStream getLogger() {
         return out;
     }
