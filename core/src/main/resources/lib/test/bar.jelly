@@ -13,17 +13,17 @@
   <div>
     <j:choose>
       <j:when test="${it.totalCount==0}">
-        No tests
+        ${%No tests}
       </j:when>
       <j:otherwise>
         <div>
-          ${it.failCount} failures
+          ${%failures(it.failCount)}
           <j:if test="${prev!=null}">
             (${h.getDiffString(it.failCount-prev.failCount)})
           </j:if>
           <!-- Only show skips if there are some since they don't make sense for JUnit, only for TestNG. -->
           <j:if test="${it.skipCount > 0}">
-            , ${it.skipCount} skipped
+            , ${%skipped(it.skipCount)}
             <j:if test="${prev!=null}">
               (${h.getDiffString(it.skipCount-prev.skipCount)})
             </j:if>
@@ -36,7 +36,7 @@
           <div style="width:${it.skipCount*100/it.totalCount}%; height: 1em; background-color: #FCE94F; float: left"></div>
         </div>
         <div align="right">
-          ${it.totalCount} tests
+          ${%tests(it.totalCount)}
           <j:if test="${prev!=null}">
             (${h.getDiffString(it.totalCount-prev.totalCount)})
           </j:if>
