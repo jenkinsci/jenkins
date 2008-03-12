@@ -2131,6 +2131,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return dependencyGraph;
     }
 
+    // for Jelly
+    public List<ManagementLink> getManagementLinks() {
+        return ManagementLink.LIST;
+    }
+
     /**
      * Gets the {@link Widget}s registered on this object.
      *

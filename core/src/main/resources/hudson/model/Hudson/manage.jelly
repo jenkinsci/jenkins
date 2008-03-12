@@ -40,6 +40,13 @@
           ${%Check the health of slaves and controls them.}
         </local:feature>
       </j:if>
+      <!-- TODO: replace all the hard-coded ones with the standard extension point -->
+      <j:forEach var="m" items="${it.managementLinks}">
+        <local:feature icon="${m.iconFileName}"      href="${m.urlName}"   title="${m.displayName}">
+          ${m.description}
+        </local:feature>
+      </j:forEach>
+
       <j:choose>
         <j:when test="${it.quietingDown}">
           <local:feature icon="system-log-out.gif"   href="cancelQuietDown" title="${%Cancel Shutdown}"/>
