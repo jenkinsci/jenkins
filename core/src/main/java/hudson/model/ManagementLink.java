@@ -33,7 +33,10 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
 
     /**
      * Returns a short description of what this link does. This text
-     * is the one that's displayed in grey. Optional.
+     * is the one that's displayed in grey. This can include HTML,
+     * although the use of block tags is highly discouraged.
+     *
+     * Optional.
      */
     public String getDescription() {
         return "";
