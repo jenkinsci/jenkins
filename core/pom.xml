@@ -277,6 +277,12 @@
       <version>1.63</version>
     </dependency>
     <dependency>
+      <!-- until the next rev of stapler picks up localizer 1.5 -->
+      <groupId>org.jvnet.localizer</groupId>
+      <artifactId>localizer</artifactId>
+      <version>1.5</version>
+    </dependency>
+    <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>graph-layouter</artifactId>
       <classifier>jdk14</classifier>
