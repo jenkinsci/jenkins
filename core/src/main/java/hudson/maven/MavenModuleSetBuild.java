@@ -4,6 +4,7 @@ import hudson.AbortException;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -16,6 +17,7 @@ import hudson.model.Result;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.StreamTaskListener;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.execution.MavenSession;
@@ -240,7 +242,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     getProject().updateTransientActions();
                 }
             }
+
+            // symlink to this module build
+            String moduleFsName = newBuild.getProject().getModuleName().toFileSystemName();
+            Util.createSymlink(getRootDir(),
+                    "../../modules/"+ moduleFsName +"/builds/"+newBuild.getId() /*ugly!*/,
+                    moduleFsName, new StreamTaskListener());
         } catch (IOException e) {
+            LOGGER.log(Level.WARNING,"Failed to update "+this,e);
+        } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING,"Failed to update "+this,e);
         }
     }
