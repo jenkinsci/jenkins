@@ -235,23 +235,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         private void createLastSuccessfulLink(BuildListener listener) throws InterruptedException {
-            if(!isWindows()) {
-                try {
-                    // ignore a failure.
-                    new LocalProc(new String[]{"rm","-rf","../lastSuccessful"},new String[0],listener.getLogger(),getProject().getBuildDir()).join();
-
-                    int r = new LocalProc(new String[]{
-                        "ln","-s","builds/"+getId()/*ugly*/,"../lastSuccessful"},
-                        new String[0],listener.getLogger(),getProject().getBuildDir()).join();
-                    if(r!=0)
-                        listener.getLogger().println("ln failed: "+r);
-                } catch (IOException e) {
-                    PrintStream log = listener.getLogger();
-                    log.println("ln failed");
-                    Util.displayIOException(e,listener);
-                    e.printStackTrace( log );
-                }
-            }
+            Util.createSymlink(getProject().getBuildDir(),"builds/"+getId(),"../lastSuccessful",listener);
         }
 
         private boolean checkout(BuildListener listener) throws Exception {

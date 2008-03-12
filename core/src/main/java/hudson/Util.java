@@ -2,14 +2,15 @@ package hudson;
 
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
+import static hudson.model.Hudson.isWindows;
 import hudson.util.IOException2;
+import hudson.Proc.LocalProc;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.kohsuke.stapler.Stapler;
-import org.jvnet.localizer.Localizable;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -23,6 +24,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.DigestInputStream;
@@ -667,6 +669,31 @@ public class Util {
 
     public static FileSet createFileSet(File baseDir, String includes) {
         return createFileSet(baseDir,includes,null);
+    }
+
+    /**
+     * Creates a symlink to baseDir+targetPath at baseDir+symlinkPath.
+     * <p>
+     * If there's a prior symlink at baseDir+symlinkPath, it will be overwritten.
+     */
+    public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
+        if(!isWindows()) {
+            try {
+                // ignore a failure.
+                new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
+
+                int r = new LocalProc(new String[]{
+                    "ln","-s", targetPath, symlinkPath},
+                    new String[0],listener.getLogger(), baseDir).join();
+                if(r!=0)
+                    listener.getLogger().println("ln failed: "+r);
+            } catch (IOException e) {
+                PrintStream log = listener.getLogger();
+                log.println("ln failed");
+                Util.displayIOException(e,listener);
+                e.printStackTrace( log );
+            }
+        }
     }
 
     /**
