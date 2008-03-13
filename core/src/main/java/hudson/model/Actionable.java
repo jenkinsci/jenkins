@@ -54,6 +54,7 @@ public abstract class Actionable extends AbstractModelObject {
      * Short for <tt>getActions().add(a)</tt>
      */
     public void addAction(Action a) {
+        if(a==null) throw new IllegalArgumentException();
         getActions().add(a);
     }
 
