@@ -249,12 +249,20 @@
         </exclusion>
       </exclusions-->
     </dependency>
+
     <dependency>
       <!-- commonly used wagon provider -->
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-webdav</artifactId>
       <version>1.0-beta-2</version>
     </dependency>
+    <dependency>
+      <!-- wagon-webdav uses a fairly old commons-httpclient that breaks some plugins that depend on newer version. -->
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>3.1-rc1</version>
+    </dependency>
+
     <dependency>
       <groupId>org.jvnet.hudson.svnkit</groupId>
       <artifactId>svnkit</artifactId>
