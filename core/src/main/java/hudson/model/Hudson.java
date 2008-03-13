@@ -1918,7 +1918,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     public void doConfigLogger( StaplerRequest req, StaplerResponse rsp, @QueryParameter("name") String name, @QueryParameter("level") String level) throws IOException {
         checkPermission(ADMINISTER);
-        Logger.getLogger(name).setLevel(Level.parse(level.toUpperCase()));
+        Level lv;
+        if(level.equals("inherit"))
+            lv = null;
+        else
+            lv = Level.parse(level.toUpperCase());
+        Logger.getLogger(name).setLevel(lv);
         rsp.sendRedirect2("log");
     }
 
