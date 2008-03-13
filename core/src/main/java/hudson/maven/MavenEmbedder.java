@@ -16,6 +16,7 @@
 package hudson.maven;
 
 import org.apache.maven.BuildFailureException;
+import org.apache.maven.SettingsConfigurationException;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.manager.WagonManager;
@@ -53,6 +54,9 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.settings.MavenSettingsBuilder;
 import org.apache.maven.settings.RuntimeInfo;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.Proxy;
+import org.apache.maven.settings.Server;
+import org.apache.maven.settings.Mirror;
 import org.apache.maven.wagon.events.TransferListener;
 import org.codehaus.classworlds.ClassWorld;
 import org.codehaus.classworlds.DuplicateRealmException;
@@ -67,6 +71,7 @@ import org.codehaus.plexus.embed.Embedder;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.dag.CycleDetectedException;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -654,6 +659,8 @@ public class MavenEmbedder
             profileManager.loadSettingsProfiles( settings );
 
             localRepository = createLocalRepository( settings );
+
+            resolveParameters(wagonManager,settings);
         }
         catch ( PlexusContainerException e )
         {
@@ -666,6 +673,10 @@ public class MavenEmbedder
         catch ( ComponentLookupException e )
         {
             throw new MavenEmbedderException( "Cannot lookup required component.", e );
+        } catch (SettingsConfigurationException e) {
+            throw new MavenEmbedderException( "Cannot start Plexus embedder.", e );
+        } catch (ComponentLifecycleException e) {
+            throw new MavenEmbedderException( "Cannot start Plexus embedder.", e );
         }
     }
 
@@ -817,5 +828,39 @@ public class MavenEmbedder
 
     public Object lookup(String role,String hint) throws ComponentLookupException {
         return getContainer().lookup(role,hint);
+    }
+
+    /**
+     * {@link WagonManager} can't configure itself from {@link Settings}, so we need to baby-sit them.
+     * So much for dependency injection.
+     */
+    private void resolveParameters(WagonManager wagonManager, Settings settings)
+            throws ComponentLookupException, ComponentLifecycleException, SettingsConfigurationException {
+        Proxy proxy = settings.getActiveProxy();
+
+        if (proxy != null) {
+            if (proxy.getHost() == null) {
+                throw new SettingsConfigurationException("Proxy in settings.xml has no host");
+            }
+
+            wagonManager.addProxy(proxy.getProtocol(), proxy.getHost(), proxy.getPort(), proxy.getUsername(),
+                    proxy.getPassword(), proxy.getNonProxyHosts());
+        }
+
+        for (Server server : (List<Server>)settings.getServers()) {
+            wagonManager.addAuthenticationInfo(server.getId(), server.getUsername(), server.getPassword(),
+                    server.getPrivateKey(), server.getPassphrase());
+
+            wagonManager.addPermissionInfo(server.getId(), server.getFilePermissions(),
+                    server.getDirectoryPermissions());
+
+            if (server.getConfiguration() != null) {
+                wagonManager.addConfiguration(server.getId(), (Xpp3Dom) server.getConfiguration());
+            }
+        }
+
+        for (Mirror mirror : (List<Mirror>)settings.getMirrors()) {
+            wagonManager.addMirror(mirror.getId(), mirror.getMirrorOf(), mirror.getUrl());
+        }
     }
 }

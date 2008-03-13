@@ -6,6 +6,15 @@ import hudson.AbortException;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.Proxy;
+import org.apache.maven.settings.Server;
+import org.apache.maven.settings.Mirror;
+import org.apache.maven.SettingsConfigurationException;
+import org.apache.maven.artifact.manager.WagonManager;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.component.repository.exception.ComponentLifecycleException;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -48,6 +58,7 @@ public class MavenUtil {
 
         return maven;
     }
+
 
     /**
      * Recursively resolves module POMs that are referenced from
