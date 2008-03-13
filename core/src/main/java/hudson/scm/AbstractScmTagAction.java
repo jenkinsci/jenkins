@@ -49,7 +49,7 @@ public abstract class AbstractScmTagAction extends TaskAction {
     protected synchronized String chooseAction() {
         if(workerThread!=null)
             return "inProgress.jelly";
-        return "form.jelly";
+        return "tagForm.jelly";
     }
 
 }
