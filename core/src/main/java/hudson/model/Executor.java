@@ -169,8 +169,11 @@ public class Executor extends Thread implements ModelObject {
      * Stops the current build.
      */
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        executable.getParent().checkAbortPermission();
-        interrupt();
+        Queue.Executable e = executable;
+        if(e!=null) {
+            e.getParent().checkAbortPermission();
+            interrupt();
+        }
         rsp.forwardToPreviousPage(req);
     }
 
