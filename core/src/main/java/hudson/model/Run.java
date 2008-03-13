@@ -875,7 +875,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         return new Summary(false,"unstable");
                 }
                 if(trP.getFailCount()==0)
-                    return new Summary(true,combine(trP.getFailCount(),"test")+" started to fail");
+                    return new Summary(true,combine(trN.getFailCount(),"test")+" started to fail");
                 if(trP.getFailCount() < trN.getFailCount())
                     return new Summary(true,combine(trN.getFailCount()-trP.getFailCount(),"more test")
                         +" are failing ("+trN.getFailCount()+" total)");
