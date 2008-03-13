@@ -20,34 +20,38 @@ throws ANTLRException
     table.bits[3]=mnth;
     table.dayOfWeek=(int)dow;
   }
-  | "@yearly"
-  {
-    table.set("0 0 1 1 *");
-  }
-  | "@annually"
-  {
-    table.set("0 0 1 1 *");
-  }
-  | "@monthly"
-  {
-    table.set("0 0 1 * *");
-  }
-  | "@weekly"
-  {
-    table.set("0 0 * * 0");
-  }
-  | "@daily"
-  {
-    table.set("0 0 * * *");
-  }
-  | "@midnight"
-  {
-    table.set("0 0 * * *");
-  }
-  | "@hourly"
-  {
-    table.set("0 * * * *");
-  }
+  | ( AT
+      (
+        "yearly"
+      {
+        table.set("0 0 1 1 *");
+      }
+      | "annually"
+      {
+        table.set("0 0 1 1 *");
+      }
+      | "monthly"
+      {
+        table.set("0 0 1 * *");
+      }
+      | "weekly"
+      {
+        table.set("0 0 * * 0");
+      }
+      | "daily"
+      {
+        table.set("0 0 * * *");
+      }
+      | "midnight"
+      {
+        table.set("0 0 * * *");
+      }
+      | "hourly"
+      {
+        table.set("0 * * * *");
+      }
+    )
+  )
   ;
 
 expr [int field]
@@ -93,6 +97,7 @@ returns [int value=0]
 
 class CrontabLexer extends Lexer;
 options {
+  k=2; // I'm sure there's a better way to do this than using lookahead. ANTLR sucks...
   defaultErrorHandler=false;
 }
 
@@ -114,3 +119,12 @@ MINUS:  '-';
 STAR: '*';
 DIV:  '/';
 OR:   ',';
+AT:   '@';
+
+YEARLY: "yearly";
+ANNUALLY: "annually";
+MONTHLY: "monthly";
+WEEKLY: "weekly";
+DAILY: "daily";
+MIDNIGHT: "midnight";
+HOURLY: "hourly";
