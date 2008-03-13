@@ -215,6 +215,8 @@ public final class FilePath implements Serializable {
 
             private void scan(File f, ZipOutputStream zip, String path) throws IOException {
                 if(f.isDirectory()) {
+                    zip.putNextEntry(new ZipEntry(path+f.getName()+'/'));
+                    zip.closeEntry();
                     for( File child : f.listFiles() )
                         scan(child,zip,path+f.getName()+'/');
                 } else {
