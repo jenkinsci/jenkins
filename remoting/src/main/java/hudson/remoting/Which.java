@@ -37,7 +37,7 @@ public class Which {
             int n = clazz.getName().split("\\.").length; // how many slashes do wo need to cut?
             for( ; n>0; n-- ) {
                 int idx = Math.max(resURL.lastIndexOf('/'), resURL.lastIndexOf('\\'));
-                if(idx<0)   throw new IllegalArgumentException(resURL);
+                if(idx<0)   throw new IllegalArgumentException(originalURL + " - " + resURL);
                 resURL = resURL.substring(0,idx);
             }
 
