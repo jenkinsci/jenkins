@@ -5,6 +5,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * {@link ModelObject} that can have additional {@link Action}s.
@@ -28,7 +29,7 @@ public abstract class Actionable extends AbstractModelObject {
      */
     public synchronized List<Action> getActions() {
         if(actions==null)
-            actions = new Vector<Action>();
+            actions = new CopyOnWriteArrayList<Action>();
         return actions;
     }
 
