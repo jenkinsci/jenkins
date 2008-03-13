@@ -25,6 +25,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.util.CopyOnWriteMap;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -420,9 +421,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             newAxes.add(Axis.parsePrefixed(req,"label"));
         this.axes = newAxes;
 
-        buildWrappers = buildDescribable(req, BuildWrappers.WRAPPERS, "wrapper");
-        builders = buildDescribable(req, BuildStep.BUILDERS, "builder");
-        publishers = buildDescribable(req, BuildStep.PUBLISHERS, "publisher");
+        buildWrappers = buildDescribable(req, BuildWrappers.getFor(this), "wrapper");
+        builders = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.BUILDERS,getClass()), "builder");
+        publishers = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.PUBLISHERS,getClass()), "publisher");
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
 
         rebuildConfigurations();
