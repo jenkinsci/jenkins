@@ -26,6 +26,7 @@ public class Which {
         if(res==null)
             throw new IllegalArgumentException("Unable to locate class file for "+clazz);
         String resURL = res.toExternalForm();
+        String originalURL = resURL;
         if(resURL.startsWith("jar:")) {
             resURL = resURL.substring(4, resURL.lastIndexOf('!')); // cut off jar: and the file name portion
             return new File(decode(new URL(resURL).getPath()));
@@ -48,7 +49,7 @@ public class Which {
             return new File(decode(new URL(resURL).getPath()));
         }
 
-        throw new IllegalArgumentException(resURL);
+        throw new IllegalArgumentException(originalURL + " - " + resURL);
     }
 
     /**
