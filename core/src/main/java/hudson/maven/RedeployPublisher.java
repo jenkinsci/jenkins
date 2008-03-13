@@ -43,6 +43,9 @@ public class RedeployPublisher extends Publisher {
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        if(build.getResult().isWorseThan(Result.SUCCESS))
+            return true;    // build failed. Don't publish
+
         MavenAbstractArtifactRecord mar = getAction(build);
         if(mar==null) {
             listener.getLogger().println("No artifacts are recorded. Is this a Maven project?");
