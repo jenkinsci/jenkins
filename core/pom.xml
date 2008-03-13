@@ -252,15 +252,15 @@
 
     <dependency>
       <!-- commonly used wagon provider -->
-      <groupId>org.apache.maven.wagon</groupId>
+      <groupId>org.jvnet.hudson</groupId>
       <artifactId>wagon-webdav</artifactId>
-      <version>1.0-beta-2</version>
+      <version>1.0-beta-2-hudson-0</version>
     </dependency>
     <dependency>
-      <!-- wagon-webdav uses a fairly old commons-httpclient that breaks some plugins that depend on newer version. -->
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1-rc1</version>
+      <!-- and somehow without this, we'd end up picking up plexus-utils 1.0.4 -->
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>1.1</version>
     </dependency>
 
     <dependency>
