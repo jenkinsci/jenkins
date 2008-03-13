@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildWrapper;
@@ -17,10 +18,13 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.LogRecord;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Represents a set of {@link Executor}s on the same computer.
@@ -45,6 +49,7 @@ import java.util.logging.LogRecord;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public abstract class Computer extends AbstractModelObject {
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
 
@@ -113,6 +118,7 @@ public abstract class Computer extends AbstractModelObject {
         return Hudson.getInstance().getSlave(nodeName);
     }
 
+    @Exported
     public boolean isOffline() {
         return temporarilyOffline || getChannel()==null;
     }
@@ -120,6 +126,7 @@ public abstract class Computer extends AbstractModelObject {
     /**
      * Returns true if this computer is supposed to be launched via JNLP.
      */
+    @Exported
     public boolean isJnlpAgent() {
         return false;
     }
@@ -137,6 +144,7 @@ public abstract class Computer extends AbstractModelObject {
      *      This method is marked as deprecated to warn people when they
      *      accidentally call this method.
      */
+    @Exported
     public boolean isTemporarilyOffline() {
         return temporarilyOffline;
     }
@@ -146,6 +154,7 @@ public abstract class Computer extends AbstractModelObject {
         Hudson.getInstance().getQueue().scheduleMaintenance();
     }
 
+    @Exported
     public String getIcon() {
         if(isOffline())
             return "computer-x.gif";
@@ -153,6 +162,7 @@ public abstract class Computer extends AbstractModelObject {
             return "computer.gif";
     }
 
+    @Exported
     public String getDisplayName() {
         return nodeName;
     }
@@ -252,6 +262,17 @@ public abstract class Computer extends AbstractModelObject {
     }
 
     /**
+     * Expose monitoring data for the remote API.
+     */
+    @Exported(inline=true)
+    public Map<String/*monitor name*/,Object> getMonitorData() {
+        Map<String,Object> r = new HashMap<String, Object>();
+        for (NodeMonitor monitor : NodeMonitor.getAll())
+            r.put(monitor.getClass().getName(),monitor.data(this));
+        return r;
+    }
+
+    /**
      * Gets the system properties of the JVM on this computer.
      * If this is the master, it returns the system property of the master computer.
      */
@@ -299,6 +320,10 @@ public abstract class Computer extends AbstractModelObject {
 
         setTemporarilyOffline(!temporarilyOffline);
         rsp.forwardToPreviousPage(req);
+    }
+
+    public Api getApi() {
+        return new Api(this);
     }
 
     /**

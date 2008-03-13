@@ -5,12 +5,13 @@ import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
-import hudson.model.Node;
 import hudson.util.DescriptorList;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Extension point for managing and monitoring {@link Node}s.
@@ -27,6 +28,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  * @since 1.123
  */
+@ExportedBean
 public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMonitor> {
     /**
      * Returns the name of the column to be added to {@link ComputerSet} index.jelly.
@@ -34,6 +36,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      * @return
      *      null to not render a column. The convention is to use capitalization like "Foo Bar Zot".
      */
+    @Exported
     public String getColumnCaption() {
         return getDescriptor().getDisplayName();
     }

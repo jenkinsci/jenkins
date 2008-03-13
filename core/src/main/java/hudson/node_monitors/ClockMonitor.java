@@ -1,7 +1,6 @@
 package hudson.node_monitors;
 
 import hudson.model.Computer;
-import hudson.model.Descriptor;
 import hudson.model.Node;
 import hudson.util.ClockDifference;
 import org.kohsuke.stapler.StaplerRequest;

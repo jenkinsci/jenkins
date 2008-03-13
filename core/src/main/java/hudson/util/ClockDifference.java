@@ -7,12 +7,15 @@ import hudson.model.Hudson;
 import java.io.IOException;
 
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Represents a clock difference. Immutable.
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public final class ClockDifference {
     /**
      * The difference in milliseconds.
@@ -20,6 +23,7 @@ public final class ClockDifference {
      * Positive value means the slave is behind the master,
      * negative value means the slave is ahead of the master.
      */
+    @Exported
     public final long diff;
 
     public ClockDifference(long value) {
