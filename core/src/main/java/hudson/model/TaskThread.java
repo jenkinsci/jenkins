@@ -33,7 +33,10 @@ public abstract class TaskThread extends Thread {
      *      Determines where the output from this task thread goes.
      */
     protected TaskThread(TaskAction owner, ListenerAndText output) {
-        super(owner.getBuild().toString()+' '+owner.getDisplayName());
+        //FIXME this failed to compile super(owner.getBuild().toString()+' '+owner.getDisplayName());
+        //Please implement more general way how to get information about action owner, 
+        //if you want it in the thread's name.
+        super(owner.getDisplayName());
         this.owner = owner;
         this.text = output.text;
         this.listener = output.listener;
