@@ -226,8 +226,13 @@ public class WebAppMain implements ServletContextListener {
     private File getHomeDir(ServletContextEvent event) {
         // check JNDI for the home directory first
         try {
-            Context env = (Context) new InitialContext().lookup("java:comp/env");
+            InitialContext iniCtxt = new InitialContext();
+            Context env = (Context) iniCtxt.lookup("java:comp/env");
             String value = (String) env.lookup("HUDSON_HOME");
+            if(value!=null && value.trim().length()>0)
+                return new File(value.trim());
+            // look at one more place. See issue #1314 
+            value = (String) iniCtxt.lookup("HUDSON_HOME");
             if(value!=null && value.trim().length()>0)
                 return new File(value.trim());
         } catch (NamingException e) {
