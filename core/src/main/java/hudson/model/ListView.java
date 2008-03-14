@@ -2,15 +2,21 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.util.CaseInsensitiveComparator;
+import hudson.util.FormFieldValidator;
+
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.text.ParseException;
 
 /**
@@ -37,6 +43,15 @@ public class ListView extends View {
      */
     private String description;
 
+    /**
+     * Include regex string.
+     */
+    private String includeRegex;
+    
+    /**
+     * Compiled include pattern from the includeRegex string.
+     */
+    private transient Pattern includePattern;
 
     public ListView(Hudson owner, String name) {
         this.name = name;
@@ -51,9 +66,28 @@ public class ListView extends View {
      * concurrent modification issue.
      */
     public synchronized List<TopLevelItem> getItems() {
-        TopLevelItem[] items = new TopLevelItem[jobNames.size()];
+        Set<String> names = (Set<String>) ((TreeSet<String>) jobNames).clone();
+        
+        if (includeRegex != null) {
+            try {
+                if (includePattern == null) {
+                    includePattern = Pattern.compile(includeRegex);
+                }
+                
+                Collection<String> allJobNames = owner.getJobNames();
+                for (Iterator<String> iterator = allJobNames.iterator(); iterator.hasNext();) {
+                    String string = iterator.next();
+                    if (includePattern.matcher(string).matches()) {
+                        names.add(string);
+                    }   
+                }
+            } catch (PatternSyntaxException pse) {
+            }
+        }
+        
+        TopLevelItem[] items = new TopLevelItem[names.size()];
         int i=0;
-        for (String name : jobNames)
+        for (String name : names)
             items[i++] = owner.getItem(name);
         return Arrays.asList(items);
     }
@@ -80,6 +114,10 @@ public class ListView extends View {
 
     public String getDisplayName() {
         return name;
+    }
+    
+    public String getIncludeRegex() {
+        return includeRegex;
     }
 
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -110,6 +148,13 @@ public class ListView extends View {
         }
 
         description = Util.nullify(req.getParameter("description"));
+        
+        if (req.getParameter("useincluderegex") != null) {
+            includeRegex = Util.nullify(req.getParameter("includeregex"));
+        } else {
+            includeRegex = null;
+        }
+        includePattern = null;
 
         try {
             String n = req.getParameter("name");
@@ -145,5 +190,25 @@ public class ListView extends View {
 
         owner.deleteView(this);
         rsp.sendRedirect2(req.getContextPath()+"/");
+    }
+
+    /**
+     * Checks if the include regular expression is valid.
+     */
+    public synchronized void doIncludeRegexCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException  {
+        new FormFieldValidator(req, rsp, false) {
+            @Override
+            protected void check() throws IOException, ServletException {
+                String v = Util.fixEmpty(request.getParameter("value"));
+                if (v != null) {
+                    try {
+                        Pattern.compile(v);
+                    } catch (PatternSyntaxException pse) {
+                        error(pse.getMessage());
+                    }
+                }
+                ok();
+            }
+        }.process();
     }
 }
