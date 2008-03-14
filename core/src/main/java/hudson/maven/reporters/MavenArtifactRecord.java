@@ -10,6 +10,7 @@ import hudson.maven.MavenUtil;
 import hudson.model.Action;
 import hudson.model.TaskListener;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.deployer.ArtifactDeployer;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -82,11 +83,12 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
 
     @Override
     public void deploy(MavenEmbedder embedder, ArtifactRepository deploymentRepository, TaskListener listener) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactDeploymentException {
+        ArtifactHandlerManager handlerManager = (ArtifactHandlerManager) embedder.lookup(ArtifactHandlerManager.ROLE);
         ArtifactDeployer deployer = (ArtifactDeployer) embedder.lookup(ArtifactDeployer.ROLE);
         ArtifactFactory factory = (ArtifactFactory) embedder.lookup(ArtifactFactory.ROLE);
         PrintStream logger = listener.getLogger();
 
-        Artifact main = mainArtifact.toArtifact(factory,parent);
+        Artifact main = mainArtifact.toArtifact(handlerManager,factory,parent);
         if(!isPOM())
             main.addMetadata(new ProjectArtifactMetadata(main,pomArtifact.getFile(parent)));
 
@@ -96,7 +98,7 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
 
         for (MavenArtifact aa : attachedArtifacts) {
             logger.println(Messages.MavenArtifact_DeployingAttachedArtifact(main.getFile().getName()));
-            Artifact a = aa.toArtifact(factory, parent);
+            Artifact a = aa.toArtifact(handlerManager,factory, parent);
             deployer.deploy(a.getFile(),a,deploymentRepository,embedder.getLocalRepository());
         }
     }
@@ -106,16 +108,17 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
      */
     public void install(TaskListener listener) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactInstallationException {
         MavenEmbedder embedder = MavenUtil.createEmbedder(listener,null);
+        ArtifactHandlerManager handlerManager = (ArtifactHandlerManager) embedder.lookup(ArtifactHandlerManager.ROLE);
         ArtifactInstaller installer = (ArtifactInstaller) embedder.lookup(ArtifactInstaller.class.getName());
         ArtifactFactory factory = (ArtifactFactory) embedder.lookup(ArtifactFactory.class.getName());
 
-        Artifact main = mainArtifact.toArtifact(factory,parent);
+        Artifact main = mainArtifact.toArtifact(handlerManager,factory,parent);
         if(!isPOM())
             main.addMetadata(new ProjectArtifactMetadata(main,pomArtifact.getFile(parent)));
         installer.install(mainArtifact.getFile(parent),main,embedder.getLocalRepository());
 
         for (MavenArtifact aa : attachedArtifacts)
-            installer.install(aa.getFile(parent),aa.toArtifact(factory,parent),embedder.getLocalRepository());
+            installer.install(aa.getFile(parent),aa.toArtifact(handlerManager,factory,parent),embedder.getLocalRepository());
 
         embedder.stop();
     }

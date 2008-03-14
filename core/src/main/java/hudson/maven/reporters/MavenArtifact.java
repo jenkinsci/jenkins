@@ -9,10 +9,13 @@ import hudson.model.Hudson;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collections;
 
 /**
  * Captures information about an artifact created by Maven and archived by
@@ -105,7 +108,20 @@ public final class MavenArtifact implements Serializable {
     /**
      * Creates a Maven {@link Artifact} back from the persisted data.
      */
-    public Artifact toArtifact(ArtifactFactory factory, MavenBuild build) throws IOException {
+    public Artifact toArtifact(ArtifactHandlerManager handlerManager, ArtifactFactory factory, MavenBuild build) throws IOException {
+        // Hack: presence of custom ArtifactHandler during builds could influence the file extension
+        // in the repository during deployment. So simulate that behavior if that's necessary.
+        final String canonicalExtension = canonicalName.substring(canonicalName.lastIndexOf('.')+1);
+        ArtifactHandler ah = handlerManager.getArtifactHandler(type);
+        if(!ah.getExtension().equals(canonicalExtension)) {
+            handlerManager.addHandlers(Collections.singletonMap(type,
+                    new DefaultArtifactHandler(type) {
+                        public String getExtension() {
+                            return canonicalExtension;
+                        }
+                    }));
+        }
+
         Artifact a = factory.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
         a.setFile(getFile(build));
         return a;
