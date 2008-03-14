@@ -592,14 +592,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         	if (scm.requiresWorkspaceForPolling()) {
         		if(workspace==null) {
         			// workspace offline. build now, or nothing will ever be built
-        			listener.getLogger().println("Workspace is offline.");
-        			listener.getLogger().println("Scheduling a new build to get a workspace.");
+        			listener.getLogger().println(Messages.AbstractProject_WorkspaceOffline());
+        			listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
         			return true;
         		}
         		if(!workspace.exists()) {
         			// no workspace. build now, or nothing will ever be built
-        			listener.getLogger().println("No workspace is available, so can't check for updates.");
-        			listener.getLogger().println("Scheduling a new build to get a workspace.");
+        			listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
+        			listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
         			return true;
         		}
         	}
