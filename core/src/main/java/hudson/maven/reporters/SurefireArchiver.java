@@ -102,7 +102,14 @@ public class SurefireArchiver extends MavenReporter {
     }
 
     private boolean isSurefireTest(MojoInfo mojo) {
-        return mojo.pluginName.matches("org.apache.maven.plugins", "maven-surefire-plugin") && mojo.getGoal().equals("test");
+        if (!mojo.pluginName.matches("org.apache.maven.plugins", "maven-surefire-plugin") || !mojo.getGoal().equals("test"))
+            return false;
+
+        try {
+            return !mojo.getConfigurationValue("skip", Boolean.class);
+        } catch (ComponentConfigurationException e) {
+            return false;
+        }
     }
 
     public DescriptorImpl getDescriptor() {
