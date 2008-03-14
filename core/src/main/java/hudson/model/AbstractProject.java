@@ -589,20 +589,21 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         try {
         	FilePath workspace = getWorkspace();
-        	if (scm.requiresWorkspaceForPolling()) {
-        		if(workspace==null) {
-        			// workspace offline. build now, or nothing will ever be built
-        			listener.getLogger().println(Messages.AbstractProject_WorkspaceOffline());
-        			listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
-        			return true;
-        		}
-        		if(!workspace.exists()) {
-        			// no workspace. build now, or nothing will ever be built
-        			listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
-        			listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
-        			return true;
-        		}
-        	}
+        	if (scm.requiresWorkspaceForPolling() && (workspace==null || !workspace.exists())) {
+                // workspace offline. build now, or nothing will ever be built
+                if(getAssignedLabel().isSelfLabel()) {
+                    // if the build is fixed on a node, then attempting a build will do us
+                    // no good. We should just wait for the slave to come back.
+                    listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
+                    return false;
+                }
+                if(workspace==null)
+                    listener.getLogger().println(Messages.AbstractProject_WorkspaceOffline());
+                else
+                    listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
+                listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
+                return true;
+            }
 
         	Launcher launcher = workspace != null ? workspace.createLauncher(listener) : null;
             return scm.pollChanges(this, launcher, workspace, listener );
