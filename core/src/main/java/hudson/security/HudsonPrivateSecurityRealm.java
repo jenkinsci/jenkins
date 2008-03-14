@@ -157,6 +157,10 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
             return user.getId();
         }
 
+        /*package*/ User getUser() {
+            return user;
+        }
+
         public boolean isAccountNonExpired() {
             return true;
         }
@@ -220,6 +224,8 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
             Details p = User.get(username).getProperty(Details.class);
             if(p==null)
                 throw new UsernameNotFoundException("Password is not set: "+username);
+            if(p.getUser()==null)
+                throw new AssertionError();
             return p;
         }
     }
