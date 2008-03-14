@@ -22,7 +22,7 @@
       <j:set var="tags" value="${it.tags}" />
       <j:if test="${it.isTagged()}">
         <p>
-          This build is already tagged:
+          ${%This build is already tagged}:
         </p>
         <j:choose>
           <j:when test="${tags.size()==1}">
@@ -48,8 +48,8 @@
             <j:if test="${tags.size()!=1}">
               <th></th>
             </j:if>
-            <th>Module URL</th>
-            <th>Tag URL</th>
+            <th>${%Module URL}</th>
+            <th>${%Tag URL}</th>
           </tr>
           <j:forEach var="m" items="${tags.keySet()}" varStatus="loop">
             <tr>

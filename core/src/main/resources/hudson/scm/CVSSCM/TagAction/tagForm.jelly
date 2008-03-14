@@ -10,7 +10,7 @@
       <form action="submit" method="get">
         <table>
           <f:block>
-            Choose the CVS tag name for this build:
+            ${%Choose the CVS tag name for this build}:
             <input type="text" name="name" value="hudson-${it.build.number}" class="validated"
                    checkUrl="'checkTag?value='+escape(this.value)"/>
           </f:block>
@@ -44,7 +44,7 @@
       <j:choose>
         <j:when test="${!empty(tags)}">
           <p>
-            This build is already tagged as
+            ${%This build is already tagged as}
             <j:forEach var="t" items="${tags}">
               <st:nbsp />
               <tt>${t}</tt>
@@ -62,11 +62,11 @@
 
           <j:set var="upstream" value="${it.build.upstreamBuilds}" />
           <j:if test="${!empty(upstream)}">
-            <h2>Upstream tags</h2>
+            <h2>${%Upstream tags}</h2>
             <table class="pane sortable" style="width:inherit">
               <tr>
-                <td class="pane-header">Build</td>
-                <td class="pane-header">Tag</td>
+                <td class="pane-header">${%Build}</td>
+                <td class="pane-header">${%Tag}</td>
               </tr>
               <j:forEach var="up" items="${upstream}">
                 <tr>
