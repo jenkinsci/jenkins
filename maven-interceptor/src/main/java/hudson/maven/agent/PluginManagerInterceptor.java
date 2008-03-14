@@ -116,9 +116,10 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
                     config.config = configuration;
                     config.eval = expressionEvaluator;
                     config.mojo = (Mojo)component;
-                    super.configureComponent(component, configuration, expressionEvaluator, containerRealm, configListener);
                     if(listener!=null)
+                        // this lets preExecute a chance to modify the mojo configuration
                         listener.preExecute(project,mojoExecution, (Mojo)component, configuration,expressionEvaluator);
+                    super.configureComponent(component, configuration, expressionEvaluator, containerRealm, configListener);
                 } catch (IOException e) {
                     throw new ComponentConfigurationException(e);
                 } catch (InterruptedException e) {
