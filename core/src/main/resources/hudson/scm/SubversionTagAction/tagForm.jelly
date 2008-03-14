@@ -66,7 +66,7 @@
             </tr>
           </j:forEach>
         </table>
-        <input type="submit" />
+        <f:submit value="${%Tag}" />
         <script>
           <!-- update the visual feedback depending on the checkbox state -->
           function updateRow(e,i) {

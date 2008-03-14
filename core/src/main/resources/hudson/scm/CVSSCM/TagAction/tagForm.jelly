@@ -28,7 +28,7 @@
           </j:if>
 
           <f:entry>
-            <f:submit />
+            <f:submit value="${%Tag}" />
           </f:entry>
         </table>
       </form>
