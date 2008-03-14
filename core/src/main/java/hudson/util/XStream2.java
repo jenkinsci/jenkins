@@ -43,7 +43,7 @@ public class XStream2 extends XStream {
     }
 
     private void init() {
-        registerConverter(new RobustCollectionConverter(getMapper()),10);
+        registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteList.ConverterImpl(getMapper()),10);
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
