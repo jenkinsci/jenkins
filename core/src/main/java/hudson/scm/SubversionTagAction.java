@@ -111,7 +111,7 @@ public class SubversionTagAction extends AbstractScmTagAction {
      * Invoked to actually tag the workspace.
      */
     public synchronized void doSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        getBuild().checkPermission(getPermission());
+        getACL().checkPermission(getPermission());
 
         Map<SvnInfo,String> newTags = new HashMap<SvnInfo,String>();
 

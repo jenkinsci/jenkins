@@ -9,6 +9,7 @@ import java.lang.ref.WeakReference;
 import java.io.IOException;
 
 import hudson.security.Permission;
+import hudson.security.ACL;
 
 /**
  * Partial {@link Action} implementation for those who kick some
@@ -33,9 +34,15 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
      */
     protected transient WeakReference<LargeText> log;
 
+    /**
+     * Gets the permission object that represents the permission to perform this task.
+     */
     protected abstract Permission getPermission();
 
-    protected abstract AbstractBuild getBuild();
+    /**
+     * Gets the {@link ACL} against which the permissions are checked.
+     */
+    protected abstract ACL getACL();
 
     public WeakReference<LargeText> getLog() {
         return log;
@@ -68,7 +75,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
      * Clears the error status.
      */
     public synchronized void doClearError(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        getBuild().checkPermission(getPermission());
+        getACL().checkPermission(getPermission());
 
         if(workerThread!=null && !workerThread.isAlive())
             workerThread = null;

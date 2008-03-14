@@ -13,6 +13,7 @@ import hudson.model.TaskThread;
 import hudson.model.BuildBadgeAction;
 import hudson.model.TaskThread.ListenerAndText;
 import hudson.security.Permission;
+import hudson.security.ACL;
 import hudson.util.Iterators;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
@@ -121,6 +122,10 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
      */
     public abstract T getBuild();
 
+    protected ACL getACL() {
+        return getBuild().getACL();
+    }
+
     public final String getIconFileName() {
         return "redo.gif";
     }
@@ -156,7 +161,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
                            @QueryParameter("redeploy.id") final String id,
                            @QueryParameter("redeploy.url") final String repositoryUrl,
                            @QueryParameter("redeploy.uniqueVersion") final boolean uniqueVersion) throws ServletException, IOException {
-        getBuild().checkPermission(REDEPLOY);
+        getACL().checkPermission(REDEPLOY);
 
         File logFile = new File(getBuild().getRootDir(),"maven-deployment."+records.size()+".log");
         final Record record = new Record(repositoryUrl, logFile.getName());

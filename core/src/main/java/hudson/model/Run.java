@@ -11,6 +11,7 @@ import static hudson.Util.combine;
 import hudson.XmlFile;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
+import hudson.security.ACL;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
@@ -568,8 +569,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public void checkPermission(Permission p) {
+        getACL().checkPermission(p);
+    }
+
+    public ACL getACL() {
         // for now, don't maintain ACL per run, and do it at project level
-        getParent().checkPermission(p);
+        return getParent().getACL();
     }
 
     /**
