@@ -606,6 +606,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
 
         	Launcher launcher = workspace != null ? workspace.createLauncher(listener) : null;
+            LOGGER.info("Polling SCM changes of "+ getName());
             return scm.pollChanges(this, launcher, workspace, listener );
         } catch (AbortException e) {
             listener.fatalError(Messages.AbstractProject_Aborted());

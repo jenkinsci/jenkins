@@ -253,8 +253,6 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                 StreamTaskListener listener = new StreamTaskListener(getLogFile());
 
                 try {
-                    LOGGER.info("Polling SCM changes of "+ job.getName());
-
                     PrintStream logger = listener.getLogger();
                     long start = System.currentTimeMillis();
                     logger.println("Started on "+new Date().toLocaleString());
