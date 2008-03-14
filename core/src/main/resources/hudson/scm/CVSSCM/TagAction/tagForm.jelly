@@ -52,7 +52,7 @@
           </p>
 
           <p id="tagButton">
-            <input type="button" value="Create another tag"
+            <input type="button" value="${%Create another tag}"
                    onclick="Element.show('tagForm');Element.hide('tagButton')"/>
           </p>
 
