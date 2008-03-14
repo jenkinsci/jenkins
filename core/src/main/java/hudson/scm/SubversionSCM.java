@@ -55,6 +55,7 @@ import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNInfo;
 import org.tmatesoft.svn.core.wc.SVNRevision;
+import org.tmatesoft.svn.core.wc.SVNStatus;
 import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
@@ -1355,4 +1356,12 @@ public class SubversionSCM extends SCM implements Serializable {
 
         ch.ethz.ssh2.log.Logger.logLevel = 100;
     }
+
+    /**
+     * Polling can happen on the master and does not require a workspace.
+     */
+	@Override
+	public boolean requiresWorkspaceForPolling() {
+		return false;
+	}
 }

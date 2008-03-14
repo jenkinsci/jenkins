@@ -80,6 +80,26 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public boolean supportsPolling() {
         return true;
     }
+    
+    /**
+     * Returns true if this SCM requires a checked out workspace for doing polling.
+     *
+     * <p>
+     * This flag affects the behavior of Hudson when a job lost its workspace
+     * (typically due to a slave outage.) If this method returns false and
+     * polling is configured, then that would immediately trigger a new build.
+     *
+     * <p>
+     * The default implementation returns true.
+     *
+     * <p>
+     * See issue #1348 for more discussion of this feature.
+     *
+     * @since 1.196
+     */
+    public boolean requiresWorkspaceForPolling() {
+    	return true;
+    }
 
     /**
      * Checks if there has been any changes to this module in the repository.

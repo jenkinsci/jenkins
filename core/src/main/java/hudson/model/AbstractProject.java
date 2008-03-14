@@ -588,19 +588,24 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         try {
-            FilePath workspace = getWorkspace();
-            if(workspace==null) {
-                // workspace offline. build now, or nothing will ever be built
-                listener.getLogger().println(Messages.AbstractProject_WorkspaceOffline());
-                return true;
-            }
-            if(!workspace.exists()) {
-                // no workspace. build now, or nothing will ever be built
-                listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
-                return true;
-            }
+        	FilePath workspace = getWorkspace();
+        	if (scm.requiresWorkspaceForPolling()) {
+        		if(workspace==null) {
+        			// workspace offline. build now, or nothing will ever be built
+        			listener.getLogger().println("Workspace is offline.");
+        			listener.getLogger().println("Scheduling a new build to get a workspace.");
+        			return true;
+        		}
+        		if(!workspace.exists()) {
+        			// no workspace. build now, or nothing will ever be built
+        			listener.getLogger().println("No workspace is available, so can't check for updates.");
+        			listener.getLogger().println("Scheduling a new build to get a workspace.");
+        			return true;
+        		}
+        	}
 
-            return scm.pollChanges(this, workspace.createLauncher(listener), workspace, listener );
+        	Launcher launcher = workspace != null ? workspace.createLauncher(listener) : null;
+            return scm.pollChanges(this, launcher, workspace, listener );
         } catch (AbortException e) {
             listener.fatalError(Messages.AbstractProject_Aborted());
             return false;
