@@ -26,6 +26,23 @@ public final class CronTabList {
         return false;
     }
 
+    /**
+     * Checks if this crontab entry looks reasonable,
+     * and if not, return an warning message.
+     *
+     * <p>
+     * The point of this method is to catch syntactically correct
+     * but semantically suspicious combinations, like
+     * "* 0 * * *"
+     */
+    public String checkSanity() {
+        for (CronTab tab : tabs) {
+            String s = tab.checkSanity();
+            if(s!=null)     return s;
+        }
+        return null;
+    }
+
     public static CronTabList create(String format) throws ANTLRException {
         Vector<CronTab> r = new Vector<CronTab>();
         int lineNumber = 0;

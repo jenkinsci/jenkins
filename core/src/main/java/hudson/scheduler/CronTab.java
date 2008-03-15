@@ -23,6 +23,11 @@ public final class CronTab {
 
     int dayOfWeek;
 
+    /**
+     * Textual representation.
+     */
+    private String spec;
+
     public CronTab(String format) throws ANTLRException {
         this(format,1);
     }
@@ -35,6 +40,7 @@ public final class CronTab {
         CrontabLexer lexer = new CrontabLexer(new StringReader(format));
         lexer.setLine(line);
         CrontabParser parser = new CrontabParser(lexer);
+        spec = format;
 
         parser.startRule(this);
         if((dayOfWeek&(1<<7))!=0)
@@ -83,4 +89,34 @@ public final class CronTab {
     private String toString(String key, long bit) {
         return key+'='+Long.toHexString(bit);
     }
+
+    /**
+     * Checks if this crontab entry looks reasonable,
+     * and if not, return an warning message.
+     *
+     * <p>
+     * The point of this method is to catch syntactically correct
+     * but semantically suspicious combinations, like
+     * "* 0 * * *"
+     */
+    public String checkSanity() {
+        for( int i=0; i<5; i++ ) {
+            for( int j=LOWER_BOUNDS[i]; j<=UPPER_BOUNDS[i]; j++ ) {
+                if(!checkBits(bits[i],j)) {
+                    // this rank has a sparse entry.
+                    // if we have a sparse rank, one of them better be the left-most.
+                    if(i>0)
+                        return "Do you really mean \"every minute\" when you say \""+spec+"\"?";
+                    // once we find a sparse rank, upper ranks don't matter
+                    return null;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // lower/uppser bounds of fields
+    private static final int[] LOWER_BOUNDS = new int[] {0,0,1,0,0};
+    private static final int[] UPPER_BOUNDS = new int[] {59,23,31,12,7};
 }

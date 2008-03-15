@@ -59,8 +59,11 @@ public class TimerTrigger extends Trigger<BuildableItem> {
             new FormFieldValidator(req,rsp,true) {
                 protected void check() throws IOException, ServletException {
                     try {
-                        CronTabList.create(fixNull(request.getParameter("value")));
-                        ok();
+                        String msg = CronTabList.create(fixNull(request.getParameter("value"))).checkSanity();
+                        if(msg!=null)
+                            warning(msg);
+                        else
+                            ok();
                     } catch (ANTLRException e) {
                         error(e.getMessage());
                     }
