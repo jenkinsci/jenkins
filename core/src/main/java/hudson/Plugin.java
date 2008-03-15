@@ -116,6 +116,7 @@ public abstract class Plugin {
             return;
         }
 
-        rsp.serveFile(req, new URL(wrapper.baseResourceURL,'.'+path));
+        // use serveLocalizedFile to support automatic locale selection
+        rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL,'.'+path));
     }
 }
