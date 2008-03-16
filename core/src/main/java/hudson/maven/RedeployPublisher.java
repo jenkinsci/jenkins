@@ -117,7 +117,7 @@ public class RedeployPublisher extends Publisher {
         }
 
         public String getDisplayName() {
-            return "Deploy artifacts to Maven repository";
+            return Messages.RedeployPublisher_getDisplayName();
         }
     }
 }
