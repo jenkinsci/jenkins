@@ -106,10 +106,18 @@ public class SurefireArchiver extends MavenReporter {
             return false;
 
         try {
-            return !mojo.getConfigurationValue("skip", Boolean.class);
+            Boolean skip = mojo.getConfigurationValue("skip", Boolean.class);
+            Boolean skipExec = mojo.getConfigurationValue("skipExec", Boolean.class);
+            Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
+            
+            if (((skip != null) && (skip)) || ((skipExec != null) && (skipExec)) || ((skipTests != null) && (!skipTests))) {
+            	return false;
+            }
         } catch (ComponentConfigurationException e) {
             return false;
         }
+        
+        return true;
     }
 
     public DescriptorImpl getDescriptor() {
