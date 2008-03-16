@@ -228,7 +228,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public String getDisplayName() {
-            return job.getScm().getDescriptor().getDisplayName()+" Polling Log";
+            return Messages.SCMTrigger_getDisplayName(job.getScm().getDescriptor().getDisplayName());
         }
 
         public String getUrlName() {
