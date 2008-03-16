@@ -28,7 +28,6 @@ class XMLEntityResolver implements EntityResolver {
     /**
      * Intercepts the lookup of publicId, systemId
      */
-    @Override
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         if (systemId != null) {
             LOGGER.fine("Will try to resolve systemId [" + systemId + "]");
