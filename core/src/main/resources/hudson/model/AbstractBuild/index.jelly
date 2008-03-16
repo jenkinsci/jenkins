@@ -11,7 +11,7 @@
           ${%startedAgo(it.timestampString)}
           </div><div>
           <j:if test="${!it.building}">
-            Took <a href="${rootURL}/${it.parent.url}buildTimeTrend">${it.durationString}</a>
+            ${%Took} <a href="${rootURL}/${it.parent.url}buildTimeTrend">${it.durationString}</a>
           </j:if>
         </div>
       </div>
