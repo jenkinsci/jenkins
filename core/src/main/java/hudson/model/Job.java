@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.StructuredForm;
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.search.QuickSilver;
@@ -11,6 +12,7 @@ import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.search.SearchItems;
 import hudson.tasks.LogRotator;
+import hudson.util.AtomicFileWriter;
 import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
 import hudson.util.CopyOnWriteList;
@@ -38,10 +40,17 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -731,6 +740,47 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
         } catch (FormException e) {
             sendError(e,req,rsp);
         }
+    }
+
+    /**
+     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     */
+    @WebMethod(name="config.xml")
+    public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        checkPermission(CONFIGURE);
+
+        if(req.getMethod().equals("GET")) {
+            // read
+            rsp.setContentType("application/xml;charset=UTF-8");
+            getConfigFile().writeRawTo(rsp.getWriter());
+            return;
+        }
+        if(req.getMethod().equals("POST")) {
+            // submission
+            XmlFile configXmlFile = getConfigFile();
+            AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
+
+            try {
+                // this allows us to use UTF-8 for storing data,
+                // plus it checks any well-formedness issue in the submitted data
+                Transformer t = TransformerFactory.newInstance().newTransformer();
+                t.transform(new StreamSource(req.getReader()),new StreamResult(out));
+                out.close();
+            } catch (TransformerException e) {
+                throw new IOException2("Failed to persist configuration.xml",e);
+            }
+
+            // try to reflect the changes by reloading
+            new XmlFile(out.getTemporaryFile()).unmarshal(this);
+            onLoad(getParent(),getName());
+
+            // if everything went well, commit this new version
+            out.commit();
+            return;
+        }
+
+        // huh?
+        rsp.sendError(SC_BAD_REQUEST);
     }
 
     /**
