@@ -11,6 +11,7 @@ import net.sf.json.JSONObject;
  * {@link SecurityRealm} that accepts {@link ContainerAuthentication} object
  * without any check (that is, by assuming that the such token is
  * already authenticated by the container.)
+ * 
  * @author Kohsuke Kawaguchi
  */
 public final class LegacySecurityRealm extends SecurityRealm implements AuthenticationManager {

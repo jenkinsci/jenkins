@@ -3,21 +3,22 @@
 
     This file must define a servlet Filter instance with the name 'filter'
 */
+import hudson.security.AccessDeniedHandlerImpl
+import hudson.security.AuthenticationProcessingFilter2
+import hudson.security.BasicAuthenticationFilter
+import hudson.security.ChainedServletFilter
+import hudson.security.LegacyAuthenticationProcessingFilterEntryPoint
+import hudson.security.UnwrapSecurityExceptionFilter
+import org.acegisecurity.context.HttpSessionContextIntegrationFilter
 import org.acegisecurity.providers.anonymous.AnonymousProcessingFilter
 import org.acegisecurity.ui.ExceptionTranslationFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
-import org.acegisecurity.context.HttpSessionContextIntegrationFilter
-import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint
-import hudson.security.ChainedServletFilter
-import hudson.security.AccessDeniedHandlerImpl
-import hudson.security.BasicAuthenticationFilter
-import hudson.security.AuthenticationProcessingFilter2
-import hudson.security.UnwrapSecurityExceptionFilter
 import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
+import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint
 
 // providers that apply to both patterns
-def commonProviders(redirectUrl) {
+def commonProviders(entryPointClass,redirectUrl) {
     return [
         bean(AnonymousProcessingFilter) {
             key = "anonymous" // must match with the AnonymousProvider
@@ -25,7 +26,7 @@ def commonProviders(redirectUrl) {
         },
         bean(ExceptionTranslationFilter) {
             accessDeniedHandler = new AccessDeniedHandlerImpl()
-            authenticationEntryPoint = bean(AuthenticationProcessingFilterEntryPoint) {
+            authenticationEntryPoint = bean(entryPointClass) {
                 loginFormUrl = redirectUrl;
             }
         },
@@ -60,7 +61,7 @@ filter(ChainedServletFilter) {
             defaultTargetUrl = "/"
             filterProcessesUrl = "/j_acegi_security_check"
         },
-    ] + commonProviders("/login")
+    ] + commonProviders(AuthenticationProcessingFilterEntryPoint.class,"/login")
 }
 
 // this filter set up is used to emulate the legacy Hudson behavior
@@ -68,7 +69,7 @@ filter(ChainedServletFilter) {
 legacy(ChainedServletFilter) {
     filters = [
         bean(BasicAuthenticationFilter)
-    ] + commonProviders("/loginEntry")
+    ] + commonProviders(LegacyAuthenticationProcessingFilterEntryPoint.class,"/loginEntry")
     // when using container-authentication we can't hit /login directly.
     // we first have to hit protected /loginEntry, then let the container
     // trap that into /login.
