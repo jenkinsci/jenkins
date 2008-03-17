@@ -45,7 +45,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     }
 
     public String getTitle() {
-        return "Test Result : "+getName();
+        return Messages.ClassResult_getTitle(getName());
     }
 
     @Exported

@@ -1,11 +1,11 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${it.totalCount!=0}">
-    <h2>All Tests</h2>
+    <h2>${%All Tests}</h2>
     <table class="pane sortable" id="testresult">
       <tr>
-        <td class="pane-header">Test name</td>
-        <td class="pane-header" style="width:6em">Duration</td>
-        <td class="pane-header" style="width:6em">Status</td>
+        <td class="pane-header">${%Test name}</td>
+        <td class="pane-header" style="width:6em">${%Duration}</td>
+        <td class="pane-header" style="width:6em">${%Status}</td>
       </tr>
       <tbody>
         <j:forEach var="p" items="${it.children}" varStatus="status">
