@@ -1,7 +1,9 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <h2>Fetch config.xml</h2>
+  <h2>Fetch/Update config.xml</h2>
   <p>
     To programatically, obtain <tt>config.xml</tt>, hit <a href="../config.xml">this URL</a>.
+    You can also POST updated config.xml to the same URL to programatically
+    update the configuration of a job.
   </p>
 
   <h2>Perform a build</h2>
