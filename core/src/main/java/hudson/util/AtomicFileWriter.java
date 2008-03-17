@@ -55,4 +55,12 @@ public class AtomicFileWriter extends Writer {
             throw new IOException("Unable to delete "+destFile);
         tmpFile.renameTo(destFile);
     }
+
+    /**
+     * Until the data is committed, this file captures
+     * the written content.
+     */
+    public File getTemporaryFile() {
+        return tmpFile;
+    }
 }
