@@ -153,11 +153,11 @@ public final class TestResult extends MetaTabulatedResult {
     }
 
     public String getTitle() {
-        return "Test Result";
+        return Messages.TestResult_getTitle();
     }
 
     public String getChildTitle() {
-        return "Package";
+        return Messages.TestResult_getChildTitle();
     }
 
     // TODO once stapler 1.60 is released: @Exported
