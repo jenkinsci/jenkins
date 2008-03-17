@@ -36,7 +36,7 @@ class XMLEntityResolver implements EntityResolver {
                 LOGGER.fine("It's a TestNG document, will try to lookup DTD in classpath");
                 String dtdFileName = systemId.substring(TESTNG_NAMESPACE.length());
 
-                URL url = Hudson.getInstance().servletContext.getResource('/' + dtdFileName);
+                URL url = getClass().getClassLoader().getResource(dtdFileName);
                 if (url != null)
                     return new InputSource(url.toString());
             }
