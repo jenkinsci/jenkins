@@ -101,8 +101,9 @@ public final class CronTab {
      */
     public String checkSanity() {
         for( int i=0; i<5; i++ ) {
+            long bitMask = (i<4)?bits[i]:(long)dayOfWeek;
             for( int j=LOWER_BOUNDS[i]; j<=UPPER_BOUNDS[i]; j++ ) {
-                if(!checkBits(bits[i],j)) {
+                if(!checkBits(bitMask,j)) {
                     // this rank has a sparse entry.
                     // if we have a sparse rank, one of them better be the left-most.
                     if(i>0)
