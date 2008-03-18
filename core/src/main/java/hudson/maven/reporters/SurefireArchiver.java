@@ -106,13 +106,29 @@ public class SurefireArchiver extends MavenReporter {
             return false;
 
         try {
-            Boolean skip = mojo.getConfigurationValue("skip", Boolean.class);
-            Boolean skipExec = mojo.getConfigurationValue("skipExec", Boolean.class);
-            Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
-            
-            if (((skip != null) && (skip)) || ((skipExec != null) && (skipExec)) || ((skipTests != null) && (!skipTests))) {
+
+        	Boolean skip = mojo.getConfigurationValue("skip", Boolean.class);
+
+            if (((skip != null) && (skip))) {
             	return false;
             }
+        	
+        	if (mojo.pluginName.version.compareTo("2.3") >= 0) {
+        		Boolean skipExec = mojo.getConfigurationValue("skipExec", Boolean.class);
+        	
+                if (((skipExec != null) && (skipExec))) {
+                	return false;
+                }            	
+        	}
+        	
+           	if (mojo.pluginName.version.compareTo("2.4") >= 0) {   	
+           		Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
+            
+           		if (((skipTests != null) && (skipTests))) {
+           			return false;
+           		}
+           	}
+
         } catch (ComponentConfigurationException e) {
             return false;
         }
