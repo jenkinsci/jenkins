@@ -1600,7 +1600,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             rsp.setStatus(HttpServletResponse.SC_OK);
         } else {
             // send the browser to the config page
-            rsp.sendRedirect2(req.getContextPath()+'/'+result.getUrl()+"configure");
+            rsp.sendRedirect2(result.getUrl()+"configure");
         }
 
         return result;
