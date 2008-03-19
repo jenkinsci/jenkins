@@ -202,6 +202,24 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
     }
 
     /**
+     * Programatically updates the next build number.
+     *
+     * <p>
+     * Much of Hudson assumes that the build number is unique and monotonic,
+     * so this method can only accept a new value that's bigger than
+     * {@link #getNextBuildNumber()} returns. Otherwise it'll be no-op.
+     *
+     * @since 1.199
+     *      (before that, this method was package private.)
+     */
+    public void updateNextBuildNumber(int next) throws IOException {
+        if(next>nextBuildNumber) {
+            this.nextBuildNumber = next;
+            saveNextBuildNumber();
+        }
+    }
+
+    /**
      * Returns the log rotator for this job, or null if none.
      */
     public LogRotator getLogRotator() {
