@@ -44,6 +44,13 @@ final class PomInfo implements Serializable {
     public final String relativePath;
 
     /**
+     * Version number taken from POM.
+     *
+     * @see MavenProject#getVersion()
+     */
+    public final String version;
+
+    /**
      * Dependency of this project.
      *
      * See Maven's ProjectSorter class for the definition of the 'dependencies' in Maven.
@@ -69,6 +76,7 @@ final class PomInfo implements Serializable {
 
     public PomInfo(MavenProject project, PomInfo parent, String relPath) {
         this.name = new ModuleName(project);
+        this.version = project.getVersion();
         this.displayName = project.getName();
         this.defaultGoal = project.getDefaultGoal();
         this.relativePath = relPath;

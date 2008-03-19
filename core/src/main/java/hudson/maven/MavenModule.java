@@ -47,6 +47,15 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      */
     private String displayName;
 
+    /**
+     * Version number of this module as of fhe last build, taken from {@link MavenProject#getVersion()}.
+     *
+     * This field can be null if Hudson loaded old data
+     * that didn't record this information, so that situation
+     * needs to be handled gracefully.
+     */
+    private String version;
+
     private transient ModuleName moduleName;
 
     private String relativePath;
@@ -114,6 +123,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      */
     /*package*/ final void reconfigure(PomInfo pom) {
         this.displayName = pom.displayName;
+        this.version = pom.version;
         this.relativePath = pom.relativePath;
         this.dependencies = pom.dependencies;
         this.children = pom.children;
@@ -156,6 +166,18 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      */
     public String getRelativePath() {
         return relativePath;
+    }
+
+    /**
+     * Gets the version number in Maven POM as of the last build.
+     *
+     * @return
+     *      This method can return null if Hudson loaded old data
+     *      that didn't record this information, so that situation
+     *      needs to be handled gracefully.
+     */
+    public String getVersion() {
+        return version;
     }
 
     /**
