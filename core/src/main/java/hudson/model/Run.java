@@ -50,6 +50,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Locale;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -487,8 +490,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Gets the first {@value #CUTOFF} artifacts (relative to {@link #getArtifactsDir()}.
      */
     public List<Artifact> getArtifacts() {
-        List<Artifact> r = new ArrayList<Artifact>();
+        ArtifactList r = new ArtifactList();
         addArtifacts(getArtifactsDir(),"",r);
+        r.computeDisplayName();
         return r;
     }
 
@@ -519,6 +523,77 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private static final int CUTOFF = 17;   // 0, 1,... 16, and then "too many"
 
+    public final class ArtifactList extends ArrayList<Artifact> {
+        public void computeDisplayName() {
+            if(size()>CUTOFF)   return; // we are not going to display file names, so no point in computing this
+
+            int maxDepth = 0;
+            int[] len = new int[size()];
+            String[][] tokens = new String[size()][];
+            for( int i=0; i<tokens.length; i++ ) {
+                tokens[i] = get(i).relativePath.split("[\\\\/]+");
+                maxDepth = Math.max(maxDepth,tokens[i].length);
+                len[i] = 1;
+            }
+
+            boolean collision;
+            int depth=0;
+            do {
+                collision = false;
+                Map<String,Integer/*index*/> names = new HashMap<String,Integer>();
+                for (int i = 0; i < tokens.length; i++) {
+                    String[] token = tokens[i];
+                    String displayName = combineLast(token,len[i]);
+                    Integer j = names.put(displayName, i);
+                    if(j!=null) {
+                        collision = true;
+                        if(j>=0)
+                            len[j]++;
+                        len[i]++;
+                        names.put(displayName,-1);  // occupy this name but don't let len[i] incremented with additional collisions
+                    }
+                }
+            } while(collision && depth++<maxDepth);
+
+            for (int i = 0; i < tokens.length; i++)
+                get(i).displayPath = combineLast(tokens[i],len[i]);
+
+//            OUTER:
+//            for( int n=1; n<maxLen; n++ ) {
+//                // if we just display the last n token, would it be suffice for disambiguation?
+//                Set<String> names = new HashSet<String>();
+//                for (String[] token : tokens) {
+//                    if(!names.add(combineLast(token,n)))
+//                        continue OUTER; // collision. Increase n and try again
+//                }
+//
+//                // this n successfully diambiguates
+//                for (int i = 0; i < tokens.length; i++) {
+//                    String[] token = tokens[i];
+//                    get(i).displayPath = combineLast(token,n);
+//                }
+//                return;
+//            }
+
+//            // it's impossible to get here, as that means
+//            // we have the same artifacts archived twice, but be defensive
+//            for (Artifact a : this)
+//                a.displayPath = a.relativePath;
+        }
+
+        /**
+         * Combines last N token into the "a/b/c" form.
+         */
+        private String combineLast(String[] token, int n) {
+            StringBuffer buf = new StringBuffer();
+            for( int i=Math.max(0,token.length-n); i<token.length; i++ ) {
+                if(buf.length()>0)  buf.append('/');
+                buf.append(token[i]);
+            }
+            return buf.toString();
+        }
+    }
+
     /**
      * A build artifact.
      */
@@ -526,9 +601,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         /**
          * Relative path name from {@link Run#getArtifactsDir()}
          */
-        private final String relativePath;
+        public final String relativePath;
 
-        private Artifact(String relativePath) {
+        /**
+         * Truncated form of {@link #relativePath} just enough
+         * to disambiguate {@link Artifact}s.
+         */
+        /*package*/ String displayPath;
+
+        /*package for test*/ Artifact(String relativePath) {
             this.relativePath = relativePath;
         }
 
@@ -544,6 +625,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          */
         public String getFileName() {
             return getFile().getName();
+        }
+
+        public String getDisplayPath() {
+            return displayPath;
         }
 
         public String toString() {
