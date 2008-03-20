@@ -7,7 +7,8 @@
 		<l:main-panel>
 		  <s:form method="post" action="createItem">
         <s:entry title="${%Job name}">
-		      <s:textbox id="name" name="name" checkUrl="'${rootURL}/itemExistsCheck?value='+escape(this.value)" onchange="updateOk(this.form)" />
+		      <s:textbox id="name" name="name" checkUrl="'${rootURL}/itemExistsCheck?value='+escape(this.value)"
+                     onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
           <script>$('name').focus();</script>
         </s:entry>
 
