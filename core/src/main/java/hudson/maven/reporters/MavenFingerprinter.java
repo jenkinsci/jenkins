@@ -58,6 +58,7 @@ public class MavenFingerprinter extends MavenReporter {
         record(pom.getArtifacts(),used);
         record(pom.getArtifact(),produced);
         record(pom.getAttachedArtifacts(),produced);
+        record(pom.getGroupId(),pom.getFile(),produced);
 
         return true;
     }
@@ -106,13 +107,16 @@ public class MavenFingerprinter extends MavenReporter {
         File f = a.getFile();
         if(files==null)
             throw new InternalError();
+        record(a.getGroupId(), f, record);
+    }
+
+    private void record(String groupId, File f, Map<String, String> record) throws IOException, InterruptedException {
         if(f==null || !f.exists() || f.isDirectory() || !files.add(f))
             return;
 
         // new file
-        String name = a.getGroupId()+':'+f.getName();
         String digest = new FilePath(f).digest();
-        record.put(name,digest);
+        record.put(groupId+':'+f.getName(),digest);
     }
 
     public DescriptorImpl getDescriptor() {
