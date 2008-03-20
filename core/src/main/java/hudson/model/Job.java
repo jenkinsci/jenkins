@@ -794,7 +794,7 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
 
             // try to reflect the changes by reloading
             new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
-            onLoad(getParent(),getName());
+            onLoad(getParent(),getRootDir().getName());
 
             // if everything went well, commit this new version
             out.commit();
