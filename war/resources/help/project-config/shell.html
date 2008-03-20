@@ -1,7 +1,14 @@
 <div>
   Runs a shell script (defaults to <tt>sh</tt>, but this configurable) for building the project.
-  The script will be run with the workspace as the current directory.
+  The script will be run with the workspace as the current directory. Type in the contents of your shell
+  script, but without a header like <tt>#!/bin/sh</tt> &mdash; that is added by Hudson, where the
+  path of the shell is configured globally.
 
+  <p>
   The shell will be invoked with the "-ex" option. So all of the commands are printed before being executed,
   and the build is considered a failure if any of the commands exits with a non-zero exit code.
+
+  <p>
+  As a best practice, try not to put a long shell script in here. Instead, consider adding the shell script
+  in SCM and simply call that shell script from Hudson, so that you can track changes in your shell script.
 </div>
