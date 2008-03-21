@@ -65,6 +65,10 @@ public interface Action extends Serializable, ModelObject {
      * <p>
      * This method should return a string that's unique among other {@link Action}s.
      *
+     * <p>
+     * The returned string can be an absolute URL, like "http://www.sun.com/",
+     * which is useful for directly connecting to external systems.
+     *
      * @return
      *      null if this action object doesn't need to be bound to web.
      */

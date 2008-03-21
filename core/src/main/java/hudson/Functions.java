@@ -776,4 +776,20 @@ public class Functions {
         else
             return base;
     }
+
+    /**
+     * Computes the hyperlink to actions, to handle the situation when the {@link Action#getUrlName()}
+     * returns absolute URL.
+     */
+    public static String getActionUrl(String itUrl,Action action) {
+        String urlName = action.getUrlName();
+
+        if(SCHEME.matcher(urlName).matches())
+            return urlName; // absolute URL
+        else
+            // relative URL name
+            return Stapler.getCurrentRequest().getContextPath()+'/'+itUrl+urlName;
+    }
+
+    private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 }
