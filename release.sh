@@ -12,9 +12,10 @@ mvn release:perform
 
 id=$(show-pom-version target/checkout/pom.xml)
 #./publish-javadoc.sh
-javanettasks uploadFile hudson /releases/$id                "`date +"%Y/%m/%d"` release" Stable target/checkout/war/target/hudson.war
+javanettasks uploadFile hudson /releases/$id                "`date +"%Y/%m/%d"` release" Stable target/checkout/war/target/hudson.war | tee target/war-upload.log
+warUrl=$(cat target/war-upload.log | grep "^Posted" | sed -e "s/Posted //g")
 javanettasks uploadFile hudson /releases/source-bundles/$id "`date +"%Y/%m/%d"` release" Stable target/checkout/target/hudson-$id-src.zip
-javanettasks announce hudson "Hudson $id released" << EOF
+javanettasks announce hudson "Hudson $id released" "$warUrl" << EOF
 See <a href="https://hudson.dev.java.net/changelog.html">the changelog</a> for details.
 EOF
 
