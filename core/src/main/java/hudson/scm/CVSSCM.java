@@ -669,6 +669,10 @@ public class CVSSCM extends SCM implements Serializable {
             listener.getLogger().println("$ no changes detected");
             return createEmptyChangeLog(changelogFile,listener, "changelog");
         }
+        if(skipChangeLog) {
+            listener.getLogger().println("Skipping changelog computation");
+            return createEmptyChangeLog(changelogFile,listener, "changelog");
+        }
 
         listener.getLogger().println("$ computing changelog");
 
@@ -1412,4 +1416,10 @@ public class CVSSCM extends SCM implements Serializable {
     public static boolean debug = false;
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * True to avoid computing the changelog. Useful with ancient versions of CVS that doesn't support
+     * the -d option in the log command. See #1346.
+     */
+    public static boolean skipChangeLog = Boolean.getBoolean(CVSSCM.class.getName()+".skipChangeLog");
 }
