@@ -5,6 +5,7 @@ import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
+import hudson.model.Node;
 import hudson.util.DescriptorList;
 
 import java.util.logging.Level;
