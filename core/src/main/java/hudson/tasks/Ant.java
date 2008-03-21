@@ -273,6 +273,10 @@ public class Ant extends Builder {
         @DataBoundConstructor
         public AntInstallation(String name, String home) {
             this.name = name;
+            if(home.endsWith("/") || home.endsWith("\\"))
+                // see https://issues.apache.org/bugzilla/show_bug.cgi?id=26947
+                // Ant doesn't like the trailing slash, especially on Windows
+                home = home.substring(0,home.length()-1);
             this.antHome = home;
         }
 
