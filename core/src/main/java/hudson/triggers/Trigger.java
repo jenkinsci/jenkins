@@ -1,21 +1,23 @@
 package hudson.triggers;
 
+import antlr.ANTLRException;
 import hudson.DependencyRunner;
-import hudson.ExtensionPoint;
-import hudson.util.DoubleLaunchChecker;
 import hudson.DependencyRunner.ProjectRunnable;
+import hudson.ExtensionPoint;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
+import hudson.model.ComputerSet;
 import hudson.model.Describable;
 import hudson.model.FingerprintCleanupThread;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Project;
-import hudson.model.WorkspaceCleanupThread;
 import hudson.model.SlaveReconnectionWork;
+import hudson.model.WorkspaceCleanupThread;
 import hudson.scheduler.CronTab;
 import hudson.scheduler.CronTabList;
+import hudson.util.DoubleLaunchChecker;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
@@ -27,8 +29,6 @@ import java.util.Timer;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import antlr.ANTLRException;
 
 /**
  * Triggers a {@link Build}.
@@ -214,5 +214,12 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         timer.scheduleAtFixedRate(new FingerprintCleanupThread(),DAY,DAY);
         timer.scheduleAtFixedRate(new WorkspaceCleanupThread(),DAY+4*HOUR,DAY);
         timer.scheduleAtFixedRate(new SlaveReconnectionWork(),15*MIN,5*MIN);
+
+        // start monitoring nodes, although there's no hurry.
+        timer.schedule(new SafeTimerTask() {
+            public void doRun() {
+                ComputerSet.initialize();
+            }
+        }, 1000*10);
     }
 }

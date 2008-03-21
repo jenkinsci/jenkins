@@ -21,21 +21,7 @@ import org.kohsuke.stapler.export.Exported;
  */
 @ExportedBean
 public final class ComputerSet implements ModelObject {
-    private static volatile List<NodeMonitor> monitors = Collections.emptyList();
-
-    public ComputerSet() {
-        if(monitors.isEmpty()) {
-            // create all instances when requested for the first time.
-            ArrayList<NodeMonitor> r = new ArrayList<NodeMonitor>();
-            for (Descriptor<NodeMonitor> d : NodeMonitor.LIST)
-                try {
-                    r.add(d.newInstance(null,null));
-                } catch (FormException e) {
-                    // so far impossible. TODO: report
-                }
-            monitors = r;
-        }
-    }
+    private static final List<NodeMonitor> monitors;
 
     @Exported
     public String getDisplayName() {
@@ -66,5 +52,22 @@ public final class ComputerSet implements ModelObject {
     
     public Api getApi() {
         return new Api(this);
+    }
+
+    /**
+     * Just to force the execution of the static initializer.
+     */
+    public static void initialize() {}
+
+    static {
+        // create all instances
+        ArrayList<NodeMonitor> r = new ArrayList<NodeMonitor>();
+        for (Descriptor<NodeMonitor> d : NodeMonitor.LIST)
+            try {
+                r.add(d.newInstance(null,null));
+            } catch (FormException e) {
+                // so far impossible. TODO: report
+            }
+        monitors = r;
     }
 }
