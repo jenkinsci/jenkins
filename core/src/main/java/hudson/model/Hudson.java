@@ -961,6 +961,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     public void setSecurityRealm(SecurityRealm securityRealm) {
+        if(securityRealm==null)
+            securityRealm= SecurityRealm.NO_AUTHENTICATION;
         this.securityRealm = securityRealm;
         SecurityComponents sc = securityRealm.createSecurityComponents();
         HudsonFilter.AUTHENTICATION_MANAGER.setDelegate(sc.manager);
@@ -1369,6 +1371,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 JSONObject security = json.getJSONObject("use_security");
                 setSecurityRealm(SecurityRealm.LIST.newInstanceFromRadioList(security,"realm"));
                 authorizationStrategy = AuthorizationStrategy.LIST.newInstanceFromRadioList(security,"authorization");
+                if(authorizationStrategy==null)
+                    authorizationStrategy = AuthorizationStrategy.UNSECURED;
             } else {
                 useSecurity = null;
                 setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);

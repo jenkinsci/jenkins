@@ -30,6 +30,8 @@ public final class DescriptorList<T extends Describable<T>> extends CopyOnWriteA
      * by a radio button group. 
      */
     public T newInstanceFromRadioList(JSONObject config) throws FormException {
+        if(config.isNullObject())
+            return null;    // none was selected
         int idx = config.getInt("value");
         return get(idx).newInstance(Stapler.getCurrentRequest(),config);
     }
