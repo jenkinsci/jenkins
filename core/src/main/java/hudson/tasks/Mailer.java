@@ -44,12 +44,6 @@ public class Mailer extends Publisher {
     protected static final Logger LOGGER = Logger.getLogger(Mailer.class.getName());
 
     /**
-     * Matches strings like "Kohsuke Kawaguchi &lt;kohsuke.kawaguchi@sun.com>"
-     * @see #extractAddressFromId(String)
-     */
-    public static final String EMAIL_ADDRESS_REGEXP = "^.*<([^>]+)>.*$";
-
-    /**
      * Whitespace-separated list of e-mail addresses that represent recipients.
      */
     public String recipients;
@@ -332,15 +326,6 @@ public class Mailer extends Publisher {
     }
 
     /**
-     * Tries to extract an email address from the user id, or returns null
-     */
-    public static String extractAddressFromId(String id) {
-    	if (id.matches(EMAIL_ADDRESS_REGEXP))
-    		return id.replaceFirst(EMAIL_ADDRESS_REGEXP, "$1");
-    	return null;
-    }
-
-    /**
      * Per user property that is e-mail address.
      */
     public static class UserProperty extends hudson.model.UserProperty {
@@ -361,24 +346,8 @@ public class Mailer extends Publisher {
             if(emailAddress!=null)
                 return emailAddress;
 
-            String extractedAddress = extractAddressFromId(user.getId());
-            if (extractedAddress != null)
-                    return extractedAddress;
-
             // try the inference logic
-            String address = MailAddressResolver.resolve(user);
-            if(address!=null)
-                return address;
-            
-            if(user.getId().contains("@"))
-                // this already looks like an e-mail ID
-                return user.getId();
-            
-            String ds = Mailer.DESCRIPTOR.getDefaultSuffix();
-            if(ds!=null)
-                return user.getId()+ds;
-            else
-                return null;
+            return MailAddressResolver.resolve(user);
         }
 
         public DescriptorImpl getDescriptor() {

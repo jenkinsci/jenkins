@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -63,8 +64,38 @@ public abstract class MailAddressResolver implements ExtensionPoint {
             String email = r.findMailAddressFor(u);
             if(email!=null) return email;
         }
-        return null;
+
+        // fall back logic
+        String extractedAddress = extractAddressFromId(u.getId());
+        if (extractedAddress != null)
+                return extractedAddress;
+
+        if(u.getId().contains("@"))
+            // this already looks like an e-mail ID
+            return u.getId();
+
+        String ds = Mailer.DESCRIPTOR.getDefaultSuffix();
+        if(ds!=null)
+            return u.getId()+ds;
+        else
+            return null;
     }
+
+    /**
+     * Tries to extract an email address from the user id, or returns null
+     */
+    private static String extractAddressFromId(String id) {
+        Matcher m = EMAIL_ADDRESS_REGEXP.matcher(id);
+        if(m.matches())
+    		return m.group(1);
+    	return null;
+    }
+
+    /**
+     * Matches strings like "Kohsuke Kawaguchi &lt;kohsuke.kawaguchi@sun.com>"
+     * @see #extractAddressFromId(String)
+     */
+    private static final Pattern EMAIL_ADDRESS_REGEXP = Pattern.compile("^.*<([^>]+)>.*$");
 
 
     /**
