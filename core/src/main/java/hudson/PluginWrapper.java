@@ -80,7 +80,10 @@ public final class PluginWrapper {
     private final File disableFile;
 
     /**
-     * Short name of the plugin. The "abc" portion of "abc.hpl".
+     * Short name of the plugin. The artifact Id of the plugin.
+     * This is also used in the URL within Hudson, so it needs
+     * to remain stable even when the *.hpi file name is changed
+     * (like Maven does.)
      */
     private final String shortName;
 
@@ -119,8 +122,6 @@ public final class PluginWrapper {
         LOGGER.info("Loading plugin: "+archive);
         this.archive = archive;
 
-        this.shortName = getShortName(archive);
-
         boolean isLinked = archive.getName().endsWith(".hpl");
 
         File expandDir = null;  // if .hpi, this is the directory where war is expanded
@@ -144,7 +145,7 @@ public final class PluginWrapper {
                 in.close();
             }
         } else {
-            expandDir = new File(archive.getParentFile(), shortName);
+            expandDir = new File(archive.getParentFile(), getBaseName(archive));
             explode(archive,expandDir);
 
             File manifestFile = new File(expandDir,"META-INF/MANIFEST.MF");
@@ -158,6 +159,8 @@ public final class PluginWrapper {
                 fin.close();
             }
         }
+
+        this.shortName = computeShortName(manifest,archive);
 
         // TODO: define a mechanism to hide classes
         // String export = manifest.getMainAttributes().getValue("Export");
@@ -199,6 +202,21 @@ public final class PluginWrapper {
             for(String s : v.split(","))
                 dependencies.add(new Dependency(s));
         }
+    }
+
+    private String computeShortName(Manifest manifest, File archive) {
+        // use the name captured in the manifest, as often plugins
+        // depend on the specific short name in its URLs.
+        String n = manifest.getMainAttributes().getValue("Short-Name");
+        if(n!=null)     return n;
+
+        // maven seems to put this automatically, so good fallback to check.
+        n = manifest.getMainAttributes().getValue("Extension-Name");
+        if(n!=null)     return n;
+
+        // otherwise infer from the file name, since older plugins don't have
+        // this entry.
+        return getBaseName(archive);
     }
 
     /**
@@ -339,7 +357,7 @@ public final class PluginWrapper {
     /**
      * Gets the "abc" portion from "abc.ext".
      */
-    private static String getShortName(File archive) {
+    private static String getBaseName(File archive) {
         String n = archive.getName();
         int idx = n.lastIndexOf('.');
         if(idx>=0)
