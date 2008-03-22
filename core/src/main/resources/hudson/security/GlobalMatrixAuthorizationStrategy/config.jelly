@@ -87,7 +87,10 @@
             return;
           }
 
-          var copy = document.importNode(master,true);
+          if(document.importNode!=null)
+            copy = document.importNode(master,true);
+          else
+            copy = master.cloneNode(true); <!-- for IE -->
           copy.removeAttribute("id");
           copy.removeAttribute("style");
           copy.firstChild.innerHTML = name;
