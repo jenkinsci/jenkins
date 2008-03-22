@@ -131,7 +131,7 @@ public final class PluginWrapper {
             if(firstLine.startsWith("Manifest-Version:")) {
                 // this is the manifest already
             } else {
-                // in direction
+                // indirection
                 archive = resolve(archive, firstLine);
             }
             // then parse manifest
