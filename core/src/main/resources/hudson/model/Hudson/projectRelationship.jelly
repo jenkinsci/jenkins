@@ -28,8 +28,8 @@
           </tr>
 
           <j:if test="${!empty(request.getParameter('lhs')) and !empty(request.getParameter('rhs'))}">
-            <j:set var="jl" value="${app.getJob(request.getParameter('lhs'))}" />
-            <j:set var="jr" value="${app.getJob(request.getParameter('rhs'))}" />
+            <j:set var="jl" value="${app.getItemByFullName(request.getParameter('lhs'))}" />
+            <j:set var="jr" value="${app.getItemByFullName(request.getParameter('rhs'))}" />
 
             <j:choose>
               <j:when test="${jl==null}">
