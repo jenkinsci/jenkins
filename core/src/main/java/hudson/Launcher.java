@@ -1,27 +1,26 @@
 package hudson;
 
-import hudson.model.Hudson;
-import hudson.model.TaskListener;
-import hudson.model.Computer;
-import hudson.remoting.VirtualChannel;
-import hudson.remoting.Channel;
-import hudson.remoting.RemoteOutputStream;
-import hudson.remoting.RemoteInputStream;
-import hudson.remoting.Pipe;
-import hudson.remoting.Callable;
 import hudson.Proc.LocalProc;
 import hudson.Proc.RemoteProc;
+import hudson.model.Computer;
+import hudson.model.Hudson;
+import hudson.model.TaskListener;
+import hudson.remoting.Callable;
+import hudson.remoting.Channel;
+import hudson.remoting.Pipe;
+import hudson.remoting.RemoteInputStream;
+import hudson.remoting.RemoteOutputStream;
+import hudson.remoting.VirtualChannel;
+import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.BufferedOutputStream;
-import java.util.Map;
 import java.util.Arrays;
-
-import org.jvnet.winp.WinProcess;
+import java.util.Map;
 
 /**
  * Starts a process.
@@ -312,10 +311,7 @@ public abstract class Launcher {
                  */
                 protected synchronized void terminate(IOException e) {
                     super.terminate(e);
-                    if(Hudson.isWindows())
-                        new WinProcess(proc).killRecursively();
-                    else
-                        proc.destroy();
+                    ProcessTreeKiller.get().kill(proc);
                 }
 
                 public synchronized void close() throws IOException {

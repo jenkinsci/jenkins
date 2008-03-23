@@ -14,17 +14,33 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.tasks.DynamicLabeler;
 import hudson.tasks.LabelFinder;
-import hudson.util.*;
+import hudson.util.ClockDifference;
+import hudson.util.NullStream;
+import hudson.util.ProcessTreeKiller;
+import hudson.util.RingBufferLogHandler;
+import hudson.util.StreamCopyThread;
+import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.jvnet.winp.WinProcess;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -322,10 +338,7 @@ public final class Slave implements Node, Serializable {
                                 public void onClosed(Channel channel, IOException cause) {
                                     if(cause!=null)
                                         cause.printStackTrace(listener.error(Messages.Slave_Terminated(getTimestamp())));
-                                    if(Hudson.isWindows())
-                                        new WinProcess(proc).killRecursively();
-                                    else
-                                        proc.destroy();
+                                    ProcessTreeKiller.get().kill(proc);
                                 }
                             });
 
