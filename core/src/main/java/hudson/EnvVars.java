@@ -66,6 +66,14 @@ public class EnvVars extends TreeMap<String,String> {
     }
 
     /**
+     * Takes a string that looks like "a=b" and adds that to this map.
+     */
+    public void addLine(String line) {
+        int sep = line.indexOf('=');
+        put(line.substring(0,sep),line.substring(sep+1));
+    }
+
+    /**
      * Obtains the environment variables of a remote peer.
      *
      * @param channel
