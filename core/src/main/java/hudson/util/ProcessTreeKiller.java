@@ -132,167 +132,18 @@ public abstract class ProcessTreeKiller {
     }
 
     /**
-     * Implementation for Linux that uses <tt>/proc</tt>.
+     * Implementation for Unix that supports reasonably powerful <tt>/proc</tt> FS.
      */
-    private static final class Linux extends ProcessTreeKiller {
-        /**
-         * Represents a single Linux system, which hosts multiple processes.
-         *
-         * <p>
-         * The object represents a snapshot of the system state.  
-         */
-        static class LinuxSystem implements Iterable<LinuxProcess> {
-            private final Map<Integer/*pid*/,LinuxProcess> processes = new HashMap<Integer,LinuxProcess>();
-
-            LinuxSystem() {
-                File[] processes = new File("/proc").listFiles(new FileFilter() {
-                    public boolean accept(File f) {
-                        return f.isDirectory();
-                    }
-                });
-                if(processes==null) {
-                    LOGGER.info("No /proc");
-                    return;
-                }
-
-                for (File p : processes) {
-                    int pid;
-                    try {
-                        pid = Integer.parseInt(p.getName());
-                    } catch (NumberFormatException e) {
-                        // other sub-directories
-                        continue;
-                    }
-                    try {
-                        this.processes.put(pid,new LinuxProcess(this,pid));
-                    } catch (IOException e) {
-                        // perhaps the process status has changed since we obtained a directory listing
-                    }
-                }
-            }
-
-            public LinuxProcess get(int pid) {
-                return processes.get(pid);
-            }
-
-            public Iterator<LinuxProcess> iterator() {
-                return processes.values().iterator();
-            }
-        }
-
-        /**
-         * A process.
-         */
-        static class LinuxProcess {
-            private final LinuxSystem system;
-            final int pid;
-            private int ppid = -1;
-            private EnvVars envVars;
-
-            LinuxProcess(LinuxSystem system, int pid) throws IOException {
-                this.system = system;
-                this.pid = pid;
-
-                BufferedReader r = new BufferedReader(new FileReader(getFile("status")));
-                String line;
-                while((line=r.readLine())!=null) {
-                    line=line.toLowerCase(Locale.ENGLISH);
-                    if(line.startsWith("ppid:"))
-                        ppid = Integer.parseInt(line.substring(4).trim());
-                }
-                if(ppid==-1)
-                    throw new IOException("Failed to parse PPID from /proc/"+pid+"/status");
-            }
-
-            private File getFile(String relativePath) {
-                return new File(new File("/proc/"+pid),relativePath);
-            }
-
-            /**
-             * Gets the parent process. This method may return null, because
-             * there's no guarantee that we are getting a consistent snapshot
-             * of the whole system state.
-             */
-            LinuxProcess getParent() {
-                return system.get(ppid);
-            }
-
-            /**
-             * Immediate child processes.
-             */
-            List<LinuxProcess> getChildren() {
-                List<LinuxProcess> r = new ArrayList<LinuxProcess>();
-                for (LinuxProcess p : system.processes.values())
-                    if(p.ppid==pid)
-                        r.add(p);
-                return r;
-            }
-
-            public void killRecursively() {
-                for (LinuxProcess p : getChildren())
-                    p.killRecursively();
-                kill();
-            }
-
-            /**
-             * Tries to kill this process.
-             */
-            public void kill() {
-                try {
-                    DESTROY_PROCESS.invoke(null,pid);
-                } catch (IllegalAccessException e) {
-                    // this is impossible
-                    IllegalAccessError x = new IllegalAccessError();
-                    x.initCause(e);
-                    throw x;
-                } catch (InvocationTargetException e) {
-                    // tunnel serious errors
-                    if(e.getTargetException() instanceof Error)
-                        throw (Error)e.getTargetException();
-                    // otherwise log and let go. I need to see when this happens
-                    LOGGER.log(Level.INFO, "Failed to terminate pid="+pid,e);
-                }
-
-            }
-
-            /**
-             * Obtains the environment variables of this process.
-             *
-             * @return
-             *      empty map if failed (for example because the process is already dead,
-             *      or the permission was denied.)
-             */
-            public synchronized EnvVars getEnvVars() {
-                if(envVars !=null)
-                    return envVars;
-                envVars = new EnvVars();
-                try {
-                    byte[] environ = FileUtils.readFileToByteArray(getFile("environ"));
-                    int pos=0;
-                    for (int i = 0; i < environ.length; i++) {
-                        byte b = environ[i];
-                        if(b==0) {
-                            String line = new String(environ,pos,i-pos);
-                            int sep = line.indexOf('=');
-                            envVars.put(line.substring(0,sep),line.substring(sep+1));
-                            pos=i+1;
-                        }
-                    }
-                } catch (IOException e) {
-                    // failed to read. this can happen under normal circumstances,
-                    // so don't report this as an error.
-                }
-                return envVars;
-            }
-        }
-
+    private static abstract class Unix<S extends Unix.UnixSystem<?>> extends ProcessTreeKiller {
         public void kill(Process proc) {
             kill(proc,null);
         }
 
+        protected abstract S createSystem();
+
         public void kill(Process proc, Run<?,?> run) {
-            LinuxSystem system = new LinuxSystem();
-            LinuxProcess p;
+            S system = createSystem();
+            UnixProcess p;
             try {
                 p = system.get((Integer) PID_FIELD.get(proc));
             } catch (IllegalAccessException e) { // impossible
@@ -311,7 +162,7 @@ public abstract class ProcessTreeKiller {
                 p.killRecursively();
             else {
                 Map<String,String> modelEnvVars = run.getEnvVars();
-                for (LinuxProcess lp : system) {
+                for (UnixProcess lp : system) {
                     if(hasMatchingEnvVars(lp.getEnvVars(),modelEnvVars))
                         lp.kill();
                 }
@@ -348,6 +199,193 @@ public abstract class ProcessTreeKiller {
                 LinkageError x = new LinkageError();
                 x.initCause(e);
                 throw x;
+            }
+        }
+
+        /**
+         * Represents a single Unix system, which hosts multiple processes.
+         *
+         * <p>
+         * The object represents a snapshot of the system state.
+         */
+        static abstract class UnixSystem<P extends UnixProcess<P>> implements Iterable<P> {
+            private final Map<Integer/*pid*/,P> processes = new HashMap<Integer,P>();
+
+            UnixSystem() {
+                File[] processes = new File("/proc").listFiles(new FileFilter() {
+                    public boolean accept(File f) {
+                        return f.isDirectory();
+                    }
+                });
+                if(processes==null) {
+                    LOGGER.info("No /proc");
+                    return;
+                }
+
+                for (File p : processes) {
+                    int pid;
+                    try {
+                        pid = Integer.parseInt(p.getName());
+                    } catch (NumberFormatException e) {
+                        // other sub-directories
+                        continue;
+                    }
+                    try {
+                        this.processes.put(pid,createProcess(pid));
+                    } catch (IOException e) {
+                        // perhaps the process status has changed since we obtained a directory listing
+                    }
+                }
+            }
+
+            protected abstract P createProcess(int pid) throws IOException;
+
+            public P get(int pid) {
+                return processes.get(pid);
+            }
+
+            public Iterator<P> iterator() {
+                return processes.values().iterator();
+            }
+        }
+
+        /**
+         * A process.
+         */
+        public static abstract class UnixProcess<P extends UnixProcess<P>> {
+            public final UnixSystem<P>  system;
+
+            protected UnixProcess(UnixSystem<P> system) {
+                this.system = system;
+            }
+
+            public abstract int getPid();
+
+            /**
+             * Gets the parent process. This method may return null, because
+             * there's no guarantee that we are getting a consistent snapshot
+             * of the whole system state.
+             */
+            public abstract P getParent();
+
+            protected final File getFile(String relativePath) {
+                return new File(new File("/proc/"+getPid()),relativePath);
+            }
+
+            /**
+             * Immediate child processes.
+             */
+            public List<P> getChildren() {
+                List<P> r = new ArrayList<P>();
+                for (P p : system)
+                    if(p.getParent()==this)
+                        r.add(p);
+                return r;
+            }
+
+            /**
+             * Tries to kill this process.
+             */
+            public void kill() {
+                try {
+                    DESTROY_PROCESS.invoke(null,getPid());
+                } catch (IllegalAccessException e) {
+                    // this is impossible
+                    IllegalAccessError x = new IllegalAccessError();
+                    x.initCause(e);
+                    throw x;
+                } catch (InvocationTargetException e) {
+                    // tunnel serious errors
+                    if(e.getTargetException() instanceof Error)
+                        throw (Error)e.getTargetException();
+                    // otherwise log and let go. I need to see when this happens
+                    LOGGER.log(Level.INFO, "Failed to terminate pid="+getPid(),e);
+                }
+
+            }
+
+            public void killRecursively() {
+                for (P p : getChildren())
+                    p.killRecursively();
+                kill();
+            }
+
+            /**
+             * Obtains the environment variables of this process.
+             *
+             * @return
+             *      empty map if failed (for example because the process is already dead,
+             *      or the permission was denied.)
+             */
+            public abstract EnvVars getEnvVars();
+        }
+    }
+
+
+
+    /**
+     * Implementation for Linux that uses <tt>/proc</tt>.
+     */
+    private static final class Linux extends Unix<Linux.LinuxSystem> {
+        protected LinuxSystem createSystem() {
+            return new LinuxSystem();
+        }
+
+        static class LinuxSystem extends UnixSystem<LinuxProcess> {
+            protected LinuxProcess createProcess(int pid) throws IOException {
+                return new LinuxProcess(this,pid);
+            }
+        }
+
+        static class LinuxProcess extends UnixProcess<LinuxProcess> {
+            final int pid;
+            private int ppid = -1;
+            private EnvVars envVars;
+
+            LinuxProcess(LinuxSystem system, int pid) throws IOException {
+                super(system);
+                this.pid = pid;
+
+                BufferedReader r = new BufferedReader(new FileReader(getFile("status")));
+                String line;
+                while((line=r.readLine())!=null) {
+                    line=line.toLowerCase(Locale.ENGLISH);
+                    if(line.startsWith("ppid:"))
+                        ppid = Integer.parseInt(line.substring(4).trim());
+                }
+                if(ppid==-1)
+                    throw new IOException("Failed to parse PPID from /proc/"+pid+"/status");
+            }
+
+            public int getPid() {
+                return pid;
+            }
+
+            public LinuxProcess getParent() {
+                return system.get(ppid);
+            }
+
+            public synchronized EnvVars getEnvVars() {
+                if(envVars !=null)
+                    return envVars;
+                envVars = new EnvVars();
+                try {
+                    byte[] environ = FileUtils.readFileToByteArray(getFile("environ"));
+                    int pos=0;
+                    for (int i = 0; i < environ.length; i++) {
+                        byte b = environ[i];
+                        if(b==0) {
+                            String line = new String(environ,pos,i-pos);
+                            int sep = line.indexOf('=');
+                            envVars.put(line.substring(0,sep),line.substring(sep+1));
+                            pos=i+1;
+                        }
+                    }
+                } catch (IOException e) {
+                    // failed to read. this can happen under normal circumstances,
+                    // so don't report this as an error.
+                }
+                return envVars;
             }
         }
     }
