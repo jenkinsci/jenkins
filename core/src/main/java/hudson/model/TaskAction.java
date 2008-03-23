@@ -48,7 +48,6 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
         return log;
     }
 
-    @Override
     public String getSearchUrl() {
         return getUrlName();
     }
