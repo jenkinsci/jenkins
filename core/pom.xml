@@ -485,7 +485,7 @@
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.2</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>com.octo.captcha</groupId>
