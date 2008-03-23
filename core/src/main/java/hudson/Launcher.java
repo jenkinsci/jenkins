@@ -298,7 +298,10 @@ public abstract class Launcher {
         public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String,String> envVars) throws IOException {
             printCommandLine(cmd, workDir);
 
-            final Process proc = Runtime.getRuntime().exec(cmd, Util.mapToEnv(Launcher.inherit(envVars)), toFile(workDir));
+            final EnvVars cookie = ProcessTreeKiller.createCookie();
+            EnvVars map = Launcher.inherit(envVars);
+            map.putAll(cookie);
+            final Process proc = Runtime.getRuntime().exec(cmd, Util.mapToEnv(map), toFile(workDir));
 
             final Thread t2 = new StreamCopyThread(cmd+": stderr copier", proc.getErrorStream(), out);
             t2.start();
@@ -311,7 +314,7 @@ public abstract class Launcher {
                  */
                 protected synchronized void terminate(IOException e) {
                     super.terminate(e);
-                    ProcessTreeKiller.get().kill(proc);
+                    ProcessTreeKiller.get().kill(proc,cookie);
                 }
 
                 public synchronized void close() throws IOException {
@@ -451,7 +454,7 @@ public abstract class Launcher {
     /**
      * Expands the list of environment variables by inheriting current env variables.
      */
-    private static Map<String,String> inherit(Map<String,String> overrides) {
+    private static EnvVars inherit(Map<String,String> overrides) {
         EnvVars m = new EnvVars(EnvVars.masterEnvVars);
         m.overrideAll(overrides);
         return m;

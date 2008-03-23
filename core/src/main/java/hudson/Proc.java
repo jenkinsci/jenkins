@@ -56,6 +56,7 @@ public abstract class Proc {
         private final Process proc;
         private final Thread copier;
         private final OutputStream out;
+        private final EnvVars cookie;
 
         public LocalProc(String cmd, Map<String,String> env, OutputStream out, File workDir) throws IOException {
             this(cmd,Util.mapToEnv(env),out,workDir);
@@ -79,7 +80,7 @@ public abstract class Proc {
 
         public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out, File workDir) throws IOException {
             this( calcName(cmd),
-                  environment(new ProcessBuilder(cmd),env).directory(workDir).redirectErrorStream(true).start(),
+                  environment(new ProcessBuilder(cmd),env).directory(workDir).redirectErrorStream(true),
                   in, out );
         }
 
@@ -95,10 +96,12 @@ public abstract class Proc {
             return pb;
         }
 
-        private LocalProc( String name, Process proc, InputStream in, OutputStream out ) throws IOException {
+        private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out ) throws IOException {
             Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
             this.out = out;
-            this.proc = proc;
+            this.cookie = ProcessTreeKiller.createCookie();
+            procBuilder.environment().putAll(cookie);
+            this.proc = procBuilder.start();
             copier = new StreamCopyThread(name+": stdout copier", proc.getInputStream(), out);
             copier.start();
             if(in!=null)
@@ -160,7 +163,7 @@ public abstract class Proc {
          * Destroys the child process without join.
          */
         private void destroy() {
-            ProcessTreeKiller.get().kill(proc);
+            ProcessTreeKiller.get().kill(proc,cookie);
         }
 
         private static class ByteCopier extends Thread {

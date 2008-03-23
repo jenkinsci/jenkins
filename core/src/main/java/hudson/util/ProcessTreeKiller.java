@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,6 +64,16 @@ public abstract class ProcessTreeKiller {
      * ancestor/descendant relationship. 
      */
     public abstract void kill(Process proc, Map<String, String> modelEnvVars);
+
+    /**
+     * Creates a magic cookie that can be used as the model environment variable
+     * when we later kill the processes.
+     */
+    public static EnvVars createCookie() {
+        EnvVars r = new EnvVars();
+        r.put("HUDSON_COOKIE",UUID.randomUUID().toString());
+        return r;
+    }
 
     /**
      * Gets the {@link ProcessTreeKiller} suitable for the current system
@@ -354,13 +365,13 @@ public abstract class ProcessTreeKiller {
             return new LinuxSystem();
         }
 
-        static class LinuxSystem extends UnixSystem<LinuxProcess> {
+        static class LinuxSystem extends Unix.UnixSystem<LinuxProcess> {
             protected LinuxProcess createProcess(int pid) throws IOException {
                 return new LinuxProcess(this,pid);
             }
         }
 
-        static class LinuxProcess extends UnixProcess<LinuxProcess> {
+        static class LinuxProcess extends Unix.UnixProcess<LinuxProcess> {
             private final int pid;
             private int ppid = -1;
             private EnvVars envVars;
@@ -428,13 +439,13 @@ public abstract class ProcessTreeKiller {
             return new SolarisSystem();
         }
 
-        static class SolarisSystem extends UnixSystem<SolarisProcess> {
+        static class SolarisSystem extends Unix.UnixSystem<SolarisProcess> {
             protected SolarisProcess createProcess(int pid) throws IOException {
                 return new SolarisProcess(this,pid);
             }
         }
 
-        static class SolarisProcess extends UnixProcess<SolarisProcess> {
+        static class SolarisProcess extends Unix.UnixProcess<SolarisProcess> {
             private final int pid;
             private final int ppid;
             /**

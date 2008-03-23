@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
@@ -327,7 +328,11 @@ public final class Slave implements Node, Serializable {
                         try {
                             listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
                             listener.getLogger().println("$ "+slave.agentCommand);
-                            final Process proc = Runtime.getRuntime().exec(slave.agentCommand);
+
+                            ProcessBuilder pb = new ProcessBuilder(Util.tokenize(slave.agentCommand));
+                            final EnvVars cookie = ProcessTreeKiller.createCookie();
+                            pb.environment().putAll(cookie);
+                            final Process proc = pb.start();
 
                             // capture error information from stderr. this will terminate itself
                             // when the process is killed.
@@ -338,7 +343,7 @@ public final class Slave implements Node, Serializable {
                                 public void onClosed(Channel channel, IOException cause) {
                                     if(cause!=null)
                                         cause.printStackTrace(listener.error(Messages.Slave_Terminated(getTimestamp())));
-                                    ProcessTreeKiller.get().kill(proc);
+                                    ProcessTreeKiller.get().kill(proc,cookie);
                                 }
                             });
 
