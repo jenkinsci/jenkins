@@ -541,6 +541,19 @@ public abstract class ProcessTreeKiller {
         }
     }
 
+    /*
+        On MacOS X, there's no procfs <http://www.osxbook.com/book/bonus/chapter11/procfs/>
+        instead you'd do it with the sysctl <http://search.cpan.org/src/DURIST/Proc-ProcessTable-0.42/os/darwin.c>
+        <http://developer.apple.com/documentation/Darwin/Reference/ManPages/man3/sysctl.3.html>
+
+        There's CLI but that doesn't seem to offer the access to per-process info
+        <http://developer.apple.com/documentation/Darwin/Reference/ManPages/man8/sysctl.8.html>
+
+
+
+        On HP-UX, pstat_getcommandline get you command line, but I'm not seeing any environment variables.
+     */
+
     private static final boolean IS_LITTLE_ENDIAN = "little".equals(System.getProperty("sun.cpu.endian"));
     private static final Logger LOGGER = Logger.getLogger(ProcessTreeKiller.class.getName());
 }
