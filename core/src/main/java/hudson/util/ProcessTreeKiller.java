@@ -12,6 +12,9 @@ import java.io.FileFilter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.DataInputStream;
+import java.io.RandomAccessFile;
+import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import java.util.Locale;
 import java.util.HashMap;
@@ -77,6 +80,8 @@ public abstract class ProcessTreeKiller {
         String os = Util.fixNull(System.getProperty("os.name"));
         if(os.equals("Linux"))
             return new Linux();
+        if(os.equals("SunOS"))
+            return new Solaris();
 
         return DEFAULT;
     }
@@ -338,7 +343,7 @@ public abstract class ProcessTreeKiller {
         }
 
         static class LinuxProcess extends UnixProcess<LinuxProcess> {
-            final int pid;
+            private final int pid;
             private int ppid = -1;
             private EnvVars envVars;
 
@@ -347,11 +352,15 @@ public abstract class ProcessTreeKiller {
                 this.pid = pid;
 
                 BufferedReader r = new BufferedReader(new FileReader(getFile("status")));
-                String line;
-                while((line=r.readLine())!=null) {
-                    line=line.toLowerCase(Locale.ENGLISH);
-                    if(line.startsWith("ppid:"))
-                        ppid = Integer.parseInt(line.substring(4).trim());
+                try {
+                    String line;
+                    while((line=r.readLine())!=null) {
+                        line=line.toLowerCase(Locale.ENGLISH);
+                        if(line.startsWith("ppid:"))
+                            ppid = Integer.parseInt(line.substring(4).trim());
+                    }
+                } finally {
+                    r.close();
                 }
                 if(ppid==-1)
                     throw new IOException("Failed to parse PPID from /proc/"+pid+"/status");
@@ -375,14 +384,12 @@ public abstract class ProcessTreeKiller {
                     for (int i = 0; i < environ.length; i++) {
                         byte b = environ[i];
                         if(b==0) {
-                            String line = new String(environ,pos,i-pos);
-                            int sep = line.indexOf('=');
-                            envVars.put(line.substring(0,sep),line.substring(sep+1));
+                            envVars.addLine(new String(environ,pos,i-pos));
                             pos=i+1;
                         }
                     }
                 } catch (IOException e) {
-                    // failed to read. this can happen under normal circumstances,
+                    // failed to read. this can happen under normal circumstances (most notably permission denied)
                     // so don't report this as an error.
                 }
                 return envVars;
@@ -390,5 +397,150 @@ public abstract class ProcessTreeKiller {
         }
     }
 
+
+
+    /**
+     * Implementation for Solaris that uses <tt>/proc</tt>.
+     *
+     * Amazingly, this single code works for both 32bit and 64bit Solaris, despite the fact
+     * that does a lot of pointer manipulation and what not.
+     */
+    private static final class Solaris extends Unix<Solaris.SolarisSystem> {
+        protected SolarisSystem createSystem() {
+            return new SolarisSystem();
+        }
+
+        static class SolarisSystem extends UnixSystem<SolarisProcess> {
+            protected SolarisProcess createProcess(int pid) throws IOException {
+                return new SolarisProcess(this,pid);
+            }
+        }
+
+        static class SolarisProcess extends UnixProcess<SolarisProcess> {
+            private final int pid;
+            private final int ppid;
+            /**
+             * Address of the environment vector. Even on 64bit Solaris this is still 32bit pointer.
+             */
+            private final int envp;
+            private EnvVars envVars;
+
+            SolarisProcess(SolarisSystem system, int pid) throws IOException {
+                super(system);
+                this.pid = pid;
+
+                RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"),"r");
+                try {
+                    //typedef struct psinfo {
+                    //	int	pr_flag;	/* process flags */
+                    //	int	pr_nlwp;	/* number of lwps in the process */
+                    //	pid_t	pr_pid;	/* process id */
+                    //	pid_t	pr_ppid;	/* process id of parent */
+                    //	pid_t	pr_pgid;	/* process id of process group leader */
+                    //	pid_t	pr_sid;	/* session id */
+                    //	uid_t	pr_uid;	/* real user id */
+                    //	uid_t	pr_euid;	/* effective user id */
+                    //	gid_t	pr_gid;	/* real group id */
+                    //	gid_t	pr_egid;	/* effective group id */
+                    //	uintptr_t	pr_addr;	/* address of process */
+                    //	size_t	pr_size;	/* size of process image in Kbytes */
+                    //	size_t	pr_rssize;	/* resident set size in Kbytes */
+                    //	dev_t	pr_ttydev;	/* controlling tty device (or PRNODEV) */
+                    //	ushort_t	pr_pctcpu;	/* % of recent cpu time used by all lwps */
+                    //	ushort_t	pr_pctmem;	/* % of system memory used by process */
+                    //	timestruc_t	pr_start;	/* process start time, from the epoch */
+                    //	timestruc_t	pr_time;	/* cpu time for this process */
+                    //	timestruc_t	pr_ctime;	/* cpu time for reaped children */
+                    //	char	pr_fname[PRFNSZ];	/* name of exec'ed file */
+                    //	char	pr_psargs[PRARGSZ];	/* initial characters of arg list */
+                    //	int	pr_wstat;	/* if zombie, the wait() status */
+                    //	int	pr_argc;	/* initial argument count */
+                    //	uintptr_t	pr_argv;	/* address of initial argument vector */
+                    //	uintptr_t	pr_envp;	/* address of initial environment vector */
+                    //	char	pr_dmodel;	/* data model of the process */
+                    //	lwpsinfo_t	pr_lwp;	/* information for representative lwp */
+                    //} psinfo_t;
+
+                    // see http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/sys/types.h
+                    // for the size of the various datatype.
+
+                    psinfo.seek(8);
+                    if(adjust(psinfo.readInt())!=pid)
+                        throw new IOException("psinfo PID mismatch");   // sanity check
+                    ppid = adjust(psinfo.readInt());
+
+                    psinfo.seek(196);  // now jump to pr_envp
+                    envp = adjust(psinfo.readInt());
+                } finally {
+                    psinfo.close();
+                }
+                if(ppid==-1)
+                    throw new IOException("Failed to parse PPID from /proc/"+pid+"/status");
+            }
+
+            /**
+             * {@link DataInputStream} reads a value in big-endian, so
+             * convert it to the correct value on little-endian systems.
+             */
+            private int adjust(int i) {
+                if(IS_LITTLE_ENDIAN)
+                    return (i<<24) |((i<<8) & 0x00FF0000) | ((i>>8) & 0x0000FF00) | (i>>>24);
+                else
+                    return i;
+            }
+
+            public int getPid() {
+                return pid;
+            }
+
+            public SolarisProcess getParent() {
+                return system.get(ppid);
+            }
+
+            public synchronized EnvVars getEnvVars() {
+                if(envVars !=null)
+                    return envVars;
+                envVars = new EnvVars();
+
+                try {
+                    RandomAccessFile as = new RandomAccessFile(getFile("as"),"r");
+                    try {
+                        for( int n=0; ; n++ ) {
+                            // read a pointer to one entry
+                            as.seek(to64(envp+n*4));
+                            int p = as.readInt();
+                            if(p==0)
+                                break;  // completed the walk
+                            // now read the null-terminated string
+                            as.seek(to64(p));
+                            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                            int ch;
+                            while((ch=as.read())!=0)
+                                buf.write(ch);
+                            envVars.addLine(buf.toString());
+                        }
+                    } finally {
+                        // failed to read. this can happen under normal circumstances,
+                        // so don't report this as an error.
+                        as.close();
+                    }
+                } catch (IOException e) {
+                    // failed to read. this can happen under normal circumstances (most notably permission denied)
+                    // so don't report this as an error.
+                }
+                
+                return envVars;
+            }
+
+            /**
+             * int to long conversion with zero-padding.
+             */
+            private static long to64(int i) {
+                return i&0xFFFFFFFFL;
+            }
+        }
+    }
+
+    private static final boolean IS_LITTLE_ENDIAN = "little".equals(System.getProperty("sun.cpu.endian"));
     private static final Logger LOGGER = Logger.getLogger(ProcessTreeKiller.class.getName());
 }
