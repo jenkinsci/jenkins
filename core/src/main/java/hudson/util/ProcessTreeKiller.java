@@ -385,8 +385,10 @@ public abstract class ProcessTreeKiller {
                     String line;
                     while((line=r.readLine())!=null) {
                         line=line.toLowerCase(Locale.ENGLISH);
-                        if(line.startsWith("ppid:"))
-                            ppid = Integer.parseInt(line.substring(4).trim());
+                        if(line.startsWith("ppid:")) {
+                            ppid = Integer.parseInt(line.substring(5).trim());
+                            break;
+                        }
                     }
                 } finally {
                     r.close();
