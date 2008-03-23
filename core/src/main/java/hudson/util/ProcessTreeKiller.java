@@ -1,31 +1,31 @@
 package hudson.util;
 
-import hudson.model.Run;
-import hudson.Util;
 import hudson.EnvVars;
+import hudson.Util;
+import org.apache.commons.io.FileUtils;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
-import org.apache.commons.io.FileUtils;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.DataInputStream;
 import java.io.RandomAccessFile;
-import java.io.ByteArrayOutputStream;
-import java.util.Map;
-import java.util.Locale;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Kills a process tree to clean up the mess left by a build.
@@ -53,12 +53,16 @@ public abstract class ProcessTreeKiller {
      * kill all the daemon processes launched.
      *
      * <p>
-     * Several different strategies are possible to determine what
-     * daemon processes are launched from the build, but the recommended
-     * approach is to check the environment variable JOB_NAME
-     * and BUILD_NUMBER. See {@link Run#getEnvVars()} for more details.
+     * Daemon processes are hard to find because they normally detach themselves
+     * from the parent process. In this method, the method is given a
+     * "model environment variables", which is a list of environment variables
+     * and their values that are characteristic to the launched process.
+     * The implementation is expected to find processes
+     * in the system that inherit these environment variables, and kill
+     * them even if the {@code proc} and such processes do not have direct
+     * ancestor/descendant relationship. 
      */
-    public abstract void kill(Process proc, Run<?,?> run);
+    public abstract void kill(Process proc, Map<String, String> modelEnvVars);
 
     /**
      * Gets the {@link ProcessTreeKiller} suitable for the current system
@@ -88,11 +92,17 @@ public abstract class ProcessTreeKiller {
      * be considered a descendant of a build.) 
      */
     protected boolean hasMatchingEnvVars(Map<String,String> envVar, Map<String,String> modelEnvVar) {
-        String n = modelEnvVar.get("JOB_NAME");
-        if(!n.equals(envVar.get("JOB_NAME")))   return false;
+        if(modelEnvVar.isEmpty())
+            // sanity check so that we don't start rampage.
+            return false;
 
-        String job = modelEnvVar.get("BUILD_NUMER");
-        return job.equals(envVar.get("BUILD_NUMER"));
+        for (Entry<String,String> e : modelEnvVar.entrySet()) {
+            String v = envVar.get(e.getKey());
+            if(v==null || !v.equals(e.getValue()))
+                return false;   // no match
+        }
+
+        return true;
     }
 
 
@@ -104,7 +114,7 @@ public abstract class ProcessTreeKiller {
             proc.destroy();
         }
 
-        public void kill(Process proc, Run<?,?> run) {
+        public void kill(Process proc, Map<String, String> modelEnvVars) {
             proc.destroy();
         }
     };
@@ -120,9 +130,8 @@ public abstract class ProcessTreeKiller {
             new WinProcess(proc).killRecursively();
         }
 
-        public void kill(Process proc, Run<?,?> run) {
+        public void kill(Process proc, Map<String,String> modelEnvVars) {
             kill(proc);
-            Map<String,String> modelEnvVars = run.getEnvVars();
 
             for( WinProcess p : WinProcess.all() ) {
                 if(p.getPid()<10)
@@ -156,7 +165,7 @@ public abstract class ProcessTreeKiller {
 
         protected abstract S createSystem();
 
-        public void kill(Process proc, Run<?,?> run) {
+        public void kill(Process proc, Map<String, String> modelEnvVars) {
             S system = createSystem();
             UnixProcess p;
             try {
@@ -173,10 +182,9 @@ public abstract class ProcessTreeKiller {
                 return;
             }
 
-            if(run==null)
+            if(modelEnvVars ==null)
                 p.killRecursively();
             else {
-                Map<String,String> modelEnvVars = run.getEnvVars();
                 for (UnixProcess lp : system) {
                     if(hasMatchingEnvVars(lp.getEnvVars(),modelEnvVars))
                         lp.kill();
