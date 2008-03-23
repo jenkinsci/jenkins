@@ -9,6 +9,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 /**
  * {@link AuthenticationProcessingFilterEntryPoint} for
@@ -37,6 +39,10 @@ public class LegacyAuthenticationProcessingFilterEntryPoint extends Authenticati
 
     @Override
     protected String determineUrlToUseForThisRequest(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) {
-         return getLoginFormUrl()+"?from="+request.getRequestURI();
+        try {
+            return getLoginFormUrl()+"?from="+URLEncoder.encode(request.getRequestURI(),"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(); // impossible
+        }
     }
 }
