@@ -11,6 +11,10 @@ import java.util.List;
 public class RunTest extends TestCase {
     private List<Run<?,?>.Artifact> createArtifactList(String... paths) {
         Run<?,?> r = new Run(null,new GregorianCalendar()) {
+
+			public int compareTo(Object arg0) {
+				return 0;
+			}
         };
         Run<?,?>.ArtifactList list = r.new ArtifactList();
         for (String p : paths) {
