@@ -588,6 +588,12 @@ public abstract class ProcessTreeKiller {
     private static final boolean IS_LITTLE_ENDIAN = "little".equals(System.getProperty("sun.cpu.endian"));
     private static final Logger LOGGER = Logger.getLogger(ProcessTreeKiller.class.getName());
 
-    // this feature is still experimental, so it is disabled by default.
+    /**
+     * Flag to control this feature.
+     *
+     * <p>
+     * This feature is still experimental, so it is disabled by default.
+     * In distributed environment, this flag needs to be enabled per slave.
+     */
     public static boolean enabled = Boolean.getBoolean(ProcessTreeKiller.class.getName());
 }
