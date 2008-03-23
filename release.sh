@@ -39,6 +39,7 @@ mv $WWW/changelog.new $WWW/changelog.html
 # push changes to the maven repository
 ruby push-m2-repo.rb $id
 
+chmod u+x publish-javadoc.sh
 ./publish-javadoc.sh
 
 cd ../../../www
