@@ -60,20 +60,15 @@ public abstract class ProcessTreeKiller {
      */
     public abstract void kill(Process proc, Run<?,?> run);
 
-    protected boolean hasMatchingEnvVars(Map<String,String> envVar, Map<String,String> modelEnvVar) {
-        String n = modelEnvVar.get("JOB_NAME");
-        if(!n.equals(envVar.get("JOB_NAME")))   return false;
-
-        String job = modelEnvVar.get("BUILD_NUMER");
-        return job.equals(envVar.get("BUILD_NUMER"));
-    }
-
     /**
      * Gets the {@link ProcessTreeKiller} suitable for the current system
      * that JVM runs in, or in the worst case return the default one
      * that's not capable of killing descendants at all.
      */
     public static ProcessTreeKiller get() {
+        if(!enabled)
+            return DEFAULT;
+
         if(File.pathSeparatorChar==';')
             return new Windows();
 
@@ -85,6 +80,21 @@ public abstract class ProcessTreeKiller {
 
         return DEFAULT;
     }
+
+
+    /**
+     * Given the environment variable of a process and the "model environment variable" that Hudson
+     * used for launching the build, returns true if there's a match (which means the process should
+     * be considered a descendant of a build.) 
+     */
+    protected boolean hasMatchingEnvVars(Map<String,String> envVar, Map<String,String> modelEnvVar) {
+        String n = modelEnvVar.get("JOB_NAME");
+        if(!n.equals(envVar.get("JOB_NAME")))   return false;
+
+        String job = modelEnvVar.get("BUILD_NUMER");
+        return job.equals(envVar.get("BUILD_NUMER"));
+    }
+
 
     /**
      * Fallback implementation that doesn't do anything clever.
@@ -556,4 +566,7 @@ public abstract class ProcessTreeKiller {
 
     private static final boolean IS_LITTLE_ENDIAN = "little".equals(System.getProperty("sun.cpu.endian"));
     private static final Logger LOGGER = Logger.getLogger(ProcessTreeKiller.class.getName());
+
+    // this feature is still experimental, so it is disabled by default.
+    public static boolean enabled = Boolean.getBoolean(ProcessTreeKiller.class.getName());
 }
