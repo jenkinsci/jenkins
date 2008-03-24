@@ -11,7 +11,8 @@
    deleteCaption: caption of the 'delete' button.
    targetType:    the type for which descriptors will be configured.
                   default to ${it.class} (optional)
-   hasHeader:     for each item, add a caption from descriptor.getDisplayName()
+   hasHeader:     for each item, add a caption from descriptor.getDisplayName().
+                  this also activates D&D (where the header is a grip), and help text support.
 
  See Descriptor.newInstancesFromHeteroList for how to parse the submission.
 -->
