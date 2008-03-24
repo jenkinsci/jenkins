@@ -26,7 +26,7 @@
     </j:if>
   </tr>
   <j:if test="${help!=null}">
-    <tr class="help-area"><td></td><td colspan="2"><div class="help">Loading...</div></td><td></td></tr>
+    <f:helpArea />
   </j:if>
   <d:invokeBody />
   <!-- end marker -->

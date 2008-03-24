@@ -1,0 +1,10 @@
+<!--
+  Place holder to lazy-load help text via AJAX.
+-->
+<tr class="help-area">
+  <td/>
+  <td colspan="2">
+    <div class="help">Loading...</div>
+  </td>
+  <td/>
+</tr>
