@@ -34,6 +34,7 @@
               </td>
             </j:if>
           </tr>
+          <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
             <f:helpArea />
           </j:if>
