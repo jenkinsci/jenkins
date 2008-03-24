@@ -19,12 +19,23 @@
   <d:taglib uri="local">
     <d:tag name="body">
       <table>
+        <j:set var="help" value="${descriptor.helpFile}" />
         <j:if test="${hasHeader}">
-          <f:block>
-            <div class="dd-handle">
-              <b>${descriptor.displayName}</b>
-            </div>
-          </f:block>
+          <tr>
+            <td colspan="3">
+              <div class="dd-handle">
+                <b>${descriptor.displayName}</b>
+              </div>
+            </td>
+            <j:if test="${help!=null}">
+              <td>
+                <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.gif" /></a>
+              </td>
+            </j:if>
+          </tr>
+          <j:if test="${help!=null}">
+            <tr class="help-area"><td></td><td colspan="2"><div class="help">Loading...</div></td><td></td></tr>
+          </j:if>
         </j:if>
         <st:include from="${descriptor}" page="${descriptor.configPage}" />
         <f:block>
