@@ -3,6 +3,7 @@ package hudson.matrix;
 import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.XmlFile;
+import hudson.StructuredForm;
 import hudson.triggers.Trigger;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
@@ -346,8 +347,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return r;
     }
 
-    public Map<Descriptor<Builder>,Builder> getBuilders() {
-        return Descriptor.toMap(builders);
+    public List<Builder> getBuilders() {
+        return Collections.unmodifiableList(builders);
     }
 
     public Map<Descriptor<Publisher>,Publisher> getPublishers() {
@@ -422,7 +423,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         this.axes = newAxes;
 
         buildWrappers = buildDescribable(req, BuildWrappers.getFor(this), "wrapper");
-        builders = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.BUILDERS,getClass()), "builder");
+        builders = Descriptor.newInstancesFromHeteroList(req,
+                StructuredForm.get(req), "builder", BuildStep.BUILDERS);
         publishers = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.PUBLISHERS,getClass()), "publisher");
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
 

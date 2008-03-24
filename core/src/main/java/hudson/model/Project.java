@@ -69,11 +69,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return this;
     }
 
-    public Map<Descriptor<Builder>,Builder> getBuilders() {
-        return Descriptor.toMap(builders);
-    }
-
-    public List<Builder> getBuildersList() {
+    public List<Builder> getBuilders() {
         return Collections.unmodifiableList(builders);
     }
 

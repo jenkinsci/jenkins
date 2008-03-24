@@ -304,7 +304,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         protected final boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) {
-            for( BuildStep bs : steps.values() )
+            return preBuild(listener,steps.values());
+        }
+
+        protected final boolean preBuild(BuildListener listener,Collection<? extends BuildStep> steps) {
+            for( BuildStep bs : steps )
                 if(!bs.prebuild(AbstractBuild.this,listener))
                     return false;
             return true;

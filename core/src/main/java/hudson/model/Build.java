@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
@@ -123,7 +124,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             } finally {
                 // tear down in reverse order
                 for( int i=buildEnvironments.size()-1; i>=0; i-- )
-                    buildEnvironments.get(i).tearDown(Build.this,listener);
+                    buildEnvironments.get(i).tearDown((AbstractBuild)Build.this,listener);
                 buildEnvironments = null;
             }
 
@@ -140,8 +141,8 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             performAllBuildStep(listener, project.getProperties(),false);
         }
 
-        private boolean build(BuildListener listener, Map<?, Builder> steps) throws IOException, InterruptedException {
-            for( BuildStep bs : steps.values() )
+        private boolean build(BuildListener listener, Collection<Builder> steps) throws IOException, InterruptedException {
+            for( BuildStep bs : steps )
                 if(!bs.perform(Build.this, launcher, listener))
                     return false;
             return true;

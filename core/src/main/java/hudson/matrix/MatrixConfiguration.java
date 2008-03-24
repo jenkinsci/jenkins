@@ -20,6 +20,7 @@ import hudson.tasks.Publisher;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.List;
 
 /**
  * One configuration of {@link MatrixProject}.
@@ -187,7 +188,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 // inherit build setting from the parent project
 //
     @Override
-    public Map<Descriptor<Builder>, Builder> getBuilders() {
+    public List<Builder> getBuilders() {
         return getParent().getBuilders();
     }
 

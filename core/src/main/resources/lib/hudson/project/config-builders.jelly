@@ -12,7 +12,7 @@
     <f:block>
       <f:hetero-list name="builder" hasHeader="true"
                      descriptors="${h.getBuilderDescriptors(it)}"
-                     items="${it.buildersList}"
+                     items="${it.builders}"
                      addCaption="${%Add build step}"/>
     </f:block>
   </f:section>
