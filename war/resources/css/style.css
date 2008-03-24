@@ -724,3 +724,9 @@ DIV.textarea-handle {
     border: 1px solid black;
     padding: 0.5em;
 }
+
+/* ========================= D&D support in heterogenous list ========================= */
+
+.hetero-list-container .dd-handle {
+    cursor: move;
+}

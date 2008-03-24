@@ -159,6 +159,23 @@ var hudsonRules = {
         }
         Element.remove(prototypes);
 
+        // D&D support
+        function prepareDD(e) {
+            var dd = new DragDrop(e);
+            var h = e;
+            // locate a handle
+            while(!Element.hasClassName(h,"dd-handle"))
+                h = h.firstChild;
+            dd.setHandleElId(h);
+        }
+        var withDragDrop = Element.hasClassName(e,"with-drag-drop");
+        if(withDragDrop) {
+            for(e=e.firstChild; e!=null; e=e.nextSibling) {
+                if(Element.hasClassName(e,"repeated-chunk"))
+                    prepareDD(e);
+            }
+        }
+
         var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu });
         menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
             var t = templates[parseInt(args[1].value)]; // where this args[1] comes is a real mystery
@@ -168,7 +185,8 @@ var hudsonRules = {
             nc.setAttribute("name",t.name);
             nc.innerHTML = t.html;
             insertionPoint.parentNode.insertBefore(nc, insertionPoint);
-
+            if(withDragDrop)    prepareDD(nc);
+            
             Behaviour.applySubtree(nc);
         });
 
@@ -1147,4 +1165,92 @@ var hoverNotification = (function() {
         msgBox.cfg.setProperty("xy",xy);
         msgBox.show();
     };
+})();
+
+/*
+    D&D implementation for heterogeneous list.
+ */
+var DragDrop = function(id, sGroup, config) {
+    DragDrop.superclass.constructor.apply(this, arguments);
+};
+
+(function() {
+    var Dom = YAHOO.util.Dom;
+    var Event = YAHOO.util.Event;
+    var DDM = YAHOO.util.DragDropMgr;
+
+    YAHOO.extend(DragDrop, YAHOO.util.DDProxy, {
+        startDrag: function(x, y) {
+            var el = this.getEl();
+
+            this.resetConstraints();
+            this.setXConstraint(0,0);    // D&D is for Y-axis only
+
+            // set Y constraint to be within the container
+            var totalHeight = el.parentNode.offsetHeight;
+            var blockHeight = el.offsetHeight;
+            this.setYConstraint(el.offsetTop, totalHeight-blockHeight-el.offsetTop);
+
+            el.style.visibility = "hidden";
+
+            this.goingUp = false;
+            this.lastY = 0;
+        },
+
+        endDrag: function(e) {
+            var srcEl = this.getEl();
+            var proxy = this.getDragEl();
+
+            // Show the proxy element and animate it to the src element's location
+            Dom.setStyle(proxy, "visibility", "");
+            var a = new YAHOO.util.Motion(
+                proxy, {
+                    points: {
+                        to: Dom.getXY(srcEl)
+                    }
+                },
+                0.2,
+                YAHOO.util.Easing.easeOut
+            )
+            var proxyid = proxy.id;
+            var thisid = this.id;
+
+            // Hide the proxy and show the source element when finished with the animation
+            a.onComplete.subscribe(function() {
+                    Dom.setStyle(proxyid, "visibility", "hidden");
+                    Dom.setStyle(thisid, "visibility", "");
+                });
+            a.animate();
+        },
+
+        onDrag: function(e) {
+
+            // Keep track of the direction of the drag for use during onDragOver
+            var y = Event.getPageY(e);
+
+            if (y < this.lastY) {
+                this.goingUp = true;
+            } else if (y > this.lastY) {
+                this.goingUp = false;
+            }
+
+            this.lastY = y;
+        },
+
+        onDragOver: function(e, id) {
+            var srcEl = this.getEl();
+            var destEl = Dom.get(id);
+
+            // We are only concerned with list items, we ignore the dragover
+            // notifications for the list.
+            if (destEl.nodeName == "DIV" && Dom.hasClass(destEl,"repeated-chunk")) {
+                var p = destEl.parentNode;
+
+                // if going up, insert above the target element
+                p.insertBefore(srcEl, this.goingUp?destEl:destEl.nextSibling);
+
+                DDM.refreshCache();
+            }
+        }
+    });
 })();

@@ -15,26 +15,36 @@
 
  See Descriptor.newInstancesFromHeteroList for how to parse the submission.
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+  <d:taglib uri="local">
+    <d:tag name="body">
+      <table>
+        <j:if test="${hasHeader}">
+          <f:block>
+            <div class="dd-handle">
+              <b>${descriptor.displayName}</b>
+            </div>
+          </f:block>
+        </j:if>
+        <st:include from="${descriptor}" page="${descriptor.configPage}" />
+        <f:block>
+          <div align="right">
+            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+          </div>
+        </f:block>
+      </table>
+      <input type="hidden" name="kind" value="${descriptor.class.name}" />
+    </d:tag>
+  </d:taglib>
+
   <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
-  <div class="hetero-list-container">
+  <div class="hetero-list-container ${h.ifThenElse(attrs.hasHeader!=null,'with-drag-drop','')}">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
       <div name="${attrs.name}" class="repeated-chunk">
-        <input type="hidden" name="kind" value="${descriptor.class.name}" />
-        <table>
-          <j:if test="${attrs.hasHeader}">
-            <f:block><b>${descriptor.displayName}</b></f:block>
-          </j:if>
-          <st:include from="${descriptor}" page="${descriptor.configPage}" />
-          <f:block>
-            <div align="right">
-              <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
-            </div>
-          </f:block>
-        </table>
+        <local:body />
       </div>
     </j:forEach>
 
@@ -44,18 +54,7 @@
       <j:set var="instance" value="${null}" />
       <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
         <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}">
-          <input type="hidden" name="kind" value="${descriptor.class.name}" />
-          <table>
-            <j:if test="${attrs.hasHeader}">
-              <f:block><b>${descriptor.displayName}</b></f:block>
-            </j:if>
-            <st:include from="${descriptor}" page="${descriptor.configPage}" />
-            <f:block>
-              <div align="right">
-                <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
-              </div>
-            </f:block>
-          </table>
+          <local:body />
         </div>
       </j:forEach>
     </div>
