@@ -11,6 +11,9 @@
    deleteCaption: caption of the 'delete' button.
    targetType:    the type for which descriptors will be configured.
                   default to ${it.class} (optional)
+   hasHeader:     for each item, add a caption from descriptor.getDisplayName()
+
+ See Descriptor.newInstancesFromHeteroList for how to parse the submission.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
@@ -20,8 +23,11 @@
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
       <div name="${attrs.name}" class="repeated-chunk">
-        <input type="hidden" name="kind" value="${descriptor.displayName}" />
+        <input type="hidden" name="kind" value="${descriptor.class.name}" />
         <table>
+          <j:if test="${attrs.hasHeader}">
+            <f:block><b>${descriptor.displayName}</b></f:block>
+          </j:if>
           <st:include from="${descriptor}" page="${descriptor.configPage}" />
           <f:block>
             <div align="right">
@@ -38,8 +44,11 @@
       <j:set var="instance" value="${null}" />
       <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
         <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}">
-          <input type="hidden" name="kind" value="${descriptor.displayName}" />
+          <input type="hidden" name="kind" value="${descriptor.class.name}" />
           <table>
+            <j:if test="${attrs.hasHeader}">
+              <f:block><b>${descriptor.displayName}</b></f:block>
+            </j:if>
             <st:include from="${descriptor}" page="${descriptor.configPage}" />
             <f:block>
               <div align="right">

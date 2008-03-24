@@ -280,11 +280,11 @@ public abstract class Descriptor<T extends Describable<T>> {
     }
 
     /**
-     * Finds a descriptor from a collection by its display name.
+     * Finds a descriptor from a collection by its class name.
      */
-    public static <T extends Descriptor> T find(Collection<? extends T> list, String displayName) {
+    public static <T extends Descriptor> T find(Collection<? extends T> list, String className) {
         for (T d : list) {
-            if(d.getDisplayName().equals(displayName))
+            if(d.getClass().getName().equals(className))
                 return d;
         }
         return null;

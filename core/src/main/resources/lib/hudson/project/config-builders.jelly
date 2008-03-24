@@ -3,8 +3,17 @@
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
   <!-- build config pane -->
-  <f:descriptorList title="${%Build}"
+  <!--f:descriptorList title="${%Build}"
                     descriptors="${h.getBuilderDescriptors(it)}"
                     instances="${it.builders}"
-                    varName="builder" />
+                    varName="builder" /-->
+
+  <f:section title="${%Build}">
+    <f:block>
+      <f:hetero-list name="builder" hasHeader="true"
+                     descriptors="${h.getBuilderDescriptors(it)}"
+                     items="${it.buildersList}"
+                     addCaption="${%Add build step}"/>
+    </f:block>
+  </f:section>
 </j:jelly>

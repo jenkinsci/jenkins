@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.CopyOnWrite;
 import hudson.Util;
+import hudson.StructuredForm;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.Collections;
 
 /**
  * Buildable software project.
@@ -69,6 +71,10 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     public Map<Descriptor<Builder>,Builder> getBuilders() {
         return Descriptor.toMap(builders);
+    }
+
+    public List<Builder> getBuildersList() {
+        return Collections.unmodifiableList(builders);
     }
 
     public Map<Descriptor<Publisher>,Publisher> getPublishers() {
@@ -147,7 +153,8 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         req.setCharacterEncoding("UTF-8");
 
         buildWrappers = buildDescribable(req, BuildWrappers.getFor(this), "wrapper");
-        builders = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.BUILDERS, getClass()), "builder");
+        builders = Descriptor.newInstancesFromHeteroList(req,
+                StructuredForm.get(req), "builder", BuildStep.BUILDERS);
         publishers = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.PUBLISHERS, getClass()), "publisher");
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }
