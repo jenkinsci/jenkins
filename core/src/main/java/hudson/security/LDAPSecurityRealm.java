@@ -3,8 +3,10 @@ package hudson.security;
 import com.sun.jndi.ldap.LdapCtxFactory;
 import groovy.lang.Binding;
 import hudson.Util;
+import hudson.tasks.MailAddressResolver;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.User;
 import hudson.util.FormFieldValidator;
 import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
@@ -12,6 +14,7 @@ import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.acegisecurity.userdetails.ldap.LdapUserDetails;
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch;
 import org.acegisecurity.ldap.LdapUserSearch;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -141,6 +144,33 @@ public class LDAPSecurityRealm extends SecurityRealm {
                     return ldapSerach.searchForUser(username);
                 }
             });
+    }
+
+    /**
+     * If the security realm is LDAP, try to pick up e-mail address from LDAP.
+     */
+    public static final class MailAdressResolverImpl extends MailAddressResolver {
+        public String findMailAddressFor(User u) {
+            // LDAP not active
+            Hudson hudson = Hudson.getInstance();
+            if(!(hudson.getSecurityRealm() instanceof LDAPSecurityRealm))
+                return null;
+            try {
+                LdapUserDetails details = (LdapUserDetails) HudsonFilter.USER_DETAILS_SERVICE_PROXY.loadUserByUsername(u.getId());
+                Attribute mail = details.getAttributes().get("mail");
+                if(mail==null)  return null;    // not found
+                return (String)mail.get();
+            } catch (UsernameNotFoundException e) {
+                LOGGER.log(Level.FINE, "Failed to look up LDAP for e-mail address",e);
+                return null;
+            } catch (DataAccessException e) {
+                LOGGER.log(Level.FINE, "Failed to look up LDAP for e-mail address",e);
+                return null;
+            } catch (NamingException e) {
+                LOGGER.log(Level.FINE, "Failed to look up LDAP for e-mail address",e);
+                return null;
+            }
+        }
     }
 
     public DescriptorImpl getDescriptor() {
