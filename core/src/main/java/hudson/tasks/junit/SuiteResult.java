@@ -72,10 +72,26 @@ public final class SuiteResult implements Serializable {
         // see http://www.nabble.com/More-JUnit-test-report-problems...-tf4267020.html#a12143611
         for (Element suite : (List<Element>)root.elements("testsuite")) {
             for (Element e : (List<Element>)suite.elements("testcase")) {
+                
                 // https://hudson.dev.java.net/issues/show_bug.cgi?id=1233 indicates that
                 // when <testsuites> is present, we are better off using @classname on the
                 // individual testcase class.
-                addCase(new CaseResult(this,e.attributeValue("classname"),e));
+
+                // https://hudson.dev.java.net/issues/show_bug.cgi?id=1463 indicates that
+                // @classname may not exist in individual testcase elements. We now
+                // also test if the testsuite element has a package name that can be used
+                // as the class name instead of the file name which is default.
+                
+                String classname = e.attributeValue("classname");
+                if (classname == null) {
+                    classname = suite.attributeValue("name");
+                }
+                
+                if (classname == null) {
+                    addCase(new CaseResult(this,e));
+                } else {
+                    addCase(new CaseResult(this,classname,e));
+                }
             }
         }
     }

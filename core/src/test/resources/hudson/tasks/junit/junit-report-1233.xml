@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites>
+  <testsuite errors="0" failures="0" hostname="archbuild" id="0"
+      name="StudioAllTests" package="test.infor.clearux.studio.integration"
+      tests="456" time="107.824" timestamp="2008-01-23T10:49:26">
+    <testcase classname="test.foo.bar.DefaultIntegrationTest" name="experimentsWithJavaElements" time="0.0" />
+    <testcase classname="test.foo.bar.BundleResolverIntegrationTest" name="testGetBundle" time="0.0" />
+    <testcase classname="test.foo.bar.BundleResolverIntegrationTest" name="testGetBundleLocation" time="0.656" />
+    <testcase classname="test.foo.bar.ProjectSettingsTest" name="testNatureAddition" time="0.125" />
+    <testcase classname="test.foo.bar.ProjectSettingsTest" name="testNatureRemoval" time="0.11" />
+  </testsuite>
+</testsuites>
