@@ -122,7 +122,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
     }
 
     public String getLDAPURL() {
-        return "ldap://"+server+'/'+rootDN;
+        return "ldap://"+server+'/'+Util.fixNull(rootDN);
     }
 
     public SecurityComponents createSecurityComponents() {
