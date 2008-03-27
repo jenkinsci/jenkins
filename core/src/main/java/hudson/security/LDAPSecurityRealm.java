@@ -181,7 +181,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
                             InetAddress adrs = InetAddress.getByName(m.group(1));
                             int port=389;
                             if(m.group(2)!=null)
-                            port = Integer.parseInt(m.group(2));
+                                port = Integer.parseInt(m.group(2));
                             Socket s = new Socket(adrs,port);
                             s.close();
                         } catch (NumberFormatException x) {
