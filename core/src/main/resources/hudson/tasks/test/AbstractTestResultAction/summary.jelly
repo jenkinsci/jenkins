@@ -1,6 +1,55 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <t:summary icon="clipboard.gif">
+
+    <script type="text/javascript">
+    function showFailures() {
+
+        var elms = document.getElementsByClassName("hidden");
+        for(var i = 0; i &lt; elms.length; i++) {
+            elms[i].style.display = "";
+        }
+        elm = document.getElementById("showLink");
+        elm.style.display = "none";
+    }
+    </script>
+
+    <!-- summary -->
+    <t:summary icon="clipboard.gif">
     <a href="testReport/">${%Test Result}</a>
     <t:test-result />
+
+
+    <!-- Show 10 failures -->
+    <j:set var="displayedCount" value="0" />
+
+    <!-- FIXME: Make it work with TestCollections -->
+    <j:set var="failedTests" value="${it.result.failedTests}" />
+    <j:if test="${failedTests != null}">
+        <j:set var="failedIterator" value="${failedTests.iterator()}" />
+        
+        <ul style="list-style-type: none; margin: 0;">
+            <j:while test="${failedIterator.hasNext()}">
+                <j:set var="testObject" value="${failedIterator.next()}" />
+                <j:if test="${testObject.fullName != null}">
+                    <!-- CaseResult -->
+                    <li class="${h.ifThenElse((displayedCount &lt; 10),'shown','hidden')}"
+                            style="${h.ifThenElse((displayedCount &lt; 10),'','display:none')}">
+                        <a href="testReport/${testObject.getRelativePathFrom(it.result)}">
+                        ${testObject.fullName}
+                        </a>
+                        <j:set var="displayedCount" value="${displayedCount + 1}" />
+                    </li>
+                </j:if>
+            </j:while>
+        </ul>
+
+        <!-- Show failures link -->
+        <j:if test="${displayedCount &gt; 10}">
+            <a id="showLink" name="editFailuresLink"
+                href="#showFailuresLink"
+                onclick="javascript:showFailures()">Show all failed tests ${">>>"}</a>
+        </j:if>
+    </j:if>
+    
+
   </t:summary>
 </j:jelly>
