@@ -17,15 +17,11 @@
     <a href="testReport/">${%Test Result}</a>
     <t:test-result />
 
-
-    <!-- Show 10 failures -->
-    <j:set var="displayedCount" value="${1}" />
-
     <!-- FIXME: Make it work with TestCollections -->
     <j:set var="failedTests" value="${it.result.failedTests}" />
     <j:if test="${failedTests != null}">
         <j:set var="failedIterator" value="${failedTests.iterator()}" />
-        
+        <j:set var="displayedCount" value="${1}" />        
         <ul style="list-style-type: none; margin: 0;">
             <j:while test="${failedIterator.hasNext()}">
                 <j:set var="testObject" value="${failedIterator.next()}" />
@@ -34,8 +30,8 @@
                     <j:set var="elementClass" value="hidden" />
                     <j:set var="elementStyle" value="display:none" />
                     
+                    <!-- Show max 10 failures from this build -->
                     <j:if test="${((testObject.age == 1) &amp;&amp; (displayedCount &lt;= 10))}"> 
-                    <!-- <j:if test="${displayedCount &lt;= 10}"> -->
                         <j:set var="displayedCount" value="${displayedCount + 1}" />
                         <j:set var="elementClass" value="shown" />
                         <j:set var="elementStyle" value="" />
