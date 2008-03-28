@@ -12,7 +12,7 @@ import java.util.HashMap;
  * <p>
  * {@link Axis Axes} are split into four groups.
  * {@link #x Ones that are displayed as columns},
- * {@link #x Ones that are displayed as rows},
+ * {@link #y Ones that are displayed as rows},
  * {@link #z Ones that are listed as bullet items inside table cell},
  * and those which only have one value, and therefore doesn't show up
  * in the table. 

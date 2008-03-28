@@ -39,10 +39,16 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         super(project, buildDir);
     }
 
-    public Layouter<MatrixRun> getLayouter() {
-        return new Layouter<MatrixRun>(getParent().getAxes()) {
-            protected MatrixRun getT(Combination c) {
-                return getRun(c);
+    public final class RunPtr {
+        public final Combination combination;
+        private RunPtr(Combination c) { this.combination=c; }
+        public MatrixRun getRun() { return MatrixBuild.this.getRun(combination); }
+    }
+
+    public Layouter<RunPtr> getLayouter() {
+        return new Layouter<RunPtr>(getParent().getAxes()) {
+            protected RunPtr getT(Combination c) {
+                return new RunPtr(c);
             }
         };
     }

@@ -60,6 +60,9 @@ public final class Combination extends TreeMap<String,String> implements Compara
      * Works like {@link #toString()} but only include the given axes.
      */
     public String toString(Collection<Axis> subset) {
+        if(size()==1 && subset.size()==1)
+            return values().iterator().next();
+
         StringBuilder buf = new StringBuilder();
         for (Axis a : subset) {
             if(buf.length()>0) buf.append(',');
