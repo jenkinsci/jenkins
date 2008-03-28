@@ -729,4 +729,7 @@ DIV.textarea-handle {
 
 .hetero-list-container .dd-handle {
     cursor: move;
+    background-image: url(../images/grip.png);
+    background-repeat: repeat-y;
+    padding-left: 20px;
 }
