@@ -33,7 +33,9 @@
                     <!-- CaseResult -->
                     <j:set var="elementClass" value="hidden" />
                     <j:set var="elementStyle" value="display:none" />
-                    <j:if test="${displayedCount &lt;= 10}">
+                    
+                    <j:if test="${((testObject.age == 1) &amp;&amp; (displayedCount &lt;= 10))}"> 
+                    <!-- <j:if test="${displayedCount &lt;= 10}"> -->
                         <j:set var="displayedCount" value="${displayedCount + 1}" />
                         <j:set var="elementClass" value="shown" />
                         <j:set var="elementStyle" value="" />
@@ -49,7 +51,7 @@
         </ul>
 
         <!-- Show failures link -->
-        <j:if test="${displayedCount &gt; 10}">
+        <j:if test="${displayedCount &lt; failedTests.size() }">
             <a id="showLink" name="editFailuresLink"
                 href="#showFailuresLink"
                 onclick="javascript:showFailures()">Show all failed tests ${">>>"}</a>
