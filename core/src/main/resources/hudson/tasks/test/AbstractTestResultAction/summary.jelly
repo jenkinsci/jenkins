@@ -19,7 +19,7 @@
 
 
     <!-- Show 10 failures -->
-    <j:set var="displayedCount" value="0" />
+    <j:set var="displayedCount" value="${1}" />
 
     <!-- FIXME: Make it work with TestCollections -->
     <j:set var="failedTests" value="${it.result.failedTests}" />
@@ -31,12 +31,18 @@
                 <j:set var="testObject" value="${failedIterator.next()}" />
                 <j:if test="${testObject.fullName != null}">
                     <!-- CaseResult -->
-                    <li class="${h.ifThenElse((displayedCount &lt; 10),'shown','hidden')}"
-                            style="${h.ifThenElse((displayedCount &lt; 10),'','display:none')}">
+                    <j:set var="elementClass" value="hidden" />
+                    <j:set var="elementStyle" value="display:none" />
+                    <j:if test="${displayedCount &lt;= 10}">
+                        <j:set var="displayedCount" value="${displayedCount + 1}" />
+                        <j:set var="elementClass" value="shown" />
+                        <j:set var="elementStyle" value="" />
+                    </j:if>
+
+                    <li class="${elementClass}" style="${elementStyle}">
                         <a href="testReport/${testObject.getRelativePathFrom(it.result)}">
                         ${testObject.fullName}
                         </a>
-                        <j:set var="displayedCount" value="${displayedCount + 1}" />
                     </li>
                 </j:if>
             </j:while>
