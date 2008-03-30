@@ -5,7 +5,7 @@
   <l:ajax>
     <p:matrix autoRefresh="${it.isBuilding()}">
       <j:set var="b" value="${p.run}" />
-      <a href="${p.combination}">
+      <a href="${p.combination}" tooltip="${p.tooltip}">
         <img src="${imagesURL}/24x24/${h.ifThenElse(b!=null,b.buildStatusUrl,'grey.gif')}"
              title="${b.iconColor.description}"/>
         <j:if test="${empty(o.x) and empty(o.y)}">

@@ -39,10 +39,21 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         super(project, buildDir);
     }
 
+    /**
+     * Used by view to render a ball for {@link MatrixRun}.
+     */
     public final class RunPtr {
         public final Combination combination;
         private RunPtr(Combination c) { this.combination=c; }
         public MatrixRun getRun() { return MatrixBuild.this.getRun(combination); }
+        public String getTooltip() {
+            MatrixRun r = getRun();
+            if(r!=null) return r.getIconColor().getDescription();
+            Queue.Item item = Hudson.getInstance().getQueue().getItem(getParent().getItem(combination));
+            if(item!=null)
+                return item.getWhy();
+            return null;    // fall back
+        }
     }
 
     public Layouter<RunPtr> getLayouter() {
@@ -133,7 +144,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
             try {
                 for(MatrixConfiguration c : activeConfigurations) {
-                    logger.println(Messages.MatrixBuild_Triggering(c.getName()));
+                    logger.println(Messages.MatrixBuild_Triggering(c.getDisplayName()));
                     c.scheduleBuild();
                 }
 
@@ -142,6 +153,9 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
                 Result r = Result.SUCCESS;
                 for (MatrixConfiguration c : activeConfigurations) {
+                    String whyInQueue = "";
+                    long startTime = System.currentTimeMillis();
+
                     // wait for the completion
                     while(true) {
                         MatrixRun b = c.getBuildByNumber(n);
@@ -151,8 +165,9 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                         Result buildResult = null;
                         if(b!=null && !b.isBuilding())
                             buildResult = b.getResult();
-                        if(b==null && !c.isInQueue()) {
-                            // there's conceivably a race condition here, sine b is set early on,
+                        Queue.Item qi = c.getQueueItem();
+                        if(b==null && qi==null) {
+                            // there's conceivably a race condition here, since b is set early on,
                             // and we are checking c.isInQueue() later. A build might have started
                             // after we computed b but before we checked c.isInQueue(). So
                             // double-check 'b' to see if it's really not there. Possibly related to
@@ -171,12 +186,24 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                                     if(!a.endRun(b))
                                         return Result.FAILURE;
                             break;
+                        } else {
+                            if(qi!=null) {
+                                // if the build seems to be stuck in the queue, display why
+                                String why = qi.getWhy();
+                                if(!why.equals(whyInQueue) && System.currentTimeMillis()-startTime>5000) {
+                                    logger.println(c.getDisplayName()+" is still in the queue: "+why);
+                                    whyInQueue = why;
+                                }
+                            }
                         }
                         Thread.sleep(1000);
                     }
                 }
 
                 return r;
+            } catch( InterruptedException e ) {
+                logger.println("Aborted");
+                return Result.ABORTED;
             } finally {
                 // if the build was aborted in the middle. Cancel all the configuration builds.
                 Queue q = Hudson.getInstance().getQueue();
