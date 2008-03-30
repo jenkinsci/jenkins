@@ -1,12 +1,15 @@
 package hudson.model;
 
 import hudson.Util;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.export.Exported;
-import org.acegisecurity.AccessDeniedException;
 import hudson.model.Node.Mode;
+import hudson.triggers.SafeTimerTask;
+import hudson.triggers.Trigger;
 import hudson.util.OneShotEvent;
+import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
+import javax.management.timer.Timer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -107,6 +111,12 @@ public class Queue extends ResourceController {
     }
 
     private final Map<Executor,JobOffer> parked = new HashMap<Executor,JobOffer>();
+
+    public Queue() {
+        // if all the executors are busy doing something, then the queue won't be maintained in
+        // timely fashion, so use another thread to make sure it happens.
+        new MaintainTask(this);
+    }
 
     /**
      * Loads the queue contents that was {@link #save() saved}.
@@ -725,4 +735,27 @@ public class Queue extends ResourceController {
     private int iota=0;
 
     private static final Logger LOGGER = Logger.getLogger(Queue.class.getName());
+
+    /**
+     * Regularly invokes {@link Queue#maintain()} and clean itself up when
+     * {@link Queue} gets GC-ed.
+     */
+    private static class MaintainTask extends SafeTimerTask {
+        private final WeakReference<Queue> queue;
+
+        MaintainTask(Queue queue) {
+            this.queue = new WeakReference<Queue>(queue);
+
+            long interval = 5 * Timer.ONE_SECOND;
+            Trigger.timer.schedule(this, interval, interval);
+        }
+
+        protected void doRun() {
+            Queue q = queue.get();
+            if(q!=null)
+                q.maintain();
+            else
+                cancel();
+        }
+    }
 }
