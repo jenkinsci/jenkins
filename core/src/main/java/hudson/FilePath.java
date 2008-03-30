@@ -105,7 +105,7 @@ import java.util.zip.GZIPInputStream;
  *
  * <p>
  * When {@link FileCallable} is transfered to a remote node, it will be done so
- * by using the same Java serializaiton scheme that the remoting module uses.
+ * by using the same Java serialization scheme that the remoting module uses.
  * See {@link Channel} for more about this. 
  *
  * <p>
