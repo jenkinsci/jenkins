@@ -14,7 +14,7 @@
         <j:otherwise>
           <t:projectView jobs="${it.getDisabledModules(true)}" showViewTabs="${true}">
             <l:tabBar>
-              <l:tab name="${%Modules}" active="${false}" href="." />
+              <l:tab name="${%Modules}" active="${false}" href="./modules" />
               <l:tab name="${%Disabled}" active="${true}" href="./disabled" />
             </l:tabBar>
           </t:projectView>

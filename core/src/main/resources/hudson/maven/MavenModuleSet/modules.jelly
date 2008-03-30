@@ -1,0 +1,35 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.displayName} Modules">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>${%Modules}</h1>
+
+      <j:choose>
+        <j:when test="${empty(it.modules)}">
+          <j:choose>
+            <j:when test="${it.inQueue or it.building}">
+              ${%A build is in progress to parse the list of modules from POM.}
+            </j:when>
+            <j:otherwise>
+              <div>
+                ${%text}
+              </div>
+            </j:otherwise>
+          </j:choose>
+        </j:when>
+        <j:otherwise>
+          <j:set var="needsView" value="${it.hasDisabledModule()}" />
+          <t:projectView jobs="${it.getDisabledModules(false)}" showViewTabs="${needsView}" indenter="${it.createIndenter()}">
+            <!-- view tab bar -->
+            <j:if test="${needsView}">
+              <l:tabBar>
+                <l:tab name="Modules" active="${true}" />
+                <l:tab name="Disabled" active="${false}" href="./disabled" />
+              </l:tabBar>
+            </j:if>
+          </t:projectView>
+        </j:otherwise>
+      </j:choose>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
