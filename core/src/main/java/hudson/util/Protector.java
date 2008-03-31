@@ -1,7 +1,5 @@
 package hudson.util;
 
-import ch.ethz.ssh2.crypto.Base64;
-
 import javax.crypto.SecretKey;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -9,6 +7,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
+
+import com.trilead.ssh2.crypto.Base64;
 
 /**
  * Encrypt/decrypt data by using a "session" key that only lasts for

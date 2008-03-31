@@ -1,18 +1,9 @@
 package hudson.util;
 
-import ch.ethz.ssh2.crypto.Base64;
+import com.trilead.ssh2.crypto.Base64;
 
-import javax.crypto.SecretKey;
-import javax.crypto.KeyGenerator;
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.BadPaddingException;
-import java.io.UnsupportedEncodingException;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.InvalidKeyException;
-import java.security.GeneralSecurityException;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Used when storing passwords in configuration files.

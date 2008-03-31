@@ -266,19 +266,7 @@
     <dependency>
       <groupId>org.jvnet.hudson.svnkit</groupId>
       <artifactId>svnkit</artifactId>
-      <version>1.1.4-hudson-6</version>
-      <exclusions>
-        <!-- replaced by out patched version -->
-        <exclusion>
-          <groupId>ch.ethz.ganymed</groupId>
-          <artifactId>ganymed-ssh2</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>ganymed-ssh2</artifactId>
-      <version>build210-hudson-1</version>
+      <version>1.1.6-hudson-1</version>
     </dependency>
     <dependency>
       <groupId>${groupId}</groupId>

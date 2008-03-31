@@ -1,7 +1,8 @@
 package hudson.scm;
 
-import ch.ethz.ssh2.SCPClient;
 import com.thoughtworks.xstream.XStream;
+import com.trilead.ssh2.SCPClient;
+import com.trilead.ssh2.DebugLogger;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
@@ -1346,15 +1347,16 @@ public class SubversionSCM extends SCM implements Serializable {
      */
     public static void enableSshDebug(Level level) {
         if(level==null)     level= Level.FINEST; // default
-        
-        Logger ganymedLogger = Logger.getLogger(SCPClient.class.getPackage().getName());
-        ganymedLogger.setLevel(level);
-        ganymedLogger.setUseParentHandlers(false);
-        ConsoleHandler handler = new ConsoleHandler();
-        handler.setLevel(level);
-        ganymedLogger.addHandler(handler);
 
-        ch.ethz.ssh2.log.Logger.logLevel = 100;
+        final Level lv = level;
+
+        com.trilead.ssh2.log.Logger.enabled=true;
+        com.trilead.ssh2.log.Logger.logger = new DebugLogger() {
+            private final Logger LOGGER = Logger.getLogger(SCPClient.class.getPackage().getName());
+            public void log(int level, String className, String message) {
+                LOGGER.log(lv,className+' '+message);
+            }
+        };
     }
 
     /**
