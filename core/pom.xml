@@ -254,7 +254,7 @@
       <!-- commonly used wagon provider -->
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>wagon-webdav</artifactId>
-      <version>1.0-beta-2-hudson-0</version>
+      <version>1.0-beta-2-hudson-1</version>
     </dependency>
     <dependency>
       <!-- and somehow without this, we'd end up picking up plexus-utils 1.0.4 -->
