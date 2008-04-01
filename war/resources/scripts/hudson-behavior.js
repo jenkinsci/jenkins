@@ -1,4 +1,4 @@
-replaceDescription//
+//
 // JavaScript for Hudson
 //     See http://www.ibm.com/developerworks/web/library/wa-memleak/?ca=dgr-lnxw97JavascriptLeaks
 //     for memory leak patterns and how to prevent them.
