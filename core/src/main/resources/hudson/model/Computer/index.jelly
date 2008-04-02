@@ -24,10 +24,10 @@
           <j:choose>
             <j:when test="${app.slaveAgentPort==-1}">
               <img src="${imagesURL}/32x32/error.gif"/>
-              <span class="error">
+              <div class="error">
                 TCP port for JNLP slave agentsis is disabled.
                 <a href="${rootURL}/configure">Go to system config screen and change it</a>.
-              </span>
+              </div>
             </j:when>
             <j:when test="${it.offline &amp;&amp; !it.temporarilyOffline}">
               <l:isAdmin>

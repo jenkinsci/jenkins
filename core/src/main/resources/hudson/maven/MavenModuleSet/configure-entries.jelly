@@ -11,10 +11,10 @@
     <j:if test="${empty(mavens)}">
       <!-- no maven installation is configured. this will be an error, so warn the user now -->
       <f:entry title="${%Maven Version}">
-        <span class="error">
+        <div class="error">
           Hudson needs to know where your Maven2 is installed.&lt;br>
           Please do so from <a href="${rootURL}/configure">the system configuration</a>.
-        </span>
+        </div>
       </f:entry>
     </j:if>
     <j:if test="${mavens.size() &gt; 1}">
