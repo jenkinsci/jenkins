@@ -340,6 +340,24 @@ public abstract class Computer extends AbstractModelObject {
         w.close();
     }
 
+    public void doScript( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        // ability to run arbitrary script is dangerous,
+        // so tie it to the admin access
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+
+        String text = req.getParameter("script");
+        if(text!=null) {
+            try {
+                req.setAttribute("output",
+                RemotingDiagnostics.executeGroovy(text,getChannel()));
+            } catch (InterruptedException e) {
+                throw new ServletException(e);
+            }
+        }
+
+        req.getView(this,"_script.jelly").forward(req,rsp);
+    }
+
     /**
      * Gets the current {@link Computer} that the build is running.
      * This method only works when called during a build, such as by

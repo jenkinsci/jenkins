@@ -7,6 +7,7 @@
     <l:tasks>
       <l:task icon="images/24x24/up.gif" href=".." title="${%Back to List}" />
       <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/builds" title="${%Build History}" />
+      <l:task icon="images/24x24/notepad.gif" href="script" title="${%Script Console}" />
     </l:tasks>
   </l:side-panel>
 </j:jelly>
