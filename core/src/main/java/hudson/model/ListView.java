@@ -73,13 +73,12 @@ public class ListView extends View {
                 if (includePattern == null) {
                     includePattern = Pattern.compile(includeRegex);
                 }
-                
-                Collection<String> allJobNames = owner.getJobNames();
-                for (Iterator<String> iterator = allJobNames.iterator(); iterator.hasNext();) {
-                    String string = iterator.next();
-                    if (includePattern.matcher(string).matches()) {
-                        names.add(string);
-                    }   
+
+                for (TopLevelItem item : owner.getItems()) {
+                	String itemName = item.getName();
+					if (includePattern.matcher(itemName).matches()) {
+                        names.add(itemName);
+                    }
                 }
             } catch (PatternSyntaxException pse) {
             }
