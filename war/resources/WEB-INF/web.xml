@@ -9,6 +9,10 @@
   <servlet>
     <servlet-name>Stapler</servlet-name>
     <servlet-class>org.kohsuke.stapler.Stapler</servlet-class>
+    <init-param>
+      <param-name>default-encodings</param-name>
+      <param-value>text/html=UTF-8</param-value>
+    </init-param>
   </servlet>
 
   <servlet-mapping>
