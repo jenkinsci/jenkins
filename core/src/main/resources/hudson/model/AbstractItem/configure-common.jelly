@@ -20,9 +20,9 @@
 
   <!-- master/slave -->
   <j:if test="${!empty(app.slaves)}">
-    <f:optionalBlock name="hasSlaveAffinity" title="Tie this project to node" checked="${it.assignedLabel!=null}"
+    <f:optionalBlock name="hasSlaveAffinity" title="${%Tie this project to a node}" checked="${it.assignedLabel!=null}"
         help="/help/project-config/slave.html">
-      <f:entry title="Node">
+      <f:entry title="${%Node}">
         <select class="setting-input" name="slave">
           <j:forEach var="s" items="${app.labels}">
             <f:option selected="${s==it.assignedLabel}" value="${s.name}"
