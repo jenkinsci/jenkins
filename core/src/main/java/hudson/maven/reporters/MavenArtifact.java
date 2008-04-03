@@ -159,6 +159,46 @@ public final class MavenArtifact implements Serializable {
         listener.getLogger().println("[HUDSON] Archiving "+ file);
         FilePath target = getArtifactArchivePath(build,groupId,artifactId,version);
         new FilePath(file).copyTo(target);
+        /* debug probe to investigate "missing artifact" problem typically seen like this:
+
+            ERROR: Asynchronous execution failure
+            java.util.concurrent.ExecutionException: java.io.IOException: Archived artifact is missing: /files/hudson/server/jobs/glassfish-v3/modules/org.glassfish.build$maven-glassfish-extension/builds/2008-04-02_10-17-15/archive/org.glassfish.build/maven-glassfish-extension/1.0-SNAPSHOT/maven-glassfish-extension-1.0-SNAPSHOT.jar
+                    at hudson.remoting.Channel$1.adapt(Channel.java:423)
+                    at hudson.remoting.Channel$1.adapt(Channel.java:418)
+                    at hudson.remoting.FutureAdapter.get(FutureAdapter.java:32)
+                    at hudson.maven.MavenBuilder.call(MavenBuilder.java:140)
+                    at hudson.maven.MavenModuleSetBuild$Builder.call(MavenModuleSetBuild.java:476)
+                    at hudson.maven.MavenModuleSetBuild$Builder.call(MavenModuleSetBuild.java:422)
+                    at hudson.remoting.UserRequest.perform(UserRequest.java:69)
+                    at hudson.remoting.UserRequest.perform(UserRequest.java:23)
+                    at hudson.remoting.Request$2.run(Request.java:200)
+                    at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:417)
+                    at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:269)
+                    at java.util.concurrent.FutureTask.run(FutureTask.java:123)
+                    at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:650)
+                    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:675)
+                    at java.lang.Thread.run(Thread.java:595)
+            Caused by: java.io.IOException: Archived artifact is missing: /files/hudson/server/jobs/glassfish-v3/modules/org.glassfish.build$maven-glassfish-extension/builds/2008-04-02_10-17-15/archive/org.glassfish.build/maven-glassfish-extension/1.0-SNAPSHOT/maven-glassfish-extension-1.0-SNAPSHOT.jar
+                    at hudson.maven.reporters.MavenArtifact.getFile(MavenArtifact.java:147)
+                    at hudson.maven.reporters.MavenArtifact.toArtifact(MavenArtifact.java:126)
+                    at hudson.maven.reporters.MavenArtifactRecord.install(MavenArtifactRecord.java:115)
+                    at hudson.maven.reporters.MavenArtifactArchiver$1.call(MavenArtifactArchiver.java:81)
+                    at hudson.maven.reporters.MavenArtifactArchiver$1.call(MavenArtifactArchiver.java:71)
+                    at hudson.maven.MavenBuild$ProxyImpl.execute(MavenBuild.java:255)
+                    at hudson.maven.MavenBuildProxy$Filter$AsyncInvoker.call(MavenBuildProxy.java:177)
+                    at hudson.remoting.UserRequest.perform(UserRequest.java:69)
+                    at hudson.remoting.UserRequest.perform(UserRequest.java:23)
+                    at hudson.remoting.Request$2.run(Request.java:200)
+                    at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:441)
+                    at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:303)
+                    at java.util.concurrent.FutureTask.run(FutureTask.java:138)
+                    at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:885)
+                    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:907)
+                    at java.lang.Thread.run(Thread.java:619)
+         */
+
+        if(!target.exists())
+            throw new AssertionError("Just copied "+file+" to "+target+" but now I can't find it");
     }
 
     /**
