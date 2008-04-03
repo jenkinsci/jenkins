@@ -7,25 +7,27 @@
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:pane title="${%Build Queue}" width="2" id="buildQueue">
+    <j:if test="${app.quietingDown}">
+      <tr>
+        <td class="pane" colspan="2" style="white-space: normal;">
+          ${%Hudson is going to shut down. No further builds will be performed.}
+          <j:if test="${h.checkPermission(app.ADMINISTER)}">
+            <a href="${rootURL}/cancelQuietDown">(${%cancel})</a>
+          </j:if>
+        </td>
+      </tr>
+    </j:if>
     <j:choose>
       <j:when test="${empty(items)}">
-        <tr>
-          <td class="pane" colspan="2">
-            ${%No builds in the queue.}
-          </td>
-        </tr>
-      </j:when>
-      <j:otherwise>
-        <j:if test="${app.quietingDown}">
+        <j:if test="${! app.quietingDown}">
           <tr>
-            <td class="pane" colspan="2" style="white-space: normal;">
-              ${%Hudson is going to shut down. No further builds will be performed.}
-              <j:if test="${h.checkPermission(app.ADMINISTER)}">
-                <a href="${rootURL}/cancelQuietDown">(${%cancel})</a>
-              </j:if>
+            <td class="pane" colspan="2">
+              ${%No builds in the queue.}
             </td>
           </tr>
         </j:if>
+      </j:when>
+      <j:otherwise>
         <j:forEach var="item" items="${items}">
           <tr>
             <td class="pane" width="100%" tooltip="${item.why}">
