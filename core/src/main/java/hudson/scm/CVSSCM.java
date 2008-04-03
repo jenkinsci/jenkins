@@ -577,7 +577,7 @@ public class CVSSCM extends SCM implements Serializable {
         if(!checkContents(new File(cvs,"Root"),cvsroot))
             return false;
         if(branch!=null) {
-            if(!checkContents(new File(cvs,"Tag"),'T'+branch))
+            if(!checkContents(new File(cvs,"Tag"),(isTag()?'N':'T')+branch))
                 return false;
         } else {
             File tag = new File(cvs,"Tag");
