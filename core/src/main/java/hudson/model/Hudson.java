@@ -760,6 +760,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return new ComputerSet();
     }
 
+    public Computer toComputer() {
+        return getComputer("");
+    }
+
     /**
      * Gets the label that exists on this system by the name.
      *

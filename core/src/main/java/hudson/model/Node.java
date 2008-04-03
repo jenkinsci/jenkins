@@ -50,6 +50,14 @@ public interface Node {
      */
     Mode getMode();
 
+    /**
+     * Gets the corresponding {@link Computer} object.
+     *
+     * @return
+     *      never null.
+     */
+    Computer toComputer();
+
     Computer createComputer();
 
     /**

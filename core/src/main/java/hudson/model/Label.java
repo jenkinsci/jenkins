@@ -57,6 +57,17 @@ public class Label implements Comparable<Label>, ModelObject {
     }
 
     /**
+     * Returns true if all the nodes of this label is offline.
+     */
+    public boolean isOffline() {
+        for (Node n : getNodes()) {
+            if(!n.toComputer().isOffline())
+                return false;
+        }
+        return true;
+    }
+
+    /**
      * Returns a human readable text that explains this label.
      */
     public String getDescription() {

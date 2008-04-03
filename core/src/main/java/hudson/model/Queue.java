@@ -693,6 +693,12 @@ public class Queue extends ResourceController {
                 String name = null;
                 if(node!=null) {
                     name = node.getName();
+                    if(node.isOffline()) {
+                        if(node.getNodes().size()>1)
+                            return "All nodes of label '"+name+"' is offline";
+                        else
+                            return name+" is offline";
+                    }
                 }
 
                 return "Waiting for next available executor"+(name==null?"":" on "+name);
