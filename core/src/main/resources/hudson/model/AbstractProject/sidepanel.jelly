@@ -20,7 +20,7 @@
           <script>
             function build(a) {
               new Ajax.Request(a.href,{method:"post"});
-              hoverNotification('Build scheduled',a.parentNode);
+              hoverNotification('${%Build scheduled}',a.parentNode);
               return false;
             }
           </script>
