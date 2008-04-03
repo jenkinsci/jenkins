@@ -42,7 +42,7 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
     }
 
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        listener.getLogger().println("Recording test results");
+        listener.getLogger().println(Messages.JUnitResultArchiver_Recording());
         TestResultAction action;
 
         try {
@@ -56,7 +56,7 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
                     String[] files = ds.getIncludedFiles();
                     if(files.length==0) {
                         // no test result. Most likely a configuration error or fatal problem
-                        throw new AbortException("No test report files were found. Configuration error?");
+                        throw new AbortException(Messages.JUnitResultArchiver_NoTestReportFound());
                     }
 
                     return new TestResult(buildTime, ds);
@@ -65,7 +65,7 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
 
             action = new TestResultAction(build, result, listener);
             if(result.getPassCount()==0 && result.getFailCount()==0)
-                new AbortException("None of the test reports contained any result");
+                new AbortException(Messages.JUnitResultArchiver_ResultIsEmpty());
         } catch (AbortException e) {
             if(build.getResult()==Result.FAILURE)
                 // most likely a build failed before it gets to the test phase.
@@ -113,7 +113,7 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
         }
 
         public String getDisplayName() {
-            return "Publish JUnit test result report";
+            return Messages.JUnitResultArchiver_DisplayName();
         }
 
         public String getHelpFile() {
