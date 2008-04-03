@@ -41,58 +41,73 @@ public final class SuiteResult implements Serializable {
         this.stdout = stdout;
     }
 
-    SuiteResult(File xmlReport) throws DocumentException {
-		SAXReader saxReader = new SAXReader();
-		// fix for problems related to testng-results.xml
-		// (see https://hudson.dev.java.net/servlets/ReadMsg?listName=users&msgNo=5530)
-		XMLEntityResolver resolver = new XMLEntityResolver();
-		saxReader.setEntityResolver(resolver);
+    /**
+     * Parses the JUnit XML file into {@link SuiteResult}s.
+     * This method returns a collection, as a single XML may have multiple &lt;testsuite>
+     * elements wrapped into the top-level &lt;testsuites>.
+     */
+    static List<SuiteResult> parse(File xmlReport) throws DocumentException {
+        List<SuiteResult> r = new ArrayList<SuiteResult>();
+
+        // parse into DOM
+        SAXReader saxReader = new SAXReader();
+        // install EntityResolver for resolving DTDs, which are in files created by TestNG.
+        // (see https://hudson.dev.java.net/servlets/ReadMsg?listName=users&msgNo=5530)
+        XMLEntityResolver resolver = new XMLEntityResolver();
+        saxReader.setEntityResolver(resolver);
         Document result = saxReader.read(xmlReport);
         Element root = result.getRootElement();
-        String name = root.attributeValue("name");
+
+        if(root.getName().equals("testsuites")) {
+            // multi-suite file
+            for (Element suite : (List<Element>)root.elements("testsuite"))
+                r.add(new SuiteResult(xmlReport,suite));
+        } else {
+            // single suite file
+            r.add(new SuiteResult(xmlReport,root));
+        }
+
+        return r;
+    }
+
+    private SuiteResult(File xmlReport, Element suite) throws DocumentException {
+        String name = suite.attributeValue("name");
         if(name==null)
             // some user reported that name is null in their environment.
             // see http://www.nabble.com/Unexpected-Null-Pointer-Exception-in-Hudson-1.131-tf4314802.html
             name = '('+xmlReport.getName()+')';
         this.name = TestObject.safe(name);
 
-        stdout = root.elementText("system-out");
-        stderr = root.elementText("system-err");
+        stdout = suite.elementText("system-out");
+        stderr = suite.elementText("system-err");
 
-        Element ex = root.element("error");
+        Element ex = suite.element("error");
         if(ex!=null) {
             // according to junit-noframes.xsl l.229, this happens when the test class failed to load
-            addCase(new CaseResult(this,root,"<init>"));
+            addCase(new CaseResult(this,suite,"<init>"));
         }
 
-        for (Element e : (List<Element>)root.elements("testcase")) {
-            addCase(new CaseResult(this,e));
-        }
-        // a user reported that there's a slight variation of the format that puts <testsuites> at root
-        // see http://www.nabble.com/More-JUnit-test-report-problems...-tf4267020.html#a12143611
-        for (Element suite : (List<Element>)root.elements("testsuite")) {
-            for (Element e : (List<Element>)suite.elements("testcase")) {
-                
-                // https://hudson.dev.java.net/issues/show_bug.cgi?id=1233 indicates that
-                // when <testsuites> is present, we are better off using @classname on the
-                // individual testcase class.
+        for (Element e : (List<Element>)suite.elements("testcase")) {
+            // https://hudson.dev.java.net/issues/show_bug.cgi?id=1233 indicates that
+            // when <testsuites> is present, we are better off using @classname on the
+            // individual testcase class.
 
-                // https://hudson.dev.java.net/issues/show_bug.cgi?id=1463 indicates that
-                // @classname may not exist in individual testcase elements. We now
-                // also test if the testsuite element has a package name that can be used
-                // as the class name instead of the file name which is default.
-                
-                String classname = e.attributeValue("classname");
-                if (classname == null) {
-                    classname = suite.attributeValue("name");
-                }
-                
-                if (classname == null) {
-                    addCase(new CaseResult(this,e));
-                } else {
-                    addCase(new CaseResult(this,classname,e));
-                }
+            // https://hudson.dev.java.net/issues/show_bug.cgi?id=1463 indicates that
+            // @classname may not exist in individual testcase elements. We now
+            // also test if the testsuite element has a package name that can be used
+            // as the class name instead of the file name which is default.
+            String classname = e.attributeValue("classname");
+            if (classname == null) {
+                classname = suite.attributeValue("name");
             }
+
+            // https://hudson.dev.java.net/issues/show_bug.cgi?id=1233 and
+            // http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
+            // are at odds with each other --- when both are present,
+            // one wants to use @name from <testsuite>,
+            // the other wants to use @classname from <testcase>.
+
+            addCase(new CaseResult(this,classname,e));
         }
     }
 

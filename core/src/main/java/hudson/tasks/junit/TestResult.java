@@ -121,9 +121,10 @@ public final class TestResult extends MetaTabulatedResult {
      */
     public void parse(File reportFile) throws IOException {
         try {
-            SuiteResult suiteResult = new SuiteResult(reportFile);
-            suites.add( suiteResult );
-            duration += suiteResult.getDuration(); 
+            for( SuiteResult suiteResult : SuiteResult.parse(reportFile) ) {
+                suites.add( suiteResult );
+                duration += suiteResult.getDuration();
+            }
         } catch (RuntimeException e) {
             throw new IOException2("Failed to read "+reportFile,e);
         } catch (DocumentException e) {

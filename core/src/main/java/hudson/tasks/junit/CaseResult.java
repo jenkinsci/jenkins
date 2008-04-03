@@ -34,14 +34,6 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         this(parent,testClassName,testCase.attributeValue("name"), getError(testCase), parseTime(testCase), isMarkedAsSkipped(testCase));
     }
 
-    CaseResult(SuiteResult parent, Element testCase) {
-        // reports in http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
-        // indicates that in certain situations, using the test suite name is better.
-        // note however in other situations, this seems not to be the case
-        // https://hudson.dev.java.net/issues/show_bug.cgi?id=1233
-        this(parent, parent.getName(), testCase);
-    }
-
     private static float parseTime(Element testCase) {
         String time = testCase.attributeValue("time");
         if(time!=null) {
