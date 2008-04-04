@@ -22,6 +22,8 @@ import org.apache.tools.ant.taskdefs.Untar;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
+import org.apache.tools.zip.ZipOutputStream;
+import org.apache.tools.zip.ZipEntry;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -50,8 +52,6 @@ import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.GZIPInputStream;
 
@@ -208,6 +208,7 @@ public final class FilePath implements Serializable {
                 buf = new byte[8192];
 
                 ZipOutputStream zip = new ZipOutputStream(out);
+                zip.setEncoding(System.getProperty("file.encoding"));
                 scan(f,zip,"");
                 zip.close();
                 return null;
@@ -255,6 +256,7 @@ public final class FilePath implements Serializable {
                 byte[] buf = new byte[8192];
 
                 ZipOutputStream zip = new ZipOutputStream(out);
+                zip.setEncoding(System.getProperty("file.encoding"));
                 for( String entry : glob(dir,glob) ) {
                     zip.putNextEntry(new ZipEntry(dir.getName()+'/'+entry));
                     FileInputStream in = new FileInputStream(new File(dir,entry));
