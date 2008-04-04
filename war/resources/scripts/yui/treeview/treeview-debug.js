@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
 http://developer.yahoo.net/yui/license.txt
-version: 2.3.1
+version: 2.5.1
 */
 /**
  * The treeview widget is a generic tree building tool.
@@ -97,9 +97,7 @@ YAHOO.widget.TreeView.prototype = {
      * in YAHOO.widget.TVAnim)
      */
     setExpandAnim: function(type) {
-        if (YAHOO.widget.TVAnim.isValid(type)) {
-            this._expandAnim = type;
-        }
+        this._expandAnim = (YAHOO.widget.TVAnim.isValid(type)) ? type : null;
     },
 
     /**
@@ -109,9 +107,7 @@ YAHOO.widget.TreeView.prototype = {
      * YAHOO.widget.TVAnim)
      */
     setCollapseAnim: function(type) {
-        if (YAHOO.widget.TVAnim.isValid(type)) {
-            this._collapseAnim = type;
-        }
+        this._collapseAnim = (YAHOO.widget.TVAnim.isValid(type)) ? type : null;
     },
 
     /**
@@ -428,6 +424,39 @@ YAHOO.widget.TreeView.prototype = {
     },
 
     /**
+     * Returns the treeview node reference for an anscestor element
+     * of the node, or null if it is not contained within any node
+     * in this tree.
+     * @method getNodeByElement
+     * @param {HTMLElement} the element to test
+     * @return {YAHOO.widget.Node} a node reference or null
+     */
+    getNodeByElement: function(el) {
+
+        var p=el, m, re=/ygtv([^\d]*)(.*)/;
+
+        do {
+
+            if (p && p.id) {
+                m = p.id.match(re);
+                if (m && m[2]) {
+                    return this.getNodeByIndex(m[2]);
+                }
+            }
+
+            p = p.parentNode;
+
+            if (!p || !p.tagName) {
+                break;
+            }
+
+        } 
+        while (p.id !== this.id && p.tagName.toLowerCase() !== "body");
+
+        return null;
+    },
+
+    /**
      * Removes the node and its children, and optionally refreshes the 
      * branch of the tree that was affected.
      * @method removeNode
@@ -487,7 +516,7 @@ YAHOO.widget.TreeView.prototype = {
             if (this._collapseAnim) {
                 this.subscribe("animComplete", 
                         this._removeChildren_animComplete, this, true);
-                node.collapse();
+                YAHOO.widget.Node.prototype.collapse.call(node);
                 return;
             }
 
@@ -497,6 +526,10 @@ YAHOO.widget.TreeView.prototype = {
         this.logger.log("Removing children for " + node);
         while (node.children.length) {
             this._deleteNode(node.children[0]);
+        }
+
+        if (node.isRoot()) {
+            YAHOO.widget.Node.prototype.expand.call(node);
         }
 
         node.childrenRendered = false;
@@ -744,7 +777,8 @@ YAHOO.widget.TreeView.addHandler(window,
  * @class Node
  * @uses YAHOO.util.EventProvider
  * @param oData {object} a string or object containing the data that will
- * be used to render this node
+ * be used to render this node, and any custom attributes that should be
+ * stored with the node (which is available in noderef.data).
  * @param oParent {Node} this node's parent node
  * @param expanded {boolean} the initial expanded/collapsed state
  * @constructor
@@ -917,6 +951,17 @@ YAHOO.widget.Node.prototype = {
      * @default false
      */
     nowrap: false,
+
+    /**
+     * If true, the node will alway be rendered as a leaf node.  This can be
+     * used to override the presentation when dynamically loading the entire
+     * tree.  Setting this to true also disables the dynamic load call for the
+     * node.
+     * @property isLeaf
+     * @type boolean
+     * @default false
+     */
+    isLeaf: false,
 
     /**
      * The node type
@@ -1316,7 +1361,9 @@ YAHOO.widget.Node.prototype = {
      */
     expand: function(lazySource) {
         // Only expand if currently collapsed.
-        if (this.expanded) { return; }
+        if (this.expanded && !lazySource) { 
+            return; 
+        }
 
         var ret = true;
 
@@ -1345,11 +1392,11 @@ YAHOO.widget.Node.prototype = {
             return;
         }
 
-        if (! this.childrenRendered) {
+        if (!this.childrenRendered) {
             this.logger.log("children not rendered yet");
             this.getChildrenEl().innerHTML = this.renderChildren();
         } else {
-            this.logger.log("CHILDREN RENDERED");
+            this.logger.log("children already rendered");
         }
 
         this.expanded = true;
@@ -1503,14 +1550,19 @@ YAHOO.widget.Node.prototype = {
      * @return {boolean} true if this node's children are to be loaded dynamically
      */
     isDynamic: function() { 
-        var lazy = (!this.isRoot() && (this._dynLoad || this.tree.root._dynLoad));
-        // this.logger.log("isDynamic: " + lazy);
-        return lazy;
+        if (this.isLeaf) {
+            return false;
+        } else {
+            return (!this.isRoot() && (this._dynLoad || this.tree.root._dynLoad));
+            // this.logger.log("isDynamic: " + lazy);
+            // return lazy;
+        }
     },
 
     /**
      * Returns the current icon mode.  This refers to the way childless dynamic
-     * load nodes appear.
+     * load nodes appear (this comes into play only after the initial dynamic
+     * load request produced no children).
      * @method getIconMode
      * @return {int} 0 for collapse style, 1 for leaf node style
      */
@@ -1531,8 +1583,12 @@ YAHOO.widget.Node.prototype = {
      * checking for this condition.
      */
     hasChildren: function(checkForLazyLoad) { 
-        return ( this.children.length > 0 || 
-                (checkForLazyLoad && this.isDynamic() && !this.dynamicLoadComplete) );
+        if (this.isLeaf) {
+            return false;
+        } else {
+            return ( this.children.length > 0 || 
+(checkForLazyLoad && this.isDynamic() && !this.dynamicLoadComplete) );
+        }
     },
 
     /**
@@ -1584,6 +1640,12 @@ YAHOO.widget.Node.prototype = {
             sb[sb.length] = ' style="display:none;"';
         }
         sb[sb.length] = '>';
+
+        // this.logger.log(["index", this.index, 
+                         // "hasChildren", this.hasChildren(true), 
+                         // "expanded", this.expanded, 
+                         // "renderHidden", this.renderHidden, 
+                         // "isDynamic", this.isDynamic()]);
 
         // Don't render the actual child node HTML unless this node is expanded.
         if ( (this.hasChildren(true) && this.expanded) ||
@@ -1672,7 +1734,7 @@ YAHOO.widget.Node.prototype = {
      * @method loadComplete
      */
     loadComplete: function() {
-        this.logger.log("loadComplete: " + this.index);
+        this.logger.log(this.index + " loadComplete, children: " + this.children.length);
         this.getChildrenEl().innerHTML = this.completeRender();
         this.dynamicLoadComplete = true;
         this.isLoading = false;
@@ -1768,7 +1830,26 @@ YAHOO.augment(YAHOO.widget.Node, YAHOO.util.EventProvider);
  * @extends YAHOO.widget.Node
  * @constructor
  * @param oData {object} a string or object containing the data that will
- * be used to render this node
+ * be used to render this node.
+ * Valid properties: 
+ * <dl>
+ *   <dt>label</dt>
+ *   <dd>The text for the node's label</dd>
+ *   <dt>title</dt>
+ *   <dd>The title attribute for the label anchor</dd>
+ *   <dt>title</dt>
+ *   <dd>The title attribute for the label anchor</dd>
+ *   <dt>href</dt>
+ *   <dd>The href for the node's label.  By default it is set to
+ *   expand/collapse the node.</dd>
+ *   <dt>target</dt>
+ *   <dd>The target attribute for the label anchor</dd>
+ *   <dt>style</dt>
+ *   <dd>A CSS class to apply to the label anchor</dd>
+ * </dl>
+ * All other attributes are made available in noderef.data, which
+ * can be used to store custom attributes.  TreeView.getNode(s)ByProperty
+ * can be used to retreive a node by one of the attributes.
  * @param oParent {YAHOO.widget.Node} this node's parent node
  * @param expanded {boolean} the initial expanded/collapsed state
  */
@@ -1845,7 +1926,7 @@ YAHOO.extend(YAHOO.widget.TextNode, YAHOO.widget.Node, {
         
         // update the link
         if (oData.href) {
-            this.href = oData.href;
+            this.href = encodeURI(oData.href);
         }
 
         // set the target
@@ -1855,6 +1936,10 @@ YAHOO.extend(YAHOO.widget.TextNode, YAHOO.widget.Node, {
 
         if (oData.style) {
             this.labelStyle = oData.style;
+        }
+
+        if (oData.title) {
+            this.title = oData.title;
         }
 
         this.labelElId = "ygtvlabelel" + this.index;
@@ -1921,6 +2006,9 @@ YAHOO.extend(YAHOO.widget.TextNode, YAHOO.widget.Node, {
         sb[sb.length] = ' >';
         sb[sb.length] = '<a';
         sb[sb.length] = ' id="' + this.labelElId + '"';
+        if (this.title) {
+            sb[sb.length] = ' title="' + this.title + '"';
+        }
         sb[sb.length] = ' class="' + this.labelStyle + '"';
         sb[sb.length] = ' href="' + this.href + '"';
         sb[sb.length] = ' target="' + this.target + '"';
@@ -2014,11 +2102,22 @@ YAHOO.extend(YAHOO.widget.RootNode, YAHOO.widget.Node, {
  * @extends YAHOO.widget.Node
  * @constructor
  * @param oData {object} a string or object containing the data that will
- * be used to render this node
+ * be used to render this node.  
+ * Valid configuration properties: 
+ * <dl>
+ *   <dt>html</dt>
+ *   <dd>The html content for the node</dd>
+ * </dl>
+ * All other attributes are made available in noderef.data, which
+ * can be used to store custom attributes.  TreeView.getNode(s)ByProperty
+ * can be used to retreive a node by one of the attributes.
  * @param oParent {YAHOO.widget.Node} this node's parent node
  * @param expanded {boolean} the initial expanded/collapsed state
  * @param hasIcon {boolean} specifies whether or not leaf nodes should
- * have an icon
+ * be rendered with or without a horizontal line line icon. If the icon
+ * is not displayed, the content fills the space it would have occupied.
+ * This option operates independently of the leaf node presentation logic
+ * for dynamic nodes.
  */
 YAHOO.widget.HTMLNode = function(oData, oParent, expanded, hasIcon) {
     if (oData) { 
@@ -2046,10 +2145,10 @@ YAHOO.extend(YAHOO.widget.HTMLNode, YAHOO.widget.Node, {
 
     /**
      * The HTML content to use for this node's display
-     * @property content
+     * @property html
      * @type string
      */
-    content: null,
+    html: null,
 
     /**
      * Sets up the node label
@@ -2147,7 +2246,26 @@ YAHOO.extend(YAHOO.widget.HTMLNode, YAHOO.widget.Node, {
  * @class MenuNode
  * @extends YAHOO.widget.TextNode
  * @param oData {object} a string or object containing the data that will
- * be used to render this node
+ * be used to render this node.
+ * Valid properties: 
+ * <dl>
+ *   <dt>label</dt>
+ *   <dd>The text for the node's label</dd>
+ *   <dt>title</dt>
+ *   <dd>The title attribute for the label anchor</dd>
+ *   <dt>title</dt>
+ *   <dd>The title attribute for the label anchor</dd>
+ *   <dt>href</dt>
+ *   <dd>The href for the node's label.  By default it is set to
+ *   expand/collapse the node.</dd>
+ *   <dt>target</dt>
+ *   <dd>The target attribute for the label anchor</dd>
+ *   <dt>style</dt>
+ *   <dd>A CSS class to apply to the label anchor</dd>
+ * </dl>
+ * All other attributes are made available in noderef.data, which
+ * can be used to store custom attributes.  TreeView.getNode(s)ByProperty
+ * can be used to retreive a node by one of the attributes.
  * @param oParent {YAHOO.widget.Node} this node's parent node
  * @param expanded {boolean} the initial expanded/collapsed state
  * @constructor
@@ -2349,4 +2467,4 @@ YAHOO.widget.TVFadeOut.prototype = {
     }
 };
 
-YAHOO.register("treeview", YAHOO.widget.TreeView, {version: "2.3.1", build: "541"});
+YAHOO.register("treeview", YAHOO.widget.TreeView, {version: "2.5.1", build: "984"});

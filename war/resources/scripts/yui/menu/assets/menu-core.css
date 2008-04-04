@@ -1,16 +1,25 @@
 /*
-Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
 http://developer.yahoo.net/yui/license.txt
-version: 2.3.1
+version: 2.5.1
 */
 /* Menu & MenuBar styles */
+
+.yuimenubar {
+
+    visibility: visible;
+    position: static;
+
+}
 
 .yuimenu .yuimenu,
 .yuimenubar .yuimenu {
 
-    position: absolute;
     visibility: hidden;
+    position: absolute;
+    top: -10000px;
+    left: -10000px;
 
 }
 
@@ -36,13 +45,83 @@ version: 2.3.1
 .yuimenuitemlabel,
 .yuimenubaritemlabel {
 
+    text-align: left;
     white-space: nowrap;
 
 }
 
 
+/* 
+    The following style rule trigger the "hasLayout" property in 
+    IE (http://msdn2.microsoft.com/en-us/library/ms533776.aspx) for a
+    MenuBar instance's <ul> element, allowing both to clear their floated 
+    child <li> elements.
+*/
+
+.yuimenubar ul {
+
+    *zoom: 1;
+
+}
+
+
+/* 
+    Remove the "hasLayout" trigger for submenus of MenuBar instances as it 
+    is unnecessary. 
+*/
+
+.yuimenubar .yuimenu ul {
+
+    *zoom: normal;
+
+}
+
 /*
-    PLEASE NOTE: The <DIV> element used for a menu's shadow is appended 
+    The following style rule allows a MenuBar instance's <ul> element to clear
+    its floated <li> elements in Firefox, Safari and and Opera.
+*/
+
+.yuimenubar>.bd>ul:after {
+
+    content: ".";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    height: 0;
+    line-height: 0;
+
+}
+
+.yuimenubaritem {
+
+    float: left;
+
+}
+
+.yuimenubaritemlabel,
+.yuimenuitemlabel {
+
+    display: block;
+
+}
+
+.yuimenuitemlabel .helptext {
+
+    font-style: normal;
+    display: block;
+    
+    /*
+        The value for the left margin controls how much the help text is
+        offset from the text of the menu item.  This value will need to 
+        be customized depending on the longest text label of a menu item.
+    */
+    
+    margin: -1em 0 0 10em;
+    
+}
+
+/*
+    PLEASE NOTE: The <div> element used for a menu's shadow is appended 
     to its root element via JavaScript once it has been rendered.  The 
     code that creates the shadow lives in the menu's public "onRender" 
     event handler that is a prototype method of YAHOO.widget.Menu.  
@@ -53,10 +132,20 @@ version: 2.3.1
 .yui-menu-shadow {
 
     position: absolute;
+    visibility: hidden;
     z-index: -1;
 
 }
 
+.yui-menu-shadow-visible {
+
+    top: 2px;
+    right: -3px;
+    left: -3px;
+    bottom: -3px;
+    visibility: visible;
+
+}
 
 
 /*
@@ -78,7 +167,7 @@ To fix these bugs in Menu (a subclass of YAHOO.widget.Overlay):
        as its "visibility" configuration property is toggled between 
        "false" and "true."
     
-    2) The "display" property of <SELECT> elements that are child nodes of the 
+    2) The "display" property of <select> elements that are child nodes of the 
        Menu instance's root element is set to "none" when it is hidden.
 
 PLEASE NOTE:  
@@ -124,19 +213,22 @@ when one of its submenus is visible.
 
 */
 
-.yuimenu.show-scrollbars {
+.yuimenu.show-scrollbars,
+.yuimenubar.show-scrollbars {
 
 	overflow: visible; 
 
 }
 
-.yuimenu.hide-scrollbars .yui-menu-shadow {
+.yuimenu.hide-scrollbars .yui-menu-shadow,
+.yuimenubar.hide-scrollbars .yui-menu-shadow {
 
     overflow: hidden;
 
 }
 
-.yuimenu.show-scrollbars .yui-menu-shadow {
+.yuimenu.show-scrollbars .yui-menu-shadow,
+.yuimenubar.show-scrollbars .yui-menu-shadow {
 
     overflow: auto;
 

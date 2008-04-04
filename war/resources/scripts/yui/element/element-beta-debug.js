@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
 http://developer.yahoo.net/yui/license.txt
-version: 2.3.1
+version: 2.5.1
 */
 /**
  * Provides Attribute configurations.
@@ -797,7 +797,7 @@ YAHOO.util.Element.prototype = {
 
         // set based on configOrder
         for (var i = 0, len = this._configOrder.length; i < len; ++i) {
-            if (map[this._configOrder[i]]) {
+            if (map[this._configOrder[i]] !== undefined) {
                 this.set(this._configOrder[i], map[this._configOrder[i]], silent);
             }
         }
@@ -974,8 +974,33 @@ var _registerHTMLAttr = function(key, map) {
  * @event contentReady
  */
 
+/**
+ * Fires before the Element is appended to another Element.
+ * <p>See: <a href="#addListener">Element.addListener</a></p>
+ * <p><strong>Event fields:</strong><br>
+ * <code>&lt;String&gt; type</code> beforeAppendTo<br>
+ * <code>&lt;HTMLElement/Element&gt;
+ * target</code> the HTMLElement/Element being appended to 
+ * <p><strong>Usage:</strong><br>
+ * <code>var handler = function(e) {var target = e.target};<br>
+ * myTabs.addListener('beforeAppendTo', handler);</code></p>
+ * @event beforeAppendTo
+ */
+
+/**
+ * Fires after the Element is appended to another Element.
+ * <p>See: <a href="#addListener">Element.addListener</a></p>
+ * <p><strong>Event fields:</strong><br>
+ * <code>&lt;String&gt; type</code> appendTo<br>
+ * <code>&lt;HTMLElement/Element&gt;
+ * target</code> the HTMLElement/Element being appended to 
+ * <p><strong>Usage:</strong><br>
+ * <code>var handler = function(e) {var target = e.target};<br>
+ * myTabs.addListener('appendTo', handler);</code></p>
+ * @event appendTo
+ */
 
 YAHOO.augment(YAHOO.util.Element, AttributeProvider);
 })();
 
-YAHOO.register("element", YAHOO.util.Element, {version: "2.3.1", build: "541"});
+YAHOO.register("element", YAHOO.util.Element, {version: "2.5.1", build: "984"});

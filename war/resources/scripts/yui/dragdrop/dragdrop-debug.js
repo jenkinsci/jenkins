@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
 http://developer.yahoo.net/yui/license.txt
-version: 2.3.1
+version: 2.5.1
 */
 /**
  * The drag and drop utility provides a framework for building drag and drop
@@ -33,7 +33,6 @@ YAHOO.util.DragDropMgr = function() {
     var Event = YAHOO.util.Event;
 
     return {
-
         /**
          * Two dimensional Array of registered DragDrop objects.  The first 
          * dimension is the DragDrop item group, the second the DragDrop 
@@ -347,6 +346,16 @@ YAHOO.util.DragDropMgr = function() {
         startY: 0,
 
         /**
+         * Flag to determine if the drag event was fired from the click timeout and
+         * not the mouse move threshold.
+         * @property fromTimeout
+         * @type boolean
+         * @private
+         * @static
+         */
+        fromTimeout: false,
+
+        /**
          * Each DragDrop instance must be registered with the DragDropMgr.  
          * This is executed in DragDrop.init()
          * @method regDragDrop
@@ -548,7 +557,8 @@ YAHOO.util.DragDropMgr = function() {
             this.clickTimeout = setTimeout( 
                     function() { 
                         var DDM = YAHOO.util.DDM;
-                        DDM.startDrag(DDM.startX, DDM.startY); 
+                        DDM.startDrag(DDM.startX, DDM.startY);
+                        DDM.fromTimeout = true;
                     }, 
                     this.clickTimeThresh );
         },
@@ -565,11 +575,13 @@ YAHOO.util.DragDropMgr = function() {
             YAHOO.log("firing drag start events", "info", "DragDropMgr");
             clearTimeout(this.clickTimeout);
             var dc = this.dragCurrent;
-            if (dc) {
+            if (dc && dc.events.b4StartDrag) {
                 dc.b4StartDrag(x, y);
+                dc.fireEvent('b4StartDragEvent', { x: x, y: y });
             }
-            if (dc) {
+            if (dc && dc.events.startDrag) {
                 dc.startDrag(x, y);
+                dc.fireEvent('startDragEvent', { x: x, y: y });
             }
             this.dragThreshMet = true;
         },
@@ -588,6 +600,11 @@ YAHOO.util.DragDropMgr = function() {
 
                 if (this.dragThreshMet) {
                     YAHOO.log("mouseup detected - completing drag", "info", "DragDropMgr");
+                    if (this.fromTimeout) {
+                        YAHOO.log('fromTimeout is true (mouse didn\'t move), call handleMouseMove so we can get the dragOver event', 'info', 'DragDropMgr');
+                        this.handleMouseMove(e);
+                    }
+                    this.fromTimeout = false;
                     this.fireEvents(e, true);
                 } else {
                     YAHOO.log("drag threshold not met", "info", "DragDropMgr");
@@ -635,17 +652,25 @@ YAHOO.util.DragDropMgr = function() {
          */
         stopDrag: function(e, silent) {
             // YAHOO.log("mouseup - removing event handlers");
-
+            var dc = this.dragCurrent;
             // Fire the drag end event for the item that was dragged
-            if (this.dragCurrent && !silent) {
+            if (dc && !silent) {
                 if (this.dragThreshMet) {
                     YAHOO.log("firing endDrag events", "info", "DragDropMgr");
-                    this.dragCurrent.b4EndDrag(e);
-                    this.dragCurrent.endDrag(e);
+                    if (dc.events.b4EndDrag) {
+                        dc.b4EndDrag(e);
+                        dc.fireEvent('b4EndDragEvent', { e: e });
+                    }
+                    if (dc.events.endDrag) {
+                        dc.endDrag(e);
+                        dc.fireEvent('endDragEvent', { e: e });
+                    }
                 }
-
-                YAHOO.log("firing dragdrop onMouseUp event", "info", "DragDropMgr");
-                this.dragCurrent.onMouseUp(e);
+                if (dc.events.mouseUp) {
+                    YAHOO.log("firing dragdrop onMouseUp event", "info", "DragDropMgr");
+                    dc.onMouseUp(e);
+                    dc.fireEvent('mouseUpEvent', { e: e });
+                }
             }
 
             this.dragCurrent = null;
@@ -681,6 +706,14 @@ YAHOO.util.DragDropMgr = function() {
                     YAHOO.log("button failure", "info", "DragDropMgr");
                     this.stopEvent(e);
                     return this.handleMouseUp(e);
+                } else {
+                    if (e.clientX < 0 || e.clientY < 0) {
+                        //This will stop the element from leaving the viewport in FF, Opera & Safari
+                        //Not turned on yet
+                        //YAHOO.log("Either clientX or clientY is negative, stop the event.", "info", "DragDropMgr");
+                        //this.stopEvent(e);
+                        //return false;
+                    }
                 }
 
                 if (!this.dragThreshMet) {
@@ -695,9 +728,13 @@ YAHOO.util.DragDropMgr = function() {
                 }
 
                 if (this.dragThreshMet) {
-                    dc.b4Drag(e);
-                    if (dc) {
+                    if (dc && dc.events.b4Drag) {
+                        dc.b4Drag(e);
+                        dc.fireEvent('b4DragEvent', { e: e});
+                    }
+                    if (dc && dc.events.drag) {
                         dc.onDrag(e);
+                        dc.fireEvent('dragEvent', { e: e});
                     }
                     if (dc) {
                         this.fireEvents(e, false);
@@ -707,7 +744,7 @@ YAHOO.util.DragDropMgr = function() {
                 this.stopEvent(e);
             }
         },
-
+        
         /**
          * Iterates over all of the DragDrop elements to find ones we are 
          * hovering over or dropping on
@@ -722,7 +759,8 @@ YAHOO.util.DragDropMgr = function() {
 
             // If the user did the mouse up outside of the window, we could 
             // get here even though we have ended the drag.
-            if (!dc || dc.isLocked()) {
+            // If the config option dragOnly is true, bail out and don't fire the events
+            if (!dc || dc.isLocked() || dc.dragOnly) {
                 return;
             }
 
@@ -731,16 +769,21 @@ YAHOO.util.DragDropMgr = function() {
                 pt = new YAHOO.util.Point(x,y),
                 pos = dc.getTargetCoord(pt.x, pt.y),
                 el = dc.getDragEl(),
+                events = ['out', 'over', 'drop', 'enter'],
                 curRegion = new YAHOO.util.Region( pos.y, 
                                                pos.x + el.offsetWidth,
                                                pos.y + el.offsetHeight, 
                                                pos.x ),
             
                 oldOvers = [], // cache the previous dragOver array
-                outEvts   = [],
-                overEvts  = [],
-                dropEvts  = [],
-                enterEvts = [];
+                inGroupsObj  = {},
+                inGroups  = [],
+                data = {
+                    outEvts: [],
+                    overEvts: [],
+                    dropEvts: [],
+                    enterEvts: []
+                };
 
 
             // Check to see if the object(s) we were hovering over is no longer 
@@ -752,9 +795,8 @@ YAHOO.util.DragDropMgr = function() {
                 if (! this.isTypeOfDD(ddo)) {
                     continue;
                 }
-
                 if (! this.isOverTarget(pt, ddo, this.mode, curRegion)) {
-                    outEvts.push( ddo );
+                    data.outEvts.push( ddo );
                 }
 
                 oldOvers[i] = true;
@@ -776,18 +818,19 @@ YAHOO.util.DragDropMgr = function() {
 
                     if (oDD.isTarget && !oDD.isLocked() && oDD != dc) {
                         if (this.isOverTarget(pt, oDD, this.mode, curRegion)) {
+                            inGroupsObj[sGroup] = true;
                             // look for drop interactions
                             if (isDrop) {
-                                dropEvts.push( oDD );
+                                data.dropEvts.push( oDD );
                             // look for drag enter and drag over interactions
                             } else {
 
                                 // initial drag over: dragEnter fires
                                 if (!oldOvers[oDD.id]) {
-                                    enterEvts.push( oDD );
+                                    data.enterEvts.push( oDD );
                                 // subsequent drag overs: dragOver fires
                                 } else {
-                                    overEvts.push( oDD );
+                                    data.overEvts.push( oDD );
                                 }
 
                                 this.dragOvers[oDD.id] = oDD;
@@ -798,106 +841,67 @@ YAHOO.util.DragDropMgr = function() {
             }
 
             this.interactionInfo = {
-                out:       outEvts,
-                enter:     enterEvts,
-                over:      overEvts,
-                drop:      dropEvts,
+                out:       data.outEvts,
+                enter:     data.enterEvts,
+                over:      data.overEvts,
+                drop:      data.dropEvts,
                 point:     pt,
                 draggedRegion:    curRegion,
                 sourceRegion: this.locationCache[dc.id],
                 validDrop: isDrop
             };
 
-            // notify about a drop that did not find a target
-            if (isDrop && !dropEvts.length) {
-                YAHOO.log(dc.id + " dropped, but not on a target", "info", "DragDropMgr");
-                this.interactionInfo.validDrop = false;
-                dc.onInvalidDrop(e);
+            
+            for (var inG in inGroupsObj) {
+                inGroups.push(inG);
             }
 
+            // notify about a drop that did not find a target
+            if (isDrop && !data.dropEvts.length) {
+                YAHOO.log(dc.id + " dropped, but not on a target", "info", "DragDropMgr");
+                this.interactionInfo.validDrop = false;
+                if (dc.events.invalidDrop) {
+                    dc.onInvalidDrop(e);
+                    dc.fireEvent('invalidDropEvent', { e: e });
+                }
+            }
 
-            if (this.mode) {
-                if (outEvts.length) {
-                    YAHOO.log(dc.id+" onDragOut: " + outEvts, "info", "DragDropMgr");
-                    dc.b4DragOut(e, outEvts);
-                    if (dc) {
-                        dc.onDragOut(e, outEvts);
+            for (i = 0; i < events.length; i++) {
+                var tmp = null;
+                if (data[events[i] + 'Evts']) {
+                    tmp = data[events[i] + 'Evts'];
+                }
+                if (tmp && tmp.length) {
+                    var type = events[i].charAt(0).toUpperCase() + events[i].substr(1),
+                        ev = 'onDrag' + type,
+                        b4 = 'b4Drag' + type,
+                        cev = 'drag' + type + 'Event',
+                        check = 'drag' + type;
+                    
+                    if (this.mode) {
+                        YAHOO.log(dc.id + ' ' + ev + ': ' + tmp, "info", "DragDropMgr");
+                        if (dc.events[b4]) {
+                            dc[b4](e, tmp, inGroups);
+                            dc.fireEvent(b4 + 'Event', { event: e, info: tmp, group: inGroups });
+                        }
+                        if (dc.events[check]) {
+                            dc[ev](e, tmp, inGroups);
+                            dc.fireEvent(cev, { event: e, info: tmp, group: inGroups });
+                        }
+                    } else {
+                        for (var b = 0, len = tmp.length; b < len; ++b) {
+                            YAHOO.log(dc.id + ' ' + ev + ': ' + tmp[b].id, "info", "DragDropMgr");
+                            if (dc.events[b4]) {
+                                dc[b4](e, tmp[b].id, inGroups[0]);
+                                dc.fireEvent(b4 + 'Event', { event: e, info: tmp[b].id, group: inGroups[0] });
+                            }
+                            if (dc.events[check]) {
+                                dc[ev](e, tmp[b].id, inGroups[0]);
+                                dc.fireEvent(cev, { event: e, info: tmp[b].id, group: inGroups[0] });
+                            }
+                        }
                     }
                 }
-
-                if (enterEvts.length) {
-                    YAHOO.log(dc.id+" onDragEnter: " + enterEvts, "info", "DragDropMgr");
-                    if (dc) {
-                        dc.onDragEnter(e, enterEvts);
-                    }
-                }
-
-                if (overEvts.length) {
-                    YAHOO.log(dc.id+" onDragOver: " + overEvts, "info", "DragDropMgr");
-                    if (dc) {
-                        dc.b4DragOver(e, overEvts);
-                    }
-
-                    if (dc) {
-                        dc.onDragOver(e, overEvts);
-                    }
-                }
-
-                if (dropEvts.length) {
-                    YAHOO.log(dc.id+" onDragDrop: " + dropEvts, "info", "DragDropMgr");
-                    if (dc) {
-                        dc.b4DragDrop(e, dropEvts);
-                    }
-                    if (dc) {
-                        dc.onDragDrop(e, dropEvts);
-                    }
-                }
-
-            } else {
-                // fire dragout events
-                var len = 0;
-                for (i=0, len=outEvts.length; i<len; ++i) {
-                    YAHOO.log(dc.id+" onDragOut: " + outEvts[i].id, "info", "DragDropMgr");
-                    if (dc) {
-                        dc.b4DragOut(e, outEvts[i].id);
-                    }
-                    if (dc) {
-                        dc.onDragOut(e, outEvts[i].id);
-                    }
-                }
-                 
-                // fire enter events
-                for (i=0,len=enterEvts.length; i<len; ++i) {
-                    YAHOO.log(dc.id + " onDragEnter " + enterEvts[i].id, "info", "DragDropMgr");
-                    // dc.b4DragEnter(e, oDD.id);
-
-                    if (dc) {
-                        dc.onDragEnter(e, enterEvts[i].id);
-                    }
-                }
-         
-                // fire over events
-                for (i=0,len=overEvts.length; i<len; ++i) {
-                    YAHOO.log(dc.id + " onDragOver " + overEvts[i].id, "info", "DragDropMgr");
-                    if (dc) {
-                        dc.b4DragOver(e, overEvts[i].id);
-                    }
-                    if (dc) {
-                        dc.onDragOver(e, overEvts[i].id);
-                    }
-                }
-
-                // fire drop events
-                for (i=0, len=dropEvts.length; i<len; ++i) {
-                    YAHOO.log(dc.id + " dropped on " + dropEvts[i].id, "info", "DragDropMgr");
-                    if (dc) {
-                        dc.b4DragDrop(e, dropEvts[i].id);
-                    }
-                    if (dc) {
-                        dc.onDragDrop(e, dropEvts[i].id);
-                    }
-                }
-
             }
         },
 
@@ -1507,7 +1511,20 @@ YAHOO.util.DragDrop = function(id, sGroup, config) {
 };
 
 YAHOO.util.DragDrop.prototype = {
-
+    /**
+     * An Object Literal containing the events that we will be using: mouseDown, b4MouseDown, mouseUp, b4StartDrag, startDrag, b4EndDrag, endDrag, mouseUp, drag, b4Drag, invalidDrop, b4DragOut, dragOut, dragEnter, b4DragOver, dragOver, b4DragDrop, dragDrop
+     * By setting any of these to false, then event will not be fired.
+     * @property events
+     * @type object
+     */
+    events: null,
+    /**
+    * @method on
+    * @description Shortcut for EventProvider.subscribe, see <a href="YAHOO.util.EventProvider.html#subscribe">YAHOO.util.EventProvider.subscribe</a>
+    */
+    on: function() {
+        this.subscribe.apply(this, arguments);
+    },
     /**
      * The id of the element associated with this object.  This is what we 
      * refer to as the "linked element" because the size and position of 
@@ -1620,7 +1637,7 @@ YAHOO.util.DragDrop.prototype = {
     /**
      * By default, all instances can be a drop target.  This can be disabled by
      * setting isTarget to false.
-     * @method isTarget
+     * @property isTarget
      * @type boolean
      */
     isTarget: true,
@@ -1628,10 +1645,16 @@ YAHOO.util.DragDrop.prototype = {
     /**
      * The padding configured for this drag and drop object for calculating
      * the drop zone intersection with this object.
-     * @method padding
+     * @property padding
      * @type int[]
      */
     padding: null,
+    /**
+     * If this flag is true, do not fire drop events. The element is a drag only element (for movement not dropping)
+     * @property dragOnly
+     * @type Boolean
+     */
+    dragOnly: false,
 
     /**
      * Cached reference to the linked element
@@ -1978,7 +2001,12 @@ YAHOO.util.DragDrop.prototype = {
         this.initTarget(id, sGroup, config);
         Event.on(this._domRef || this.id, "mousedown", 
                         this.handleMouseDown, this, true);
+
         // Event.on(this.id, "selectstart", Event.preventDefault);
+        for (var i in this.events) {
+            this.createEvent(i + 'Event');
+        }
+        
     },
 
     /**
@@ -1993,6 +2021,8 @@ YAHOO.util.DragDrop.prototype = {
 
         // configuration attributes 
         this.config = config || {};
+
+        this.events = {};
 
         // create a local reference to the drag and drop manager
         this.DDM = YAHOO.util.DDM;
@@ -2045,6 +2075,34 @@ YAHOO.util.DragDrop.prototype = {
      * @method applyConfig
      */
     applyConfig: function() {
+        this.events = {
+            mouseDown: true,
+            b4MouseDown: true,
+            mouseUp: true,
+            b4StartDrag: true,
+            startDrag: true,
+            b4EndDrag: true,
+            endDrag: true,
+            drag: true,
+            b4Drag: true,
+            invalidDrop: true,
+            b4DragOut: true,
+            dragOut: true,
+            dragEnter: true,
+            b4DragOver: true,
+            dragOver: true,
+            b4DragDrop: true,
+            dragDrop: true
+        };
+        
+        if (this.config.events) {
+            for (var i in this.config.events) {
+                if (this.config.events[i] === false) {
+                    this.events[i] = false;
+                }
+            }
+        }
+
 
         // configurable properties: 
         //    padding, isTarget, maintainOffset, primaryButtonOnly
@@ -2052,7 +2110,7 @@ YAHOO.util.DragDrop.prototype = {
         this.isTarget          = (this.config.isTarget !== false);
         this.maintainOffset    = (this.config.maintainOffset);
         this.primaryButtonOnly = (this.config.primaryButtonOnly !== false);
-
+        this.dragOnly = ((this.config.dragOnly === true) ? true : false);
     },
 
     /**
@@ -2101,7 +2159,11 @@ YAHOO.util.DragDrop.prototype = {
         var el = this.getEl();
 
         if (!this.DDM.verifyEl(el)) {
-            this.logger.log(this.id + " element is broken");
+            if (el && el.style && (el.style.display == 'none')) {
+                this.logger.log(this.id + " can not get initial position, element style is display: none");
+            } else {
+                this.logger.log(this.id + " element is broken");
+            }
             return;
         }
 
@@ -2264,8 +2326,19 @@ YAHOO.util.DragDrop.prototype = {
         this.logger.log("firing onMouseDown events");
 
         // firing the mousedown events prior to calculating positions
-        this.b4MouseDown(e);
-        this.onMouseDown(e);
+        var b4Return = this.b4MouseDown(e);
+        if (this.events.b4MouseDown) {
+            b4Return = this.fireEvent('b4MouseDownEvent', e);
+        }
+        var mDownReturn = this.onMouseDown(e);
+        if (this.events.mouseDown) {
+            mDownReturn = this.fireEvent('mouseDownEvent', e);
+        }
+
+        if ((b4Return === false) || (mDownReturn === false)) {
+            this.logger.log('b4MouseDown or onMouseDown returned false, exiting drag');
+            return;
+        }
 
         this.DDM.refreshCache(this.groups);
         // var self = this;
@@ -2302,8 +2375,14 @@ this.logger.log("clickValidator returned false, drag not initiated");
         }
     },
 
+    /**
+     * @method clickValidator
+     * @description Method validates that the clicked element
+     * was indeed the handle or a valid child of the handle
+     * @param {Event} e 
+     */
     clickValidator: function(e) {
-        var target = Event.getTarget(e);
+        var target = YAHOO.util.Event.getTarget(e);
         return ( this.isValidHandleChild(target) &&
                     (this.id == this.handleElId || 
                         this.DDM.handleWasClicked(target, this.id)) );
@@ -2669,7 +2748,100 @@ this.logger.log("clickValidator returned false, drag not initiated");
     }
 
 };
+YAHOO.augment(YAHOO.util.DragDrop, YAHOO.util.EventProvider);
 
+/**
+* @event mouseDownEvent
+* @description Provides access to the mousedown event. The mousedown does not always result in a drag operation.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event b4MouseDownEvent
+* @description Provides access to the mousedown event, before the mouseDownEvent gets fired. Returning false will cancel the drag.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event mouseUpEvent
+* @description Fired from inside DragDropMgr when the drag operation is finished.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event b4StartDragEvent
+* @description Fires before the startDragEvent, returning false will cancel the startDrag Event.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event startDragEvent
+* @description Occurs after a mouse down and the drag threshold has been met. The drag threshold default is either 3 pixels of mouse movement or 1 full second of holding the mousedown. 
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event b4EndDragEvent
+* @description Fires before the endDragEvent. Returning false will cancel.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event endDragEvent
+* @description Fires on the mouseup event after a drag has been initiated (startDrag fired).
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event dragEvent
+* @description Occurs every mousemove event while dragging.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragEvent
+* @description Fires before the dragEvent.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event invalidDropEvent
+* @description Fires when the dragged objects is dropped in a location that contains no drop targets.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragOutEvent
+* @description Fires before the dragOutEvent
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragOutEvent
+* @description Fires when a dragged object is no longer over an object that had the onDragEnter fire. 
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragEnterEvent
+* @description Occurs when the dragged object first interacts with another targettable drag and drop object.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragOverEvent
+* @description Fires before the dragOverEvent.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragOverEvent
+* @description Fires every mousemove event while over a drag and drop object.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragDropEvent 
+* @description Fires before the dragDropEvent
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragDropEvent
+* @description Fires when the dragged objects is dropped on another.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
 })();
 /**
  * A DragDrop implementation where the linked element follows the 
@@ -2772,7 +2944,10 @@ YAHOO.extend(YAHOO.util.DD, YAHOO.util.DragDrop, {
         }
         
         this.cachePosition(oCoord.x, oCoord.y);
-        this.autoScroll(oCoord.x, oCoord.y, el.offsetHeight, el.offsetWidth);
+        var self = this;
+        setTimeout(function() {
+            self.autoScroll.call(self, oCoord.x, oCoord.y, el.offsetHeight, el.offsetWidth);
+        }, 0);
     },
 
     /**
@@ -2943,6 +3118,98 @@ YAHOO.extend(YAHOO.util.DD, YAHOO.util.DragDrop, {
 
     */
 
+/**
+* @event mouseDownEvent
+* @description Provides access to the mousedown event. The mousedown does not always result in a drag operation.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event b4MouseDownEvent
+* @description Provides access to the mousedown event, before the mouseDownEvent gets fired. Returning false will cancel the drag.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event mouseUpEvent
+* @description Fired from inside DragDropMgr when the drag operation is finished.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event b4StartDragEvent
+* @description Fires before the startDragEvent, returning false will cancel the startDrag Event.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event startDragEvent
+* @description Occurs after a mouse down and the drag threshold has been met. The drag threshold default is either 3 pixels of mouse movement or 1 full second of holding the mousedown. 
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event b4EndDragEvent
+* @description Fires before the endDragEvent. Returning false will cancel.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event endDragEvent
+* @description Fires on the mouseup event after a drag has been initiated (startDrag fired).
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event dragEvent
+* @description Occurs every mousemove event while dragging.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragEvent
+* @description Fires before the dragEvent.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event invalidDropEvent
+* @description Fires when the dragged objects is dropped in a location that contains no drop targets.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragOutEvent
+* @description Fires before the dragOutEvent
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragOutEvent
+* @description Fires when a dragged object is no longer over an object that had the onDragEnter fire. 
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragEnterEvent
+* @description Occurs when the dragged object first interacts with another targettable drag and drop object.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragOverEvent
+* @description Fires before the dragOverEvent.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragOverEvent
+* @description Fires every mousemove event while over a drag and drop object.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragDropEvent 
+* @description Fires before the dragDropEvent
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragDropEvent
+* @description Fires when the dragged objects is dropped on another.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
 });
 /**
  * A DragDrop implementation that inserts an empty, bordered div into
@@ -3038,6 +3305,27 @@ YAHOO.extend(YAHOO.util.DDProxy, YAHOO.util.DD, {
             Dom.setStyle(_data, 'background-color', '#ccc');
             Dom.setStyle(_data, 'opacity', '0');
             div.appendChild(_data);
+
+            /**
+            * It seems that IE will fire the mouseup event if you pass a proxy element over a select box
+            * Placing the IFRAME element inside seems to stop this issue
+            */
+            if (YAHOO.env.ua.ie) {
+                //Only needed for Internet Explorer
+                var ifr = document.createElement('iframe');
+                ifr.setAttribute('src', 'about:blank');
+                ifr.setAttribute('scrolling', 'no');
+                ifr.setAttribute('frameborder', '0');
+                div.insertBefore(ifr, div.firstChild);
+                Dom.setStyle(ifr, 'height', '100%');
+                Dom.setStyle(ifr, 'width', '100%');
+                Dom.setStyle(ifr, 'position', 'absolute');
+                Dom.setStyle(ifr, 'top', '0');
+                Dom.setStyle(ifr, 'left', '0');
+                Dom.setStyle(ifr, 'opacity', '0');
+                Dom.setStyle(ifr, 'zIndex', '-1');
+                Dom.setStyle(ifr.nextSibling, 'zIndex', '2');
+            }
 
             // appendChild can blow up IE if invoked prior to the window load event
             // while rendering a table.  It is possible there are other scenarios 
@@ -3175,6 +3463,98 @@ YAHOO.extend(YAHOO.util.DDProxy, YAHOO.util.DD, {
     toString: function() {
         return ("DDProxy " + this.id);
     }
+/**
+* @event mouseDownEvent
+* @description Provides access to the mousedown event. The mousedown does not always result in a drag operation.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event b4MouseDownEvent
+* @description Provides access to the mousedown event, before the mouseDownEvent gets fired. Returning false will cancel the drag.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event mouseUpEvent
+* @description Fired from inside DragDropMgr when the drag operation is finished.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event b4StartDragEvent
+* @description Fires before the startDragEvent, returning false will cancel the startDrag Event.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event startDragEvent
+* @description Occurs after a mouse down and the drag threshold has been met. The drag threshold default is either 3 pixels of mouse movement or 1 full second of holding the mousedown. 
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event b4EndDragEvent
+* @description Fires before the endDragEvent. Returning false will cancel.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event endDragEvent
+* @description Fires on the mouseup event after a drag has been initiated (startDrag fired).
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+
+/**
+* @event dragEvent
+* @description Occurs every mousemove event while dragging.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragEvent
+* @description Fires before the dragEvent.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event invalidDropEvent
+* @description Fires when the dragged objects is dropped in a location that contains no drop targets.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragOutEvent
+* @description Fires before the dragOutEvent
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragOutEvent
+* @description Fires when a dragged object is no longer over an object that had the onDragEnter fire. 
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragEnterEvent
+* @description Occurs when the dragged object first interacts with another targettable drag and drop object.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragOverEvent
+* @description Fires before the dragOverEvent.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragOverEvent
+* @description Fires every mousemove event while over a drag and drop object.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event b4DragDropEvent 
+* @description Fires before the dragDropEvent
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
+/**
+* @event dragDropEvent
+* @description Fires when the dragged objects is dropped on another.
+* @type YAHOO.util.CustomEvent See <a href="YAHOO.util.Element.html#addListener">Element.addListener</a> for more information on listening for this event.
+*/
 
 });
 /**
@@ -3204,4 +3584,4 @@ YAHOO.extend(YAHOO.util.DDTarget, YAHOO.util.DragDrop, {
         return ("DDTarget " + this.id);
     }
 });
-YAHOO.register("dragdrop", YAHOO.util.DragDropMgr, {version: "2.3.1", build: "541"});
+YAHOO.register("dragdrop", YAHOO.util.DragDropMgr, {version: "2.5.1", build: "984"});

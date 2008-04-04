@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
 http://developer.yahoo.net/yui/license.txt
-version: 2.3.1
+version: 2.5.1
 */
 .yui-skin-sam .yui-button  {
 
@@ -20,7 +20,7 @@ version: 2.3.1
     border-style: solid;
     border-color: #808080;
     margin: 0 -1px;
-    *position: relative;
+    *position: relative;    /* Necessary to get negative margins working in IE */
     *left: -1px;
 
 }
@@ -35,6 +35,16 @@ version: 2.3.1
     min-height: 2em; /* For Gecko */
     *min-height: auto; /* For IE */
     color: #000; 
+
+}
+
+.yui-skin-sam .yui-button a {
+
+    /*
+        Necessary to get Button's of type "link" to be the correct 
+        height in IE.
+    */
+    *line-height: 2;
 
 }
 

@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
 http://developer.yahoo.net/yui/license.txt
-version: 2.3.1
+version: 2.5.1
 */
 .yui-overlay,
 .yui-panel-container {
@@ -23,15 +23,15 @@ version: 2.3.1
     left: 0;
     right: 0;
     bottom: 0;
-    /*
-        Application of "overflow:auto" prevents Mac scrollbars from bleeding
-        through the modality mask in Gecko.
-    */
-    overflow: auto;
 }
 
-.yui-panel-container select {
-    _visibility: inherit;
+.mask.block-scrollbars {
+    /*
+        Application of "overflow:auto" prevents Mac scrollbars from bleeding
+        through the modality mask in Gecko. The block-scollbars class is only 
+        added for Gecko on MacOS
+    */
+    overflow: auto;
 }
 
 /* 
@@ -51,14 +51,15 @@ version: 2.3.1
 
 */
 
-.masked select, 
-.drag select, 
+.masked select,
+.drag select,
 .hide-select select {
-
-    _visibility: hidden;   
-
+    _visibility: hidden;
 }
 
+.yui-panel-container select {
+    _visibility: inherit;
+}
 
 /*
 
@@ -110,22 +111,16 @@ PLEASE NOTE:
 }
 
 .hide-scrollbars select {
-
     display: none;
-
 }
 
 .show-scrollbars {
-
     overflow: auto;
-
 }
 
 .yui-panel-container.show-scrollbars,
 .yui-tt.show-scrollbars {
-
     overflow: visible;
-
 }
 
 .yui-panel-container.show-scrollbars .underlay,
@@ -135,6 +130,19 @@ PLEASE NOTE:
 
 }
 
+/* 
+   Workaround for Safari 2.x - the yui-force-redraw class is applied, and then removed when
+   the Panel's content changes, to force Safari 2.x to redraw the underlay.
+   We attempt to choose a CSS property which has no visual impact when added,
+   removed.
+*/
+.yui-panel-container.shadow .underlay.yui-force-redraw {
+    padding-bottom: 1px;
+}
+
+.yui-effect-fade .underlay {
+    display:none;
+}
 
 /*
     PLEASE NOTE: The <DIV> element used for a Tooltip's shadow is appended 

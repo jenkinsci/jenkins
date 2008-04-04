@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
 http://developer.yahoo.net/yui/license.txt
-version: 2.3.1
+version: 2.5.1
 */
 /* base.css, part of YUI's CSS Foundation */
 h1 {
@@ -65,12 +65,15 @@ th {
 	text-align:center;
 }
 caption {
-	/*coordinated marking to match cell's padding*/
+	/*coordinated margin to match cell's padding*/
 	margin-bottom:.5em;
 	/*centered so it doesn't blend in to other content*/
 	text-align:center;
 }
-p,fieldset,table {
+p,fieldset,table,pre {
 	/*so things don't run into each other*/
 	margin-bottom:1em;
 }
+/* setting a consistent width, 160px; 
+   control of type=file still not possible */
+input[type=text],input[type=password],textarea{width:12.25em;*width:11.9em;}

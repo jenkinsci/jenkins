@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
 http://developer.yahoo.net/yui/license.txt
-version: 2.3.1
+version: 2.5.1
 */
 (function() {
 
@@ -368,6 +368,7 @@ version: 2.3.1
             }
         });
 
+        YAHOO.log('attributes initialized', 'info', 'TabView');
         if ( this._tabParent ) {
             _initTabs.call(this);
         }
@@ -424,6 +425,7 @@ version: 2.3.1
             el.className = this.CLASSNAME;
         }
         
+        YAHOO.log('TabView Dom created', 'info', 'TabView');
         return el;
     };
     
@@ -495,8 +497,6 @@ version: 2.3.1
                 this.set('content', o.responseText);
             },
             failure: function(o) {
-                YAHOO.log('loading failed: ' + o.statusText,
-                        'error', 'Tab');
             }
         };
         
@@ -524,6 +524,14 @@ version: 2.3.1
      */
     proto.ACTIVE_CLASSNAME = 'selected';
     
+    /**
+     * The title applied to active tabs.
+     * @property ACTIVE_TITLE
+     * @type String
+     * @default "active"
+     */
+    proto.ACTIVE_TITLE = 'active';
+
     /**
      * The class name applied to disabled tabs.
      * @property DISABLED_CLASSNAME
@@ -727,7 +735,7 @@ version: 2.3.1
             method: function(value) {
                 if (value === true) {
                     this.addClass(this.ACTIVE_CLASSNAME);
-                    this.set('title', 'active');
+                    this.set('title', this.ACTIVE_TITLE);
                 } else {
                     this.removeClass(this.ACTIVE_CLASSNAME);
                     this.set('title', '');
@@ -794,6 +802,7 @@ version: 2.3.1
             },
             validator: YAHOO.lang.isBoolean
         });
+        YAHOO.log('attributes initialized', 'info', 'Tab');
     };
     
     var _createTabElement = function(attr) {
@@ -817,6 +826,7 @@ version: 2.3.1
         
         a.appendChild(labelEl);
         
+        YAHOO.log('creating Tab Dom', 'info', 'Tab');
         return el;
     };
     
@@ -859,6 +869,7 @@ version: 2.3.1
             this.get('dataSrc'), 
             {
                 success: function(o) {
+                    YAHOO.log('content loaded successfully', 'info', 'Tab');
                     this.loadHandler.success.call(this, o);
                     this.set('dataLoaded', true);
                     this.dataConnection = null;
@@ -867,6 +878,7 @@ version: 2.3.1
                     this._loading = false;
                 },
                 failure: function(o) {
+                    YAHOO.log('loading failed: ' + o.statusText, 'error', 'Tab');
                     this.loadHandler.failure.call(this, o);
                     this.dataConnection = null;
                     Dom.removeClass(this.get('contentEl').parentNode,
@@ -882,4 +894,4 @@ version: 2.3.1
     YAHOO.widget.Tab = Tab;
 })();
 
-YAHOO.register("tabview", YAHOO.widget.TabView, {version: "2.3.1", build: "541"});
+YAHOO.register("tabview", YAHOO.widget.TabView, {version: "2.5.1", build: "984"});

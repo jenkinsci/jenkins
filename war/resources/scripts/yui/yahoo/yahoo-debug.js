@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
 http://developer.yahoo.net/yui/license.txt
-version: 2.3.1
+version: 2.5.1
 */
 /**
  * The YAHOO object is the single global object used by YUI Library.  It
@@ -53,7 +53,15 @@ version: 2.3.1
  * @see yuiloader
  */
 
-if (typeof YAHOO == "undefined") {
+/**
+ * Forces the use of the supplied locale where applicable in the library
+ * @property locale
+ * @type string
+ * @static
+ * @default undefined
+ */
+
+if (typeof YAHOO == "undefined" || !YAHOO) {
     /**
      * The YAHOO global namespace object.  If YAHOO is already defined, the
      * existing YAHOO object will not be overwritten so that defined
@@ -264,16 +272,44 @@ YAHOO.env.ua = function() {
          * Safari 2.0.4:         418     <-- preventDefault fixed
          * Safari 2.0.4 (419.3): 418.9.1 <-- One version of Safari may run
          *                                   different versions of webkit
-         * Safari 2.0.4 (419.3): 419     <-- Current Safari release
-         * Webkit 212 nightly:   522+    <-- Safari 3.0 (with native SVG) should
-         *                                   be higher than this
+         * Safari 2.0.4 (419.3): 419     <-- Tiger installations that have been
+         *                                   updated, but not updated
+         *                                   to the latest patch.
+         * Webkit 212 nightly:   522+    <-- Safari 3.0 precursor (with native SVG
+         *                                   and many major issues fixed).  
+         * 3.x yahoo.com, flickr:422     <-- Safari 3.x hacks the user agent
+         *                                   string when hitting yahoo.com and 
+         *                                   flickr.com.
+         * Safari 3.0.4 (523.12):523.12  <-- First Tiger release - automatic update
+         *                                   from 2.x via the 10.4.11 OS patch
+         * Webkit nightly 1/2008:525+    <-- Supports DOMContentLoaded event.
+         *                                   yahoo.com user agent hack removed.
          *                                   
          * </pre>
          * http://developer.apple.com/internet/safari/uamatrix.html
          * @property webkit
          * @type float
          */
-        webkit:0
+        webkit: 0,
+
+        /**
+         * The mobile property will be set to a string containing any relevant
+         * user agent information when a modern mobile browser is detected.
+         * Currently limited to Safari on the iPhone/iPod Touch, Nokia N-series
+         * devices with the WebKit-based browser, and Opera Mini.  
+         * @property mobile 
+         * @type string
+         */
+        mobile: null,
+
+        /**
+         * Adobe AIR version number or 0.  Only populated if webkit is detected.
+         * Example: 1.0
+         * @property air
+         * @type float
+         */
+        air: 0
+
     };
 
     var ua=navigator.userAgent, m;
@@ -286,6 +322,22 @@ YAHOO.env.ua = function() {
     m=ua.match(/AppleWebKit\/([^\s]*)/);
     if (m&&m[1]) {
         o.webkit=parseFloat(m[1]);
+
+        // Mobile browser check
+        if (/ Mobile\//.test(ua)) {
+            o.mobile = "Apple"; // iPhone or iPod Touch
+        } else {
+            m=ua.match(/NokiaN[^\/]*/);
+            if (m) {
+                o.mobile = m[0]; // Nokia N-series, ex: NokiaN95
+            }
+        }
+
+        m=ua.match(/AdobeAIR\/([^\s]*)/);
+        if (m) {
+            o.air = m[0]; // Adobe AIR 1.0 or better
+        }
+
     }
 
     if (!o.webkit) { // not webkit
@@ -293,6 +345,10 @@ YAHOO.env.ua = function() {
         m=ua.match(/Opera[\s\/]([^\s]*)/);
         if (m&&m[1]) {
             o.opera=parseFloat(m[1]);
+            m=ua.match(/Opera Mini[^;]*/);
+            if (m) {
+                o.mobile = m[0]; // ex: Opera Mini/2.0.4509/1316
+            }
         } else { // not opera or webkit
             m=ua.match(/MSIE\s([^;]*)/);
             if (m&&m[1]) {
@@ -345,7 +401,7 @@ YAHOO.env.ua = function() {
  * Provides the language utilites and extensions used by the library
  * @class YAHOO.lang
  */
-YAHOO.lang = {
+YAHOO.lang = YAHOO.lang || {
     /**
      * Determines whether or not the provided object is an array.
      * Testing typeof/instanceof/constructor of arrays across frame 
@@ -355,14 +411,12 @@ YAHOO.lang = {
      * properties.
      * @method isArray
      * @param {any} o The object being testing
-     * @return Boolean
+     * @return {boolean} the result
      */
     isArray: function(o) { 
-
         if (o) {
            var l = YAHOO.lang;
-           return l.isNumber(o.length) && l.isFunction(o.splice) && 
-                  !l.hasOwnProperty(o.length);
+           return l.isNumber(o.length) && l.isFunction(o.splice);
         }
         return false;
     },
@@ -371,7 +425,7 @@ YAHOO.lang = {
      * Determines whether or not the provided object is a boolean
      * @method isBoolean
      * @param {any} o The object being testing
-     * @return Boolean
+     * @return {boolean} the result
      */
     isBoolean: function(o) {
         return typeof o === 'boolean';
@@ -381,7 +435,7 @@ YAHOO.lang = {
      * Determines whether or not the provided object is a function
      * @method isFunction
      * @param {any} o The object being testing
-     * @return Boolean
+     * @return {boolean} the result
      */
     isFunction: function(o) {
         return typeof o === 'function';
@@ -391,7 +445,7 @@ YAHOO.lang = {
      * Determines whether or not the provided object is null
      * @method isNull
      * @param {any} o The object being testing
-     * @return Boolean
+     * @return {boolean} the result
      */
     isNull: function(o) {
         return o === null;
@@ -401,7 +455,7 @@ YAHOO.lang = {
      * Determines whether or not the provided object is a legal number
      * @method isNumber
      * @param {any} o The object being testing
-     * @return Boolean
+     * @return {boolean} the result
      */
     isNumber: function(o) {
         return typeof o === 'number' && isFinite(o);
@@ -412,7 +466,7 @@ YAHOO.lang = {
      * or function
      * @method isObject
      * @param {any} o The object being testing
-     * @return Boolean
+     * @return {boolean} the result
      */  
     isObject: function(o) {
 return (o && (typeof o === 'object' || YAHOO.lang.isFunction(o))) || false;
@@ -422,7 +476,7 @@ return (o && (typeof o === 'object' || YAHOO.lang.isFunction(o))) || false;
      * Determines whether or not the provided object is a string
      * @method isString
      * @param {any} o The object being testing
-     * @return Boolean
+     * @return {boolean} the result
      */
     isString: function(o) {
         return typeof o === 'string';
@@ -432,7 +486,7 @@ return (o && (typeof o === 'object' || YAHOO.lang.isFunction(o))) || false;
      * Determines whether or not the provided object is undefined
      * @method isUndefined
      * @param {any} o The object being testing
-     * @return Boolean
+     * @return {boolean} the result
      */
     isUndefined: function(o) {
         return typeof o === 'undefined';
@@ -456,7 +510,7 @@ return (o && (typeof o === 'object' || YAHOO.lang.isFunction(o))) || false;
      * </pre>
      * @method hasOwnProperty
      * @param {any} o The object being testing
-     * @return Boolean
+     * @return {boolean} the result
      */
     hasOwnProperty: function(o, prop) {
         if (Object.prototype.hasOwnProperty) {
@@ -787,18 +841,69 @@ return (o && (typeof o === 'object' || YAHOO.lang.isFunction(o))) || false;
      * @return the new merged object
      */
     merge: function() {
-        var o={}, a=arguments, i;
-        for (i=0; i<a.length; i=i+1) {
+        var o={}, a=arguments;
+        for (var i=0, l=a.length; i<l; i=i+1) {
             YAHOO.lang.augmentObject(o, a[i], true);
-            /*
-            for (var j in a[i]) {
-                o[j] = a[i][j];
-            }
-            */
         }
         return o;
     },
 
+    /**
+     * Executes the supplied function in the context of the supplied 
+     * object 'when' milliseconds later.  Executes the function a 
+     * single time unless periodic is set to true.
+     * @method later
+     * @since 2.4.0
+     * @param when {int} the number of milliseconds to wait until the fn 
+     * is executed
+     * @param o the context object
+     * @param fn {Function|String} the function to execute or the name of 
+     * the method in the 'o' object to execute
+     * @param data [Array] data that is provided to the function.  This accepts
+     * either a single item or an array.  If an array is provided, the
+     * function is executed with one parameter for each array item.  If
+     * you need to pass a single array parameter, it needs to be wrapped in
+     * an array [myarray]
+     * @param periodic {boolean} if true, executes continuously at supplied 
+     * interval until canceled
+     * @return a timer object. Call the cancel() method on this object to 
+     * stop the timer.
+     */
+    later: function(when, o, fn, data, periodic) {
+        when = when || 0; 
+        o = o || {};
+        var m=fn, d=data, f, r;
+
+        if (YAHOO.lang.isString(fn)) {
+            m = o[fn];
+        }
+
+        if (!m) {
+            throw new TypeError("method undefined");
+        }
+
+        if (!YAHOO.lang.isArray(d)) {
+            d = [data];
+        }
+
+        f = function() {
+            m.apply(o, d);
+        };
+
+        r = (periodic) ? setInterval(f, when) : setTimeout(f, when);
+
+        return {
+            interval: periodic,
+            cancel: function() {
+                if (this.interval) {
+                    clearInterval(r);
+                } else {
+                    clearTimeout(r);
+                }
+            }
+        };
+    },
+    
     /**
      * A convenience method for detecting a legitimate non-null value.
      * Returns false for null/undefined/NaN, true for other values, 
@@ -866,4 +971,4 @@ YAHOO.augment = YAHOO.lang.augmentProto;
  */
 YAHOO.extend = YAHOO.lang.extend;
 
-YAHOO.register("yahoo", YAHOO, {version: "2.3.1", build: "541"});
+YAHOO.register("yahoo", YAHOO, {version: "2.5.1", build: "984"});
