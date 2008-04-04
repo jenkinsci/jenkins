@@ -34,7 +34,26 @@ import java.util.logging.Logger;
 
 /**
  * Represents a user.
- * 
+ *
+ * <p>
+ * In Hudson, {@link User} objects are created in on-demand basis;
+ * for example, when a build is performed, its change log is computed
+ * and as a result commits from users who Hudson has never seen may be discovered.
+ * When this happens, new {@link User} object is created.
+ *
+ * <p>
+ * If the persisted record for an user exists, the information is loaded at
+ * that point, but if there's no such record, a fresh instance is created from
+ * thin air (this is where {@link UserPropertyDescriptor#newInstance(User)} is
+ * called to provide initial {@link UserProperty} objects.
+ *
+ * <p>
+ * Such newly created {@link User} objects will be simply GC-ed without
+ * ever leaving the persisted record, unless {@link User#save()} method
+ * is explicitly invoked (perhaps as a result of a browser submitting a
+ * configuration.)
+ *
+ *
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
