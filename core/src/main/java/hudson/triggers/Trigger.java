@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.Timer;
+import java.util.Date;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -135,17 +136,19 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         private final Calendar cal = new GregorianCalendar();
 
         public void doRun() {
-            LOGGER.fine("cron checking "+cal.getTime().toLocaleString());
+            while(new Date().getTime()-cal.getTimeInMillis()>1000) {
+                LOGGER.fine("cron checking "+cal.getTime().toLocaleString());
 
-            try {
-                checkTriggers(cal);
-            } catch (Throwable e) {
-                LOGGER.log(Level.WARNING,"Cron thread throw an exception",e);
-                // bug in the code. Don't let the thread die.
-                e.printStackTrace();
+                try {
+                    checkTriggers(cal);
+                } catch (Throwable e) {
+                    LOGGER.log(Level.WARNING,"Cron thread throw an exception",e);
+                    // bug in the code. Don't let the thread die.
+                    e.printStackTrace();
+                }
+
+                cal.add(Calendar.MINUTE,1);
             }
-
-            cal.add(Calendar.MINUTE,1);
         }
     }
 
