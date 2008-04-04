@@ -56,7 +56,7 @@
     <l:yui module="autocomplete" />
     <l:yui module="menu" />
     <l:yui module="element" suffix="-beta" />
-    <l:yui module="button" suffix="-beta" />
+    <l:yui module="button" />
     <l:yui module="dragdrop" />
     <j:if test="${yuiSuffix=='debug'}">
       <l:yui module="logger" />
