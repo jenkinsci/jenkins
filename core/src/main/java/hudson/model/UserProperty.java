@@ -35,4 +35,7 @@ public abstract class UserProperty implements Describable<UserProperty>, Extensi
     /*package*/ final void setUser(User u) {
         this.user = u;
     }
+
+    // descriptor must be of the UserPropertyDescriptor type
+    public abstract UserPropertyDescriptor getDescriptor();
 }
