@@ -477,7 +477,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
         JSONObject json = StructuredForm.get(req);
         reporters.rebuild(req,json,MavenReporters.getConfigurableList(),"reporter");
-        publishers.rebuild(req,json,BuildStepDescriptor.filter(BuildStep.PUBLISHERS,getClass()),"publisher");
+        publishers.rebuild(req,json,BuildStepDescriptor.filter(BuildStep.PUBLISHERS,this.getClass()),"publisher");
 
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }

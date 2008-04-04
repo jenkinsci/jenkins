@@ -151,7 +151,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         buildWrappers = buildDescribable(req, BuildWrappers.getFor(this), "wrapper");
         builders = Descriptor.newInstancesFromHeteroList(req,
                 StructuredForm.get(req), "builder", BuildStep.BUILDERS);
-        publishers = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.PUBLISHERS, getClass()), "publisher");
+        publishers = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.PUBLISHERS, this.getClass()), "publisher");
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }
 
