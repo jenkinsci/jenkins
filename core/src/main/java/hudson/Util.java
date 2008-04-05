@@ -27,6 +27,8 @@ import java.io.Writer;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -693,6 +695,23 @@ public class Util {
                 Util.displayIOException(e,listener);
                 e.printStackTrace( log );
             }
+        }
+    }
+
+    /**
+     * Encodes the URL by RFC 2396.
+     *
+     * I thought there's another spec that refers to UTF-8 as the encoding,
+     * but don't remember it right now.
+     *
+     * @since 1.204
+     */
+    public static String encodeRFC2396(String url) {
+        try {
+            return new URI(null,url,null).toASCIIString();
+        } catch (URISyntaxException e) {
+            LOGGER.warning("Failed to encode "+url);    // could this ever happen?
+            return url;
         }
     }
 

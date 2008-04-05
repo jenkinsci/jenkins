@@ -12,6 +12,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.net.URI;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -150,7 +151,7 @@ public abstract class AbstractItem extends Actionable implements Item {
         StaplerRequest request = Stapler.getCurrentRequest();
         if(request==null)
             throw new IllegalStateException("Not processing a HTTP request");
-        return request.getRootPath()+'/'+getUrl();
+        return Util.encodeRFC2396(request.getRootPath()+'/'+getUrl());
     }
 
     /**

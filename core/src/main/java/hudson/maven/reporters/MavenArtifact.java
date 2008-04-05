@@ -156,8 +156,8 @@ public final class MavenArtifact implements Serializable {
      * Called from within Maven to archive an artifact in Hudson.
      */
     public void archive(MavenBuildProxy build, File file, BuildListener listener) throws IOException, InterruptedException {
-        listener.getLogger().println("[HUDSON] Archiving "+ file);
         FilePath target = getArtifactArchivePath(build,groupId,artifactId,version);
+        listener.getLogger().println("[HUDSON] Archiving "+ file+" to "+target);
         new FilePath(file).copyTo(target);
         /* debug probe to investigate "missing artifact" problem typically seen like this:
 
