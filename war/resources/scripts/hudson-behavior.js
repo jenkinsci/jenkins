@@ -366,6 +366,25 @@ var hudsonRules = {
 
     // resizable text area
     "TEXTAREA" : function(textarea) {
+        if(Element.hasClassName(textarea,"rich-editor")) {
+            // rich HTML editor
+            try {
+                var editor = new YAHOO.widget.Editor(textarea, {
+                    dompath: true,
+                    animate: true,
+                    handleSubmit: true
+                });
+                // probably due to the timing issue, we need to let the editor know
+                // that DOM is ready
+                editor.DOMReady=true;
+                editor.fireQueue();
+                editor.render();
+            } catch(e) {
+                alert(e);
+            }
+            return;
+        }
+
         var handle = textarea.nextSibling;
         if(handle==null || handle.className!="textarea-handle") return;
 

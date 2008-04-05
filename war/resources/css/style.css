@@ -715,6 +715,9 @@ DIV.textarea-handle {
     border-top: none;
     cursor: s-resize;
 }
+TEXTAREA.rich-editor {
+  visibility: hidden;
+}
 
 /* ========================= hover notification ========================= */
 

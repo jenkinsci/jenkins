@@ -1,0 +1,11 @@
+<!--
+	Rich HTML editor (http://developer.yahoo.com/yui/editor/)
+
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <textarea name="${attrs.name}" id="${attrs.id}" style="${attrs.style}"
+            class="setting-input rich-editor"
+            rows="${h.determineRows(attrs.value)}">
+    <st:out value="${attrs.value}" />
+  </textarea>
+</j:jelly>
