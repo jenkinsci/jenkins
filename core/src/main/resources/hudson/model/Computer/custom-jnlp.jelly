@@ -1,0 +1,12 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.displayName}">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>Tweak Launch Parameters</h1>
+      <p>
+        This page allows you to tweak the JVM parameters when launching JNLP slave agents.
+        <!-- TODO: work from home for the rest -->
+      </p>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
