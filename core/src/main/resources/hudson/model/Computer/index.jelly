@@ -51,7 +51,7 @@
           </j:choose>
         </j:when>
         <j:otherwise>
-          <j:if test="${it.offline &amp;&amp; !it.temporarilyOffline}">
+          <j:if test="${it.offline and !it.temporarilyOffline}">
             <p class="error">
               This node is offline because Hudson failed to launch the slave agent on it.
               <a href="log">See log for more details</a>
