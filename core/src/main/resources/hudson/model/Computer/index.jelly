@@ -37,9 +37,9 @@
                     Launch slave agent
                   </a>
 
-                  <a href="custom-jnlp" style="margin-left:3em">
+                  <!--a href="custom-jnlp" style="margin-left:3em">
                     (tweak launch parameters)
-                  </a>
+                  </a-->
                 </p>
                 <p>
                   (Click the above link from this slave computer to launch the slave agent via JNLP,
