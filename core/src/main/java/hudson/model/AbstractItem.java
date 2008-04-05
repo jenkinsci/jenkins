@@ -5,14 +5,12 @@ import hudson.Util;
 import hudson.Functions;
 import hudson.security.Permission;
 import hudson.security.ACL;
-import hudson.security.AuthorizationStrategy;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.net.URI;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
