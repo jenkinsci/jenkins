@@ -129,7 +129,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
      * is sent to the hidden input field by using {@link Protector}, so that
      * the same password can be retained but without leaking information to the browser.
      */
-    public static final class Details extends UserProperty implements UserDetails {
+    public static final class Details extends UserProperty implements InvalidatableUserDetails {
         /**
          * Scrambled password.
          */
@@ -175,6 +175,10 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
 
         public boolean isEnabled() {
             return true;
+        }
+
+        public boolean isInvalid() {
+            return user==null;
         }
 
         public UserPropertyDescriptor getDescriptor() {
