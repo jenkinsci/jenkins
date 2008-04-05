@@ -2,6 +2,7 @@ package hudson.model;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 import java.util.List;
 import java.util.Vector;
@@ -27,6 +28,7 @@ public abstract class Actionable extends AbstractModelObject {
      * @return
      *      may be empty but never null.
      */
+    @Exported
     public synchronized List<Action> getActions() {
         if(actions==null)
             actions = new CopyOnWriteArrayList<Action>();
