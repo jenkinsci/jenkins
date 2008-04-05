@@ -3,6 +3,7 @@ package hudson.model;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.List;
 import java.util.Vector;
@@ -13,6 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public abstract class Actionable extends AbstractModelObject {
     /**
      * Actions contributed to this model object.
