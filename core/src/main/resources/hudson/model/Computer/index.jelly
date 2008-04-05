@@ -29,7 +29,7 @@
                 <a href="${rootURL}/configure">Go to system config screen and change it</a>.
               </div>
             </j:when>
-            <j:when test="${it.offline &amp;&amp; !it.temporarilyOffline}">
+            <j:when test="${it.offline and !it.temporarilyOffline}">
               <l:isAdmin>
                 <p>
                   <a href="slave-agent.jnlp">
