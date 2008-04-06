@@ -139,7 +139,8 @@ public class AggregatedTestResultPublisher extends Publisher {
         }
 
         /**
-         * Gets the downstream projects that haven't run yet.
+         * Gets the downstream projects that haven't run yet, but
+         * expected to produce test results.
          */
         public List<AbstractProject> getDidntRun() {
             return Collections.unmodifiableList(didntRun);
@@ -161,7 +162,10 @@ public class AggregatedTestResultPublisher extends Publisher {
             for (AbstractProject job : getJobs()) {
                 RangeSet rs = owner.getDownstreamRelationship(job);
                 if(rs.isEmpty()) {
-                    didntRun.add(job);
+                    // is this job expected to produce a test result?
+                    Run b = job.getLastSuccessfulBuild();
+                    if(b!=null && b.getAction(AbstractTestResultAction.class)!=null)
+                        didntRun.add(job);
                     continue;
                 }
                 for (int n : rs.listNumbersReverse()) {

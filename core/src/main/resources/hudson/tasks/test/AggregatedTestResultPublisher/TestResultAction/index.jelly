@@ -30,6 +30,20 @@
             </td>
           </tr>
         </j:forEach>
+        <j:forEach var="i" items="${it.didntRun}">
+          <tr>
+            <td class="pane">
+              <a href="${rootURL}${i.url}">${i.fullDisplayName}</a>
+              (hasn't run yet)
+            </td>
+            <td class="pane">
+              N/A
+            </td>
+            <td class="pane">
+              N/A
+            </td>
+          </tr>
+        </j:forEach>
       </table>
     </l:main-panel>
   </l:layout>
