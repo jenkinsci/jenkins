@@ -14,7 +14,7 @@
 
     <!-- summary -->
     <t:summary icon="clipboard.gif">
-    <a href="testReport/">${%Test Result}</a>
+    <a href="${it.urlName}/">${it.displayName}</a>
     <t:test-result />
 
     <!-- FIXME: Make it work with TestCollections -->
