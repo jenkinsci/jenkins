@@ -13,6 +13,9 @@ import java.util.List;
  * {@link AbstractTestResultAction} that aggregates all the test results
  * from the corresponding {@link AbstractBuild}s.
  *
+ * <p>
+ * (This has nothing to do with {@link AggregatedTestResultPublisher}, unfortunately)
+ *
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
