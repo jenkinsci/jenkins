@@ -9,10 +9,12 @@
     initial checkbox status. true/false.
   @help (optional)
     if present, URL of the help HTML page.
+  @negative (optional)
+    if present, the check box expands when the item is unchecked.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set var="id" value="${h.generateId()}" />
-  <tr id="oe_s${id}" class="optional-block-start" hasHelp="${help!=null}"><!-- this ID marks the beginning -->
+  <tr id="oe_s${id}" class="optional-block-start ${h.ifThenElse(attrs.negative!=null,'negative','')}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
     <td colspan="3">
       <f:checkbox name="${name}" onclick="javascript:updateOptionalBlock(this,true)"
                   id="oe_c${id}" checked="${checked}" />

@@ -492,6 +492,7 @@ function updateOptionalBlock(c,scroll) {
     var s = c;
     while(!Element.hasClassName(s, "optional-block-start"))
         s = s.parentNode;
+    var isNegative = Element.hasClassName(s,"negative"); // is this a negative check box?
     var tbl = s.parentNode;
     var i = false;
     var o = false;
@@ -506,7 +507,7 @@ function updateOptionalBlock(c,scroll) {
             o = true;
 
         if (i && !o) {
-            if (checked) {
+            if (checked ^ isNegative) {
                 n.style.display = "";
                 lastRow = n;
             } else
