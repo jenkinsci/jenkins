@@ -492,12 +492,11 @@ function updateOptionalBlock(c,scroll) {
     var s = c;
     while(!Element.hasClassName(s, "optional-block-start"))
         s = s.parentNode;
-    var isNegative = Element.hasClassName(s,"negative"); // is this a negative check box?
     var tbl = s.parentNode;
     var i = false;
     var o = false;
 
-    var checked = c.checked;
+    var checked = c.checked^Element.hasClassName(c,"negative");
     var lastRow = null;
 
     for (var j = 0; tbl.rows[j]; j++) {
@@ -507,7 +506,7 @@ function updateOptionalBlock(c,scroll) {
             o = true;
 
         if (i && !o) {
-            if (checked ^ isNegative) {
+            if (checked) {
                 n.style.display = "";
                 lastRow = n;
             } else
@@ -1044,7 +1043,7 @@ function buildFormTree(form) {
 
                 var name = e.getAttribute("name");
                 if(name!=null) {
-                    if(e.tagName=="INPUT" && !e.checked)
+                    if(e.tagName=="INPUT" && !(e.checked^Element.hasClassName(e,"negative")))
                         return {};  // field is not active
 
                     var m = e.formDom;
@@ -1091,10 +1090,11 @@ function buildFormTree(form) {
                 break;
             case "checkbox":
                 p = findParent(e);
+                var checked = e.checked ^ Element.hasClassName(e,"negative");
                 if(!e.groupingNode)
-                    addProperty(p, e.name, e.checked);
+                    addProperty(p, e.name, checked);
                 else {
-                    if(e.checked)
+                    if(checked)
                         addProperty(p, e.name, e.formDom = {});
                 }
                 break;
