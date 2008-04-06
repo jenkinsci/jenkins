@@ -1,6 +1,7 @@
 package hudson.matrix;
 
 import hudson.model.Build;
+import hudson.maven.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +47,17 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
         return super.getDisplayName();
     }
 
+    /**
+     * Gets the {@link MatrixBuild} that has the same build number.
+     *
+     * @return
+     *      null if no such build exists, which happens when the module build
+     *      is manually triggered.
+     */
+    public MatrixBuild getParentBuild() {
+        return getParent().getParent().getBuildByNumber(getNumber());
+    }
+
     public String getDisplayName() {
         StaplerRequest req = Stapler.getCurrentRequest();
         if(req!=null) {
@@ -65,6 +77,17 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
     public Map<String,String> getBuildVariables() {
         // pick up user axes
         return new HashMap<String,String>(getParent().getCombination());
+    }
+
+    /**
+     * If the parent {@link MatrixRun} is kept, keep this record, too.
+     */
+    @Override
+    public String getWhyKeepLog() {
+        MatrixBuild pb = getParentBuild();
+        if(pb!=null && pb.getWhyKeepLog()!=null)
+            return hudson.maven.Messages.MavenBuild_KeptBecauseOfParent(pb);
+        return super.getWhyKeepLog();
     }
 
     @Override

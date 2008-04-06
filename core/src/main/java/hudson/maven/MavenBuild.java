@@ -168,6 +168,17 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     }
 
     /**
+     * If the parent {@link MavenModuleSetBuild} is kept, keep this record, too.
+     */
+    @Override
+    public String getWhyKeepLog() {
+        MavenModuleSetBuild pb = getParentBuild();
+        if(pb!=null && pb.getWhyKeepLog()!=null)
+            return Messages.MavenBuild_KeptBecauseOfParent(pb);
+        return super.getWhyKeepLog();
+    }
+
+    /**
      * Runs Maven and builds the project.
      */
     private static final class Builder extends MavenBuilder {
