@@ -8,6 +8,7 @@ import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.List;
 
 /**
  * Records fingerprints of the builds to keep track of dependencies.
@@ -136,6 +138,27 @@ public class MavenFingerprinter extends MavenReporter {
 
         public MavenReporter newAutoInstance(MavenModule module) {
             return new MavenFingerprinter();
+        }
+    }
+
+    /**
+     * Creates {@link FingerprintAction} for {@link MavenModuleSetBuild}
+     * by aggregating all fingerprints from module builds.
+     */
+    public static void aggregate(MavenModuleSetBuild mmsb) throws IOException {
+        Map<String,String> records = new HashMap<String, String>();
+        for (List<MavenBuild> builds : mmsb.getModuleBuilds().values()) {
+            for (MavenBuild build : builds) {
+                FingerprintAction fa = build.getAction(FingerprintAction.class);
+                if(fa!=null)
+                    records.putAll(fa.getRecords());
+            }
+        }
+        if(!records.isEmpty()) {
+            FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+            for (Entry<String, String> e : records.entrySet())
+                map.getOrCreate(null, e.getKey(), e.getValue()).add(mmsb);
+            mmsb.addAction(new FingerprintAction(mmsb,records));
         }
     }
 

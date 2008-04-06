@@ -6,6 +6,7 @@ import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.MavenBuild.ProxyImpl2;
+import hudson.maven.reporters.MavenFingerprinter;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -393,6 +394,14 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
             performAllBuildStep(listener, project.getPublishers(), true);
             performAllBuildStep(listener, project.getProperties(), true);
+
+            // aggregate all module fingerprints to us,
+            // so that dependencies between module builds can be understood as
+            // dependencies between module set builds.
+            // TODO: we really want to implement this as a publisher,
+            // but we don't want to ask for a user configuration, nor should it
+            // show up in the persisted record.
+            MavenFingerprinter.aggregate(MavenModuleSetBuild.this);
         }
 
         @Override
