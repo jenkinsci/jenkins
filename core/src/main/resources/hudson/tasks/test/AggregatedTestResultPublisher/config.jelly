@@ -1,6 +1,14 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="Jobs to aggregate">
-    <f:textbox name="aggragatedTestResult.jobs" value="${instance.jobs}"
-               checkUrl="'${rootURL}/publisher/AggregatedTestResultPublisher/check?value='+escape(this.value)"/>
-  </f:entry>
+  <f:nested>
+    <table style="width:100%">
+      <f:optionalBlock name="aggragatedTestResult.specify" negative="true"
+              title="${%Automatically aggregate all downstream tests}"
+              help="/help/tasks/aggregate-test/auto-aggregate.html">
+        <f:entry title="Jobs to aggregate">
+          <f:textbox name="aggragatedTestResult.jobs" value="${instance.jobs}"
+                     checkUrl="'${rootURL}/publisher/AggregatedTestResultPublisher/check?value='+escape(this.value)"/>
+        </f:entry>        
+      </f:optionalBlock>
+    </table>
+  </f:nested>
 </j:jelly>
