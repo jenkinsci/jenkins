@@ -9,13 +9,13 @@ import hudson.security.BasicAuthenticationFilter
 import hudson.security.ChainedServletFilter
 import hudson.security.LegacyAuthenticationProcessingFilterEntryPoint
 import hudson.security.UnwrapSecurityExceptionFilter
-import org.acegisecurity.context.HttpSessionContextIntegrationFilter
 import org.acegisecurity.providers.anonymous.AnonymousProcessingFilter
 import org.acegisecurity.ui.ExceptionTranslationFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
 import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint
+import hudson.security.HttpSessionContextIntegrationFilter2
 
 // providers that apply to both patterns
 def commonProviders(entryPointClass,redirectUrl) {
@@ -37,7 +37,7 @@ def commonProviders(entryPointClass,redirectUrl) {
 filter(ChainedServletFilter) {
     filters = [
         // this persists the authentication across requests by using session
-        bean(HttpSessionContextIntegrationFilter) {
+        bean(HttpSessionContextIntegrationFilter2) {
         },
         // allow clients to submit basic authentication credential
         bean(BasicProcessingFilter) {
