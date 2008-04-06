@@ -15,7 +15,6 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.FormFieldValidator;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -80,6 +79,10 @@ public class AggregatedTestResultPublisher extends Publisher {
         private transient int failCount;
         private transient int totalCount;
         private transient List<AbstractTestResultAction> individuals;
+        /**
+         * Projects that haven't run yet.
+         */
+        private transient List<AbstractProject> didntRun;
 
         public TestResultAction(String jobs, AbstractBuild<?,?> owner) {
             super(owner);
@@ -136,6 +139,13 @@ public class AggregatedTestResultPublisher extends Publisher {
         }
 
         /**
+         * Gets the downstream projects that haven't run yet.
+         */
+        public List<AbstractProject> getDidntRun() {
+            return Collections.unmodifiableList(didntRun);
+        }
+
+        /**
          * Makes sure that the data fields are up to date.
          */
         private synchronized void upToDateCheck() {
@@ -146,9 +156,14 @@ public class AggregatedTestResultPublisher extends Publisher {
             int failCount = 0;
             int totalCount = 0;
             List<AbstractTestResultAction> individuals = new ArrayList<AbstractTestResultAction>();
+            List<AbstractProject> didntRun = new ArrayList<AbstractProject>();
 
             for (AbstractProject job : getJobs()) {
                 RangeSet rs = owner.getDownstreamRelationship(job);
+                if(rs.isEmpty()) {
+                    didntRun.add(job);
+                    continue;
+                }
                 for (int n : rs.listNumbersReverse()) {
                     Run b = job.getBuildByNumber(n);
                     if(b==null) continue;
@@ -167,6 +182,7 @@ public class AggregatedTestResultPublisher extends Publisher {
             this.failCount = failCount;
             this.totalCount = totalCount;
             this.individuals = individuals;
+            this.didntRun = didntRun;
         }
 
         @Override
