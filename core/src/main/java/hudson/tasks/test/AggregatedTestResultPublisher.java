@@ -202,6 +202,10 @@ public class AggregatedTestResultPublisher extends Publisher {
             return Messages.AggregatedTestResultPublisher_DisplayName();
         }
 
+        public String getHelpFile() {
+            return "/help/tasks/aggregate-test/help.html";
+        }
+
         public void doCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter("value") final String list) throws IOException, ServletException {
             new FormFieldValidator(req,rsp,false) {
                 protected void check() throws IOException, ServletException {
