@@ -3,6 +3,7 @@
     <table style="width:100%">
       <f:optionalBlock name="aggragatedTestResult.specify" negative="true"
               title="${%Automatically aggregate all downstream tests}"
+              checked="${instance.jobs==null}"
               help="/help/tasks/aggregate-test/auto-aggregate.html">
         <f:entry title="Jobs to aggregate"
                  help="/help/tasks/aggregate-test/manual-list.html">

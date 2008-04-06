@@ -41,7 +41,6 @@ public class AggregatedTestResultPublisher extends Publisher {
      */
     public final String jobs;
 
-    @DataBoundConstructor
     public AggregatedTestResultPublisher(String jobs) {
         this.jobs = Util.fixEmptyAndTrim(jobs);
     }
@@ -220,7 +219,11 @@ public class AggregatedTestResultPublisher extends Publisher {
         }
 
         public AggregatedTestResultPublisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return req.bindJSON(AggregatedTestResultPublisher.class,formData);
+            JSONObject s = formData.getJSONObject("specify");
+            if(s.isNullObject())
+                return new AggregatedTestResultPublisher(null);
+            else
+                return new AggregatedTestResultPublisher(s.getString("jobs"));
         }
 
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();
