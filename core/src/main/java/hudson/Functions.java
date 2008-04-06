@@ -113,13 +113,24 @@ public class Functions {
     }
 
     /**
-     * {@link #getDiffString2(int)} that doesn't show anything for +/-0
+     * {@link #getDiffString(int)} that doesn't show anything for +/-0
      */
     public static String getDiffString2(int i) {
         if(i==0)    return "";
         String s = Integer.toString(i);
         if(i>0)     return "+"+s;
         else        return s;
+    }
+
+    /**
+     * {@link #getDiffString2(int)} that puts the result into prefix and suffix
+     * if there's something to print
+     */
+    public static String getDiffString2(String prefix, int i, String suffix) {
+        if(i==0)    return "";
+        String s = Integer.toString(i);
+        if(i>0)     return prefix+"+"+s+suffix;
+        else        return prefix+s+suffix;
     }
 
     /**

@@ -1,0 +1,6 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry title="Jobs to aggregate">
+    <f:textbox name="aggragatedTestResult.jobs" value="${instance.jobs}"
+               checkUrl="'${rootURL}/publisher/AggregatedTestResultPublisher/check?value='+escape(this.value)"/>
+  </f:entry>
+</j:jelly>

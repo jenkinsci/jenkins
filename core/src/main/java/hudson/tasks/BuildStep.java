@@ -10,6 +10,7 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.tasks.junit.JUnitResultArchiver;
+import hudson.tasks.test.AggregatedTestResultPublisher;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -116,6 +117,7 @@ public interface BuildStep {
         Fingerprinter.DESCRIPTOR,
         JavadocArchiver.DESCRIPTOR,
         JUnitResultArchiver.DescriptorImpl.DESCRIPTOR,
+        AggregatedTestResultPublisher.DescriptorImpl.INSTANCE,
         BuildTrigger.DESCRIPTOR,
         RedeployPublisher.DESCRIPTOR,
         Mailer.DESCRIPTOR
