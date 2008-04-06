@@ -5,6 +5,7 @@
     jobName    name of the job. Can be omitted if you don't want to show a name.
     job        A 'job' object. Can be omitted if you don't want to link.
     number     build number to link to.
+    href       Link target. If missing, the top page of the build.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set var="jobName_" value="${h.appendSpaceIfNotNull(jobName)}"/>
@@ -20,7 +21,7 @@
           #<!-- -->${number}
 	      </j:when>
 	      <j:otherwise>
-	        <a href="${rootURL}/${r.url}">
+	        <a href="${h.ifThenElse(attrs.href!=null,href,rootURL+'/'+r.url)}">
 	          <img src="${imagesURL}/16x16/${r.buildStatusUrl}"
                  alt="${r.iconColor.description}"/>${jobName_}#<!-- -->${number}</a>
 	      </j:otherwise>
