@@ -172,7 +172,7 @@ public class AggregatedTestResultPublisher extends Publisher {
 
         @Override
         public String getDisplayName() {
-            return "Aggregated Test Result";
+            return Messages.AggregatedTestResultPublisher_Title();
         }
 
         @Override
@@ -186,19 +186,6 @@ public class AggregatedTestResultPublisher extends Publisher {
                     lastChanged = System.currentTimeMillis();
                 }
             }.register();
-//            Hudson.getInstance().getJobListeners().add(new ItemListener() {
-//                public void onCreated(Item item) {
-//                    itemChanged = System.currentTimeMillis();
-//                }
-//
-//                public void onDeleted(Item item) {
-//                    itemChanged = System.currentTimeMillis();
-//                }
-//
-//                public void onRenamed(Item item, String oldName, String newName) {
-//                    itemChanged = System.currentTimeMillis();
-//                }
-//            });
         }
     }
 
@@ -212,7 +199,7 @@ public class AggregatedTestResultPublisher extends Publisher {
         }
 
         public String getDisplayName() {
-            return "Aggregate downstream test results"; // TODO: i18n after the feature is stabilized
+            return Messages.AggregatedTestResultPublisher_DisplayName();
         }
 
         public void doCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter("value") final String list) throws IOException, ServletException {
