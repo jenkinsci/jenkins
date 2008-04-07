@@ -203,7 +203,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * and so on exists.
      */
     public FilePath getModuleRoot() {
-        return getScm().getModuleRoot(getWorkspace());
+        FilePath ws = getWorkspace();
+        if(ws==null)    return null;
+        return getScm().getModuleRoot(ws);
     }
 
     /**
