@@ -455,6 +455,12 @@ function applyTooltip(e,text) {
 Behaviour.register(hudsonRules);
 
 
+
+function xor(a,b) {
+    // convert both values to boolean by '!' and then do a!=b
+    return !a != !b;
+}
+
 // used by editableDescription.jelly to replace the description field with a form
 function replaceDescription() {
     var d = document.getElementById("description");
@@ -496,7 +502,7 @@ function updateOptionalBlock(c,scroll) {
     var i = false;
     var o = false;
 
-    var checked = c.checked^Element.hasClassName(c,"negative");
+    var checked = xor(c.checked,Element.hasClassName(c,"negative"));
     var lastRow = null;
 
     for (var j = 0; tbl.rows[j]; j++) {
@@ -1043,7 +1049,7 @@ function buildFormTree(form) {
 
                 var name = e.getAttribute("name");
                 if(name!=null) {
-                    if(e.tagName=="INPUT" && !(e.checked^Element.hasClassName(e,"negative")))
+                    if(e.tagName=="INPUT" && !xor(e.checked,Element.hasClassName(e,"negative")))
                         return {};  // field is not active
 
                     var m = e.formDom;
@@ -1090,7 +1096,7 @@ function buildFormTree(form) {
                 break;
             case "checkbox":
                 p = findParent(e);
-                var checked = e.checked ^ Element.hasClassName(e,"negative");
+                var checked = xor(e.checked,Element.hasClassName(e,"negative"));
                 if(!e.groupingNode)
                     addProperty(p, e.name, checked);
                 else {
