@@ -14,7 +14,6 @@ import hudson.maven.MavenModuleSet;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
 import hudson.util.XStream2;
-import hudson.util.AdaptedIterator;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -414,19 +413,16 @@ public class Fingerprint implements ModelObject {
 
             public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
                 RangeSet src = (RangeSet) source;
-                if(!tryNewFormat) {
-                    collectionConv.marshal( src.ranges, writer, context );
-                } else {
-                    StringBuilder buf = new StringBuilder(src.ranges.size()*10);
-                    for (Range r : src.ranges) {
-                        if(buf.length()>0)  buf.append(',');
-                        if(r.isSingle())
-                            buf.append(r.start);
-                        else
-                            buf.append(r.start).append('-').append(r.end-1);
-                    }
-                    writer.setValue(buf.toString());
+
+                StringBuilder buf = new StringBuilder(src.ranges.size()*10);
+                for (Range r : src.ranges) {
+                    if(buf.length()>0)  buf.append(',');
+                    if(r.isSingle())
+                        buf.append(r.start);
+                    else
+                        buf.append(r.start).append('-').append(r.end-1);
                 }
+                writer.setValue(buf.toString());
             }
 
             public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
@@ -714,5 +710,4 @@ public class Fingerprint implements ModelObject {
     }
 
     private static final Logger logger = Logger.getLogger(Fingerprint.class.getName());
-    private static boolean tryNewFormat = Boolean.getBoolean(Fingerprint.class.getName()+".tryNewFormat");
 }
