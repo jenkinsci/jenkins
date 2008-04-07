@@ -415,7 +415,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         for (AbstractProject<?,?> p : getParent().getDownstreamProjects()) {
             if(!p.isKeepDependencies()) continue;
 
-            AbstractBuild<?, ?> fb = p.getFirstBuild();
+            AbstractBuild<?,?> fb = p.getFirstBuild();
             if(fb==null)        continue; // no active record
 
             // is there any active build that depends on us?
@@ -426,7 +426,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 if(i<fb.getNumber())
                     continue OUTER; // all the other records are younger than the first record, so pointless to search.
 
-                AbstractBuild<?, ?> b = p.getBuildByNumber(i);
+                AbstractBuild<?,?> b = p.getBuildByNumber(i);
                 if(b!=null)
                     return Messages.AbstractBuild_KeptBecause(b);
             }
