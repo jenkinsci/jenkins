@@ -1021,19 +1021,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public void doToggleLogKeep( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(UPDATE);
 
-        keepLog = !keepLog;
-        save();
+        keepLog(!keepLog);
         rsp.forwardToPreviousPage(req);
     }
 
     /**
      * Marks this build to keep the log.
      */
-    public void keepLog() throws IOException {
-        keepLog = true;
+    public final void keepLog() throws IOException {
+        keepLog(true);
+    }
+
+    public void keepLog(boolean newValue) throws IOException {
+        keepLog = newValue;
         save();
     }
-    
+
     /**
      * Deletes the build when the button is pressed.
      */

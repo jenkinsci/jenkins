@@ -14,6 +14,7 @@ import hudson.maven.MavenModuleSet;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
 import hudson.util.XStream2;
+import hudson.util.AdaptedIterator;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -233,7 +234,7 @@ public class Fingerprint implements ModelObject {
         }
 
         /**
-         * List all numbers in this range set.
+         * List all numbers in this range set, in the ascending order.
          */
         public Iterable<Integer> listNumbers() {
             final List<Range> ranges = getRanges();
@@ -247,6 +248,25 @@ public class Fingerprint implements ModelObject {
                 }
             };
         }
+
+//        /**
+//         * List up builds.
+//         */
+//        public <J extends Job<J,R>,R extends Run<J,R>>  Iterable<R> listBuilds(final J job) {
+//            return new Iterable<R>() {
+//                public Iterator<R> iterator() {
+//                    return new Iterators.FilterIterator<R>(new AdaptedIterator<Integer,R>(listNumbers().iterator()) {
+//                        protected R adapt(Integer n) {
+//                            return job.getBuildByNumber(n);
+//                        }
+//                    }) {
+//                        protected boolean filter(R r) {
+//                            return r!=null;
+//                        }
+//                    };
+//                }
+//            };
+//        }
 
         /**
          * List all numbers in this range set in the descending order.

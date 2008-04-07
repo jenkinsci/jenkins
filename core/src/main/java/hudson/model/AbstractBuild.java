@@ -411,19 +411,19 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public String getWhyKeepLog() {
         // if any of the downstream project is configured with 'keep dependency component',
         // we need to keep this log
-        for (Map.Entry<AbstractProject, RangeSet> e : getDownstreamBuilds().entrySet()) {
-            AbstractProject<?,?> p = e.getKey();
-            if(!p.isKeepDependencies())     continue;
+        for (AbstractProject<?,?> p : getParent().getDownstreamProjects()) {
+            if(!p.isKeepDependencies()) continue;
 
-            // is there any active build that depends on us?
-            for (AbstractBuild build : p.getBuilds()) {
-                if(e.getValue().includes(build.getNumber()))
-                    return Messages.AbstractBuild_KeptBecause(build);
+            for(int i : getDownstreamRelationship(p).listNumbersReverse()) {
+                AbstractBuild<?, ?> b = p.getBuildByNumber(i);
+                if(b!=null && b.isKeepLog())
+                    return Messages.AbstractBuild_KeptBecause(b);
             }
         }
 
         return super.getWhyKeepLog();
     }
+
 
     /**
      * Gets the dependency relationship from this build (as the source)
