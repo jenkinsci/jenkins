@@ -37,7 +37,7 @@ def updatePom(src,prev,ver)
 end
 
 Dir.chdir("../plugins") do
-  system "cvs -q update -Pd"
+  system "svn update"
   # update master POM
   updatePom("pom.xml",prev,ver)
   # update parent reference in module POM
@@ -47,6 +47,6 @@ Dir.chdir("../plugins") do
     next unless File.exists?(name+"/pom.xml")
     updatePom(name+"/pom.xml",prev,ver)
   end
-  system "cvs commit -m 'bumping up POM version'" or fail
+  system "svn commit -m 'bumping up POM version'" or fail
   system "mvn -N deploy" or fail
 end
