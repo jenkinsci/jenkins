@@ -4,7 +4,7 @@
 # but Maven doesn't let me run release goals unless I have this in CVS.
 
 # make sure we have up to date workspace
-cvs -q update -Pd
+svn update
 
 tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
 mvn -B -Dtag=$tag release:prepare || mvn -B -Dtag=$tag install release:prepare
@@ -26,7 +26,7 @@ javanettasks uploadFile hudson /releases/jnlp/hudson.jar "version $id" Stable ta
 # replace the jar file link accordingly
 WWW=../../../www
 pushd $WWW
-cvs update -l
+svn update
 popd
 jarUrl=$(cat target/upload.log | grep "^Posted" | sed -e "s/Posted //g")
 perl -p -i.bak -e "s|https://.+hudson\.jar|$jarUrl|" $WWW/hudson.jnlp
@@ -43,4 +43,4 @@ chmod u+x publish-javadoc.sh
 ./publish-javadoc.sh
 
 cd ../../../www
-cvs commit -m "Hudson $id released" changelog.html hudson.jnlp
+svn commit -m "Hudson $id released" changelog.html hudson.jnlp
