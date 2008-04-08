@@ -427,21 +427,30 @@ public class Queue extends ResourceController {
             return null;
         }
 
+        // if we are a large deployment, then we will favor slaves
+        boolean isLargeHudson = Hudson.getInstance().getSlaves().size()>10;
+
         // otherwise let's see if the last node where this project was built is available
         // it has up-to-date workspace, so that's usually preferable.
         // (but we can't use an exclusive node)
         Node n = p.getLastBuiltOn();
         if(n!=null && n.getMode()==Mode.NORMAL) {
             for (JobOffer offer : parked.values()) {
-                if(offer.isAvailable() && offer.getNode()==n)
+                if(offer.isAvailable() && offer.getNode()==n) {
+                    if(isLargeHudson && offer.getNode() instanceof Slave)
+                        // but if we are a large Hudson, then we really do want to keep the master free from builds 
+                        continue;
                     return offer;
+                }
             }
         }
 
         // duration of a build on a slave tends not to have an impact on
         // the master/slave communication, so that means we should favor
         // running long jobs on slaves.
-        if(p.getEstimatedDuration()>15*60*1000) {
+        // Similarly if we have many slaves, master should be made available
+        // for HTTP requests and coordination as much as possible
+        if(isLargeHudson || p.getEstimatedDuration()>15*60*1000) {
             // consider a long job to be > 15 mins
             for (JobOffer offer : parked.values()) {
                 if(offer.isAvailable() && offer.getNode() instanceof Slave && offer.isNotExclusive())
