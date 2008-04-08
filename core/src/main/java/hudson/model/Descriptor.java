@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.lang.reflect.Method;
 
 /**
  * Metadata about a configurable instance.
@@ -103,6 +104,14 @@ public abstract class Descriptor<T extends Describable<T>> {
      * Hudson only invokes this method when the user wants an instance of <tt>T</tt>.
      * So there's no need to check that in the implementation.
      *
+     * <p>
+     * Starting 1.206, the default implementation of this method does the following:
+     * <pre>
+     * req.bindJSON(clazz,formData);
+     * </pre>
+     * <p>
+     * ... which performs the databinding on the constructor of {@link #clazz}.
+     *
      * @param req
      *      Always non-null. This object includes represents the entire submisison.
      * @param formData
@@ -114,8 +123,20 @@ public abstract class Descriptor<T extends Describable<T>> {
      * @since 1.145
      */
     public T newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-        // backward compatibility.
-        return newInstance(req);
+        try {
+            Method m = getClass().getMethod("newInstance", StaplerRequest.class);
+
+            if(m.getDeclaringClass()!=Descriptor.class) {
+                // this class overrides newInstance(StaplerRequest).
+                // maintain the backward compatible behavior
+                return newInstance(req);
+            } else {
+                // new behavior as of 1.206
+                return req.bindJSON(clazz,formData);
+            }
+        } catch (NoSuchMethodException e) {
+            throw new AssertionError(e); // impossible
+        }
     }
 
     /**
