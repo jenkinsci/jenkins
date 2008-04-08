@@ -721,13 +721,16 @@ Form.findMatchingInput = function(base, name) {
 
 // used witih <dropdownList> and <dropdownListBlock> to control visibility
 function updateDropDownList(sel) {
-    // alert('Yay! '+sel.value+' '+sel.selectedIndex);
     for (var i = 0; i < sel.subForms.length; i++) {
         var show = sel.selectedIndex == i;
         var f = sel.subForms[i];
         var td = f.start;
         while (true) {
             td.style.display = (show ? "" : "none");
+            if(show)
+                td.removeAttribute("disabled");
+            else    // buildFormData uses this attribute and ignores the contents
+                td.setAttribute("disabled","true");
             if (td == f.end) break;
             td = td.nextSibling;
         }
@@ -1046,6 +1049,9 @@ function buildFormTree(form) {
                 var nameRef = e.getAttribute("nameRef");
                 if(nameRef!=null)
                     e = $(nameRef);
+
+                if(e.getAttribute("disabled")!=null)
+                    return {};  // this field shouldn't contribute to the final result
 
                 var name = e.getAttribute("name");
                 if(name!=null) {
