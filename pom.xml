@@ -25,9 +25,9 @@
   </modules>
   
   <scm>
-    <connection>scm:cvs:pserver:guest@cvs.dev.java.net:/cvs:hudson/hudson/main</connection>
-    <developerConnection>scm:cvs:pserver:kohsuke@cvs.dev.java.net:/cvs:hudson/hudson/main</developerConnection>
-    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/main</url>
+    <connection>scm:svn:https://svn.dev.java.net/svn/hudson/trunk/hudson/main/</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/trunk/hudson/main/</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/trunk/hudson/main</url>
   </scm>
   
   <build>
