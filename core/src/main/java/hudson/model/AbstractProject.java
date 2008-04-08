@@ -593,7 +593,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         	FilePath workspace = getWorkspace();
         	if (scm.requiresWorkspaceForPolling() && (workspace==null || !workspace.exists())) {
                 // workspace offline. build now, or nothing will ever be built
-                if(getAssignedLabel().isSelfLabel()) {
+                Label label = getAssignedLabel();
+                if(label!=null && label.isSelfLabel()) {
                     // if the build is fixed on a node, then attempting a build will do us
                     // no good. We should just wait for the slave to come back.
                     listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
