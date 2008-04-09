@@ -690,7 +690,7 @@ public class Functions {
         if(it instanceof Descriptor)
             clazz = ((Descriptor)it).clazz;
 
-        StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder(Stapler.getCurrentRequest().getContextPath());
         buf.append(Hudson.VIEW_RESOURCE_PATH).append('/');
         buf.append(clazz.getName().replace('.','/').replace('$','/'));
         buf.append('/').append(path);
