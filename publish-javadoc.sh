@@ -21,7 +21,7 @@ find . -name "*.bak" | xargs rm
 # add the rest of the files
 #find . -name CVS -prune -o -exec bash in-cvs.sh {} \; -o \( -print -a -exec cvs add {} \+ \)
 #rcvsadd . "commiting javadoc"
-svn add $(svn status | grep "^?" | cut -d " " -f2-)
+svn add $(svn status | grep "^?" | cut -d " " -f2-) .
 svn commit -m "commiting javadoc"
 
 # sometimes the first commit fails
