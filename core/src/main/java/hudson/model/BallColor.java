@@ -1,5 +1,6 @@
 package hudson.model;
 
+import org.jvnet.localizer.LocaleProvider;
 import org.jvnet.localizer.Localizable;
 
 import java.util.Locale;
@@ -62,7 +63,7 @@ public enum BallColor {
      * Gets the human-readable description used as img/@alt.
      */
     public String getDescription() {
-        return description.toString();
+        return description.toString(LocaleProvider.getLocale());
     }
 
     /**
