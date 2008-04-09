@@ -24,6 +24,7 @@ import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.util.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.zip.ZipEntry;
@@ -679,11 +680,12 @@ public class CVSSCM extends SCM implements Serializable {
         final String cvspassFile = getDescriptor().getCvspassFile();
         final String cvsExe = getDescriptor().getCvsExe();
 
+        OutputStream o = null;
         try {
             // range of time for detecting changes
             final Date startTime = build.getPreviousBuild().getTimestamp().getTime();
             final Date endTime = build.getTimestamp().getTime();
-            final OutputStream out = new RemoteOutputStream(new FileOutputStream(changelogFile));
+            final OutputStream out = o = new RemoteOutputStream(new FileOutputStream(changelogFile));
 
             ChangeLogResult result = ws.act(new FileCallable<ChangeLogResult>() {
                 public ChangeLogResult invoke(File ws, VirtualChannel channel) throws IOException {
@@ -721,7 +723,8 @@ public class CVSSCM extends SCM implements Serializable {
                     }
                     task.setCvsRsh(cvsRsh);
                     task.setFailOnError(true);
-                    task.setDeststream(new BufferedOutputStream(out));
+                    BufferedOutputStream bufferedOutput = new BufferedOutputStream(out);
+                    task.setDeststream(bufferedOutput);
                     task.setBranch(branch);
                     task.setStart(startTime);
                     task.setEnd(endTime);
@@ -749,6 +752,8 @@ public class CVSSCM extends SCM implements Serializable {
                         task.execute();
                     } catch (BuildException e) {
                         throw new BuildExceptionWithLog(e,errorOutput.toString());
+                    } finally {
+                        bufferedOutput.close();
                     }
 
                     return new ChangeLogResult(hadError[0],errorOutput.toString());
@@ -777,6 +782,8 @@ public class CVSSCM extends SCM implements Serializable {
         } catch( IOException e ) {
             e.printStackTrace(listener.error("Failed to detect changlog"));
             return true;
+        } finally {
+            IOUtils.closeQuietly(o);
         }
     }
 
