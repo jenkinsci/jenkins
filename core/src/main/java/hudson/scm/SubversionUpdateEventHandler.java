@@ -187,7 +187,7 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
     }
 
     public void checkCancelled() throws SVNCancelException {
-        if(Thread.currentThread().isInterrupted())
+        if(Thread.interrupted())
             throw new SVNCancelException();
     }
 }
