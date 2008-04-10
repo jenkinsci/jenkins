@@ -60,6 +60,8 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
     }
 
     public BuildTrigger(String childProjects, Result threshold) {
+        if(childProjects==null)
+            throw new IllegalArgumentException();
         this.childProjects = childProjects;
         this.threshold = threshold;
     }
