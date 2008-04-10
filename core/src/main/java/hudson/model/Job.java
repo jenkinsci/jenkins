@@ -31,6 +31,8 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +50,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import net.sf.json.JSONObject;
+import net.sf.json.JSONException;
 
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
@@ -760,7 +763,18 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
                 rsp.sendRedirect(".");
             }
         } catch (FormException e) {
+            rsp.setStatus(SC_BAD_REQUEST);
             sendError(e,req,rsp);
+        } catch (JSONException e) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            pw.println("Failed to parse form data. Please report this probelm as a bug");
+            pw.println("JSON="+StructuredForm.get(req));
+            pw.println();
+            e.printStackTrace(pw);
+
+            rsp.setStatus(SC_BAD_REQUEST);
+            sendError(sw.toString(),req,rsp);
         }
     }
 
