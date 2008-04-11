@@ -138,7 +138,7 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
                 synchronized(Request.this) {
                     try {
                         while(response==null)
-                        Request.this.wait(); // wait until the response arrives
+                            Request.this.wait(); // wait until the response arrives
                     } catch (InterruptedException e) {
                         try {
                             channel.send(new Cancel(id));
