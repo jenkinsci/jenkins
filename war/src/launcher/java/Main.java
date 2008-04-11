@@ -26,7 +26,15 @@ public class Main {
         URL jar = Main.class.getResource("winstone.jar");
 
         // put this jar in a file system so that we can load jars from there
-        File tmpJar = File.createTempFile("winstone", "jar");
+        File tmpJar;
+        try {
+            tmpJar = File.createTempFile("winstone", "jar");
+        } catch (IOException e) {
+            String tmpdir = System.getProperty("java.io.tmpdir");
+            IOException x = new IOException("Hudson has failed to create a temporary file in " + tmpdir);
+            x.initCause(e);
+            throw x;
+        }
         copyStream(jar.openStream(), new FileOutputStream(tmpJar));
         tmpJar.deleteOnExit();
 
