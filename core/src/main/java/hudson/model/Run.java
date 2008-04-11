@@ -671,11 +671,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public synchronized void delete() throws IOException {
         File rootDir = getRootDir();
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
-
-        if(!rootDir.renameTo(tmp))
-            throw new IOException(rootDir+" is in use");
-
+        
+        boolean renamingSucceeded = rootDir.renameTo(tmp);
         Util.deleteRecursive(tmp);
+
+        if(!renamingSucceeded)
+            throw new IOException(rootDir+" is in use");
 
         removeRunFromParent();
     }
