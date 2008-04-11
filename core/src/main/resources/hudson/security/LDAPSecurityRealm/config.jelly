@@ -13,5 +13,11 @@
     <f:entry title="${%User search filter}" help="/help/security/ldap/userSearchFilter.html">
       <f:textbox name="ldap.userSearch" value="${instance.userSearch}" />
     </f:entry>
+    <f:entry title="${%Manager DN}" help="/help/security/ldap/managerDN.html">
+      <f:textbox name="ldap.managerDN" value="${instance.managerDN}" />
+    </f:entry>
+    <f:entry title="${%Manager Password}" help="/help/security/ldap/managerPassword.html">
+      <f:password name="ldap.managerPassword" value="${instance.managerPassword}" />
+    </f:entry>
   </f:advanced>
 </j:jelly>

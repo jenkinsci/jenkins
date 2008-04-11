@@ -8,6 +8,7 @@ import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.User;
 import hudson.util.FormFieldValidator;
+import hudson.util.Scrambler;
 import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AuthenticationManager;
@@ -17,6 +18,7 @@ import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.userdetails.ldap.LdapUserDetails;
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch;
 import org.acegisecurity.ldap.LdapUserSearch;
+import org.acegisecurity.ldap.LdapDataAccessException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -25,6 +27,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.dao.DataAccessException;
 
 import javax.naming.NamingException;
+import javax.naming.Context;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
@@ -89,14 +92,32 @@ public class LDAPSecurityRealm extends SecurityRealm {
         Geronimo configuration at http://cwiki.apache.org/GMOxDOC11/ldap-realm.html
      */
 
+    /**
+     * If non-null, we use this and {@link #managerPassword}
+     * when binding to LDAP.
+     *
+     * This is necessary when LDAP doesn't support anonymous access.
+     */
+    public final String managerDN;
+
+    /**
+     * Scrambled password, used to first bind to LDAP.
+     */
+    private final String managerPassword;
+
     @DataBoundConstructor
-    public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch) {
+    public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch, String managerDN, String managerPassword) {
         this.server = server.trim();
         if(Util.fixEmptyAndTrim(rootDN)==null)    rootDN=Util.fixNull(inferRootDN(server));
         this.rootDN = rootDN.trim();
         this.userSearchBase = userSearchBase.trim();
         if(Util.fixEmptyAndTrim(userSearch)==null)    userSearch="uid={0}";
         this.userSearch = userSearch.trim();
+        this.managerDN = Util.fixEmpty(managerDN);
+        if(Util.fixEmpty(managerPassword)==null)
+            this.managerPassword = null;
+        else
+            this.managerPassword = Scrambler.scramble(managerPassword);
     }
 
     /**
@@ -106,7 +127,12 @@ public class LDAPSecurityRealm extends SecurityRealm {
      */
     private String inferRootDN(String server) {
         try {
-            DirContext ctx = LdapCtxFactory.getLdapCtxInstance("ldap://"+server+'/', new Hashtable());
+            Hashtable<String,String> props = new Hashtable<String,String>();
+            if(managerDN!=null) {
+                props.put(Context.SECURITY_PRINCIPAL,managerDN);
+                props.put(Context.SECURITY_CREDENTIALS,getManagerPassword());
+            }
+            DirContext ctx = LdapCtxFactory.getLdapCtxInstance("ldap://"+server+'/', props);
             Attributes atts = ctx.getAttributes("");
             Attribute a = atts.get("defaultNamingContext");
             if(a!=null) // this entry is available on Active Directory. See http://msdn2.microsoft.com/en-us/library/ms684291(VS.85).aspx
@@ -122,6 +148,10 @@ public class LDAPSecurityRealm extends SecurityRealm {
             LOGGER.log(Level.WARNING,"Failed to connect to LDAP to infer Root DN for "+server,e);
             return null;
         }
+    }
+
+    public String getManagerPassword() {
+        return Scrambler.descramble(managerPassword);
     }
 
     public String getLDAPURL() {
@@ -141,7 +171,12 @@ public class LDAPSecurityRealm extends SecurityRealm {
             new UserDetailsService() {
                 final LdapUserSearch ldapSerach = findBean(LdapUserSearch.class, appContext);
                 public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-                    return ldapSerach.searchForUser(username);
+                    try {
+                        return ldapSerach.searchForUser(username);
+                    } catch (LdapDataAccessException e) {
+                        LOGGER.log(Level.WARNING, "Failed to search LDAP for username="+username,e);
+                        throw new UsernameNotFoundException(e.getMessage(),e);
+                    }
                 }
             });
     }
