@@ -416,7 +416,7 @@ var hudsonRules = {
     "FORM" : function(form) {
         // add the hidden 'json' input field, which receives the form structure in JSON
         var div = document.createElement("div");
-        div.innerHTML = "<input type=hidden name=json>";
+        div.innerHTML = "<input type=hidden name=json value=init>";
         form.appendChild(div);
         
         form.onsubmit = function() { buildFormTree(this) };
