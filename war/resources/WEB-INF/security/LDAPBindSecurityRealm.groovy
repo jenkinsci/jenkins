@@ -1,7 +1,7 @@
 import org.acegisecurity.providers.ProviderManager
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider
 import org.acegisecurity.providers.ldap.LdapAuthenticationProvider
-import org.acegisecurity.providers.ldap.authenticator.BindAuthenticator
+import org.acegisecurity.providers.ldap.authenticator.BindAuthenticator2
 import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator
 import org.acegisecurity.ldap.DefaultInitialDirContextFactory
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
@@ -26,7 +26,7 @@ ldapUserSearch(FilterBasedLdapUserSearch, instance.userSearchBase, instance.user
     searchSubtree=true
 }
 
-bindAuthenticator(BindAuthenticator,initialDirContextFactory) {
+bindAuthenticator(BindAuthenticator2,initialDirContextFactory) {
     // this is when you the user name can be translated into DN.
 //  userDnPatterns = [
 //    "uid={0},ou=people"
