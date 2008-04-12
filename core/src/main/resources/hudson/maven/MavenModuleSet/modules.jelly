@@ -23,8 +23,8 @@
             <!-- view tab bar -->
             <j:if test="${needsView}">
               <l:tabBar>
-                <l:tab name="Modules" active="${true}" />
-                <l:tab name="Disabled" active="${false}" href="./disabled" />
+                <l:tab name="${%Modules}" active="${true}" />
+                <l:tab name="${%Disabled}" active="${false}" href="./disabled" />
               </l:tabBar>
             </j:if>
           </t:projectView>
