@@ -3,6 +3,7 @@ package hudson.tasks.test;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.*;
+import hudson.tasks.junit.CaseResult;
 import hudson.util.ChartUtil;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.ColorPalette;
@@ -25,6 +26,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Common base class for recording test result.
@@ -140,6 +143,15 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
             if(r!=null)
                 return r;
         }
+    }
+    
+    /**
+     * A shortcut for summary.jelly
+     * 
+     * @return List of failed tests from associated test result.
+     */
+    public List<CaseResult> getFailedTests() {
+        return Collections.emptyList();
     }
 
     /**

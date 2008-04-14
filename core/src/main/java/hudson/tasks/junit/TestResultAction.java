@@ -8,6 +8,7 @@ import hudson.model.BuildListener;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.StringConverter2;
 import hudson.util.XStream2;
+import java.util.List;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.export.Exported;
 
@@ -109,6 +110,11 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
             getResult();    // this will compute the result
         return totalCount;
     }
+
+     @Override
+     public List<CaseResult> getFailedTests() {
+          return getResult().getFailedTests();
+     }
 
     /**
      * Loads a {@link TestResult} from disk.
