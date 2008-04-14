@@ -2,6 +2,8 @@ package hudson.tasks.test;
 
 import hudson.maven.MavenBuild;
 import hudson.model.AbstractBuild;
+import hudson.tasks.junit.CaseResult;
+import hudson.tasks.junit.TestResult;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -76,11 +78,22 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
     public int getTotalCount() {
         return totalCount;
     }
-
+   
     public List<ChildReport> getResult() {
         // I think this is a reasonable default.
         return getChildReports();
-    }
+     }
+
+     @Override
+     public List<CaseResult> getFailedTests() {
+          List<CaseResult> failedTests = new ArrayList<CaseResult>(failCount);
+          for (ChildReport childReport : getChildReports()) {
+               if (childReport.result instanceof TestResult) {
+                    failedTests.addAll(((TestResult) childReport.result).getFailedTests());
+               }
+          }
+          return failedTests;
+     }
 
     /**
      * Data-binding bean for the remote API.
