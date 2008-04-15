@@ -4,6 +4,7 @@
 # 
 
 pushd ../../../www/javadoc
+svn revert -R .
 svn update
 popd
 
