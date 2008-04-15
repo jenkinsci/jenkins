@@ -43,5 +43,5 @@ ruby push-m2-repo.rb $id
 chmod u+x publish-javadoc.sh
 ./publish-javadoc.sh
 
-cd ../../../www
+cd $WWW
 svn commit -m "Hudson $id released" changelog.html hudson.jnlp
