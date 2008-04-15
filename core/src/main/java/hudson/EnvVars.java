@@ -94,6 +94,15 @@ public class EnvVars extends TreeMap<String,String> {
 
     /**
      * Environmental variables that we've inherited.
+     *
+     * <p>
+     * Despite what the name might imply, this is the environment variable
+     * of the current JVM process. And therefore, it is Hudson master's environment
+     * variables only when you access this from the master.
+     *
+     * <p>
+     * If you access this field from slaves, then this is the environment
+     * variable of the slave agent.
      */
     public static final Map<String,String> masterEnvVars = new EnvVars(System.getenv());
 }
