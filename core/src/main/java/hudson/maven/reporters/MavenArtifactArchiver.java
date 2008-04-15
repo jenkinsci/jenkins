@@ -50,7 +50,7 @@ public class MavenArtifactArchiver extends MavenReporter {
                 pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), null, "pom", pom.getFile().getName());
             pomArtifact.archive(build,pom.getFile(),listener);
 
-            // record main artifact
+            // record main artifact (if packaging is POM, this doesn't exist)
             final MavenArtifact mainArtifact = MavenArtifact.create(pom.getArtifact());
             if(mainArtifact!=null)
                 mainArtifact.archive(build,pom.getArtifact().getFile(),listener);
@@ -67,34 +67,32 @@ public class MavenArtifactArchiver extends MavenReporter {
 
             final boolean installed = this.installed;
 
-            if(mainArtifact!=null || !attachedArtifacts.isEmpty()) {
-                build.executeAsync(new BuildCallable<Void,IOException>() {
-                    public Void call(MavenBuild build) throws IOException, InterruptedException {
-                        MavenArtifactRecord mar = new MavenArtifactRecord(build,pomArtifact,mainArtifact,attachedArtifacts);
-                        build.addAction(mar);
+            build.executeAsync(new BuildCallable<Void,IOException>() {
+                public Void call(MavenBuild build) throws IOException, InterruptedException {
+                    MavenArtifactRecord mar = new MavenArtifactRecord(build,pomArtifact,mainArtifact,attachedArtifacts);
+                    build.addAction(mar);
 
-                        mar.recordFingerprints();
+                    mar.recordFingerprints();
 
-                        // install files on the master
-                        if(installed) {// TODO: find out how to install files on the master
-                            try {
-                                mar.install(listener);
-                            } catch (MavenEmbedderException e) {
-                                e.printStackTrace(listener.error(hudson.maven.reporters.Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
-                                build.setResult(Result.FAILURE);
-                            } catch (ComponentLookupException e) {
-                                e.printStackTrace(listener.error(Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
-                                build.setResult(Result.FAILURE);
-                            } catch (ArtifactInstallationException e) {
-                                e.printStackTrace(listener.error(Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
-                                build.setResult(Result.FAILURE);
-                            }
+                    // install files on the master
+                    if(installed) {// TODO: find out how to install files on the master
+                        try {
+                            mar.install(listener);
+                        } catch (MavenEmbedderException e) {
+                            e.printStackTrace(listener.error(hudson.maven.reporters.Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
+                            build.setResult(Result.FAILURE);
+                        } catch (ComponentLookupException e) {
+                            e.printStackTrace(listener.error(Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
+                            build.setResult(Result.FAILURE);
+                        } catch (ArtifactInstallationException e) {
+                            e.printStackTrace(listener.error(Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
+                            build.setResult(Result.FAILURE);
                         }
-
-                        return null;
                     }
-                });
-            }
+
+                    return null;
+                }
+            });
         }
 
         return true;
