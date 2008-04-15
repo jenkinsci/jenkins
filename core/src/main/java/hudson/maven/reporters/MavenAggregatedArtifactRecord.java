@@ -45,10 +45,16 @@ public class MavenAggregatedArtifactRecord extends MavenAbstractArtifactRecord<M
     }
 
     public void deploy(MavenEmbedder embedder, ArtifactRepository deploymentRepository, TaskListener listener) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactDeploymentException {
+        if(debug)
+            listener.getLogger().println("Redeploying artifacts of "+parent+" timestamp="+parent.getTimestamp());
+
         for (MavenBuild build : parent.getModuleLastBuilds().values()) {
             MavenArtifactRecord mar = build.getAction(MavenArtifactRecord.class);
-            if(mar!=null)
+            if(mar!=null) {
+                if(debug)
+                    listener.getLogger().println("Deploying module: "+build+" timestamp="+build.getTimestamp());
                 mar.deploy(embedder,deploymentRepository,listener);
+            }
         }
     }
 }

@@ -240,4 +240,9 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
      * Permission for redeploying artifacts.
      */
     public static final Permission REDEPLOY = AbstractProject.BUILD;
+
+    /**
+     * Debug probe for HUDSON-1461.
+     */
+    public static boolean debug = Boolean.getBoolean(MavenArtifactRecord.class.getName()+".debug");
 }
