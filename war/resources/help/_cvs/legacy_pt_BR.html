@@ -1,0 +1,10 @@
+<div>
+  Hudson 1.20 e anteriores usavam para criar diretórios redundantes dentro do workspace.
+  Por exemplo, se o nome do módulo CVS fosse "foo/bar", ele primeiro criava "foo/bar" e
+  depois colocava tudo abaixo desta estrutura. Com este opção desmarcada, não haverá mais
+  diretórios intermediários desnecessários.
+
+  <p>
+  Isto afeta outros especificadores de caminho, tal como arquivadores de artefatos --- você agora especifica
+  "build/foo.jar" ao invés de "foo/build/foo.jar".
+</div>
