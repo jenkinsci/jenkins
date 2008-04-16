@@ -5,7 +5,7 @@
               title="${%Automatically aggregate all downstream tests}"
               checked="${instance.jobs==null}"
               help="/help/tasks/aggregate-test/auto-aggregate.html">
-        <f:entry title="Jobs to aggregate"
+        <f:entry title="${%Jobs to aggregate}"
                  help="/help/tasks/aggregate-test/manual-list.html">
           <f:textbox name="aggragatedTestResult.jobs" value="${instance.jobs}"
                      checkUrl="'${rootURL}/publisher/AggregatedTestResultPublisher/check?value='+escape(this.value)"/>
