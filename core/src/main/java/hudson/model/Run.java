@@ -18,6 +18,7 @@ import hudson.model.listeners.RunListener;
 import hudson.search.SearchIndexBuilder;
 import hudson.tasks.BuildStep;
 import hudson.tasks.LogRotator;
+import hudson.tasks.BuildWrapper;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
 import hudson.util.XStream2;
@@ -1073,9 +1074,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Returns the map that contains environmental variables for this build.
+     * Returns the map that contains environmental variable overrides for this build.
+     *
      * <p>
-     * Used by {@link BuildStep}s that invoke external processes.
+     * {@link BuildStep}s that invoke external processes should use this.
+     * This allows {@link BuildWrapper}s and other project configurations (such as JDK selection)
+     * to take effect.
+     *
      * <p>
      * On Windows systems, environment variables are case-preserving but
      * comparison/query is case insensitive (IOW, you can set 'Path' to something
