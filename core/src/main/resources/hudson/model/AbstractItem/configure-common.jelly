@@ -8,7 +8,7 @@
   <j:if test="${jdks.size() &gt; 1}">
     <!-- if there's only one JDK configured, always use that. -->
     <f:entry title="JDK"
-             description="JDK to be used for this project">
+             description="${%JDK to be used for this project}">
       <select class="setting-input validated" name="jdk" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value">
         <option>(Default)</option>
         <j:forEach var="inst" items="${jdks}">
