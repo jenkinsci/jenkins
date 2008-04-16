@@ -728,9 +728,9 @@ function updateDropDownList(sel) {
         while (true) {
             td.style.display = (show ? "" : "none");
             if(show)
-                td.removeAttribute("disabled");
+                td.removeAttribute("field-disabled");
             else    // buildFormData uses this attribute and ignores the contents
-                td.setAttribute("disabled","true");
+                td.setAttribute("field-disabled","true");
             if (td == f.end) break;
             td = td.nextSibling;
         }
@@ -1050,7 +1050,7 @@ function buildFormTree(form) {
                 if(nameRef!=null)
                     e = $(nameRef);
 
-                if(e.getAttribute("disabled")!=null)
+                if(e.getAttribute("field-disabled")!=null)
                     return {};  // this field shouldn't contribute to the final result
 
                 var name = e.getAttribute("name");
