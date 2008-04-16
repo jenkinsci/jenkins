@@ -16,7 +16,7 @@
           <th initialSortDir="down">${%File}</th>
           <th>${%Original owner}</th>
           <th>${%Age}</th>
-          <th></th>
+          <th/>
         </tr>
         <j:forEach var="e" items="${it.fingerprints}">
           <j:set var="f" value="${e.value}" />
@@ -27,10 +27,10 @@
             <td>
               <j:choose>
                 <j:when test="${f.original==null}">
-                  outside Hudson
+                  ${%outside Hudson}
                 </j:when>
                 <j:when test="${f.original.run==it.build}">
-                  this build
+                  ${%this build}
                 </j:when>
                 <j:otherwise>
                   <t:buildLink jobName="${f.original.name}" job="${f.original.job}" number="${f.original.number}" />
