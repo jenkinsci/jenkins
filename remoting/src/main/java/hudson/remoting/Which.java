@@ -32,6 +32,12 @@ public class Which {
             return new File(decode(new URL(resURL).getPath()));
         }
 
+        if(resURL.startsWith("code-source:/")) {
+            // OC4J apparently uses this. See http://www.nabble.com/Hudson-on-OC4J-tt16702113.html
+            resURL = resURL.substring("code-source:/".length(), resURL.lastIndexOf('!')); // cut off jar: and the file name portion
+            return new File(decode(new URL(resURL).getPath()));
+        }
+
         if(resURL.startsWith("file:")) {
             // unpackaged classes
             int n = clazz.getName().split("\\.").length; // how many slashes do wo need to cut?
