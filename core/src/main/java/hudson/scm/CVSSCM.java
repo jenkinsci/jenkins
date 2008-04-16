@@ -223,7 +223,7 @@ public class CVSSCM extends SCM implements Serializable {
 
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException, InterruptedException {
         if(!isUpdatable(dir)) {
-            listener.getLogger().println("Workspace is inconsistent with configuration. Scheduling a new build");
+            listener.getLogger().println(Messages.CVSSCM_WorkspaceInconsistent());
             return true;
         }
 
@@ -1034,7 +1034,7 @@ public class CVSSCM extends SCM implements Serializable {
                     String v = fixNull(request.getParameter("value"));
 
                     if(v.equals("HEAD"))
-                        error("Technically, HEAD is not a branch in CVS. Leave this field empty to build the trunk.");
+                        error(Messages.CVSSCM_HeadIsNotBranch());
                     else
                         ok();
                 }
@@ -1051,7 +1051,7 @@ public class CVSSCM extends SCM implements Serializable {
                 protected void check() throws IOException, ServletException {
                     String v = fixEmpty(request.getParameter("value"));
                     if(v==null) {
-                        error("CVSROOT is mandatory");
+                        error(Messages.CVSSCM_MissingCvsroot());
                         return;
                     }
 
@@ -1060,7 +1060,7 @@ public class CVSSCM extends SCM implements Serializable {
                     // CVSROOT format isn't really that well defined. So it's hard to check this rigorously.
                     if(v.startsWith(":pserver") || v.startsWith(":ext")) {
                         if(!m.matches()) {
-                            error("Invalid CVSROOT string");
+                            error(Messages.CVSSCM_InvalidCvsroot());
                             return;
                         }
                         // I can't really test if the machine name exists, either.
@@ -1087,7 +1087,7 @@ public class CVSSCM extends SCM implements Serializable {
                                 // if this is explicitly specified, then our system config page should have
                                 // reported an error.
                                 if(!scanCvsPassFile(passfile, v)) {
-                                    error("It doesn't look like this CVSROOT has its password set.");
+                                    error(Messages.CVSSCM_PasswordNotSet());
                                     return;
                                 }
                             }
@@ -1178,11 +1178,11 @@ public class CVSSCM extends SCM implements Serializable {
 
         public String getDisplayName() {
             if(tagName==null)
-                return "Tag this build";
+                return Messages.CVSSCM_TagThisBuild();
             if(tagName.indexOf(' ')>=0)
-                return "CVS tags";
+                return Messages.CVSSCM_DisplayName2();
             else
-                return "CVS tag";
+                return Messages.CVSSCM_DisplayName1();
         }
 
         public String[] getTagNames() {
@@ -1242,7 +1242,7 @@ public class CVSSCM extends SCM implements Serializable {
                     String tag = fixNull(req.getParameter(upName)).trim();
                     reason = isInvalidTag(tag);
                     if(reason!=null) {
-                        sendError("No valid tag name given for "+upName+" : "+reason,req,rsp);
+                        sendError(Messages.CVSSCM_NoValidTagNameGivenFor(upName,reason),req,rsp);
                         return;
                     }
 
@@ -1294,15 +1294,15 @@ public class CVSSCM extends SCM implements Serializable {
             //    error (1, 0, "tag `%s' must start with a letter", tag);
             //}
             if(name==null || name.length()==0)
-                return "Tag is empty";
+                return Messages.CVSSCM_TagIsEmpty();
 
             char ch = name.charAt(0);
             if(!(('A'<=ch && ch<='Z') || ('a'<=ch && ch<='z')))
-                return "Tag needs to start with alphabet";
+                return Messages.CVSSCM_TagNeedsToStartWithAlphabet();
 
             for( char invalid : "$,.:;@".toCharArray() ) {
                 if(name.indexOf(invalid)>=0)
-                    return "Tag contains illegal '"+invalid+"' character";
+                    return Messages.CVSSCM_TagContainsIllegalChar(invalid);
             }
 
             return null;
@@ -1317,7 +1317,7 @@ public class CVSSCM extends SCM implements Serializable {
                 destdir = Util.createTempDir();
 
                 // unzip the archive
-                listener.getLogger().println("expanding the workspace archive into "+destdir);
+                listener.getLogger().println(Messages.CVSSCM_ExpandingWorkspaceArchive(destdir));
                 Expand e = new Expand();
                 e.setProject(new org.apache.tools.ant.Project());
                 e.setDest(destdir);
@@ -1326,7 +1326,7 @@ public class CVSSCM extends SCM implements Serializable {
                 e.execute();
 
                 // run cvs tag command
-                listener.getLogger().println("tagging the workspace");
+                listener.getLogger().println(Messages.CVSSCM_TaggingWorkspace());
                 for (String m : getAllModulesNormalized()) {
                     FilePath path = new FilePath(destdir).child(m);
                     boolean isDir = path.isDirectory();
@@ -1343,7 +1343,7 @@ public class CVSSCM extends SCM implements Serializable {
                     }
 
                     if(!CVSSCM.this.run(new Launcher.LocalLauncher(listener),cmd,listener, path)) {
-                        listener.getLogger().println("tagging failed");
+                        listener.getLogger().println(Messages.CVSSCM_TaggingFailed());
                         return;
                     }
                 }
@@ -1402,11 +1402,11 @@ public class CVSSCM extends SCM implements Serializable {
                     listener.error(e.getKey()+" doesn't have CVS tag associated with it. Skipping");
                     continue;
                 }
-                listener.getLogger().println("Tagging "+e.getKey()+" to "+e.getValue());
+                listener.getLogger().println(Messages.CVSSCM_TagginXasY(e.getKey(),e.getValue()));
                 try {
                     e.getKey().keepLog();
                 } catch (IOException x) {
-                    x.printStackTrace(listener.error("Failed to mark "+e.getKey()+" for keep"));
+                    x.printStackTrace(listener.error(Messages.CVSSCM_FailedToMarkForKeep(e.getKey())));
                 }
                 ta.perform(e.getValue(), listener);
                 listener.getLogger().println();
