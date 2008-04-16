@@ -12,6 +12,7 @@ import java.io.Serializable;
  * Version independent name of a Maven project.
  * 
  * @author Kohsuke Kawaguchi
+ * @see ModuleDependency
  */
 public class ModuleName implements Comparable<ModuleName>, Serializable {
     public final String groupId;

@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -70,7 +71,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * List of modules that this module declares direct dependencies on.
      */
     @CopyOnWrite
-    private volatile Set<ModuleName> dependencies;
+    private volatile Set<ModuleDependency> dependencies;
 
     /**
      * List of child modules as defined by &lt;module> POM element.
@@ -156,6 +157,18 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         reporters.setOwner(this);
         if(dependencies==null)
             dependencies = Collections.emptySet();
+        else {
+            // Until 1.207, we used to have ModuleName in dependencies. So convert.
+            Set<ModuleDependency> deps = new HashSet<ModuleDependency>(dependencies.size());
+            for (Object d : (Set)dependencies) {
+                if (d instanceof ModuleDependency) {
+                    deps.add((ModuleDependency) d);
+                } else {
+                    deps.add(new ModuleDependency((ModuleName)d, ModuleDependency.UNKNOWN));
+                }
+            }
+            dependencies = deps;
+        }
     }
 
     /**
@@ -224,6 +237,13 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
     public ModuleName getModuleName() {
         return moduleName;
+    }
+
+    /**
+     * Gets groupId+artifactId+version as {@link ModuleDependency}.
+     */
+    public ModuleDependency asDependency() {
+        return new ModuleDependency(moduleName,version);
     }
 
     @Override
@@ -298,26 +318,32 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     protected void buildDependencyGraph(DependencyGraph graph) {
         if(isDisabled())        return;
 
-        Map<ModuleName,MavenModule> modules = new HashMap<ModuleName,MavenModule>();
+        Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
+
+        // when we load old data that doesn't record version in dependency, we'd like
+        // to emulate the old behavior that it tries to identify the upstream by ignoring the version.
+        // do this by always putting groupId:artifactId:UNKNOWN to the modules list.
 
         for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
             if(m.isDisabled())  continue;
-            modules.put(m.getModuleName(),m);
+            modules.put(m.asDependency(),m);
+            modules.put(m.asDependency().withUnknownVersion(),m);
         }
 
-        // in case two modules with the same name is defined, modules in this MavenModuleSet
-        // takes precedence
+        // in case two modules with the same name is defined, modules in the same MavenModuleSet
+        // takes precedence.
 
         for (MavenModule m : getParent().getModules()) {
             if(m.isDisabled())  continue;
-            modules.put(m.getModuleName(),m);
+            modules.put(m.asDependency(),m);
+            modules.put(m.asDependency().withUnknownVersion(),m);
         }
 
         // if the build style is the aggregator build, define dependencies against project,
         // not module.
         AbstractProject dest = getParent().isAggregatorStyleBuild() ? getParent() : this;
 
-        for (ModuleName d : dependencies) {
+        for (ModuleDependency d : dependencies) {
             MavenModule src = modules.get(d);
             if(src!=null) {
                 if(src.getParent().isAggregatorStyleBuild())

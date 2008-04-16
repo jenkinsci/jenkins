@@ -55,7 +55,7 @@ final class PomInfo implements Serializable {
      *
      * See Maven's ProjectSorter class for the definition of the 'dependencies' in Maven.
      */
-    public final Set<ModuleName> dependencies = new HashSet<ModuleName>();
+    public final Set<ModuleDependency> dependencies = new HashSet<ModuleDependency>();
 
     /**
      * Children of this module.
@@ -85,13 +85,13 @@ final class PomInfo implements Serializable {
             parent.children.add(name);
 
         for (Dependency dep : (List<Dependency>)project.getDependencies())
-            dependencies.add(new ModuleName(dep));
+            dependencies.add(new ModuleDependency(dep));
 
         MavenProject parentProject = project.getParent();
         if(parentProject!=null)
-            dependencies.add(new ModuleName(parentProject));
+            dependencies.add(new ModuleDependency(parentProject));
         if(parent!=null)
-            dependencies.add(parent.name);
+            dependencies.add(parent.asDependency());
 
         addPluginsAsDependencies(project.getBuildPlugins(),dependencies);
         addReportPluginsAsDependencies(project.getReportPlugins(),dependencies);
@@ -99,11 +99,11 @@ final class PomInfo implements Serializable {
         List<Extension> extensions = project.getBuildExtensions();
         if(extensions!=null)
             for (Extension ext : extensions)
-                dependencies.add(new ModuleName(ext));
+                dependencies.add(new ModuleDependency(ext));
 
         // when the parent POM uses a plugin and builds a plugin at the same time,
         // the plugin module ends up depending on itself
-        dependencies.remove(name);
+        dependencies.remove(asDependency());
 
         CiManagement ciMgmt = project.getCiManagement();
         if ((ciMgmt != null) && (ciMgmt.getSystem()==null || ciMgmt.getSystem().equals("hudson"))) {
@@ -119,16 +119,23 @@ final class PomInfo implements Serializable {
             this.mailNotifier = null;
     }
 
-    private void addPluginsAsDependencies(List<Plugin> plugins, Set<ModuleName> dependencies) {
-        if(plugins==null)   return;
-        for (Plugin p : plugins)
-            dependencies.add(new ModuleName(p));
+    /**
+     * Creates {@link ModuleDependency} that represents this {@link PomInfo}.
+     */
+    private ModuleDependency asDependency() {
+        return new ModuleDependency(name,version);
     }
 
-    private void addReportPluginsAsDependencies(List<ReportPlugin> plugins, Set<ModuleName> dependencies) {
+    private void addPluginsAsDependencies(List<Plugin> plugins, Set<ModuleDependency> dependencies) {
+        if(plugins==null)   return;
+        for (Plugin p : plugins)
+            dependencies.add(new ModuleDependency(p));
+    }
+
+    private void addReportPluginsAsDependencies(List<ReportPlugin> plugins, Set<ModuleDependency> dependencies) {
         if(plugins==null)   return;
         for (ReportPlugin p : plugins)
-            dependencies.add(new ModuleName(p));
+            dependencies.add(new ModuleDependency(p));
     }
 
     /**
@@ -140,9 +147,10 @@ final class PomInfo implements Serializable {
      * make sure parent POMs don't depend on a child module.
      */
     /*package*/ void cutCycle() {
+        ModuleDependency dep = asDependency();
         for(PomInfo p=parent; p!=null; p=p.parent) {
-            if(p.dependencies.contains(name))
-                p.dependencies.remove(name);
+            if(p.dependencies.contains(dep))
+                p.dependencies.remove(dep);
         }
     }
 

@@ -6,6 +6,7 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixConfiguration;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
+import hudson.maven.ModuleDependency;
 import hudson.util.XStream2;
 
 import java.io.File;
@@ -106,6 +107,7 @@ public class Items {
     static {
         XSTREAM.alias("project",FreeStyleProject.class);
         XSTREAM.alias("maven2", MavenModule.class);
+        XSTREAM.alias("dependency", ModuleDependency.class);
         XSTREAM.alias("maven2-module-set", MavenModule.class);
         XSTREAM.alias("matrix-project",MatrixProject.class);
         XSTREAM.alias("matrix-config",MatrixConfiguration.class);
