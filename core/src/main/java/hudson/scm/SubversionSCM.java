@@ -1202,7 +1202,7 @@ public class SubversionSCM extends SCM implements Serializable {
                             "document.getElementById(\"svnerrorlink\").style.display=\"none\";" +
                             "return false;'>(show details)</a>";
                         message += "<pre id=svnerror style='display:none'>"+sw+"</pre>";
-                        message += " (Maybe you need to <a href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>?)";
+                        message += " (Maybe you need to <a target='_new' href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>?)";
                         message += "<br>";
                         logger.log(Level.INFO, "Failed to access subversion repository "+url,e);
                         errorWithMarkup(message);
