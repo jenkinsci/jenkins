@@ -26,7 +26,7 @@ javanettasks uploadFile hudson /releases/jnlp/hudson.jar "version $id" Stable ta
 # replace the jar file link accordingly
 WWW=../../../www
 pushd $WWW
-svn revert
+svn revert -R .
 svn update
 popd
 jarUrl=$(cat target/upload.log | grep "^Posted" | sed -e "s/Posted //g")
