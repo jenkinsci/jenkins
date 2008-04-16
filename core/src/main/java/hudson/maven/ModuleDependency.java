@@ -19,6 +19,7 @@ public final class ModuleDependency {
     public ModuleDependency(String groupId, String artifactId, String version) {
         this.groupId = groupId;
         this.artifactId = artifactId;
+        if(version==null)   version=UNKNOWN;
         this.version = version;
     }
 
