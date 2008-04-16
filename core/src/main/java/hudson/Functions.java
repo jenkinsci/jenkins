@@ -715,7 +715,7 @@ public class Functions {
      *
      * @since 1.150
      */
-    public static Object defaulted(Object value, Object defaultValue) {
+    public static <T> T defaulted(T value, T defaultValue) {
         return value!=null ? value : defaultValue;
     }
 

@@ -4,6 +4,7 @@ import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.StructuredForm;
 import hudson.Util;
+import hudson.Functions;
 import hudson.maven.reporters.MavenMailer;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -243,7 +244,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * Gets groupId+artifactId+version as {@link ModuleDependency}.
      */
     public ModuleDependency asDependency() {
-        return new ModuleDependency(moduleName,version);
+        return new ModuleDependency(moduleName,Functions.defaulted(version,ModuleDependency.UNKNOWN));
     }
 
     @Override
