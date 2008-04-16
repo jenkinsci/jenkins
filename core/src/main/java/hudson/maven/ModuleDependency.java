@@ -5,13 +5,15 @@ import org.apache.maven.model.Plugin;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.Extension;
 
+import java.io.Serializable;
+
 /**
  * group id + artifact id + version.
  *
  * @author Kohsuke Kawaguchi
  * @see ModuleName
  */
-public final class ModuleDependency {
+public final class ModuleDependency implements Serializable {
     public final String groupId;
     public final String artifactId;
     public final String version;
@@ -82,4 +84,6 @@ public final class ModuleDependency {
      * to indicate that the version is unknown.
      */
     public static final String UNKNOWN = "*";
+
+    private static final long serialVersionUID = 1L;
 }
