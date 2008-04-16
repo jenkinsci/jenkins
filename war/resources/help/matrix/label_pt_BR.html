@@ -1,0 +1,27 @@
+<div>
+  Especifica os nós onde as construções serão executadas.
+
+  <ul>
+    <li>
+      Se nenhum for selecionado, Hudson escolherá
+      um nó disponível para executar uma construção (este é o mesmo comportamento do projeto 
+      estilo-livre quando "amarrar este projeto ao nó" não estiver selecionado).  Isto é útil
+      quando o projeto não tem dependência em nenhum nó particular, assim
+      ele permite ao Hudson utilizar nós em uma forma ótima.
+    <li>
+      Se um for selecionado, Hudson sempre executará a construção no nó especificado
+      (se você selecionar um de "nós específicos")
+      ou um dos nós que pertencem ao label (se você selecionar um de "label").
+      Isto é útil quando for necessário que a construção execute em um computador específico,
+      ou em um subconjunto de computadores. Por exemplo, talvez sua construção necessite de um MacOS X.
+    <li>
+      Se valores múltiplos forem selecionados, a matriz de configuração será expandida para incluir
+      todos eles, e as construçõs serão executadas em todos os nós/labels selecionandos.
+      Isto é últi, por exemplo, quando você quiser executar testes em Windows, Linux,
+      e Solaris.
+  </ul>
+
+  <br>
+  Durante uma construção, o nome do nó/label selecionado está disponível como o eixo "label".
+  Veja a ajuda de "eixos" abaixo para mais informações sobre como acessar o valor do eixo.
+</div>

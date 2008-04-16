@@ -1,0 +1,22 @@
+<div>
+  Se sua matriz de configuração precisa de eixos adicionais, você pode especificá-los aqui.
+  <p>
+  Por exemplo, vamos dizer que você está tentando executar um teste para sua aplicação de banco de dados,
+  e você precisa testá-la com três bancos de dados: MySQL, PostgreSQL, e Oracle. Seu
+  script de construção está projetado tal que você possa testar com um banco de dados particular usando
+  <tt>ant -Ddatabase=mysql</tt>.
+  <p>
+  Este é o conceito de um eixo. Você pode ter uma variável chamada "database",
+  que recebe três valores. Quando você configurá-la, Hudson executará 3 construções, cada uma com
+  valores diferentes para a variável "database" para exaustivamente cobrir 
+  a matriz de configuração.
+  <p>
+  Variáveis especificadas aqui se tornam disponíveis para a construção como variáveis de ambiente.
+  Em adição, para Ant e Maven, as variáveis também são expostas como propriedades, como se
+  <tt>-D<i>nomeDaVariavel</i>=<i>valor</i></tt> fossem especificadas na linha de comando.
+  <p>
+  Quando múltiplos eixos são especificados, todas as possíveis combinações dos eixos são construídas
+  exaustivamente. Valores múltiplos em labels e JDKs são tratados da mesma maneira. Assim
+  se você especificar jdk=[JDK5,JDK6], database=[mysql,postgresql,oracle], container=[jetty,tomcat],
+  então cada construção consistirá de 2x3x2=12 diferentes sub-construções.
+</div>
