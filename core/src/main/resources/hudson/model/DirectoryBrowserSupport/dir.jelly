@@ -19,7 +19,7 @@
         </div>
         <j:choose>
           <j:when test="${empty(files)}">
-            No files in directory
+            ${%No files in directory}
           </j:when>
           <j:otherwise>
             <table class="fileList">
