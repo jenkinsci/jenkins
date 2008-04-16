@@ -1,20 +1,15 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="Files to fingerprint"
-    description="
-     Can use wildcards like 'module/dist/**/*.zip'.
-     See &lt;a href='http://ant.apache.org/manual/CoreTypes/fileset.html'>
-     the @includes of Ant fileset&lt;/a> for the exact format.
-     the base directory is &lt;a href='ws/'>the workspace&lt;/a>.
-    ">
+  <f:entry title="${%Files to fingerprint}"
+    description="${%description}">
     <f:textbox name="fingerprint_targets" value="${instance.targets}"
                checkUrl="'${rootURL}/publisher/Fingerprinter/check?job=${it.fullName}&amp;value='+escape(this.value)" />
   </f:entry>
   <f:entry title="">
     <f:checkbox name="fingerprint_artifacts" checked="${instance.recordBuildArtifacts}" />
-    <label class="attach-previous">Fingerprint all archived artifacts</label>
+    <label class="attach-previous">${%Fingerprint all archived artifacts}</label>
   </f:entry>
   <f:entry title="" help="/help/tasks/fingerprint/keepDependencies.html">
     <f:checkbox name="keepDependencies" checked="${it.keepDependencies}" />
-    <label class="attach-previous">Keep the build logs of dependencies</label> 
+    <label class="attach-previous">${%Keep the build logs of dependencies}</label> 
   </f:entry>
 </j:jelly>
