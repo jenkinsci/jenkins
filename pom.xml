@@ -68,7 +68,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
+      <!--<plugin>
         <groupId>org.jvnet.fix1600</groupId>
         <artifactId>fix1600</artifactId>
         <executions>
@@ -78,7 +78,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin>-->
     </plugins>
   </build>
   
