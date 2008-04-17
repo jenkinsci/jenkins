@@ -1,0 +1,20 @@
+<div>
+  <p>
+  Se marcada, o Hudson executará as construções de módulo individual como construções separadas. Em um projeto
+  com um grande número de módulos, ou em um projeto onde os módulo levam muito tempo para construir,
+  marcar esta opção pode acelerar a construção toda, assim módulos diferentes podem ser construídos
+  em paralelo.
+
+  <p>
+  Caso contrário, deixe desmarcada e o Hudson construirá este projeto maven como você faria normalmente
+  pela linha de comando.
+
+  <p>
+  Quando sua construção usa os mojos no "estilo-agregador" multi-módulo, você teria que deixar esta
+  opção desmarcada assim o mojo terá acesso a todos os seus módulos.
+
+  <p>
+  Históricamente, este tem sido o módo padrão do projeto maven nativo até o Hudson 1.133.
+  Assim se seu projeto foi criado antes disso, você poderia querer desmarcar esta opção.   
+  
+</div>
