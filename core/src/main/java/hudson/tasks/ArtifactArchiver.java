@@ -76,10 +76,14 @@ public class ArtifactArchiver extends Publisher {
         try {
             FilePath ws = p.getWorkspace();
             if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
-                listener.error(Messages.ArtifactArchiver_NoMatchFound(artifacts));
-                String msg = ws.validateAntFileMask(artifacts);
-                if(msg!=null)
-                    listener.error(msg);
+                if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
+                    // If the build failed, don't complain that there was no matching artifact.
+                    // The build probably didn't even get to the point where it produces artifacts. 
+                    listener.error(Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    String msg = ws.validateAntFileMask(artifacts);
+                    if(msg!=null)
+                        listener.error(msg);
+                }
                 build.setResult(Result.FAILURE);
                 return true;
             }
