@@ -153,26 +153,48 @@ public class Util {
                 return;
 
             // perhaps this file is read-only?
-            // try chmod. this becomes no-op if this is not Unix.
-            try {
-                Chmod chmod = new Chmod();
-                chmod.setProject(new org.apache.tools.ant.Project());
-                chmod.setFile(f);
-                chmod.setPerm("u+w");
-                chmod.execute();
-            } catch (BuildException e) {
-                LOGGER.log(Level.INFO,"Failed to chmod "+f,e);
-            }
+            makeWritable(f);
+            /*
+             on Unix both the file and the directory that contains it has to be writable
+             for a file deletion to be successful. (Confirmed on Solaris 9)
 
-            // also try JDK6-way of doing it.
-            try {
-                f.setWritable(true);
-            } catch (NoSuchMethodError e) {
-                // not JDK6
-            }
+             $ ls -la
+             total 6
+             dr-xr-sr-x   2 hudson   hudson       512 Apr 18 14:41 .
+             dr-xr-sr-x   3 hudson   hudson       512 Apr 17 19:36 ..
+             -r--r--r--   1 hudson   hudson       469 Apr 17 19:36 manager.xml
+             -rw-r--r--   1 hudson   hudson         0 Apr 18 14:41 x
+             $ rm x
+             rm: x not removed: Permission denied
+             */
+
+            makeWritable(f.getParentFile());
 
             if(!f.delete() && f.exists())
                 throw new IOException("Unable to delete " + f.getPath());
+        }
+    }
+
+    /**
+     * Makes the given file writable.
+     */
+    private static void makeWritable(File f) {
+        // try chmod. this becomes no-op if this is not Unix.
+        try {
+            Chmod chmod = new Chmod();
+            chmod.setProject(new Project());
+            chmod.setFile(f);
+            chmod.setPerm("u+w");
+            chmod.execute();
+        } catch (BuildException e) {
+            LOGGER.log(Level.INFO,"Failed to chmod "+f,e);
+        }
+
+        // also try JDK6-way of doing it.
+        try {
+            f.setWritable(true);
+        } catch (NoSuchMethodError e) {
+            // not JDK6
         }
     }
 
