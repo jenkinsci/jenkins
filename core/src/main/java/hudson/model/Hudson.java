@@ -101,6 +101,7 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.text.ParseException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1651,13 +1652,26 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         for( int i=0; i<name.length(); i++ ) {
             char ch = name.charAt(i);
-            if(Character.isISOControl(ch))
-                throw new ParseException(Messages.Hudson_ControlCodeNotAllowed(),i);
+            if(Character.isISOControl(ch)) {
+                throw new ParseException(Messages.Hudson_ControlCodeNotAllowed(toPrintableName(name)),i);
+            }
             if("?*/\\%!@#$^&|<>[]:;".indexOf(ch)!=-1)
                 throw new ParseException(Messages.Hudson_UnsafeChar(ch),i);
         }
 
         // looks good
+    }
+
+    private static String toPrintableName(String name) {
+        StringBuffer printableName = new StringBuffer();
+        for( int i=0; i<name.length(); i++ ) {
+            char ch = name.charAt(i);
+            if(Character.isISOControl(ch))
+                printableName.append("\\u").append((int)ch).append(';');
+            else
+                printableName.append(ch);
+        }
+        return printableName.toString();
     }
 
     /**
