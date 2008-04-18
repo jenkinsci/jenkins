@@ -1,0 +1,14 @@
+<div>
+  Executa um script de shell (o padrão é o <tt>sh</tt>, mas isto é configurável) para construir o projeto.
+  O script será executado com o workspace como diretório atual. Informe no conteúdo de seu
+  script, mas sem um cabeçalho como <tt>#!/bin/sh</tt> &mdash; que é adicionado pelo Hudson, onde 
+  o caminho do shell está configurado globalmente.
+
+  <p>
+  O shell será invocado com a opção "-ex". Assim todos os comandos são impressos antes ser executados,
+  e a construção é considerada uma falha se qualquer dos comandos sair com um código diferente de zero.
+
+  <p>
+  Como uma boa prática, tente não colocar um script muito longo aqui. Ao invés, considere adicionar o script
+  no SCM e simplesmente chamá-lo do Hudson, desta forma você pode rastrear as mudanças em seu script.
+</div>

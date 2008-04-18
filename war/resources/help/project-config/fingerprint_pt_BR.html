@@ -1,0 +1,31 @@
+<div>
+  Hudson pode gravar o 'fingerprint' dos arquivos (mais frequentemente do arquivos jar) para manter registro
+  de onde/quando estes arquivos são produzidos e usados. Quando você tiver projetos
+  inter-dependêntes no Hudson, isto permite que você rapidamente encontre respostas para questões como:
+
+  <ul>
+    <li>
+      Eu tenho um <tt>foo.jar</tt> no meu HD mas qual o número da construção de FOO que gerou ele?
+    </li>
+    <li>
+      Meu projeto BAR depende de <tt>foo.jar</tt> do projeto FOO.
+    </li>
+    <ul>
+      <li>
+        Qual construção de <tt>foo.jar</tt> é usada na construção de BAR número 51?
+      </li>
+      <li>
+        Qual construção de BAR contém minha correção de bug para o <tt>foo.jar</tt> de número 32?
+      </li>
+    </ul>
+  </ul>
+
+  <p>
+  Para usar esta característica, todos os projetos envolvidos (não apenas o projeto
+  no qual um arquivo é produzido, mas também os projetos nos quais o arquivo
+  é usado) necessitam usar isto e gravar os fingerprints.
+
+  <p>
+  Veja <a href="https://hudson.dev.java.net/fingerprint.html">esta documentação</a>
+  para mais detalhes.
+</div>
