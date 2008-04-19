@@ -7,6 +7,8 @@ import org.apache.maven.model.Extension;
 
 import java.io.Serializable;
 
+import hudson.Functions;
+
 /**
  * group id + artifact id + version.
  *
@@ -38,7 +40,7 @@ public final class ModuleDependency implements Serializable {
     }
 
     public ModuleDependency(Plugin p) {
-        this(p.getGroupId(),p.getArtifactId(),p.getVersion());
+        this(p.getGroupId(),p.getArtifactId(), Functions.defaulted(p.getVersion(),NONE));
     }
 
     public ModuleDependency(ReportPlugin p) {
@@ -84,6 +86,20 @@ public final class ModuleDependency implements Serializable {
      * to indicate that the version is unknown.
      */
     public static final String UNKNOWN = "*";
+
+    /**
+     * When a plugin dependency is specified without giving a version,
+     * the semantics of that is the latest released plugin.
+     * In this case, we don't want the {@link ModuleDependency} version to become
+     * {@link #UNKNOWN}, which would match any builds of the plugin.
+     *
+     * <p>
+     * So we use this constant to indicate a version, and this will not match
+     * anything.
+     *
+     * @see #ModuleDependency(Plugin)
+     */
+    public static final String NONE = "-";
 
     private static final long serialVersionUID = 1L;
 }
