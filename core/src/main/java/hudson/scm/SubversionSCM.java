@@ -332,8 +332,10 @@ public class SubversionSCM extends SCM implements Serializable {
      */
     private List<External> checkout(AbstractBuild build, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         try {
-            if (!repositoryLocationsExist()) {
+            if (!repositoryLocationsExist() && build.getProject().getLastSuccessfulBuild()!=null) {
                 // Disable this project, see issue #763
+                // but only do so if there was at least some successful build,
+                // to make sure that initial configuration error won't disable the build. see issue #1567
                 listener.getLogger().println("One or more repository locations do not exist anymore for " + build.getProject().getName() + ", project will be disabled.");
                 build.getProject().makeDisabled(true);
                 return null;
