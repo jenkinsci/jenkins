@@ -180,7 +180,12 @@ public class QuotedStringTokenizer
 
               case 1: // Token
                   _hasToken=true;
-                  if(_delim.indexOf(c)>=0)
+                  if (escape)
+                  {
+                      escape=false;
+                      _token.append(c);
+                  }
+                  else if(_delim.indexOf(c)>=0)
                   {
                       if (_returnDelimiters)
                           _i--;
@@ -197,6 +202,10 @@ public class QuotedStringTokenizer
                       if (_returnQuotes)
                           _token.append(c);
                       state=3;
+                  }
+                  else if (c=='\\')
+                  {
+                      escape=true;
                   }
                   else
                       _token.append(c);
