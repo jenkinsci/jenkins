@@ -35,7 +35,7 @@ public class Which {
         if(resURL.startsWith("code-source:/")) {
             // OC4J apparently uses this. See http://www.nabble.com/Hudson-on-OC4J-tt16702113.html
             resURL = resURL.substring("code-source:/".length(), resURL.lastIndexOf('!')); // cut off jar: and the file name portion
-            return new File(decode(new URL(resURL).getPath()));
+            return new File(decode(new URL("file:/"+resURL).getPath()));
         }
 
         if(resURL.startsWith("file:")) {
