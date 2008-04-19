@@ -5,6 +5,12 @@
       <h1>${it.pronoun} ${it.displayName}</h1>
       <t:editableDescription adminOnly="true"/>
 
+      <j:if test="${it.disabled}">
+        <div class="warning">
+          ${%This project is currently disabled}
+        </div>
+      </j:if>
+
       <!-- inject main part here -->
       <st:include page="main.jelly" />
 
