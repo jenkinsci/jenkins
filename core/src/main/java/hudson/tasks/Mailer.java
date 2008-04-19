@@ -212,6 +212,12 @@ public class Mailer extends Publisher {
             // this code is brain dead
             smtpHost = nullify(req.getParameter("mailer_smtp_server"));
             adminAddress = req.getParameter("mailer_admin_address");
+            if(adminAddress.startsWith("\"") && adminAddress.endsWith("\"")) {
+                // some users apparently quote the whole thing. Don't konw why
+                // anyone does this, but it's a machine's job to forgive human mistake
+                adminAddress = adminAddress.substring(1,adminAddress.length()-1);
+            }
+
             defaultSuffix = nullify(req.getParameter("mailer_default_suffix"));
             String url = nullify(req.getParameter("mailer_hudson_url"));
             if(url!=null && !url.endsWith("/"))
