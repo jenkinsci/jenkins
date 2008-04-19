@@ -559,7 +559,7 @@ public final class Slave implements Node, Serializable {
      * Gets the corresponding computer object.
      */
     public ComputerImpl getComputer() {
-        return (ComputerImpl)Hudson.getInstance().getComputer(getNodeName());
+        return (ComputerImpl)Hudson.getInstance().getComputer(this);
     }
 
     public Computer toComputer() {

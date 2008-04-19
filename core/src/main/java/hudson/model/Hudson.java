@@ -742,6 +742,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return r;
     }
 
+    /*package*/ Computer getComputer(Node n) {
+        return computers.get(n);
+    }
+
     public Computer getComputer(String name) {
         if(name.equals("(master)"))
             name = "";
@@ -762,7 +766,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     public Computer toComputer() {
-        return getComputer("");
+        return getComputer(this);
     }
 
     /**
