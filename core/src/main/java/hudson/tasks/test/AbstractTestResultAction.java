@@ -97,12 +97,9 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         StringBuilder description = new StringBuilder(getDisplayName());
         description.append(": ");
         if (totalCount == 0) {
-            description.append("0 tests in total.");
+        	description.append(Messages.AbstractTestResultAction_zeroTestDescription());
         } else {
-            description.append(failCount);
-            description.append(" tests failing out of a total of ");
-            description.append(totalCount);
-            description.append(" tests.");
+        	description.append(Messages.AbstractTestResultAction_TestsDescription(failCount, totalCount));
         }
         return new HealthReport(score, description.toString());
     }
