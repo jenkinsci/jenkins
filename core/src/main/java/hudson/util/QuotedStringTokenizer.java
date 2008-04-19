@@ -71,6 +71,10 @@ public class QuotedStringTokenizer
         return new QuotedStringTokenizer(str).toArray();
     }
 
+    public static String[] tokenize(String str, String delimiters) {
+        return new QuotedStringTokenizer(str,delimiters).toArray();
+    }
+
     /* ------------------------------------------------------------ */
     /**
      *
