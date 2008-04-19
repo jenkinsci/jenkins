@@ -4,6 +4,7 @@ import hudson.model.TaskListener;
 import hudson.model.Hudson;
 import static hudson.model.Hudson.isWindows;
 import hudson.util.IOException2;
+import hudson.util.QuotedStringTokenizer;
 import hudson.Proc.LocalProc;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -312,14 +313,17 @@ public class Util {
     }
 
     /**
+     * Tokenizes the text separated by delimiters.
+     *
+     * <p>
+     * In 1.210, this method was changed to handle quotes like Unix shell does.
+     * Before that, this method just used {@link StringTokenizer}.
+     *
      * @since 1.145
+     * @see QuotedStringTokenizer
      */
     public static String[] tokenize(String s,String delimiter) {
-        StringTokenizer st = new StringTokenizer(s,delimiter);
-        String[] a = new String[st.countTokens()];
-        for (int i = 0; st.hasMoreTokens(); i++)
-            a[i] = st.nextToken();
-        return a;
+        return QuotedStringTokenizer.tokenize(s,delimiter);
     }
 
     public static String[] tokenize(String s) {
