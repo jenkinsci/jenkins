@@ -96,10 +96,12 @@ public final class PluginWrapper {
     private final File archive;
 
     private final List<Dependency> dependencies = new ArrayList<Dependency>();
+    private final List<Dependency> optionalDependencies = new ArrayList<Dependency>();
 
     private static final class Dependency {
         public final String shortName;
         public final String version;
+        public final boolean optional;
 
         public Dependency(String s) {
             int idx = s.indexOf(':');
@@ -107,6 +109,16 @@ public final class PluginWrapper {
                 throw new IllegalArgumentException("Illegal dependency specifier "+s);
             this.shortName = s.substring(0,idx);
             this.version = s.substring(idx+1);
+            
+            boolean isOptional = false;
+            String[] osgiProperties = s.split(";");
+            for (int i = 1; i < osgiProperties.length; i++) {
+                String osgiProperty = osgiProperties[i].trim();
+                if (osgiProperty.equalsIgnoreCase("resolution:=optional")) {
+                    isOptional = true;
+                }
+            }
+            this.optional = isOptional;
         }
     }
 
@@ -199,8 +211,14 @@ public final class PluginWrapper {
         // compute dependencies
         String v = manifest.getMainAttributes().getValue("Plugin-Dependencies");
         if(v!=null) {
-            for(String s : v.split(","))
-                dependencies.add(new Dependency(s));
+            for(String s : v.split(",")) {
+                Dependency d = new Dependency(s);
+                if (d.optional) {
+                    optionalDependencies.add(d);
+                } else {
+                    dependencies.add(d);
+                }
+            }
         }
     }
 
@@ -236,6 +254,12 @@ public final class PluginWrapper {
         for (Dependency d : dependencies) {
             if(owner.getPlugin(d.shortName)==null)
                 throw new IOException("Dependency "+d.shortName+" doesn't exist");
+        }
+        
+        // add the optional dependencies that exists
+        for (Dependency d : optionalDependencies) {
+            if(owner.getPlugin(d.shortName)!=null)
+                dependencies.add(d);
         }
 
         if(!active)
