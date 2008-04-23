@@ -1,6 +1,7 @@
 package hudson;
 
 import hudson.util.IOException2;
+import hudson.util.StringUtil;
 import hudson.model.Hudson;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -21,6 +22,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
@@ -120,6 +122,11 @@ public final class PluginWrapper {
             }
             this.optional = isOptional;
         }
+
+        @Override
+        public String toString() {
+            return shortName + " (" + version + ")";
+        }        
     }
 
     /**
@@ -250,17 +257,7 @@ public final class PluginWrapper {
             throw new IOException("Plugin installation failed. No 'Plugin-Class' entry in the manifest of "+archive);
         }
 
-        // make sure dependencies exist
-        for (Dependency d : dependencies) {
-            if(owner.getPlugin(d.shortName)==null)
-                throw new IOException("Dependency "+d.shortName+" doesn't exist");
-        }
-        
-        // add the optional dependencies that exists
-        for (Dependency d : optionalDependencies) {
-            if(owner.getPlugin(d.shortName)!=null)
-                dependencies.add(d);
-        }
+        loadPluginDependencies(owner);
 
         if(!active)
             return;
@@ -296,6 +293,33 @@ public final class PluginWrapper {
             }
         } finally {
             Thread.currentThread().setContextClassLoader(old);
+        }
+    }
+
+    /**
+     * Loads the dependencies to other plugins.
+     * @param owner plugin manager to determine if the dependency is installed or not.
+     * @throws IOException thrown if one or several mandatory dependencies doesnt exists.
+     */
+    private void loadPluginDependencies(PluginManager owner) throws IOException {
+        List<String> missingDependencies = new ArrayList<String>();
+        // make sure dependencies exist
+        for (Dependency d : dependencies) {
+            if(owner.getPlugin(d.shortName)==null)
+                missingDependencies.add(d.toString());
+        }
+        if (! missingDependencies.isEmpty()) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("Dependency ");
+            builder.append(StringUtil.collectionToString(missingDependencies, ", "));
+            builder.append(" doesn't exist");
+            throw new IOException(builder.toString());
+        }
+        
+        // add the optional dependencies that exists
+        for (Dependency d : optionalDependencies) {
+            if(owner.getPlugin(d.shortName)!=null)
+                dependencies.add(d);
         }
     }
 
