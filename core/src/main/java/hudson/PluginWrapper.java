@@ -1,7 +1,6 @@
 package hudson;
 
 import hudson.util.IOException2;
-import hudson.util.StringUtil;
 import hudson.model.Hudson;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -22,7 +21,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
@@ -311,7 +309,7 @@ public final class PluginWrapper {
         if (! missingDependencies.isEmpty()) {
             StringBuilder builder = new StringBuilder();
             builder.append("Dependency ");
-            builder.append(StringUtil.collectionToString(missingDependencies, ", "));
+            builder.append(Util.join(missingDependencies, ", "));
             builder.append(" doesn't exist");
             throw new IOException(builder.toString());
         }
