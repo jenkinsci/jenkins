@@ -174,6 +174,12 @@ public final class ProcessCache {
 
     public static int MAX_AGE = 5;
 
+    static {
+        String age = System.getProperty(ProcessCache.class.getName() + ".age");
+        if(age!=null)
+            MAX_AGE = Integer.parseInt(age);
+    }
+
     /**
      * Noop callable used for checking the sanity of the maven process in the cache.
      */
