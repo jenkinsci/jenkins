@@ -4,11 +4,12 @@ import hudson.Util;
 import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 
 /**
@@ -66,6 +67,11 @@ public class Executor extends Thread implements ModelObject {
                 }
 
                 try {
+                    // clear the interrupt flag as a precaution.
+                    // sometime an interrupt aborts a build but without clearing the flag.
+                    // see issue #1583
+                    Thread.interrupted();
+
                     startTime = System.currentTimeMillis();
                     executable = task.createExecutable();
                     queue.execute(executable,task);
@@ -73,7 +79,7 @@ public class Executor extends Thread implements ModelObject {
                     // for some reason the executor died. this is really
                     // a bug in the code, but we don't want the executor to die,
                     // so just leave some info and go on to build other things
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Executor throw an exception unexpectedly",e);
                 }
                 executable = null;
             }
@@ -195,4 +201,6 @@ public class Executor extends Thread implements ModelObject {
     public static Executor currentExecutor() {
         return (Executor)Thread.currentThread();
     }
+
+    private static final Logger LOGGER = Logger.getLogger(Executor.class.getName());
 }
