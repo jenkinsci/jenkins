@@ -1,0 +1,14 @@
+<div>
+  Isto controla o número de construções concorrentes que o Hudson pode executar neste slave.
+  Assim o valor afeta toda a carga de sistema que o Hudson pode sustentar.
+  Um bom valor para iniciar seria o número de processadores da máquina.
+
+  <p>
+  Aumentando este valor além disso pode causar lentidão na construção, mas também pode aumentar
+  a capacidade total, porque permite a CPU construir um projeto enquanto uma outra construção
+  está aguardando por operação de E/S.
+
+  <p>
+  Atribuir 0 a este valor é útil para remover temporáriamente um slave desabilitado do Hudson
+  sem perder outras informações de configuração.
+</div>

@@ -1,0 +1,49 @@
+<div>
+    Controla como Hudson permite lançamentos via JNLP.
+
+    <dl>
+        <dt><b>
+            Lançar apenas a partir de "Detalhes do Computador". Requer Login se a 
+            segurança estiver habilitada.
+        </b></dt>
+        <dd>
+            <em>Esta é a configuração normal e padrão.</em>
+            Neste modo, Hudson fornece um link de lançamento JNLP na visualização do computador.
+            Se a segurança estiver habilitada, então o link apenas estará disponível para 
+            usuário autenticados.
+        </dd>
+
+        <dt><b>
+            Lançar da página inicial. Requer Login se a 
+            segurança estiver habilitada.
+        </b></dt>
+        <dd>
+            Neste modo, Hudson fornece um link de lançamento JNLP em na visualização do computador e
+            no painel lateral "Estado do Executor de Construção".
+            Se a segurança estiver habilitada, então o link apenas estará disponível para 
+            usuário autenticados.
+        </dd>
+
+        <dt><b>
+            Lançar apenas a partir de "Detalhes do Computador". Nunca requer Login.
+        </b></dt>
+        <dd>
+            Neste modo, Hudson fornece um link de lançamento JNLP na visualização do computador.
+            O link estará sempre disponível mesmo quando o slave estiver desligado.
+            <br />
+            <b>AVISO!</b> Neste modo a segurança é desabilitada.  Assim os slaves podem ser iniciados por <em>qualquer um
+            que tenha acesso a este servidor</em>.  Os slaves têm a habilidade de executar código arbitrário no 
+            master.  <b>Não selecione esta opção a menos que você esteja completamente ciente dos riscos</b>
+        </dd>
+
+        <!--dt><b>
+            Launch from front page. Login never required.
+        </b></dt>
+        <dd>
+            In this mode, Hudson provides the JNLP launch link on both the computer view and the Build Executor Status
+            sidepanel.
+            The link will always be available whenever the slave is offline.
+        </dd-->
+
+    </dl>
+</div>
