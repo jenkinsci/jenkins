@@ -208,8 +208,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     private static Hudson theInstance;
 
-    private transient boolean isQuietingDown;
-    private transient boolean terminating;
+    private transient volatile boolean isQuietingDown;
+    private transient volatile boolean terminating;
 
     private List<JDK> jdks = new ArrayList<JDK>();
 

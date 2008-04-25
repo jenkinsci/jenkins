@@ -35,7 +35,7 @@ public abstract class AbstractItem extends Actionable implements Item {
     /**
      * Project description. Can be HTML.
      */
-    protected String description;
+    protected volatile String description;
 
     private transient ItemGroup parent;
 

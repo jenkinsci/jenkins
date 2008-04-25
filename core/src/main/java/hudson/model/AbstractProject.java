@@ -63,7 +63,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * To allow derived classes to link {@link SCM} config to elsewhere,
      * access to this variable should always go through {@link #getScm()}.
      */
-    private SCM scm = new NullSCM();
+    private volatile SCM scm = new NullSCM();
 
     /**
      * All the builds keyed by their build number.
@@ -73,7 +73,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * The quiet period. Null to delegate to the system default.
      */
-    private Integer quietPeriod = null;
+    private volatile Integer quietPeriod = null;
 
     /**
      * If this project is configured to be only built on a certain label,
@@ -94,12 +94,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * This somewhat ugly flag combination is so that we can migrate
      * existing Hudson installations nicely.
      */
-    private boolean canRoam;
+    private volatile boolean canRoam;
 
     /**
      * True to suspend new builds.
      */
-    protected boolean disabled;
+    protected volatile boolean disabled;
 
     /**
      * Identifies {@link JDK} to be used.
@@ -111,14 +111,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @see Hudson#getJDK(String)
      */
-    private String jdk;
+    private volatile String jdk;
 
     /**
      * @deprecated
      */
     private transient boolean enableRemoteTrigger;
 
-    private BuildAuthorizationToken authToken = null;
+    private volatile BuildAuthorizationToken authToken = null;
 
     /**
      * List of all {@link Trigger}s for this project.

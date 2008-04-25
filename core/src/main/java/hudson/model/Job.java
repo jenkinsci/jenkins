@@ -89,9 +89,9 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
      * In 1.28 and earlier, this field was stored in the project configuration file,
      * so even though this is marked as transient, don't move it around.
      */
-    protected transient int nextBuildNumber = 1;
+    protected transient volatile int nextBuildNumber = 1;
 
-    private LogRotator logRotator;
+    private volatile LogRotator logRotator;
     
     /**
      * Not all plugins are good at calculating their health report quickly.
