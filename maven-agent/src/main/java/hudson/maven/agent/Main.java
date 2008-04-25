@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,6 +37,19 @@ public class Main {
     }
 
     public static void main(File m2Home, File remotingJar, File interceptorJar) throws Exception {
+        // Unix master with Windows slave ends up passing path in Unix format,
+        // so convert it to Windows format now so that no one chokes with the path format later.
+        try {
+            m2Home = m2Home.getCanonicalFile();
+        } catch (IOException e) {
+            // ignore. We'll check the error later if m2Home exists anyway
+        }
+
+        if(!m2Home.exists()) {
+            System.err.println("No such directory exists: "+m2Home);
+            System.exit(1);
+        }
+
         versionCheck();
 
         System.setProperty("maven.home",m2Home.getPath());
