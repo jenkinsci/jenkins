@@ -308,8 +308,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (Project p : Hudson.getInstance().getProjects()) {
             boolean isUpstream = upstream.contains(p);
             synchronized(p) {
-                List<AbstractProject> newChildProjects = new ArrayList<AbstractProject>(p.getDownstreamProjects());
-
+                // does 'p' include us in its BuildTrigger? 
+                BuildTrigger trigger = (BuildTrigger) p.getPublisher(BuildTrigger.DESCRIPTOR);
+                List<AbstractProject> newChildProjects = trigger == null ? new ArrayList<AbstractProject>():trigger.getChildProjects();
                 if(isUpstream) {
                     if(!newChildProjects.contains(this))
                         newChildProjects.add(this);
@@ -720,6 +721,28 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return Hudson.getInstance().getDependencyGraph().getUpstream(this);
     }
 
+    /**
+     * Returns only those upstream projects that defines {@link BuildTrigger} to this project.
+     * This is a subset of {@link #getUpstreamProjects()}
+     *
+     * @return A List of upstream projects that has a {@link BuildTrigger} to this project.
+     */
+    public final List<AbstractProject> getBuildTriggerUpstreamProjects() {
+        ArrayList<AbstractProject> result = new ArrayList<AbstractProject>();
+        for (AbstractProject ap : getUpstreamProjects()) {
+            if (ap instanceof Project) {
+                Project p = (Project) ap;
+                BuildTrigger buildTrigger = (BuildTrigger)p.getPublisher(BuildTrigger.DESCRIPTOR);
+                if (buildTrigger != null) {
+                    if (buildTrigger.getChildProjects().contains(this)) {
+                        result.add(p);
+                    }
+                }                
+            }
+        }        
+        return result;
+    }    
+    
     /**
      * Gets all the upstream projects including transitive upstream projects.
      *

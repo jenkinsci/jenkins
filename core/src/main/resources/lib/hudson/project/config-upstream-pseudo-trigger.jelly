@@ -5,7 +5,7 @@
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <!-- pseudo-trigger to list upstream projects. -->
-  <j:set var="up" value="${it.upstreamProjects}" />
+  <j:set var="up" value="${it.buildTriggerUpstreamProjects}" />
   <f:optionalBlock name="pseudoUpstreamTrigger"
                    help="/help/project-config/upstream.html"
                    title="${%Build after other projects are built}"

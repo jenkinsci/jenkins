@@ -105,7 +105,9 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
     private boolean execute(AbstractBuild build, BuildListener listener) {
         if(!build.getResult().isWorseThan(getThreshold())) {
             PrintStream logger = listener.getLogger();
-            for (AbstractProject p : getChildProjects()) {
+            //Trigger all downstream Project of the project, not just those defined by this buildtrigger
+            List <AbstractProject> downstreamProjects = build.getProject().getDownstreamProjects();
+            for (AbstractProject p : downstreamProjects) {
                 if(p.isDisabled()) {
                     logger.println(Messages.BuildTrigger_Disabled(p.getName()));
                     continue;
