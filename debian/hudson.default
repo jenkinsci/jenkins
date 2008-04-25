@@ -1,0 +1,10 @@
+# Defaults for hudson initscript
+# sourced by /etc/init.d/hudson
+# installed at /etc/default/hudson by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# Additional options that are passed to the Daemon.
+DAEMON_OPTS=""
