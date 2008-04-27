@@ -20,6 +20,9 @@ import java.util.List;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
+        // this is so that JFreeChart can work nicely even if we are launched as a daemon
+        System.setProperty("java.awt.headless","true");
+
         File me = whoAmI();
 
         // locate Winstone jar
