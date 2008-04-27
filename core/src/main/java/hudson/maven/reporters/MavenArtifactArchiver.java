@@ -1,19 +1,13 @@
 package hudson.maven.reporters;
 
-import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
-import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
 import hudson.model.BuildListener;
-import hudson.model.Result;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.installer.ArtifactInstallationException;
-import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,15 +24,11 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class MavenArtifactArchiver extends MavenReporter {
-    private transient boolean installed;
-
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
         if(!mojo.pluginName.matches("org.apache.maven.plugins","maven-install-plugin"))
             return true;
         if(!mojo.getGoal().equals("install"))
             return true;
-
-        this.installed = true;
 
         return true;
     }
@@ -64,35 +54,6 @@ public class MavenArtifactArchiver extends MavenReporter {
                     attachedArtifacts.add(ma);
                 }
             }
-
-            final boolean installed = this.installed;
-
-            build.executeAsync(new BuildCallable<Void,IOException>() {
-                public Void call(MavenBuild build) throws IOException, InterruptedException {
-                    MavenArtifactRecord mar = new MavenArtifactRecord(build,pomArtifact,mainArtifact,attachedArtifacts);
-                    build.addAction(mar);
-
-                    mar.recordFingerprints();
-
-                    // install files on the master
-                    if(installed) {// TODO: find out how to install files on the master
-                        try {
-                            mar.install(listener);
-                        } catch (MavenEmbedderException e) {
-                            e.printStackTrace(listener.error(hudson.maven.reporters.Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
-                            build.setResult(Result.FAILURE);
-                        } catch (ComponentLookupException e) {
-                            e.printStackTrace(listener.error(Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
-                            build.setResult(Result.FAILURE);
-                        } catch (ArtifactInstallationException e) {
-                            e.printStackTrace(listener.error(Messages.MavenArtifactArchiver_FailedToInstallToMaster()));
-                            build.setResult(Result.FAILURE);
-                        }
-                    }
-
-                    return null;
-                }
-            });
         }
 
         return true;
