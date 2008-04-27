@@ -148,7 +148,7 @@ public final class PluginManager {
             // first, use the context classloader so that plugins that are loading
             // can use its own classloader first.
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            if(cl!=null)
+            if(cl!=null && cl!=this)
                 try {
                     return cl.loadClass(name);
                 } catch(ClassNotFoundException e) {
