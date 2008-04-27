@@ -103,11 +103,12 @@ public class Maven extends Builder {
             }
 
             if(seed==null) {
-                if(new File(ws,"pom.xml").exists())
-                    seed = "mvn";
-                else
-                    // err on Maven 1 to be closer to the behavior in < 1.81
+                // as of 1.212 (2008 April), I think Maven2 mostly replaced Maven1, so
+                // switching to err on M2 side.
+                if(new File(ws,"project.xml").exists())
                     seed = "maven";
+                else
+                    seed = "mvn";
             }
 
             if(Functions.isWindows())
