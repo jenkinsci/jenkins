@@ -1,11 +1,9 @@
 package hudson.tasks;
 
 import hudson.Launcher;
-import hudson.maven.MavenModuleSetBuild;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
-import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -36,6 +34,16 @@ import java.util.logging.Logger;
 
 /**
  * Triggers builds of other projects.
+ *
+ * <p>
+ * Despite what the name suggests, this class doesn't actually trigger other jobs
+ * as a part of {@link #perform} method. Its main job is to simply augument
+ * {@link DependencyGraph}. Jobs are responsible for triggering downstream jobs
+ * on its own, because dependencies may come from other sources.
+ *
+ * <p>
+ * This class, however, does provide the {@link #execute(AbstractBuild, BuildListener, BuildTrigger)}
+ * method as a convenience method to invoke downstream builds.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -94,16 +102,25 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
     }
 
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
-        if (build instanceof MatrixRun)
-            return true;    // when configured for a matrix project, run against MatrixBuild, not MatrixRun
-        if (build instanceof MavenModuleSetBuild)
-            return true;    // because Maven sets up dependencies on its own, that triggers any downstreams that we configured.
-
-        return execute(build, listener);
+        return true;
     }
 
-    private boolean execute(AbstractBuild build, BuildListener listener) {
-        if(!build.getResult().isWorseThan(getThreshold())) {
+    /**
+     * Convenience method to trigger downstream builds.
+     *
+     * @param build
+     *      The current build. Its downstreams will be triggered.
+     * @param listener
+     *      Receives the progress report.
+     * @param trigger
+     *      Optional {@link BuildTrigger} configured for the current build.
+     *      If it is non-null, its configuration value will affect the triggering behavior.
+     *      But even when this is null (meaning no user-defined downstream project is set up),
+     *      there might be other dependencies defined by somebody else, so buidl would
+     *      still have to call this method. 
+     */
+    public static boolean execute(AbstractBuild build, BuildListener listener, BuildTrigger trigger) {
+        if(trigger==null || !build.getResult().isWorseThan(trigger.getThreshold())) {
             PrintStream logger = listener.getLogger();
             //Trigger all downstream Project of the project, not just those defined by this buildtrigger
             List <AbstractProject> downstreamProjects = build.getProject().getDownstreamProjects();
@@ -140,7 +157,7 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
         return new MatrixAggregator(build, launcher, listener) {
             @Override
             public boolean endBuild() throws InterruptedException, IOException {
-                return execute(build,listener);
+                return execute(build,listener,BuildTrigger.this);
             }
         };
     }
