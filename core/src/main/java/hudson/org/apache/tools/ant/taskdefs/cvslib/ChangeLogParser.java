@@ -117,7 +117,8 @@ class ChangeLogParser {
     }
 
     private boolean dead = false;
-
+    private String previousLine = null;
+    
     /**
      * Receive notification about the process writing
      * to standard output.
@@ -174,11 +175,24 @@ class ChangeLogParser {
             m_comment = m_comment.substring(0, end);
             saveEntry();
             m_status = GET_FILE;
+        } else if (null != previousLine && previousLine.startsWith("----------------------------")) {
+            if (line.startsWith("revision")) {
+                final int end
+                    = m_comment.length() - lineSeparator.length(); //was -1
+                m_comment = m_comment.substring(0, end);
+                m_status = GET_PREVIOUS_REV;
+                
+                processGetPreviousRevision(line);
+            } else {
+                m_comment += previousLine + lineSeparator + line + lineSeparator;
+            }
+            
+            previousLine = null;
         } else if (line.startsWith("----------------------------")) {
-            final int end
-                = m_comment.length() - lineSeparator.length(); //was -1
-            m_comment = m_comment.substring(0, end);
-            m_status = GET_PREVIOUS_REV;
+            if (null != previousLine) {
+                m_comment += previousLine + lineSeparator;
+            }
+            previousLine = line;
         } else {
             m_comment += line + lineSeparator;
         }
