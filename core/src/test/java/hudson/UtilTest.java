@@ -51,4 +51,13 @@ public class UtilTest extends TestCase {
         assertEquals(Messages.Util_second(17), Util.getTimeSpanString(17000L));
     }
 
+
+    /**
+     * Test that Strings that contain spaces are correctly URL encoded.
+     */
+    public void testEncodeSpaces() {
+        final String urlWithSpaces = "http://hudson/job/Hudson Job";
+        String encoded = Util.encode(urlWithSpaces);
+        assertEquals(encoded, "http://hudson/job/Hudson%20Job");
+    }
 }
