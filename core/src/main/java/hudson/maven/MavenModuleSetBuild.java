@@ -280,9 +280,17 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(MavenModuleSetBuild.this,slistener));
 
                     // run the complete build here
-                    FilePath pom = project.getModuleRoot().child(project.getRootPOM());
-                    Map<String,String> envVars = getEnvVars();
 
+                    // figure out the root POM location.
+                    // choice of module root ('ws' in this method) is somewhat arbitrary
+                    // when multiple CVS/SVN modules are checked out, so also check
+                    // the path against the workspace root if that seems like what the user meant (see issue #1293)
+                    FilePath pom = project.getModuleRoot().child(project.getRootPOM());
+                    FilePath parentLoc = project.getWorkspace().child(project.getRootPOM());
+                    if(!pom.exists() && parentLoc.exists())
+                        pom = parentLoc;
+
+                    Map<String,String> envVars = getEnvVars();
                     ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
                         new MavenProcessFactory(project,launcher,envVars,pom.getParent()));
 
@@ -603,6 +611,13 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             File pom = new File(ws,rootPOM);
 
             PrintStream logger = listener.getLogger();
+
+            // choice of module root ('ws' in this method) is somewhat arbitrary
+            // when multiple CVS/SVN modules are checked out, so also check
+            // the path against the workspace root if that seems like what the user meant (see issue #1293)
+            File parentLoc = new File(ws.getParentFile(),rootPOM);
+            if(!pom.exists() && parentLoc.exists())
+                pom = parentLoc;
 
             if(!pom.exists()) {
                 logger.println(Messages.MavenModuleSetBuild_NoSuchFile(pom));
