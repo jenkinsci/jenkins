@@ -1,0 +1,13 @@
+<div>
+  Isto controla o número de construções concorrentes que o Hudson pode executar. Assim o valor
+  afeta toda a carga do sistema que o Hudson pode sustentar.
+  Um bom valor para iniciar seria o número de processadores em seu sistema.
+
+  Aumentando este valor além disso pode causar lentidão na construção, mas também pode aumentar
+  a capacidade total, porque permite a CPU construir um projeto enquanto uma outra construção
+  está aguardando por operação de E/S.
+
+  <p>
+  Quando usando o Hudson no modo master/slave, atribuir este valor a 0 evitará que o master
+  faça qualquer construção nele mesmo.
+</div>
