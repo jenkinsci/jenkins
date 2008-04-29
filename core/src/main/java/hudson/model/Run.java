@@ -645,9 +645,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     protected SearchIndexBuilder makeSearchIndex() {
-        return super.makeSearchIndex()
-            .add("console")
-            .add("changes");
+        SearchIndexBuilder builder = super.makeSearchIndex()
+                .add("console")
+                .add("changes");
+        for (Action a : getActions()) {
+            if(a.getIconFileName()!=null)
+                builder.add(a.getUrlName());
+        }
+        return builder;
     }
 
     public Api getApi(final StaplerRequest req) {
