@@ -13,7 +13,7 @@
       <f:entry title="${%Maven Version}">
         <div class="error">
           Hudson needs to know where your Maven2 is installed.&lt;br>
-          Please do so from <a href="${rootURL}/configure">the system configuration</a>.
+          Please do so from <a href="${rootURL}/configure" target="_new">the system configuration</a>.
         </div>
       </f:entry>
     </j:if>
