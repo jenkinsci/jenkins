@@ -246,7 +246,7 @@ public class Mailer extends Publisher {
 
         public String getAdminAddress() {
             String v = adminAddress;
-            if(v==null)     v = "address not configured yet <nobody>";
+            if(v==null)     v = "address not configured yet <nobody@nowhere>";
             return v;
         }
 
