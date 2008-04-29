@@ -5,6 +5,7 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.tasks.BuildWrapper;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.model.AbstractBuild;
@@ -60,7 +61,7 @@ import java.util.logging.Logger;
  *
  * This object remembers the changelog and what {@link MavenBuild}s are done
  * on this.
- *  
+ *
  * @author Kohsuke Kawaguchi
  */
 public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,MavenModuleSetBuild> {
@@ -76,7 +77,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
      * Displays the combined status of all modules.
      * <p>
      * More precisely, this picks up the status of this build itself,
-     * plus all the latest builds of the modules that belongs to this build. 
+     * plus all the latest builds of the modules that belongs to this build.
      */
     @Override
     public Result getResult() {
@@ -274,40 +275,56 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                     project.getRootModule().scheduleBuild();
                 } else {
                     // do builds here
-                    SplittableBuildListener slistener = new SplittableBuildListener(listener);
-                    proxies = new HashMap<ModuleName, ProxyImpl2>();
-                    for (MavenModule m : project.sortedActiveModules)
-                        proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(MavenModuleSetBuild.this,slistener));
-
-                    // run the complete build here
-
-                    // figure out the root POM location.
-                    // choice of module root ('ws' in this method) is somewhat arbitrary
-                    // when multiple CVS/SVN modules are checked out, so also check
-                    // the path against the workspace root if that seems like what the user meant (see issue #1293)
-                    FilePath pom = project.getModuleRoot().child(project.getRootPOM());
-                    FilePath parentLoc = project.getWorkspace().child(project.getRootPOM());
-                    if(!pom.exists() && parentLoc.exists())
-                        pom = parentLoc;
-
-                    Map<String,String> envVars = getEnvVars();
-                    ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
-                        new MavenProcessFactory(project,launcher,envVars,pom.getParent()));
-
-                    ArgumentListBuilder margs = new ArgumentListBuilder();
-                    margs.add("-B").add("-f", pom.getRemote());
-                    margs.addTokenized(project.getGoals());
-
-                    Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
-                    MavenProbeAction mpa=null;
                     try {
-                        mpa = new MavenProbeAction(project,process.channel);
-                        addAction(mpa);
-                        return process.channel.call(builder);
+                        buildEnvironments = new ArrayList<BuildWrapper.Environment>();
+                        for( BuildWrapper w : project.getBuildWrappers()) {
+                            BuildWrapper.Environment e = w.setUp((AbstractBuild)MavenModuleSetBuild.this, launcher, listener);
+                            if(e==null)
+                                return Result.FAILURE;
+                            buildEnvironments.add(e);
+                        }
+
+                        SplittableBuildListener slistener = new SplittableBuildListener(listener);
+                        proxies = new HashMap<ModuleName, ProxyImpl2>();
+                        for (MavenModule m : project.sortedActiveModules)
+                            proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(MavenModuleSetBuild.this,slistener));
+
+                        // run the complete build here
+
+                        // figure out the root POM location.
+                        // choice of module root ('ws' in this method) is somewhat arbitrary
+                        // when multiple CVS/SVN modules are checked out, so also check
+                        // the path against the workspace root if that seems like what the user meant (see issue #1293)
+                        FilePath pom = project.getModuleRoot().child(project.getRootPOM());
+                        FilePath parentLoc = project.getWorkspace().child(project.getRootPOM());
+                        if(!pom.exists() && parentLoc.exists())
+                            pom = parentLoc;
+
+                        Map<String,String> envVars = getEnvVars();
+                        ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
+                            new MavenProcessFactory(project,launcher,envVars,pom.getParent()));
+
+                        ArgumentListBuilder margs = new ArgumentListBuilder();
+                        margs.add("-B").add("-f", pom.getRemote());
+                        margs.addTokenized(project.getGoals());
+
+                        Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
+                        MavenProbeAction mpa=null;
+                        try {
+                            mpa = new MavenProbeAction(project,process.channel);
+                            addAction(mpa);
+                            return process.channel.call(builder);
+                        } finally {
+                            builder.end(launcher);
+                            getActions().remove(mpa);
+                            process.discard();
+                        }
                     } finally {
-                        builder.end(launcher);
-                        getActions().remove(mpa);
-                        process.discard();
+                        // tear down in reverse order
+                        for( int i=buildEnvironments.size()-1; i>=0; i-- )
+                            buildEnvironments.get(i)
+                                    .tearDown((AbstractBuild)MavenModuleSetBuild.this, listener);
+                            buildEnvironments = null;
                     }
                 }
                 
@@ -643,7 +660,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
                 for (PomInfo pi : infos)
                     pi.cutCycle();
-                
+
                 embedder.stop();
                 return infos;
             } catch (MavenEmbedderException e) {

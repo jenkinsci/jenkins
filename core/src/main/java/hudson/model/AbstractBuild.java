@@ -17,6 +17,7 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildWrapper;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
@@ -87,6 +88,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @since 1.137
      */
     private volatile Set<String> culprits;
+    
+    /**
+     * During the build this field remembers {@link BuildWrapper.Environment}s created by
+     * {@link BuildWrapper}. This design is bit ugly but forced due to compatibility.
+     */
+    protected transient List<BuildWrapper.Environment> buildEnvironments;
 
     protected AbstractBuild(P job) throws IOException {
         super(job);
@@ -367,6 +374,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             jdk.buildEnvVars(env);
         project.getScm().buildEnvVars(this,env);
 
+        if(buildEnvironments!=null) {
+            for (BuildWrapper.Environment e : buildEnvironments)
+                e.buildEnvVars(env);
+        }
         return env;
     }
 

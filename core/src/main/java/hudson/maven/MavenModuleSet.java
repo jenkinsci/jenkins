@@ -94,6 +94,12 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private DescribableList<Publisher,Descriptor<Publisher>> publishers =
         new DescribableList<Publisher,Descriptor<Publisher>>(this);
 
+    /**
+     * List of active ${link BuildWrapper}s configured for this project.
+     * @since 1.212
+     */
+    private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
+        new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
 
     public MavenModuleSet(String name) {
         super(Hudson.getInstance(),name);
@@ -209,6 +215,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return publishers;
     }
 
+    /**
+     * List of active {@link BuildWrapper}s. Can be empty but never null.
+     */
+    public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappers() {
+        return buildWrappers;
+    }
+
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         if(ModuleName.isValid(token))
             return getModule(token);
@@ -300,6 +313,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
         if(publishers==null)
             publishers = new DescribableList<Publisher,Descriptor<Publisher>>(this);
+        if(buildWrappers==null)
+            buildWrappers = new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
 
         updateTransientActions();
     }
@@ -349,6 +364,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
     protected void buildDependencyGraph(DependencyGraph graph) {
         publishers.buildDependencyGraph(this,graph);
+        buildWrappers.buildDependencyGraph(this,graph);
     }
 
     public MavenModule getRootModule() {
@@ -362,6 +378,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
         activities.addAll(super.getResourceActivities());
         activities.addAll(Util.filter(publishers,ResourceActivity.class));
+        activities.addAll(Util.filter(buildWrappers,ResourceActivity.class));
 
         return activities;
     }
@@ -478,6 +495,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         JSONObject json = StructuredForm.get(req);
         reporters.rebuild(req,json,MavenReporters.getConfigurableList(),"reporter");
         publishers.rebuild(req,json,BuildStepDescriptor.filter(BuildStep.PUBLISHERS,this.getClass()),"publisher");
+        buildWrappers.rebuild(req,json,BuildWrappers.getFor(this),"wrapper");
 
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }

@@ -42,12 +42,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
     protected Build(P project, File buildDir) throws IOException {
         super(project,buildDir);
     }
-    
-    /**
-     * During the build this field remembers {@link Environment}s created by
-     * {@link BuildWrapper}. This design is bit ugly but forced due to compatibility.
-     */
-    private transient List<Environment> buildEnvironments;
 
     @Override
     protected void onStartBuilding() {
@@ -79,18 +73,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         SCMTrigger t = (SCMTrigger)project.getTriggers().get(SCMTrigger.DESCRIPTOR);
         if(t!=null)
             t.getLock().unlock();
-    }
-
-    @Override
-    public Map<String,String> getEnvVars() {
-        Map<String,String> env = super.getEnvVars();
-
-        if(buildEnvironments!=null) {
-            for (Environment e : buildEnvironments)
-                e.buildEnvVars(env);
-        }
-
-        return env;
     }
 
 //

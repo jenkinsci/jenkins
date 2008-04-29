@@ -121,7 +121,9 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
         if (build instanceof Build)
             return setUp((Build)build,launcher,listener);
         else
-            throw new AssertionError();
+            throw new AssertionError("The plugin '" + this.getClass().getName() + "' still uses " +
+                    "deprecated setUp(Build,Launcher,BuildListener) method. " +
+                    "Update the plugin to use setUp(AbstractBuild, Launcher, BuildListener) instead.");
     }
 
     /**

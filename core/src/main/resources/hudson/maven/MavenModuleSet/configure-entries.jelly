@@ -51,5 +51,6 @@
                       varName="reporter" />
   </j:if>
 
+  <p:config-buildWrappers />
   <p:config-publishers />
 </j:jelly>
