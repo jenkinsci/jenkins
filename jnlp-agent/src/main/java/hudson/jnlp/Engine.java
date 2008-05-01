@@ -38,9 +38,12 @@ public class Engine extends Thread {
                 HttpURLConnection con = (HttpURLConnection)new URL(hudsonUrl).openConnection();
                 con.connect();
                 String port = con.getHeaderField("X-Hudson-JNLP-Port");
-                if(con.getResponseCode()!=200
-                || port ==null) {
-                    listener.error(new Exception(hudsonUrl+" is not Hudson: "+con.getResponseMessage()));
+                if(con.getResponseCode()!=200) {
+                    listener.error(new Exception(hudsonUrl+" is invalid: "+con.getResponseCode()+" "+con.getResponseMessage()));
+                    return;
+                }
+                if(port ==null) {
+                    listener.error(new Exception(hudsonUrl+" is not Hudson: "));
                     return;
                 }
 
