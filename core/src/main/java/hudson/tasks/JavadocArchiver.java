@@ -74,7 +74,7 @@ public class JavadocArchiver extends Publisher {
 
     public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
-    public static final class JavadocAction implements ProminentProjectAction {
+    public static class JavadocAction implements ProminentProjectAction {
         private final AbstractItem project;
 
         public JavadocAction(AbstractItem project) {

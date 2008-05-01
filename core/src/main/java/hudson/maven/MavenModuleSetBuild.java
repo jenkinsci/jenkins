@@ -65,6 +65,12 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,MavenModuleSetBuild> {
+    /**
+     * {@link MavenReporter}s that will contribute project actions.
+     * Can be null if there's none.
+     */
+    /*package*/ List<MavenReporter> projectActionReporters;
+
     public MavenModuleSetBuild(MavenModuleSet job) throws IOException {
         super(job);
     }
@@ -156,6 +162,12 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         }
 
         return r;
+    }
+
+    public void registerAsProjectAction(MavenReporter reporter) {
+        if(projectActionReporters==null)
+            projectActionReporters = new ArrayList<MavenReporter>();
+        projectActionReporters.add(reporter);
     }
 
     /**

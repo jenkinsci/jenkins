@@ -151,6 +151,16 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             if(a instanceof MavenAggregatedReport)
                 if(added.add(a.getClass()))
                     transientActions.add(((MavenAggregatedReport)a).getProjectAction(this));
+
+        List<MavenReporter> list = build.projectActionReporters;
+        if(list==null)   return;
+
+        for (MavenReporter step : list) {
+            if(!added.add(step.getClass()))     continue;   // already added
+            Action a = step.getAggregatedProjectAction(this);
+            if(a!=null)
+                transientActions.add(a);
+        }
     }
 
     /**

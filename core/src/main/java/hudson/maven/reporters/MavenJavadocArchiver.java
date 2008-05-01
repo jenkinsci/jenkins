@@ -7,6 +7,8 @@ import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
+import hudson.maven.MavenBuild;
+import hudson.maven.MavenModuleSet;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Result;
@@ -23,6 +25,7 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class MavenJavadocArchiver extends MavenReporter {
+    private Boolean aggregated;
 
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
         if(!mojo.pluginName.matches("org.apache.maven.plugins","maven-javadoc-plugin"))
@@ -31,8 +34,14 @@ public class MavenJavadocArchiver extends MavenReporter {
         if(!mojo.getGoal().equals("javadoc"))
             return true;
 
+
         File destDir;
+        boolean aggregated;
         try {
+            aggregated = mojo.getConfigurationValue("aggregate",Boolean.class);
+            if(aggregated && !pom.isExecutionRoot())
+                return true;    // in the aggregated mode, the generation will only happen for the root module
+
             destDir = mojo.getConfigurationValue("reportOutputDirectory", File.class);
             if(destDir==null)
                 destDir = mojo.getConfigurationValue("outputDirectory", File.class);
@@ -44,7 +53,19 @@ public class MavenJavadocArchiver extends MavenReporter {
 
         if(destDir.exists()) {
             // javadoc:javadoc just skips itself when the current project is not a java project 
-            FilePath target = build.getProjectRootDir().child("javadoc");
+            FilePath target;
+            if(aggregated) {
+                // store at MavenModuleSet level. 
+                target = build.execute(new MavenBuildProxy.BuildCallable<FilePath,IOException>() {
+                    public FilePath call(MavenBuild build) throws IOException, InterruptedException {
+                        return new FilePath(build.getProject().getParent().getRootDir());
+                    }
+                    private static final long serialVersionUID = 1L;
+                });
+            } else
+                target = build.getProjectRootDir();
+
+            target = target.child("javadoc");
 
             try {
                 listener.getLogger().println("Archiving javadoc");
@@ -55,7 +76,11 @@ public class MavenJavadocArchiver extends MavenReporter {
                 build.setResult(Result.FAILURE);
             }
 
-            build.registerAsProjectAction(this);
+            if(aggregated)
+                build.registerAsAggregatedProjectAction(this);
+            else
+                build.registerAsProjectAction(this);
+
         }
 
         return true;
@@ -63,6 +88,10 @@ public class MavenJavadocArchiver extends MavenReporter {
 
 
     public Action getProjectAction(MavenModule project) {
+        return new JavadocAction(project);
+    }
+
+    public Action getAggregatedProjectAction(MavenModuleSet project) {
         return new JavadocAction(project);
     }
 

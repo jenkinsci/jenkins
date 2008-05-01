@@ -187,8 +187,38 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
     /**
      * Equivalent of {@link BuildStep#getProjectAction(AbstractProject)}
      * for {@link MavenReporter}.
+     *
+     * <p>
+     * Registers a transient action to {@link MavenModule} when it's rendered.
+     * This is useful if you'd like to display an action at the module level.
+     *
+     * <p>
+     * Since this contributes a transient action, the returned {@link Action}
+     * will not be serialized.
+     *
+     * <p>
+     * For this method to be invoked, your {@link MavenReporter} has to invoke
+     * {@link MavenBuildProxy#registerAsProjectAction(MavenReporter)} during the build.
+     *
+     * @return
+     *      null not to contribute an action, which is the default.
      */
     public Action getProjectAction(MavenModule module) {
+        return null;
+    }
+
+    /**
+     * Works like {@link #getProjectAction(MavenModule)} but
+     * works at {@link MavenModuleSet} level.
+     *
+     * <p>
+     * For this method to be invoked, your {@link MavenReporter} has to invoke
+     * {@link MavenBuildProxy#registerAsAggregatedProjectAction(MavenReporter)} during the build.
+     *
+     * @return
+     *      null not to contribute an action, which is the default.
+     */
+    public Action getAggregatedProjectAction(MavenModuleSet project) {
         return null;
     }
 

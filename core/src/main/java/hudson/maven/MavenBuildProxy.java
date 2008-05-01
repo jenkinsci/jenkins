@@ -87,6 +87,16 @@ public interface MavenBuildProxy {
     void registerAsProjectAction(MavenReporter reporter);
 
     /**
+     * Nominates that the reporter will contribute a project action
+     * for this build by using {@link MavenReporter#getAggregatedProjectAction(MavenModuleSet)}.
+     *
+     * <p>
+     * The specified {@link MavenReporter} object will be transfered to the master
+     * and will become a persisted part of the {@link MavenModuleSetBuild}.
+     */
+    void registerAsAggregatedProjectAction(MavenReporter  reporter);
+
+    /**
      * Called at the end of the build to record what mojos are executed.
      */
     void setExecutedMojos(List<ExecutedMojo> executedMojos);
@@ -148,6 +158,10 @@ public interface MavenBuildProxy {
 
         public void registerAsProjectAction(MavenReporter reporter) {
             core.registerAsProjectAction(reporter);
+        }
+
+        public void registerAsAggregatedProjectAction(MavenReporter reporter) {
+            core.registerAsAggregatedProjectAction(reporter);
         }
 
         public void setExecutedMojos(List<ExecutedMojo> executedMojos) {

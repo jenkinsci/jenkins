@@ -301,6 +301,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             MavenBuild.this.registerAsProjectAction(reporter);
         }
 
+        public void registerAsAggregatedProjectAction(MavenReporter reporter) {
+            getParentBuild().registerAsProjectAction(reporter);
+        }
+
         public void setExecutedMojos(List<ExecutedMojo> executedMojos) {
             MavenBuild.this.executedMojos = executedMojos;
         }
