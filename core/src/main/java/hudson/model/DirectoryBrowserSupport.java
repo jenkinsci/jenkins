@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Has convenience methods to serve file system.
@@ -180,6 +182,9 @@ public final class DirectoryBrowserSupport {
         }
 
         ContentInfo ci = baseFile.act(new ContentInfo());
+
+        if(LOGGER.isLoggable(Level.FINE))
+            LOGGER.fine("Serving "+baseFile+" with lastModified="+ci.lastModified+", contentLength="+ci.contentLength);
 
         InputStream in = baseFile.read();
         if (view) {
@@ -413,4 +418,6 @@ public final class DirectoryBrowserSupport {
 
         private static final long serialVersionUID = 1L;
     }
+
+    private static final Logger LOGGER = Logger.getLogger(DirectoryBrowserSupport.class.getName());
 }
