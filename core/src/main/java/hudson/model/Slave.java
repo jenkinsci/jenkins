@@ -100,11 +100,11 @@ public final class Slave implements Node, Serializable {
     /**
      * @stapler-constructor
      */
-    public Slave(String name, String description, String command, String remoteFS, int numExecutors, Mode mode,
+    public Slave(String name, String description, String command, String remoteFS, String numExecutors, Mode mode,
                  String label) throws FormException {
         this.name = name;
         this.description = description;
-        this.numExecutors = numExecutors;
+        this.numExecutors = Util.tryParseNumber(numExecutors, 1).intValue();
         this.mode = mode;
         this.agentCommand = command;
         this.remoteFS = remoteFS;
@@ -122,7 +122,7 @@ public final class Slave implements Node, Serializable {
         if (remoteFS.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoRemoteDir(name), null);
 
-        if (numExecutors<=0)
+        if (this.numExecutors<=0)
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
 

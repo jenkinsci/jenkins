@@ -100,8 +100,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.security.SecureRandom;
+import java.text.NumberFormat;
 import java.text.ParseException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -2083,6 +2083,85 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                     ok();
                 else
                     error(Messages.Hudson_JobAlreadyExists(job));
+            }
+        }.process();
+    }
+    /**
+     * Checks if the value for a field is set; if not an error or warning text is displayed.
+     * If the parameter "value" is not set then the parameter "errorText" is displayed
+     * as an error text. If the parameter "errorText" is not set, then the parameter "warningText" is
+     * displayed as a warning text.
+     * <p/> 
+     * If the text is set and the parameter "type" is set, it will validate that the value is of the
+     * correct type. Supported types are "number, "number-positive" and "number-negative".
+     * @param req containing the parameter value and the errorText to display if the value isnt set
+     * @param rsp used by FormFieldValidator
+     * @throws IOException thrown by FormFieldValidator.check()
+     * @throws ServletException thrown by FormFieldValidator.check()
+     */
+    public void doFieldCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        new FormFieldValidator(req, rsp, false) {
+            
+            /**
+             * Display the error text or warning text.
+             */
+            private void fieldCheckFailed() throws IOException, ServletException {
+                String v = fixEmpty(request.getParameter("errorText"));
+                if (v != null) {
+                    error(v);
+                    return;
+                }
+                v = fixEmpty(request.getParameter("warningText"));
+                if (v != null) {
+                    warning(v);
+                    return;
+                }
+                error("No error or warning text was set for fieldCheck().");
+                return;                
+            }
+            
+            /**
+             * Checks if the value is of the correct type.
+             * @param type the type of string
+             * @param value the actual value to check
+             * @return true, if the type was valid; false otherwise
+             */
+            private boolean checkType(String type, String value) throws IOException, ServletException {
+                try {
+                    if (type.equalsIgnoreCase("number")) {
+                        NumberFormat.getInstance().parse(value);                            
+                    } else if (type.equalsIgnoreCase("number-positive")) {
+                        if (NumberFormat.getInstance().parse(value).floatValue() <= 0) {
+                            error(Messages.Hudson_NotAPositiveNumber());
+                            return false;
+                        }
+                    } else if (type.equalsIgnoreCase("number-negative")) {
+                        if (NumberFormat.getInstance().parse(value).floatValue() >= 0) {
+                            error(Messages.Hudson_NotANegativeNumber());
+                            return false;
+                        }
+                    }
+                } catch (ParseException e) {
+                    error(Messages.Hudson_NotANumber());
+                    return false;
+                }
+                return true;
+            }
+            
+            @Override
+            protected void check() throws IOException, ServletException {
+                String value = fixEmpty(request.getParameter("value"));
+                if (value == null) {
+                    fieldCheckFailed();
+                    return;
+                }
+                String type = fixEmpty(request.getParameter("type"));
+                if (type != null) {
+                    if (!checkType(type, value)) {
+                        return;
+                    }
+                }
+                ok();
             }
         }.process();
     }

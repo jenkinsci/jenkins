@@ -63,7 +63,8 @@
           <s:repeatable var="s" items="${it.slaves}" name="slaves">
             <table width="100%">
               <s:entry title="${%name}" help="/help/system-config/master-slave/name.html">
-                <s:textbox name="slave.name" value="${s.nodeName}" />
+                <s:textbox name="slave.name" value="${s.nodeName}" 
+                	checkUrl="'fieldCheck?errorText='+escape('${%Name is mandatory}')+'&amp;value='+escape(this.value)"/>
               </s:entry>
 
               <s:entry title="${%launch command}" help="/help/system-config/master-slave/command.html">
@@ -73,14 +74,13 @@
               <s:entry title="${%description}" help="/help/system-config/master-slave/description.html">
                 <s:textbox name="slave.description" value="${s.nodeDescription}" />
               </s:entry>
-
               <s:entry title="${%# of executors}" help="/help/system-config/master-slave/numExecutors.html">
-                <input class="setting-input number" name="slave.numExecutors"
-                  type="text" value="${s.numExecutors}" />
+                <s:textbox name="slave.numExecutors" value="${s.numExecutors}" 
+                  checkUrl="'fieldCheck?errorText='+escape('${%Number of executors is mandatory.}')+'&amp;type=number-positive&amp;value='+escape(this.value)"/>
               </s:entry>
-
               <s:entry title="${%remote FS root}" help="/help/system-config/master-slave/remoteFS.html">
-                <s:textbox name="slave.remoteFS" value="${s.remoteFS}" />
+                <s:textbox name="slave.remoteFS" value="${s.remoteFS}" 
+                	checkUrl="'fieldCheck?errorText='+escape('${%Remote directory is mandatory.}')+'&amp;value='+escape(this.value)"/>
               </s:entry>
 
               <s:entry title="${%usage}" help="/help/system-config/master-slave/usage.html">

@@ -33,6 +33,8 @@ import java.net.URISyntaxException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -750,6 +752,25 @@ public class Util {
             Stapler.getCurrentRequest().getContextPath()+ Hudson.RESOURCE_PATH+
             "/images/none.gif' height=16 width=1>"+s+"</span>";
         return s;
+    }
+    
+    /**
+     * Returns the parsed string if parsed successful; otherwise returns the default number.
+     * If the string is null, empty or a ParseException is thrown then the defaultNumber
+     * is returned.
+     * @param numberStr string to parse
+     * @param defaultNumber number to return if the string can not be parsed
+     * @return returns the parsed string; otherwise the default number
+     */
+    public static Number tryParseNumber(String numberStr, Number defaultNumber) {
+        if ((numberStr == null) || (numberStr.length() == 0)) {
+            return defaultNumber;
+        }
+        try {
+            return NumberFormat.getNumberInstance().parse(numberStr);
+        } catch (ParseException e) {
+            return defaultNumber;
+        }
     }
 
     public static final SimpleDateFormat XS_DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
