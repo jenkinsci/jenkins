@@ -2,7 +2,7 @@
 	<st:header name="X-Hudson" value="${servletContext.getAttribute('version')}" />
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
 	<l:layout title="${h.ifThenElse(app==it,'%Dashboard',it.viewName)}">
-		<st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly" />
 		<l:main-panel>
 		  <div id="view-message">
         <t:editableDescription adminOnly="true"/>
@@ -28,5 +28,12 @@
         </j:otherwise>
       </j:choose>
 		</l:main-panel>
+    <l:header>
+      <!-- for screen resolution detection -->
+      <l:yui module="cookie" suffix="-beta" />
+      <script>
+        YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height); 
+      </script>
+    </l:header>
 	</l:layout>
 </st:compress>

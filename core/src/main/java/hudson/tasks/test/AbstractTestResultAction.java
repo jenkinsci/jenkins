@@ -10,6 +10,7 @@ import hudson.util.ColorPalette;
 import hudson.util.DataSetBuilder;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
+import hudson.util.Area;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -164,7 +165,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         if(req.checkIfModified(owner.getTimestamp(),rsp))
             return;
 
-        ChartUtil.generateGraph(req,rsp,createChart(req,buildDataSet(req)),500,200);
+        ChartUtil.generateGraph(req,rsp,createChart(req,buildDataSet(req)),calcDefaultSize());
     }
 
     /**
@@ -173,9 +174,23 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     public void doGraphMap( StaplerRequest req, StaplerResponse rsp) throws IOException {
         if(req.checkIfModified(owner.getTimestamp(),rsp))
             return;
-        ChartUtil.generateClickableMap(req,rsp,createChart(req,buildDataSet(req)),500,200);
+        ChartUtil.generateClickableMap(req,rsp,createChart(req,buildDataSet(req)),calcDefaultSize());
     }
 
+    /**
+     * Determines the default size of the trend graph.
+     *
+     * This is default because the query parameter can choose arbitrary size.
+     * If the screen resolution is too low, use a smaller size.
+     */
+    private Area calcDefaultSize() {
+        Area res = Functions.getScreenResolution();
+        if(res!=null && res.width<=800)
+            return new Area(250,100);
+        else
+            return new Area(500,200);
+    }
+    
     private CategoryDataset buildDataSet(StaplerRequest req) {
         boolean failureOnly = Boolean.valueOf(req.getParameter("failureOnly"));
 

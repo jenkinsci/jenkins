@@ -61,6 +61,17 @@ public class ChartUtil {
     /**
      * Generates the graph in PNG format and sends that to the response.
      *
+     * @param defaultSize
+     *      The size of the picture to be generated. These values can be overridden
+     *      by the query paramter 'width' and 'height' in the request.
+     */
+    public static void generateGraph(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
+        generateGraph(req,rsp,chart,defaultSize.width, defaultSize.height);
+    }
+
+    /**
+     * Generates the graph in PNG format and sends that to the response.
+     *
      * @param defaultW
      * @param defaultH
      *      The size of the picture to be generated. These values can be overridden
@@ -81,6 +92,13 @@ public class ChartUtil {
             // not available. send out error message
             rsp.sendRedirect2(req.getContextPath()+"/images/headless.png");
         }
+    }
+
+    /**
+     * Generates the clickable map info and sends that to the response.
+     */
+    public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
+        generateClickableMap(req,rsp,chart,defaultSize.width,defaultSize.height);
     }
 
     /**

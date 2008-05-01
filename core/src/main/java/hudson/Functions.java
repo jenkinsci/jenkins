@@ -26,6 +26,7 @@ import hudson.tasks.Publisher;
 import hudson.security.SecurityRealm;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
+import hudson.util.Area;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.jelly.JellyContext;
@@ -61,6 +62,7 @@ import java.util.TreeMap;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /**
  * Utility functions used in views.
@@ -179,6 +181,17 @@ public class Functions {
         String rest = reqUri.substring(f.getUrl().length());
 
         return new RunUrl( (Run) f.getObject(), head, base, rest);
+    }
+
+    /**
+     * If we know the user's screen resolution, return it. Otherwise null.
+     * @since 1.213
+     */
+    public static Area getScreenResolution() {
+        Cookie res = Functions.getCookie(Stapler.getCurrentRequest(),"screenResolution");
+        if(res!=null)
+            return Area.parse(res.getValue());
+        return null;
     }
 
     /**
