@@ -3,4 +3,6 @@
     Publicize the TCP port number for JNLP slave agents so that they know where to conenct.
   -->
   <st:header name="X-Hudson-JNLP-Port" value="${app.tcpSlaveAgentListener.port}" />
+
+  Hudson
 </j:jelly>
