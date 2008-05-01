@@ -8,7 +8,7 @@
         ${act.displayName}
       </t:summary>
     </j:forEach>
-    <t:summary icon="folder.gif" href="ws/">
+    <t:summary icon="folder.gif" href="ws/" permission="${it.WORKSPACE}">
       ${%Workspace}
     </t:summary>
 

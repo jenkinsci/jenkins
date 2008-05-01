@@ -922,6 +922,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Serves the workspace files.
      */
     public void doWs( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
+        checkPermission(AbstractProject.WORKSPACE);
         FilePath ws = getWorkspace();
         if(!ws.exists()) {
             // if there's no workspace, report a nice error message
@@ -1009,6 +1010,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
 
     public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Permission.UPDATE);
+    public static final Permission WORKSPACE = new Permission(PERMISSIONS, "Workspace", Permission.READ);
     /**
      * Permission to abort a build. For now, let's make it the same as {@link #BUILD}
      */

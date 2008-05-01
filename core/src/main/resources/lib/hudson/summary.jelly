@@ -9,21 +9,25 @@ Attributes:
     where the summary icon links to.
   iconOnly (optional)
     if true, hyperlink will only cover the icon, not the body.
+  permission (optional) 
+  	permission object. If specified, the link will be displayed only if you have a permission
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:if test="${attrs.icon!=null}">
-    <tr>
-      <td>
-        <a href="${attrs.href}">
-          <img src="${h.ifThenElse(icon.startsWith('/'), rootURL+icon, imagesURL+'/48x48/'+icon)}"
-               width="48" height="48" style="margin-right:1em" />
-        </a>
-      </td>
-      <td style="vertical-align:middle">
-        <a href="${h.ifThenElse(attrs.iconOnly==null,attrs.href,null)}">
-          <d:invokeBody />
-        </a>
-      </td>
-    </tr>
+  <j:if test="${h.hasPermission(attrs.permission)}">
+    <j:if test="${attrs.icon!=null}">
+      <tr>
+        <td>
+          <a href="${attrs.href}">
+            <img src="${h.ifThenElse(icon.startsWith('/'), rootURL+icon, imagesURL+'/48x48/'+icon)}"
+                 width="48" height="48" style="margin-right:1em" />
+          </a>
+        </td>
+        <td style="vertical-align:middle">
+          <a href="${h.ifThenElse(attrs.iconOnly==null,attrs.href,null)}">
+            <d:invokeBody />
+          </a>
+        </td>
+      </tr>
+    </j:if>
   </j:if>
 </j:jelly>

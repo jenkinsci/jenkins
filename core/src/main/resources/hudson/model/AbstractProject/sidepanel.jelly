@@ -13,7 +13,7 @@
       <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
       <l:task icon="images/24x24/search.gif"  href="${url}/" title="${%Status}" />
       <l:task icon="images/24x24/notepad.gif" href="${url}/changes" title="${%Changes}" />
-      <l:task icon="images/24x24/folder.gif"  href="${url}/ws/" title="${%Workspace}" />
+      <l:task icon="images/24x24/folder.gif"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}" />
       <j:if test="${it.configurable}">
         <j:if test="${!it.disabled}">
           <l:task icon="images/24x24/clock.gif" href="${url}/build?delay=0sec" title="${%Build Now}" onclick="return build(this)" permission="${it.BUILD}" />
