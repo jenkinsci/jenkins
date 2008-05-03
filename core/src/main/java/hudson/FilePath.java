@@ -357,9 +357,19 @@ public final class FilePath implements Serializable {
      * Creates this directory.
      */
     public void mkdirs() throws IOException, InterruptedException {
-        if(act(new FileCallable<Boolean>() {
+        if(!act(new FileCallable<Boolean>() {
             public Boolean invoke(File f, VirtualChannel channel) throws IOException {
-                return !f.mkdirs() && !f.exists();
+                if(f.mkdirs() || f.exists())
+                    return true;    // OK
+
+                // following Ant <mkdir> task to avoid possible race condition.
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+
+                return f.mkdirs() || f.exists();
             }
         }))
             throw new IOException("Failed to mkdirs: "+remote);
