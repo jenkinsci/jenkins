@@ -924,7 +924,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void doWs( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         checkPermission(AbstractProject.WORKSPACE);
         FilePath ws = getWorkspace();
-        if(!ws.exists()) {
+        if ((ws == null) || (!ws.exists())) {
             // if there's no workspace, report a nice error message
             req.getView(this,"noWorkspace.jelly").forward(req,rsp);
         } else {
