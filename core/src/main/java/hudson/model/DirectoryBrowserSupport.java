@@ -229,7 +229,7 @@ public final class DirectoryBrowserSupport {
         int current=1;
         while(tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            r.add(new Path(createBackRef(total-current+restSize),token,true,0));
+            r.add(new Path(createBackRef(total-current+restSize),token,true,0, true));
             current++;
         }
         return r;
@@ -262,16 +262,26 @@ public final class DirectoryBrowserSupport {
          * File size, or null if this is not a file.
          */
         private final long size;
+        
+        /**
+         * If the current user can read the file. 
+         */
+        private final boolean isReadable;
 
-        public Path(String href, String title, boolean isFolder, long size) {
+        public Path(String href, String title, boolean isFolder, long size, boolean isReadable) {
             this.href = href;
             this.title = title;
             this.isFolder = isFolder;
             this.size = size;
+            this.isReadable = isReadable;
         }
 
         public boolean isFolder() {
             return isFolder;
+        }
+        
+        public boolean isReadable() {
+            return isReadable;
         }
 
         public String getHref() {
@@ -283,7 +293,10 @@ public final class DirectoryBrowserSupport {
         }
 
         public String getIconName() {
-            return isFolder?"folder.gif":"text.gif";
+            if (isReadable)
+                return isFolder?"folder.gif":"text.gif";
+            else
+                return isFolder?"folder-error.gif":"text-error.gif";
         }
 
         public long getSize() {
@@ -320,31 +333,33 @@ public final class DirectoryBrowserSupport {
             List<List<Path>> r = new ArrayList<List<Path>>();
 
             File[] files = cur.listFiles();
-            Arrays.sort(files,new FileComparator());
-
-            for( File f : files ) {
-                Path p = new Path(f.getName(),f.getName(),f.isDirectory(),f.length());
-                if(!f.isDirectory()) {
-                    r.add(Collections.singletonList(p));
-                } else {
-                    // find all empty intermediate directory
-                    List<Path> l = new ArrayList<Path>();
-                    l.add(p);
-                    String relPath = f.getName();
-                    while(true) {
-                        // files that don't start with '.' qualify for 'meaningful files', nor SCM related files
-                        File[] sub = f.listFiles(new FilenameFilter() {
-                            public boolean accept(File dir, String name) {
-                                return !name.startsWith(".") && !name.equals("CVS") && !name.equals(".svn");
-                            }
-                        });
-                        if(sub.length!=1 || !sub[0].isDirectory())
-                            break;
-                        f = sub[0];
-                        relPath += '/'+f.getName();
-                        l.add(new Path(relPath,f.getName(),true,0));
+            if (files != null) {
+                Arrays.sort(files,new FileComparator());
+    
+                for( File f : files ) {
+                    Path p = new Path(f.getName(),f.getName(),f.isDirectory(),f.length(), f.canRead());
+                    if(!f.isDirectory()) {
+                        r.add(Collections.singletonList(p));
+                    } else {
+                        // find all empty intermediate directory
+                        List<Path> l = new ArrayList<Path>();
+                        l.add(p);
+                        String relPath = f.getName();
+                        while(true) {
+                            // files that don't start with '.' qualify for 'meaningful files', nor SCM related files
+                            File[] sub = f.listFiles(new FilenameFilter() {
+                                public boolean accept(File dir, String name) {
+                                    return !name.startsWith(".") && !name.equals("CVS") && !name.equals(".svn");
+                                }
+                            });
+                            if(sub==null || sub.length!=1 || !sub[0].isDirectory())
+                                break;
+                            f = sub[0];
+                            relPath += '/'+f.getName();
+                            l.add(new Path(relPath,f.getName(),true,0, f.canRead()));
+                        }
+                        r.add(l);
                     }
-                    r.add(l);
                 }
             }
 
@@ -412,7 +427,7 @@ public final class DirectoryBrowserSupport {
                 href.append("/");
             }
 
-            Path path = new Path(href.toString(), filePath.getName(), filePath.isDirectory(), filePath.length());
+            Path path = new Path(href.toString(), filePath.getName(), filePath.isDirectory(), filePath.length(), filePath.canRead());
             pathList.add(path);
         }
 

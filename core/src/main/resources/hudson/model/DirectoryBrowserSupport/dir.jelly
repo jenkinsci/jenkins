@@ -31,18 +31,31 @@
                   </td>
                   <td>
                     <j:forEach var="t" items="${f}" varStatus="st">
-                      <a href="${t.href}">${t.title}</a>
+                    
+                      <j:choose>
+                        <j:when test="${x.readable}">
+                          <a href="${t.href}">${t.title}</a>
+                        </j:when>
+                        <j:otherwise>
+                          ${t.title}
+                        </j:otherwise>
+                      </j:choose>
+                      
                       <j:if test="${!st.last}">/</j:if>
                     </j:forEach>
                   </td>
                   <j:if test="${!x.folder}">
                     <td class="fileSize">
                       ${x.getSize()}
-                      <a href="${x.href}/*fingerprint*/">
-                        <img src="${imagesURL}/16x16/fingerprint.gif" alt="fingerprint" />
-                      </a>
-                      <st:nbsp/>
-                      <a href="${x.href}/*view*/">view</a>
+                    </td>
+                    <td>
+                      <j:if test="${x.readable}">
+                        <a href="${x.href}/*fingerprint*/">
+                          <img src="${imagesURL}/16x16/fingerprint.gif" alt="fingerprint" />
+                        </a>
+                        <st:nbsp/>
+                        <a href="${x.href}/*view*/">view</a>
+                      </j:if>                      
                     </td>
                   </j:if>
                 </tr>
