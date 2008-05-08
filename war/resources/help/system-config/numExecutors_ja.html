@@ -1,0 +1,14 @@
+﻿<div>
+  Hudson の同時ビルド数を設定します。この値はシステム全体の負荷に影響を与えます。
+  初期値には，使用しているシステムのプロセッサ数が望ましいです。
+
+  <p>
+  <!-- TODO:誰か訳して -->
+  Increasing this value beyond that would cause each build to take longer, but it could increase
+  the overall throughput, because it allows CPU to build one project while another build is waiting
+  for I/O.
+
+  <p>
+  When using Hudson in the master/slave mode, setting this value to 0 would prevent the master
+  to do any build on its own.
+</div>

@@ -1,0 +1,15 @@
+﻿<div>
+  <!-- TODO:誰か訳して -->
+  For projects that use Maven as the build system. This causes Hudson to
+  invoke Maven with the given goals and options. A non-zero exit code from
+  Maven makes Hudson mark the build as a failure.
+  Some Maven versions have a bug where it doesn't return the exit code correctly.
+
+  <p>
+  Hudson passes <a href="https://hudson.dev.java.net/source/browse/*checkout*/hudson/hudson/main/war/resources/env-vars.html">
+  various environment variables</a> to Maven, which you can acecss from Maven as "${env.VARIABLENAME}".
+
+  <p>
+  The same variables can be used in command-line arguments (as if you are invoking this from shell).
+  For example, you can specify <tt>-DresultsFile=${WORKSPACE}/${BUILD_TAG}.results.txt</tt>
+</div>
