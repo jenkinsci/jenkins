@@ -702,6 +702,22 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Rename this file/directory to the target filepath.  This FilePath and the target must
+     * be on the some host
+     */
+    public void renameTo(final FilePath target) throws IOException, InterruptedException {
+    	if(this.channel != target.channel) {
+    		throw new IOException("renameTo target must be on the same host");
+    	}
+        act(new FileCallable<Void>() {
+            public Void invoke(File f, VirtualChannel channel) throws IOException {
+            	f.renameTo(new File(target.remote));
+                return null;
+            }
+        });
+    }
+
+    /**
      * Copies this file to the specified target.
      */
     public void copyTo(FilePath target) throws IOException, InterruptedException {
