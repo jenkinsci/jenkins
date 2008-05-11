@@ -1,13 +1,14 @@
 ﻿<div>
   Hudson の同時ビルド数を設定します。この値はシステム全体の負荷に影響を与えます。
-  初期値には，使用しているシステムのプロセッサ数が望ましいです。
+  初期値には、使用しているシステムのプロセッサ数が望ましいです。
 
   <p>
   <!-- TODO:誰か訳して -->
-  Increasing this value beyond that would cause each build to take longer, but it could increase
-  the overall throughput, because it allows CPU to build one project while another build is waiting
-  for I/O.
+  プロセッサ数以上にこの値を増やすと、個々のビルドにかかる時間は長くなりますが、
+  全体でのスループットを増加することができます。なぜなら、あるビルドがI/O待ちをしている間に、
+  CPUは別のプロジェクトをビルドできるからです。
 
   <p>
-  マスタ/スレーブ モードでHudsonを使用する場合、この値を0に設定することはマスタがビルドすることを防ぐでしょう。
+  マスタ/スレーブ モードでHudsonを使用する場合、
+  この値を0に設定するとマスタ自身はビルドしないようになります。
 </div>
