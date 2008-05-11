@@ -359,7 +359,9 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
                 doSetName(newName);
                 File newRoot = this.getRootDir();
 
-                {// rename data files
+                boolean success = false;
+
+                try {// rename data files
                     boolean interrupted=false;
                     boolean renamed = false;
 
@@ -406,6 +408,12 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
                             e.printStackTrace();
                         }
                     }
+
+                    success = true;
+                } finally {
+                    // if failed, back out the rename.
+                    if(!success)
+                        doSetName(oldName);
                 }
 
                 parent.onRenamed((TopLevelItem)this,oldName,newName);
