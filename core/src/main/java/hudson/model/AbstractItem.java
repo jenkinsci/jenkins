@@ -15,6 +15,7 @@ import java.util.Collection;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.HttpDeletable;
 
 import javax.servlet.ServletException;
 
@@ -26,7 +27,7 @@ import javax.servlet.ServletException;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
-public abstract class AbstractItem extends Actionable implements Item {
+public abstract class AbstractItem extends Actionable implements Item, HttpDeletable {
     /**
      * Project name.
      */
@@ -211,6 +212,10 @@ public abstract class AbstractItem extends Actionable implements Item {
         checkPermission(DELETE);
         delete();
         rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
+    }
+
+    public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        doDoDelete(req,rsp);
     }
 
     /**
