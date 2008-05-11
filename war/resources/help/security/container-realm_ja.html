@@ -1,16 +1,15 @@
-<div><!-- TODO 誰か訳して! -->
-  Use the servlet container to authenticate users, as per defined by the servlet spec.
-  This is historically what Hudson has been doing up to 1.163. It is useful mainly
-  for the following situations:
+<div>
+  サーブレットコンテナーによるサーブレット仕様に基づいたユーザー認証を使用します。
+  この認証は、Hudson 1.163まで使用してきた認証です。
+  主に、次のような状況で便利です。
 
   <ol>
     <li>
-      You've been using Hudson before 1.164 and would like to keep its behavior.
+      1.164以前からHudsonを使用していて、そのまま使用したい場合。
     </li>
     <li>
-      You've already configured your container with the right security realm and
-      prefer Hudson to just use it. (sometimes the container offers better documentation
-      or custom implementations to connect to a specific user realm.) 
+      既にコンテナーにセキュリティ・レルムを構築済みで、Hudsonではそれを使用したい場合
+      (良質なドキュメントや、独自のユーザー・レルムに接続する実装を提供するコンテナーもあります)。
     </li>
   </ol>
 </div>
