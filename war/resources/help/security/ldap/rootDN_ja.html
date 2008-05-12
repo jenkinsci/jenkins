@@ -1,17 +1,17 @@
-<div><!-- TODO 誰か訳して! -->
-    For authenticating user and determing the roles given to this user, Hudson performs
-    multiple LDAP queries.
+<div>
+    ユーザーを認証し、このユーザーに割り当てられた権限を決定するために、
+    Hudsonは複数のLDAPクエリーを発行します。
 
-    Since an LDAP database is conceptually a big tree and the search is performed recursively,
-    in theory if we can start a search starting at a sub-node (as opposed to root), you get
-    a better performance because it narrows down the scope of a search.
-    This field specifies the DN of such a subtree.
+    LDAPのデータベースは、概念的に巨大な木構造で再帰的に検索するので、
+    理論上ルートではなくサブノードから検索できれば、検索する範囲を絞れるので、
+    より良いパフォーマンスを得ることができます。
+    この項目には、そのサブノードのDN(識別名)を指定します。
+
+    <p><!-- TODO 誰かチェックして! -->
+    実際には、LDAPサーバーはデータ上に豊富なインデックスを持っているので、
+    この項目の値が必要になるのはまれです。
+    &mdash; LDAPと通信して、Hudsonがこの値を自動的に取得できるようにすべきです。
 
     <p>
-    But in practice, LDAP servers maintain an extensive index over the data, so specifying
-    this field is rarely necessary &mdash; you should just let Hudson figure this out
-    by talking to LDAP.
-
-    <p>
-    If you do specify this value, the field normally looks something like <tt>"dc=sun,dc=com"</tt>
+    この値を設定する場合は、通常、<tt>"dc=sun,dc=com"</tt>のようなものになります。
 </div>
