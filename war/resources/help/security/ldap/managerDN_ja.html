@@ -1,17 +1,19 @@
-<div><!-- TODO 誰か訳して! -->
-  If your LDAP server doesn't support <a href="http://www.google.com/?q=LDAP+anonymous+bind">anonymous binding</a>
-  (IOW, if your LDAP server doesn't even allow a query without authentication),
-  then Hudson would have to first authenticate itself against the LDAP server,
-  and Hudson does that by sending "manager" DN and password.
+<div>
+  LDAPサーバーが<a href="http://www.google.com/search?q=LDAP+anonymous+bind">匿名バインド</a>をサポートしない場合
+  (言い換えると、LDAPサーバーが認証なしのクエリーを許可しない場合)、
+  Hudsonは。最初にLDAPサーバーに対して自分自身の認証を行う必要があるので、
+  "管理者"のDNとパスワードをLDAPセーバーに送信します。
 
   <p>
-  A DN typically looks like <tt>CN=MyUser,CN=Users,DC=mydomain,DC=com</tt>
-  although the exact sequence of tokens depends on the LDAP server configuration.
+  DNは、正確な並びはLDAPサーバーの設定に依存しますが、
+  一般的に<tt>CN=MyUser,CN=Users,DC=mydomain,DC=com</tt>のようなものです。
+  <!-- TODO 誰か訳して! -->
   It can be any valid DN as long as LDAP allows this user to query data.
 
   <p>
-  This configuration is also useful when you are connecting to Active Directory
-  from a Unix machine, as AD doesn't allow anonymous bind by default. But
-  if you can't figure this out, you can also change AD setting to allow
-  anonymous bind. See <a href="http://www.novell.com/coolsolutions/appnote/15120.html">this document</a> for how to.
+  Active Directory(AD)はデフォルトでは匿名バインドを許可していないので、
+  UnixマシーンからADに接続するときにも便利です。
+  この設定が分からないのであれば、匿名バインドを許可するようにADの設定を変更することもできます。
+  変更方法については、
+  <a href="http://www.novell.com/coolsolutions/appnote/15120.html">このドキュメント</a>を参照してください。
 </div>
