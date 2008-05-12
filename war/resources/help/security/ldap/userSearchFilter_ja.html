@@ -1,12 +1,13 @@
-<div><!-- TODO 誰か訳して! -->
-    One of the searches Hudson does on LDAP is to locate the user record given the user name.
+<div>
+    Hudsonが行うLDAPの検索の1つに、与えられたユーザー名を持つユーザーレコードの検索があります。
 
     <p>
-    This field determines the query to be run to identify the user record. The query is
-    almost always <tt>"uid={0}"</tt> as per defined in <a href="http://www.ietf.org/rfc/rfc2798.txt">RFC 2798</a>,
-    so in most cases you should leave this field empty and let this default kick in.
+    この項目は、ユーザーレコードを特定するクエリーを決めます。
+    <a href="http://www.ietf.org/rfc/rfc2798.txt">RFC 2798</a>で定義により、
+    多くの場合、クエリーには<tt>"uid={0}"</tt>を使用するので、
+    多くの場合この項目を空欄のままにして、デフォルトのまま動作するようにします。
 
     <p>
-    If you do specify a different query, specify an LDAP query string with marker token "{0}",
-    which is to be replaced by the user name string entered by the user.
+    異なるクエリーを指定する場合、"{0}"を使ったLDAPクエリー文字列を指定します。
+    "{0}"は、ユーザーが入力したユーザー名で置き換えられます。
 </div>
