@@ -53,6 +53,14 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     /**
      * Performs monitoring of the given computer object.
      * This method is invoked periodically to perform the monitoring of the computer.
+     *
+     * @return
+     *      Application-specific value that represents the observed monitoring value
+     *      on the given node. This value will be returned from the {@link #get(Computer)} method.
+     *      If null is returned, it will be interpreted as "no observed value." This is
+     *      convenient way of abandoning the observation on a particular computer,
+     *      whereas {@link IOException} is useful for indicating a hard error that needs to be
+     *      corrected.
      */
     protected abstract T monitor(Computer c) throws IOException,InterruptedException;
 
