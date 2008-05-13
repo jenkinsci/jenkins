@@ -6,6 +6,7 @@ import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.jelly.JellyClassTearOff;
+import net.sf.json.JSONObject;
 
 /**
  * {@link Descriptor} for {@link MavenReporter}.
@@ -41,7 +42,16 @@ public abstract class MavenReporterDescriptor extends Descriptor<MavenReporter> 
      * If {@link #hasConfigScreen() the reporter has no configuration screen},
      * this method can safely return null, which is the default implementation.
      */
+    @Deprecated
     public MavenReporter newInstance(StaplerRequest req) throws FormException {
+        return null;
+    }
+
+    /**
+     * If {@link #hasConfigScreen() the reporter has no configuration screen},
+     * this method can safely return null, which is the default implementation.
+     */
+    public MavenReporter newInstance(StaplerRequest req, JSONObject formData) throws FormException {
         return null;
     }
 
