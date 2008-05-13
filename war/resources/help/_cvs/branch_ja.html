@@ -1,0 +1,10 @@
+<div><!--  TODO 誰か訳して! -->
+  設定すると、特定のブランチをビルドするために、Hudsonは<tt>-r</tt>オプションを使用してcvsを起動します。
+  空欄のままにするとトランクをビルドします。
+
+  <p>
+  Normally, Hudson runs cvs check-out and update with the <tt>-D date</tt> option
+  to make sure it gets a coherent snapshot of the repository and better build
+  reproducibility, but this interferes if the branch name specified here is actually
+  a tag name. Telling Hudson that the name is a tag would fix this problem.
+</div>
