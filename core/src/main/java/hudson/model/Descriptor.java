@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
  * Metadata about a configurable instance.
@@ -126,7 +127,7 @@ public abstract class Descriptor<T extends Describable<T>> {
         try {
             Method m = getClass().getMethod("newInstance", StaplerRequest.class);
 
-            if(m.getDeclaringClass()!=Descriptor.class) {
+            if(!Modifier.isAbstract(m.getDeclaringClass().getModifiers())) {
                 // this class overrides newInstance(StaplerRequest).
                 // maintain the backward compatible behavior
                 return newInstance(req);
