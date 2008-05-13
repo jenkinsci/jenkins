@@ -4,7 +4,6 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.FilePath.FileCallable;
 import hudson.model.Computer;
-import hudson.model.Descriptor;
 import hudson.remoting.VirtualChannel;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -61,7 +60,12 @@ public class DiskSpaceMonitor extends NodeMonitor {
 
     private static final class GetUsableSpace implements FileCallable<Long> {
         public Long invoke(File f, VirtualChannel channel) throws IOException {
-            return f.getUsableSpace();
+            try {
+                return f.getUsableSpace();
+            } catch (LinkageError e) {
+                // pre-mustang
+                return null;
+            }
         }
         private static final long serialVersionUID = 1L;
     }
