@@ -150,7 +150,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         StaplerRequest request = Stapler.getCurrentRequest();
         if(request==null)
             throw new IllegalStateException("Not processing a HTTP request");
-        return Util.encodeRFC2396(request.getRootPath()+'/'+getUrl());
+        return Util.encode(request.getRootPath()+'/'+getUrl());
     }
 
     /**
