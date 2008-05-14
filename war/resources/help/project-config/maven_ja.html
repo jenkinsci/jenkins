@@ -1,15 +1,14 @@
 ﻿<div>
-  <!-- TODO:誰か訳して -->
-  For projects that use Maven as the build system. This causes Hudson to
-  invoke Maven with the given goals and options. A non-zero exit code from
-  Maven makes Hudson mark the build as a failure.
-  Some Maven versions have a bug where it doesn't return the exit code correctly.
+  Mavenをビルドシステムとして使用するプロジェクト向けです。
+  Hudsonは、与えられたゴールとオプションとともにMavenを起動します。
+  Mavenが0でない終了コードを返すと、Hudsonはビルドが失敗したと判断します。
+  Mavenのあるバージョンは、終了コードを適切に返さないバグがあります。
 
   <p>
-  Hudson passes <a href="https://hudson.dev.java.net/source/browse/*checkout*/hudson/hudson/main/war/resources/env-vars.html">
-  various environment variables</a> to Maven, which you can acecss from Maven as "${env.VARIABLENAME}".
+  HudsonはMavenに、<a href="https://hudson.dev.java.net/source/browse/*checkout*/hudson/hudson/main/war/resources/env-vars.html">
+  利用可能な環境変数</a> を渡します。Mavenでは"${env.VARIABLENAME}"として参照できます。
 
   <p>
-  The same variables can be used in command-line arguments (as if you are invoking this from shell).
-  For example, you can specify <tt>-DresultsFile=${WORKSPACE}/${BUILD_TAG}.results.txt</tt>
+  同じ変数を、コマンドラインの引数で使用することができます(シェルから起動しているかのように)。
+  例えば、<tt>-DresultsFile=${WORKSPACE}/${BUILD_TAG}.results.txt</tt>のように指定できます。
 </div>
