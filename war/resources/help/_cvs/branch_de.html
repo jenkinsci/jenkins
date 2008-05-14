@@ -1,0 +1,11 @@
+<div>
+  Wenn gesetzt, führt Hudson CVS mit der Option <tt>-r</tt> aus, um einen
+  bestimmten Zweig (branch) zu bauen. Wenn leer, wird Hudson die Hauptlinie (trunk)
+  bauen.
+  <p>
+  Im Regelfall startet Hudson CVS check-out und update mit der Option <tt>-D date</tt>,
+  um kohärente Schnappschüsse des Repositories und damit reproduzierbare Builds sicherzustellen.
+  Dies kann allerdings problematisch werden, falls der hier angegebene Name des Zweigs
+  der Name eines Tags ist. Hudson mitzuteilen, dass es sich um einen Tag-Namen handelt,
+  würde das Problem lösen.
+</div>
