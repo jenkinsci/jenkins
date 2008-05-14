@@ -57,7 +57,7 @@ public class MavenArtifactArchiver extends MavenReporter {
                 }
             }
 
-            // deleted too much
+            // record the action
             build.executeAsync(new MavenBuildProxy.BuildCallable<Void,IOException>() {
                 public Void call(MavenBuild build) throws IOException, InterruptedException {
                     MavenArtifactRecord mar = new MavenArtifactRecord(build,pomArtifact,mainArtifact,attachedArtifacts);
