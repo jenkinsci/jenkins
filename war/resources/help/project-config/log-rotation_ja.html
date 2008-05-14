@@ -1,19 +1,16 @@
-﻿<div>
-  <!-- TODO:誰か訳して -->
-  This controls the disk consumption of Hudson by managing how long you'd like to keep
-  records of the builds (such as console output, build artifacts, and so on.)
-  Hudson offers two criteria:
+<div>
+  (コンソールログ、成果物など) ビルドの記録の保存期間を管理して、
+  Hudsonが消費するディスク容量を調整します。
+  Hudsonでは次の2つの条件を提供します。
 
-  <ol>
+  <ol><!-- TODO Driven by XXXの訳がイマイチ -->
     <li>
-      Driven by age. You can have Hudson delete a record if it reaches a certain age
-      (for example, 7 days old.)
+      期間ドリブン。一定の期間(例 7日間)になったら記録を削除します。
     <li>
-      Driven by number. You can have Hudson make sure that it only maintains up to
-      N build records. If a new build is started, the oldest record will
-      be simply removed.
+      世代ドリブン。N個のビルドの記録のみ保持するようにします。
+      新規のビルドが開始したら、一番古い記録を削除します。
   </ol>
 
-  Hudson also allows you to mark an individual build as 'Keep this log forever', to
-  exclude certain important builds from being discarded automatically.
+  個々のビルドを、'このログをずっと保持する'としてマークすることで、
+  特定の重要なビルドを自動削除からはずすことができます。
 </div>
