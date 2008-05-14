@@ -5,8 +5,10 @@ import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
+import hudson.maven.MavenBuild;
 import hudson.model.BuildListener;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
@@ -54,6 +56,18 @@ public class MavenArtifactArchiver extends MavenReporter {
                     attachedArtifacts.add(ma);
                 }
             }
+
+            // deleted too much
+            build.executeAsync(new MavenBuildProxy.BuildCallable<Void,IOException>() {
+                public Void call(MavenBuild build) throws IOException, InterruptedException {
+                    MavenArtifactRecord mar = new MavenArtifactRecord(build,pomArtifact,mainArtifact,attachedArtifacts);
+                    build.addAction(mar);
+
+                    mar.recordFingerprints();
+
+                    return null;
+                }
+            });
         }
 
         return true;
