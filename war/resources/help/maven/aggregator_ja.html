@@ -1,0 +1,20 @@
+<div><!-- TODO:誰か訳して -->
+  <p>
+  If checked, Hudson will run individual module builds as separate builds. On a project
+  with a large number of modules, or on a project where modules take a long time to build,
+  setting this option to true may speed up the whole build, as different modules can be built
+  in parallel.
+
+  <p>
+  Otherwise, leave it unchecked and Hudson will build this maven project like you'd normally
+  do from command line.
+
+  <p>
+  When your build uses "aggregator-style" multi-module aware mojos, you'd have to leave this
+  option unchecked so that the mojo will have access to all of your modules.
+
+  <p>
+  Historically, this has been the default mode of the native maven project up until Hudson 1.133.
+  So if your project was created before that, you might want to uncheck this.
+
+</div>
