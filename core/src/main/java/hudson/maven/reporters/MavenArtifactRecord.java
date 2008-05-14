@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * {@link Action} that remembers {@link MavenArtifact artifact}s that are built.
  *
- * Dfines the methods and UIs to do (delayed) deployment and installation. 
+ * Defines the methods and UIs to do (delayed) deployment and installation. 
  *
  * @author Kohsuke Kawaguchi
  * @see MavenArtifactArchiver
