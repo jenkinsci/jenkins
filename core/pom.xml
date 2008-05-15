@@ -269,6 +269,11 @@
       <version>1.1.6-hudson-3</version>
     </dependency>
     <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>trilead-putty-extension</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
       <groupId>${groupId}</groupId>
       <artifactId>maven-agent</artifactId>
       <version>${project.version}</version>
