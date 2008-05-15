@@ -36,7 +36,7 @@
         </s:entry>
 
 		    <s:block>
-		      <input type="submit" name="Submit" value="OK" id="ok" disabled="true" style="margin-left:5em" />
+		      <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
 		    </s:block>
       </s:form>
       <script><![CDATA[
