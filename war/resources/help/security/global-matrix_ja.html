@@ -1,18 +1,19 @@
-<div><!-- TODO 誰か訳して! -->
-  In this scheme, you can configure who can do what by using a big table.
+<div>
+  大きな表形式で、誰が何をできるのか設定します。
 
   <p>
-  Each column represents a permission. Hover the mouse over the permission names to get
-  more information about what they represent.
+  各列はパーミッションを表します。パーミッション名の上にマウスをあわせると、
+  そのパーミッションの詳細が表示されます。
 
   <p>
-  Each row represents a user or a group (often called 'role', depending on the security realm.)
-  This includes a special user 'anonymous', which represents unauthenticated users.
-  Use the text box below the table to add new users/groups/roles to the table, and click the
-  <tt>[x]</tt> icon to remove it from the table.
+  各行はユーザーかグループ(セキュリティ・レルムでは、'ロール'とも呼ばれます)を表します。
+  行には、特別なユーザーである'匿名ユーザー'を含みます。
+  このユーザーは、認証されていないユーザーを表します。
+  表の下にあるテキストボックスを使用して、ユーザー/グループ/ロールを表に追加し、
+  <tt>[x]</tt> のアイコンをクリックすると、表から削除します。
 
   <p>
-  Permissions are additive. That is, if an user X is in group A, B, and C, then
-  the permissions that this user actually has are the union of all permissions given to
-  X, A, B, C, and anonymous.
+  パーミッションは追加式です。つまり、ユーザーXがグループA、B、Cに所属しているなら、
+  このユーザーが実際に持つパーミッションは、
+  ユーザーX、グループA、B、Cおよび匿名ユーザーに与えられた全てのパーミッションの和になります。
 </div>
