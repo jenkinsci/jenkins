@@ -1,55 +1,54 @@
-﻿<div>
+<div>
   <!-- TODO:誰か訳して -->
-  This field follows the syntax of cron (with minor differences).
-  Specifically, each line consists of 5 fields separated by TAB or whitespace:
+  この項目は、クーロンの書式に従います(多少違いはありますが)。
+  具体的には、各行はTABかスペースで区切った5つの項目から成ります。
   <pre>MINUTE HOUR DOM MONTH DOW</pre>
   <table>
     <tr>
       <td>MINUTE</td>
-      <td>Minutes within the hour (0-59)</td>
+      <td>分 (0-59)。</td>
     </tr>
     <tr>
       <td>HOUR</td>
-      <td>The hour of the day (0-23)</td>
+      <td>時 (0-23)。</td>
     </tr>
     <tr>
       <td>DOM</td>
-      <td>The day of the month (1-31)</td>
+      <td>日 (1-31)。</td>
     </tr>
     <tr>
       <td>MONTH</td>
-      <td>The month (1-12)</td>
+      <td>月 (1-12)。</td>
     </tr>
     <tr>
       <td>DOW</td>
-      <td>The day of the week (0-7) where 0 and 7 are Sunday.</td>
+      <td>曜日 (0-7) 0と7は日曜日。</td>
     </tr>
   </table>
   <p>
-    To specify multiple values for one field, the following operators are
-    available. In the order of precedence,
+    １つの項目に複数の値を設定するには、次の演算子を使用できます。優先度の順に、
   </p>
   <ul>
-    <li>'*' can be used to specify all valid values.</li>
-    <li>'M-N' can be used to specify a range, such as "1-5"</li>
-    <li>'M-N/X' or '*/X' can be used to specify skips of X's value through the range,
-        such as "*/15" in the MINUTE field for "0,15,30,45" and "1-6/2" for "1,3,5"</li>
-    <li>'A,B,...,Z' can be used to specify multiple values, such as "0,30" or "1,3,5"</li>
+    <li>'*'は、全ての有効な値を指定します。</li>
+    <li>'M-N'は、"1-5"のような範囲を指定します。</li>
+    <li>'M-N/X'や'*/X'は、例えば、分の項目で"0,15,30,45"の代わりに"*/15"を、
+        "1,3,5"の代わりに"1-6/2"のように、その範囲内でXだけスキップします。</li>
+    <li>'A,B,...,Z'は、"0,30"や"1,3,5"のように複数の値を指定します。</li>
   </ul>
   <p>
-    Empty lines and lines that start with '#' will be ignored as comments.
+    空行や'#'で始まる行はコメントとして無視されます。
   </p><p>
-    In addition, '@yearly', '@annually', '@monthly', '@weekly', '@daily', '@midnight',
-    and '@hourly' are supported.
+    さらに、'@yearly'(年に1回)、'@annually'(年に1回)、'@monthly'(月に1回)、'@weekly'(週に1回)、'@daily'(日に1回)、
+    '@midnight'(日に1回)、および'@hourly'(時間に1回)をサポートします。
   </p>
   <table>
     <tr>
-      <td>Examples</td>
+      <td>例</td>
       <td>
 <pre>
-# every minute
+# 1分ごとに
 * * * * *
-# every 5 mins past the hour 
+# 毎時5分
 5 * * * *
 </pre>
       </td>
