@@ -65,6 +65,7 @@ import hudson.util.TextFile;
 import hudson.util.XStream2;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
+import net.sf.json.JSONArray;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
@@ -178,7 +179,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * <p>
      * Intuitively, this corresponds to the user database.
      *
-     * See {@link HudsonFilter} for the concrete authentication protocol. 
+     * See {@link HudsonFilter} for the concrete authentication protocol.
      *
      * Never null. Always use {@link #setSecurityRealm(SecurityRealm)} to
      * update this field.
@@ -394,7 +395,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /**
      * Returns a secret key that survives across container start/stop.
      * <p>
-     * This value is useful for implementing some of the security features. 
+     * This value is useful for implementing some of the security features.
      */
     public String getSecretKey() {
         return  secretKey;
@@ -1310,7 +1311,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             authorizationStrategy = AuthorizationStrategy.UNSECURED;
             setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
         }
-        
+
 
         LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
     }
@@ -1417,29 +1418,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 }
             }
 
-            numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
             quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
-
-            {// update slave list
-                List<Slave> newSlaves = new ArrayList<Slave>();
-                String[] names = req.getParameterValues("slave.name");
-                if(names!=null) {
-                    for(int i=0;i< names.length;i++) {
-                        newSlaves.add(req.bindParameters(Slave.class,"slave.",i));
-                    }
-                }
-                this.slaves = newSlaves;
-                updateComputerList();
-
-                // label trim off
-                for (Label l : labels.values()) {
-                    l.reset();
-                    if(l.getNodes().isEmpty())
-                        labels.remove(l);
-                }
-            }
 
             {// update JDK installations
                 jdks.clear();
@@ -1474,6 +1455,84 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 result &= d.configure(req);
 
             save();
+            if(result)
+                rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
+            else
+                rsp.sendRedirect("configure"); // back to config
+        } catch (FormException e) {
+            sendError(e,req,rsp);
+        }
+    }
+
+    /**
+     * Accepts submission from the configuration page.
+     */
+    public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        try {
+            checkPermission(ADMINISTER);
+
+            req.setCharacterEncoding("UTF-8");
+
+            JSONObject json = StructuredForm.get(req);
+
+            numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
+
+            {
+                // update slave list
+                Object src = json.get("slaves");
+                ArrayList<Slave> r = new ArrayList<Slave>();
+                if (src instanceof JSONObject) {
+                    JSONObject j = (JSONObject) src;
+                    final Slave slave = req.bindJSON(Slave.class, j);
+                    String clazz = j.get("startMethodClass").toString();
+                    for (Descriptor<SlaveStartMethod> d: SlaveStartMethod.LIST) {
+                        if (d.getClass().getName().equals(clazz)) {
+                            slave.setStartMethod(d.newInstance(req, j.getJSONObject("startMethod")));
+                            break;
+                        }
+                    }
+                    r.add(slave);
+                }
+                if (src instanceof JSONArray) {
+                    JSONArray a = (JSONArray) src;
+                    for (Object o : a) {
+                        if (o instanceof JSONObject) {
+                            JSONObject j = (JSONObject) o;
+                            String clazz = j.get("startMethodClass").toString();
+                            SlaveStartMethod startMethod = null;
+                            for (Descriptor<SlaveStartMethod> d: SlaveStartMethod.LIST) {
+                                if (d.getClass().getName().equals(clazz)) {
+                                    startMethod = d.newInstance(req, j.getJSONObject("startMethod"));
+                                    break;
+                                }
+                            }
+
+                            j.remove("startMethod");
+                            j.remove("startMethodClass");
+
+                            System.out.println("j = " + j);
+
+                            final Slave slave = req.bindJSON(Slave.class, j);
+                            slave.setStartMethod(startMethod);
+                            r.add(slave);
+                        }
+                    }
+                }
+                this.slaves = r;
+                updateComputerList();
+
+                // label trim off
+                for (Label l : labels.values()) {
+                    l.reset();
+                    if(l.getNodes().isEmpty())
+                        labels.remove(l);
+                }
+            }
+
+            boolean result = true;
+
+            save();
+
             if(result)
                 rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
             else
@@ -1920,7 +1979,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         PrintWriter w = rsp.getWriter();
         w.println("Shutting down");
         w.close();
-        
+
         System.exit(0);
     }
 
@@ -2384,7 +2443,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /**
      * Prefix to static resources like images and javascripts in the war file.
      * Either "" or strings like "/static/VERSION", which avoids Hudson to pick up
-     * stale cache when the user upgrades to a different version. 
+     * stale cache when the user upgrades to a different version.
      */
     public static String RESOURCE_PATH;
 

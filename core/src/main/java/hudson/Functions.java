@@ -1,21 +1,7 @@
 package hudson;
 
 import hudson.maven.ExecutedMojo;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.Items;
-import hudson.model.Job;
-import hudson.model.JobPropertyDescriptor;
-import hudson.model.ModelObject;
-import hudson.model.Node;
-import hudson.model.Project;
-import hudson.model.Run;
-import hudson.model.TopLevelItem;
-import hudson.model.View;
+import hudson.model.*;
 import hudson.search.SearchableModelObject;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
@@ -259,6 +245,10 @@ public class Functions {
 
     public static Node.Mode[] getNodeModes() {
         return Node.Mode.values();
+    }
+
+    public static Node.Availability[] getNodeAvailabilities() {
+        return Node.Availability.values();
     }
 
     public static String getProjectListString(List<Project> projects) {
@@ -505,6 +495,10 @@ public class Functions {
 
     public static List<Descriptor<Publisher>> getPublisherDescriptors(AbstractProject<?,?> project) {
         return BuildStepDescriptor.filter(BuildStep.PUBLISHERS, project.getClass());
+    }
+
+    public static List<Descriptor<SlaveStartMethod>> getSlaveStartMethodDescriptors() {
+        return SlaveStartMethod.LIST;
     }
 
     /**

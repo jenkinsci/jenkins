@@ -12,10 +12,6 @@
       <s:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
         <s:textarea name="system_message" value="${it.systemMessage}" />
       </s:entry>
-      <s:entry title="${%# of executors}" help="/help/system-config/numExecutors.html">
-        <input type="text" name="numExecutors" class="setting-input number"
-          value="${it.numExecutors}"/>
-      </s:entry>
       <s:entry title="${%Quiet period}" help="/help/project-config/quietPeriod.html">
         <input class="setting-input number" name="quiet_period"
           type="text" value="${it.quietPeriod}"/>
@@ -55,55 +51,6 @@
           </table>
         </s:entry>
       </s:optionalBlock>
-
-
-      <s:section title="${%Master/Slave Support}">
-        <s:entry title="${%Slaves}"
-          description="${%slaves.description}">
-          <s:repeatable var="s" items="${it.slaves}" name="slaves">
-            <table width="100%">
-              <s:entry title="${%name}" help="/help/system-config/master-slave/name.html">
-                <s:textbox name="slave.name" value="${s.nodeName}" 
-                	checkUrl="'fieldCheck?errorText='+escape('${%Name is mandatory}')+'&amp;value='+escape(this.value)"/>
-              </s:entry>
-
-              <s:entry title="${%launch command}" help="/help/system-config/master-slave/command.html">
-                <s:textbox name="slave.command" value="${s.command}"/>
-              </s:entry>
-
-              <s:entry title="${%description}" help="/help/system-config/master-slave/description.html">
-                <s:textbox name="slave.description" value="${s.nodeDescription}" />
-              </s:entry>
-              <s:entry title="${%# of executors}" help="/help/system-config/master-slave/numExecutors.html">
-                <s:textbox name="slave.numExecutors" value="${s.numExecutors}" 
-                  checkUrl="'fieldCheck?errorText='+escape('${%Number of executors is mandatory.}')+'&amp;type=number-positive&amp;value='+escape(this.value)"/>
-              </s:entry>
-              <s:entry title="${%remote FS root}" help="/help/system-config/master-slave/remoteFS.html">
-                <s:textbox name="slave.remoteFS" value="${s.remoteFS}" 
-                	checkUrl="'fieldCheck?errorText='+escape('${%Remote directory is mandatory.}')+'&amp;value='+escape(this.value)"/>
-              </s:entry>
-
-              <s:entry title="${%usage}" help="/help/system-config/master-slave/usage.html">
-                <select class="setting-input" name="slave.mode">
-                  <j:forEach var="m" items="${h.getNodeModes()}">
-                    <s:option value="${m.name}" selected="${m==s.mode}">${m.description}</s:option>
-                  </j:forEach>
-                </select>
-              </s:entry>
-
-              <s:entry title="${%labels}" help="/help/system-config/master-slave/label.html">
-                <s:textbox name="slave.label" value="${s.labelString}" />
-              </s:entry>
-
-              <s:entry title="">
-                <div align="right">
-                  <s:repeatableDeleteButton />
-                </div>
-              </s:entry>
-            </table>
-          </s:repeatable>
-        </s:entry>
-      </s:section>
 
       <s:section title="${%JDKs}">
         <s:entry title="${%JDK installations}"

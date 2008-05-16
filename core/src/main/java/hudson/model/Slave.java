@@ -23,6 +23,7 @@ import hudson.util.StreamCopyThread;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -36,15 +37,12 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+
+import net.sf.json.JSONObject;
 
 /**
  * Information about a Hudson slave node.
@@ -79,10 +77,38 @@ public final class Slave implements Node, Serializable {
     private Mode mode;
 
     /**
-     * Command line to launch the agent, like
-     * "ssh myslave java -jar /path/to/hudson-remoting.jar"
+     * Slave availablility strategy.
      */
-    private String agentCommand;
+    private Availability onlineAvailability;
+
+    /**
+     * Number of minutes when the slave is required to be on-line before bringing the slave on-line.
+     * Only used with {@link #onlineAvailability} == {@link hudson.model.Node.Availability#DEMAND}
+     */
+    private int demandPeriod = 5;
+
+    /**
+     * Number of minutes when the slave is idle before bringing the slave off-line.
+     * Only used with {@link #onlineAvailability} == {@link hudson.model.Node.Availability#DEMAND}
+     */
+    private int idlePeriod = 10;
+
+    /**
+     * Cron spec for starting up the slave.
+     * Only used with {@link #onlineAvailability} == {@link hudson.model.Node.Availability#SCHEDULED}
+     */
+    private String startupSpec = "";
+
+    /**
+     * Cron spec for shutting down the slave.
+     * Only used with {@link #onlineAvailability} == {@link hudson.model.Node.Availability#SCHEDULED}
+     */
+    private String shutdownSpec = "";
+
+    /**
+     * The starter that will startup this slave.
+     */
+    private SlaveStartMethod startMethod;
 
     /**
      * Whitespace-separated labels.
@@ -100,15 +126,19 @@ public final class Slave implements Node, Serializable {
     /**
      * @stapler-constructor
      */
-    public Slave(String name, String description, String command, String remoteFS, String numExecutors, Mode mode,
-                 String label) throws FormException {
+    public Slave(String name, String description, String remoteFS, String numExecutors,
+                 Mode mode, String label, Availability onlineAvailability) throws FormException {
         this.name = name;
         this.description = description;
         this.numExecutors = Util.tryParseNumber(numExecutors, 1).intValue();
         this.mode = mode;
-        this.agentCommand = command;
         this.remoteFS = remoteFS;
         this.label = Util.fixNull(label).trim();
+        this.onlineAvailability = onlineAvailability;
+        this.demandPeriod = demandPeriod;
+        this.idlePeriod = idlePeriod;
+        this.startupSpec = startupSpec;
+        this.shutdownSpec = shutdownSpec;
         getAssignedLabels();    // compute labels now
 
         if (name.equals(""))
@@ -126,8 +156,12 @@ public final class Slave implements Node, Serializable {
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
 
-    public String getCommand() {
-        return agentCommand;
+    public SlaveStartMethod getStartMethod() {
+        return startMethod == null ? new JNLPStartMethod() : startMethod;
+    }
+
+    public void setStartMethod(SlaveStartMethod startMethod) {
+        this.startMethod = startMethod;
     }
 
     public String getRemoteFS() {
@@ -148,6 +182,26 @@ public final class Slave implements Node, Serializable {
 
     public Mode getMode() {
         return mode;
+    }
+
+    public Availability getOnlineAvailability() {
+        return onlineAvailability;
+    }
+
+    public int getDemandPeriod() {
+        return demandPeriod;
+    }
+
+    public int getIdlePeriod() {
+        return idlePeriod;
+    }
+
+    public String getStartupSpec() {
+        return startupSpec;
+    }
+
+    public String getShutdownSpec() {
+        return shutdownSpec;
     }
 
     public String getLabelString() {
@@ -299,15 +353,14 @@ public final class Slave implements Node, Serializable {
         }
 
         @Override
+        @Deprecated
         public boolean isJnlpAgent() {
-            return getNode().getCommand().length()==0;
+            return getNode().getStartMethod() instanceof JNLPStartMethod;
         }
 
-        /**
-         * Gets the formatted current time stamp.
-         */
-        private static String getTimestamp() {
-            return String.format("[%1$tD %1$tT]",new Date());
+        @Override
+        public boolean isStartSupported() {
+            return getNode().getStartMethod().isStartSupported();
         }
 
         /**
@@ -317,53 +370,7 @@ public final class Slave implements Node, Serializable {
             closeChannel();
 
             final OutputStream launchLog = openLogFile();
-
-            if(slave.agentCommand.length()>0) {
-                // launch the slave agent asynchronously
-                threadPoolForRemoting.execute(new Runnable() {
-                    // TODO: do this only for nodes that are so configured.
-                    // TODO: support passive connection via JNLP
-                    public void run() {
-                        final StreamTaskListener listener = new StreamTaskListener(launchLog);
-                        try {
-                            listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
-                            listener.getLogger().println("$ "+slave.agentCommand);
-
-                            ProcessBuilder pb = new ProcessBuilder(Util.tokenize(slave.agentCommand));
-                            final EnvVars cookie = ProcessTreeKiller.createCookie();
-                            pb.environment().putAll(cookie);
-                            final Process proc = pb.start();
-
-                            // capture error information from stderr. this will terminate itself
-                            // when the process is killed.
-                            new StreamCopyThread("stderr copier for remote agent on "+slave.getNodeName(),
-                                proc.getErrorStream(), launchLog).start();
-
-                            setChannel(proc.getInputStream(),proc.getOutputStream(),launchLog,new Listener() {
-                                public void onClosed(Channel channel, IOException cause) {
-                                    if(cause!=null)
-                                        cause.printStackTrace(listener.error(Messages.Slave_Terminated(getTimestamp())));
-                                    ProcessTreeKiller.get().kill(proc,cookie);
-                                }
-                            });
-
-                            logger.info("slave agent launched for "+slave.getNodeName());
-                            numRetryAttempt=0;
-                        } catch (InterruptedException e) {
-                            e.printStackTrace(listener.error("aborted"));
-                        } catch (IOException e) {
-                            Util.displayIOException(e,listener);
-
-                            String msg = Util.getWin32ErrorMessage(e);
-                            if(msg==null)   msg="";
-                            else            msg=" : "+msg;
-                            msg = Messages.Slave_UnableToLaunch(slave.getNodeName(),msg);
-                            logger.log(Level.SEVERE,msg,e);
-                            e.printStackTrace(listener.error(msg));
-                        }
-                    }
-                });
-            }
+            slave.startMethod.start(this, slave, launchLog, logger);
         }
 
         public OutputStream openLogFile() {
@@ -387,7 +394,7 @@ public final class Slave implements Node, Serializable {
                 if(this.channel!=null)
                     throw new IllegalStateException("Already connected");
 
-                Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE, 
+                Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE,
                     in,out, launchLog);
                 channel.addListener(new Listener() {
                     public void onClosed(Channel c,IOException cause) {
@@ -588,6 +595,11 @@ public final class Slave implements Node, Serializable {
             if(command.length()>0)  command += ' ';
             agentCommand = command+"java -jar ~/bin/slave.jar";
         }
+        if (startMethod == null) {
+            startMethod = (agentCommand == null || agentCommand.trim().length() == 0)
+                    ? new JNLPStartMethod()
+                    : new CommandStartMethod(agentCommand);
+        }
         return this;
     }
 
@@ -605,6 +617,126 @@ public final class Slave implements Node, Serializable {
             return null;
         }
         private static final long serialVersionUID = 1L;
+    }
+
+    public static class JNLPStartMethod extends SlaveStartMethod {
+
+        @Override
+        public boolean isStartSupported() {
+            return false;
+        }
+
+        public void start(ComputerImpl computer, Slave slave, OutputStream launchLog, Logger logger) {
+            // do nothing as we cannot self start
+        }
+
+        //@DataBoundConstructor
+        public JNLPStartMethod() {
+        }
+
+        public Descriptor<SlaveStartMethod> getDescriptor() {
+            return DESCRIPTOR;
+        }
+
+        public static final Descriptor<SlaveStartMethod> DESCRIPTOR = new Descriptor<SlaveStartMethod>(JNLPStartMethod.class) {
+            public String getDisplayName() {
+                return "Launch slave agents via JNLP";
+            }
+
+            public SlaveStartMethod newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+                return new JNLPStartMethod();
+            }
+        };
+    }
+
+    public static class CommandStartMethod extends SlaveStartMethod {
+
+        /**
+         * Command line to launch the agent, like
+         * "ssh myslave java -jar /path/to/hudson-remoting.jar"
+         */
+        private String agentCommand;
+
+        @DataBoundConstructor
+        public CommandStartMethod(String command) {
+            this.agentCommand = command;
+        }
+
+        public String getCommand() {
+            return agentCommand;
+        }
+
+        public Descriptor<SlaveStartMethod> getDescriptor() {
+            return DESCRIPTOR;
+        }
+
+        public static final Descriptor<SlaveStartMethod> DESCRIPTOR = new Descriptor<SlaveStartMethod>(CommandStartMethod.class) {
+            public String getDisplayName() {
+                return "Launch slave via execution of command on the Master";
+            }
+
+        };
+
+        /**
+         * Gets the formatted current time stamp.
+         */
+        private static String getTimestamp() {
+            return String.format("[%1$tD %1$tT]", new Date());
+        }
+
+        public void start(final ComputerImpl computer, final Slave slave, final OutputStream launchLog,
+                final Logger logger) {
+            final CommandStartMethod method = (CommandStartMethod) slave.startMethod;
+            // launch the slave agent asynchronously
+            Computer.threadPoolForRemoting.execute(new Runnable() {
+                // TODO: do this only for nodes that are so configured.
+                // TODO: support passive connection via JNLP
+                public void run() {
+                    final StreamTaskListener listener = new StreamTaskListener(launchLog);
+                    try {
+                        listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
+                        listener.getLogger().println("$ " + method.getCommand());
+
+                        ProcessBuilder pb = new ProcessBuilder(Util.tokenize(method.getCommand()));
+                        final EnvVars cookie = ProcessTreeKiller.createCookie();
+                        pb.environment().putAll(cookie);
+                        final Process proc = pb.start();
+
+                        // capture error information from stderr. this will terminate itself
+                        // when the process is killed.
+                        new StreamCopyThread("stderr copier for remote agent on " + slave.getNodeName(),
+                                proc.getErrorStream(), launchLog).start();
+
+                        computer.setChannel(proc.getInputStream(), proc.getOutputStream(), launchLog, new Listener() {
+                            public void onClosed(Channel channel, IOException cause) {
+                                if (cause != null) {
+                                    cause.printStackTrace(
+                                            listener.error(Messages.Slave_Terminated(getTimestamp())));
+                                }
+                                ProcessTreeKiller.get().kill(proc, cookie);
+                            }
+                        });
+
+                        logger.info("slave agent launched for " + slave.getNodeName());
+                        computer.numRetryAttempt = 0;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace(listener.error("aborted"));
+                    } catch (IOException e) {
+                        Util.displayIOException(e, listener);
+
+                        String msg = Util.getWin32ErrorMessage(e);
+                        if (msg == null) {
+                            msg = "";
+                        } else {
+                            msg = " : " + msg;
+                        }
+                        msg = Messages.Slave_UnableToLaunch(slave.getNodeName(), msg);
+                        logger.log(Level.SEVERE, msg, e);
+                        e.printStackTrace(listener.error(msg));
+                    }
+                }
+            });
+        }
     }
 
 //
@@ -626,4 +758,28 @@ public final class Slave implements Node, Serializable {
      * @deprecated
      */
     private transient String command;
+    /**
+     * Command line to launch the agent, like
+     * "ssh myslave java -jar /path/to/hudson-remoting.jar"
+     */
+    private transient String agentCommand;
+
+    static {
+        SlaveStartMethod.LIST.add(Slave.JNLPStartMethod.DESCRIPTOR);
+        SlaveStartMethod.LIST.add(Slave.CommandStartMethod.DESCRIPTOR);
+    }
+
+
+//    static {
+//        ConvertUtils.register(new Converter(){
+//            public Object convert(Class type, Object value) {
+//                if (value != null) {
+//                System.out.println("CVT: " + type + " from (" + value.getClass() + ") " + value);
+//                } else {
+//                    System.out.println("CVT: " + type + " from " + value);
+//                }
+//                return null;  //To change body of implemented methods use File | Settings | File Templates.
+//            }
+//        }, SlaveStartMethod.class);
+//    }
 }

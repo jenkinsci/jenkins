@@ -5,7 +5,7 @@ import hudson.triggers.SafeTimerTask;
 
 /**
  * Periodically checks the slaves and try to reconnect dead slaves.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class SlaveReconnectionWork extends SafeTimerTask {
@@ -14,7 +14,7 @@ public class SlaveReconnectionWork extends SafeTimerTask {
             ComputerImpl c = s.getComputer();
             if(c==null) // shouldn't happen, but let's be defensive
                 continue;
-            if(c.isOffline() && !c.isJnlpAgent())
+            if(c.isOffline() && c.isStartSupported())
                 c.tryReconnect();
         }
     }
