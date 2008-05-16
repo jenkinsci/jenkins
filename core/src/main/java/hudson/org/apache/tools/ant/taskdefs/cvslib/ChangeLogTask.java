@@ -332,13 +332,19 @@ public class ChangeLogTask extends AbstractCvsTask {
         long version = 0;
         while (mySt.hasMoreTokens()) {
             String s = mySt.nextToken();
-            int i = 0;
-            for (i = 0; i < s.length(); i++) {
+            int startpos;
+            // find the first digit char
+            for (startpos = 0; startpos < s.length(); startpos++)
+                if (Character.isDigit(s.charAt(startpos)))
+                    break;
+            // ... and up to the end of this digit set
+            int i;
+            for (i = startpos; i < s.length(); i++) {
                 if (!Character.isDigit(s.charAt(i))) {
                     break;
                 }
             }
-            String s2 = s.substring(0, i);
+            String s2 = s.substring(startpos, i);
             version = version + counter * Long.parseLong(s2);
             if (counter == 1) {
                 break;
