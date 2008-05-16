@@ -39,8 +39,8 @@
             (function(){
               var tree = new YAHOO.widget.TreeView("nodeTree");
 
-              var machines = new YAHOO.widget.TextNode("Individual nodes", tree.getRoot(), false);
-              var labels = new YAHOO.widget.TextNode("Labels", tree.getRoot(), false);
+              var machines = new YAHOO.widget.TextNode("${%Individual nodes}", tree.getRoot(), false);
+              var labels = new YAHOO.widget.TextNode("${%Labels}", tree.getRoot(), false);
 
               <j:forEach var="l" items="${app.labels}">
                 new YAHOO.widget.TextNode('&lt;input type="checkbox" name="label.${l.name}" id="label.${l.name}" <j:if test="${labels.contains(l)}">checked</j:if>&gt;<label for="label.${l.name}">${h.jsStringEscape(l.name)} (${h.jsStringEscape(l.description)})</label>', ${h.ifThenElse(l.isSelfLabel(),'machines','labels')}, false);
