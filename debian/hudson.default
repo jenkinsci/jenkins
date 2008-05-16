@@ -1,10 +1,33 @@
-# Defaults for hudson initscript
-# sourced by /etc/init.d/hudson
-# installed at /etc/default/hudson by the maintainer scripts
+# defaults for hudson continuous integration server
 
-#
-# This is a POSIX shell fragment
-#
+# pulled in from the init script; makes things easier.
+NAME=hudson
 
-# Additional options that are passed to the Daemon.
-DAEMON_OPTS=""
+# location of java
+JAVA=/usr/bin/java
+
+# arguments to pass to java
+JAVA_ARGS=-jar
+
+PIDFILE=/var/run/hudson/hudson.pid
+
+# user id to be invoked as (otherwise will run as root; not wise!)
+HUDSON_USER=hudson
+
+# location of the hudson war file
+HUDSON_WAR=/usr/local/bin/$NAME.war
+
+# hudson home location
+#HUDSON_HOME=/var/lib/hudson
+
+# log location.  this may be a syslog facility.priority
+#HUDSON_LOG=/var/log/$NAME.log
+#HUDSON_LOG=daemon.info
+
+# arguments to pass to hudson.
+# --javahome=$JAVA_HOME
+# --httpPort=$HTTP_PORT (default 8080; disable with -1)
+# --httpsPort=$HTTP_PORT
+# --argumentsRealm.passwd.$ADMIN_USER=[password]
+# --argumentsRealm.$ADMIN_USER=admin
+#HUDSON_ARGS=
