@@ -29,6 +29,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
+import org.apache.maven.project.overlay.BuildOverlay;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -611,7 +612,7 @@ public class CVSSCM extends SCM implements Serializable {
             try {
                 String s = new BufferedReader(r).readLine();
                 if (s == null) return false;
-                return s.trim().equals(contents.trim());
+                return massageForCheckContents(s).equals(massageForCheckContents(contents));
             } finally {
                 r.close();
             }
@@ -620,6 +621,34 @@ public class CVSSCM extends SCM implements Serializable {
         }
     }
 
+    /**
+     * Normalize the string for comparison in {@link #checkContents(File, String)}.
+     */
+    private String massageForCheckContents(String s) {
+        s=s.trim();
+        // this is somewhat ugly because we only want to do this for CVS/Root but still ended up doing this
+        // for all checks. OTOH, there shouldn'be really any false positive.
+        Matcher m = PSERVER_CVSROOT_WITH_PASSWORD.matcher(s);
+        if(m.matches())
+            s = m.group(1)+m.group(2);  // cut off password
+        return s;
+    }
+
+    /**
+     * Looks for CVSROOT that includes password, like ":pserver:uid:pwd@server:/path".
+     *
+     * <p>
+     * Some CVS client (likely CVSNT?) appears to add the password despite the fact that CVSROOT Hudson is setting
+     * doesn't include one. So when we compare CVSROOT, we need to remove the password.
+     *
+     * <p>
+     * Since the password equivalence shouldn't really affect the {@link #checkContents(File, String)}, we use
+     * this pattern to ignore password from both {@link #cvsroot} and the string found in <tt>path/CVS/Root</tt>
+     * and then compare.
+     *
+     * See http://www.nabble.com/Problem-with-polling-CVS%2C-from-version-1.181-tt15799926.html for the user report.
+     */
+    private static final Pattern PSERVER_CVSROOT_WITH_PASSWORD = Pattern.compile("(:pserver:[^@:]+):[^@:]+(@.+)");
 
     /**
      * Used to communicate the result of the detection in {@link CVSSCM#calcChangeLog(AbstractBuild, FilePath, List, File, BuildListener)}
