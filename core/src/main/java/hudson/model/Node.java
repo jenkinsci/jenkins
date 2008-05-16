@@ -5,7 +5,7 @@ import hudson.FilePath;
 import hudson.node_monitors.NodeMonitor;
 import hudson.util.EnumConverter;
 import hudson.util.ClockDifference;
-import org.apache.commons.beanutils.ConvertUtils;
+import org.kohsuke.stapler.Stapler;
 
 import java.util.Set;
 import java.io.IOException;
@@ -131,7 +131,7 @@ public interface Node {
         }
 
         static {
-            ConvertUtils.register(new EnumConverter(),Mode.class);
+            Stapler.CONVERT_UTILS.register(new EnumConverter(),Mode.class);
         }
     }
 }
