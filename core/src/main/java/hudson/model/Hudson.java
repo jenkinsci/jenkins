@@ -935,6 +935,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return new FilePath(getRootDir());
     }
 
+    public FilePath createPath(String absolutePath) {
+        return new FilePath((VirtualChannel)null,absolutePath);
+    }
+
     public ClockDifference getClockDifference() {
         return ClockDifference.ZERO;
     }

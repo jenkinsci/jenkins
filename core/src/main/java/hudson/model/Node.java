@@ -107,6 +107,11 @@ public interface Node {
     FilePath getRootPath();
 
     /**
+     * Gets the {@link FilePath} on this node.
+     */
+    FilePath createPath(String absolutePath);
+
+    /**
      * Estimates the clock difference with this slave.
      *
      * @return

@@ -311,9 +311,13 @@ public final class Slave implements Node, Serializable {
     }
 
     public FilePath getRootPath() {
+        return createPath(remoteFS);
+    }
+
+    public FilePath createPath(String absolutePath) {
         VirtualChannel ch = getComputer().getChannel();
         if(ch==null)    return null;    // offline
-        return new FilePath(ch,remoteFS);
+        return new FilePath(ch,absolutePath);
     }
 
     /**
