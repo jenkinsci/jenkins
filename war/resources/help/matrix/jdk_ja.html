@@ -1,13 +1,10 @@
 <div>
-  <!-- TODO:誰か訳して -->
-  Specify the JDK(s) with which builds are performed. If none is selected,
-  the default JDK is used (no explicit <tt>JAVA_HOME</tt>, and <tt>java</tt> command
-  is assumed to be in <tt>PATH</tt>.) If multiple JDKs are selected,
-  the configuration matrix will include all of the specified JDKs.
+  ビルドを実行するJDKを指定します。指定しなければ、
+  デフォルトのJDKを使用します(明示的に<tt>JAVA_HOME</tt>はしませんし、<tt>java</tt>コマンドはパスに設定されていると想定します)。
+  複数のJDKを指定した場合、構成軸は指定した全てのJDKを含みます。
   <br>
-  Selecting multiple values is typically useful when this job is running tests,
-  and you need to run tests on multiple different versions of JDKs.
+  ジョブがテストを実行する場合や、異なるバージョンのJDKでテストする必要がある場合に、複数の値の選択は便利です。
   <br>
-  During a build, the selected JDK value for the given run is available as the "jdk" axis.
-  See the help of "axes" below for more information about how to access the axis value.
+  指定されたJDKの値は、ビルド中は"jdk"という軸として利用可能です。
+  軸の値のアクセス方法の詳細については、"構成軸"のヘルプを参照してください。
 </div>

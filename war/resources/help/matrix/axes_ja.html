@@ -1,23 +1,21 @@
 <div>
-  <!-- TODO:誰か訳して -->
-  If your configuration matrix needs additional axes, you can specify them here.
+  構成軸を追加する必要があれば、ここで指定します。
   <p>
-  For example, let's say you are trying to run a test for your database application,
-  and you need to test it with three databases: MySQL, PostgreSQL, and Oracle. Your
-  build script is designed so that you can test with a particular database by doing
-  <tt>ant -Ddatabase=mysql</tt>.
+  例えば、データベースアプリケーションのテストを実行し、
+  MySQL、PostgreSQLおよびOracleの3つのデータベースでテストする必要があるとしましょう。
+  <tt>ant -Ddatabase=mysql</tt>を実行して特定のデータベースでテストできるように、
+  ビルドスクリプトがデザインされています。
   <p>
-  This is the concept of an axis. You can have a variable called "database",
-  which takes three values. When you configure it, Hudson will run 3 builds, each with
-  different values assigned to the "database" variable to exhaustively cover
-  the configuration matrix.
+  これが、構成軸のコンセプトです。"database"という変数を使用し、その変数は3つの値をとります。
+  構成軸を設定すると、Hudsonは3つのビルドを起動します。それぞれのビルドは、構成マトリックスを全てカバーするように、
+  "database"変数に異なる値が割り当てられます。
   <p>
-  Variables specified here are made available to the build as environment variables.
-  In addition, for Ant and Maven, variables are also exposed as properties, as if
-  <tt>-D<i>variableName</i>=<i>value</i></tt> are specified on the command line.
+  ここで指定した変数は、環境変数としてビルドで利用できます。さらに、
+  コマンドラインで<tt>-D<i>variableName</i>=<i>value</i></tt>と指定したのと同様に、
+  AntやMavenでプロパティでも利用できます。
   <p>
-  When multiple axes are specified, all of the possible combinations of axes are built
-  exhaustively. Multiple values in labels and JDKs are treated in the same way. So
-  if you specify jdk=[JDK5,JDK6], database=[mysql,postgresql,oracle], container=[jetty,tomcat],
-  then each build will consists of 2x3x2=12 different sub-builds.
+  複数の軸が指定されている場合、軸の取り得る全ての組み合わせが組み立てられます。
+  ラベルやJDKに複数の値を設定した場合も同様に扱われます。つまり、jdk=[JDK5,JDK6]、
+  database=[mysql,postgresql,oracle]およびcontainer=[jetty,tomcat]と指定した場合、
+  各ビルドは、2x3x2=12個の異なるサブビルドで構成されます。
 </div>

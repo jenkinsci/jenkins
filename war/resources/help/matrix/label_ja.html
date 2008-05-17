@@ -1,28 +1,23 @@
 <div>
-  <!-- TODO:誰か訳して -->
-  Specify nodes where builds are performed.
+  ビルドを実行するノードを選択します。
 
   <ul>
     <li>
-      If none is selected, Hudson will choose
-      an available node to perform a build (this is the same behavior as the free-style
-      project when "tie this project to node" is not selected).  This is useful
-      when the project doesn't have a dependency on any particular node, as
-      it allows Hudson to utilize nodes in an optimal fashion.
+      ノードを選択すると、Hudsonはビルドを実行可能なノードを選択します(この動作は、
+      "このビルドは指定のノード上でのみ実行"を選択していない場合のフリースタイルと同じです)。
+      プロジェクトが特定のノードに依存していないとき、Hudsonはノードを最適な方法で利用できるので、
+      便利です。
     <li>
-      If one is selected, Hudson will always run the build on the specified node
-      (if you select one from "specific nodes")
-      or one of the nodes that belongs to the label (if you select one from "label").
-      This is useful when the build is required to run on a specific computer,
-      or a subset of computers. For example, maybe your build requires MacOS X.
+      １つだけ選択すると、Hudsonはビルドを、指定されたノード("個別のノード"から1つ選択)か、
+      ラベルに属する複数ノードのうちの1つのノード("ラベル"から1つ選択)で実行します。
+      これは、ビルドを特定のコンピューターやコンピューターのセットで動かす必要がある場合に便利です。
+      例えば、ビルドにMacOS Xが必要な場合など。
     <li>
-      If multiple values are selected, the configuration matrix will be expanded to include
-      all of them, and builds will be performed on all of the selected nodes/labels.
-      This is useful, for example, when you'd like to run tests on Windows, Linux,
-      and Solaris.
+      複数の値を選択すると、構成マトリックスはそれらを含むように拡張され、
+      ビルドは選択したノードもしくはラベルで実行されます。例えば、Windows、LinuxおよびSolarisでテストをしたい場合に便利です。
   </ul>
 
   <br>
-  During a build, the selected node name / label name for the given run is available as the "label" axis.
-  See the help of "axes" below for more information about how to access the axis value.
+  選択したノード名やラベル名は、ビルド実行中には、"label"という軸として利用可能です。
+  軸の値のアクセス方法の詳細については、"構成軸"のヘルプを参照してください。
 </div>
