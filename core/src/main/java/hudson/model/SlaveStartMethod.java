@@ -1,8 +1,6 @@
 package hudson.model;
 
 import hudson.ExtensionPoint;
-import hudson.security.SecurityRealm;
-import hudson.util.DescriptorList;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -26,8 +24,5 @@ public abstract class SlaveStartMethod implements Describable<SlaveStartMethod>,
 
     public abstract void start(Slave.ComputerImpl computer, Slave slave, OutputStream launchLog, Logger logger);
 
-    /**
-     * All registered {@link SlaveStartMethod} implementations.
-     */
-    public static final DescriptorList<SlaveStartMethod> LIST = new DescriptorList<SlaveStartMethod>();
+    public static final List<Descriptor<SlaveStartMethod>> LIST = new ArrayList<Descriptor<SlaveStartMethod>>();
 }

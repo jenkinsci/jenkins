@@ -125,20 +125,10 @@ public abstract class Computer extends AbstractModelObject {
 
     /**
      * Returns true if this computer is supposed to be launched via JNLP.
-     * @deprecated see {@linkplain #isStartSupported()} and {@linkplain hudson.model.SlaveStartMethod}
      */
     @Exported
-    @Deprecated
     public boolean isJnlpAgent() {
         return false;
-    }
-
-    /**
-     * Returns true if this computer can be launched by Hudson.
-     */
-    @Exported
-    public boolean isStartSupported() {
-        return true;
     }
 
     /**
@@ -191,7 +181,7 @@ public abstract class Computer extends AbstractModelObject {
     public List<AbstractProject> getTiedJobs() {
         return getNode().getSelfLabel().getTiedJobs();
     }
-
+    
     public RunList getBuilds() {
     	return new RunList(Hudson.getInstance().getAllItems(Job.class)).node(getNode());
     }
