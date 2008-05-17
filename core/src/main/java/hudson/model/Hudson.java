@@ -1486,39 +1486,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 Object src = json.get("slaves");
                 ArrayList<Slave> r = new ArrayList<Slave>();
                 if (src instanceof JSONObject) {
-                    JSONObject j = (JSONObject) src;
-                    final Slave slave = req.bindJSON(Slave.class, j);
-                    String clazz = j.get("startMethodClass").toString();
-                    for (Descriptor<SlaveStartMethod> d: SlaveStartMethod.LIST) {
-                        if (d.getClass().getName().equals(clazz)) {
-                            slave.setStartMethod(d.newInstance(req, j.getJSONObject("startMethod")));
-                            break;
-                        }
-                    }
-                    r.add(slave);
+                    r.add(newSlave(req, (JSONObject) src));
                 }
                 if (src instanceof JSONArray) {
                     JSONArray a = (JSONArray) src;
                     for (Object o : a) {
                         if (o instanceof JSONObject) {
-                            JSONObject j = (JSONObject) o;
-                            String clazz = j.get("startMethodClass").toString();
-                            SlaveStartMethod startMethod = null;
-                            for (Descriptor<SlaveStartMethod> d: SlaveStartMethod.LIST) {
-                                if (d.getClass().getName().equals(clazz)) {
-                                    startMethod = d.newInstance(req, j.getJSONObject("startMethod"));
-                                    break;
-                                }
-                            }
-
-                            j.remove("startMethod");
-                            j.remove("startMethodClass");
-
-                            System.out.println("j = " + j);
-
-                            final Slave slave = req.bindJSON(Slave.class, j);
-                            slave.setStartMethod(startMethod);
-                            r.add(slave);
+                            r.add(newSlave(req, (JSONObject) o));
                         }
                     }
                 }
@@ -1544,6 +1518,31 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         } catch (FormException e) {
             sendError(e,req,rsp);
         }
+    }
+
+    private Slave newSlave(StaplerRequest req, JSONObject j) throws FormException {
+        final SlaveStartMethod startMethod = newDescribedChild(req, j, "startMethod", SlaveStartMethod.LIST);
+        final SlaveAvailabilityStrategy availabilityStrategy =
+                newDescribedChild(req, j, "availabilityStrategy", SlaveAvailabilityStrategy.LIST);
+        final Slave slave = req.bindJSON(Slave.class, j);
+        slave.setStartMethod(startMethod);
+        slave.setAvailabilityStrategy(availabilityStrategy);
+        return slave;
+    }
+
+    private <T extends Describable<T>> T newDescribedChild(StaplerRequest req, JSONObject j,
+                                                           String name, List<Descriptor<T>> descriptors)
+            throws FormException {
+        final String clazz = j.get(name + "Class").toString();
+        final JSONObject data = j.getJSONObject(name);
+        j.remove(name + "Class");
+        j.remove(name);
+        for (Descriptor<T> d: descriptors) {
+            if (d.getClass().getName().equals(clazz)) {
+                return d.newInstance(req, data);
+            }
+        }
+        return null;
     }
 
     /**

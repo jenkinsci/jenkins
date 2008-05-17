@@ -79,31 +79,7 @@ public final class Slave implements Node, Serializable {
     /**
      * Slave availablility strategy.
      */
-    private Availability onlineAvailability;
-
-    /**
-     * Number of minutes when the slave is required to be on-line before bringing the slave on-line.
-     * Only used with {@link #onlineAvailability} == {@link hudson.model.Node.Availability#DEMAND}
-     */
-    private int demandPeriod = 5;
-
-    /**
-     * Number of minutes when the slave is idle before bringing the slave off-line.
-     * Only used with {@link #onlineAvailability} == {@link hudson.model.Node.Availability#DEMAND}
-     */
-    private int idlePeriod = 10;
-
-    /**
-     * Cron spec for starting up the slave.
-     * Only used with {@link #onlineAvailability} == {@link hudson.model.Node.Availability#SCHEDULED}
-     */
-    private String startupSpec = "";
-
-    /**
-     * Cron spec for shutting down the slave.
-     * Only used with {@link #onlineAvailability} == {@link hudson.model.Node.Availability#SCHEDULED}
-     */
-    private String shutdownSpec = "";
+    private SlaveAvailabilityStrategy availabilityStrategy;
 
     /**
      * The starter that will startup this slave.
@@ -127,18 +103,13 @@ public final class Slave implements Node, Serializable {
      * @stapler-constructor
      */
     public Slave(String name, String description, String remoteFS, String numExecutors,
-                 Mode mode, String label, Availability onlineAvailability) throws FormException {
+                 Mode mode, String label) throws FormException {
         this.name = name;
         this.description = description;
         this.numExecutors = Util.tryParseNumber(numExecutors, 1).intValue();
         this.mode = mode;
         this.remoteFS = remoteFS;
         this.label = Util.fixNull(label).trim();
-        this.onlineAvailability = onlineAvailability;
-        this.demandPeriod = demandPeriod;
-        this.idlePeriod = idlePeriod;
-        this.startupSpec = startupSpec;
-        this.shutdownSpec = shutdownSpec;
         getAssignedLabels();    // compute labels now
 
         if (name.equals(""))
@@ -184,24 +155,12 @@ public final class Slave implements Node, Serializable {
         return mode;
     }
 
-    public Availability getOnlineAvailability() {
-        return onlineAvailability;
+    public SlaveAvailabilityStrategy getAvailabilityStrategy() {
+        return availabilityStrategy == null ? new SlaveAvailabilityStrategy.Always() : availabilityStrategy;
     }
 
-    public int getDemandPeriod() {
-        return demandPeriod;
-    }
-
-    public int getIdlePeriod() {
-        return idlePeriod;
-    }
-
-    public String getStartupSpec() {
-        return startupSpec;
-    }
-
-    public String getShutdownSpec() {
-        return shutdownSpec;
+    public void setAvailabilityStrategy(SlaveAvailabilityStrategy availabilityStrategy) {
+        this.availabilityStrategy = availabilityStrategy;
     }
 
     public String getLabelString() {

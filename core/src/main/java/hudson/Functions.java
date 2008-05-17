@@ -247,10 +247,6 @@ public class Functions {
         return Node.Mode.values();
     }
 
-    public static Node.Availability[] getNodeAvailabilities() {
-        return Node.Availability.values();
-    }
-
     public static String getProjectListString(List<Project> projects) {
         return Items.toNameList(projects);
     }
@@ -499,6 +495,10 @@ public class Functions {
 
     public static List<Descriptor<SlaveStartMethod>> getSlaveStartMethodDescriptors() {
         return SlaveStartMethod.LIST;
+    }
+
+    public static List<Descriptor<SlaveAvailabilityStrategy>> getSlaveAvailabilityStrategyDescriptors() {
+        return SlaveAvailabilityStrategy.LIST;
     }
 
     /**
