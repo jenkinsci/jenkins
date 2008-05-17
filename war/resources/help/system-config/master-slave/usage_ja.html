@@ -1,28 +1,26 @@
-<div><!-- TODO 誰か訳して -->
-  Controls how Hudson schedules builds on this machine.
+<div>
+  ビルドのスケジューリング方法を選択します。
 
   <dl>
     <dt><b>
-      Utilize this slave as much as possible
+      このスレーブをできるだけ利用する
     </b></dt>
     <dd>
-      This is the default and normal setting.
-      In this mode, Hudson uses this slave freely. Whenever there is a build
-      that can be done by using this slave, Hudson will use it.
+      これはデフォルトで通常の設定です。
+      このモードでは、Hudsonはこのスレーブを自由に利用します。このスレーブを利用して実行できるビルドがあればいつでも、
+      Hudsonはこのスレーブを利用します。
     </dd>
 
     <dt><b>
-      Leave this machine for tied jobs only
+      このマシーンを特定ジョブ専用にする
     </b></dt>
     <dd>
-      In this mode, Hudson will only build a project on this machine when
-      that project specifically has this slave as the "assigned node".
+      このモードでは、プロジェクトが"このビルドは指定のノード上でのみ実行"としてこのスレーブを指定している場合、
+      このマシーンで1つだけプロジェクトをビルドします。
 
-      This allows a slave to be reserved for certain kinds of jobs.
-      For example, to run performance tests continuously from Hudson,
-      you can use this setting with # of executors as 1, so that only one performance
-      test runs at any given time, and that one executor won't be blocked
-      by other builds that can be done on other slaves.
+      スレーブをある種のジョブ専用にすることができます。
+      例えば、Hudsonで継続的に性能テストを動かすために、同時実行数を1として設定できます。
+      そうすると、いつでも性能テストが1つだけ動き、他のスレーブでも実行できる他のビルドに実行を妨げられることはありません。
     </dd>
   </dl>
 </div>

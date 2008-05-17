@@ -1,53 +1,45 @@
-<div><!-- TODO 誰か訳して -->
-  Command to be used to launch a slave agent program, which controls the slave
-  computer and communicates with the master.
+<div>
+  スレーブエージェントとプログラムの起動に使用するコマンドで、スレーブのコンピュータの制御、
+  マスターとの通信を行います。
 
-  <h3>JNLP slave agents</h3>
+  <h3>JNLPスレーブエージェント</h3>
   <p>
-  Leave this field empty if you'd like to launch slave agents via JNLP.
-  With this setting, the slave information page (hudson/computer/***/) will
-  have a JNLP launch icon, and you can click that link from the correct slave
-  machine to launch a slave agent via JNLP.
+  JNLPでスレーブエージェントを起動する場合は空欄のままにします。
+  この設定を行うと、スレーブ情報ページ (hudson/computer/***/) にJNLPの起動アイコンが表示され、
+  正しいスレーブマシーンからこのリンクをクリックすると、JNLPでスレーブエージェントを起動できます。
   <p>
-  This mode is convenient for Windows slaves that often do not have a remote execution
-  mechanism.
+  このモードは、リモート実行の仕組みを持っていないWindowsのスレーブを使用する場合に便利です。
 
-  <h3>ssh/rsh slave agents</h3>
+  <h3>ssh/rshスレーブエージェント</h3>
   <p>
-  When an actual command is specified in this field,
-  this command is executed on the
-  master, and Hudson assumes that the executed program launches the <tt>slave.jar</tt>
-  program on the correct slave machine.
-
+  この項目にコマンドが指定されたとき、マスターでこのコマンドが実行されます。そして、
+  Hudsonは、その実行コマンドが正しいスレーブマシーン上で<tt>slave.jar</tt>を起動することを想定しています。
 
   <p>
-  A copy of <tt>slave.jar</tt> can be found in <tt>WEB-INF/slave.jar</tt> inside
-  <tt>hudson.war</tt>.
+  <tt>slave.jar</tt>のコピーが、<tt>hudson.war</tt>の中の<tt>WEB-INF/slave.jar</tt>にあります。
 
   <p>
-  In a simple case, this could be
-  something like "ssh <i>hostname</i> java -jar ~/bin/slave.jar".
+  シンプルなケースでは、このコマンドは"ssh <i>hostname</i> java -jar ~/bin/slave.jar"のようなものになります。
 
-  However, it is often a good idea to write a small shell script, like the following, on a slave
-  so that you can control the location of Java and/or slave.jar, as well as set up any
-  environment variables specific to this slave node, such as PATH.
+  しかし、PATHのようなこのスレーブノード独自の環境変数を設定するのと同時に、javaやslave.jarの場所を制御できるように、
+　スレーブに以下のような小さいシェルスクリプトを書くのはいい考えです。
 
 <pre>
 #!/bin/sh
 exec java -jar ~/bin/slave.jar
 </pre>
 
-  <p>
+  <p><!-- TODO:誰か訳して -->
   You can use any command to run a process on the slave machine, such as RSH,
   as long as stdin/stdout of this process will be connected to
   "java -jar ~/bin/slave.jar" eventually.
 
   <p>
-  In a larger deployment, It is also worth considering to load <tt>slave.jar</tt> from
-  a NFS-mounted common location, so that you don't have to update this file every time
-  you update Hudson.
+  スレーブがたくさん配置されている場合、NFSでマウントされた共通の場所から、
+  <tt>slave.jar</tt>をロードすることは考える価値があります。
+  そうすれば、Hudsonを更新するごとにこのファイルを更新する必要がありません。
 
   <p>
-  Setting this to "ssh -v <i>hostname</i>" may be useful for debugging connectivity
+  "ssh -v <i>ホスト名</i>"とすると、接続確認するのに便利です。
   issue.
 </div>
