@@ -22,7 +22,7 @@ public abstract class SlaveAvailabilityStrategy implements Describable<SlaveAvai
     public long check(Slave slave, State state) {
         Slave.ComputerImpl c = slave.getComputer();
         if (c != null && c.isOffline() && c.isStartSupported())
-            c.tryReconnect();
+            c.tryReconnect();  
         return 5;
     }
 
