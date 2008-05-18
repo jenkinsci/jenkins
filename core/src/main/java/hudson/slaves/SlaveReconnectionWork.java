@@ -15,9 +15,12 @@ import java.util.WeakHashMap;
  * @author Kohsuke Kawaguchi
  */
 public class SlaveReconnectionWork extends SafeTimerTask {
+    /**
+     * Use weak hash map to avoid leaking {@link Slave}.
+     */
+    private final Map<Slave, Long> nextCheck = new WeakHashMap<Slave, Long>();
+
     protected void doRun() {
-        // use a weak hashmap
-        Map<Slave, Long> nextCheck = new WeakHashMap<Slave, Long>();
         for (Slave s : Hudson.getInstance().getSlaves()) {
             if (!nextCheck.containsKey(s) || System.currentTimeMillis() > nextCheck.get(s)) {
                 final Queue queue = Hudson.getInstance().getQueue();
