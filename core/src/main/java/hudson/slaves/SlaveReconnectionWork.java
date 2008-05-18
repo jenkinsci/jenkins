@@ -1,9 +1,8 @@
 package hudson.slaves;
 
-import hudson.model.Slave;
 import hudson.model.Hudson;
 import hudson.model.Queue;
-import hudson.model.Executor;
+import hudson.model.Slave;
 import hudson.triggers.SafeTimerTask;
 
 import java.util.Map;
@@ -25,13 +24,8 @@ public class SlaveReconnectionWork extends SafeTimerTask {
         
         for (Slave s : Hudson.getInstance().getSlaves()) {
             if (!nextCheck.containsKey(s) || System.currentTimeMillis() > nextCheck.get(s)) {
-                boolean hasJob = false;
-                for (Executor exec: s.getComputer().getExecutors()) {
-                    if (!exec.isIdle()) {
-                        hasJob = true;
-                        break;
-                    }
-                }
+                boolean hasJob = !s.getComputer().isIdle();
+                
                 // TODO get only the items from the queue that can apply to this slave
                 SlaveAvailabilityStrategy.State state = new SlaveAvailabilityStrategy.State(queue.getItems().length > 0, hasJob);
                 // at the moment I don't trust strategies to wait more than 60 minutes
