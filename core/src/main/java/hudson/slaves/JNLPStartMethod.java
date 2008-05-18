@@ -1,10 +1,9 @@
 package hudson.slaves;
 
-import hudson.model.Slave;
 import hudson.model.Descriptor;
+import hudson.model.Slave;
 import hudson.util.StreamTaskListener;
-import org.kohsuke.stapler.StaplerRequest;
-import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * {@link SlaveStartMethod} via JNLP.
@@ -13,6 +12,9 @@ import net.sf.json.JSONObject;
  * @author Kohsuke Kawaguchi
 */
 public class JNLPStartMethod extends SlaveStartMethod {
+    @DataBoundConstructor
+    public JNLPStartMethod() {
+    }
 
     @Override
     public boolean isLaunchSupported() {
@@ -23,10 +25,6 @@ public class JNLPStartMethod extends SlaveStartMethod {
         // do nothing as we cannot self start
     }
 
-    //@DataBoundConstructor
-    public JNLPStartMethod() {
-    }
-
     public Descriptor<SlaveStartMethod> getDescriptor() {
         return DESCRIPTOR;
     }
@@ -34,10 +32,6 @@ public class JNLPStartMethod extends SlaveStartMethod {
     public static final Descriptor<SlaveStartMethod> DESCRIPTOR = new Descriptor<SlaveStartMethod>(JNLPStartMethod.class) {
         public String getDisplayName() {
             return "Launch slave agents via JNLP";
-        }
-
-        public SlaveStartMethod newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new JNLPStartMethod();
         }
     };
 }
