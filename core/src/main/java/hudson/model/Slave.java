@@ -383,6 +383,7 @@ public final class Slave implements Node, Serializable {
                 // install log handler
                 channel.call(new LogInstaller());
 
+                numRetryAttempt = 0;
 
                 // prevent others from seeing a channel that's not properly initialized yet
                 this.channel = channel;
@@ -679,7 +680,6 @@ public final class Slave implements Node, Serializable {
                         });
 
                         LOGGER.info("slave agent launched for " + computer.getDisplayName());
-                        computer.numRetryAttempt = 0;
                     } catch (InterruptedException e) {
                         e.printStackTrace(listener.error("aborted"));
                     } catch (IOException e) {
