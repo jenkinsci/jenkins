@@ -125,7 +125,7 @@ public abstract class Computer extends AbstractModelObject {
 
     /**
      * Returns true if this computer is supposed to be launched via JNLP.
-     * @deprecated see {@linkplain #isStartSupported()} and {@linkplain hudson.model.SlaveStartMethod}
+     * @deprecated see {@linkplain #isLaunchSupported()} and {@linkplain hudson.model.SlaveStartMethod}
      */
     @Exported
     @Deprecated
@@ -137,7 +137,7 @@ public abstract class Computer extends AbstractModelObject {
      * Returns true if this computer can be launched by Hudson.
      */
     @Exported
-    public boolean isStartSupported() {
+    public boolean isLaunchSupported() {
         return true;
     }
 

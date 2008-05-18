@@ -6,7 +6,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.io.IOException;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -43,7 +42,7 @@ public final class ComputerSet implements ModelObject {
 
     public void do_launchAll(StaplerRequest req, StaplerResponse rsp) throws IOException {
         for(Computer c : get_all()) {
-            if(c.isStartSupported())
+            if(c.isLaunchSupported())
                 continue;
             c.launch();
         }

@@ -322,8 +322,8 @@ public final class Slave implements Node, Serializable {
         }
 
         @Override
-        public boolean isStartSupported() {
-            return getNode().getStartMethod().isStartSupported();
+        public boolean isLaunchSupported() {
+            return getNode().getStartMethod().isLaunchSupported();
         }
 
         /**
@@ -587,7 +587,7 @@ public final class Slave implements Node, Serializable {
     public static class JNLPStartMethod extends SlaveStartMethod {
 
         @Override
-        public boolean isStartSupported() {
+        public boolean isLaunchSupported() {
             return false;
         }
 

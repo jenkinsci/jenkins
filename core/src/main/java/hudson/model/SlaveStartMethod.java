@@ -19,8 +19,11 @@ import org.apache.commons.beanutils.Converter;
  * @since 24-Apr-2008 22:12:35
  */
 public abstract class SlaveStartMethod implements Describable<SlaveStartMethod>, ExtensionPoint {
-
-    public boolean isStartSupported() {
+    /**
+     * Returns true if this {@link SlaveStartMethod} supports
+     * programatic launch of the slave agent in the target {@link Computer}.
+     */
+    public boolean isLaunchSupported() {
         return true;
     }
 
