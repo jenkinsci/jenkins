@@ -331,7 +331,7 @@ public final class Slave implements Node, Serializable {
          */
         private void launch(final Slave slave) {
             closeChannel();
-            slave.startMethod.launch(this, openLogFile());
+            slave.startMethod.launch(this, new StreamTaskListener(openLogFile()));
         }
 
         public OutputStream openLogFile() {
@@ -591,7 +591,7 @@ public final class Slave implements Node, Serializable {
             return false;
         }
 
-        public void launch(ComputerImpl computer, OutputStream launchLog) {
+        public void launch(ComputerImpl computer, StreamTaskListener listener) {
             // do nothing as we cannot self start
         }
 
@@ -649,13 +649,12 @@ public final class Slave implements Node, Serializable {
             return String.format("[%1$tD %1$tT]", new Date());
         }
 
-        public void launch(final ComputerImpl computer, final OutputStream launchLog) {
+        public void launch(final ComputerImpl computer, final StreamTaskListener listener) {
             // launch the slave agent asynchronously
             Computer.threadPoolForRemoting.execute(new Runnable() {
                 // TODO: do this only for nodes that are so configured.
                 // TODO: support passive connection via JNLP
                 public void run() {
-                    final StreamTaskListener listener = new StreamTaskListener(launchLog);
                     try {
                         listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
                         listener.getLogger().println("$ " + getCommand());
@@ -668,9 +667,9 @@ public final class Slave implements Node, Serializable {
                         // capture error information from stderr. this will terminate itself
                         // when the process is killed.
                         new StreamCopyThread("stderr copier for remote agent on " + computer.getDisplayName(),
-                                proc.getErrorStream(), launchLog).start();
+                                proc.getErrorStream(), listener.getLogger()).start();
 
-                        computer.setChannel(proc.getInputStream(), proc.getOutputStream(), launchLog, new Listener() {
+                        computer.setChannel(proc.getInputStream(), proc.getOutputStream(), listener.getLogger(), new Listener() {
                             public void onClosed(Channel channel, IOException cause) {
                                 if (cause != null) {
                                     cause.printStackTrace(
