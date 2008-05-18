@@ -1,0 +1,24 @@
+<!--
+  Various system information for diagnostics.
+
+  TODO: merge this with Hudson/systemInfo.jelly
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout title="${it.displayName} System Information">
+    <st:include page="sidepanel.jelly" />
+
+    <l:main-panel>
+      <l:isAdmin>
+        <h1>System Properties</h1>
+        <t:propertyTable items="${it.systemProperties}" />
+        <h1>Environment Variables</h1>
+        <t:propertyTable items="${it.envVars}" />
+        <h1>Thread Dump</h1>
+        <j:forEach var="t" items="${it.getThreadDump().entrySet()}">
+          <h2>${t.key}</h2>
+          <pre>${t.value}</pre>
+        </j:forEach>
+      </l:isAdmin>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

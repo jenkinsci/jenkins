@@ -1,7 +1,7 @@
 package hudson.slaves;
 
 import hudson.ExtensionPoint;
-import hudson.model.Slave.ComputerImpl;
+import hudson.slaves.SlaveComputer;
 import hudson.model.Describable;
 import hudson.model.Computer;
 import hudson.remoting.Channel.Listener;
@@ -30,7 +30,7 @@ public abstract class SlaveStartMethod implements Describable<SlaveStartMethod>,
      * Launches the slave agent for the given {@link Computer}.
      *
      * <p>
-     * If the slave agent is launched successfully, {@link ComputerImpl#setChannel(InputStream, OutputStream, OutputStream, Listener)}
+     * If the slave agent is launched successfully, {@link SlaveComputer#setChannel(InputStream, OutputStream, OutputStream, Listener)}
      * should be invoked in the end to notify Hudson of the established connection.
      * The operation could also fail, in which case there's no need to make any callback notification,
      * (except to notify the user of the failure through {@link StreamTaskListener}.)
@@ -38,7 +38,7 @@ public abstract class SlaveStartMethod implements Describable<SlaveStartMethod>,
      * @param listener
      *      The progress of the launch, as well as any error, should be sent to this listener.
      */
-    public abstract void launch(ComputerImpl computer, StreamTaskListener listener);
+    public abstract void launch(SlaveComputer computer, StreamTaskListener listener);
 
     /**
      * All registered {@link SlaveStartMethod} implementations.

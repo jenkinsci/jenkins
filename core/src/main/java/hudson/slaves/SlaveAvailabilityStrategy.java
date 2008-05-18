@@ -1,12 +1,11 @@
 package hudson.slaves;
 
-import hudson.util.DescriptorList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
-import hudson.model.Slave;
 import hudson.model.Descriptor;
-import org.kohsuke.stapler.StaplerRequest;
-import net.sf.json.JSONObject;
+import hudson.model.Slave;
+import hudson.util.DescriptorList;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Slave availability strategy
@@ -22,12 +21,7 @@ public abstract class SlaveAvailabilityStrategy implements Describable<SlaveAvai
      * @return The number of minutes after which the strategy would like to be checked again. The strategy may be
      *         rechecked earlier or later that this!
      */
-    public long check(Slave slave, State state) {
-        Slave.ComputerImpl c = slave.getComputer();
-        if (c != null && c.isOffline() && c.isLaunchSupported())
-            c.tryReconnect();  
-        return 5;
-    }
+    public abstract long check(Slave slave, State state);
 
     /**
      * All registered {@link SlaveAvailabilityStrategy} implementations.
@@ -36,7 +30,7 @@ public abstract class SlaveAvailabilityStrategy implements Describable<SlaveAvai
             Always.DESCRIPTOR
     );
 
-    public static class State {
+    public static final class State {
         private final boolean jobWaiting;
         private final boolean jobRunning;
 
@@ -54,14 +48,26 @@ public abstract class SlaveAvailabilityStrategy implements Describable<SlaveAvai
         }
     }
 
+    /**
+     * {@link SlaveAvailabilityStrategy} that tries to keep the node online all the time.
+     */
     public static class Always extends SlaveAvailabilityStrategy {
+        @DataBoundConstructor
+        public Always() {
+        }
+
+        public long check(Slave slave, State state) {
+            SlaveComputer c = slave.getComputer();
+            if (c != null && c.isOffline() && c.isLaunchSupported())
+                c.tryReconnect();
+            return 5;
+        }
 
         public Descriptor<SlaveAvailabilityStrategy> getDescriptor() {
             return DESCRIPTOR;
         }
 
-        public static final Descriptor<SlaveAvailabilityStrategy> DESCRIPTOR =
-                new DescriptorImpl();
+        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         private static class DescriptorImpl extends Descriptor<SlaveAvailabilityStrategy> {
             public DescriptorImpl() {
@@ -71,12 +77,6 @@ public abstract class SlaveAvailabilityStrategy implements Describable<SlaveAvai
             public String getDisplayName() {
                 return "Keep this slave on-line as much as possible";
             }
-
-            public SlaveAvailabilityStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-                return new Always();
-            }
-
-
         }
     }
 }

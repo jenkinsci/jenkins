@@ -1,0 +1,14 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.displayName} log" secured="true">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <l:isAdmin>
+        <pre id="out"></pre>
+        <div id="spinner">
+          <img src="${imagesURL}/spinner.gif" />
+        </div>
+        <t:progressiveText href="progressiveLog" idref="out" spinner="spinner" />
+      </l:isAdmin>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

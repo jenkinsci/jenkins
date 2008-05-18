@@ -1,7 +1,7 @@
 package hudson;
 
 import hudson.model.Hudson;
-import hudson.model.Slave.ComputerImpl;
+import hudson.slaves.SlaveComputer;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
 
@@ -159,7 +159,7 @@ public class TcpSlaveAgentListener extends Thread {
             }
 
             String nodeName = in.readUTF();
-            ComputerImpl computer = (ComputerImpl) Hudson.getInstance().getComputer(nodeName);
+            SlaveComputer computer = (SlaveComputer) Hudson.getInstance().getComputer(nodeName);
             if(computer==null) {
                 error(out, "No such slave: "+nodeName);
                 return;

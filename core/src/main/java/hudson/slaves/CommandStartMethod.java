@@ -2,7 +2,6 @@ package hudson.slaves;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.model.Descriptor;
-import hudson.model.Slave;
 import hudson.model.Messages;
 import hudson.util.StreamTaskListener;
 import hudson.util.ProcessTreeKiller;
@@ -56,7 +55,7 @@ public class CommandStartMethod extends SlaveStartMethod {
         return String.format("[%1$tD %1$tT]", new Date());
     }
 
-    public void launch(Slave.ComputerImpl computer, final StreamTaskListener listener) {
+    public void launch(SlaveComputer computer, final StreamTaskListener listener) {
         try {
             listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
             listener.getLogger().println("$ " + getCommand());

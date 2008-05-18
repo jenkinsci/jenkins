@@ -1,7 +1,6 @@
 package hudson.slaves;
 
 import hudson.model.Descriptor;
-import hudson.model.Slave;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -21,7 +20,7 @@ public class JNLPStartMethod extends SlaveStartMethod {
         return false;
     }
 
-    public void launch(Slave.ComputerImpl computer, StreamTaskListener listener) {
+    public void launch(SlaveComputer computer, StreamTaskListener listener) {
         // do nothing as we cannot self start
     }
 
