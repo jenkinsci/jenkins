@@ -331,9 +331,7 @@ public final class Slave implements Node, Serializable {
          */
         private void launch(final Slave slave) {
             closeChannel();
-
-            final OutputStream launchLog = openLogFile();
-            slave.startMethod.launch(this, launchLog);
+            slave.startMethod.launch(this, openLogFile());
         }
 
         public OutputStream openLogFile() {
@@ -467,6 +465,9 @@ public final class Slave implements Node, Serializable {
             closeChannel();
         }
 
+        /**
+         * If still connected, disconnect.
+         */
         private void closeChannel() {
             Channel c = channel;
             channel = null;
