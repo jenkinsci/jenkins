@@ -111,7 +111,10 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
             } else {
                 out.println(Messages.SubversionUpdateEventHandler_FetchExternal(
                         ext.getNewURL(), ext.getNewRevision(), event.getFile()));
-                externals.add(new SubversionSCM.External(modulePath,ext));
+                //#1539 - an external inside an external needs to have the path appended 
+                externals.add(new SubversionSCM.External(modulePath + "/" + event.getPath().substring(0
+                		,event.getPath().length() - ext.getPath().length())
+                		,ext));
             }
             return;
         } else if (action == SVNEventAction.UPDATE_COMPLETED) {
