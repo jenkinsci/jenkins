@@ -46,5 +46,8 @@ public abstract class SlaveStartMethod implements Describable<SlaveStartMethod>,
     /**
      * All registered {@link SlaveStartMethod} implementations.
      */
-    public static final DescriptorList<SlaveStartMethod> LIST = new DescriptorList<SlaveStartMethod>();
+    public static final DescriptorList<SlaveStartMethod> LIST = new DescriptorList<SlaveStartMethod>(
+        JNLPStartMethod.DESCRIPTOR,
+        CommandStartMethod.DESCRIPTOR
+    );
 }
