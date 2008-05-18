@@ -45,7 +45,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public final class SlaveComputer extends Computer {
     private volatile Channel channel;
-    private boolean isUnix;
+    private Boolean isUnix;
 
     /**
      * Number of failed attempts to reconnect to this node
@@ -67,8 +67,11 @@ public final class SlaveComputer extends Computer {
 
     /**
      * True if this computer is a Unix machine (as opposed to Windows machine).
+     *
+     * @return
+     *      null if the computer is disconnected and therefore we don't know whether it is Unix or not.
      */
-    public boolean isUnix() {
+    public Boolean isUnix() {
         return isUnix;
     }
 
@@ -230,6 +233,10 @@ public final class SlaveComputer extends Computer {
     protected void kill() {
         super.kill();
         closeChannel();
+    }
+
+    public RetentionStrategy getRetentionStrategy() {
+        return getNode().getAvailabilityStrategy();
     }
 
     /**

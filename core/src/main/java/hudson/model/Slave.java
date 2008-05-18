@@ -5,7 +5,7 @@ import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
 import hudson.slaves.SlaveStartMethod;
-import hudson.slaves.SlaveAvailabilityStrategy;
+import hudson.slaves.RetentionStrategy;
 import hudson.slaves.CommandStartMethod;
 import hudson.slaves.JNLPStartMethod;
 import hudson.slaves.SlaveComputer;
@@ -15,7 +15,6 @@ import hudson.remoting.VirtualChannel;
 import hudson.tasks.DynamicLabeler;
 import hudson.tasks.LabelFinder;
 import hudson.util.ClockDifference;
-import hudson.util.RingBufferLogHandler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -27,7 +26,6 @@ import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * Information about a Hudson slave node.
@@ -68,7 +66,7 @@ public final class Slave implements Node, Serializable {
     /**
      * Slave availablility strategy.
      */
-    private SlaveAvailabilityStrategy availabilityStrategy;
+    private RetentionStrategy availabilityStrategy;
 
     /**
      * The starter that will startup this slave.
@@ -144,11 +142,11 @@ public final class Slave implements Node, Serializable {
         return mode;
     }
 
-    public SlaveAvailabilityStrategy getAvailabilityStrategy() {
-        return availabilityStrategy == null ? new SlaveAvailabilityStrategy.Always() : availabilityStrategy;
+    public RetentionStrategy getAvailabilityStrategy() {
+        return availabilityStrategy == null ? RetentionStrategy.Always.INSTANCE : availabilityStrategy;
     }
 
-    public void setAvailabilityStrategy(SlaveAvailabilityStrategy availabilityStrategy) {
+    public void setAvailabilityStrategy(RetentionStrategy availabilityStrategy) {
         this.availabilityStrategy = availabilityStrategy;
     }
 
@@ -306,7 +304,7 @@ public final class Slave implements Node, Serializable {
 
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
-        return new RemoteLauncher(listener, c.getChannel(), c.isUnix);
+        return new RemoteLauncher(listener, c.getChannel(), c.isUnix());
     }
 
     /**

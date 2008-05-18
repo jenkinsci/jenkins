@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.slaves.SlaveStartMethod;
+import hudson.slaves.RetentionStrategy;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -253,7 +254,7 @@ public abstract class Computer extends AbstractModelObject {
     /**
      * Returns true if all the executors of this computer is idle.
      */
-    public boolean isIdle() {
+    public final boolean isIdle() {
         for (Executor e : executors)
             if(!e.isIdle())
                 return false;
@@ -281,6 +282,14 @@ public abstract class Computer extends AbstractModelObject {
     public String getSearchUrl() {
         return "computer/"+nodeName;
     }
+
+    /**
+     * {@link RetentionStrategy} associated with this computer.
+     *
+     * @return
+     *      never null.
+     */
+    public abstract RetentionStrategy getRetentionStrategy();
 
     /**
      * Expose monitoring data for the remote API.

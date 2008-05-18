@@ -15,7 +15,7 @@ import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
 import hudson.slaves.SlaveStartMethod;
-import hudson.slaves.SlaveAvailabilityStrategy;
+import hudson.slaves.RetentionStrategy;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -1524,8 +1524,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     private Slave newSlave(StaplerRequest req, JSONObject j) throws FormException {
         final SlaveStartMethod startMethod = newDescribedChild(req, j, "startMethod", SlaveStartMethod.LIST);
-        final SlaveAvailabilityStrategy availabilityStrategy =
-                newDescribedChild(req, j, "availabilityStrategy", SlaveAvailabilityStrategy.LIST);
+        final RetentionStrategy availabilityStrategy =
+                newDescribedChild(req, j, "availabilityStrategy", RetentionStrategy.LIST);
         final Slave slave = req.bindJSON(Slave.class, j);
         slave.setStartMethod(startMethod);
         slave.setAvailabilityStrategy(availabilityStrategy);
@@ -2354,6 +2354,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         public String getUrl() {
             return "computer/(master)/";
+        }
+
+        public RetentionStrategy getRetentionStrategy() {
+            return RetentionStrategy.Always.INSTANCE;
         }
 
         @Override

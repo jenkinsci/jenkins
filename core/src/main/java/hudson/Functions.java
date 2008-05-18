@@ -14,7 +14,7 @@ import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.util.Area;
 import hudson.slaves.SlaveStartMethod;
-import hudson.slaves.SlaveAvailabilityStrategy;
+import hudson.slaves.RetentionStrategy;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.jelly.JellyContext;
@@ -498,8 +498,8 @@ public class Functions {
         return SlaveStartMethod.LIST;
     }
 
-    public static List<Descriptor<SlaveAvailabilityStrategy>> getSlaveAvailabilityStrategyDescriptors() {
-        return SlaveAvailabilityStrategy.LIST;
+    public static List<Descriptor<RetentionStrategy<?>>> getSlaveAvailabilityStrategyDescriptors() {
+        return RetentionStrategy.LIST;
     }
 
     /**
