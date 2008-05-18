@@ -29,7 +29,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
- * Represents a set of {@link Executor}s on the same computer.
+ * Represents the running state of a remote computer that holds {@link Executor}s.
  *
  * <p>
  * {@link Executor}s on one {@link Computer} are transparently interchangeable
