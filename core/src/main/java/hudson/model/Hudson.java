@@ -14,7 +14,7 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
-import hudson.slaves.ComputerStartMethod;
+import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
@@ -1523,10 +1523,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     private Slave newSlave(StaplerRequest req, JSONObject j) throws FormException {
-        final ComputerStartMethod startMethod = newDescribedChild(req, j, "startMethod", ComputerStartMethod.LIST);
+        final ComputerLauncher launcher = newDescribedChild(req, j, "launcher", ComputerLauncher.LIST);
         final RetentionStrategy retentionStrategy = newDescribedChild(req, j, "availabilityStrategy", RetentionStrategy.LIST);
         final Slave slave = req.bindJSON(Slave.class, j);
-        slave.setStartMethod(startMethod);
+        slave.setStartMethod(launcher);
         slave.setRetentionStrategy(retentionStrategy);
         return slave;
     }

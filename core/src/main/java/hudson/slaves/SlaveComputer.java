@@ -46,7 +46,7 @@ import javax.servlet.http.HttpServletResponse;
 public final class SlaveComputer extends Computer {
     private volatile Channel channel;
     private Boolean isUnix;
-    private ComputerStartMethod startMethod;
+    private ComputerLauncher launcher;
 
     /**
      * Number of failed attempts to reconnect to this node
@@ -83,16 +83,16 @@ public final class SlaveComputer extends Computer {
     @Override
     @Deprecated
     public boolean isJnlpAgent() {
-        return startMethod instanceof JNLPStartMethod;
+        return launcher instanceof JNLPLauncher;
     }
 
     @Override
     public boolean isLaunchSupported() {
-        return startMethod.isLaunchSupported();
+        return launcher.isLaunchSupported();
     }
 
-    public ComputerStartMethod getStartMethod() {
-        return startMethod;
+    public ComputerLauncher getLauncher() {
+        return launcher;
     }
 
     public void launch() {
@@ -103,7 +103,7 @@ public final class SlaveComputer extends Computer {
             public void run() {
                 // do this on another thread so that the lengthy launch operation
                 // (which is typical) won't block UI thread.
-                startMethod.launch(SlaveComputer.this, new StreamTaskListener(openLogFile()));
+                launcher.launch(SlaveComputer.this, new StreamTaskListener(openLogFile()));
             }
         });
     }
@@ -256,7 +256,7 @@ public final class SlaveComputer extends Computer {
     @Override
     protected void setNode(Node node) {
         super.setNode(node);
-        startMethod = ((Slave)node).getStartMethod();
+        launcher = ((Slave)node).getStartMethod();
 
         // maybe the configuration was changed to relaunch the slave, so try to re-launch now.
         launch();

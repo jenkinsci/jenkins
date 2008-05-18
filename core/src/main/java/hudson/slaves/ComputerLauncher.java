@@ -11,7 +11,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * Extension point to allow control over how Slaves are started.
+ * Extension point to allow control over how {@link Computer}s are "launched",
+ * meaning how they get connected to their slave agent program.
  *
  * <p>
  * <b>EXPERIMENTAL: SIGNATURE MAY CHANGE IN FUTURE RELEASES</b>
@@ -19,9 +20,9 @@ import java.io.OutputStream;
  * @author Stephen Connolly
  * @since 24-Apr-2008 22:12:35
  */
-public abstract class ComputerStartMethod implements Describable<ComputerStartMethod>, ExtensionPoint {
+public abstract class ComputerLauncher implements Describable<ComputerLauncher>, ExtensionPoint {
     /**
-     * Returns true if this {@link ComputerStartMethod} supports
+     * Returns true if this {@link ComputerLauncher} supports
      * programatic launch of the slave agent in the target {@link Computer}.
      */
     public boolean isLaunchSupported() {
@@ -43,12 +44,12 @@ public abstract class ComputerStartMethod implements Describable<ComputerStartMe
     public abstract void launch(SlaveComputer computer, StreamTaskListener listener);
 
     /**
-     * All registered {@link ComputerStartMethod} implementations.
+     * All registered {@link ComputerLauncher} implementations.
      */
-    public static final DescriptorList<ComputerStartMethod> LIST = new DescriptorList<ComputerStartMethod>();
+    public static final DescriptorList<ComputerLauncher> LIST = new DescriptorList<ComputerLauncher>();
 
     static {
-        LIST.load(JNLPStartMethod.class);
-        LIST.load(CommandStartMethod.class);        
+        LIST.load(JNLPLauncher.class);
+        LIST.load(CommandLauncher.class);
     }
 }

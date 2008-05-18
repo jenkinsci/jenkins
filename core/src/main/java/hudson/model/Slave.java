@@ -4,10 +4,10 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
-import hudson.slaves.ComputerStartMethod;
+import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
-import hudson.slaves.CommandStartMethod;
-import hudson.slaves.JNLPStartMethod;
+import hudson.slaves.CommandLauncher;
+import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
@@ -71,7 +71,7 @@ public final class Slave implements Node, Serializable {
     /**
      * The starter that will startup this slave.
      */
-    private ComputerStartMethod startMethod;
+    private ComputerLauncher launcher;
 
     /**
      * Whitespace-separated labels.
@@ -114,12 +114,12 @@ public final class Slave implements Node, Serializable {
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
 
-    public ComputerStartMethod getStartMethod() {
-        return startMethod == null ? new JNLPStartMethod() : startMethod;
+    public ComputerLauncher getStartMethod() {
+        return launcher == null ? new JNLPLauncher() : launcher;
     }
 
-    public void setStartMethod(ComputerStartMethod startMethod) {
-        this.startMethod = startMethod;
+    public void setStartMethod(ComputerLauncher launcher) {
+        this.launcher = launcher;
     }
 
     public String getRemoteFS() {
@@ -340,10 +340,10 @@ public final class Slave implements Node, Serializable {
             if(command.length()>0)  command += ' ';
             agentCommand = command+"java -jar ~/bin/slave.jar";
         }
-        if (startMethod == null) {
-            startMethod = (agentCommand == null || agentCommand.trim().length() == 0)
-                    ? new JNLPStartMethod()
-                    : new CommandStartMethod(agentCommand);
+        if (launcher == null) {
+            launcher = (agentCommand == null || agentCommand.trim().length() == 0)
+                    ? new JNLPLauncher()
+                    : new CommandLauncher(agentCommand);
         }
         return this;
     }
@@ -384,6 +384,6 @@ public final class Slave implements Node, Serializable {
 //                }
 //                return null;  //To change body of implemented methods use File | Settings | File Templates.
 //            }
-//        }, ComputerStartMethod.class);
+//        }, ComputerLauncher.class);
 //    }
 }

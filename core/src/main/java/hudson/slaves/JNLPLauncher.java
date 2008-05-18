@@ -5,14 +5,14 @@ import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * {@link ComputerStartMethod} via JNLP.
+ * {@link ComputerLauncher} via JNLP.
  *
  * @author Stephen Connolly
  * @author Kohsuke Kawaguchi
 */
-public class JNLPStartMethod extends ComputerStartMethod {
+public class JNLPLauncher extends ComputerLauncher {
     @DataBoundConstructor
-    public JNLPStartMethod() {
+    public JNLPLauncher() {
     }
 
     @Override
@@ -24,11 +24,11 @@ public class JNLPStartMethod extends ComputerStartMethod {
         // do nothing as we cannot self start
     }
 
-    public Descriptor<ComputerStartMethod> getDescriptor() {
+    public Descriptor<ComputerLauncher> getDescriptor() {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<ComputerStartMethod> DESCRIPTOR = new Descriptor<ComputerStartMethod>(JNLPStartMethod.class) {
+    public static final Descriptor<ComputerLauncher> DESCRIPTOR = new Descriptor<ComputerLauncher>(JNLPLauncher.class) {
         public String getDisplayName() {
             return "Launch slave agents via JNLP";
         }

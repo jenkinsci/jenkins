@@ -16,12 +16,12 @@ import java.util.logging.Logger;
 import java.io.IOException;
 
 /**
- * {@link ComputerStartMethod} through a remote login mechanism like ssh/rsh.
+ * {@link ComputerLauncher} through a remote login mechanism like ssh/rsh.
  *
  * @author Stephen Connolly
  * @author Kohsuke Kawaguchi
 */
-public class CommandStartMethod extends ComputerStartMethod {
+public class CommandLauncher extends ComputerLauncher {
 
     /**
      * Command line to launch the agent, like
@@ -30,7 +30,7 @@ public class CommandStartMethod extends ComputerStartMethod {
     private String agentCommand;
 
     @DataBoundConstructor
-    public CommandStartMethod(String command) {
+    public CommandLauncher(String command) {
         this.agentCommand = command;
     }
 
@@ -38,11 +38,11 @@ public class CommandStartMethod extends ComputerStartMethod {
         return agentCommand;
     }
 
-    public Descriptor<ComputerStartMethod> getDescriptor() {
+    public Descriptor<ComputerLauncher> getDescriptor() {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<ComputerStartMethod> DESCRIPTOR = new Descriptor<ComputerStartMethod>(CommandStartMethod.class) {
+    public static final Descriptor<ComputerLauncher> DESCRIPTOR = new Descriptor<ComputerLauncher>(CommandLauncher.class) {
         public String getDisplayName() {
             return "Launch slave via execution of command on the Master";
         }
@@ -98,7 +98,7 @@ public class CommandStartMethod extends ComputerStartMethod {
         }
     }
 
-    private static final Logger LOGGER = Logger.getLogger(CommandStartMethod.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CommandLauncher.class.getName());
 
     static {
         LIST.add(DESCRIPTOR);

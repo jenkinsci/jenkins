@@ -19,7 +19,7 @@
         ${it.caption}
       </h1>
 
-      <st:include from="${it.startMethod}" page="main.jelly" optional="true"/>
+      <st:include from="${it.launcher}" page="main.jelly" optional="true"/>
 
       <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div>
