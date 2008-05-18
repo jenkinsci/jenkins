@@ -1,32 +1,32 @@
 ﻿<div>
-  <!-- TODO:誰か訳して -->
-  Hudson can record the 'fingerprint' of files (most often jar files) to keep track
-  of where/when those files are produced and used. When you have inter-dependent
-  projects on Hudson, this allows you to quickly find out answers to questions like:
-
+  <!-- TODO: 超訳だなぁ -->
+  Hudson は成果物がいつ・どこで，作られた・使われたかを追跡するために
+  ファイル（大抵はJarファイル）の「フィンガープリント（指紋）」を記録します。
+  依存するプロジェクトがあるとき，フィンガープリントを使う事で，次のような問題を
+  すばやく解決する事ができます。
   <ul>
     <li>
-      I have <tt>foo.jar</tt> on my HDD but which build number of FOO did it come from?
+      ハードディスクにある <tt>foo.jar</tt> は，FOOプロジェクトのどのビルド番号で作られたのか？
     </li>
     <li>
-      My BAR project depends on <tt>foo.jar</tt> from the FOO project.
+      BARプロジェクトが，FOOプロジェクトの <tt>foo.jar</tt> に依存している場合
     </li>
     <ul>
       <li>
-        Which build of <tt>foo.jar</tt> is used in BAR #51?
+        BAR プロジェクトのビルド #51 で使われている <tt>foo.jar</tt>のビルドはどれか？
       </li>
       <li>
-        Which build of BAR contains my bug fix to <tt>foo.jar</tt> #32?
+        #32でバグフィックスした <tt>foo.jar</tt> を含んでいる BARプロジェクトのビルド はどれか？
       </li>
     </ul>
   </ul>
 
   <p>
-  To use this feature, all of the involved projects (not just the project
-  in which a file is produced, but also the projects in which the file
-  is used) need to use this and record fingerprints.
-
+  この機能を使用するには，関連するプロジェクト（ファイルを生成するプロジェクトだけではなく，
+  ファイルを利用するプロジェクト）すべてで，フィンガープリントを記録する必要があります。
   <p>
-  See <a href="https://hudson.dev.java.net/fingerprint.html">this document</a>
-  for more details.
+  より詳しくは
+  <a href="https://hudson.dev.java.net/fingerprint.html">このドキュメント</a>を
+  参照してください。
+  
 </div>
