@@ -19,55 +19,7 @@
         ${it.caption}
       </h1>
 
-      <j:choose>
-        <j:when test="${it.jnlpAgent}">
-          <j:choose>
-            <j:when test="${app.slaveAgentPort==-1}">
-              <img src="${imagesURL}/32x32/error.gif"/>
-              <div class="error">
-                TCP port for JNLP slave agents is disabled.
-                <a href="${rootURL}/configure">Go to system config screen and change it</a>.
-              </div>
-            </j:when>
-            <j:when test="${it.offline and !it.temporarilyOffline}">
-              <l:isAdmin>
-                <p>
-                  <a href="slave-agent.jnlp">
-                    <img src="${imagesURL}/webstart.gif" alt="launch agent" />
-                    Launch slave agent
-                  </a>
-
-                  <!--a href="custom-jnlp" style="margin-left:3em">
-                    (tweak launch parameters)
-                  </a-->
-                </p>
-                <p>
-                  (Click the above link from this slave computer to launch the slave agent via JNLP,
-                  or from command-line run <nowrap><tt>javaws ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</tt></nowrap>)
-                </p>
-              </l:isAdmin>
-            </j:when>
-            <j:otherwise>
-              <p>
-                Connected via JNLP agent.
-              </p>
-            </j:otherwise>
-          </j:choose>
-        </j:when>
-        <j:otherwise>
-          <j:if test="${it.offline and !it.temporarilyOffline}">
-            <p class="error">
-              This node is offline because Hudson failed to launch the slave agent on it.
-              <a href="log">See log for more details</a>
-            </p>
-            <l:isAdmin>
-              <form method="get" action="launchSlaveAgent">
-                <f:submit value="Launch slave agent" />
-              </form>
-            </l:isAdmin>
-          </j:if>
-        </j:otherwise>
-      </j:choose>
+      <st:include from="${it.startMethod}" page="main.jelly" optional="true"/>
 
       <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div>

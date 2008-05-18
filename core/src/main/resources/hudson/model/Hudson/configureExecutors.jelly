@@ -65,7 +65,6 @@
                 <s:dropdownList name="slave.startMethodClass" title="${%Start method}"
                                 help="/help/system-config/master-slave/startMethod.html">
                     <j:forEach var="d" items="${h.getSlaveStartMethodDescriptors()}" varStatus="loop">
-                        <j:if test="${d != null}">
                         <s:dropdownListBlock value="${d.class.name}" name="${d.displayName}"
                                              selected="${s.startMethod.descriptor==d}"
                                              title="${d.displayName}">
@@ -82,7 +81,6 @@
                                 </j:if>
                             </s:nested>
                         </s:dropdownListBlock>
-                        </j:if>
                     </j:forEach>
                 </s:dropdownList>
 
