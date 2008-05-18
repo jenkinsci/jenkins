@@ -498,7 +498,7 @@ public class Functions {
         return ComputerLauncher.LIST;
     }
 
-    public static List<Descriptor<RetentionStrategy<?>>> getSlaveAvailabilityStrategyDescriptors() {
+    public static List<Descriptor<RetentionStrategy<?>>> getRetentionStrategyDescriptors() {
         return RetentionStrategy.LIST;
     }
 

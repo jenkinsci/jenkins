@@ -62,14 +62,13 @@
                     </select>
                 </s:entry>
 
-                <s:dropdownList name="slave.startMethodClass" title="${%Start method}"
+                <s:dropdownList name="slave.launcherClass" title="${%Start method}"
                                 help="/help/system-config/master-slave/launcher.html">
                     <j:forEach var="d" items="${h.getComputerLauncherDescriptors()}" varStatus="loop">
                         <s:dropdownListBlock value="${d.class.name}" name="${d.displayName}"
                                              selected="${s.launcher.descriptor==d}"
                                              title="${d.displayName}">
                             <s:nested>
-                                <j:if test='${d.configPage != ""}'>
                                 <div name="launcher">
                                     <table width="100%">
                                         <j:set var="descriptor" value="${d}"/>
@@ -78,26 +77,23 @@
                                         <st:include from="${d}" page="${d.configPage}" optional="true"/>
                                     </table>
                                 </div>
-                                </j:if>
                             </s:nested>
                         </s:dropdownListBlock>
                     </j:forEach>
                 </s:dropdownList>
 
-                <s:dropdownList name="slave.availabilityStrategyClass" title="${%Availability}"
+                <s:dropdownList name="slave.retentionStrategyClass" title="${%Availability}"
                                 help="/help/system-config/master-slave/availability.html">
-                    <j:forEach var="d" items="${h.getSlaveAvailabilityStrategyDescriptors()}">
+                    <j:forEach var="d" items="${h.getRetentionStrategyDescriptors()}">
                         <j:if test="${d != null}">
                             <s:dropdownListBlock value="${d.class.name}" name="${d.displayName}"
-                                                 selected="${s.availabilityStrategy.descriptor==d}"
+                                                 selected="${s.retentionStrategy.descriptor==d}"
                                                  title="${d.displayName}">
                                 <s:nested>
-                                    <j:if test='${d.configPage != ""}'>
-                                        <j:set var="descriptor" value="${d}"/>
-                                        <j:set var="instance"
-                                               value="${h.ifThenElse(s.availabilityStrategy.descriptor==d,s.availabilityStrategy,null)}"/>
-                                        <st:include from="${d}" page="${d.configPage}" optional="true"/>
-                                    </j:if>
+                                      <j:set var="descriptor" value="${d}"/>
+                                      <j:set var="instance"
+                                             value="${h.ifThenElse(s.retentionStrategy.descriptor==d,s.retentionStrategy,null)}"/>
+                                      <st:include from="${d}" page="${d.configPage}" optional="true"/>
                                 </s:nested>
                             </s:dropdownListBlock>
                         </j:if>
