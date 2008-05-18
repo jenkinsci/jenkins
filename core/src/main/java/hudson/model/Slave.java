@@ -45,6 +45,10 @@ import java.util.logging.Logger;
 /**
  * Information about a Hudson slave node.
  *
+ * <p>
+ * Ideally this would have been in the <tt>hudson.slaves</tt> package,
+ * but for compatibility reasons, it can't.
+ *
  * @author Kohsuke Kawaguchi
  */
 public final class Slave implements Node, Serializable {
