@@ -45,8 +45,10 @@ public abstract class ComputerStartMethod implements Describable<ComputerStartMe
     /**
      * All registered {@link ComputerStartMethod} implementations.
      */
-    public static final DescriptorList<ComputerStartMethod> LIST = new DescriptorList<ComputerStartMethod>(
-        JNLPStartMethod.DESCRIPTOR,
-        CommandStartMethod.DESCRIPTOR
-    );
+    public static final DescriptorList<ComputerStartMethod> LIST = new DescriptorList<ComputerStartMethod>();
+
+    static {
+        LIST.load(JNLPStartMethod.class);
+        LIST.load(CommandStartMethod.class);        
+    }
 }

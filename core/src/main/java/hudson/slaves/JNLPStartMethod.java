@@ -33,4 +33,8 @@ public class JNLPStartMethod extends ComputerStartMethod {
             return "Launch slave agents via JNLP";
         }
     };
+
+    static {
+        LIST.add(DESCRIPTOR);
+    }
 }

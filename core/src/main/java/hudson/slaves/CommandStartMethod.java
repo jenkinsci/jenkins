@@ -99,4 +99,8 @@ public class CommandStartMethod extends ComputerStartMethod {
     }
 
     private static final Logger LOGGER = Logger.getLogger(CommandStartMethod.class.getName());
+
+    static {
+        LIST.add(DESCRIPTOR);
+    }
 }
