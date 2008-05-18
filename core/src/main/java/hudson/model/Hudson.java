@@ -1524,11 +1524,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     private Slave newSlave(StaplerRequest req, JSONObject j) throws FormException {
         final ComputerStartMethod startMethod = newDescribedChild(req, j, "startMethod", ComputerStartMethod.LIST);
-        final RetentionStrategy availabilityStrategy =
-                newDescribedChild(req, j, "availabilityStrategy", RetentionStrategy.LIST);
+        final RetentionStrategy retentionStrategy = newDescribedChild(req, j, "availabilityStrategy", RetentionStrategy.LIST);
         final Slave slave = req.bindJSON(Slave.class, j);
         slave.setStartMethod(startMethod);
-        slave.setAvailabilityStrategy(availabilityStrategy);
+        slave.setRetentionStrategy(retentionStrategy);
         return slave;
     }
 

@@ -66,7 +66,7 @@ public final class Slave implements Node, Serializable {
     /**
      * Slave availablility strategy.
      */
-    private RetentionStrategy availabilityStrategy;
+    private RetentionStrategy retentionStrategy;
 
     /**
      * The starter that will startup this slave.
@@ -142,12 +142,12 @@ public final class Slave implements Node, Serializable {
         return mode;
     }
 
-    public RetentionStrategy getAvailabilityStrategy() {
-        return availabilityStrategy == null ? RetentionStrategy.Always.INSTANCE : availabilityStrategy;
+    public RetentionStrategy getRetentionStrategy() {
+        return retentionStrategy == null ? RetentionStrategy.Always.INSTANCE : retentionStrategy;
     }
 
-    public void setAvailabilityStrategy(RetentionStrategy availabilityStrategy) {
-        this.availabilityStrategy = availabilityStrategy;
+    public void setRetentionStrategy(RetentionStrategy availabilityStrategy) {
+        this.retentionStrategy = availabilityStrategy;
     }
 
     public String getLabelString() {

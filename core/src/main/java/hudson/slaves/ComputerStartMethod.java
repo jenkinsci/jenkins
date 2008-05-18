@@ -1,9 +1,8 @@
 package hudson.slaves;
 
 import hudson.ExtensionPoint;
-import hudson.slaves.SlaveComputer;
-import hudson.model.Describable;
 import hudson.model.Computer;
+import hudson.model.Describable;
 import hudson.remoting.Channel.Listener;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;

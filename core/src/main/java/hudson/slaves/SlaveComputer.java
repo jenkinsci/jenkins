@@ -46,6 +46,7 @@ import javax.servlet.http.HttpServletResponse;
 public final class SlaveComputer extends Computer {
     private volatile Channel channel;
     private Boolean isUnix;
+    private ComputerStartMethod startMethod;
 
     /**
      * Number of failed attempts to reconnect to this node
@@ -82,24 +83,27 @@ public final class SlaveComputer extends Computer {
     @Override
     @Deprecated
     public boolean isJnlpAgent() {
-        return getNode().getStartMethod() instanceof JNLPStartMethod;
+        return startMethod instanceof JNLPStartMethod;
     }
 
     @Override
     public boolean isLaunchSupported() {
-        return getNode().getStartMethod().isLaunchSupported();
+        return startMethod.isLaunchSupported();
     }
 
-    /**
-     * Launches a remote agent asynchronously.
-     */
-    private void launch(final Slave slave) {
+    public ComputerStartMethod getStartMethod() {
+        return startMethod;
+    }
+
+    public void launch() {
+        if(channel!=null)   return;
+
         closeChannel();
         Computer.threadPoolForRemoting.execute(new Runnable() {
             public void run() {
                 // do this on another thread so that the lengthy launch operation
                 // (which is typical) won't block UI thread.
-                slave.getStartMethod().launch(SlaveComputer.this, new StreamTaskListener(openLogFile()));
+                startMethod.launch(SlaveComputer.this, new StreamTaskListener(openLogFile()));
             }
         });
     }
@@ -203,11 +207,6 @@ public final class SlaveComputer extends Computer {
         }
     }
 
-    public void launch() {
-        if(channel==null)
-            launch(getNode());
-    }
-
     /**
      * Gets the string representation of the slave log.
      */
@@ -236,7 +235,7 @@ public final class SlaveComputer extends Computer {
     }
 
     public RetentionStrategy getRetentionStrategy() {
-        return getNode().getAvailabilityStrategy();
+        return getNode().getRetentionStrategy();
     }
 
     /**
@@ -257,9 +256,10 @@ public final class SlaveComputer extends Computer {
     @Override
     protected void setNode(Node node) {
         super.setNode(node);
-        if(channel==null)
-            // maybe the configuration was changed to relaunch the slave, so try it now.
-            launch((Slave)node);
+        startMethod = ((Slave)node).getStartMethod();
+
+        // maybe the configuration was changed to relaunch the slave, so try to re-launch now.
+        launch();
     }
 
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
