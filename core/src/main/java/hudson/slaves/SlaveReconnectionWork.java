@@ -21,9 +21,10 @@ public class SlaveReconnectionWork extends SafeTimerTask {
     private final Map<Slave, Long> nextCheck = new WeakHashMap<Slave, Long>();
 
     protected void doRun() {
+        final Queue queue = Hudson.getInstance().getQueue();
+        
         for (Slave s : Hudson.getInstance().getSlaves()) {
             if (!nextCheck.containsKey(s) || System.currentTimeMillis() > nextCheck.get(s)) {
-                final Queue queue = Hudson.getInstance().getQueue();
                 boolean hasJob = false;
                 for (Executor exec: s.getComputer().getExecutors()) {
                     if (!exec.isIdle()) {
