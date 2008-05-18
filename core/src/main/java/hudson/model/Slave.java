@@ -327,11 +327,17 @@ public final class Slave implements Node, Serializable {
         }
 
         /**
-         * Launches a remote agent.
+         * Launches a remote agent asynchronously.
          */
         private void launch(final Slave slave) {
             closeChannel();
-            slave.startMethod.launch(this, new StreamTaskListener(openLogFile()));
+            Computer.threadPoolForRemoting.execute(new Runnable() {
+                public void run() {
+                    // do this on another thread so that the lengthy launch operation
+                    // (which is typical) won't block UI thread.
+                    slave.startMethod.launch(ComputerImpl.this, new StreamTaskListener(openLogFile()));
+                }
+            });
         }
 
         public OutputStream openLogFile() {
@@ -648,54 +654,47 @@ public final class Slave implements Node, Serializable {
             return String.format("[%1$tD %1$tT]", new Date());
         }
 
-        public void launch(final ComputerImpl computer, final StreamTaskListener listener) {
-            // launch the slave agent asynchronously
-            Computer.threadPoolForRemoting.execute(new Runnable() {
-                // TODO: do this only for nodes that are so configured.
-                // TODO: support passive connection via JNLP
-                public void run() {
-                    try {
-                        listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
-                        listener.getLogger().println("$ " + getCommand());
+        public void launch(ComputerImpl computer, final StreamTaskListener listener) {
+            try {
+                listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
+                listener.getLogger().println("$ " + getCommand());
 
-                        ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
-                        final EnvVars cookie = ProcessTreeKiller.createCookie();
-                        pb.environment().putAll(cookie);
-                        final Process proc = pb.start();
+                ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
+                final EnvVars cookie = ProcessTreeKiller.createCookie();
+                pb.environment().putAll(cookie);
+                final Process proc = pb.start();
 
-                        // capture error information from stderr. this will terminate itself
-                        // when the process is killed.
-                        new StreamCopyThread("stderr copier for remote agent on " + computer.getDisplayName(),
-                                proc.getErrorStream(), listener.getLogger()).start();
+                // capture error information from stderr. this will terminate itself
+                // when the process is killed.
+                new StreamCopyThread("stderr copier for remote agent on " + computer.getDisplayName(),
+                        proc.getErrorStream(), listener.getLogger()).start();
 
-                        computer.setChannel(proc.getInputStream(), proc.getOutputStream(), listener.getLogger(), new Listener() {
-                            public void onClosed(Channel channel, IOException cause) {
-                                if (cause != null) {
-                                    cause.printStackTrace(
-                                            listener.error(Messages.Slave_Terminated(getTimestamp())));
-                                }
-                                ProcessTreeKiller.get().kill(proc, cookie);
-                            }
-                        });
-
-                        LOGGER.info("slave agent launched for " + computer.getDisplayName());
-                    } catch (InterruptedException e) {
-                        e.printStackTrace(listener.error("aborted"));
-                    } catch (IOException e) {
-                        Util.displayIOException(e, listener);
-
-                        String msg = Util.getWin32ErrorMessage(e);
-                        if (msg == null) {
-                            msg = "";
-                        } else {
-                            msg = " : " + msg;
+                computer.setChannel(proc.getInputStream(), proc.getOutputStream(), listener.getLogger(), new Listener() {
+                    public void onClosed(Channel channel, IOException cause) {
+                        if (cause != null) {
+                            cause.printStackTrace(
+                                listener.error(Messages.Slave_Terminated(getTimestamp())));
                         }
-                        msg = Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
-                        LOGGER.log(Level.SEVERE, msg, e);
-                        e.printStackTrace(listener.error(msg));
+                        ProcessTreeKiller.get().kill(proc, cookie);
                     }
+                });
+
+                LOGGER.info("slave agent launched for " + computer.getDisplayName());
+            } catch (InterruptedException e) {
+                e.printStackTrace(listener.error("aborted"));
+            } catch (IOException e) {
+                Util.displayIOException(e, listener);
+
+                String msg = Util.getWin32ErrorMessage(e);
+                if (msg == null) {
+                    msg = "";
+                } else {
+                    msg = " : " + msg;
                 }
-            });
+                msg = Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
+                LOGGER.log(Level.SEVERE, msg, e);
+                e.printStackTrace(listener.error(msg));
+            }
         }
 
         private static final Logger LOGGER = Logger.getLogger(CommandStartMethod.class.getName());
