@@ -30,9 +30,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
     /**
      * All registered {@link RetentionStrategy} implementations.
      */
-    public static final DescriptorList<RetentionStrategy<?>> LIST = new DescriptorList<RetentionStrategy<?>>(
-        Always.DESCRIPTOR
-    );
+    public static final DescriptorList<RetentionStrategy<?>> LIST = new DescriptorList<RetentionStrategy<?>>();
 
     /**
      * Dummy instance that doesn't do any attempt to retention.
@@ -46,7 +44,12 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
             throw new UnsupportedOperationException();
         }
     };
-    
+
+    /**
+     * Convenient singleton instance, sine this {@link RetentionStrategy} is stateless.
+     */
+    public static final Always INSTANCE = new Always();
+
     /**
      * {@link RetentionStrategy} that tries to keep the node online all the time.
      */
@@ -60,11 +63,6 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
                 c.tryReconnect();
             return 1;
         }
-
-        /**
-         * Convenient singleton instance, sine this {@link RetentionStrategy} is stateless.
-         */
-        public static final Always INSTANCE = new Always();
 
         public DescriptorImpl getDescriptor() {
             return DESCRIPTOR;
@@ -80,6 +78,10 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
             public String getDisplayName() {
                 return "Keep this slave on-line as much as possible";
             }
+        }
+
+        static {
+            LIST.add(DESCRIPTOR);
         }
     }
 }
