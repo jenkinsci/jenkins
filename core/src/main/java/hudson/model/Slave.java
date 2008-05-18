@@ -333,7 +333,7 @@ public final class Slave implements Node, Serializable {
             closeChannel();
 
             final OutputStream launchLog = openLogFile();
-            slave.startMethod.start(this, slave, launchLog, logger);
+            slave.startMethod.launch(this, launchLog);
         }
 
         public OutputStream openLogFile() {
@@ -589,7 +589,7 @@ public final class Slave implements Node, Serializable {
             return false;
         }
 
-        public void start(ComputerImpl computer, Slave slave, OutputStream launchLog, Logger logger) {
+        public void launch(ComputerImpl computer, OutputStream launchLog) {
             // do nothing as we cannot self start
         }
 
@@ -647,9 +647,7 @@ public final class Slave implements Node, Serializable {
             return String.format("[%1$tD %1$tT]", new Date());
         }
 
-        public void start(final ComputerImpl computer, final Slave slave, final OutputStream launchLog,
-                final Logger logger) {
-            final CommandStartMethod method = (CommandStartMethod) slave.startMethod;
+        public void launch(final ComputerImpl computer, final OutputStream launchLog) {
             // launch the slave agent asynchronously
             Computer.threadPoolForRemoting.execute(new Runnable() {
                 // TODO: do this only for nodes that are so configured.
@@ -658,16 +656,16 @@ public final class Slave implements Node, Serializable {
                     final StreamTaskListener listener = new StreamTaskListener(launchLog);
                     try {
                         listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
-                        listener.getLogger().println("$ " + method.getCommand());
+                        listener.getLogger().println("$ " + getCommand());
 
-                        ProcessBuilder pb = new ProcessBuilder(Util.tokenize(method.getCommand()));
+                        ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
                         final EnvVars cookie = ProcessTreeKiller.createCookie();
                         pb.environment().putAll(cookie);
                         final Process proc = pb.start();
 
                         // capture error information from stderr. this will terminate itself
                         // when the process is killed.
-                        new StreamCopyThread("stderr copier for remote agent on " + slave.getNodeName(),
+                        new StreamCopyThread("stderr copier for remote agent on " + computer.getDisplayName(),
                                 proc.getErrorStream(), launchLog).start();
 
                         computer.setChannel(proc.getInputStream(), proc.getOutputStream(), launchLog, new Listener() {
@@ -680,7 +678,7 @@ public final class Slave implements Node, Serializable {
                             }
                         });
 
-                        logger.info("slave agent launched for " + slave.getNodeName());
+                        LOGGER.info("slave agent launched for " + computer.getDisplayName());
                         computer.numRetryAttempt = 0;
                     } catch (InterruptedException e) {
                         e.printStackTrace(listener.error("aborted"));
@@ -693,13 +691,15 @@ public final class Slave implements Node, Serializable {
                         } else {
                             msg = " : " + msg;
                         }
-                        msg = Messages.Slave_UnableToLaunch(slave.getNodeName(), msg);
-                        logger.log(Level.SEVERE, msg, e);
+                        msg = Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
+                        LOGGER.log(Level.SEVERE, msg, e);
                         e.printStackTrace(listener.error(msg));
                     }
                 }
             });
         }
+
+        private static final Logger LOGGER = Logger.getLogger(CommandStartMethod.class.getName());
     }
 
 //

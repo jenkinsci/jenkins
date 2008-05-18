@@ -24,7 +24,7 @@ public abstract class SlaveStartMethod implements Describable<SlaveStartMethod>,
         return true;
     }
 
-    public abstract void start(Slave.ComputerImpl computer, Slave slave, OutputStream launchLog, Logger logger);
+    public abstract void launch(Slave.ComputerImpl computer, OutputStream launchLog);
 
     /**
      * All registered {@link SlaveStartMethod} implementations.
