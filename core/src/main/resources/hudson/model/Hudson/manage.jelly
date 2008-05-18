@@ -20,7 +20,8 @@
   <l:main-panel>
     <h1>${%Manage Hudson}</h1>
     <table style="padding-left: 2em;">
-      <local:feature icon="setting.gif"          href="configure"    title="${%System Configuration}"/>
+        <local:feature icon="setting.gif"          href="configure"    title="${%Configure System}"/>
+        <local:feature icon="setting.gif"          href="configureExecutors"    title="${%Configure Executors}"/>
       <local:feature icon="refresh.gif"          href="reload"       title="${%Reload Configuration from Disk}">
         ${%Discard all the loaded data in memory and reload everything from file system.}
         ${%Useful when you modified config files directly on disk.} 

@@ -6,6 +6,10 @@ import hudson.node_monitors.NodeMonitor;
 import hudson.util.EnumConverter;
 import hudson.util.ClockDifference;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
+import org.acegisecurity.ui.AbstractProcessingFilter;
 
 import java.util.Set;
 import java.io.IOException;
@@ -136,7 +140,8 @@ public interface Node {
         }
 
         static {
-            Stapler.CONVERT_UTILS.register(new EnumConverter(),Mode.class);
+            Stapler.CONVERT_UTILS.register(new EnumConverter(), Mode.class);
         }
     }
+
 }

@@ -206,17 +206,18 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     public static final Timer timer = new Timer("Hudson cron thread");
 
     public static void init() {
-        timer.scheduleAtFixedRate(new Cron(), 1000*60, 1000*60/*every minute*/);
+        long MIN = 1000*60;
+        long HOUR =60*MIN;
+        long DAY = 24*HOUR;
+
+        timer.scheduleAtFixedRate(new Cron(), MIN, MIN);
 
         new DoubleLaunchChecker().schedule();
 
         // clean up fingerprint once a day
-        long MIN = 1000*60;
-        long HOUR =60*MIN;
-        long DAY = 24*HOUR;
         timer.scheduleAtFixedRate(new FingerprintCleanupThread(),DAY,DAY);
         timer.scheduleAtFixedRate(new WorkspaceCleanupThread(),DAY+4*HOUR,DAY);
-        timer.scheduleAtFixedRate(new SlaveReconnectionWork(),15*MIN,5*MIN);
+        timer.scheduleAtFixedRate(new SlaveReconnectionWork(),15*MIN,1*MIN);
 
         // start monitoring nodes, although there's no hurry.
         timer.schedule(new SafeTimerTask() {

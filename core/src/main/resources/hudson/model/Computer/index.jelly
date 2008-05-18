@@ -25,7 +25,7 @@
             <j:when test="${app.slaveAgentPort==-1}">
               <img src="${imagesURL}/32x32/error.gif"/>
               <div class="error">
-                TCP port for JNLP slave agentsis is disabled.
+                TCP port for JNLP slave agents is disabled.
                 <a href="${rootURL}/configure">Go to system config screen and change it</a>.
               </div>
             </j:when>
