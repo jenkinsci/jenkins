@@ -494,7 +494,7 @@ public class Functions {
         return BuildStepDescriptor.filter(BuildStep.PUBLISHERS, project.getClass());
     }
 
-    public static List<Descriptor<ComputerLauncher>> getSlaveStartMethodDescriptors() {
+    public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
         return ComputerLauncher.LIST;
     }
 

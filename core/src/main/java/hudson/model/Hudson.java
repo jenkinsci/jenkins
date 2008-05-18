@@ -1526,7 +1526,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         final ComputerLauncher launcher = newDescribedChild(req, j, "launcher", ComputerLauncher.LIST);
         final RetentionStrategy retentionStrategy = newDescribedChild(req, j, "availabilityStrategy", RetentionStrategy.LIST);
         final Slave slave = req.bindJSON(Slave.class, j);
-        slave.setStartMethod(launcher);
+        slave.setLauncher(launcher);
         slave.setRetentionStrategy(retentionStrategy);
         return slave;
     }

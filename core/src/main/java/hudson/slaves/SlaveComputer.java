@@ -256,7 +256,7 @@ public final class SlaveComputer extends Computer {
     @Override
     protected void setNode(Node node) {
         super.setNode(node);
-        launcher = ((Slave)node).getStartMethod();
+        launcher = ((Slave)node).getLauncher();
 
         // maybe the configuration was changed to relaunch the slave, so try to re-launch now.
         launch();

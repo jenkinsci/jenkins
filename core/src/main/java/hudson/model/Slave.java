@@ -114,11 +114,11 @@ public final class Slave implements Node, Serializable {
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
 
-    public ComputerLauncher getStartMethod() {
+    public ComputerLauncher getLauncher() {
         return launcher == null ? new JNLPLauncher() : launcher;
     }
 
-    public void setStartMethod(ComputerLauncher launcher) {
+    public void setLauncher(ComputerLauncher launcher) {
         this.launcher = launcher;
     }
 
