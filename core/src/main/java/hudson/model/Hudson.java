@@ -14,6 +14,8 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
+import hudson.slaves.SlaveStartMethod;
+import hudson.slaves.SlaveAvailabilityStrategy;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;

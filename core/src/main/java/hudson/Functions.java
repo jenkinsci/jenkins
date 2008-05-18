@@ -13,6 +13,8 @@ import hudson.security.SecurityRealm;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.util.Area;
+import hudson.slaves.SlaveStartMethod;
+import hudson.slaves.SlaveAvailabilityStrategy;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.jelly.JellyContext;
@@ -48,7 +50,6 @@ import java.util.TreeMap;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 /**
  * Utility functions used in views.

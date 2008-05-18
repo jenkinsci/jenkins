@@ -5,6 +5,8 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
+import hudson.slaves.SlaveStartMethod;
+import hudson.slaves.SlaveAvailabilityStrategy;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.model.Descriptor.FormException;

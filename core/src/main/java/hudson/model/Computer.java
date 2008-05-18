@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.slaves.SlaveStartMethod;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -125,7 +126,7 @@ public abstract class Computer extends AbstractModelObject {
 
     /**
      * Returns true if this computer is supposed to be launched via JNLP.
-     * @deprecated see {@linkplain #isLaunchSupported()} and {@linkplain hudson.model.SlaveStartMethod}
+     * @deprecated see {@linkplain #isLaunchSupported()} and {@linkplain SlaveStartMethod}
      */
     @Exported
     @Deprecated
