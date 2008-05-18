@@ -34,6 +34,18 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         Always.DESCRIPTOR
     );
 
+    /**
+     * Dummy instance that doesn't do any attempt to retention.
+     */
+    public static final RetentionStrategy<Computer> NOOP = new RetentionStrategy<Computer>() {
+        public long check(Computer c) {
+            return 1;
+        }
+
+        public Descriptor<RetentionStrategy<?>> getDescriptor() {
+            throw new UnsupportedOperationException();
+        }
+    };
     
     /**
      * {@link RetentionStrategy} that tries to keep the node online all the time.

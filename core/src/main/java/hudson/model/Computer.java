@@ -287,7 +287,8 @@ public abstract class Computer extends AbstractModelObject {
      * {@link RetentionStrategy} associated with this computer.
      *
      * @return
-     *      never null.
+     *      never null. This method return {@code RetentionStrategy<? super T>} where
+     *      {@code T=this.getClass()}.
      */
     public abstract RetentionStrategy getRetentionStrategy();
 

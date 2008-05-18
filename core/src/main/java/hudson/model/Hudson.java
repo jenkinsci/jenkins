@@ -2357,7 +2357,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         }
 
         public RetentionStrategy getRetentionStrategy() {
-            return RetentionStrategy.Always.INSTANCE;
+            return RetentionStrategy.NOOP;
         }
 
         @Override
