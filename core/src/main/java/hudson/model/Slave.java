@@ -639,7 +639,6 @@ public final class Slave implements Node, Serializable {
             public String getDisplayName() {
                 return "Launch slave via execution of command on the Master";
             }
-
         };
 
         /**
