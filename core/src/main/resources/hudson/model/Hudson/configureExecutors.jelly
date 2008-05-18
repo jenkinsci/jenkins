@@ -56,9 +56,7 @@
                 <s:entry title="${%Usage}" help="/help/system-config/master-slave/usage.html">
                   <select class="setting-input" name="slave.mode">
                     <j:forEach var="m" items="${h.getNodeModes()}">
-                      <s:option value="${m.name}"
-                                selected="${m==s.mode}">${m.description}
-                      </s:option>
+                      <s:option value="${m.name}" selected="${m==s.mode}">${m.description}</s:option>
                     </j:forEach>
                   </select>
                 </s:entry>
