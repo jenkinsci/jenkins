@@ -251,6 +251,16 @@ public abstract class Computer extends AbstractModelObject {
     }
 
     /**
+     * Returns true if all the executors of this computer is idle.
+     */
+    public boolean isIdle() {
+        for (Executor e : executors)
+            if(!e.isIdle())
+                return false;
+        return true;
+    }
+
+    /**
      * Called by {@link Executor} to kill excessive executors from this computer.
      */
     /*package*/ synchronized void removeExecutor(Executor e) {
