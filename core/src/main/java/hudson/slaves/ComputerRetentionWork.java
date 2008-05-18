@@ -12,7 +12,7 @@ import java.util.WeakHashMap;
  *
  * @author Kohsuke Kawaguchi
  */
-public class SlaveReconnectionWork extends SafeTimerTask {
+public class ComputerRetentionWork extends SafeTimerTask {
     /**
      * Use weak hash map to avoid leaking {@link Computer}.
      */
