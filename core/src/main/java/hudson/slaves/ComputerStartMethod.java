@@ -20,9 +20,9 @@ import java.io.OutputStream;
  * @author Stephen Connolly
  * @since 24-Apr-2008 22:12:35
  */
-public abstract class SlaveStartMethod implements Describable<SlaveStartMethod>, ExtensionPoint {
+public abstract class ComputerStartMethod implements Describable<ComputerStartMethod>, ExtensionPoint {
     /**
-     * Returns true if this {@link SlaveStartMethod} supports
+     * Returns true if this {@link ComputerStartMethod} supports
      * programatic launch of the slave agent in the target {@link Computer}.
      */
     public boolean isLaunchSupported() {
@@ -44,9 +44,9 @@ public abstract class SlaveStartMethod implements Describable<SlaveStartMethod>,
     public abstract void launch(SlaveComputer computer, StreamTaskListener listener);
 
     /**
-     * All registered {@link SlaveStartMethod} implementations.
+     * All registered {@link ComputerStartMethod} implementations.
      */
-    public static final DescriptorList<SlaveStartMethod> LIST = new DescriptorList<SlaveStartMethod>(
+    public static final DescriptorList<ComputerStartMethod> LIST = new DescriptorList<ComputerStartMethod>(
         JNLPStartMethod.DESCRIPTOR,
         CommandStartMethod.DESCRIPTOR
     );

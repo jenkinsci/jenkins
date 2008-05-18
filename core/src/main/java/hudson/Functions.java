@@ -13,7 +13,7 @@ import hudson.security.SecurityRealm;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.util.Area;
-import hudson.slaves.SlaveStartMethod;
+import hudson.slaves.ComputerStartMethod;
 import hudson.slaves.RetentionStrategy;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
@@ -494,8 +494,8 @@ public class Functions {
         return BuildStepDescriptor.filter(BuildStep.PUBLISHERS, project.getClass());
     }
 
-    public static List<Descriptor<SlaveStartMethod>> getSlaveStartMethodDescriptors() {
-        return SlaveStartMethod.LIST;
+    public static List<Descriptor<ComputerStartMethod>> getSlaveStartMethodDescriptors() {
+        return ComputerStartMethod.LIST;
     }
 
     public static List<Descriptor<RetentionStrategy<?>>> getSlaveAvailabilityStrategyDescriptors() {

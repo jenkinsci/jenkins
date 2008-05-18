@@ -4,7 +4,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
-import hudson.slaves.SlaveStartMethod;
+import hudson.slaves.ComputerStartMethod;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.CommandStartMethod;
 import hudson.slaves.JNLPStartMethod;
@@ -71,7 +71,7 @@ public final class Slave implements Node, Serializable {
     /**
      * The starter that will startup this slave.
      */
-    private SlaveStartMethod startMethod;
+    private ComputerStartMethod startMethod;
 
     /**
      * Whitespace-separated labels.
@@ -114,11 +114,11 @@ public final class Slave implements Node, Serializable {
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
 
-    public SlaveStartMethod getStartMethod() {
+    public ComputerStartMethod getStartMethod() {
         return startMethod == null ? new JNLPStartMethod() : startMethod;
     }
 
-    public void setStartMethod(SlaveStartMethod startMethod) {
+    public void setStartMethod(ComputerStartMethod startMethod) {
         this.startMethod = startMethod;
     }
 
@@ -384,6 +384,6 @@ public final class Slave implements Node, Serializable {
 //                }
 //                return null;  //To change body of implemented methods use File | Settings | File Templates.
 //            }
-//        }, SlaveStartMethod.class);
+//        }, ComputerStartMethod.class);
 //    }
 }
