@@ -1,12 +1,13 @@
 package hudson.model;
 
-import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
 import hudson.slaves.SlaveStartMethod;
 import hudson.slaves.SlaveAvailabilityStrategy;
+import hudson.slaves.CommandStartMethod;
+import hudson.slaves.JNLPStartMethod;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.model.Descriptor.FormException;
@@ -19,13 +20,10 @@ import hudson.tasks.DynamicLabeler;
 import hudson.tasks.LabelFinder;
 import hudson.util.ClockDifference;
 import hudson.util.NullStream;
-import hudson.util.ProcessTreeKiller;
 import hudson.util.RingBufferLogHandler;
-import hudson.util.StreamCopyThread;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -43,8 +41,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-
-import net.sf.json.JSONObject;
 
 /**
  * Information about a Hudson slave node.
@@ -592,116 +588,6 @@ public final class Slave implements Node, Serializable {
         private static final long serialVersionUID = 1L;
     }
 
-    public static class JNLPStartMethod extends SlaveStartMethod {
-
-        @Override
-        public boolean isLaunchSupported() {
-            return false;
-        }
-
-        public void launch(ComputerImpl computer, StreamTaskListener listener) {
-            // do nothing as we cannot self start
-        }
-
-        //@DataBoundConstructor
-        public JNLPStartMethod() {
-        }
-
-        public Descriptor<SlaveStartMethod> getDescriptor() {
-            return DESCRIPTOR;
-        }
-
-        public static final Descriptor<SlaveStartMethod> DESCRIPTOR = new Descriptor<SlaveStartMethod>(JNLPStartMethod.class) {
-            public String getDisplayName() {
-                return "Launch slave agents via JNLP";
-            }
-
-            public SlaveStartMethod newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-                return new JNLPStartMethod();
-            }
-        };
-    }
-
-    public static class CommandStartMethod extends SlaveStartMethod {
-
-        /**
-         * Command line to launch the agent, like
-         * "ssh myslave java -jar /path/to/hudson-remoting.jar"
-         */
-        private String agentCommand;
-
-        @DataBoundConstructor
-        public CommandStartMethod(String command) {
-            this.agentCommand = command;
-        }
-
-        public String getCommand() {
-            return agentCommand;
-        }
-
-        public Descriptor<SlaveStartMethod> getDescriptor() {
-            return DESCRIPTOR;
-        }
-
-        public static final Descriptor<SlaveStartMethod> DESCRIPTOR = new Descriptor<SlaveStartMethod>(CommandStartMethod.class) {
-            public String getDisplayName() {
-                return "Launch slave via execution of command on the Master";
-            }
-        };
-
-        /**
-         * Gets the formatted current time stamp.
-         */
-        private static String getTimestamp() {
-            return String.format("[%1$tD %1$tT]", new Date());
-        }
-
-        public void launch(ComputerImpl computer, final StreamTaskListener listener) {
-            try {
-                listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
-                listener.getLogger().println("$ " + getCommand());
-
-                ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
-                final EnvVars cookie = ProcessTreeKiller.createCookie();
-                pb.environment().putAll(cookie);
-                final Process proc = pb.start();
-
-                // capture error information from stderr. this will terminate itself
-                // when the process is killed.
-                new StreamCopyThread("stderr copier for remote agent on " + computer.getDisplayName(),
-                        proc.getErrorStream(), listener.getLogger()).start();
-
-                computer.setChannel(proc.getInputStream(), proc.getOutputStream(), listener.getLogger(), new Listener() {
-                    public void onClosed(Channel channel, IOException cause) {
-                        if (cause != null) {
-                            cause.printStackTrace(
-                                listener.error(Messages.Slave_Terminated(getTimestamp())));
-                        }
-                        ProcessTreeKiller.get().kill(proc, cookie);
-                    }
-                });
-
-                LOGGER.info("slave agent launched for " + computer.getDisplayName());
-            } catch (InterruptedException e) {
-                e.printStackTrace(listener.error("aborted"));
-            } catch (IOException e) {
-                Util.displayIOException(e, listener);
-
-                String msg = Util.getWin32ErrorMessage(e);
-                if (msg == null) {
-                    msg = "";
-                } else {
-                    msg = " : " + msg;
-                }
-                msg = Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
-                LOGGER.log(Level.SEVERE, msg, e);
-                e.printStackTrace(listener.error(msg));
-            }
-        }
-
-        private static final Logger LOGGER = Logger.getLogger(CommandStartMethod.class.getName());
-    }
-
 //
 // backwrad compatibility
 //
@@ -728,8 +614,8 @@ public final class Slave implements Node, Serializable {
     private transient String agentCommand;
 
     static {
-        SlaveStartMethod.LIST.add(Slave.JNLPStartMethod.DESCRIPTOR);
-        SlaveStartMethod.LIST.add(Slave.CommandStartMethod.DESCRIPTOR);
+        SlaveStartMethod.LIST.add(JNLPStartMethod.DESCRIPTOR);
+        SlaveStartMethod.LIST.add(CommandStartMethod.DESCRIPTOR);
     }
 
 
