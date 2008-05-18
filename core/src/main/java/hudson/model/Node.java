@@ -1,18 +1,14 @@
 package hudson.model;
 
-import hudson.Launcher;
 import hudson.FilePath;
+import hudson.Launcher;
 import hudson.node_monitors.NodeMonitor;
-import hudson.util.EnumConverter;
 import hudson.util.ClockDifference;
+import hudson.util.EnumConverter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
-import org.acegisecurity.ui.AbstractProcessingFilter;
 
-import java.util.Set;
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * Commonality between {@link Slave} and master {@link Hudson}.
@@ -121,6 +117,9 @@ public interface Node {
      */
     ClockDifference getClockDifference() throws IOException, InterruptedException;
 
+    /**
+     * Constants that control how Hudson allocates jobs to slaves.
+     */
     public enum Mode {
         NORMAL("Utilize this slave as much as possible"),
         EXCLUSIVE("Leave this machine for tied jobs only");
