@@ -217,7 +217,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         // clean up fingerprint once a day
         timer.scheduleAtFixedRate(new FingerprintCleanupThread(),DAY,DAY);
         timer.scheduleAtFixedRate(new WorkspaceCleanupThread(),DAY+4*HOUR,DAY);
-        timer.scheduleAtFixedRate(new ComputerRetentionWork(),15*MIN,1*MIN);
+        timer.scheduleAtFixedRate(new ComputerRetentionWork(), MIN, MIN);
 
         // start monitoring nodes, although there's no hurry.
         timer.schedule(new SafeTimerTask() {

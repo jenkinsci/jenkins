@@ -6,6 +6,8 @@ import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
@@ -102,6 +104,9 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
      * {@link hudson.slaves.RetentionStrategy} that tries to keep the node offline when not in use.
      */
     public static class Demand extends RetentionStrategy<SlaveComputer> {
+
+        private static final Logger logger = Logger.getLogger(Demand.class.getName());
+
         /**
          * The delay (in minutes) for which the slave must be in demand before tring to launch it.
          */
@@ -113,7 +118,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         private final long idleDelay;
 
         private transient Long finishTransition = null;
-        private transient Boolean finishState = null;
+        private transient Boolean startState = null;
 
         @DataBoundConstructor
         public Demand(long inDemandDelay, long idleDelay) {
@@ -145,38 +150,47 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
          * {@inheritDoc}
          */
         public synchronized long check(SlaveComputer c) {
-            if (Boolean.valueOf(c.isOffline()).equals(finishState)) {
-                // reset the timer as we are in the target state!
+            if (!Boolean.valueOf(c.isOffline()).equals(startState)) {
+                // reset the timer as we are no longer in the starting state
                 finishTransition = null;
-                finishState = !c.isOffline();
+                startState = c.isOffline();
             }
             if (c.isOffline()) {
                 final Queue queue = Hudson.getInstance().getQueue();
-                if (queue.getItems().length == 0) {
-                    // reset our timer
-                    finishTransition = null;
-                } else {
-                    if (finishTransition == null) {
-                        // only just noticed we're in demand
-                        finishTransition = System.currentTimeMillis() +
-                                TimeUnit.MILLISECONDS.convert(inDemandDelay, TimeUnit.MINUTES);
-                    } else if (System.currentTimeMillis() > finishTransition) {
+                final Queue.Item[] items = queue.getItems(); // TODO filter this array to this computer
+                for (Queue.Item item : items) {
+                    if ((System.currentTimeMillis() - item.timestamp.getTimeInMillis()) >
+                            TimeUnit.MILLISECONDS.convert(inDemandDelay, TimeUnit.MINUTES)) {
+
+                        logger.log(Level.INFO, "Trying to launch computer {0} as it has been in demand for too long", c.getNode().getNodeName());
                         // we've been in demand for long enough
                         if (c.isOffline() && c.isLaunchSupported())
                             c.tryReconnect();
                         finishTransition = null;
+
+                        break;
                     }
                 }
             } else {
                 if (c.isIdle()) {
                     if (finishTransition == null) {
+                        logger.log(Level.INFO, "Computer {0} is now idle, {1} minutes until disconnection",
+                                new Object[]{c.getNode().getNodeName(), idleDelay});
                         // only just noticed that we're idle
                         finishTransition = System.currentTimeMillis() +
                                 TimeUnit.MILLISECONDS.convert(idleDelay, TimeUnit.MINUTES);
                     } else if (System.currentTimeMillis() > finishTransition) {
+                        logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle too long", c.getNode().getNodeName());
                         // we've been idle for long enough
                         c.disconnect();
                         finishTransition = null;
+                    } else {
+                        logger.log(Level.INFO, "Computer {0} is still idle, {1} minutes until disconnection",
+                                new Object[]{c.getNode().getNodeName(),
+                                        TimeUnit.MILLISECONDS.convert(
+                                                Math.max(0, finishTransition - System.currentTimeMillis()),
+                                                TimeUnit.MINUTES)
+                                });
                     }
                 } else {
                     // reset our timer
