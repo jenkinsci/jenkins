@@ -22,6 +22,10 @@ public class Executor extends Thread implements ModelObject {
     private final Queue queue;
 
     private long startTime;
+    /**
+     * Used to track when a job was last executed.
+     */
+    private long finishTime;
 
     /**
      * Executor number that identifies it among other executors for the same {@link Computer}.
@@ -47,6 +51,7 @@ public class Executor extends Thread implements ModelObject {
         SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
 
         try {
+            finishTime = System.currentTimeMillis();
             while(true) {
                 if(Hudson.getInstance().isTerminating())
                     return;
@@ -81,6 +86,7 @@ public class Executor extends Thread implements ModelObject {
                     // so just leave some info and go on to build other things
                     LOGGER.log(Level.SEVERE, "Executor throw an exception unexpectedly",e);
                 }
+                finishTime = System.currentTimeMillis();
                 executable = null;
             }
         } catch(RuntimeException e) {
@@ -193,6 +199,18 @@ public class Executor extends Thread implements ModelObject {
 
     public Computer getOwner() {
         return owner;
+    }
+
+    /**
+     * Returns when this executor started or should start being idle.
+     */
+    public long getIdleStartMilliseconds() {
+        if (isIdle())
+            return finishTime;
+        else {
+            return Math.max(startTime + executable.getParent().getEstimatedDuration(),
+                    System.currentTimeMillis() + 15000);
+        }
     }
 
     /**

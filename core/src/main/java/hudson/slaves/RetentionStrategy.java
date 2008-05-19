@@ -117,9 +117,6 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
          */
         private final long idleDelay;
 
-        private transient Long finishTransition = null;
-        private transient Boolean startState = null;
-
         @DataBoundConstructor
         public Demand(long inDemandDelay, long idleDelay) {
             this.inDemandDelay = inDemandDelay;
@@ -150,55 +147,31 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
          * {@inheritDoc}
          */
         public synchronized long check(SlaveComputer c) {
-            if (!Boolean.valueOf(c.isOffline()).equals(startState)) {
-                // reset the timer as we are no longer in the starting state
-                finishTransition = null;
-                startState = c.isOffline();
-            }
             if (c.isOffline()) {
                 final Queue queue = Hudson.getInstance().getQueue();
                 final Queue.Item[] items = queue.getItems(); // TODO filter this array to this computer
                 for (Queue.Item item : items) {
                     if ((System.currentTimeMillis() - item.timestamp.getTimeInMillis()) >
                             TimeUnit.MILLISECONDS.convert(inDemandDelay, TimeUnit.MINUTES)) {
-
-                        logger.log(Level.INFO, "Trying to launch computer {0} as it has been in demand for too long", c.getNode().getNodeName());
                         // we've been in demand for long enough
+                        logger.log(Level.INFO, "Trying to launch computer {0} as it has been in demand for too long", c.getNode().getNodeName());
                         if (c.isOffline() && c.isLaunchSupported())
                             c.tryReconnect();
-                        finishTransition = null;
 
                         break;
                     }
                 }
             } else {
                 if (c.isIdle()) {
-                    if (finishTransition == null) {
-                        logger.log(Level.INFO, "Computer {0} is now idle, {1} minutes until disconnection",
-                                new Object[]{c.getNode().getNodeName(), idleDelay});
-                        // only just noticed that we're idle
-                        finishTransition = System.currentTimeMillis() +
-                                TimeUnit.MILLISECONDS.convert(idleDelay, TimeUnit.MINUTES);
-                    } else if (System.currentTimeMillis() > finishTransition) {
-                        logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle too long", c.getNode().getNodeName());
+                    if (System.currentTimeMillis() - c.getIdleStartMilliseconds() >
+                            TimeUnit.MILLISECONDS.convert(inDemandDelay, TimeUnit.MINUTES)) {
                         // we've been idle for long enough
+                        logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle too long", c.getNode().getNodeName());
                         c.disconnect();
-                        finishTransition = null;
-                    } else {
-                        logger.log(Level.INFO, "Computer {0} is still idle, {1} minutes until disconnection",
-                                new Object[]{c.getNode().getNodeName(),
-                                        TimeUnit.MILLISECONDS.convert(
-                                                Math.max(0, finishTransition - System.currentTimeMillis()),
-                                                TimeUnit.MINUTES)
-                                });
                     }
-                } else {
-                    // reset our timer
-                    finishTransition = null;
                 }
-                return 1;
             }
-            return 0;
+            return 1;
         }
 
         /**

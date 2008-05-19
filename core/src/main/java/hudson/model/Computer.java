@@ -270,6 +270,17 @@ public abstract class Computer extends AbstractModelObject {
     }
 
     /**
+     * Returns the time when this computer first became idle.
+     */
+    public final long getIdleStartMilliseconds() {
+        long firstIdle = Long.MIN_VALUE;
+        for (Executor e : executors) {
+            firstIdle = Math.max(firstIdle, e.getIdleStartMilliseconds());
+        }
+        return firstIdle;
+    }
+
+    /**
      * Called by {@link Executor} to kill excessive executors from this computer.
      */
     /*package*/ synchronized void removeExecutor(Executor e) {
