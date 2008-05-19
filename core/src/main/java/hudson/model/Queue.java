@@ -31,6 +31,20 @@ import java.util.logging.Logger;
  * task that are placed in the queue. While in the queue, it's wrapped into {@link Item}
  * so that we can keep track of additional data used for deciding what to exeucte when.
  *
+ * <p>
+ * Items in queue goes through several stages, as depicted below:
+ * <pre>
+ * (enter) --> waitingList --+--> blockedProjects
+ *                           |        ^
+ *                           |        |
+ *                           |        v
+ *                           +--> buildables ---> (executed)
+ * </pre>
+ *
+ * <p>
+ * In addition, at any stage, an item can be removed from the queue (for example, when the user
+ * cancels a job in the queue.) See the corresponding field for their exact meanings.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Queue extends ResourceController {
@@ -41,7 +55,7 @@ public class Queue extends ResourceController {
      * This consists of {@link Item}s that cannot be run yet
      * because its time has not yet come.
      */
-    private final Set<Item> queue = new TreeSet<Item>();
+    private final Set<Item> waitingList = new TreeSet<Item>();
 
     /**
      * {@link Project}s that can be built immediately
@@ -201,7 +215,7 @@ public class Queue extends ResourceController {
             LOGGER.fine(p.getName() + " added to queue");
 
             // put the item in the queue
-            queue.add(new Item(due, p));
+            waitingList.add(new Item(due, p));
 
         }
         scheduleMaintenance();   // let an executor know that a new item is in the queue.
@@ -216,7 +230,7 @@ public class Queue extends ResourceController {
      */
     public synchronized boolean cancel(AbstractProject<?, ?> p) {
         LOGGER.fine("Cancelling " + p.getName());
-        for (Iterator itr = queue.iterator(); itr.hasNext();) {
+        for (Iterator itr = waitingList.iterator(); itr.hasNext();) {
             Item item = (Item) itr.next();
             if (item.task == p) {
                 itr.remove();
@@ -229,20 +243,20 @@ public class Queue extends ResourceController {
     }
 
     public synchronized boolean isEmpty() {
-        return queue.isEmpty() && blockedProjects.isEmpty() && buildables.isEmpty();
+        return waitingList.isEmpty() && blockedProjects.isEmpty() && buildables.isEmpty();
     }
 
     private synchronized Item peek() {
-        return queue.iterator().next();
+        return waitingList.iterator().next();
     }
 
     /**
      * Gets a snapshot of items in the queue.
      */
     public synchronized Item[] getItems() {
-        Item[] r = new Item[queue.size() + blockedProjects.size() + buildables.size()];
-        queue.toArray(r);
-        int idx = queue.size();
+        Item[] r = new Item[waitingList.size() + blockedProjects.size() + buildables.size()];
+        waitingList.toArray(r);
+        int idx = waitingList.size();
         Calendar now = new GregorianCalendar();
         for (Task p : blockedProjects) {
             r[idx++] = new Item(now, p, true, false);
@@ -288,7 +302,7 @@ public class Queue extends ResourceController {
             }
             return new Item(new GregorianCalendar(), p, false, true, enterBuildables.get(p));
         }
-        for (Item item : queue) {
+        for (Item item : waitingList) {
             if (item.task == p)
                 return item;
         }
@@ -310,7 +324,7 @@ public class Queue extends ResourceController {
     public synchronized boolean contains(Task p) {
         if (blockedProjects.contains(p) || buildables.contains(p))
             return true;
-        for (Item item : queue) {
+        for (Item item : waitingList) {
             if (item.task == p)
                 return true;
         }
@@ -369,7 +383,7 @@ public class Queue extends ResourceController {
                     // until this thread is awakened. If this executor assigned a job to
                     // itself above, the block method will return immediately.
 
-                    if (!queue.isEmpty()) {
+                    if (!waitingList.isEmpty()) {
                         // wait until the first item in the queue is due
                         sleep = peek().timestamp.getTimeInMillis() - new GregorianCalendar().getTimeInMillis();
                         if (sleep < 100) sleep = 100;    // avoid wait(0)
@@ -514,7 +528,7 @@ public class Queue extends ResourceController {
     /**
      * Queue maintenance.
      * <p>
-     * Move projects between {@link #queue}, {@link #blockedProjects}, and {@link #buildables}
+     * Move projects between {@link #waitingList}, {@link #blockedProjects}, and {@link #buildables}
      * appropriately.
      */
     private synchronized void maintain() {
@@ -533,7 +547,7 @@ public class Queue extends ResourceController {
             }
         }
 
-        while (!queue.isEmpty()) {
+        while (!waitingList.isEmpty()) {
             Item top = peek();
 
             if (!top.timestamp.before(new GregorianCalendar()))
@@ -542,14 +556,14 @@ public class Queue extends ResourceController {
             Task p = top.task;
             if (!isBuildBlocked(p)) {
                 // ready to be executed immediately
-                queue.remove(top);
+                waitingList.remove(top);
                 LOGGER.fine(p.getName() + " ready to build");
                 buildables.add(p);
                 enterBuildables.put(p, System.currentTimeMillis());
             } else {
                 // this can't be built now because another build is in progress
                 // set this project aside.
-                queue.remove(top);
+                waitingList.remove(top);
                 LOGGER.fine(p.getName() + " is blocked");
                 blockedProjects.add(p);
             }
