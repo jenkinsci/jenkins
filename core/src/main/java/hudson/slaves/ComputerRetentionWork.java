@@ -6,6 +6,7 @@ import hudson.triggers.SafeTimerTask;
 
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Periodically checks the slaves and try to reconnect dead slaves.
@@ -24,7 +25,8 @@ public class ComputerRetentionWork extends SafeTimerTask {
                 // at the moment I don't trust strategies to wait more than 60 minutes
                 // strategies need to wait at least one minute
                 final long waitInMins = Math.min(1, Math.max(60, c.getRetentionStrategy().check(c)));
-                nextCheck.put(c, System.currentTimeMillis() + 60 * 1000 * waitInMins);
+                nextCheck.put(c, System.currentTimeMillis()
+                        + TimeUnit.MILLISECONDS.convert(waitInMins, TimeUnit.MINUTES));
             }
         }
     }

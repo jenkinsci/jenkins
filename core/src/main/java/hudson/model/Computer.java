@@ -100,6 +100,14 @@ public abstract class Computer extends AbstractModelObject {
     public abstract void launch();
 
     /**
+     * Do the same as {@link #doDoDisconnect(StaplerRequest, StaplerResponse)} but outside the context
+     * of serving a request.
+     *
+     * If this is the master, no-op
+     */
+    public void disconnect() { }
+
+    /**
      * Number of {@link Executor}s that are configured for this computer.
      *
      * <p>

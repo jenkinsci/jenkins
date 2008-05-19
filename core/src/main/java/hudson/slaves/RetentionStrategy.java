@@ -1,16 +1,16 @@
 package hudson.slaves;
 
 import hudson.ExtensionPoint;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Computer;
+import hudson.model.*;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
- *
- * <p>
+ * <p/>
+ * <p/>
  * <b>EXPERIMENTAL: SIGNATURE MAY CHANGE IN FUTURE RELEASES</b>
  */
 public abstract class RetentionStrategy<T extends Computer> implements Describable<RetentionStrategy<?>>, ExtensionPoint {
@@ -18,10 +18,8 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
     /**
      * This method will be called periodically to allow this strategy to decide what to do with it's owning slave.
      *
-     * @param c
-     *      {@link Computer} for which this strategy is assigned. This object also exposes a bunch of properties
-     *      that the callee can use to decide what action to take.
-     *
+     * @param c {@link Computer} for which this strategy is assigned. This object also exposes a bunch of properties
+     *          that the callee can use to decide what action to take.
      * @return The number of minutes after which the strategy would like to be checked again. The strategy may be
      *         rechecked earlier or later that this!
      */
@@ -54,16 +52,25 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
      * {@link RetentionStrategy} that tries to keep the node online all the time.
      */
     public static class Always extends RetentionStrategy<SlaveComputer> {
+        /**
+         * Constructs a new Always.
+         */
         @DataBoundConstructor
         public Always() {
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public long check(SlaveComputer c) {
             if (c.isOffline() && c.isLaunchSupported())
                 c.tryReconnect();
             return 1;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public DescriptorImpl getDescriptor() {
             return DESCRIPTOR;
         }
@@ -71,10 +78,16 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         private static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+            /**
+             * Constructs a new DescriptorImpl.
+             */
             public DescriptorImpl() {
                 super(Always.class);
             }
 
+            /**
+             * {@inheritDoc}
+             */
             public String getDisplayName() {
                 return "Keep this slave on-line as much as possible";
             }
@@ -83,5 +96,126 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         static {
             LIST.add(DESCRIPTOR);
         }
+    }
+
+    /**
+     * {@link hudson.slaves.RetentionStrategy} that tries to keep the node offline when not in use.
+     */
+    public static class Demand extends RetentionStrategy<SlaveComputer> {
+        /**
+         * The delay (in minutes) for which the slave must be in demand before tring to launch it.
+         */
+        private final long inDemandDelay;
+
+        /**
+         * The delay (in minutes) for which the slave must be idle before taking it offline.
+         */
+        private final long idleDelay;
+
+        private transient Long finishTransition = null;
+        private transient Boolean finishState = null;
+
+        @DataBoundConstructor
+        public Demand(long inDemandDelay, long idleDelay) {
+            this.inDemandDelay = inDemandDelay;
+            this.idleDelay = idleDelay;
+        }
+
+        /**
+         * Getter for property 'inDemandDelay'.
+         *
+         * @return Value for property 'inDemandDelay'.
+         */
+        public long getInDemandDelay() {
+            return inDemandDelay;
+        }
+
+        /**
+         * Getter for property 'idleDelay'.
+         *
+         * @return Value for property 'idleDelay'.
+         */
+        public long getIdleDelay() {
+            return idleDelay;
+        }
+
+        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+
+        /**
+         * {@inheritDoc}
+         */
+        public synchronized long check(SlaveComputer c) {
+            if (Boolean.valueOf(c.isOffline()).equals(finishState)) {
+                // reset the timer as we are in the target state!
+                finishTransition = null;
+                finishState = !c.isOffline();
+            }
+            if (c.isOffline()) {
+                final Queue queue = Hudson.getInstance().getQueue();
+                if (queue.getItems().length == 0) {
+                    // reset our timer
+                    finishTransition = null;
+                } else {
+                    if (finishTransition == null) {
+                        // only just noticed we're in demand
+                        finishTransition = System.currentTimeMillis() +
+                                TimeUnit.MILLISECONDS.convert(inDemandDelay, TimeUnit.MINUTES);
+                    } else if (System.currentTimeMillis() > finishTransition) {
+                        // we've been in demand for long enough
+                        if (c.isOffline() && c.isLaunchSupported())
+                            c.tryReconnect();
+                        finishTransition = null;
+                    }
+                }
+            } else {
+                if (c.isIdle()) {
+                    if (finishTransition == null) {
+                        // only just noticed that we're idle
+                        finishTransition = System.currentTimeMillis() +
+                                TimeUnit.MILLISECONDS.convert(idleDelay, TimeUnit.MINUTES);
+                    } else if (System.currentTimeMillis() > finishTransition) {
+                        // we've been idle for long enough
+                        c.disconnect();
+                        finishTransition = null;
+                    }
+                } else {
+                    // reset our timer
+                    finishTransition = null;
+                }
+                return 1;
+            }
+            return 0;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public Descriptor<RetentionStrategy<?>> getDescriptor() {
+            return DESCRIPTOR;
+        }
+
+        private static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+            /**
+             * Constructs a new DescriptorImpl.
+             */
+            public DescriptorImpl() {
+                super(Demand.class);
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            public String getDisplayName() {
+                return "Take this slave on-line when in demand and off-line when idle";
+            }
+        }
+
+        static {
+            LIST.add(DESCRIPTOR);
+        }
+    }
+
+    static {
+        LIST.load(Demand.class);
     }
 }

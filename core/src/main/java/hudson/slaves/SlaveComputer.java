@@ -181,8 +181,13 @@ public final class SlaveComputer extends Computer {
 
     public void doDoDisconnect(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-        closeChannel();
+        disconnect();
         rsp.sendRedirect(".");
+    }
+
+    @Override
+    public void disconnect() {
+        closeChannel();
     }
 
     public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
