@@ -61,7 +61,7 @@
                   </select>
                 </s:entry>
 
-                <s:dropdownList name="slave.launcherClass" title="${%Start method}"
+                <s:dropdownList name="slave.launcherClass" title="${%Launch method}"
                                 help="/help/system-config/master-slave/launcher.html">
                   <j:forEach var="d" items="${h.getComputerLauncherDescriptors()}" varStatus="loop">
                     <s:dropdownListBlock value="${d.class.name}" name="${d.displayName}"
