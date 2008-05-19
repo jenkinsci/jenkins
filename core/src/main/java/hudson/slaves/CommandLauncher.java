@@ -56,14 +56,16 @@ public class CommandLauncher extends ComputerLauncher {
     }
 
     public void launch(SlaveComputer computer, final StreamTaskListener listener) {
+        EnvVars _cookie = null;
+        Process _proc = null;
         try {
             listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
             listener.getLogger().println("$ " + getCommand());
 
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
-            final EnvVars cookie = ProcessTreeKiller.createCookie();
+            final EnvVars cookie = _cookie = ProcessTreeKiller.createCookie();
             pb.environment().putAll(cookie);
-            final Process proc = pb.start();
+            final Process proc = _proc = pb.start();
 
             // capture error information from stderr. this will terminate itself
             // when the process is killed.
@@ -95,6 +97,9 @@ public class CommandLauncher extends ComputerLauncher {
             msg = Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
             LOGGER.log(Level.SEVERE, msg, e);
             e.printStackTrace(listener.error(msg));
+
+            if(_proc!=null)
+                ProcessTreeKiller.get().kill(_proc, _cookie);
         }
     }
 
