@@ -1,6 +1,7 @@
 package hudson.slaves;
 
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.*;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -150,23 +151,26 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
             if (c.isOffline()) {
                 final Queue queue = Hudson.getInstance().getQueue();
                 for (Queue.Item item : queue.getBuildableItems(c)) {
-                    if ((System.currentTimeMillis() - item.buildableStartMilliseconds) >
+                    final long demandMilliseconds = System.currentTimeMillis() - item.buildableStartMilliseconds;
+                    if (demandMilliseconds >
                             TimeUnit.MILLISECONDS.convert(inDemandDelay, TimeUnit.MINUTES)) {
                         // we've been in demand for long enough
-                        logger.log(Level.INFO, "Trying to launch computer {0} as it has been in demand for too long",
-                                c.getNode().getNodeName());
-                        if (c.isOffline() && c.isLaunchSupported())
-                            c.tryReconnect();
+                        logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
+                                new Object[]{c.getNode().getNodeName(), Util.getTimeSpanString(demandMilliseconds)});
+                        if (c.isLaunchSupported())
+                            c.launch();
 
                         break;
                     }
                 }
             } else {
                 if (c.isIdle()) {
-                    if (System.currentTimeMillis() - c.getIdleStartMilliseconds() >
+                    final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
+                    if (idleMilliseconds >
                             TimeUnit.MILLISECONDS.convert(inDemandDelay, TimeUnit.MINUTES)) {
                         // we've been idle for long enough
-                        logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle too long", c.getNode().getNodeName());
+                        logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
+                                new Object[]{c.getNode().getNodeName(), Util.getTimeSpanString(idleMilliseconds)});
                         c.disconnect();
                     }
                 }
