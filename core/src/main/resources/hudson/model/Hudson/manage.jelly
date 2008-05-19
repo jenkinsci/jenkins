@@ -20,13 +20,17 @@
   <l:main-panel>
     <h1>${%Manage Hudson}</h1>
     <table style="padding-left: 2em;">
-        <local:feature icon="setting.gif"          href="configure"    title="${%Configure System}"/>
-        <local:feature icon="setting.gif"          href="configureExecutors"    title="${%Configure Executors}"/>
+      <local:feature icon="setting.gif"          href="configure"    title="${%Configure System}">
+        ${%Configure global settings and paths.}  
+      </local:feature>
+      <local:feature icon="setting.gif"          href="configureExecutors"    title="${%Configure Executors}">
+        ${%Configure resources available for executing jobs.}
+      </local:feature>
       <local:feature icon="refresh.gif"          href="reload"       title="${%Reload Configuration from Disk}">
         ${%Discard all the loaded data in memory and reload everything from file system.}
         ${%Useful when you modified config files directly on disk.} 
       </local:feature>
-      <local:feature icon="gear2.gif"          href="managePlugins" title="${%Manage Plugins}"/>
+      <local:feature icon="gear2.gif"        href="managePlugins" title="${%Manage Plugins}"/>
       <local:feature icon="computer.gif"     href="systemInfo"  title="${%System Information}">
         ${%Displays various environmental information to assist trouble-shooting.}
       </local:feature>
