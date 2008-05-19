@@ -120,8 +120,8 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
 
         @DataBoundConstructor
         public Demand(long inDemandDelay, long idleDelay) {
-            this.inDemandDelay = inDemandDelay;
-            this.idleDelay = idleDelay;
+            this.inDemandDelay = Math.max(1, inDemandDelay);
+            this.idleDelay = Math.max(1, idleDelay);
         }
 
         /**
