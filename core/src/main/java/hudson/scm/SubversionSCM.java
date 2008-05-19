@@ -356,7 +356,7 @@ public class SubversionSCM extends SCM implements Serializable {
         private final ISVNAuthenticationProvider authProvider;
         private final Date timestamp;
         // true to "svn update", false to "svn checkout".
-        private final boolean update;
+        private boolean update;
         private final TaskListener listener;
         private final ModuleLocation[] locations;
 
@@ -383,6 +383,13 @@ public class SubversionSCM extends SCM implements Serializable {
                             svnuc.doUpdate(new File(ws, l.local).getCanonicalFile(), revision, true);
 
                         } catch (final SVNException e) {
+                            if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_LOCKED) {
+                                // work space locked. try fresh check out
+                                listener.getLogger().println("Workspace appear to be locked, so getting a fresh workspace");
+                                update = false;
+                                return invoke(ws,channel);
+                            }
+
                             e.printStackTrace(listener.error("Failed to update "+l.remote));
                             // trouble-shooting probe for #591
                             if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_NOT_LOCKED) {
