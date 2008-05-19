@@ -149,12 +149,12 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         public synchronized long check(SlaveComputer c) {
             if (c.isOffline()) {
                 final Queue queue = Hudson.getInstance().getQueue();
-                final Queue.Item[] items = queue.getItems(); // TODO filter this array to this computer
-                for (Queue.Item item : items) {
-                    if ((System.currentTimeMillis() - item.timestamp.getTimeInMillis()) >
+                for (Queue.Item item : queue.getBuildableItems(c)) {
+                    if ((System.currentTimeMillis() - item.buildableStartMilliseconds) >
                             TimeUnit.MILLISECONDS.convert(inDemandDelay, TimeUnit.MINUTES)) {
                         // we've been in demand for long enough
-                        logger.log(Level.INFO, "Trying to launch computer {0} as it has been in demand for too long", c.getNode().getNodeName());
+                        logger.log(Level.INFO, "Trying to launch computer {0} as it has been in demand for too long",
+                                c.getNode().getNodeName());
                         if (c.isOffline() && c.isLaunchSupported())
                             c.tryReconnect();
 
