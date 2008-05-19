@@ -1534,7 +1534,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     private <T extends Describable<T>> T newDescribedChild(StaplerRequest req, JSONObject j,
                                                            String name, List<Descriptor<T>> descriptors)
             throws FormException {
-        final String clazz = j.get(name + "Class").toString();
+
+        if(!j.has(name + "Class"))  return null;
+        final String clazz = j.getString(name + "Class");
         final JSONObject data = j.getJSONObject(name);
         j.remove(name + "Class");
         j.remove(name);
