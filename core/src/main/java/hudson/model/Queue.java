@@ -25,8 +25,8 @@ import java.util.logging.Logger;
 
 /**
  * Build queue.
- * <p/>
- * <p/>
+ *
+ * <p>
  * This class implements the core scheduling logic. {@link Task} represents the executable
  * task that are placed in the queue. While in the queue, it's wrapped into {@link Item}
  * so that we can keep track of additional data used for deciding what to exeucte when.
@@ -36,8 +36,8 @@ import java.util.logging.Logger;
 public class Queue extends ResourceController {
     /**
      * Items in the queue ordered by {@link Item#timestamp}.
-     * <p/>
-     * <p/>
+     *
+     * <p>
      * This consists of {@link Item}s that cannot be run yet
      * because its time has not yet come.
      */
@@ -62,8 +62,8 @@ public class Queue extends ResourceController {
     /**
      * Data structure created for each idle {@link Executor}.
      * This is an offer from the queue to an executor.
-     * <p/>
-     * <p/>
+     *
+     * <p>
      * It eventually receives a {@link #task} to build.
      */
     private static class JobOffer {
@@ -169,8 +169,8 @@ public class Queue extends ResourceController {
 
     /**
      * Schedules a new build with a custom quiet period.
-     * <p/>
-     * <p/>
+     *
+     * <p>
      * Left for backward compatibility with &lt;1.114.
      *
      * @since 1.105
@@ -319,7 +319,7 @@ public class Queue extends ResourceController {
 
     /**
      * Called by the executor to fetch something to build next.
-     * <p/>
+     * <p>
      * This method blocks until a next project becomes buildable.
      */
     public Task pop() throws InterruptedException {
@@ -485,10 +485,10 @@ public class Queue extends ResourceController {
 
     /**
      * Checks the queue and runs anything that can be run.
-     * <p/>
-     * <p/>
+     *
+     * <p>
      * When conditions are changed, this method should be invoked.
-     * <p/>
+     * <p>
      * This wakes up one {@link Executor} so that it will maintain a queue.
      */
     public synchronized void scheduleMaintenance() {
@@ -513,7 +513,7 @@ public class Queue extends ResourceController {
 
     /**
      * Queue maintenance.
-     * <p/>
+     * <p>
      * Move projects between {@link #queue}, {@link #blockedProjects}, and {@link #buildables}
      * appropriately.
      */
@@ -558,7 +558,7 @@ public class Queue extends ResourceController {
 
     /**
      * Task whose execution is controlled by the queue.
-     * <p/>
+     * <p>
      * {@link #equals(Object) Value equality} of {@link Task}s is used
      * to collapse two tasks into one. This is used to avoid infinite
      * queue backlog.
@@ -581,8 +581,8 @@ public class Queue extends ResourceController {
         /**
          * Returns true if the execution should be blocked
          * for temporary reasons.
-         * <p/>
-         * <p/>
+         *
+         * <p>
          * This can be used to define mutual exclusion that goes beyond
          * {@link #getResourceList()}.
          */
@@ -599,7 +599,6 @@ public class Queue extends ResourceController {
          * Unique name of this task.
          *
          * @see hudson.model.Item#getName()
-         *      <p/>
          *      TODO: this doesn't make sense anymore. remove it.
          */
         String getName();
@@ -678,7 +677,7 @@ public class Queue extends ResourceController {
          * Build is blocked because another build is in progress,
          * required {@link Resource}s are not available, or otherwise blocked
          * by {@link Task#isBuildBlocked()}.
-         * <p/>
+         * <p>
          * This flag is only used in {@link Queue#getItems()} for
          * 'pseudo' items that are actually not really in the queue.
          */
