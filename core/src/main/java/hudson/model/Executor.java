@@ -208,7 +208,7 @@ public class Executor extends Thread implements ModelObject {
         if (isIdle())
             return finishTime;
         else {
-            return Math.max(startTime + executable.getParent().getEstimatedDuration(),
+            return Math.max(startTime + Math.max(0, executable.getParent().getEstimatedDuration()),
                     System.currentTimeMillis() + 15000);
         }
     }
