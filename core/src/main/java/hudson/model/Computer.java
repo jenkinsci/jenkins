@@ -271,6 +271,14 @@ public abstract class Computer extends AbstractModelObject {
 
     /**
      * Returns the time when this computer first became idle.
+     *
+     * <p>
+     * If this computer is already idle, the return value will point to the
+     * time in the past since when this computer has been idle.
+     *
+     * <p>
+     * If this computer is busy, the return value will point to the
+     * time in the future where this computer will be expected to become free.
      */
     public final long getIdleStartMilliseconds() {
         long firstIdle = Long.MIN_VALUE;
