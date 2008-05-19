@@ -1560,13 +1560,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         rsp.sendRedirect(".");
     }
 
-    public synchronized void doQuietDown( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doQuietDown(StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(ADMINISTER);
         isQuietingDown = true;
         rsp.sendRedirect2(".");
     }
 
-    public synchronized void doCancelQuietDown( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doCancelQuietDown(StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(ADMINISTER);
         isQuietingDown = false;
         getQueue().scheduleMaintenance();
@@ -1576,7 +1576,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /**
      * Backward compatibility. Redirect to the thread dump.
      */
-    public void doClassicThreadDump( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doClassicThreadDump(StaplerResponse rsp) throws IOException, ServletException {
         rsp.sendRedirect2("threadDump");
     }
 
@@ -1965,7 +1965,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /**
      * For debugging. Expose URL to perform GC.
      */
-    public void doGc( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public void doGc(StaplerResponse rsp) throws IOException {
         System.gc();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
@@ -2007,7 +2007,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /**
      * Configure the logging level.
      */
-    public void doConfigLogger( StaplerRequest req, StaplerResponse rsp, @QueryParameter("name") String name, @QueryParameter("level") String level) throws IOException {
+    public void doConfigLogger(StaplerResponse rsp, @QueryParameter("name")String name, @QueryParameter("level")String level) throws IOException {
         checkPermission(ADMINISTER);
         Level lv;
         if(level.equals("inherit"))
@@ -2061,14 +2061,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         rsp.sendRedirect2(ref);
     }
 
-    public void doFingerprintCleanup( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public void doFingerprintCleanup(StaplerResponse rsp) throws IOException {
         FingerprintCleanupThread.invoke();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         rsp.getWriter().println("Invoked");
     }
 
-    public void doWorkspaceCleanup( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public void doWorkspaceCleanup(StaplerResponse rsp) throws IOException {
         WorkspaceCleanupThread.invoke();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
