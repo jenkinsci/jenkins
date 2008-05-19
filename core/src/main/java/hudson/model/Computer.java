@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.Util;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.node_monitors.NodeMonitor;
@@ -278,6 +279,17 @@ public abstract class Computer extends AbstractModelObject {
             firstIdle = Math.max(firstIdle, e.getIdleStartMilliseconds());
         }
         return firstIdle;
+    }
+
+    /**
+     * Returns the time when this computer first became in demand.
+     */
+    public final long getDemandStartMilliseconds() {
+        long firstDemand = Long.MAX_VALUE;
+        for (Queue.Item item : Hudson.getInstance().getQueue().getBuildableItems(this)) {
+            firstDemand = Math.min(item.buildableStartMilliseconds, firstDemand);
+        }
+        return firstDemand;
     }
 
     /**
