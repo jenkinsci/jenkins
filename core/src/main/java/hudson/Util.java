@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -173,8 +174,15 @@ public class Util {
 
             makeWritable(f.getParentFile());
 
-            if(!f.delete() && f.exists())
+            if(!f.delete() && f.exists()) {
+                // trouble-shooting.
+                // see http://www.nabble.com/Sometimes-can%27t-delete-files-from-hudson.scm.SubversionSCM%24CheckOutTask.invoke%28%29-tt17333292.html
+                // I suspect other processes putting files in this directory
+                File[] files = f.listFiles();
+                if(files!=null && files.length>0)
+                    throw new IOException("Unable to delete " + f.getPath()+" - files in dir: "+Arrays.asList(files));
                 throw new IOException("Unable to delete " + f.getPath());
+            }
         }
     }
 
