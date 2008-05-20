@@ -49,36 +49,43 @@ import java.util.logging.Logger;
  */
 public class Queue extends ResourceController {
     /**
-     * Items in the queue ordered by {@link Item#timestamp}.
+     * Items that are waiting for its quiet period to pass.
      *
      * <p>
      * This consists of {@link Item}s that cannot be run yet
      * because its time has not yet come.
      */
-    private final Set<Item> waitingList = new TreeSet<Item>();
+    private final Set<WaitingItem> waitingList = new TreeSet<WaitingItem>();
 
     /**
      * {@link Project}s that can be built immediately
      * but blocked because another build is in progress,
      * required {@link Resource}s are not available, or otherwise blocked
      * by {@link Task#isBuildBlocked()}.
+     *
+     * <p>
+     * Conceptually a set of {@link BlockedItem}, but we often need to look up
+     * {@link BlockedItem} from {@link Task}, so organized as a map.
      */
-    private final Set<Task> blockedProjects = new HashSet<Task>();
+    private final Map<Task,BlockedItem> blockedProjects = new HashMap<Task,BlockedItem>();
 
     /**
      * {@link Project}s that can be built immediately
      * that are waiting for available {@link Executor}.
+     *
+     * <p>
+     * Conceptually, this is a list of {@link BuildableItem} (FIFO list, not a set, so that
+     * the item doesn't starve in the queue), but we often need to look up
+     * {@link BuildableItem} from {@link Task}, so organized as a {@link LinkedHashMap}.
      */
-    private final List<Task> buildables = new LinkedList<Task>();
-
-    private final Map<Task, Long> enterBuildables = new WeakHashMap<Task, Long>();
+    private final LinkedHashMap<Task,BuildableItem> buildables = new LinkedHashMap<Task,BuildableItem>();
 
     /**
      * Data structure created for each idle {@link Executor}.
      * This is an offer from the queue to an executor.
      *
      * <p>
-     * It eventually receives a {@link #task} to build.
+     * It eventually receives a {@link #item} to build.
      */
     private static class JobOffer {
         final Executor executor;
@@ -92,20 +99,20 @@ public class Queue extends ResourceController {
          * The project that this {@link Executor} is going to build.
          * (Or null, in which case event is used to trigger a queue maintenance.)
          */
-        Task task;
+        BuildableItem item;
 
         public JobOffer(Executor executor) {
             this.executor = executor;
         }
 
-        public void set(Task p) {
-            assert this.task == null;
-            this.task = p;
+        public void set(BuildableItem p) {
+            assert this.item == null;
+            this.item = p;
             event.signal();
         }
 
         public boolean isAvailable() {
-            return task == null && !executor.getOwner().isOffline();
+            return item == null && !executor.getOwner().isOffline();
         }
 
         public Node getNode() {
@@ -206,16 +213,22 @@ public class Queue extends ResourceController {
         Calendar due = new GregorianCalendar();
         due.add(Calendar.SECOND, quietPeriod);
         if (item != null) {
-            if (item.timestamp.before(due))
+            if (!(item instanceof WaitingItem))
+                // already in the blocked or buildable stage
+                // no need to requeue
+                return false;
+
+            WaitingItem wi = (WaitingItem) item;
+            if (wi.timestamp.before(due))
                 return false; // no double queueing
 
             // allow the due date to be pulled in
-            item.timestamp = due;
+            wi.timestamp = due;
         } else {
             LOGGER.fine(p.getName() + " added to queue");
 
             // put the item in the queue
-            waitingList.add(new Item(due, p));
+            waitingList.add(new WaitingItem(due,p));
 
         }
         scheduleMaintenance();   // let an executor know that a new item is in the queue.
@@ -238,15 +251,14 @@ public class Queue extends ResourceController {
             }
         }
         // use bitwise-OR to make sure that both branches get evaluated all the time
-        enterBuildables.remove(p);
-        return blockedProjects.remove(p) | buildables.remove(p);
+        return blockedProjects.remove(p)!=null | buildables.remove(p)!=null;
     }
 
     public synchronized boolean isEmpty() {
         return waitingList.isEmpty() && blockedProjects.isEmpty() && buildables.isEmpty();
     }
 
-    private synchronized Item peek() {
+    private synchronized WaitingItem peek() {
         return waitingList.iterator().next();
     }
 
@@ -257,35 +269,25 @@ public class Queue extends ResourceController {
         Item[] r = new Item[waitingList.size() + blockedProjects.size() + buildables.size()];
         waitingList.toArray(r);
         int idx = waitingList.size();
-        Calendar now = new GregorianCalendar();
-        for (Task p : blockedProjects) {
-            r[idx++] = new Item(now, p, true, false);
-        }
-        for (Task p : buildables) {
-            if (!enterBuildables.containsKey(p)) {
-                enterBuildables.put(p, System.currentTimeMillis());
-            }
-            r[idx++] = new Item(now, p, false, true, enterBuildables.get(p));
-        }
+        for (BlockedItem p : blockedProjects.values())
+            r[idx++] = p;
+        for (BuildableItem p : buildables.values())
+            r[idx++] = p;
         return r;
     }
 
-    public synchronized Item[] getBuildableItems(Computer c) {
-        List<Item> result = new ArrayList<Item>();
-        Calendar now = new GregorianCalendar();
-        for (Task p : buildables) {
-            Label l = p.getAssignedLabel();
+    public synchronized List<BuildableItem> getBuildableItems(Computer c) {
+        List<BuildableItem> result = new ArrayList<BuildableItem>();
+        for (BuildableItem p : buildables.values()) {
+            Label l = p.task.getAssignedLabel();
             if (l != null) {
                 // if a project has assigned label, it can be only built on it
                 if (!l.contains(c.getNode()))
                     continue;
             }
-            if (!enterBuildables.containsKey(p)) {
-                enterBuildables.put(p, System.currentTimeMillis());
-            }
-            result.add(new Item(now, p, false, true, enterBuildables.get(p)));
+            result.add(p);
         }
-        return result.toArray(new Item[result.size()]);
+        return result;
     }
 
     /**
@@ -293,17 +295,16 @@ public class Queue extends ResourceController {
      *
      * @return null if the project is not in the queue.
      */
-    public synchronized Item getItem(Task p) {
-        if (blockedProjects.contains(p))
-            return new Item(new GregorianCalendar(), p, true, false);
-        if (buildables.contains(p)) {
-            if (!enterBuildables.containsKey(p)) {
-                enterBuildables.put(p, System.currentTimeMillis());
-            }
-            return new Item(new GregorianCalendar(), p, false, true, enterBuildables.get(p));
-        }
+    public synchronized Item getItem(Task t) {
+        BlockedItem bp = blockedProjects.get(t);
+        if (bp!=null)
+            return bp;
+        BuildableItem bi = buildables.get(t);
+        if(bi!=null)
+            return bi;
+
         for (Item item : waitingList) {
-            if (item.task == p)
+            if (item.task == t)
                 return item;
         }
         return null;
@@ -321,11 +322,11 @@ public class Queue extends ResourceController {
     /**
      * Returns true if this queue contains the said project.
      */
-    public synchronized boolean contains(Task p) {
-        if (blockedProjects.contains(p) || buildables.contains(p))
+    public synchronized boolean contains(Task t) {
+        if (blockedProjects.containsKey(t) || buildables.containsKey(t))
             return true;
         for (Item item : waitingList) {
-            if (item.task == p)
+            if (item.task == t)
                 return true;
         }
         return false;
@@ -355,18 +356,18 @@ public class Queue extends ResourceController {
                     maintain();
 
                     // allocate buildable jobs to executors
-                    Iterator<Task> itr = buildables.iterator();
+                    Iterator<BuildableItem> itr = buildables.values().iterator();
                     while (itr.hasNext()) {
-                        Task p = itr.next();
+                        BuildableItem p = itr.next();
 
                         // one last check to make sure this build is not blocked.
-                        if (isBuildBlocked(p)) {
+                        if (isBuildBlocked(p.task)) {
                             itr.remove();
-                            blockedProjects.add(p);
+                            blockedProjects.put(p.task,new BlockedItem(p));
                             continue;
                         }
 
-                        JobOffer runner = choose(p);
+                        JobOffer runner = choose(p.task);
                         if (runner == null)
                             // if we couldn't find the executor that fits,
                             // just leave it in the buildables list and
@@ -403,10 +404,10 @@ public class Queue extends ResourceController {
                     parked.remove(exec);
 
                     // am I woken up because I have a project to build?
-                    if (offer.task != null) {
-                        LOGGER.fine("Pop returning " + offer.task + " for " + exec.getName());
+                    if (offer.item != null) {
+                        LOGGER.fine("Pop returning " + offer.item + " for " + exec.getName());
                         // if so, just build it
-                        return offer.task;
+                        return offer.item.task;
                     }
                     // otherwise run a queue maintenance
                 }
@@ -415,14 +416,14 @@ public class Queue extends ResourceController {
             synchronized (this) {
                 // remove myself from the parked list
                 JobOffer offer = parked.remove(exec);
-                if (offer != null && offer.task != null) {
+                if (offer != null && offer.item != null) {
                     // we are already assigned a project,
                     // ask for someone else to build it.
                     // note that while this thread is waiting for CPU
                     // someone else can schedule this build again,
                     // so check the contains method first.
-                    if (!contains(offer.task))
-                        buildables.add(offer.task);
+                    if (!contains(offer.item.task))
+                        buildables.put(offer.item.task,offer.item);
                 }
 
                 // since this executor might have been chosen for
@@ -510,7 +511,7 @@ public class Queue extends ResourceController {
         // no more executors will be offered job except by
         // the pop() code.
         for (Entry<Executor, JobOffer> av : parked.entrySet()) {
-            if (av.getValue().task == null) {
+            if (av.getValue().item == null) {
                 av.getValue().event.signal();
                 return;
             }
@@ -535,20 +536,19 @@ public class Queue extends ResourceController {
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Queue maintenance started " + this);
 
-        Iterator<Task> itr = blockedProjects.iterator();
+        Iterator<BlockedItem> itr = blockedProjects.values().iterator();
         while (itr.hasNext()) {
-            Task p = itr.next();
-            if (!isBuildBlocked(p)) {
+            BlockedItem p = itr.next();
+            if (!isBuildBlocked(p.task)) {
                 // ready to be executed
-                LOGGER.fine(p.getName() + " no longer blocked");
+                LOGGER.fine(p.task.getName() + " no longer blocked");
                 itr.remove();
-                buildables.add(p);
-                enterBuildables.put(p, System.currentTimeMillis());
+                buildables.put(p.task,new BuildableItem(p));
             }
         }
 
         while (!waitingList.isEmpty()) {
-            Item top = peek();
+            WaitingItem top = peek();
 
             if (!top.timestamp.before(new GregorianCalendar()))
                 return; // finished moving all ready items from queue
@@ -558,14 +558,13 @@ public class Queue extends ResourceController {
                 // ready to be executed immediately
                 waitingList.remove(top);
                 LOGGER.fine(p.getName() + " ready to build");
-                buildables.add(p);
-                enterBuildables.put(p, System.currentTimeMillis());
+                buildables.put(p,new BuildableItem(top));
             } else {
                 // this can't be built now because another build is in progress
                 // set this project aside.
                 waitingList.remove(top);
                 LOGGER.fine(p.getName() + " is blocked");
-                blockedProjects.add(p);
+                blockedProjects.put(p,new BlockedItem(top));
             }
         }
     }
@@ -667,19 +666,11 @@ public class Queue extends ResourceController {
      * Item in a queue.
      */
     @ExportedBean(defaultVisibility = 999)
-    public final class Item implements Comparable<Item> {
-        /**
-         * This item can be run after this time.
-         */
-        @Exported
-        public Calendar timestamp;
-
+    public abstract class Item {
         /**
          * Project to be built.
          */
         public final Task task;
-
-        public final long buildableStartMilliseconds;
 
         /**
          * Unique number of this {@link Item}.
@@ -691,12 +682,9 @@ public class Queue extends ResourceController {
          * Build is blocked because another build is in progress,
          * required {@link Resource}s are not available, or otherwise blocked
          * by {@link Task#isBuildBlocked()}.
-         * <p>
-         * This flag is only used in {@link Queue#getItems()} for
-         * 'pseudo' items that are actually not really in the queue.
          */
         @Exported
-        public final boolean isBlocked;
+        public boolean isBlocked() { return this instanceof BlockedItem; }
 
         /**
          * Build is waiting the executor to become available.
@@ -704,23 +692,10 @@ public class Queue extends ResourceController {
          * 'pseudo' items that are actually not really in the queue.
          */
         @Exported
-        public final boolean isBuildable;
+        public boolean isBuildable() { return this instanceof BuildableItem; }
 
-        public Item(Calendar timestamp, Task project) {
-            this(timestamp, project, false, false);
-        }
-
-        public Item(Calendar timestamp, Task project, boolean isBlocked, boolean isBuildable) {
-            this(timestamp, project, isBlocked, isBuildable, System.currentTimeMillis() + 1000);
-        }
-
-        public Item(Calendar timestamp, Task project, boolean isBlocked, boolean isBuildable,
-                    long buildableStartMilliseconds) {
-            this.timestamp = timestamp;
+        protected Item(Task project) {
             this.task = project;
-            this.isBlocked = isBlocked;
-            this.isBuildable = isBuildable;
-            this.buildableStartMilliseconds = buildableStartMilliseconds;
             synchronized (Queue.this) {
                 this.id = iota++;
             }
@@ -730,56 +705,122 @@ public class Queue extends ResourceController {
          * Gets a human-readable status message describing why it's in the queu.
          */
         @Exported
-        public String getWhy() {
-            if (isBuildable) {
-                Label node = task.getAssignedLabel();
-                Hudson hudson = Hudson.getInstance();
-                if (hudson.getSlaves().isEmpty())
-                    node = null;    // no master/slave. pointless to talk about nodes
-
-                String name = null;
-                if (node != null) {
-                    name = node.getName();
-                    if (node.isOffline()) {
-                        if (node.getNodes().size() > 1)
-                            return "All nodes of label '" + name + "' is offline";
-                        else
-                            return name + " is offline";
-                    }
-                }
-
-                return "Waiting for next available executor" + (name == null ? "" : " on " + name);
-            }
-
-            if (isBlocked) {
-                ResourceActivity r = getBlockingActivity(task);
-                if (r != null) {
-                    if (r == task) // blocked by itself, meaning another build is in progress
-                        return Messages.Queue_InProgress();
-                    return Messages.Queue_BlockedBy(r.getDisplayName());
-                }
-                return task.getWhyBlocked();
-            }
-
-            long diff = timestamp.getTimeInMillis() - System.currentTimeMillis();
-            if (diff > 0) {
-                return Messages.Queue_InQuietPeriod(Util.getTimeSpanString(diff));
-            }
-
-            return Messages.Queue_Unknown();
-        }
+        public abstract String getWhy();
 
         public boolean hasCancelPermission() {
             return task.hasAbortPermission();
         }
+    }
 
-        public int compareTo(Item that) {
+    /**
+     * {@link Item} in the {@link Queue#waitingList} stage.
+     */
+    public final class WaitingItem extends Item implements Comparable<WaitingItem> {
+        /**
+         * This item can be run after this time.
+         */
+        @Exported
+        public Calendar timestamp;
+
+        WaitingItem(Calendar timestamp, Task project) {
+            super(project);
+            this.timestamp = timestamp;
+        }
+
+        public int compareTo(WaitingItem that) {
             int r = this.timestamp.getTime().compareTo(that.timestamp.getTime());
             if (r != 0) return r;
 
             return this.id - that.id;
         }
 
+        @Override
+        public String getWhy() {
+            long diff = timestamp.getTimeInMillis() - System.currentTimeMillis();
+            if (diff > 0)
+                return Messages.Queue_InQuietPeriod(Util.getTimeSpanString(diff));
+            else
+                return Messages.Queue_Unknown();
+        }
+    }
+
+    /**
+     * Common part between {@link BlockedItem} and {@link BuildableItem}.
+     */
+    public abstract class NotWaitingItem extends Item {
+        /**
+         * When did this job exit the {@link Queue#waitingList} phase?
+         */
+        @Exported
+        public final long buildableStartMilliseconds;
+
+        protected NotWaitingItem(WaitingItem wi) {
+            super(wi.task);
+            buildableStartMilliseconds = System.currentTimeMillis();
+        }
+
+        protected NotWaitingItem(NotWaitingItem ni) {
+            super(ni.task);
+            buildableStartMilliseconds = ni.buildableStartMilliseconds;
+        }
+    }
+
+    /**
+     * {@link Item} in the {@link Queue#blockedProjects} stage.
+     */
+    public final class BlockedItem extends NotWaitingItem {
+        public BlockedItem(WaitingItem wi) {
+            super(wi);
+        }
+
+        public BlockedItem(NotWaitingItem ni) {
+            super(ni);
+        }
+
+        @Override
+        public String getWhy() {
+            ResourceActivity r = getBlockingActivity(task);
+            if (r != null) {
+                if (r == task) // blocked by itself, meaning another build is in progress
+                    return Messages.Queue_InProgress();
+                return Messages.Queue_BlockedBy(r.getDisplayName());
+            }
+            return task.getWhyBlocked();
+        }
+    }
+
+    /**
+     * {@link Item} in the {@link Queue#buildables} stage.
+     */
+    public final class BuildableItem extends NotWaitingItem {
+        public BuildableItem(WaitingItem wi) {
+            super(wi);
+        }
+
+        public BuildableItem(NotWaitingItem ni) {
+            super(ni);
+        }
+
+        @Override
+        public String getWhy() {
+            Label node = task.getAssignedLabel();
+            Hudson hudson = Hudson.getInstance();
+            if (hudson.getSlaves().isEmpty())
+                node = null;    // no master/slave. pointless to talk about nodes
+
+            String name = null;
+            if (node != null) {
+                name = node.getName();
+                if (node.isOffline()) {
+                    if (node.getNodes().size() > 1)
+                        return "All nodes of label '" + name + "' is offline";
+                    else
+                        return name + " is offline";
+                }
+            }
+
+            return "Waiting for next available executor" + (name == null ? "" : " on " + name);
+        }
     }
 
     /**

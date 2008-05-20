@@ -293,7 +293,7 @@ public abstract class Computer extends AbstractModelObject {
      */
     public final long getDemandStartMilliseconds() {
         long firstDemand = Long.MAX_VALUE;
-        for (Queue.Item item : Hudson.getInstance().getQueue().getBuildableItems(this)) {
+        for (Queue.BuildableItem item : Hudson.getInstance().getQueue().getBuildableItems(this)) {
             firstDemand = Math.min(item.buildableStartMilliseconds, firstDemand);
         }
         return firstDemand;
