@@ -673,12 +673,6 @@ public class Queue extends ResourceController {
         public final Task task;
 
         /**
-         * Unique number of this {@link Item}.
-         * Used to differentiate {@link Item}s with the same due date.
-         */
-        public final int id;
-
-        /**
          * Build is blocked because another build is in progress,
          * required {@link Resource}s are not available, or otherwise blocked
          * by {@link Task#isBuildBlocked()}.
@@ -696,9 +690,6 @@ public class Queue extends ResourceController {
 
         protected Item(Task project) {
             this.task = project;
-            synchronized (Queue.this) {
-                this.id = iota++;
-            }
         }
 
         /**
@@ -722,9 +713,18 @@ public class Queue extends ResourceController {
         @Exported
         public Calendar timestamp;
 
+        /**
+         * Unique number of this {@link WaitingItem}.
+         * Used to differentiate {@link WaitingItem}s with the same due date, to make it sortable.
+         */
+        public final int id;
+
         WaitingItem(Calendar timestamp, Task project) {
             super(project);
             this.timestamp = timestamp;
+            synchronized (Queue.this) {
+                this.id = iota++;
+            }
         }
 
         public int compareTo(WaitingItem that) {
