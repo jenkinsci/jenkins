@@ -236,11 +236,7 @@ public final class Slave implements Node, Serializable {
             throw new IOException(getNodeName()+" is offline");
 
         long startTime = System.currentTimeMillis();
-        long slaveTime = channel.call(new Callable<Long,RuntimeException>() {
-            public Long call() {
-                return System.currentTimeMillis();
-            }
-        });
+        long slaveTime = channel.call(new GetSystemTime());
         long endTime = System.currentTimeMillis();
 
         return new ClockDifference((startTime+endTime)/2 - slaveTime);
@@ -373,6 +369,16 @@ public final class Slave implements Node, Serializable {
      */
     private transient String agentCommand;
 
+    /**
+     * Obtains the system clock.
+     */
+    private static final class GetSystemTime implements Callable<Long,RuntimeException> {
+        public Long call() {
+            return System.currentTimeMillis();
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
 
 //    static {
 //        ConvertUtils.register(new Converter(){
