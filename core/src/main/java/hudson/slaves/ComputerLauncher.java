@@ -44,6 +44,12 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
     public abstract void launch(SlaveComputer computer, StreamTaskListener listener);
 
     /**
+     * Allows the {@link ComputerLauncher} to tidy-up after a disconnect.
+     */
+    public void afterDisconnect(SlaveComputer computer, StreamTaskListener listener) {
+    }
+
+    /**
      * All registered {@link ComputerLauncher} implementations.
      */
     public static final DescriptorList<ComputerLauncher> LIST = new DescriptorList<ComputerLauncher>();

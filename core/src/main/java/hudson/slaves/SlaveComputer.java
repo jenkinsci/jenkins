@@ -188,6 +188,13 @@ public final class SlaveComputer extends Computer {
     @Override
     public void disconnect() {
         closeChannel();
+        Computer.threadPoolForRemoting.execute(new Runnable() {
+            public void run() {
+                // do this on another thread so that any lengthy disconnect operation
+                // (which could be typical) won't block UI thread.
+                launcher.afterDisconnect(SlaveComputer.this, new StreamTaskListener(openLogFile()));
+            }
+        });
     }
 
     public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
