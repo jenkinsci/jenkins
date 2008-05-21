@@ -16,7 +16,7 @@ import java.io.OutputStream;
  *
  * <p>
  * <b>EXPERIMENTAL: SIGNATURE MAY CHANGE IN FUTURE RELEASES</b>
- * 
+ *
  * @author Stephen Connolly
  * @since 24-Apr-2008 22:12:35
  */
@@ -47,6 +47,12 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
      * Allows the {@link ComputerLauncher} to tidy-up after a disconnect.
      */
     public void afterDisconnect(SlaveComputer computer, StreamTaskListener listener) {
+    }
+
+    /**
+     * Allows the {@link ComputerLauncher} to prepare for a disconnect.
+     */
+    public void beforeDisconnect(SlaveComputer computer, StreamTaskListener listener) {
     }
 
     /**

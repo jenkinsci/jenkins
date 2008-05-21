@@ -40,7 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * {@link Computer} for {@link Slave}s.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public final class SlaveComputer extends Computer {
@@ -187,11 +187,12 @@ public final class SlaveComputer extends Computer {
 
     @Override
     public void disconnect() {
-        closeChannel();
         Computer.threadPoolForRemoting.execute(new Runnable() {
             public void run() {
                 // do this on another thread so that any lengthy disconnect operation
                 // (which could be typical) won't block UI thread.
+                launcher.beforeDisconnect(SlaveComputer.this, new StreamTaskListener(openLogFile()));
+                closeChannel();
                 launcher.afterDisconnect(SlaveComputer.this, new StreamTaskListener(openLogFile()));
             }
         });
@@ -254,15 +255,18 @@ public final class SlaveComputer extends Computer {
      * If still connected, disconnect.
      */
     private void closeChannel() {
-        Channel c = channel;
-        channel = null;
-        isUnix=null;
-        if(c!=null)
-            try {
-                c.close();
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "Failed to terminate channel to "+getDisplayName(),e);
+        synchronized (channelLock) {
+            Channel c = channel;
+            channel = null;
+            isUnix = null;
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
+                }
             }
+        }
     }
 
     @Override
