@@ -4,6 +4,7 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.*;
 import hudson.util.DescriptorList;
+import hudson.util.TimeUnit2;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.concurrent.TimeUnit;
@@ -12,9 +13,11 @@ import java.util.logging.Level;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
- * <p/>
- * <p/>
+ *
  * <b>EXPERIMENTAL: SIGNATURE MAY CHANGE IN FUTURE RELEASES</b>
+ *
+ * @author Stephen Connolly
+ * @author Kohsuke Kawaguchi
  */
 public abstract class RetentionStrategy<T extends Computer> implements Describable<RetentionStrategy<?>>, ExtensionPoint {
 
@@ -150,7 +153,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         public synchronized long check(SlaveComputer c) {
             if (c.isOffline()) {
                 final long demandMilliseconds = System.currentTimeMillis() - c.getDemandStartMilliseconds();
-                if (demandMilliseconds > TimeUnit.MILLISECONDS.convert(inDemandDelay, TimeUnit.MINUTES)) {
+                if (demandMilliseconds > TimeUnit2.MINUTES.toMillis(inDemandDelay)) {
                     // we've been in demand for long enough
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getNode().getNodeName(), Util.getTimeSpanString(demandMilliseconds)});
@@ -159,7 +162,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
-                if (idleMilliseconds > TimeUnit.MILLISECONDS.convert(inDemandDelay, TimeUnit.MINUTES)) {
+                if (idleMilliseconds > TimeUnit2.MINUTES.toMillis(idleDelay)) {
                     // we've been idle for long enough
                     logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
                             new Object[]{c.getNode().getNodeName(), Util.getTimeSpanString(idleMilliseconds)});
