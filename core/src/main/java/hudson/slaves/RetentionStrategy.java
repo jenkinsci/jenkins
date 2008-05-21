@@ -4,10 +4,8 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.*;
 import hudson.util.DescriptorList;
-import hudson.util.TimeUnit2;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -153,7 +151,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         public synchronized long check(SlaveComputer c) {
             if (c.isOffline()) {
                 final long demandMilliseconds = System.currentTimeMillis() - c.getDemandStartMilliseconds();
-                if (demandMilliseconds > TimeUnit2.MINUTES.toMillis(inDemandDelay)) {
+                if (demandMilliseconds > inDemandDelay*1000*60 /*MINS->MILLIS*/) {
                     // we've been in demand for long enough
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getNode().getNodeName(), Util.getTimeSpanString(demandMilliseconds)});
@@ -162,7 +160,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
-                if (idleMilliseconds > TimeUnit2.MINUTES.toMillis(idleDelay)) {
+                if (idleMilliseconds > idleDelay*1000*60 /*MINS->MILLIS*/) {
                     // we've been idle for long enough
                     logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
                             new Object[]{c.getNode().getNodeName(), Util.getTimeSpanString(idleMilliseconds)});
