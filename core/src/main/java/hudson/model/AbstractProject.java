@@ -166,6 +166,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         updateTransientActions();
     }
 
+    protected void performDelete() throws IOException {
+        // prevent a new build while a delete operation is in progress
+        makeDisabled(true);
+        super.performDelete();
+    }
+
     /**
      * If this project is configured to be always built on this node,
      * return that {@link Node}. Otherwise null.
