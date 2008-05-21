@@ -191,9 +191,10 @@ public final class SlaveComputer extends Computer {
             public void run() {
                 // do this on another thread so that any lengthy disconnect operation
                 // (which could be typical) won't block UI thread.
-                launcher.beforeDisconnect(SlaveComputer.this, new StreamTaskListener(openLogFile()));
+                StreamTaskListener listener = new StreamTaskListener(openLogFile());
+                launcher.beforeDisconnect(SlaveComputer.this, listener);
                 closeChannel();
-                launcher.afterDisconnect(SlaveComputer.this, new StreamTaskListener(openLogFile()));
+                launcher.afterDisconnect(SlaveComputer.this, listener);
             }
         });
     }
