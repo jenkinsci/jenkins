@@ -12,9 +12,12 @@ public class JNLPMain {
         // so I'm doing it here, too.
         System.setSecurityManager(null);
 
-        // launch GUI to display output
-        setUILookAndFeel();
-        new MainDialog().setVisible(true);
+        boolean headlessMode = Boolean.getBoolean("hudson.master.headless");
+        if (!headlessMode) {
+            // launch GUI to display output
+            setUILookAndFeel();
+            new MainDialog().setVisible(true);
+        }
 
         Main.main(args);
     }
