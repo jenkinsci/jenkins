@@ -256,16 +256,15 @@ public final class SlaveComputer extends Computer {
      * If still connected, disconnect.
      */
     private void closeChannel() {
-        synchronized (channelLock) {
-            Channel c = channel;
-            channel = null;
-            isUnix = null;
-            if (c != null) {
-                try {
-                    c.close();
-                } catch (IOException e) {
-                    logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
-                }
+        // TODO: race condition between this and the setChannel method.
+        Channel c = channel;
+        channel = null;
+        isUnix = null;
+        if (c != null) {
+            try {
+                c.close();
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
         }
     }
@@ -276,8 +275,7 @@ public final class SlaveComputer extends Computer {
         launcher = ((Slave)node).getLauncher();
 
         // maybe the configuration was changed to relaunch the slave, so try to re-launch now.
-        //launch(); this can cause a partially constructed object to leak out of the constructor
-        // TODO refactor the constructors to sort this all out
+        launch();
     }
 
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
