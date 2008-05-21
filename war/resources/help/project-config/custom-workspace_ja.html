@@ -1,23 +1,23 @@
-<div><!-- TODO:誰か訳して -->
-  For each job on Hudson, Hudson allocates a unique "workspace directory." This is the directory
-  where the code is checked out and builds happen. Normally you should let Hudson allocate
-  and clean up workspace directories, but in several situations this is problematic,
-  and in such case, this option lets you specify the workspace location manually.
+<div>
+  Hudsonはジョブ毎に"ワークスペースディレクトリ"を割り当てます。
+  このディレクトリでは、ソースコードのチェックアウト、ビルドが行われます。
+  通常、Hudsonがディレクトリの割り当てやクリーンアップを行いますが、いくつかの状況では問題があるため、
+  手動でワークスペースの位置を指定します。
 
   <p>
-  Once such situation is where paths are hard-coded and the code needs to be built on a specific location.
-  (and you can find one such discussion <a href="http://www.nabble.com/Customize-Workspace-directory-tt17194310.html">here</a>.)
-  While there's no doubt that such a build is not ideal, this option allows you to get going in such a situation.
+  パスがハードコーディングされていて特定の位置でビルドしなければならないことがあります。
+  (<a href="http://www.nabble.com/Customize-Workspace-directory-tt17194310.html">ここ</a>で議論が行われています)
+  そのようなビルドが理想でないことに疑いはありませんが、このオプションを設定すればそのような状況でも実行できます。
 
   <p>
-  Another situation where this is useful is when you are using the free-style project type not to perform
-  a software build, but execution of a certain batch task, perhaps as a cron replacement. In such case,
-  you can use this option to map the relevant directory as the workspace, so that people can look at files
-  through the Hudson web UI, and you can kick relevant commands more easily.
+  この設定が役立つ他の状況として、ソフトウェアのビルドではなく、クーロンの代わりにバッチタスクを実行するために、
+  フリースタイル・プロジェクトを使用する場合があります。
+  この場合、このオプションで関連するディレクトリをワークスペースに割り当てます。
+  そうすると、HudsonのWebインタフェースでファイルをみることができ、より簡単にコマンドを実行できます。
 
   <p>
-  If you are in a distributed build environment, unless you tie a job to a specific node, Hudson may still
-  move around jobs to different slaves. Sometimes this is desirable, sometimes this is not. Also,
-  you can map multiple projects to have the same workspace, but if you do so, make sure concurrent executions
-  of those jobs won't have nasty interferance with each other.
+  分散ビルド環境では、ジョブを特定のノードに固定しない限り、Hudsonはジョブを異なるスレーブに割り当てます。
+  これは、あるときは望ましいですが、あるときは望ましくありません。
+  また、複数のプロジェクトに同一のワークスペースを割り当てることもできますが、そうする場合には、
+  そのジョブを同時に実行したときにお互いに干渉しないことを確認してください。
 </div>
