@@ -276,7 +276,8 @@ public final class SlaveComputer extends Computer {
         launcher = ((Slave)node).getLauncher();
 
         // maybe the configuration was changed to relaunch the slave, so try to re-launch now.
-        launch();
+        //launch(); this can cause a partially constructed object to leak out of the constructor
+        // TODO refactor the constructors to sort this all out
     }
 
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
