@@ -8,7 +8,7 @@
 
   <Projects>
     <j:forEach var="p" items="${it.items}">
-      <j:set var="lb" value="${p.lastBuild}"/>
+      <j:set var="lb" value="${p.lastCompletedBuild}"/>
       <j:if test="${lb!=null}">
         <Project  name="${p.displayName}"
                   activity="${h.ifThenElse(p.isBuilding(),'Building','Sleeping')}"

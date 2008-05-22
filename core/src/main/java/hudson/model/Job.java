@@ -610,6 +610,17 @@ public abstract class Job<JobT extends Job<JobT,RunT>, RunT extends Run<JobT,Run
             r=r.getPreviousBuild();
         return r;
     }
+    
+    /**
+     * Returns the last completed build, if any. Otherwise null.
+     */
+    @Exported @QuickSilver
+    public RunT getLastCompletedBuild() {
+       RunT r = getLastBuild();
+       while(r!=null && r.isBuilding())
+           r=r.getPreviousBuild();
+       return r;
+    }
 
     /**
      * Used as the color of the status ball for the project.
