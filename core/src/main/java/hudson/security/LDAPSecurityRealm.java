@@ -227,11 +227,21 @@ public class LDAPSecurityRealm extends SecurityRealm {
             return "LDAP";
         }
 
-        public void doServerCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter("server") final String server) throws IOException, ServletException {
+        public void doServerCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter("server") final String server,
+        		@QueryParameter("managerDN") final String managerDN,
+        		@QueryParameter("managerPassword") final String managerPassword
+        		) throws IOException, ServletException {
             new FormFieldValidator(req,rsp,true) {
                 protected void check() throws IOException, ServletException {
                     try {
-                        DirContext ctx = LdapCtxFactory.getLdapCtxInstance("ldap://"+server+'/', new Hashtable());
+                        Hashtable<String,String> props = new Hashtable<String,String>();
+                        if(managerDN!=null && managerDN.trim().length() > 0  && !"undefined".equals(managerDN)) {
+                            props.put(Context.SECURITY_PRINCIPAL,managerDN);
+                        }
+                        if(managerPassword!=null && managerPassword.trim().length() > 0 && !"undefined".equals(managerPassword)) {
+                            props.put(Context.SECURITY_PRINCIPAL,managerPassword);
+                        }
+                        DirContext ctx = LdapCtxFactory.getLdapCtxInstance("ldap://"+server+'/', props);
                         ctx.getAttributes("");
                         ok();   // connected
                     } catch (NamingException e) {
