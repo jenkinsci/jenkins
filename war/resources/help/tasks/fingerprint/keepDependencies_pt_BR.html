@@ -1,0 +1,17 @@
+<div>
+  Se esta opção estiver habilitada, todas  <a href="lastSuccessfulBuild/fingerprint">
+  as costruções que são referenciadas</a> das construções deste projet (via fingerprint)
+  serão protegidas da rotação de log.
+
+  <p>
+  Quando sua tarefa depende de outras tarefas no Hudson e você ocasionalmente precisa
+  marcar com uma tag seu workspace, é frequentemente conveniente/necessário também marcar com uma tag suas
+  dependências no Hudson. O problema é que a rotação de log poderia
+  interferir nisto, desde que a construção que seu projeto está usando poderia já ter 
+  seu log rotacionado (se houve uma porção de construções e sua dependência), e
+  se isto acontecer você não será capaz de confiavelmente marcar com uma tag suas dependências.
+
+  <p>
+  Esta característica corrige este problema "travando" aquelas construções que você depende,
+  portanto garantindo que você possa sempre marcar suas dependências completas.
+</div>
