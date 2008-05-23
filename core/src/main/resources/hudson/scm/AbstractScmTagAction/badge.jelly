@@ -1,0 +1,7 @@
+<j:if test="${it.isTagged()}" xmlns:j="jelly:core">
+  <a href="${rootURL}/${it.build.url}tagBuild/">
+    <img width="16" height="16"
+      tooltip="${it.tooltip}"
+      src="${imagesURL}/16x16/save.gif"/>
+  </a>
+</j:if>

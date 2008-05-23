@@ -83,11 +83,18 @@ public class SubversionTagAction extends AbstractScmTagAction {
     /**
      * Returns true if this build has already been tagged at least once.
      */
+    @Override
     public boolean isTagged() {
         for (List<String> t : tags.values()) {
             if(!t.isEmpty())    return true;
         }
         return false;
+    }
+
+    @Override
+    public String getTooltip() {
+        if(isTagged())  return "Tagged";
+        else            return null;
     }
 
     private static final Pattern TRUNK_BRANCH_MARKER = Pattern.compile("/(trunk|branches)(/|$)");

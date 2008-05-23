@@ -1,3 +1,3 @@
 <img width="16" height="16"
-  title="${it.whyKeepLog}"
+  title="${it.tooltip}"
   src="${imagesURL}/16x16/lock.gif"/>

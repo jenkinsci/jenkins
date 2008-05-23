@@ -2,6 +2,7 @@ package hudson.scm;
 
 import hudson.model.AbstractBuild;
 import hudson.model.TaskAction;
+import hudson.model.BuildBadgeAction;
 import hudson.security.Permission;
 import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
@@ -20,7 +21,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class AbstractScmTagAction extends TaskAction {
+public abstract class AbstractScmTagAction extends TaskAction implements BuildBadgeAction {
     protected final AbstractBuild build;
 
     protected AbstractScmTagAction(AbstractBuild build) {
@@ -42,6 +43,18 @@ public abstract class AbstractScmTagAction extends TaskAction {
     public AbstractBuild getBuild() {
         return build;
     }
+
+    /**
+     * This message is shown as the tool tip of the build badge icon.
+     */
+    public String getTooltip() {
+        return null;
+    }
+
+    /**
+     * Returns true if the build is tagged already.
+     */
+    public abstract boolean isTagged();
 
     protected ACL getACL() {
         return build.getACL();

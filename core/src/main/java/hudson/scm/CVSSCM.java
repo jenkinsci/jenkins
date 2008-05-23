@@ -6,7 +6,6 @@ import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
-import hudson.security.Permission;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
 import hudson.model.AbstractBuild;
@@ -22,14 +21,18 @@ import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
-import hudson.util.*;
+import hudson.security.Permission;
+import hudson.util.ArgumentListBuilder;
+import hudson.util.ByteBuffer;
+import hudson.util.ForkOutputStream;
+import hudson.util.FormFieldValidator;
+import hudson.util.IOException2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
-import org.apache.maven.project.overlay.BuildOverlay;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -1239,6 +1242,17 @@ public class CVSSCM extends SCM implements Serializable {
         @Override
         protected Permission getPermission() {
             return TAG;
+        }
+
+        @Override
+        public String getTooltip() {
+            if(tagName!=null)   return "Tag: "+tagName;
+            else                return null;
+        }
+
+        @Override
+        public boolean isTagged() {
+            return tagName!=null;
         }
 
         /**
