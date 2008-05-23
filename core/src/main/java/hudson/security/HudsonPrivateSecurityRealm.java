@@ -106,7 +106,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
     }
 
     // TODO
-    private static final GrantedAuthority[] TEST_AUTHORITY = {new GrantedAuthorityImpl("authenticated"),new GrantedAuthorityImpl("admin")};
+    private static final GrantedAuthority[] TEST_AUTHORITY = {new GrantedAuthorityImpl("authenticated")};
 
     public static final class SignupInfo {
         public String username,password1,password2,fullname,email,captcha;
