@@ -74,6 +74,9 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
 }
 
 class FingerprintParams {
+    /**
+     * Null if the build isn't claiming to be the owner.
+     */
     final AbstractBuild build;
     final String fileName;
 
@@ -81,7 +84,6 @@ class FingerprintParams {
         this.build = build;
         this.fileName = fileName;
 
-        assert build!=null;
         assert fileName!=null;
     }
 }
