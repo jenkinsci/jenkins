@@ -6,14 +6,19 @@ import java.util.StringTokenizer;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.io.Serializable;
 
 /**
  * Used to build up arguments for a process invocation.
  *
  * @author Kohsuke Kawaguchi
  */
-public class ArgumentListBuilder {
+public class ArgumentListBuilder implements Serializable {
     private final List<String> args = new ArrayList<String>();
+
+    public ArgumentListBuilder add(Object a) {
+        return add(a.toString());
+    }
 
     public ArgumentListBuilder add(String a) {
         if(a!=null)
@@ -94,4 +99,6 @@ public class ArgumentListBuilder {
         }
         return buf.toString();
     }
+
+    private static final long serialVersionUID = 1L;
 }

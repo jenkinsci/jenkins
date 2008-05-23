@@ -6,15 +6,17 @@ import org.codehaus.classworlds.DefaultClassRealm;
 import org.codehaus.classworlds.Launcher;
 import org.codehaus.classworlds.NoSuchRealmException;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.Socket;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Entry point for launching Maven and Hudson remoting in the same VM,
@@ -33,10 +35,22 @@ public class Main {
     private static Launcher launcher;
 
     public static void main(String[] args) throws Exception {
-        main(new File(args[0]),new File(args[1]),new File(args[2]));
+        main(new File(args[0]),new File(args[1]),new File(args[2]),Integer.parseInt(args[3]));
     }
 
-    public static void main(File m2Home, File remotingJar, File interceptorJar) throws Exception {
+    /**
+     *
+     * @param m2Home
+     *      Maven2 installation. This is where we find Maven jars that we'll run.
+     * @param remotingJar
+     *      Hudson's remoting.jar that we'll load.
+     * @param interceptorJar
+     *      maven-interceptor.jar that we'll load.
+     * @param tcpPort
+     *      TCP socket that the launching Hudson will be listening to.
+     *      This is used for the remoting communication.
+     */
+    public static void main(File m2Home, File remotingJar, File interceptorJar, int tcpPort) throws Exception {
         // Unix master with Windows slave ends up passing path in Unix format,
         // so convert it to Windows format now so that no one chokes with the path format later.
         try {
@@ -71,15 +85,23 @@ public class Main {
         remoting.setParent(launcher.getWorld().getRealm("plexus.core.maven"));
         remoting.addConstituent(remotingJar.toURL());
 
-        // we'll use stdin/out to talk to the host,
-        // so make sure Maven won't touch them later
-        OutputStream os = System.out;
-        System.setOut(System.err);
-        InputStream is = System.in;
-        System.setIn(new ByteArrayInputStream(new byte[0]));
+        final Socket s = new Socket((String)null,tcpPort);
 
         Class remotingLauncher = remoting.loadClass("hudson.remoting.Launcher");
-        remotingLauncher.getMethod("main",new Class[]{InputStream.class,OutputStream.class}).invoke(null,new Object[]{is,os});
+        remotingLauncher.getMethod("main",new Class[]{InputStream.class,OutputStream.class}).invoke(null,
+                new Object[]{
+                        // do partial close, since socket.getInputStream and getOutputStream doesn't do it by
+                        new FilterInputStream(s.getInputStream()) {
+                            public void close() throws IOException {
+                                s.shutdownInput();
+                            }
+                        },
+                        new FilterOutputStream(s.getOutputStream()) {
+                            public void close() throws IOException {
+                                s.shutdownOutput();
+                            }
+                        }
+                });
         System.exit(0);
     }
 

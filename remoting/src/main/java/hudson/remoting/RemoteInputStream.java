@@ -7,6 +7,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 /**
+ * Wraps {@link InputStream} so that it can be sent over the remoting channel.
+ *
+ * <p>
+ * Note that this class by itself does not perform buffering.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class RemoteInputStream extends InputStream implements Serializable {

@@ -2,9 +2,11 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Proc;
 import static hudson.Util.fixNull;
 import hudson.maven.agent.Main;
 import hudson.model.BuildListener;
+import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Hudson;
 import hudson.model.JDK;
@@ -13,19 +15,33 @@ import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
+import hudson.remoting.RemoteInputStream;
+import hudson.remoting.RemoteOutputStream;
+import hudson.remoting.SocketInputStream;
+import hudson.remoting.SocketOutputStream;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOException2;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.JarURLConnection;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  * Launches the maven process.
@@ -59,14 +75,138 @@ final class MavenProcessFactory implements ProcessCache.Factory {
     }
 
     /**
+     * Represents a bi-directional connection.
+     *
+     * <p>
+     * This implementation is remoting aware, so it can be safely sent to the remote callable object.
+     *
+     * <p>
+     * When we run Maven on a slave, the master may not have a direct TCP/IP connectivty to the slave.
+     * That means the {@link Channel} between the master and the Maven needs to be tunneled through
+     * the channel between master and the slave, then go to TCP socket to the Maven.
+     */
+    private static final class Connection implements Serializable {
+        public InputStream in;
+        public OutputStream out;
+
+        Connection(InputStream in, OutputStream out) {
+            this.in = in;
+            this.out = out;
+        }
+
+        private Object writeReplace() {
+            return new Connection(new RemoteInputStream(in),new RemoteOutputStream(out));
+        }
+
+        private Object readResolve() {
+            // ObjectInputStream seems to access data at byte-level and do not do any buffering,
+            // so if we are remoted, buffering would be crucial.
+            this.in = new BufferedInputStream(in);
+            this.out = new BufferedOutputStream(out);
+            return this;
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    interface Acceptor {
+        Connection accept() throws IOException;
+        int getPort();
+    }
+
+    static final class AcceptorImpl implements Acceptor, Serializable {
+        private final ServerSocket serverSocket;
+        private Socket socket;
+
+        AcceptorImpl(ServerSocket serverSocket) {
+            this.serverSocket = serverSocket;
+        }
+
+        public Connection accept() throws IOException {
+            socket = serverSocket.accept();
+            // we'd only accept one connection
+            serverSocket.close();
+
+            return new Connection(new SocketInputStream(socket),new SocketOutputStream(socket));
+        }
+
+        public int getPort() {
+            return serverSocket.getLocalPort();
+        }
+
+        /**
+         * When sent to the remote node, send a proxy.
+         */
+        private Object writeReplace() {
+            return Channel.current().export(Acceptor.class, this);
+        }
+    }
+
+    /**
+     * Opens a server socket and returns {@link Acceptor} so that
+     * we can accept a connection later on it.
+     */
+    private static final class SocketHandler implements Callable<Acceptor,IOException> {
+        public Acceptor call() throws IOException {
+            // open a TCP socket to talk to the launched Maven process.
+            // let the OS pick up a random open port
+            ServerSocket ss = new ServerSocket();
+            ss.bind(null); // new InetSocketAddress(InetAddress.getLocalHost(),0));
+
+            return new AcceptorImpl(ss);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
      * Starts maven process.
      */
     public Channel newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
         if(debug)
             listener.getLogger().println("Using env variables: "+ envVars);
         try {
-            return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
-                out, workDir, envVars);
+            final Acceptor acceptor = launcher.getChannel().call(new SocketHandler());
+
+            final ArgumentListBuilder cmdLine = buildMavenCmdLine(listener,acceptor.getPort());
+            String[] cmds = cmdLine.toCommandArray();
+            final Proc proc = launcher.launch(cmds, envVars, out, workDir);
+
+            Connection con = acceptor.accept();
+
+            return new Channel("Channel to Maven "+ Arrays.toString(cmds),
+                Computer.threadPoolForRemoting, con.in, con.out) {
+
+                /**
+                 * Kill the process when the channel is severed.
+                 */
+                protected synchronized void terminate(IOException e) {
+                    super.terminate(e);
+                    try {
+                        proc.kill();
+                    } catch (IOException x) {
+                        // we are already in the error recovery mode, so just record it and move on
+                        LOGGER.log(Level.INFO, "Failed to terminate the severed connection",x);
+                    } catch (InterruptedException x) {
+                        // process the interrupt later
+                        Thread.currentThread().interrupt();
+                    }
+                }
+
+                public synchronized void close() throws IOException {
+                    super.close();
+                    // wait for Maven to complete
+                    try {
+                        proc.join();
+                    } catch (InterruptedException e) {
+                        // process the interrupt later
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            };
+
+//            return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
+//                out, workDir, envVars);
         } catch (IOException e) {
             if(fixNull(e.getMessage()).contains("java: not found")) {
                 // diagnose issue #659
@@ -83,7 +223,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
      *
      * UGLY.
      */
-    private ArgumentListBuilder buildMavenCmdLine(BuildListener listener) throws IOException, InterruptedException {
+    private ArgumentListBuilder buildMavenCmdLine(BuildListener listener,int tcpPort) throws IOException, InterruptedException {
         MavenInstallation mvn = getMavenInstallation();
         if(mvn==null) {
             listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
@@ -131,6 +271,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         args.add(isMaster?
             Which.jarFile(hudson.maven.agent.PluginManagerInterceptor.class).getAbsolutePath():
             slaveRoot.child("maven-interceptor.jar").getRemote());
+        args.add(tcpPort);
         return args;
     }
 
@@ -234,4 +375,6 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         if(port!=null)
             debugPort = Integer.parseInt(port);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(MavenProcessFactory.class.getName());
 }
