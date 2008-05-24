@@ -1,0 +1,31 @@
+<div>
+  Hudson kann "Fingerabdrücke" von Datein aufzeichnen (in den meisten Fällen von
+  JAR-Dateien), um nachzuvollziehen, wann in welchen Builds diese Dateien 
+  erstellt oder verwendet wurden. Wenn Sie untereinander abhängige Projekte in
+  Hudson bauen, können Sie dadurch schnell Antworten finden auf Fragen wie:
+  <ul>
+    <li>
+      Ich habe <tt>foo.jar</tt> auf meiner Festplatte - aber aus welchem Build
+      des Projekts FOO stammt es? 
+    </li>
+    <li>
+      Mein Projekt BAR hängt von <tt>foo.jar</tt> des Projekts FOO ab.
+    </li>
+    <ul>
+      <li>
+        Welcher Build von <tt>foo.jar</tt> wurde in BAR #51 verwendet?
+      </li>
+      <li>
+        Welcher Build von BAR beinhaltet meine Fehlerkorrektur für
+        <tt>foo.jar</tt> #32?
+      </li>
+    </ul>
+  </ul>
+
+  <p>
+  Um dieses Merkmal zu nützen, müssen alle Projekte (also nicht nur nur das
+  Projekt, in dem eine Datei produziert wird, sondern alle Projekte, welche
+  die Datei verwenden) diese Funktion verenden und Fingerabdrücke aufzeichnen.
+  <p>
+  <a href="https://hudson.dev.java.net/fingerprint.html">Weitere Informationen (auf Englisch)</a>
+</div>

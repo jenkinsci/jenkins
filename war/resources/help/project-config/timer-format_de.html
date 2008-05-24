@@ -1,0 +1,58 @@
+<div>
+  Dieses Feld verwendet die Cron-Syntax (mit kleinen Unterschieden).
+  Jede Zeile besteht dabei aus 5 Felden, getrennt durch Tabulator oder Leerzeichen:
+  <pre>MINUTE STUNDE TAG MONAT WOCHENTAG</pre>
+  <table>
+    <tr>
+      <td>MINUTE</td>
+      <td>Die Minute der Stunde (0-59)</td>
+    </tr>
+    <tr>
+      <td>STUNDE</td>
+      <td>Die Stunde des Tages (0-23)</td>
+    </tr>
+    <tr>
+      <td>TAG</td>
+      <td>Der Tag des Monats (1-31)</td>
+    </tr>
+    <tr>
+      <td>MONAT</td>
+      <td>Der Monat (1-12)</td>
+    </tr>
+    <tr>
+      <td>WOCHENTAG</td>
+      <td>Der Wochentag (0-7), 0 und 7 entsprechen dem Sonntag.</td>
+    </tr>
+  </table>
+  <p>
+    Um mehrere Werte pro Feld anzugeben, können folgende Operatoren verwendet
+    werden. In absteigender Priorität sind dies:
+  </p>
+  <ul>
+    <li>'*' entspricht allen gültigen Werten</li>
+    <li>'M-N' gibt einen Bereich an, z.B. "1-5"</li>
+    <li>'M-N/X' oder '*/X' gibt Schritte in X-er Schritten an durch den Bereich an, z.B.
+         "*/15" im Feld MINUTE für "0,15,30,45" und "1-6/2" für "1,3,5"</li>
+    <li>'A,B,...,Z' entspricht direkt den angegebenen Werten, z.B. "0,30" oder "1,3,5"</li>
+  </ul>
+  <p>
+    Leere Zeilen und Zeilen, die mit '#' beginnen, werden als Kommentarzeilen
+    ignoriert.
+  </p><p>
+    Zusätzlich werden '@yearly', '@annually', '@monthly', '@weekly', '@daily', '@midnight'
+    und '@hourly' unterstützt.
+  </p>
+  <table>
+    <tr>
+      <td>Beispiele</td>
+      <td>
+<pre>
+# Jede Minute
+* * * * *
+# Immer 5 Minuten nach der vollen Stunde 
+5 * * * *
+</pre>
+      </td>
+    </tr>
+  </table>
+</div>
