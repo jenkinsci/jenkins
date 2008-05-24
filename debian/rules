@@ -43,8 +43,10 @@ install: build
 	dh_installdirs
     
 	# Add here commands to install the package into debian/hudson.
-	mkdir -p $(CURDIR)/debian/hudson/usr/local/hudson
-	cp hudson.war $(CURDIR)/debian/hudson/usr/local/hudson/hudson.war
+	mkdir -p $(CURDIR)/debian/hudson/usr/local/bin
+	mkdir -p $(CURDIR)/debian/hudson/var/run/hudson
+	mkdir -p $(CURDIR)/debian/hudson/var/lib/hudson
+	cp hudson.war $(CURDIR)/debian/hudson/usr/local/bin/hudson.war
 	
 
 

@@ -7,7 +7,7 @@ Standards-Version: 3.7.2
 
 Package: hudson
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, daemon
 Description: Continuous integration system written in Java
  Hudson is an extensible continuous engine written in Java.
  More info at https://hudson.dev.java.net/

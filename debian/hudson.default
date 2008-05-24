@@ -7,21 +7,21 @@ NAME=hudson
 JAVA=/usr/bin/java
 
 # arguments to pass to java
-JAVA_ARGS=-jar
+JAVA_ARGS="-Xmx256m -jar"
 
 PIDFILE=/var/run/hudson/hudson.pid
 
 # user id to be invoked as (otherwise will run as root; not wise!)
-HUDSON_USER=hudson
+HUDSON_USER=root
 
 # location of the hudson war file
-HUDSON_WAR=/usr/local/bin/$NAME.war
+HUDSON_WAR=/usr/local/bin/hudson.war
 
 # hudson home location
-#HUDSON_HOME=/var/lib/hudson
+HUDSON_HOME=/var/lib/hudson
 
 # log location.  this may be a syslog facility.priority
-#HUDSON_LOG=/var/log/$NAME.log
+HUDSON_LOG=/var/log/$NAME.log
 #HUDSON_LOG=daemon.info
 
 # arguments to pass to hudson.
