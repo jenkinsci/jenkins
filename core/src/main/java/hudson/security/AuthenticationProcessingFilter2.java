@@ -1,11 +1,11 @@
 package hudson.security;
 
-import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
-import org.kohsuke.stapler.Stapler;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
-import hudson.model.Hudson;
+import org.acegisecurity.AuthenticationException;
+import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
 
 /**
  * {@link AuthenticationProcessingFilter} with a change for Hudson so that
@@ -18,6 +18,7 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
     @Override
     protected String determineTargetUrl(HttpServletRequest request) {
         String targetUrl = request.getParameter("from");
+        request.getSession().setAttribute("from", targetUrl);
 
         if (targetUrl == null)
             return getDefaultTargetUrl();
@@ -30,6 +31,18 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
         // not sure when this happens, but apparently this happens in some case.
         // see #1274
         return targetUrl;
+    }
+
+    /**
+     * @see org.acegisecurity.ui.AbstractProcessingFilter#determineFailureUrl(javax.servlet.http.HttpServletRequest, org.acegisecurity.AuthenticationException)
+     */
+    @Override
+    protected String determineFailureUrl(HttpServletRequest request, AuthenticationException failed) {
+        Properties excMap = getExceptionMappings();
+		String failedClassName = failed.getClass().getName();
+		String whereFrom = request.getParameter("from");
+		request.getSession().setAttribute("from", whereFrom);
+		return excMap.getProperty(failedClassName, getAuthenticationFailureUrl());
     }
 
 }

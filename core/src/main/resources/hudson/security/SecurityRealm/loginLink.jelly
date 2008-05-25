@@ -1,1 +1,1 @@
-<a style="color:inherit" href="${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}"><b>${%login}</b></a>
+<a style="color:inherit" href="${rootURL}/${app.securityRealm.loginUrl}?from=${if (request.session.attribute('from')!=null) request.session.getAttribute('from');  else if (request.getParameter('from')!=null) request.getParameter('from'); else if (request.requestURI=='/loginError' || request.requestURI=='/login') '/'; else request.requestURI;} "><b>${%login}</b></a>
