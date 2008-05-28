@@ -5,7 +5,7 @@
   <j:forEach var="action" items="${it.actions}">
     <j:if test="${action.iconFileName!=null}">
       <l:task icon="${h.getIconFilePath(action)}" title="${action.displayName}"
-              href="${h.getActionUrl(it.url,action)}/" />
+              href="${h.getActionUrl(it.url,action)}" />
     </j:if>
   </j:forEach>
 </j:jelly>
