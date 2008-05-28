@@ -1114,7 +1114,7 @@ public class SubversionSCM extends SCM implements Serializable {
                      */
                     @Override
                     public SVNAuthentication getNextAuthentication(String kind, String realm, SVNURL url) throws SVNException {
-                        SVNErrorManager.authenticationFailed("Authentication failed for ''{0}''", realm);
+                        SVNErrorManager.authenticationFailed("Authentication failed for "+url+" realm="+realm, null);
                         return null;
                     }
 
