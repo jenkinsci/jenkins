@@ -4,7 +4,14 @@
     <l:side-panel />
     <l:main-panel>
       <h1>Error</h1>
-      <p><st:out value="${message}"/></p>
+      <j:choose>
+        <j:when test="${pre}">
+          <pre><st:out value="${message}"/></pre>
+        </j:when>
+        <j:otherwise>
+          <p><st:out value="${message}"/></p>
+        </j:otherwise>
+      </j:choose>
       <j:if test="${exception!=null}">
         <input type="button" value="Detail..." onclick="showDetails()" id="button"/>
         <pre id="details" style="display:none">${h.printThrowable(exception)}</pre>
