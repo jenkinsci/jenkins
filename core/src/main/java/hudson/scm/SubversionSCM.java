@@ -37,6 +37,7 @@ import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.SVNCancelException;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
 import org.tmatesoft.svn.core.auth.SVNAuthentication;
@@ -1075,6 +1076,8 @@ public class SubversionSCM extends SCM implements Serializable {
             // we'll record what credential we are trying here.
             StringWriter log = new StringWriter();
             final PrintWriter logWriter = new PrintWriter(log);
+            final boolean[] authenticationAttemped = new boolean[1];
+            final boolean[] authenticationAcknowled = new boolean[1];
 
             SVNRepository repository = null;
             try {
@@ -1090,6 +1093,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
                     @Override
                     public SVNAuthentication getFirstAuthentication(String kind, String realm, SVNURL url) throws SVNException {
+                        authenticationAttemped[0] = true;
                         if(kind.equals(ISVNAuthenticationManager.USERNAME))
                             // when using svn+ssh, svnkit first asks for ISVNAuthenticationManager.SSH
                             // authentication to connect via SSH, then calls this method one more time
@@ -1135,6 +1139,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
                     @Override
                     public void acknowledgeAuthentication(boolean accepted, String kind, String realm, SVNErrorMessage errorMessage, SVNAuthentication authentication) throws SVNException {
+                        authenticationAcknowled[0] = true;
                         if(accepted) {
                             assert cred!=null;
                             credentials.put(realm,cred);
@@ -1146,6 +1151,16 @@ public class SubversionSCM extends SCM implements Serializable {
                     }
                 });
                 repository.testConnection();
+
+                if(!authenticationAttemped[0]) {
+                    logWriter.println("No authentication was attemped.");
+                    throw new SVNCancelException();
+                }
+                if(!authenticationAcknowled[0]) {
+                    logWriter.println("Authentication was not acknowledged.");
+                    throw new SVNCancelException();
+                }
+
                 rsp.sendRedirect("credentialOK");
             } catch (SVNException e) {
                 logWriter.println("FAILED: "+e.getErrorMessage());
