@@ -1035,6 +1035,7 @@ public class SubversionSCM extends SCM implements Serializable {
          *
          * This code is fairly ugly because of the way SVNKit handles credentials.
          */
+        // TODO: stapler should do multipart/form-data handling 
         public void doPostCredential(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
@@ -1071,6 +1072,10 @@ public class SubversionSCM extends SCM implements Serializable {
                 }
             }
 
+            // we'll record what credential we are trying here.
+            StringWriter log = new StringWriter();
+            final PrintWriter logWriter = new PrintWriter(log);
+
             SVNRepository repository = null;
             try {
                 // the way it works with SVNKit is that
@@ -1093,18 +1098,28 @@ public class SubversionSCM extends SCM implements Serializable {
                             // I don't set the cred field here, so that the 1st credential for ssh
                             // won't get clobbered.
                             return new SVNUserNameAuthentication(username,false);
-                        if(kind.equals(ISVNAuthenticationManager.PASSWORD))
+                        if(kind.equals(ISVNAuthenticationManager.PASSWORD)) {
+                            logWriter.println("Passing user name "+username+" and password you entered");
                             cred = new PasswordCredential(username,password);
-                        if(kind.equals(ISVNAuthenticationManager.SSH)) {
-                            if(keyFile==null)
-                                cred = new PasswordCredential(username,password);
-                            else
-                                cred = new SshPublicKeyCredential(username,password,keyFile);
                         }
-                        if(kind.equals(ISVNAuthenticationManager.SSL))
+                        if(kind.equals(ISVNAuthenticationManager.SSH)) {
+                            if(keyFile==null) {
+                                logWriter.println("Passing user name "+username+" and password you entered to SSH");
+                                cred = new PasswordCredential(username,password);
+                            } else {
+                                logWriter.println("Attempting a public key authentication with username "+username);
+                                cred = new SshPublicKeyCredential(username,password,keyFile);
+                            }
+                        }
+                        if(kind.equals(ISVNAuthenticationManager.SSL)) {
+                            logWriter.println("Attempting an SSL client certificate authentcation");
                             cred = new SslClientCertificateCredential(keyFile,password);
+                        }
 
-                        if(cred==null)  return null;
+                        if(cred==null) {
+                            logWriter.println("Unknown authentication method: "+kind);
+                            return null;
+                        }
                         return cred.createSVNAuthentication(kind);
                     }
 
@@ -1114,7 +1129,7 @@ public class SubversionSCM extends SCM implements Serializable {
                      */
                     @Override
                     public SVNAuthentication getNextAuthentication(String kind, String realm, SVNURL url) throws SVNException {
-                        SVNErrorManager.authenticationFailed("Authentication failed for "+url+" realm="+realm, null);
+                        SVNErrorManager.authenticationFailed("Authentication failed for "+url, null);
                         return null;
                     }
 
@@ -1124,6 +1139,8 @@ public class SubversionSCM extends SCM implements Serializable {
                             assert cred!=null;
                             credentials.put(realm,cred);
                             save();
+                        } else {
+                            logWriter.println("Failed to authenticate: "+errorMessage);
                         }
                         super.acknowledgeAuthentication(accepted, kind, realm, errorMessage, authentication);
                     }
@@ -1131,7 +1148,9 @@ public class SubversionSCM extends SCM implements Serializable {
                 repository.testConnection();
                 rsp.sendRedirect("credentialOK");
             } catch (SVNException e) {
-                req.setAttribute("message",e.getErrorMessage());
+                logWriter.println("FAILED: "+e.getErrorMessage());
+                req.setAttribute("message",log.toString());
+                req.setAttribute("pre",true);
                 req.setAttribute("exception",e);
                 rsp.forward(Hudson.getInstance(),"error",req);
             } finally {
