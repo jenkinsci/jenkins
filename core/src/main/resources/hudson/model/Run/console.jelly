@@ -20,7 +20,7 @@
           <div id="spinner">
             <img src="${imagesURL}/spinner.gif" /> 
           </div>
-          <t:progressiveText href="progressiveLog" idref="out" spinner="spinner" />
+         <t:progressiveText href="progressiveLog" idref="out" spinner="spinner" />
         </j:when>
         <!-- output is completed now. -->
         <j:otherwise>

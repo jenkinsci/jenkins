@@ -17,6 +17,8 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.Writer;
 
+import org.kohsuke.stapler.framework.io.WriterOutputStream;
+
 /**
  * {@link TaskListener} that generates output into a single stream.
  *

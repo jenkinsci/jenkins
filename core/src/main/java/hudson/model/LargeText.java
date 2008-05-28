@@ -2,11 +2,11 @@ package hudson.model;
 
 import hudson.util.ByteBuffer;
 import hudson.util.CharSpool;
-import hudson.util.CountingOutputStream;
 import hudson.util.LineEndNormalizingWriter;
-import hudson.util.WriterOutputStream;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.framework.io.WriterOutputStream;
+import org.apache.commons.io.output.CountingOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
  * This class defines methods for handling progressive text update.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated moved to stapler
  */
 public class LargeText {
     /**
