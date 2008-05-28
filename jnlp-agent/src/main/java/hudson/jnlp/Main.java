@@ -18,7 +18,9 @@ public class Main {
         // by overwriting the security manager.
         System.setSecurityManager(null);
 
-        boolean headlessMode = Boolean.getBoolean("hudson.agent.headless");
+        boolean headlessMode = Boolean.getBoolean("hudson.agent.headless") 
+                    || Boolean.getBoolean("hudson.webstart.headless");
+        
         if (headlessMode) {
             mainHeadless(args);
         } else {
