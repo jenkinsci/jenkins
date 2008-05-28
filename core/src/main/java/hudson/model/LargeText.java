@@ -25,7 +25,7 @@ import java.io.InputStreamReader;
  * This class defines methods for handling progressive text update.
  *
  * @author Kohsuke Kawaguchi
- * @deprecated moved to stapler
+ * @deprecated moved to stapler, as of Hudson 1.220
  */
 public class LargeText {
     /**
