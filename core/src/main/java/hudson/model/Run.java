@@ -22,6 +22,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
 import hudson.util.XStream2;
+import org.kohsuke.stapler.framework.io.LargeText;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;

@@ -1,5 +1,6 @@
 package hudson.model;
 
+import org.kohsuke.stapler.framework.io.LargeText;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 

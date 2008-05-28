@@ -4,7 +4,6 @@ import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.Slave;
 import hudson.model.Messages;
-import hudson.model.LargeText;
 import hudson.model.Node;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
@@ -34,6 +33,7 @@ import java.util.ArrayList;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.framework.io.LargeText;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;

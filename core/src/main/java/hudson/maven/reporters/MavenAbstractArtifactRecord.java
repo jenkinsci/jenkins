@@ -5,7 +5,6 @@ import hudson.maven.MavenUtil;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BallColor;
-import hudson.model.LargeText;
 import hudson.model.Result;
 import hudson.model.TaskAction;
 import hudson.model.TaskListener;
@@ -26,6 +25,7 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.framework.io.LargeText;
 
 import javax.servlet.ServletException;
 import java.io.File;

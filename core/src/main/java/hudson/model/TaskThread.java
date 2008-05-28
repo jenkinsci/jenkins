@@ -1,12 +1,13 @@
 package hudson.model;
 
-import hudson.util.ByteBuffer;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.ref.WeakReference;
+import org.kohsuke.stapler.framework.io.LargeText;
+import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 /**
  * {@link Thread} for performing one-off task.
