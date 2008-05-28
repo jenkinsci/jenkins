@@ -12,7 +12,7 @@ public class JNLPMain {
         // so I'm doing it here, too.
         System.setSecurityManager(null);
 
-        boolean headlessMode = Boolean.getBoolean("hudson.master.headless");
+        boolean headlessMode = Boolean.getBoolean("hudson.webstart.headless");
         if (!headlessMode) {
             // launch GUI to display output
             setUILookAndFeel();
