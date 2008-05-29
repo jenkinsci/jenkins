@@ -134,9 +134,15 @@ public class Mailer extends Publisher {
         private String smtpHost;
         
         /**
-         * If true use SSL on port 465 (standard SMTPS).
+         * If true use SSL on port 465 (standard SMTPS) unless <code>smtpPort</code> is set.
          */
         private boolean useSsl;
+
+        /**
+         * The SMTP port to use for sending e-mail. Null for default to the environment,
+         * which is usually <tt>25</tt>.
+         */
+        private String smtpPort;
 
         /**
          * Used to keep track of number test e-mails.
@@ -178,6 +184,9 @@ public class Mailer extends Publisher {
             Properties props = new Properties(System.getProperties());
             if(smtpHost!=null)
                 props.put("mail.smtp.host",smtpHost);
+            if (smtpPort!=null) {
+                props.put("mail.smtp.port", smtpPort);
+            }
             if (useSsl) {
             	/* This allows the user to override settings by setting system properties but
             	 * also allows us to use the default SMTPs port of 465 if no port is already set.
@@ -186,8 +195,9 @@ public class Mailer extends Publisher {
             	 * coordinate, and we can make it work through setting mail.smtp properties.
             	 */
             	if (props.getProperty("mail.smtp.socketFactory.port") == null) {
-				    props.put("mail.smtp.port", "465");
-    				props.put("mail.smtp.socketFactory.port", "465");
+                    String port = smtpPort==null?"465":smtpPort;
+                    props.put("mail.smtp.port", port);
+                    props.put("mail.smtp.socketFactory.port", port);
             	}
             	if (props.getProperty("mail.smtp.socketFactory.class") == null) {
             		props.put("mail.smtp.socketFactory.class","javax.net.ssl.SSLSocketFactory");
@@ -231,6 +241,7 @@ public class Mailer extends Publisher {
             } else {
                 smtpAuthUsername = smtpAuthPassword = null;
             }
+            smtpPort = nullify(req.getParameter("mailer_smtp_port"));
             useSsl = req.getParameter("mailer_smtp_use_ssl")!=null;
             save();
             return super.configure(req);
@@ -265,6 +276,10 @@ public class Mailer extends Publisher {
         
         public boolean getUseSsl() {
         	return useSsl;
+        }
+
+        public String getSmtpPort() {
+        	return smtpPort;
         }
 
         public Publisher newInstance(StaplerRequest req) {

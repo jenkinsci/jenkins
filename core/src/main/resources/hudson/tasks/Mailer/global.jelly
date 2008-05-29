@@ -43,6 +43,11 @@
                help="/help/tasks/mailer/smtp-use-ssl.html">
         <f:checkbox name="mailer_smtp_use_ssl" checked="${descriptor.useSsl}" />
       </f:entry>
+      <f:entry title="${%SMTP Port}"
+               help="/help/tasks/mailer/smtp-port.html">
+        <input class="setting-input" name="mailer_smtp_port"
+          type="text" value="${descriptor.smtpPort}"/>
+      </f:entry>
     </f:advanced>
   </f:section>
 </j:jelly>
