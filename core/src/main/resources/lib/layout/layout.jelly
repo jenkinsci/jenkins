@@ -175,6 +175,7 @@
         </a>
       </td></tr>
     </table>
+    <st:include it="${app.updateCenter}" page="main.jelly" />
   </body>
 </html>
 </j:jelly>

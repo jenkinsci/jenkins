@@ -1286,3 +1286,21 @@ var DragDrop = function(id, sGroup, config) {
         }
     });
 })();
+
+var updateCenter = {
+    postBackURL : null,
+    version: "?",
+
+    checkUpdates : function() {
+        var s = document.createElement("script");
+        s.setAttribute("src","https://hudson.dev.java.net/update-center.json?version="+updateCenter.version);
+        document.getElementsByTagName("HEAD")[0].appendChild(s);
+    },
+
+    post : function(data) {
+        new Ajax.Request(updateCenter.postBackURL, {
+            method:"post",
+            parameters:{json:Object.toJSON(data)}
+        });
+    }
+};

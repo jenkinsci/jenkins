@@ -303,6 +303,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     private final String secretKey;
 
+    private transient final UpdateCenter updateCenter = new UpdateCenter();
 
     public Hudson(File root, ServletContext context) throws IOException {
         this.root = root;
@@ -392,6 +393,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     public PluginManager getPluginManager() {
         return pluginManager;
+    }
+    
+    public UpdateCenter getUpdateCenter() {
+        return updateCenter;
     }
 
     /**
