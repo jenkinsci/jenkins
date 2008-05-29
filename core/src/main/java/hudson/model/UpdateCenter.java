@@ -17,6 +17,7 @@ import java.util.Set;
  * Controls update center capability.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.220
  */
 public class UpdateCenter {
     private long dataTimestamp = -1;
