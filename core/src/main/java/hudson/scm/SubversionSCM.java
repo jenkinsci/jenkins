@@ -1146,6 +1146,8 @@ public class SubversionSCM extends SCM implements Serializable {
                             save();
                         } else {
                             logWriter.println("Failed to authenticate: "+errorMessage);
+                            if(errorMessage.getCause()!=null)
+                                errorMessage.getCause().printStackTrace(logWriter);
                         }
                         super.acknowledgeAuthentication(accepted, kind, realm, errorMessage, authentication);
                     }
