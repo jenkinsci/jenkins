@@ -5,7 +5,7 @@
     <st:include page="sidepanel.jelly" />
 		<l:main-panel>
 		  <div id="view-message">
-        <t:editableDescription adminOnly="true"/>
+        <t:editableDescription permission="${app.ADMINISTER}"/>
 		  </div>
       <j:set var="items" value="${it.items}"/>
       <j:choose>
@@ -20,7 +20,7 @@
               <j:forEach var="v" items="${app.views}">
                 <l:tab name="${v.viewName}" active="${v==it}" href="${rootURL}/${v.url}" />
               </j:forEach>
-              <j:if test="${h.hasPermission(it.CREATE)}">
+              <j:if test="${it.hasPermission(it.CREATE)}">
                 <l:tab name="+" href="${rootURL}/newView" active="false" />
               </j:if>
             </l:tabBar>

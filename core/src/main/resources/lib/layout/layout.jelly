@@ -31,8 +31,7 @@
 <j:set var="imagesURL"  value="${rootURL}${h.resourcePath}/images" />
 <html>
   <head>
-    <!-- if this page needs to be secured, make sure the user is admin -->
-    ${h.adminCheck(request,response,secured,permission)}
+    ${h.checkPermission(it,permission)}
 
     <title>${h.appendIfNotNull(title, ' [Hudson]', 'Hudson')}</title>
     <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />

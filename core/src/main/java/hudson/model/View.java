@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
 import hudson.security.PermissionGroup;
@@ -33,7 +34,7 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject {
+public abstract class View extends AbstractModelObject implements AccessControlled {
 
     /**
      * Gets all the items in this collection in a read-only view.
@@ -91,15 +92,15 @@ public abstract class View extends AbstractModelObject {
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
-        // TODO: this object should have its own ACL
-        return Hudson.getInstance().getACL();
+    	return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
-    /**
-     * Short for {@code getACL().checkPermission(p)}
-     */
     public void checkPermission(Permission p) {
         getACL().checkPermission(p);
+    }
+
+    public boolean hasPermission(Permission p) {
+        return getACL().hasPermission(p);
     }
 
     @ExportedBean(defaultVisibility=2)

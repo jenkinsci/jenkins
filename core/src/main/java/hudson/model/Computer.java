@@ -7,25 +7,32 @@ import hudson.slaves.RetentionStrategy;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RunList;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.LogRecord;
+
+import javax.servlet.ServletException;
+
+import org.jvnet.localizer.Localizable;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -53,8 +60,9 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class Computer extends AbstractModelObject {
-    private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
+public abstract class Computer extends AbstractModelObject implements AccessControlled {
+
+	private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
 
     private int numExecutors;
 
@@ -72,6 +80,18 @@ public abstract class Computer extends AbstractModelObject {
     public Computer(Node node) {
         assert node.getNumExecutors()!=0 : "Computer created with 0 executors";
         setNode(node);
+    }
+
+    public ACL getACL() {
+        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+    }
+
+    public void checkPermission(Permission permission) {
+        getACL().checkPermission(permission);
+    }
+
+    public boolean hasPermission(Permission permission) {
+        return getACL().hasPermission(permission);
     }
 
     /**
@@ -385,7 +405,7 @@ public abstract class Computer extends AbstractModelObject {
     }
 
     public void doToggleOffline( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        checkPermission(Hudson.ADMINISTER);
 
         setTemporarilyOffline(!temporarilyOffline);
         rsp.forwardToPreviousPage(req);
@@ -400,7 +420,7 @@ public abstract class Computer extends AbstractModelObject {
      */
     public void doDumpExportTable( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // this is a debug probe and may expose sensitive information
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        checkPermission(Hudson.ADMINISTER);
 
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("UTF-8");
@@ -412,7 +432,7 @@ public abstract class Computer extends AbstractModelObject {
     public void doScript( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous,
         // so tie it to the admin access
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        checkPermission(Hudson.ADMINISTER);
 
         String text = req.getParameter("script");
         if(text!=null) {

@@ -1,22 +1,25 @@
 package hudson.util;
 
+import static hudson.Util.fixEmpty;
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Util;
-import hudson.EnvVars;
-import static hudson.Util.fixEmpty;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import hudson.security.Permission;
 
-import javax.servlet.ServletException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.HttpURLConnection;
+
+import javax.servlet.ServletException;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Base class that provides the framework for doing on-the-fly form field validation.
@@ -28,29 +31,35 @@ import java.net.HttpURLConnection;
  * @author Kohsuke Kawaguchi
  */
 public abstract class FormFieldValidator {
-    protected final StaplerRequest request;
+	
+	public static final Permission CHECK = new Permission(Hudson.PERMISSIONS, "check", Permission.FULL_CONTROL);
+
+	protected final StaplerRequest request;
     protected final StaplerResponse response;
-    private final boolean isAdminOnly;
+    private final Permission permission;
+    
 
     /**
-     *
      * @param adminOnly
      *      Pass true to only let admin users to run the check. This is necessary
      *      for security reason, so that unauthenticated user cannot obtain sensitive
      *      information or run a process that may have side-effect.
      */
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, boolean adminOnly) {
+        this(request, response, CHECK);
+    }
+
+    protected FormFieldValidator(StaplerRequest request, StaplerResponse response, Permission permission) {
         this.request = request;
         this.response = response;
-        isAdminOnly = adminOnly;
+        this.permission = permission;
     }
 
     /**
      * Runs the validation code.
      */
     public final void process() throws IOException, ServletException {
-        if(isAdminOnly && !Hudson.adminCheck(request,response))
-            return; // failed check
+    	Hudson.getInstance().checkPermission(permission);
 
         check();
     }

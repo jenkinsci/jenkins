@@ -59,6 +59,15 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
+  <filter>
+    <filter-name>plugins-filter</filter-name>
+    <filter-class>hudson.util.PluginServletFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>plugins-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <!-- Uncomment this if you are protecting your entire hudson setup
   	from public view.  See note above about the filter.
   <filter-mapping>

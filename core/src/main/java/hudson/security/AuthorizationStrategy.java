@@ -1,19 +1,23 @@
 package hudson.security;
 
 import hudson.ExtensionPoint;
+import hudson.model.AbstractItem;
+import hudson.model.AbstractProject;
+import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.View;
 import hudson.util.DescriptorList;
-import org.acegisecurity.Authentication;
-import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
 
 import net.sf.json.JSONObject;
+
+import org.acegisecurity.Authentication;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Controls authorization throughout Hudson.
@@ -44,7 +48,23 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      */
     public abstract ACL getRootACL();
 
-    /**
+    public ACL getACL(AbstractProject<?,?> project) {
+    	return getRootACL();
+    }
+
+    public ACL getACL(View item) {
+    	return getRootACL();
+    }
+
+    public ACL getACL(AbstractItem item) {
+    	return getRootACL();
+    }
+
+	public ACL getACL(Computer computer) {
+		return getRootACL();
+	}
+
+	/**
      * Returns the list of all group/role names used in this authorization strategy,
      * and the ACL returned from the {@link #getRootACL()} method.
      * <p>

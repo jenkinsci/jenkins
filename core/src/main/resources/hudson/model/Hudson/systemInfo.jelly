@@ -2,15 +2,13 @@
   Various system information for diagnostics
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout>
+  <l:layout permission="${app.ADMINISTER}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <l:isAdmin>
         <h1>${%System Properties}</h1>
         <t:propertyTable items="${h.systemProperties}" />
         <h1>${%Environment Variables}</h1>
         <t:propertyTable items="${h.envVars}" />
-      </l:isAdmin>
     </l:main-panel>
   </l:layout>
 </j:jelly>

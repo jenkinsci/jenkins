@@ -245,6 +245,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     private List<ListView> views;   // can't initialize it eagerly for backward compatibility
 
+    private transient MyView myView = new MyView(this);
+
     private transient final FingerprintMap fingerprintMap = new FingerprintMap();
 
     /**
@@ -702,9 +704,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                     return v;
             }
         }
-        if(this.getViewName().equals(name))
+        if (this.getViewName().equals(name)) {
             return this;
-        else
+        } else if (myView.getViewName().equals(name)) {
+            return myView;
+        } else
             return null;
     }
 
@@ -715,12 +719,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     public synchronized View[] getViews() {
         if(views==null)
             views = new ArrayList<ListView>();
-        View[] r = new View[views.size()+1];
+        View[] r = new View[views.size()+2];
         views.toArray(r);
-        // sort Views and put "all" at the very beginning
-        r[r.length-1] = r[0];
-        Arrays.sort(r,1,r.length, View.SORTER);
-        r[0] = this;
+        r[r.length-2] = r[0];
+        r[r.length-1] = r[1];
+        Arrays.sort(r,2,r.length, View.SORTER);
+        r[0] = myView;
+        r[1] = this;
         return r;
     }
 

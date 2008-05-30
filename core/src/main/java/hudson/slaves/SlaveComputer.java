@@ -180,7 +180,7 @@ public final class SlaveComputer extends Computer {
     }
 
     public void doDoDisconnect(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        checkPermission(Hudson.ADMINISTER);
         disconnect();
         rsp.sendRedirect(".");
     }

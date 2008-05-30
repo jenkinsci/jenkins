@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
+import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
 import org.kohsuke.stapler.export.Exported;
@@ -27,7 +28,7 @@ import javax.servlet.ServletException;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
-public abstract class AbstractItem extends Actionable implements Item, HttpDeletable {
+public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled {
     /**
      * Project name.
      */
@@ -164,8 +165,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
-        // TODO: this object should have its own ACL
-        return Hudson.getInstance().getACL();
+        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
     /**

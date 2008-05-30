@@ -23,7 +23,7 @@
 
           <ol>
             <j:forEach var="c" items="${b.changeSet.iterator()}" varStatus="loop">
-              <li>
+              <li value="${c.revision}">
                 ${c.msgAnnotated}
 
                 &#8212;

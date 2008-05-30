@@ -8,7 +8,7 @@
       </div>
     </j:when>
     <j:when test="${it.offline and !it.temporarilyOffline}">
-      <l:isAdmin>
+      <l:isAdmin><!-- TODO: we need a permission to launch a slave -->
         <p>
           <a href="slave-agent.jnlp">
             <img src="${imagesURL}/webstart.gif" alt="launch agent" />

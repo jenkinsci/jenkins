@@ -61,7 +61,7 @@ public class Label implements Comparable<Label>, ModelObject {
      */
     public boolean isOffline() {
         for (Node n : getNodes()) {
-            if(!n.toComputer().isOffline())
+            if(n.toComputer() != null && !n.toComputer().isOffline())
                 return false;
         }
         return true;

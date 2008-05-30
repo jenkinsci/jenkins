@@ -3,7 +3,7 @@
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>${%Project} ${it.name}</h1>
-      <t:editableDescription adminOnly="true"/>
+      <t:editableDescription permission="${app.ADMINISTER}"/>
 
       <st:include page="ajaxMatrix.jelly" />
 

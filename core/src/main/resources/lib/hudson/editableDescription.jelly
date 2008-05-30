@@ -9,7 +9,7 @@
       ${it.description}
     </div>
 
-    <l:isAdmin>
+    <l:hasPermission permission="${permission}">
       <div align="right"><a href="editDescription" onclick="return replaceDescription();">
         <img src="${imagesURL}/16x16/notepad.gif" />
         <j:choose>
@@ -21,6 +21,6 @@
           </j:otherwise>
         </j:choose>
       </a></div>
-    </l:isAdmin>
+    </l:hasPermission>
   </div>
 </j:jelly>

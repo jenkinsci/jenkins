@@ -1,0 +1,9 @@
+<!--
+  Attributes:
+   permission: the body is only rendered if permission is null, or the user has the permission
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:s="jelly:stapler">
+  <j:if test="${h.hasPermission(it, permission)}">
+    <d:invokeBody />
+  </j:if>
+</j:jelly>
