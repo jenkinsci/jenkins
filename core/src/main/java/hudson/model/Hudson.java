@@ -719,14 +719,26 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     public synchronized View[] getViews() {
         if(views==null)
             views = new ArrayList<ListView>();
-        View[] r = new View[views.size()+2];
-        views.toArray(r);
-        r[r.length-2] = r[0];
-        r[r.length-1] = r[1];
-        Arrays.sort(r,2,r.length, View.SORTER);
-        r[0] = myView;
-        r[1] = this;
-        return r;
+
+        if(Functions.isAnonymous()) {
+            View[] r = new View[views.size()+1];
+            views.toArray(r);
+            // sort Views and put "all" at the very beginning
+            r[r.length-1] = r[0];
+            Arrays.sort(r,1,r.length, View.SORTER);
+            r[0] = this;
+            return r;
+        } else {
+            // this is an authenticated user, so let's have the "my projects" view
+            View[] r = new View[views.size()+2];
+            views.toArray(r);
+            r[r.length-2] = r[0];
+            r[r.length-1] = r[1];
+            Arrays.sort(r,2,r.length, View.SORTER);
+            r[0] = myView;
+            r[1] = this;
+            return r;
+        }
     }
 
     public synchronized void deleteView(ListView view) throws IOException {
