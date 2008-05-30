@@ -1057,7 +1057,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     public TopLevelItem getJobCaseInsensitive(String name) {
         for (Entry<String, TopLevelItem> e : items.entrySet()) {
-            if(e.getKey().equalsIgnoreCase(name))
+            if(Functions.toEmailSafeString(e.getKey()).equalsIgnoreCase(Functions.toEmailSafeString(name)))
                 return e.getValue();
         }
         return null;

@@ -837,5 +837,26 @@ public class Functions {
             return Stapler.getCurrentRequest().getContextPath()+'/'+itUrl+urlName;
     }
 
+    /**
+     * Escapes the character unsafe for e-mail address.
+     * See http://en.wikipedia.org/wiki/E-mail_address for the details,
+     * but here the vocabulary is even more restricted.
+     */
+    public static String toEmailSafeString(String projectName) {
+        // TODO: escape non-ASCII characters
+        StringBuilder buf = new StringBuilder(projectName.length());
+        for( int i=0; i<projectName.length(); i++ ) {
+            char ch = projectName.charAt(i);
+            if(('a'<=ch && ch<='z')
+            || ('z'<=ch && ch<='Z')
+            || ('0'<=ch && ch<='9')
+            || "-_.".indexOf(ch)>=0)
+                buf.append(ch);
+            else
+                buf.append('_');    // escape
+        }
+        return projectName;
+    }
+
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 }
