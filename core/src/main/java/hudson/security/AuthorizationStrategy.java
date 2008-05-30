@@ -52,14 +52,41 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
     	return getRootACL();
     }
 
+    /**
+     * Implementation can choose to provide different ACL for different views.
+     * This can be used as a basis for more fine-grained access control.
+     *
+     * <p>
+     * The default implementation returns {@link #getRootACL()}.
+     *
+     * @since 1.220
+     */
     public ACL getACL(View item) {
     	return getRootACL();
     }
 
+    /**
+     * Implementation can choose to provide different ACL for different items.
+     * This can be used as a basis for more fine-grained access control.
+     *
+     * <p>
+     * The default implementation returns {@link #getRootACL()}.
+     *
+     * @since 1.220
+     */
     public ACL getACL(AbstractItem item) {
         return getRootACL();
     }
 
+    /**
+     * Implementation can choose to provide different ACL for different computers.
+     * This can be used as a basis for more fine-grained access control.
+     *
+     * <p>
+     * The default implementation returns {@link #getRootACL()}.
+     *
+     * @since 1.220
+     */
     public ACL getACL(Computer computer) {
         return getRootACL();
     }
