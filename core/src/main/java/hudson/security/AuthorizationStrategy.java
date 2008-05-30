@@ -57,14 +57,14 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
     }
 
     public ACL getACL(AbstractItem item) {
-    	return getRootACL();
+        return getRootACL();
     }
 
-	public ACL getACL(Computer computer) {
-		return getRootACL();
-	}
+    public ACL getACL(Computer computer) {
+        return getRootACL();
+    }
 
-	/**
+    /**
      * Returns the list of all group/role names used in this authorization strategy,
      * and the ACL returned from the {@link #getRootACL()} method.
      * <p>
