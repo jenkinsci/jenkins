@@ -175,7 +175,8 @@
         </a>
       </td></tr>
     </table>
-    <st:include it="${app.updateCenter}" page="main.jelly" />
+    <!-- during the loading 'app' object is not Hudson, so it may not have update center -->
+    <st:include it="${app.updateCenter}" page="main.jelly" optional="true" />
   </body>
 </html>
 </j:jelly>
