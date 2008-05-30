@@ -90,7 +90,7 @@ public final class TestResult extends MetaTabulatedResult {
                     // this is a typical problem when JVM quits abnormally, like OutOfMemoryError during a test.
                     SuiteResult sr = new SuiteResult(reportFile.getName(), "", "");
                     sr.addCase(new CaseResult(sr,"<init>","Test report file "+reportFile.getAbsolutePath()+" was length 0"));
-                    suites.add(sr);
+                    add(sr);
                 } else {
                     parse(reportFile);
                 }
@@ -116,15 +116,28 @@ public final class TestResult extends MetaTabulatedResult {
         }
     }
 
+    private void add(SuiteResult sr) {
+        for (SuiteResult s : suites) {
+            // a common problem is that people parse TEST-*.xml as well as TESTS-TestSuite.xml
+            // see http://www.nabble.com/Problem-with-duplicate-build-execution-td17549182.html for discussion
+            if(s.getName().equals(sr.getName()) && eq(s.getTimestamp(),sr.getTimestamp()))
+                return; // duplicate
+        }
+        suites.add(sr);
+        duration += sr.getDuration();
+    }
+
+    private boolean eq(Object lhs, Object rhs) {
+        return lhs != null && rhs != null && lhs.equals(rhs);
+    }
+
     /**
      * Parses an additional report file.
      */
     public void parse(File reportFile) throws IOException {
         try {
-            for( SuiteResult suiteResult : SuiteResult.parse(reportFile) ) {
-                suites.add( suiteResult );
-                duration += suiteResult.getDuration();
-            }
+            for( SuiteResult suiteResult : SuiteResult.parse(reportFile) )
+                add(suiteResult);
         } catch (RuntimeException e) {
             throw new IOException2("Failed to read "+reportFile,e);
         } catch (DocumentException e) {

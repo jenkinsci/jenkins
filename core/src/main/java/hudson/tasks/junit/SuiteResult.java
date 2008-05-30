@@ -27,7 +27,12 @@ public final class SuiteResult implements Serializable {
     private final String name;
     private final String stdout;
     private final String stderr;
-    private float duration; 
+    private float duration;
+    /**
+     * The 'timestamp' attribute of  the test suite.
+     * AFAICT, this is not a required attribute in XML, so the value may be null.
+     */
+    private String timestamp;
 
     /**
      * All test cases.
@@ -76,7 +81,12 @@ public final class SuiteResult implements Serializable {
             // some user reported that name is null in their environment.
             // see http://www.nabble.com/Unexpected-Null-Pointer-Exception-in-Hudson-1.131-tf4314802.html
             name = '('+xmlReport.getName()+')';
+        else {
+            String pkg = suite.attributeValue("package");
+            if(pkg!=null)   name=pkg+'.'+name;
+        }
         this.name = TestObject.safe(name);
+        this.timestamp = suite.attributeValue("timestamp");
 
         stdout = suite.elementText("system-out");
         stderr = suite.elementText("system-err");
@@ -134,6 +144,10 @@ public final class SuiteResult implements Serializable {
 
     public TestResult getParent() {
         return parent;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
     }
 
     public List<CaseResult> getCases() {
