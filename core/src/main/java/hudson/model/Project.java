@@ -143,9 +143,6 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     protected void submit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         super.submit(req,rsp);
 
-        if(!Hudson.adminCheck(req,rsp))
-            return;
-
         req.setCharacterEncoding("UTF-8");
 
         buildWrappers = buildDescribable(req, BuildWrappers.getFor(this), "wrapper");
