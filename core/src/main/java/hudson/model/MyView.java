@@ -11,9 +11,15 @@ import javax.servlet.ServletException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+/**
+ * {@link View} that only contains projects for which the current user has access to.
+ *
+ * @since 1.220
+ * @author Tom Huybrechts
+ */
 public class MyView extends View {
 
-    private Hudson owner;
+    private final Hudson owner;
     private String description;
 
     public MyView(Hudson owner) {
@@ -59,7 +65,7 @@ public class MyView extends View {
 
     @Override
     public String getViewName() {
-        return "My Projects";
+        return getDisplayName();
     }
 
     public String getDisplayName() {
