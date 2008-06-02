@@ -38,7 +38,7 @@
           <li class="${elementClass}" style="${elementStyle}">
             <!-- child test results are referenced from their parent builds -->
             <j:set var="build" value="${testObject.owner}" />
-            <a href="${build.absoluteUrl}${build.testResultAction.urlName}/${testObject.getRelativePathFrom(null)}">
+            <a href="${it.urlName}/${testObject.getRelativePathFrom(null)}">
               ${testObject.fullName}
             </a>
           </li>

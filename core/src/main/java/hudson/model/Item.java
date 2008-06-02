@@ -125,6 +125,12 @@ public interface Item extends PersistenceRoot, SearchableModelObject {
      *      absolute URL.
      * @throws IllegalStateException
      *      if the method is invoked outside the HTTP request processing.
+     *
+     * @deprecated
+     *      This method shall <b>NEVER</b> be used during HTML page rendering, as it won't work with
+     *      network set up like Apache reverse proxy.
+     *      This method is only intended for the remote API clients who cannot resolve relative references
+     *      (even this won't work for the same reason, which should be fixed.)
      */
     String getAbsoluteUrl();
 

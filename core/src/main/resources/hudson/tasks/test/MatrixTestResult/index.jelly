@@ -17,7 +17,7 @@
         <j:forEach var="report" items="${it.childReports}">
           <tr>
             <td class="pane">
-              <a href="${report.child.absoluteUrl}">${report.child.project.name}</a>
+              <a href="../${report.child.project.shortUrl}">${report.child.project.name}</a>
             </td>
             <td class="pane" style="text-align:right;">
               ${report.result.durationString}
@@ -49,7 +49,7 @@
 
           <h3>
             <a name="${report.child.project.name}"/>
-            <a href="${report.child.absoluteUrl}">${report.child.project.name}</a>
+            <a href="../${report.child.project.shortUrl}">${report.child.project.name}</a>
           </h3>
 
           <table class="pane sortable">
@@ -61,7 +61,7 @@
             <j:forEach var="f" items="${report.result.failedTests}" varStatus="i">
               <tr>
                 <td class="pane">
-                  <a href="${report.child.absoluteUrl}/testReport/${f.getRelativePathFrom(report.result)}">
+                  <a href="../${report.child.project.shortUrl}/testReport/${f.getRelativePathFrom(report.result)}">
                     <st:out value="${f.fullName}"/>
                   </a>
                 </td>
