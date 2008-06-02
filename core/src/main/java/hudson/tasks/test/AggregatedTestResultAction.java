@@ -82,18 +82,18 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
     public List<ChildReport> getResult() {
         // I think this is a reasonable default.
         return getChildReports();
-     }
+    }
 
-     @Override
-     public List<CaseResult> getFailedTests() {
-          List<CaseResult> failedTests = new ArrayList<CaseResult>(failCount);
-          for (ChildReport childReport : getChildReports()) {
-               if (childReport.result instanceof TestResult) {
-                    failedTests.addAll(((TestResult) childReport.result).getFailedTests());
-               }
-          }
-          return failedTests;
-     }
+    @Override
+    public List<CaseResult> getFailedTests() {
+        List<CaseResult> failedTests = new ArrayList<CaseResult>(failCount);
+        for (ChildReport childReport : getChildReports()) {
+            if (childReport.result instanceof TestResult) {
+                failedTests.addAll(((TestResult) childReport.result).getFailedTests());
+            }
+        }
+        return failedTests;
+    }
 
     /**
      * Data-binding bean for the remote API.
