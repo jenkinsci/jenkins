@@ -175,7 +175,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             Connection con = acceptor.accept();
 
             return new Channel("Channel to Maven "+ Arrays.toString(cmds),
-                Computer.threadPoolForRemoting, con.in, con.out) {
+                Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out)) {
 
                 /**
                  * Kill the process when the channel is severed.

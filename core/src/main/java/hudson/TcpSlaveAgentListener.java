@@ -9,6 +9,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -175,7 +177,7 @@ public class TcpSlaveAgentListener extends Thread {
             OutputStream log = computer.openLogFile();
             new PrintWriter(log).println("JNLP agent connected from "+ this.s.getInetAddress());
 
-            computer.setChannel(this.s.getInputStream(), this.s.getOutputStream(),log,
+            computer.setChannel(new BufferedInputStream(this.s.getInputStream()), new BufferedOutputStream(this.s.getOutputStream()), log,
                 new Listener() {
                     public void onClosed(Channel channel, IOException cause) {
                         if(cause!=null)
