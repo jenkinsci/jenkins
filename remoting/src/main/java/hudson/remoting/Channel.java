@@ -222,9 +222,11 @@ public class Channel implements VirtualChannel {
      * @param mode
      *      The encoding to be used over the stream.
      * @param is
-     *      Stream connected to the remote peer.
+     *      Stream connected to the remote peer. It's the caller's responsibility to do
+     *      buffering on this stream, if that's necessary.
      * @param os
-     *      Stream connected to the remote peer.
+     *      Stream connected to the remote peer. It's the caller's responsibility to do
+     *      buffering on this stream, if that's necessary.
      * @param header
      *      If non-null, receive the portion of data in <tt>is</tt> before
      *      the data goes into the "binary mode". This is useful
