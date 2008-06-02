@@ -9,6 +9,9 @@ import hudson.matrix.MatrixRun;
 /**
  * {@link Action} that aggregates all the test results from {@link MatrixRun}s.
  *
+ * <p>
+ * This object is attached to {@link MatrixBuild}.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class MatrixTestResult extends AggregatedTestResultAction {
