@@ -7,6 +7,7 @@ import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.User;
 import hudson.model.View;
 import hudson.util.DescriptorList;
 
@@ -79,6 +80,19 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
     }
 
     /**
+     * Implementation can choose to provide different ACL per user.
+     * This can be used as a basis for more fine-grained access control.
+     *
+     * <p>
+     * The default implementation returns {@link #getRootACL()}.
+     *
+     * @since 1.221
+     */
+	public ACL getACL(User user) {
+		return getRootACL();
+	}
+
+	/**
      * Implementation can choose to provide different ACL for different computers.
      * This can be used as a basis for more fine-grained access control.
      *

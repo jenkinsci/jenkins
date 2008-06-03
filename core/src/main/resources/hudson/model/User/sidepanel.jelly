@@ -8,9 +8,7 @@
       <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
       <l:task icon="images/24x24/search.gif" href="${rootURL}/${it.url}/" title="${%Status}" />
       <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/builds" title="${%Builds}" />
-      <l:isAdmin>
-        <l:task icon="images/24x24/setting.gif" href="${rootURL}/${it.url}/configure" title="${%Configure}" />
-      </l:isAdmin>
+      <l:task icon="images/24x24/setting.gif" href="${rootURL}/${it.url}/configure" title="${%Configure}" permission="${app.ADMINISTER}"/>
     </l:tasks>
   </l:side-panel>
 </j:jelly>

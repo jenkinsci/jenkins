@@ -6,6 +6,10 @@ import hudson.FeedAdapter;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import org.acegisecurity.Authentication;
@@ -57,7 +61,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject {
+public class User extends AbstractModelObject implements AccessControlled {
 
     private transient final String id;
 
@@ -344,8 +348,7 @@ public class User extends AbstractModelObject {
      * Accepts submission from the configuration page.
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        if(!Hudson.adminCheck(req,rsp))
-            return;
+        checkPermission(Hudson.ADMINISTER);
 
         req.setCharacterEncoding("UTF-8");
 
@@ -425,4 +428,18 @@ public class User extends AbstractModelObject {
             return entry.getTimestamp();
         }
     };
+
+
+    public ACL getACL() {
+    	return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+    }
+    
+	public void checkPermission(Permission permission) {
+		getACL().checkPermission(permission);
+	}
+
+	public boolean hasPermission(Permission permission) {
+		return getACL().hasPermission(permission);
+	}
+
 }
