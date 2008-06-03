@@ -15,6 +15,7 @@ import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
 import hudson.search.SearchIndexBuilder;
+import hudson.security.ACL;
 import hudson.security.Permission;
 import hudson.tasks.BuildTrigger;
 import hudson.triggers.SCMTrigger;
@@ -1007,6 +1008,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return (AbstractProject)Hudson.getInstance().getItem(nearest);
     }
 
+    /**
+     * Returns the {@link ACL} for this object.
+     * We need to override the identical method in AbstractItem because we won't
+     * call getACL(AbstractProject) otherwise (single dispatch)
+     */
+    public ACL getACL() {
+        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+    }
+
     private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
         public int compare(Integer o1, Integer o2) {
             return o2-o1;
@@ -1022,3 +1032,4 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public static final Permission ABORT = BUILD;
 }
+	
