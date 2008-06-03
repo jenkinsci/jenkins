@@ -96,7 +96,7 @@ public class Main {
                                 s.shutdownInput();
                             }
                         },
-                        new FilterOutputStream(s.getOutputStream()) {
+                        new RealFilterOutputStream(s.getOutputStream()) {
                             public void close() throws IOException {
                                 s.shutdownOutput();
                             }
