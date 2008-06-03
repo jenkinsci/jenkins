@@ -4,6 +4,8 @@ import hudson.remoting.Channel;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
@@ -55,7 +57,9 @@ public class Engine extends Thread {
                 dos.writeUTF(secretKey);
                 dos.writeUTF(slaveName);
 
-                Channel channel = new Channel("channel", executor, s.getInputStream(), s.getOutputStream());
+                Channel channel = new Channel("channel", executor,
+                        new BufferedInputStream(s.getInputStream()),
+                        new BufferedOutputStream(s.getOutputStream()));
                 listener.status("Connected");
                 channel.join();
                 listener.status("Terminated");
