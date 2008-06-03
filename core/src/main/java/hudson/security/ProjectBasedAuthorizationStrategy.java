@@ -61,6 +61,8 @@ public class ProjectBasedAuthorizationStrategy extends AuthorizationStrategy {
     	ROOT_ACL.add(new GrantedAuthoritySid("admin"), Permission.FULL_CONTROL, true);
     	ROOT_ACL.add(ACL.ANONYMOUS,FormFieldValidator.CHECK,false);
         ROOT_ACL.add(ACL.EVERYONE,FormFieldValidator.CHECK,true);
+        ROOT_ACL.add(ACL.ANONYMOUS, Permission.CREATE, false);
+        ROOT_ACL.add(ACL.EVERYONE, Permission.CREATE, true);
         ROOT_ACL.add(ACL.EVERYONE,Permission.READ,true);
         ROOT_ACL.add(ACL.EVERYONE,Permission.FULL_CONTROL,false);
     }
