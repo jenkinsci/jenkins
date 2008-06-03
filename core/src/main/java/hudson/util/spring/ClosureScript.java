@@ -35,6 +35,7 @@ import groovy.lang.Script;
  *
  * @author Kohsuke Kawaguchi
  */
+// TODO: moved to stapler
 public abstract class ClosureScript extends Script {
     private GroovyObject delegate;
 
