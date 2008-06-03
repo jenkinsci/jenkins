@@ -23,6 +23,18 @@ public class SocketOutputStream extends FilterOutputStream {
         this.socket = socket;
     }
 
+    public void write(int b) throws IOException {
+        out.write(b);
+    }
+
+    public void write(byte[] b) throws IOException {
+        out.write(b);
+    }
+
+    public void write(byte[] b, int off, int len) throws IOException {
+        out.write(b, off, len);
+    }
+
     @Override
     public void close() throws IOException {
         socket.shutdownOutput();
