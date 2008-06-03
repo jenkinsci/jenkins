@@ -36,6 +36,9 @@ public abstract class FormFieldValidator {
 
     protected final StaplerRequest request;
     protected final StaplerResponse response;
+    /**
+     * Permission to check, or null if this check doesn't require any permission.
+     */
     private final Permission permission;
     
 
@@ -46,7 +49,7 @@ public abstract class FormFieldValidator {
      *      information or run a process that may have side-effect.
      */
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, boolean adminOnly) {
-        this(request, response, CHECK);
+        this(request, response, adminOnly?CHECK:null);
     }
 
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, Permission permission) {
@@ -59,7 +62,8 @@ public abstract class FormFieldValidator {
      * Runs the validation code.
      */
     public final void process() throws IOException, ServletException {
-    	Hudson.getInstance().checkPermission(permission);
+        if(permission!=null)
+            Hudson.getInstance().checkPermission(permission);
 
         check();
     }
