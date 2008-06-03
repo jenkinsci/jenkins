@@ -16,3 +16,5 @@ mv debian/changelog.tmp debian/changelog
 
 # build the debian package
 debuild -us -uc -B
+scp ../hudson_${ver}_all.deb hudson.gotdns.com:~/public_html_hudson/debian/binary
+
