@@ -31,8 +31,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 public abstract class FormFieldValidator {
-	
-    public static final Permission CHECK = new Permission(Hudson.PERMISSIONS, "check", Hudson.ADMINISTER);
+    public static final Permission CHECK = Hudson.ADMINISTER;
 
     protected final StaplerRequest request;
     protected final StaplerResponse response;
