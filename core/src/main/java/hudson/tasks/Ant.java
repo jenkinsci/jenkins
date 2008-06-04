@@ -128,7 +128,7 @@ public class Ant extends Builder {
             buildFilePath = proj.getModuleRoot().child("build.xml");
 
         if(buildFile!=null) {
-        	args.add("-file", buildFilePath.getName());
+            args.add("-file", buildFilePath.getName());
         }
 
         args.addKeyValuePairs("-D",build.getBuildVariables());
