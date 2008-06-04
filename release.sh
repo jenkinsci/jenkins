@@ -48,7 +48,7 @@ chmod u+x publish-javadoc.sh
 ./publish-javadoc.sh
 
 chmod u+x release-debian.sh
-./release-debian.sh
+./release-debian.sh $id
 
 cd $WWW
 svn commit -m "Hudson $id released" changelog.html hudson.jnlp

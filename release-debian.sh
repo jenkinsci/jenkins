@@ -2,7 +2,7 @@
 # build a debian package from a release build
 ver=$1
 
-#cp target/checkout/war/target/hudson.war hudson.war
+cp target/checkout/war/target/hudson.war hudson.war
 (cat << EOF
 hudson ($ver) unstable; urgency=low
 
