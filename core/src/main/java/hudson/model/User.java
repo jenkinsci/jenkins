@@ -3,6 +3,7 @@ package hudson.model;
 import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
+import hudson.StructuredForm;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
@@ -12,6 +13,8 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.util.RunList;
 import hudson.util.XStream2;
+import net.sf.json.JSONObject;
+
 import org.acegisecurity.Authentication;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.stapler.Stapler;
@@ -356,9 +359,12 @@ public class User extends AbstractModelObject implements AccessControlled {
             fullName = req.getParameter("fullName");
             description = req.getParameter("description");
 
+            JSONObject json = StructuredForm.get(req);
+
             List<UserProperty> props = new ArrayList<UserProperty>();
+            int i=0;
             for (Descriptor<UserProperty> d : UserProperties.LIST) {
-                UserProperty p = d.newInstance(req, null);
+                UserProperty p = d.newInstance(req, json.getJSONObject("userProperty"+(i++)));
                 p.setUser(this);
                 props.add(p);
             }
