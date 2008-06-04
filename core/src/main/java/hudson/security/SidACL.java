@@ -57,6 +57,10 @@ public abstract class SidACL extends ACL {
      * by checking authentication's {@link GrantedAuthority} by using
      * this method.
      *
+     * <p>
+     * It is the implementor's responsibility to recognize {@link Permission#impliedBy}
+     * and take that into account.
+     *
      * @return
      *      true if the access should be granted, false if it should be denied.
      *      The null value indicates that the ACL does no rule for this Sid/Permission
