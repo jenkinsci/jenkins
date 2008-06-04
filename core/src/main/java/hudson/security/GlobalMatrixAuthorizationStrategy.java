@@ -80,8 +80,12 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      * Checks if the given SID has the given permission.
      */
     public boolean hasPermission(String sid, Permission p) {
-        Set<String> set = grantedPermissions.get(p);
-        return set!=null && set.contains(sid);
+        for(; p!=null; p=p.impliedBy) {
+            Set<String> set = grantedPermissions.get(p);
+            if(set!=null && set.contains(sid))
+                return true;
+        }
+        return false;
     }
 
     /**
