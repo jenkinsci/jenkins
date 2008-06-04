@@ -121,11 +121,25 @@ public class Ant extends Builder {
             args.add(ai.getExecutable(launcher));
 
 
-        FilePath buildFilePath;
-        if(buildFile!=null)
-            buildFilePath = proj.getModuleRoot().child(buildFile);
-        else
-            buildFilePath = proj.getModuleRoot().child("build.xml");
+        FilePath buildFilePath = buildFilePath(proj.getModuleRoot());
+
+        if(!buildFilePath.exists()) {
+            // because of the poor choice of getModuleRoot() with CVS/Subversion, people often get confused
+            // with where the build file path is relative to. Now it's too late to change this behavior
+            // due to compatibility issue, but at least we can make this less painful by looking for errors
+            // and diagnosing it nicely. See HUDSON-1782
+
+            // first check if this appears to be a valid relative path from workspace root
+            FilePath buildFilePath2 = buildFilePath(proj.getWorkspace());
+            if(buildFilePath2.exists()) {
+                // This must be what the user meant. Let it continue.
+                buildFilePath = buildFilePath2;
+            } else {
+                // neither file exists. So this now really does look like an error.
+                listener.fatalError("Unable to find build script at "+buildFilePath);
+                return false;
+            }
+        }
 
         if(buildFile!=null) {
             args.add("-file", buildFilePath.getName());
@@ -193,6 +207,11 @@ public class Ant extends Builder {
             e.printStackTrace( listener.fatalError(errorMessage) );
             return false;
         }
+    }
+
+    private FilePath buildFilePath(FilePath base) {
+        if(buildFile!=null)     return base.child(buildFile);
+        else                    return base.child("build.xml");
     }
 
     public Descriptor<Builder> getDescriptor() {
