@@ -52,7 +52,7 @@ import java.awt.image.BufferedImage;
  * @see Hudson#getDependencyGraph() 
  * @author Kohsuke Kawaguchi
  */
-public final class DependencyGraph {
+public final class DependencyGraph implements Comparator <AbstractProject> {
 
     private Map<AbstractProject, List<AbstractProject>> forward = new HashMap<AbstractProject, List<AbstractProject>>();
     private Map<AbstractProject, List<AbstractProject>> backward = new HashMap<AbstractProject, List<AbstractProject>>();
@@ -312,4 +312,17 @@ public final class DependencyGraph {
     };
 
     public static final DependencyGraph EMPTY = new DependencyGraph(false);
+
+    /**
+     * Compare to Projects based on the topological order defined by this Dependency Graph
+     */
+    public int compare(AbstractProject o1, AbstractProject o2) {
+        Set<AbstractProject> o1sdownstreams = getTransitiveDownstream(o1);
+        Set<AbstractProject> o2sdownstreams = getTransitiveDownstream(o2);
+        if (o1sdownstreams.contains(o2)) {
+            if (o2sdownstreams.contains(o1)) return 0; else return 1;                       
+        } else {
+            if (o2sdownstreams.contains(o1)) return -1; else return 0; 
+        }               
+    }
 }

@@ -26,7 +26,9 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -123,13 +125,18 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
         if(trigger==null || !build.getResult().isWorseThan(trigger.getThreshold())) {
             PrintStream logger = listener.getLogger();
             //Trigger all downstream Project of the project, not just those defined by this buildtrigger
-            List <AbstractProject> downstreamProjects = build.getProject().getDownstreamProjects();
+            List <AbstractProject> downstreamProjects = 
+                new ArrayList<AbstractProject> (build.getProject().getDownstreamProjects()); 
+                
+            // Sort topologically            
+            Collections.sort(downstreamProjects, 
+                    Collections.reverseOrder (Hudson.getInstance().getDependencyGraph()));
+            
             for (AbstractProject p : downstreamProjects) {
                 if(p.isDisabled()) {
                     logger.println(Messages.BuildTrigger_Disabled(p.getName()));
                     continue;
                 }
-
                 // this is not completely accurate, as a new build might be triggered
                 // between these calls
                 String name = p.getName()+" #"+p.getNextBuildNumber();
