@@ -1291,7 +1291,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                     TopLevelItem item = loader.get();
                     items.put(item.getName(), item);
                 } catch (ExecutionException e) {
-                    LOGGER.log(Level.WARNING, "Failed to loa da project",e.getCause());
+                    LOGGER.log(Level.WARNING, "Failed to load a project",e.getCause());
                 } catch (InterruptedException e) {
                     e.printStackTrace(); // this is probably not the right thing to do
                 }
