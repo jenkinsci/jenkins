@@ -55,7 +55,13 @@ public abstract class SidACL extends ACL {
      * <p>
      * {@link #hasPermission(Authentication, Permission)} is implemented
      * by checking authentication's {@link GrantedAuthority} by using
-     * this method. 
+     * this method.
+     *
+     * @return
+     *      true if the access should be granted, false if it should be denied.
+     *      The null value indicates that the ACL does no rule for this Sid/Permission
+     *      combination. The caller can decide what to do &mash; such as consulting the higher level ACL,
+     *      or denying the access (if the model is no-access-by-default.)  
      */
     protected abstract Boolean hasPermission(Sid p, Permission permission);
 }
