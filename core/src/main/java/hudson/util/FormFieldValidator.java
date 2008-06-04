@@ -7,6 +7,7 @@ import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.security.Permission;
+import hudson.security.AccessControlled;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -39,7 +40,11 @@ public abstract class FormFieldValidator {
      * Permission to check, or null if this check doesn't require any permission.
      */
     private final Permission permission;
-    
+
+    /**
+     * The object to which the permission is checked against.
+     */
+    private final AccessControlled subject;
 
     /**
      * @param adminOnly
@@ -48,12 +53,17 @@ public abstract class FormFieldValidator {
      *      information or run a process that may have side-effect.
      */
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, boolean adminOnly) {
-        this(request, response, adminOnly?CHECK:null);
+        this(request, response, adminOnly?Hudson.getInstance():null, adminOnly?CHECK:null);
     }
 
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, Permission permission) {
+        this(request,response,Hudson.getInstance(),permission);
+    }
+
+    protected FormFieldValidator(StaplerRequest request, StaplerResponse response, AccessControlled subject, Permission permission) {
         this.request = request;
         this.response = response;
+        this.subject = subject;
         this.permission = permission;
     }
 
@@ -62,7 +72,7 @@ public abstract class FormFieldValidator {
      */
     public final void process() throws IOException, ServletException {
         if(permission!=null)
-            Hudson.getInstance().checkPermission(permission);
+            subject.checkPermission(permission);
 
         check();
     }
