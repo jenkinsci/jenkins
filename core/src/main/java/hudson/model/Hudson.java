@@ -1303,6 +1303,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                     items.put(item.getName(), item);
                 } catch (Error e) {
                     LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
+                } catch (RuntimeException e) {
+                    LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
                 }
