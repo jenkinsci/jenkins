@@ -26,6 +26,10 @@ public class TextFile {
         return file.exists();
     }
 
+    public void delete() {
+        file.delete();
+    }
+
     /**
      * Reads the entire contents and returns it.
      */
