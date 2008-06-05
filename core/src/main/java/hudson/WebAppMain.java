@@ -14,6 +14,7 @@ import hudson.util.NoHomeDir;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.NoTempDir;
 import hudson.util.IncompatibleAntVersionDetected;
+import hudson.util.HudsonFailedToLoad;
 import org.jvnet.localizer.LocaleProvider;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -169,9 +170,11 @@ public class WebAppMain implements ServletContextListener {
                         }, 1000*10);
                     } catch (Error e) {
                         LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+                        context.setAttribute(APP,new HudsonFailedToLoad(e));
                         throw e;
                     } catch (RuntimeException e) {
                         LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+                        context.setAttribute(APP,new HudsonFailedToLoad(e));
                         throw e;
                     }
                 }
