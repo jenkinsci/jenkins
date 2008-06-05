@@ -1,7 +1,9 @@
 package hudson;
 
 import hudson.util.IOException2;
+import hudson.util.VersionNumber;
 import hudson.model.Hudson;
+import hudson.model.UpdateCenter;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
@@ -457,6 +459,36 @@ public final class PluginWrapper {
      */
     public boolean isEnabled() {
         return !disableFile.exists();
+    }
+
+    /**
+     * If the plugin has {@link #getUpdateInfo() an update},
+     * returns the {@link UpdateCenter.Plugin} object.
+     */
+    public UpdateCenter.Plugin getUpdateInfo() {
+        UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+        UpdateCenter.Plugin p = uc.getPlugin(getShortName());
+        if(p==null)     return null;
+
+        try {
+            if(new VersionNumber(getVersion()).compareTo(new VersionNumber(p.version)) < 0)
+                return p;
+            return null;
+        } catch (IllegalArgumentException e) {
+            // couldn't parse it as the version number. ignore. 
+            return null;
+        }
+    }
+
+    /**
+     * Returns true if this plugin has update in the update center.
+     *
+     * <p>
+     * This method is conservative in the sense that if the version number is incomprehensible,
+     * it always returns false.
+     */
+    public boolean hasUpdate() {
+        return getUpdateInfo()!=null;
     }
 
     /**

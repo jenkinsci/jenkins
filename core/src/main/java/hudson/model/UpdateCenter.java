@@ -1,20 +1,41 @@
 package hudson.model;
 
+import hudson.PluginManager;
+import hudson.PluginWrapper;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.TextFile;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
+import org.apache.commons.io.input.CountingInputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controls update center capability.
+ *
+ * <p>
+ * The main job of this class is to keep track of the latest update center metadata file, and perform installations.
+ * Much of the UI about choosing plugins to install is done in {@link PluginManager}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.220
@@ -31,6 +52,31 @@ public class UpdateCenter {
      * all at once.
      */
     private volatile long lastAttempt = -1;
+
+    /**
+     * {@link ExecutorService} that performs installation.
+     */
+    private final ThreadPoolExecutor installerService = new ThreadPoolExecutor(1, 1,
+        0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<Runnable>(),
+        new DaemonThreadFactory(new ThreadFactory() {
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r);
+                t.setName("Update center installer thread");
+                return t;
+            }
+        })) {
+        @Override
+        protected void finalize() {
+            super.finalize();
+            shutdown();
+        }
+    };
+
+    /**
+     * List of completed {@link InstallationStatus}es. Access needs to be synchronized.
+     */
+    private final Vector<InstallationStatus> installationStatuses = new Vector<InstallationStatus>();
 
     /**
      * Returns true if it's time for us to check for new version.
@@ -65,13 +111,34 @@ public class UpdateCenter {
      *
      * @return  null if no data is available.
      */
-    public Data getData() throws IOException {
+    public Data getData() {
         TextFile df = getDataFile();
         if(df.exists()) {
-            return new Data(JSONObject.fromObject(df.read()));
+            try {
+                return new Data(JSONObject.fromObject(df.read()));
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
+                df.delete(); // if we keep this file, it will cause repeated failures
+                return null;
+            }
         } else {
             return null;
         }
+    }
+
+    /**
+     * Gets the information about a specific plugin.
+     *
+     * @param artifactId
+     *      The short name of the plugin. Corresponds to {@link PluginWrapper#getShortName()}.
+     *
+     * @return
+     *      null if no such information is found.
+     */
+    public Plugin getPlugin(String artifactId) {
+        Data dt = getData();
+        if(dt==null)    return null;
+        return dt.plugins.get(artifactId);
     }
 
     /**
@@ -82,9 +149,28 @@ public class UpdateCenter {
     }
 
     /**
+     * Returns the list of plugins that are updates to currently installed ones.
+     *
+     * @return
+     *      can be empty but never null.
+     */
+    public List<Plugin> getUpdates() {
+        Data data = getData();
+        if(data==null)      return Collections.emptyList(); // fail to determine
+
+        List<Plugin> r = new ArrayList<Plugin>();
+        for (PluginWrapper pw : Hudson.getInstance().getPluginManager().getPlugins()) {
+            Plugin p = pw.getUpdateInfo();
+            if(p!=null) r.add(p);
+        }
+
+        return r;
+    }
+
+    /**
      * In-memory representation of the update center data.
      */
-    public static final class Data {
+    public final class Data {
         /**
          * The latest hudson.war.
          */
@@ -92,7 +178,7 @@ public class UpdateCenter {
         /**
          * Plugins in the official repository, keyed by their artifact IDs.
          */
-        public final Map<String,Plugin> plugins = new HashMap<String,Plugin>();
+        public final Map<String,Plugin> plugins = new TreeMap<String,Plugin>(String.CASE_INSENSITIVE_ORDER);
         
         Data(JSONObject o) {
             core = new Entry(o.getJSONObject("core"));
@@ -123,13 +209,17 @@ public class UpdateCenter {
         }
     }
 
-    public static final class Plugin extends Entry {
+    public final class Plugin extends Entry {
         /**
          * Optional URL to the Wiki page that discusses this plugin.
          */
         public final String wiki;
         /**
          * Human readable title of the plugin, taken from Wiki page.
+         * Can be null.
+         *
+         * <p>
+         * beware of XSS vulnerability since this data comes from Wiki 
          */
         public final String title;
 
@@ -145,6 +235,108 @@ public class UpdateCenter {
                 return o.getString(prop);
             else
                 return null;
+        }
+
+        public String getDisplayName() {
+            if(title!=null) return title;
+            return name;
+        }
+
+        /**
+         * If some version of this plugin is currently installed, return {@link PluginWrapper}.
+         * Otherwise null.
+         */
+        public PluginWrapper getInstalled() {
+            PluginManager pm = Hudson.getInstance().getPluginManager();
+            return pm.getPlugin(name);
+        }
+
+        /**
+         * Schedules the installation of this plugin.
+         *
+         * <p>
+         * This is mainly intended to be called from the UI. The actual installation work happens
+         * asynchronously in another thread.
+         */
+        public void install() {
+            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+
+            LOGGER.info("Scheduling the installation of "+getDisplayName());
+            installerService.submit(new Runnable() {
+                public void run() {
+                    try {
+                        // for security reasons, only install from hudson.dev.java.net for now, which is also conveniently
+                        // https to guarantee transport level security.
+                        if(!url.startsWith("https://hudson.dev.java.net/")) {
+                            throw new IOException("Installation from non-official repository at "+url+" is not support yet");
+                        }
+
+                        // In the future if we are to open up update center to 3rd party, we need more elaborate scheme
+                        // like signing to ensure the safety of the bits.
+                        CountingInputStream in = new CountingInputStream(new URL(url).openStream());
+                        byte[] buf = new byte[8192];
+                        int len;
+
+                        File baseDir = Hudson.getInstance().getPluginManager().rootDir;
+                        File target = new File(baseDir, name + ".tmp");
+                        OutputStream out = new FileOutputStream(target);
+
+                        while((len=in.read(buf))>=0) {
+                            out.write(buf,0,len);
+                        }
+
+                        in.close();
+                        out.close();
+
+                        File hpi = new File(baseDir, name + ".hpi");
+                        hpi.delete();
+                        if(!target.renameTo(hpi)) {
+                            throw new IOException("Failed to rename "+target+" to "+hpi);
+                        }
+
+                        installationStatuses.add(new Success(Plugin.this));
+                        
+                    } catch (IOException e) {
+                        LOGGER.log(Level.SEVERE, "Failed to install "+name,e);
+                        installationStatuses.add(new Failure(Plugin.this,e));
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Indicates the status or the result of a plugin installation.
+     */
+    public abstract class InstallationStatus {
+        /**
+         * Plugin that is installing, installed, or attempted to be installed.
+         */
+        public final Plugin plugin;
+
+        protected InstallationStatus(Plugin plugin) {
+            this.plugin = plugin;
+        }
+    }
+
+    /**
+     * Indicates that the installation of a plugin failed.
+     */
+    public class Failure extends InstallationStatus {
+        public final Throwable problem;
+
+        public Failure(Plugin plugin, Throwable problem) {
+            super(plugin);
+            this.problem = problem;
+        }
+    }
+
+    /**
+     * Indicates that the plugin was successfully installed.
+     */
+    public class Success extends InstallationStatus {
+        public Success(Plugin plugin) {
+            super(plugin);
         }
     }
 

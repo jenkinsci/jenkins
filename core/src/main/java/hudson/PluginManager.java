@@ -1,10 +1,13 @@
 package hudson;
 
 import hudson.model.Hudson;
+import hudson.model.UpdateCenter;
+import hudson.model.AbstractModelObject;
 import hudson.util.Service;
 
 import java.util.Enumeration;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -21,13 +24,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.logging.LogFactory;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Manages {@link PluginWrapper}s.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class PluginManager {
+public final class PluginManager extends AbstractModelObject {
     /**
      * All discovered plugins.
      */
@@ -112,6 +117,14 @@ public final class PluginManager {
         return null;
     }
 
+    public String getDisplayName() {
+        return "Plugin Manager";
+    }
+
+    public String getSearchUrl() {
+        return "pluginManager";
+    }
+
     /**
      * Discover all the service provider implementations of the given class,
      * via <tt>META-INF/services</tt>.
@@ -136,6 +149,26 @@ public final class PluginManager {
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(uberClassLoader);
+    }
+
+    /**
+     * Performs the installation of the plugins.
+     */
+    public void doInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        Enumeration<String> en = req.getParameterNames();
+        while (en.hasMoreElements()) {
+            String n =  en.nextElement();
+            if(n.startsWith("plugin.")) {
+                n = n.substring(7);
+                UpdateCenter.Plugin p = Hudson.getInstance().getUpdateCenter().getPlugin(n);
+                if(p==null) {
+                    sendError("No such plugin: "+n,req,rsp);
+                    return;
+                }
+                p.install();
+            }
+        }
+        rsp.sendRedirect("../updateCenter/");
     }
 
     private final class UberClassLoader extends ClassLoader {

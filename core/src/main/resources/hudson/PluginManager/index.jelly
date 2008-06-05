@@ -1,0 +1,25 @@
+<!--
+  Update Center main page
+
+  TODO:
+      categorize plugins
+      find excerpt from Wiki
+      
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="Update Center" permission="${app.ADMINISTER}">
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel>
+    <j:set var="list" value="${app.updateCenter.updates}" />
+
+    <form action="install">
+      <l:tabBar>
+        <l:tab name="${%Updates}" active="${true}" href="." />
+        <l:tab name="${%Available}" active="${false}" href="./available" />
+        <l:tab name="${%Installed}" active="${false}" href="./installed" />
+      </l:tabBar>
+      <st:include page="table.jelly" />
+    </form>
+  </l:main-panel>
+</l:layout>
+</j:jelly>
