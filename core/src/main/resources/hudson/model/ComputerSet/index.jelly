@@ -6,7 +6,7 @@
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <j:set var="monitors" value="${it._monitors}"/>
-    <table id="projectstatus" class="sortable pane">
+    <table id="computers" class="sortable pane bigtable">
       <tr>
         <th width="32">S</th>
         <th initialSortDir="down">Name</th>

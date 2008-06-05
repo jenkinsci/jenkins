@@ -2,7 +2,7 @@
 	<l:layout title="People - ${it.parent.viewName}">
 		<st:include page="sidepanel.jelly" it="${it.parent}" />
 		<l:main-panel>
-      <table class="sortable pane" id="projectstatus">
+      <table class="sortable pane bigtable" id="people">
         <tr>
           <th />
           <th>${%Name}</th>

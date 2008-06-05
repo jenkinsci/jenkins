@@ -270,19 +270,19 @@ th.pane {
   font-weight: bold;
 }
 
-#projectstatus tr {
+.bigtable tr {
   border: 1px solid #bbb;
   padding: 3px 4px 3px 4px;
 }
 
-#projectstatus th {
+.bigtable th {
   font-weight: bold;
   border: none;
   background-color: #f0f0f0;
   padding: 3px 4px 3px 4px;
 }
 
-#projectstatus td {
+.bigtable td {
   vertical-align: middle;
   padding: 3px 4px 3px 4px;
 }
