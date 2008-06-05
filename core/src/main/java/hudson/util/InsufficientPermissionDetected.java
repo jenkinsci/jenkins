@@ -12,7 +12,7 @@ import java.io.PrintWriter;
  *
  * @author Kohsuke Kawaguchi
  */
-public class InsufficientPermissionDetected {
+public class InsufficientPermissionDetected extends ErrorObject {
     public final SecurityException exception;
 
     public InsufficientPermissionDetected(SecurityException e) {

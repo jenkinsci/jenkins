@@ -14,7 +14,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class IncompatibleServletVersionDetected {
+public class IncompatibleServletVersionDetected extends ErrorObject {
     private final Class servletClass;
 
     public IncompatibleServletVersionDetected(Class servletClass) {

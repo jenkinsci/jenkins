@@ -1,22 +1,20 @@
 package hudson.util;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
- * Model object used to display the error top page if
- * there appears to be no temporary directory.
+ * Model object used to display the generic error when Hudson start up fails fatally during initialization.
  *
  * <p>
  * <tt>index.jelly</tt> would display a nice friendly error page.
  *
  * @author Kohsuke Kawaguchi
  */
-public class NoTempDir extends ErrorObject {
-    public final IOException exception;
+public class HudsonFailedToLoad extends ErrorObject {
+    public final Throwable exception;
 
-    public NoTempDir(IOException exception) {
+    public HudsonFailedToLoad(Throwable exception) {
         this.exception = exception;
     }
 
@@ -24,9 +22,5 @@ public class NoTempDir extends ErrorObject {
         StringWriter sw = new StringWriter();
         exception.printStackTrace(new PrintWriter(sw));
         return sw.toString();
-    }
-
-    public String getTempDir() {
-        return System.getProperty("java.io.tmpdir");
     }
 }

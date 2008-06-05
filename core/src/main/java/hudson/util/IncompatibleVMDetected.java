@@ -11,7 +11,7 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public class IncompatibleVMDetected {
+public class IncompatibleVMDetected extends ErrorObject {
 
     public Map getSystemProperties() {
         return System.getProperties();

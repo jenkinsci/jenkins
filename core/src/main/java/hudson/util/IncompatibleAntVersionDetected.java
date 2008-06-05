@@ -14,7 +14,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class IncompatibleAntVersionDetected {
+public class IncompatibleAntVersionDetected extends ErrorObject {
     private final Class antClass;
 
     public IncompatibleAntVersionDetected(Class antClass) {

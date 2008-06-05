@@ -11,7 +11,7 @@ import java.io.File;
  *
  * @author Kohsuke Kawaguchi
  */
-public class NoHomeDir {
+public class NoHomeDir extends ErrorObject {
     public final File home;
 
     public NoHomeDir(File home) {
