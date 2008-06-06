@@ -10,18 +10,40 @@
     <p class="warning">
       Once the installation is completed, Hudson needs to be restarted for new plugins to take effect.
     </p>
-    
-    <table>
-      <j:forEach var="i" items="${it.jobs}">
-        <tr id="row${i.id}">
-          <td style="vertical-align: middle; padding-right:1em">${i.plugin.displayName}</td>
-          <j:set var="status" value="${i.status}" /><!-- so that two reference to this variable resolve to the same value. -->
-          <td id="status${status.id}">
-            <st:include it="${status}" page="status.jelly" />
-          </td>
-        </tr>
-      </j:forEach>
-    </table>
+
+    <st:include page="body.jelly" />
+
+    <script><![CDATA[
+      function refresh() {
+          window.setTimeout(function() {
+              new Ajax.Request("./body", {
+                  method: "post",
+                  onSuccess: function(rsp) {
+                      var div = document.createElement('div');
+                      div.innerHTML = rsp.responseText;
+
+                      var rows = div.firstChild.rows;
+                      for(var i=0; i<rows.length; i++ ) {
+                        var row = rows[i];
+                        var target = document.getElementById(row.id);
+                        if(target==null) {
+                          document.getElementById("log").appendChild(row);
+                        } else {
+                          var tcell = target.cells[1];
+                          var scell = row.cells[1];
+                          if(scell.id!=tcell.id) {
+                            tcell.innerHTML = scell.innerHTML;
+                            tcell.id = scell.id;
+                          }
+                        }
+                      }
+                      refresh();
+                  }
+              });
+          }, 5000);
+      }
+      refresh();
+    ]]></script>
   </l:main-panel>
 </l:layout>
 </j:jelly>

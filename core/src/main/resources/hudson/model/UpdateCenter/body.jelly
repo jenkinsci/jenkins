@@ -1,0 +1,19 @@
+<!--
+  Requested by the browser separately to partially update the page.
+  Also used as a part of index.jelly rendering.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:ajax>
+    <table id="log">
+      <j:forEach var="i" items="${it.jobs}">
+        <tr id="row${i.id}">
+          <td style="vertical-align: middle; padding-right:1em">${i.plugin.displayName}</td>
+          <j:set var="status" value="${i.status}" /><!-- so that two reference to this variable resolve to the same value. -->
+          <td id="status${status.id}">
+            <st:include it="${status}" page="status.jelly" />
+          </td>
+        </tr>
+      </j:forEach>
+    </table>
+  </l:ajax>
+</j:jelly>
