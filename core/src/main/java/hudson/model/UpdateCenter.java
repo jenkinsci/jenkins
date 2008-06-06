@@ -10,6 +10,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.input.CountingInputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -271,6 +271,14 @@ public class UpdateCenter {
             UpdateCenter.InstallationJob job = new InstallationJob(this);
             jobs.add(job);
             installerService.submit(job);
+        }
+
+        /**
+         * Making the installation web bound.
+         */
+        public void doInstall(StaplerResponse rsp) throws IOException {
+            install();
+            rsp.sendRedirect2("../..");
         }
     }
 

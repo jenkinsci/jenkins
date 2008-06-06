@@ -9,7 +9,7 @@
     <table>
       <j:forEach var="i" items="${it.jobs}">
         <tr id="row${i.id}">
-          <td>${i.plugin.displayName}</td>
+          <td style="vertical-align: middle; padding-right:1em">${i.plugin.displayName}</td>
           <j:set var="status" value="${i.status}" /><!-- so that two reference to this variable resolve to the same value. -->
           <td id="status${status.id}">
             <st:include it="${status}" page="status.jelly" />
