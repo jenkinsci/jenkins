@@ -26,6 +26,8 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.PrintStream;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.net.URI;
@@ -784,6 +786,17 @@ public class Util {
         } catch (ParseException e) {
             return defaultNumber;
         }
+    }
+
+    /**
+     * Obtains the stack dump as a string.
+     *
+     * @since 1.222
+     */
+    public static String toString(Throwable t) {
+        StringWriter sw = new StringWriter();
+        t.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
     }
 
     public static final SimpleDateFormat XS_DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
