@@ -6,6 +6,11 @@
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1>Installing Plugins</h1>
+
+    <p class="warning">
+      Once the installation is completed, Hudson needs to be restarted for new plugins to take effect.
+    </p>
+    
     <table>
       <j:forEach var="i" items="${it.jobs}">
         <tr id="row${i.id}">
