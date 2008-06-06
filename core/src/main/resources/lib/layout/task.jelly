@@ -8,7 +8,7 @@
     permission: permission object. If specified, the link will be displayed only if you have a permission (optional)
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <j:if test="${h.hasPermission(it,permission)}">
+  <j:if test="${attrs.permission==null or h.hasPermission(it,attrs.permission)}">
     <div class="task">
       <a href="${href}" onclick="${attrs.onclick}">
         <img width="24" height="24" style="margin: 2px;" src="${rootURL}${h.ifThenElse(icon.startsWith('images/'),h.resourcePath,'')}/${icon}"/>
