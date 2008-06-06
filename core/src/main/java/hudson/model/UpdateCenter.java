@@ -309,6 +309,8 @@ public class UpdateCenter implements ModelObject {
 
         public void run() {
             try {
+                LOGGER.info("Starting the installation of "+plugin.name);
+
                 // for security reasons, only install from hudson.dev.java.net for now, which is also conveniently
                 // https to guarantee transport level security.
                 if(!plugin.url.startsWith("https://hudson.dev.java.net/")) {
@@ -327,6 +329,7 @@ public class UpdateCenter implements ModelObject {
                 File target = new File(baseDir, plugin.name + ".tmp");
                 OutputStream out = new FileOutputStream(target);
 
+                LOGGER.info("Downloading "+plugin.name);
                 while((len=in.read(buf))>=0) {
                     out.write(buf,0,len);
                     status = new Installing(total==-1 ? -1 : in.getCount()*100/total);
@@ -341,6 +344,7 @@ public class UpdateCenter implements ModelObject {
                     throw new IOException("Failed to rename "+target+" to "+hpi);
                 }
 
+                LOGGER.info("Installation successful: "+plugin.name);
                 status = new Success();
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+plugin.name,e);
