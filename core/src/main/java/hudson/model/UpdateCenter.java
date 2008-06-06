@@ -42,7 +42,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  * @since 1.220
  */
-public class UpdateCenter {
+public class UpdateCenter implements ModelObject {
     private long dataTimestamp = -1;
 
     /**
@@ -171,6 +171,10 @@ public class UpdateCenter {
         }
 
         return r;
+    }
+
+    public String getDisplayName() {
+        return "Update center";
     }
 
     /**
