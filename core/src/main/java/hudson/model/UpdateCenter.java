@@ -15,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -79,6 +80,11 @@ public class UpdateCenter {
     private final Vector<InstallationStatus> installationStatuses = new Vector<InstallationStatus>();
 
     /**
+     * Plugin being installed, if any.
+     */
+    private volatile Installing installing;
+
+    /**
      * Returns true if it's time for us to check for new version.
      */
     public boolean isDue() {
@@ -86,6 +92,32 @@ public class UpdateCenter {
         boolean due = now - dataTimestamp > DAY && now - lastAttempt > 15000;
         if(due)     lastAttempt = now;
         return due;
+    }
+
+    /**
+     * Returns the list of {@link InstallationStatus} representing completed installation attempts.
+     */
+    public List<InstallationStatus> getInstallationStatuses() {
+        synchronized (installationStatuses) {
+            return new ArrayList<InstallationStatus>(installationStatuses);
+        }
+    }
+
+    /**
+     * If there's any installation in progress, return it. Otherwise null.
+     */
+    public Installing getInstalling() {
+        return installing;
+    }
+
+    /**
+     * Gets the list of plugins whose installation is pending.
+     *
+     * @return
+     *      can be empty but never null.
+     */
+    public Plugin[] getPending() {
+        return installerService.getQueue().toArray(new Plugin[0]);
     }
 
     /**
@@ -273,7 +305,9 @@ public class UpdateCenter {
 
                         // In the future if we are to open up update center to 3rd party, we need more elaborate scheme
                         // like signing to ensure the safety of the bits.
-                        CountingInputStream in = new CountingInputStream(new URL(url).openStream());
+                        URLConnection con = new URL(url).openConnection();
+                        int total = con.getContentLength();
+                        CountingInputStream in = new CountingInputStream(con.getInputStream());
                         byte[] buf = new byte[8192];
                         int len;
 
@@ -283,6 +317,8 @@ public class UpdateCenter {
 
                         while((len=in.read(buf))>=0) {
                             out.write(buf,0,len);
+                            installing = new Installing(Plugin.this,
+                                    total==-1 ? -1 : in.getCount()*100/total );
                         }
 
                         in.close();
@@ -299,6 +335,8 @@ public class UpdateCenter {
                     } catch (IOException e) {
                         LOGGER.log(Level.SEVERE, "Failed to install "+name,e);
                         installationStatuses.add(new Failure(Plugin.this,e));
+                    } finally {
+                        installing = null;
                     }
                 }
             });
@@ -307,6 +345,8 @@ public class UpdateCenter {
 
     /**
      * Indicates the status or the result of a plugin installation.
+     * <p>
+     * Instances of this class is immutable.
      */
     public abstract class InstallationStatus {
         /**
@@ -337,6 +377,21 @@ public class UpdateCenter {
     public class Success extends InstallationStatus {
         public Success(Plugin plugin) {
             super(plugin);
+        }
+    }
+
+    /**
+     * Installation of a plugin is in progress.
+     */
+    public class Installing extends InstallationStatus {
+        /**
+         * % completed download, or -1 if the percentage is not known.
+         */
+        public final int percentage;
+
+        public Installing(Plugin plugin, int percentage) {
+            super(plugin);
+            this.percentage = percentage;
         }
     }
 
