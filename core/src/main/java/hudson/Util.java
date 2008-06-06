@@ -788,17 +788,6 @@ public class Util {
         }
     }
 
-    /**
-     * Obtains the stack dump as a string.
-     *
-     * @since 1.222
-     */
-    public static String toString(Throwable t) {
-        StringWriter sw = new StringWriter();
-        t.printStackTrace(new PrintWriter(sw));
-        return sw.toString();
-    }
-
     public static final SimpleDateFormat XS_DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
     // Note: RFC822 dates must not be localized!

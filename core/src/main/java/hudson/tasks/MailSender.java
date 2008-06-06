@@ -2,6 +2,7 @@ package hudson.tasks;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.Functions;
 import hudson.model.*;
 import hudson.scm.ChangeLogSet;
 
@@ -227,9 +228,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
             }
         } catch (IOException e) {
             // somehow failed to read the contents of the log
-            StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
-            buf.append("Failed to access build log\n\n").append(sw);
+            buf.append("Failed to access build log\n\n").append(Functions.printThrowable(e));
         }
 
         msg.setText(buf.toString());

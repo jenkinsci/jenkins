@@ -234,9 +234,7 @@ public final class PluginManager extends AbstractModelObject {
         }
 
         public String getExceptionString() {
-            StringWriter sw = new StringWriter();
-            cause.printStackTrace(new PrintWriter(sw));
-            return sw.toString();
+            return Functions.printThrowable(cause);
         }
     }
 }

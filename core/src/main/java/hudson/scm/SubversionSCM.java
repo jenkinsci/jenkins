@@ -8,6 +8,7 @@ import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.Functions;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -1244,16 +1245,13 @@ public class SubversionSCM extends SCM implements Serializable {
                         } else
                             ok();
                     } catch (SVNException e) {
-                        StringWriter sw = new StringWriter();
-                        e.printStackTrace(new PrintWriter(sw));
-
                         String message="";
                         message += "Unable to access "+Util.escape(url)+" : "+Util.escape( e.getErrorMessage().getFullMessage());
                         message += " <a href='#' id=svnerrorlink onclick='javascript:" +
                             "document.getElementById(\"svnerror\").style.display=\"block\";" +
                             "document.getElementById(\"svnerrorlink\").style.display=\"none\";" +
                             "return false;'>(show details)</a>";
-                        message += "<pre id=svnerror style='display:none'>"+sw+"</pre>";
+                        message += "<pre id=svnerror style='display:none'>"+Functions.printThrowable(e)+"</pre>";
                         message += " (Maybe you need to <a target='_new' href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>?)";
                         message += "<br>";
                         logger.log(Level.INFO, "Failed to access subversion repository "+url,e);

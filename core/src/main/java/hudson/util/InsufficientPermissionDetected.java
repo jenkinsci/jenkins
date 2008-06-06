@@ -1,5 +1,7 @@
 package hudson.util;
 
+import hudson.Functions;
+
 import java.io.StringWriter;
 import java.io.PrintWriter;
 
@@ -20,8 +22,6 @@ public class InsufficientPermissionDetected extends ErrorObject {
     }
 
     public String getExceptionTrace() {
-        StringWriter sw = new StringWriter();
-        exception.printStackTrace(new PrintWriter(sw));
-        return sw.toString();
+        return Functions.printThrowable(exception);
     }
 }

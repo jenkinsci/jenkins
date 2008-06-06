@@ -39,8 +39,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.Writer;
-import java.io.StringWriter;
-import java.io.PrintWriter;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.ArrayList;
@@ -852,9 +850,7 @@ public final class FilePath implements Serializable {
                     throw e;    // the remote side completed successfully, so the error must be local
                 } catch (ExecutionException x) {
                     // report both errors
-                    StringWriter sw = new StringWriter();
-                    e.printStackTrace(new PrintWriter(sw));
-                    throw new IOException2(sw.toString(),x);
+                    throw new IOException2(Functions.printThrowable(e),x);
                 } catch (TimeoutException _) {
                     // remote is hanging
                     throw e;

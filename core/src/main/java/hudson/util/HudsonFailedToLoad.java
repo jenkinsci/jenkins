@@ -1,5 +1,7 @@
 package hudson.util;
 
+import hudson.Functions;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -19,8 +21,6 @@ public class HudsonFailedToLoad extends ErrorObject {
     }
 
     public String getStackTrace() {
-        StringWriter sw = new StringWriter();
-        exception.printStackTrace(new PrintWriter(sw));
-        return sw.toString();
+        return Functions.printThrowable(exception);
     }
 }
