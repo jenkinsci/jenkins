@@ -1,0 +1,22 @@
+<!--
+  This page shows the status of the plugin installation
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="Update Center" permission="${app.ADMINISTER}">
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel>
+    <h1>Installing Plugins</h1>
+    <table>
+      <j:forEach var="i" items="${it.jobs}">
+        <tr id="row${i.id}">
+          <td>${i.plugin.displayName}</td>
+          <j:set var="status" value="${i.status}" /><!-- so that two reference to this variable resolve to the same value. -->
+          <td id="status${status.id}">
+            <st:include it="${status}" page="status.jelly" />
+          </td>
+        </tr>
+      </j:forEach>
+    </table>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

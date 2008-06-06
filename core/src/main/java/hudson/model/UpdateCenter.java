@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.Functions;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.util.DaemonThreadFactory;
@@ -22,12 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,32 +58,19 @@ public class UpdateCenter {
     /**
      * {@link ExecutorService} that performs installation.
      */
-    private final ThreadPoolExecutor installerService = new ThreadPoolExecutor(1, 1,
-        0L, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(),
+    private final ExecutorService installerService = Executors.newSingleThreadExecutor(
         new DaemonThreadFactory(new ThreadFactory() {
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(r);
                 t.setName("Update center installer thread");
                 return t;
             }
-        })) {
-        @Override
-        protected void finalize() {
-            super.finalize();
-            shutdown();
-        }
-    };
+        }));
 
     /**
-     * List of completed {@link InstallationStatus}es. Access needs to be synchronized.
+     * List of created {@link InstallationJob}s. Access needs to be synchronized.
      */
-    private final Vector<InstallationStatus> installationStatuses = new Vector<InstallationStatus>();
-
-    /**
-     * Plugin being installed, if any.
-     */
-    private volatile Installing installing;
+    private final Vector<InstallationJob> jobs = new Vector<InstallationJob>();
 
     /**
      * Returns true if it's time for us to check for new version.
@@ -95,29 +83,15 @@ public class UpdateCenter {
     }
 
     /**
-     * Returns the list of {@link InstallationStatus} representing completed installation attempts.
-     */
-    public List<InstallationStatus> getInstallationStatuses() {
-        synchronized (installationStatuses) {
-            return new ArrayList<InstallationStatus>(installationStatuses);
-        }
-    }
-
-    /**
-     * If there's any installation in progress, return it. Otherwise null.
-     */
-    public Installing getInstalling() {
-        return installing;
-    }
-
-    /**
-     * Gets the list of plugins whose installation is pending.
+     * Returns the list of {@link InstallationJob} representing scheduled installation attempts.
      *
      * @return
-     *      can be empty but never null.
+     *      can be empty but never null. Oldest entries first.
      */
-    public Plugin[] getPending() {
-        return installerService.getQueue().toArray(new Plugin[0]);
+    public List<InstallationJob> getJobs() {
+        synchronized (jobs) {
+            return new ArrayList<InstallationJob>(jobs);
+        }
     }
 
     /**
@@ -294,106 +268,129 @@ public class UpdateCenter {
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
             LOGGER.info("Scheduling the installation of "+getDisplayName());
-            installerService.submit(new Runnable() {
-                public void run() {
-                    try {
-                        // for security reasons, only install from hudson.dev.java.net for now, which is also conveniently
-                        // https to guarantee transport level security.
-                        if(!url.startsWith("https://hudson.dev.java.net/")) {
-                            throw new IOException("Installation from non-official repository at "+url+" is not support yet");
-                        }
-
-                        // In the future if we are to open up update center to 3rd party, we need more elaborate scheme
-                        // like signing to ensure the safety of the bits.
-                        URLConnection con = new URL(url).openConnection();
-                        int total = con.getContentLength();
-                        CountingInputStream in = new CountingInputStream(con.getInputStream());
-                        byte[] buf = new byte[8192];
-                        int len;
-
-                        File baseDir = Hudson.getInstance().getPluginManager().rootDir;
-                        File target = new File(baseDir, name + ".tmp");
-                        OutputStream out = new FileOutputStream(target);
-
-                        while((len=in.read(buf))>=0) {
-                            out.write(buf,0,len);
-                            installing = new Installing(Plugin.this,
-                                    total==-1 ? -1 : in.getCount()*100/total );
-                        }
-
-                        in.close();
-                        out.close();
-
-                        File hpi = new File(baseDir, name + ".hpi");
-                        hpi.delete();
-                        if(!target.renameTo(hpi)) {
-                            throw new IOException("Failed to rename "+target+" to "+hpi);
-                        }
-
-                        installationStatuses.add(new Success(Plugin.this));
-                        
-                    } catch (IOException e) {
-                        LOGGER.log(Level.SEVERE, "Failed to install "+name,e);
-                        installationStatuses.add(new Failure(Plugin.this,e));
-                    } finally {
-                        installing = null;
-                    }
-                }
-            });
+            UpdateCenter.InstallationJob job = new InstallationJob(this);
+            jobs.add(job);
+            installerService.submit(job);
         }
     }
 
     /**
-     * Indicates the status or the result of a plugin installation.
-     * <p>
-     * Instances of this class is immutable.
+     * Represents the state of the installation activity of one plugin.
      */
-    public abstract class InstallationStatus {
+    public final class InstallationJob implements Runnable {
         /**
-         * Plugin that is installing, installed, or attempted to be installed.
+         * What plugin are we trying to install?
          */
         public final Plugin plugin;
+        /**
+         * Unique ID that identifies this job.
+         */
+        public final int id = iota.incrementAndGet();
+        /**
+         * Immutable object representing the current state of this job.
+         */
+        public volatile InstallationStatus status = new Pending();
 
-        protected InstallationStatus(Plugin plugin) {
+        public InstallationJob(Plugin plugin) {
             this.plugin = plugin;
         }
-    }
 
-    /**
-     * Indicates that the installation of a plugin failed.
-     */
-    public class Failure extends InstallationStatus {
-        public final Throwable problem;
+        public void run() {
+            try {
+                // for security reasons, only install from hudson.dev.java.net for now, which is also conveniently
+                // https to guarantee transport level security.
+                if(!plugin.url.startsWith("https://hudson.dev.java.net/")) {
+                    throw new IOException("Installation from non-official repository at "+plugin.url+" is not support yet");
+                }
 
-        public Failure(Plugin plugin, Throwable problem) {
-            super(plugin);
-            this.problem = problem;
+                // In the future if we are to open up update center to 3rd party, we need more elaborate scheme
+                // like signing to ensure the safety of the bits.
+                URLConnection con = new URL(plugin.url).openConnection();
+                int total = con.getContentLength();
+                CountingInputStream in = new CountingInputStream(con.getInputStream());
+                byte[] buf = new byte[8192];
+                int len;
+
+                File baseDir = Hudson.getInstance().getPluginManager().rootDir;
+                File target = new File(baseDir, plugin.name + ".tmp");
+                OutputStream out = new FileOutputStream(target);
+
+                while((len=in.read(buf))>=0) {
+                    out.write(buf,0,len);
+                    status = new Installing(total==-1 ? -1 : in.getCount()*100/total);
+                }
+
+                in.close();
+                out.close();
+
+                File hpi = new File(baseDir, plugin.name + ".hpi");
+                hpi.delete();
+                if(!target.renameTo(hpi)) {
+                    throw new IOException("Failed to rename "+target+" to "+hpi);
+                }
+
+                status = new Success();
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to install "+plugin.name,e);
+                status = new Failure(e);
+            }
         }
-    }
 
-    /**
-     * Indicates that the plugin was successfully installed.
-     */
-    public class Success extends InstallationStatus {
-        public Success(Plugin plugin) {
-            super(plugin);
-        }
-    }
-
-    /**
-     * Installation of a plugin is in progress.
-     */
-    public class Installing extends InstallationStatus {
         /**
-         * % completed download, or -1 if the percentage is not known.
+         * Indicates the status or the result of a plugin installation.
+         * <p>
+         * Instances of this class is immutable.
          */
-        public final int percentage;
+        public abstract class InstallationStatus {
+            public final int id = iota.incrementAndGet();
+        }
 
-        public Installing(Plugin plugin, int percentage) {
-            super(plugin);
-            this.percentage = percentage;
+        /**
+         * Indicates that the installation of a plugin failed.
+         */
+        public class Failure extends InstallationStatus {
+            public final Throwable problem;
+
+            public Failure(Throwable problem) {
+                this.problem = problem;
+            }
+
+            public String getStackTrace() {
+                return Functions.printThrowable(problem);
+            }
+        }
+
+        /**
+         * Indicates that the plugin was successfully installed.
+         */
+        public class Success extends InstallationStatus {
+        }
+
+        /**
+         * Indicates that the plugin is waiting for its turn for installation.
+         */
+        public class Pending extends InstallationStatus {
+        }
+
+        /**
+         * Installation of a plugin is in progress.
+         */
+        public class Installing extends InstallationStatus {
+            /**
+             * % completed download, or -1 if the percentage is not known.
+             */
+            public final int percentage;
+
+            public Installing(int percentage) {
+                this.percentage = percentage;
+            }
         }
     }
+
+    /**
+     * Sequence number generator.
+     */
+    private static final AtomicInteger iota = new AtomicInteger();
 
     private static final long DAY = DAYS.toMillis(1);
 
