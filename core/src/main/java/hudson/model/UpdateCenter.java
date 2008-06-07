@@ -176,6 +176,19 @@ public class UpdateCenter implements ModelObject {
         return r;
     }
 
+    /**
+     * Does any of the plugin has updates?
+     */
+    public boolean hasUpdates() {
+        Data data = getData();
+        if(data==null)      return false;
+
+        for (PluginWrapper pw : Hudson.getInstance().getPluginManager().getPlugins()) {
+            if(pw.getUpdateInfo() !=null) return true;
+        }
+        return false;
+    }
+
     public String getDisplayName() {
         return "Update center";
     }
