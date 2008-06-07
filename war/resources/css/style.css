@@ -18,6 +18,10 @@ td {
   vertical-align: top;
 }
 
+.center {
+  text-align: center;
+}
+
 table.middle-align td {
   vertical-align: middle;
 }
