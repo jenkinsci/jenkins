@@ -11,7 +11,37 @@
       </tr>
       <tr>
         <td>
-          Big table
+          <h1>${%HTTP Proxy Configuration}</h1>
+          <f:form method="post" action="proxyConfigure">
+            <f:block>
+              <f:entry title="HTTP proxy server" help="/help/update-center/proxy-server.html">
+                <f:textbox name="proxy.server" value="${h.getSystemProperty('http.proxyHost')}" />
+              </f:entry>
+              <f:entry title="HTTP proxy port" help="/help/update-center/proxy-port.html">
+                <f:textbox name="proxy.port" value="${h.getSystemProperty('http.proxyPort')}" />
+              </f:entry>
+            </f:block>
+            <f:block>
+              <f:submit value="${%Submit}" />
+            </f:block>
+          </f:form>
+
+          <h1>${%Upload Plugin}</h1>
+          <f:form method="post" action="uploadPlugin" enctype="multipart/form-data">
+            <f:block>
+              <div style="margin-bottom: 1em;">
+               ${%uploadtext}
+              </div>
+            </f:block>
+            <f:block>
+              <!-- @size is for other browsers, @style is for IE -->
+              ${%File}: <input type="file" name="name" class="setting-input" style="width:80%" size='40' />
+            </f:block>
+            <f:block>
+              <f:submit value="${%Upload}" />
+            </f:block>
+          </f:form>
+
         </td>
       </tr>
     </local:tabBar>

@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -169,6 +170,12 @@ public final class PluginManager extends AbstractModelObject {
             }
         }
         rsp.sendRedirect("../updateCenter/");
+    }
+
+    public void doProxyConfigure(@QueryParameter("proxy.server") String server, @QueryParameter("proxy.port") String port, StaplerResponse rsp) throws IOException {
+        System.setProperty("http.proxyHost",Util.fixEmptyAndTrim(server));
+        System.setProperty("http.proxyPort",Util.fixEmptyAndTrim(port));
+        rsp.sendRedirect("./advanced");
     }
 
     private final class UberClassLoader extends ClassLoader {

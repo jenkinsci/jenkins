@@ -858,5 +858,9 @@ public class Functions {
         return projectName;
     }
 
+    public String getSystemProperty(String key) {
+        return System.getProperty(key);
+    }
+
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 }
