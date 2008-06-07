@@ -1,0 +1,117 @@
+<!--
+  Config page
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <l:layout title="Update Center" permission="${app.ADMINISTER}" norefresh="true">
+    <st:include page="sidepanel.jelly"/>
+    <l:main-panel>
+      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager">
+        <j:choose>
+          <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
+            <tr><td>
+              ${%No plugins installed.}
+            </td></tr>
+          </j:when>
+          <j:otherwise>
+            <tr style="border-top: 0px;">
+              <th width="32" tooltip="Uncheck to disable the plugin">Enabled</th>
+              <th initialSortDir="down">Name</th>
+              <th width="32">Version</th>
+            </tr>
+            <j:forEach var="p" items="${app.pluginManager.plugins}">
+              <tr>
+                <td class="center pane">
+                  <j:set var="state" value="${h.ifThenElse(p.enabled,'true',null)}"/>
+                  <input type="checkbox" checked="${state}" onclick="flip(event)"
+                         url="plugin/${p.shortName}"
+                         original="${h.ifThenElse(p.active,'true','false')}"/>
+                </td>
+                <td class="pane">
+                  <h4>${p.longName}</h4>
+                  <div stlyle="padding-left: 1em">
+                    <j:set var="indexPage" value="${p.indexPage.toString()}" />
+                    <j:if test="${!empty(indexPage)}">
+                      <j:include uri="${indexPage}" />
+                    </j:if>
+                  </div>
+                </td>
+                <td class="center pane" style="white-space:no-wrap">
+                  ${p.version}
+                </td>
+              </tr>
+            </j:forEach>
+            <!-- failed ones -->
+            <j:forEach var="p" items="${it.pluginManager.failedPlugins}">
+              <tr class="hoverback">
+                <td class="pane" />
+                <td class="pane">
+                  <h4 class="error">Failed : ${p.name}</h4>
+                  <div stlyle="padding-left: 1em">
+                    <pre>${p.exceptionString}</pre>
+                  </div>
+                </td>
+                <td class="pane" />
+              </tr>
+            </j:forEach>
+          </j:otherwise>
+        </j:choose>
+      </local:tabBar>
+
+      <j:if test="${app.isPluginUploaded()}">
+        <div style="margin: 1em; height: 1em">
+          <div class="error">
+            ${%New plugins will take effect once you restart Hudson}
+          </div>
+        </div>
+      </j:if>
+      <div class="error" id="needRestart" style="display:none; margin: 1em; height: 1em">
+        ${%Changes will take effect when you restart Hudson}
+      </div>
+
+
+
+      <script>
+        <!-- function to toggle the enable/disable state -->
+        function flip(o) {
+          btn = Event.element(o);
+
+          <!-- trigger -->
+          new Ajax.Request(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
+            onFailure : function(req,o) {
+              $('needRestart').innerHTML = req.responseText;
+            }
+          });
+
+          updateMsg();
+        }
+
+        function updateMsg() {
+          <!-- is anything changed since its original state? -->
+          var e = $A($('plugins').getElementsByTagName('input')).find(function(e) {
+            return String(e.checked)!=e.getAttribute('original');
+          });
+
+          $('needRestart').style.display = (e!=null?"block":"none");
+        }
+
+        updateMsg(); // set the initial state
+      </script>
+
+      <s:form method="post" action="uploadPlugin" enctype="multipart/form-data">
+        <s:block>
+          <h1>${%Upload Plugin}</h1>
+          <div style="margin-bottom: 1em;">
+           ${%uploadtext}
+          </div>
+        </s:block>
+        <s:block>
+          <!-- @size is for other browsers, @style is for IE -->
+          ${%File}: <input type="file" name="name" class="setting-input" style="width:80%" size='40' />
+        </s:block>
+        <s:block><div>
+          <s:submit value="${%Upload}" />
+        </div></s:block>
+      </s:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

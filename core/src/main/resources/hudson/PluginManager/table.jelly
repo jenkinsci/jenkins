@@ -1,41 +1,50 @@
 <!--
   Shared between index.jelly and available.jelly
 
-  expects the 'list' variable to contain List<Plugin>
+  Attributes:
+     list: variable to contain List<Plugin>
+     page: page name to be passed to local:tabBar
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <table id="plugins" class="sortable pane bigtable" style="margin-top:0px; border-top: none;">
-    <tr style="border-top: 0px;">
-      <th width="32" tooltip="Check to install the plugin">Install</th>
-      <th initialSortDir="down">Name</th>
-      <th>Version</th>
-    </tr>
-    <j:choose>
-      <j:when test="${!empty(list)}">
-        <j:forEach var="p" items="${list}">
-          <tr>
-            <td class="pane" align="center"><input type="checkbox" name="plugin.${p.name}"/></td>
-            <td class="pane">
-              <a href="${p.wiki}"><st:out value="${p.displayName}"/></a>
-            </td>
-            <td class="pane"><st:out value="${p.version}" /></td>
+  <l:layout title="Update Center" permission="${app.ADMINISTER}" norefresh="true">
+    <st:include page="sidepanel.jelly"/>
+    <l:main-panel>
+      <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager">
+        <table id="plugins" class="sortable pane bigtable" style="margin-top:0px; border-top: none;">
+          <tr style="border-top: 0px;">
+            <th width="32" tooltip="Check to install the plugin">Install</th>
+            <th initialSortDir="down">Name</th>
+            <th>Version</th>
           </tr>
-        </j:forEach>
-      </j:when>
-      <j:otherwise>
-        <tr>
-          <td colspan="3" align="center">
-            <div style="padding:1em">
-              No updates
-            </div>
-          </td>
-        </tr>
-      </j:otherwise>
-    </j:choose>
-  </table>
-  <j:if test="${!empty(list)}">
-    <div align="right" style="margin-top:1em">
-      <f:submit value="Install" />
-    </div>
-  </j:if>
+          <j:choose>
+            <j:when test="${!empty(list)}">
+              <j:forEach var="p" items="${list}">
+                <tr>
+                  <td class="pane" align="center"><input type="checkbox" name="plugin.${p.name}"/></td>
+                  <td class="pane">
+                    <a href="${p.wiki}"><st:out value="${p.displayName}"/></a>
+                  </td>
+                  <td class="pane"><st:out value="${p.version}" /></td>
+                </tr>
+              </j:forEach>
+            </j:when>
+            <j:otherwise>
+              <tr>
+                <td colspan="3" align="center">
+                  <div style="padding:1em">
+                    No updates
+                  </div>
+                </td>
+              </tr>
+            </j:otherwise>
+          </j:choose>
+        </table>
+        <j:if test="${!empty(list)}">
+          <div align="right" style="margin-top:1em">
+            <f:submit value="Install" />
+          </div>
+        </j:if>
+      </local:tabBar>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>

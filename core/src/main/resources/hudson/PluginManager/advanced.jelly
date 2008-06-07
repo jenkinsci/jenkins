@@ -1,0 +1,20 @@
+<!--
+  List of available new plugins
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="Update Center" permission="${app.ADMINISTER}" norefresh="true">
+  <st:include page="sidepanel.jelly"/>
+  <l:main-panel>
+    <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager">
+      <tr style="border-top: 0px;">
+        <th/>
+      </tr>
+      <tr>
+        <td>
+          Big table
+        </td>
+      </tr>
+    </local:tabBar>
+  </l:main-panel>
+</l:layout>
+</j:jelly>
