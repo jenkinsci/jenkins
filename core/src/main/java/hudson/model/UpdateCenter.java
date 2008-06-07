@@ -8,6 +8,7 @@ import hudson.util.TextFile;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -16,6 +17,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -68,9 +71,9 @@ public class UpdateCenter implements ModelObject {
         }));
 
     /**
-     * List of created {@link InstallationJob}s. Access needs to be synchronized.
+     * List of created {@link UpdateCenterJob}s. Access needs to be synchronized.
      */
-    private final Vector<InstallationJob> jobs = new Vector<InstallationJob>();
+    private final Vector<UpdateCenterJob> jobs = new Vector<UpdateCenterJob>();
 
     /**
      * Returns true if it's time for us to check for new version.
@@ -83,14 +86,14 @@ public class UpdateCenter implements ModelObject {
     }
 
     /**
-     * Returns the list of {@link InstallationJob} representing scheduled installation attempts.
+     * Returns the list of {@link UpdateCenterJob} representing scheduled installation attempts.
      *
      * @return
      *      can be empty but never null. Oldest entries first.
      */
-    public List<InstallationJob> getJobs() {
+    public List<UpdateCenterJob> getJobs() {
         synchronized (jobs) {
-            return new ArrayList<InstallationJob>(jobs);
+            return new ArrayList<UpdateCenterJob>(jobs);
         }
     }
 
@@ -271,10 +274,13 @@ public class UpdateCenter implements ModelObject {
         public void install() {
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
+            // the first job is always the connectivity check
+            if(jobs.size()==0)
+                new ConnectionCheckJob().schedule();
+
             LOGGER.info("Scheduling the installation of "+getDisplayName());
             UpdateCenter.InstallationJob job = new InstallationJob(this);
-            jobs.add(job);
-            installerService.submit(job);
+            job.schedule();
         }
 
         /**
@@ -287,9 +293,55 @@ public class UpdateCenter implements ModelObject {
     }
 
     /**
+     * Things that {@link UpdateCenter#installerService} executes.
+     *
+     * This object will have the <tt>row.jelly</tt> which renders the job on UI.
+     */
+    public abstract class UpdateCenterJob implements Runnable {
+        public void schedule() {
+            jobs.add(this);
+            installerService.submit(this);
+        }
+    }
+
+    /**
+     * Tests the internet connectivity.
+     */
+    public final class ConnectionCheckJob extends UpdateCenterJob {
+        private final Vector<String> statuses= new Vector<String>();
+
+        public void run() {
+            try {
+                statuses.add("Checking internet connectivity");
+                testConnection(new URL("http://www.google.com/"));
+
+                statuses.add("Checking java.net connectivity");
+                testConnection(new URL("https://hudson.dev.java.net/?uctest"));
+
+                statuses.add("Success");
+            } catch (IOException e) {
+                statuses.add(Functions.printThrowable(e));
+            }
+        }
+
+        public String[] getStatuses() {
+            synchronized (statuses) {
+                return statuses.toArray(new String[statuses.size()]);
+            }
+        }
+
+        private void testConnection(URL url) throws IOException {
+            InputStream in = url.openStream();
+            IOUtils.copy(in,new ByteArrayOutputStream());
+            in.close();
+        }
+    }
+
+
+    /**
      * Represents the state of the installation activity of one plugin.
      */
-    public final class InstallationJob implements Runnable {
+    public final class InstallationJob extends UpdateCenterJob {
         /**
          * What plugin are we trying to install?
          */

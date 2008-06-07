@@ -6,13 +6,7 @@
   <l:ajax>
     <table id="log">
       <j:forEach var="i" items="${it.jobs}">
-        <tr id="row${i.id}">
-          <td style="vertical-align: middle; padding-right:1em">${i.plugin.displayName}</td>
-          <j:set var="status" value="${i.status}" /><!-- so that two reference to this variable resolve to the same value. -->
-          <td id="status${status.id}">
-            <st:include it="${status}" page="status.jelly" />
-          </td>
-        </tr>
+        <st:include it="${i}" page="row.jelly" />
       </j:forEach>
     </table>
   </l:ajax>
