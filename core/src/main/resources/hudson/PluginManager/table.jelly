@@ -39,11 +39,13 @@
             </j:otherwise>
           </j:choose>
         </table>
+        
         <j:if test="${!empty(list)}">
-          <div align="right" style="margin-top:1em">
+          <div style="float:right; margin-top:1em">
             <f:submit value="Install" />
           </div>
         </j:if>
+        <d:invokeBody />
       </local:tabBar>
     </l:main-panel>
   </l:layout>
