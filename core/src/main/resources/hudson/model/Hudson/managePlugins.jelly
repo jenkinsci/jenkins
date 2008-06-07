@@ -1,5 +1,7 @@
 <!--
   Config page
+
+  TODO: this page is deprecated by "pluginManager/". Once it's confirmed to be working, redirect this to the new URL.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 <l:layout permission="${app.ADMINISTER}" norefresh="true">
