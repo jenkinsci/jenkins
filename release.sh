@@ -5,6 +5,8 @@
 
 # make sure we have up to date workspace
 svn update
+# if left-over hudson.war for Debian build from the last time, delete it.
+rm hudson.war || true
 
 tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
 mvn -B -Dtag=$tag release:prepare || mvn -B -Dtag=$tag install release:prepare
