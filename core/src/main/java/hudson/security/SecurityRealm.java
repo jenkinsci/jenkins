@@ -103,7 +103,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * <st:redirect url="http://www.sun.com/" xmlns:st="jelly:stapler"/>
      * </xmp></pre>
      */
-    public final boolean allowsSignup() {
+    public boolean allowsSignup() {
         Class clz = getClass();
         return clz.getClassLoader().getResource(clz.getName().replace('.','/')+"/signup.jelly")!=null;
     }

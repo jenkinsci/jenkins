@@ -6,6 +6,8 @@ import hudson.model.Hudson;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.model.ManagementLink;
+import hudson.model.ModelObject;
 import hudson.tasks.Mailer;
 import hudson.util.Protector;
 import hudson.util.Scrambler;
@@ -23,6 +25,7 @@ import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletException;
@@ -33,7 +36,24 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class HudsonPrivateSecurityRealm extends SecurityRealm {
+public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelObject {
+    /**
+     * If true, sign up is not allowed.
+     * <p>
+     * This is a negative switch so that the default value 'false' remains compatible with older installations. 
+     */
+    private final boolean disableSignup;
+
+    @DataBoundConstructor
+    public HudsonPrivateSecurityRealm(boolean allowsSignup) {
+        this.disableSignup = !allowsSignup;
+    }
+
+    @Override
+    public boolean allowsSignup() {
+        return !disableSignup;
+    }
+
     @Override
     public SecurityComponents createSecurityComponents() {
         BeanBuilder builder = new BeanBuilder();
@@ -103,6 +123,13 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
 
         // then back to top
         req.getView(this,"success.jelly").forward(req,rsp);
+    }
+
+    /**
+     * This is used primarily when the object is listed in the breadcrumb, in the user management screen.
+     */
+    public String getDisplayName() {
+        return "User Database";
     }
 
     // TODO
@@ -234,6 +261,28 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
         }
     }
 
+    public static final class ManageUserLinks extends ManagementLink {
+        public String getIconFileName() {
+            if(Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
+                return "user.gif";
+            else
+                return null;    // not applicable now
+        }
+
+        public String getUrlName() {
+            return "securityRealm/users";
+        }
+
+        public String getDisplayName() {
+            return "Manage Users";
+        }
+
+        @Override
+        public String getDescription() {
+            return "Create/delete/modify users that can log in to this Hudson";
+        }
+    }
+
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();
 
@@ -248,13 +297,10 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm {
         public String getHelpFile() {
             return "/help/security/private-realm.html"; 
         }
-
-        public HudsonPrivateSecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new HudsonPrivateSecurityRealm();
-        }
     }
 
     static {
         LIST.add(DescriptorImpl.INSTANCE);
+        ManageUserLinks.LIST.add(new ManageUserLinks());
     }
 }
