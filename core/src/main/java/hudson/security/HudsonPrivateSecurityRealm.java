@@ -30,6 +30,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
@@ -130,6 +132,18 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
      */
     public String getDisplayName() {
         return "User Database";
+    }
+
+    /**
+     * All users who can login to the system.
+     */
+    public List<User> getAllUsers() {
+        List<User> r = new ArrayList<User>();
+        for (User u : User.getAll()) {
+            if(u.getProperty(Details.class)!=null)
+                r.add(u);
+        }
+        return r;
     }
 
     // TODO
@@ -270,7 +284,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         }
 
         public String getUrlName() {
-            return "securityRealm/users";
+            return "securityRealm/";
         }
 
         public String getDisplayName() {

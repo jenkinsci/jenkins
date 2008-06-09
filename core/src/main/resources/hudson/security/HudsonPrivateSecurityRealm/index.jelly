@@ -1,0 +1,25 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout norefresh="true">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>Users</h1>
+      <p>
+        These users can log into Hudson. This is the super set of <a href="../people">this list</a>,
+        which also contains "users" who really just made some commits on some projects and has no
+        direct Hudson access.
+      </p>
+      <table class="sortable pane bigtable" id="people">
+        <tr>
+          <th />
+          <th>${%Name}</th>
+        </tr>
+        <j:forEach var="user" items="${it.allUsers}">
+          <tr>
+            <td><a href="${rootURL}/${user.url}"><img src="${imagesURL}/32x32/user.gif"/></a></td>
+            <td><a href="${rootURL}/${user.url}">${user}</a></td>
+          </tr>
+        </j:forEach>
+      </table>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
