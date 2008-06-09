@@ -28,6 +28,11 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * Mostly works like {@link Action#getIconFileName()}, except that
      * the expected icon size is 48x48, not 24x24. So if you give
      * just a file name, "/images/48x48" will be assumed.
+     *
+     * @return
+     *      As a special case, return null to exclude this object from the management link.
+     *      This is useful for defining {@link ManagementLink} that only shows up under
+     *      certain circumstances.
      */
     public abstract String getIconFileName();
 
