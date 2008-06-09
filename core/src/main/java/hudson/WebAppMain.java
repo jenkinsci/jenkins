@@ -165,7 +165,7 @@ public class WebAppMain implements ServletContextListener {
                         // can be served quickly
                         Trigger.timer.schedule(new SafeTimerTask() {
                             public void doRun() {
-                                User.get("nobody").getBuilds();
+                                User.getUnknown().getBuilds();
                             }
                         }, 1000*10);
                     } catch (Error e) {
