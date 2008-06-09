@@ -106,7 +106,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
     @ExportedBean(defaultVisibility=2)
     public static final class UserInfo implements Comparable<UserInfo> {
         private final User user;
+        /**
+         * When did this user made a last commit on any of our projects? Can be null.
+         */
         private Calendar lastChange;
+        /**
+         * Which project did this user commit? Can be null.
+         */
         private AbstractProject project;
 
         UserInfo(User user, AbstractProject p, Calendar lastChange) {
@@ -134,20 +140,27 @@ public abstract class View extends AbstractModelObject implements AccessControll
          * Returns a human-readable string representation of when this user was last active.
          */
         public String getLastChangeTimeString() {
-            long duration = new GregorianCalendar().getTimeInMillis()-lastChange.getTimeInMillis();
+            if(lastChange==null)    return "N/A";
+            long duration = new GregorianCalendar().getTimeInMillis()- ordinal();
             return Util.getTimeSpanString(duration);
         }
 
         public String getTimeSortKey() {
+            if(lastChange==null)    return "-";
             return Util.XS_DATETIME_FORMATTER.format(lastChange.getTime());
         }
 
         public int compareTo(UserInfo that) {
-            long rhs = that.lastChange.getTimeInMillis();
-            long lhs = this.lastChange.getTimeInMillis();
+            long rhs = that.ordinal();
+            long lhs = this.ordinal();
             if(rhs>lhs) return 1;
             if(rhs<lhs) return -1;
             return 0;
+        }
+
+        private long ordinal() {
+            if(lastChange==null)    return 0;
+            return lastChange.getTimeInMillis();
         }
     }
 
@@ -205,6 +218,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
                             }
                         }
                     }
+                }
+            }
+
+            if(View.this==Hudson.getInstance()) {
+                // for Hudson, really load all users
+                for(User u : User.getAll()) {
+                    UserInfo info = users.get(u);
+                    if(info==null)
+                        users.put(u,new UserInfo(u,null,null));
                 }
             }
 

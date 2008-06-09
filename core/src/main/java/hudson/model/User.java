@@ -10,7 +10,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
-import hudson.security.PermissionGroup;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
@@ -22,10 +21,12 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -269,10 +270,28 @@ public class User extends AbstractModelObject implements AccessControlled {
         return get(a.getPrincipal().toString());
     }
 
+    private static volatile long lastScanned;
     /**
      * Gets all the users.
      */
     public static Collection<User> getAll() {
+        if(System.currentTimeMillis() -lastScanned>10000) {
+            // occasionally scan the file system to check new users
+            // whether we should do this only once at start up or not is debatable.
+            // set this right away to avoid another thread from doing the same thing while we do this.
+            // having two threads doing the work won't cause race condition, but it's waste of time.
+            lastScanned = System.currentTimeMillis();
+
+            File[] subdirs = getRootDir().listFiles((FileFilter)DirectoryFileFilter.INSTANCE);
+            if(subdirs==null)       return Collections.emptyList(); // shall never happen
+
+            for (File subdir : subdirs)
+                if(new File(subdir,"config.xml").exists())
+                    User.get(subdir.getName());
+
+            lastScanned = System.currentTimeMillis();
+        }
+
         synchronized (byName) {
             return new ArrayList<User>(byName.values());
         }
@@ -330,7 +349,14 @@ public class User extends AbstractModelObject implements AccessControlled {
      * The file we save our configuration.
      */
     protected final XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM,new File(Hudson.getInstance().getRootDir(),"users/"+ id +"/config.xml"));
+        return new XmlFile(XSTREAM,new File(getRootDir(),id +"/config.xml"));
+    }
+
+    /**
+     * Gets the directory where Hudson stores user information.
+     */
+    private static File getRootDir() {
+        return new File(Hudson.getInstance().getRootDir(), "users");
     }
 
     /**
