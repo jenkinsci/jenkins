@@ -223,7 +223,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
             if(View.this==Hudson.getInstance()) {
                 // for Hudson, really load all users
+                User unknown = User.getUnknown();
                 for(User u : User.getAll()) {
+                    if(u==unknown)  continue;   // skip the special 'unknown' user
                     UserInfo info = users.get(u);
                     if(info==null)
                         users.put(u,new UserInfo(u,null,null));
