@@ -36,9 +36,13 @@ import java.util.ArrayList;
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
  *
+ * <p>
+ * Implements {@link AccessControlled} to satisfy view rendering, but in reality the access control
+ * is done against the {@link Hudson} object.
+ *
  * @author Kohsuke Kawaguchi
  */
-public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelObject {
+public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelObject, AccessControlled {
     /**
      * If true, sign up is not allowed.
      * <p>
@@ -134,6 +138,19 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         return "User Database";
     }
 
+    public ACL getACL() {
+        return Hudson.getInstance().getACL();
+    }
+
+    public void checkPermission(Permission permission) {
+        Hudson.getInstance().checkPermission(permission);
+    }
+
+    public boolean hasPermission(Permission permission) {
+        return Hudson.getInstance().hasPermission(permission);
+    }
+
+
     /**
      * All users who can login to the system.
      */
@@ -144,6 +161,14 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
                 r.add(u);
         }
         return r;
+    }
+
+    /**
+     * This is to map users under the security realm URL.
+     * This in turn helps us set up the right navigation breadcrumb.
+     */
+    public User getUser(String id) {
+        return User.get(id);
     }
 
     // TODO
