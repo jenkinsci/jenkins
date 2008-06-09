@@ -6,7 +6,7 @@
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <t:setIconSize/>
-  <table class="pane sortable" id="projectStatus">
+  <table class="sortable pane bigtable" id="projectStatus">
     <tr>
       <th><st:nbsp/></th>
       <th>${%Build}</th>
