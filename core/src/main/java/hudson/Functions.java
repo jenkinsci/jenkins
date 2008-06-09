@@ -440,9 +440,7 @@ public class Functions {
     }
 
     public static void checkPermission(Permission permission) throws IOException, ServletException {
-        if (permission != null) {
-            Hudson.getInstance().getACL().checkPermission(permission);
-        }
+        checkPermission(Hudson.getInstance(),permission);
     }
 
     public static void checkPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
@@ -458,7 +456,7 @@ public class Functions {
      *      If null, returns true. This defaulting is convenient in making the use of this method terse.
      */
     public static boolean hasPermission(Permission permission) throws IOException, ServletException {
-        return permission==null || Hudson.getInstance().getACL().hasPermission(permission);
+        return hasPermission(Hudson.getInstance(),permission);
     }
 
     public static boolean hasPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
