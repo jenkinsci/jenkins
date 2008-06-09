@@ -6,11 +6,11 @@
   </f:entry>
   <f:entry title="">
     <f:checkbox name="mailer_notifyEveryUnstableBuild" checked="${h.defaultToTrue(!instance.dontNotifyEveryUnstableBuild)}" />
-    ${%Send e-mail for every unstable build}
+    <label class="attach-previous">${%Send e-mail for every unstable build}</label>
   </f:entry>
   <f:entry title="" help="/help/tasks/mailer/sendToindividuals.html">
     <f:checkbox name="mailer_sendToIndividuals" checked="${instance.sendToIndividuals}"
         />
-    ${%Send separate e-mails to individuals who broke the build} 
+    <label class="attach-previous">${%Send separate e-mails to individuals who broke the build}</label>
   </f:entry>
 </j:jelly>
