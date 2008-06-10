@@ -119,7 +119,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     /**
      * Gets the duration of the test, in seconds
      */
-    // TODO: wait for stapler 1.60 to do this : @Exported
+    @Exported
     public float getDuration() {
         return duration;
     }
