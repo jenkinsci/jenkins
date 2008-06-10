@@ -88,11 +88,11 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      *
      * @since 1.221
      */
-	public ACL getACL(User user) {
-		return getRootACL();
-	}
+    public ACL getACL(User user) {
+        return getRootACL();
+    }
 
-	/**
+    /**
      * Implementation can choose to provide different ACL for different computers.
      * This can be used as a basis for more fine-grained access control.
      *
