@@ -1291,6 +1291,10 @@ public class CVSSCM extends SCM implements Serializable {
 
                     upName = upName.substring(9);   // trim off 'upstream.'
                     Job p = Hudson.getInstance().getItemByFullName(upName,Job.class);
+                    if(p==null) {
+                        sendError(Messages.CVSSCM_NoSuchJobExists(upName),req,rsp);
+                        return;
+                    }
 
                     Run build = p.getBuildByNumber(upstreams.get(p));
                     tagSet.put((AbstractBuild) build,tag);
