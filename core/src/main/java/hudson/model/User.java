@@ -463,15 +463,14 @@ public class User extends AbstractModelObject implements AccessControlled {
 
 
     public ACL getACL() {
-    	return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
     }
-    
-	public void checkPermission(Permission permission) {
-		getACL().checkPermission(permission);
-	}
 
-	public boolean hasPermission(Permission permission) {
-		return getACL().hasPermission(permission);
-	}
+    public void checkPermission(Permission permission) {
+        getACL().checkPermission(permission);
+    }
 
+    public boolean hasPermission(Permission permission) {
+        return getACL().hasPermission(permission);
+    }
 }
