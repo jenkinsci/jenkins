@@ -29,6 +29,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletException;
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -75,15 +76,50 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
     }
 
     /**
-     * Creates an user account.
+     * Creates an user account. Used for self-registration.
      */
     public void doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        if(!allowsSignup()) {
+            rsp.sendError(SC_UNAUTHORIZED,"User sign up is prohibited");
+            return;
+        }
+        User u = createAccount(req, rsp, true, "signup.jelly");
+        if(u!=null) {
+            // ... and let him login
+            Authentication a = u.getProperty(Details.class).createAuthentication();
+            a = HudsonFilter.AUTHENTICATION_MANAGER.authenticate(a);
+            SecurityContextHolder.getContext().setAuthentication(a);
+
+            // then back to top
+            req.getView(this,"success.jelly").forward(req,rsp);
+        }
+    }
+
+    /**
+     * Creates an user account. Used by admins.
+     *
+     * This version behaves differently from {@link #doCreateAccount(StaplerRequest, StaplerResponse)} in that
+     * this is someone creating another user.
+     */
+    public void doCreateAccountByAdmin(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        checkPermission(Hudson.ADMINISTER);
+        if(createAccount(req, rsp, false, "addUser.jelly")!=null) {
+            rsp.sendRedirect(".");  // send the user back to the listing page
+        }
+    }
+
+    /**
+     * @return
+     *      null if failed. The browser is already redirected to retry by the time this method returns.
+     *      a valid {@link User} object if the user creation was successful.
+     */
+    private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean selfRegistration, String formView) throws ServletException, IOException {
         // form field validation
         // this pattern needs to be generalized and moved to stapler
         SignupInfo si = new SignupInfo();
         req.bindParameters(si);
 
-        if(!validateCaptcha(si.captcha))
+        if(selfRegistration && !validateCaptcha(si.captcha))
             si.errorMessage = "Text didn't match the word shown in the image";
 
         if(!si.password1.equals(si.password2))
@@ -110,8 +146,8 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         if(si.errorMessage!=null) {
             // failed. ask the user to try again.
             req.setAttribute("data",si);
-            req.getView(this,"signup.jelly").forward(req,rsp);
-            return;
+            req.getView(this, formView).forward(req,rsp);
+            return null;
         }
 
         // register the user
@@ -120,15 +156,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         user.addProperty(new Mailer.UserProperty(si.email));
         user.setFullName(si.fullname);
         user.save();
-        
-        // ... and let him login
-        Authentication a = new UsernamePasswordAuthenticationToken(si.username,si.password1);
-        a = HudsonFilter.AUTHENTICATION_MANAGER.authenticate(a);
-        SecurityContextHolder.getContext().setAuthentication(a);
-//        req.getSession().setAttribute(HttpSessionContextIntegrationFilter.ACEGI_SECURITY_CONTEXT_KEY,SecurityContextHolder.getContext());
-
-        // then back to top
-        req.getView(this,"success.jelly").forward(req,rsp);
+        return user;
     }
 
     /**
@@ -249,6 +277,10 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
 
         public UserPropertyDescriptor getDescriptor() {
             return DETAILS_DESCRIPTOR;
+        }
+
+        /*package*/ Authentication createAuthentication() {
+            return new UsernamePasswordAuthenticationToken(null, password);
         }
     }
 
