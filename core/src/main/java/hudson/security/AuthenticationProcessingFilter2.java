@@ -1,8 +1,12 @@
 package hudson.security;
 
 import java.util.Properties;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
@@ -45,4 +49,17 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
 		return excMap.getProperty(failedClassName, getAuthenticationFailureUrl());
     }
 
+    /**
+     * Leave the information about login failure.
+     *
+     * <p>
+     * Otherwise it seems like Acegi doesn't really leave the detail of the failure anywhere.
+     */
+    @Override
+    protected void onUnsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
+        super.onUnsuccessfulAuthentication(request, response, failed);
+        LOGGER.log(Level.INFO, "Login attempt failed", failed);
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(AuthenticationProcessingFilter2.class.getName());
 }
