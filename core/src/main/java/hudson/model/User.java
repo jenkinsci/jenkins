@@ -267,7 +267,7 @@ public class User extends AbstractModelObject implements AccessControlled {
         Authentication a = Hudson.getAuthentication();
         if(a instanceof AnonymousAuthenticationToken)
             return null;
-        return get(a.getPrincipal().toString());
+        return get(a.getName());
     }
 
     private static volatile long lastScanned;
@@ -463,7 +463,13 @@ public class User extends AbstractModelObject implements AccessControlled {
 
 
     public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        final ACL base = Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        // always allow the user full control of himself.
+        return new ACL() {
+            public boolean hasPermission(Authentication a, Permission permission) {
+                return a.getName().equals(id) || base.hasPermission(a, permission);
+            }
+        };
     }
 
     public void checkPermission(Permission permission) {
