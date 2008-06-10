@@ -91,4 +91,13 @@ public final class Resource {
     public int hashCode() {
         return displayName.hashCode();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        if(parent!=null)
+            buf.append(parent).append('/');
+        buf.append(displayName).append('(').append(numConcurrentWrite).append(')');
+        return buf.toString();
+    }
 }
