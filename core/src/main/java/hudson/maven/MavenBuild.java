@@ -420,7 +420,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
             ArgumentListBuilder margs = new ArgumentListBuilder();
             margs.add("-N").add("-B");
-            margs.add("-f",getParent().getModuleRoot().child("pom.xml").getRemote());
+            MavenModuleSet mms = project.getParent();
+            if(mms.usesPrivateRepository())
+                // use the per-project repository. should it be per-module? But that would cost too much in terms of disk
+                // the workspace must be on this node, so getRemote() is safe.
+                margs.add("-D").add("maven.repo.local="+mms.getWorkspace().child(".repository").getRemote());
+            margs.add("-f",getProject().getModuleRoot().child("pom.xml").getRemote());
             margs.addTokenized(getProject().getGoals());
 
             Map<String,String> systemProps = new HashMap<String, String>(envVars);

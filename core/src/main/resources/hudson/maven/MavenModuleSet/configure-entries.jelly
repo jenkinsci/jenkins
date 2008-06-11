@@ -40,6 +40,8 @@
       </f:entry>
       <f:optionalBlock name="maven.perModuleBuild" title="${%Build modules in parallel}" help="/help/maven/aggregator.html"
         checked="${!it.aggregatorStyleBuild}" />
+      <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private maven repository}" help="/help/maven/private-repository.html"
+        checked="${it.usesPrivateRepository()}" />
     </f:advanced>
   </f:section>
 

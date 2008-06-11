@@ -82,6 +82,18 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private boolean aggregatorStyleBuild = true;
 
     /**
+     * If true, the build will use its own local Maven repository
+     * via "-Dmaven.repo.local=...".
+     * <p>
+     * This would consume additional disk space, but provides isolation with other builds on the same machine,
+     * such as mixing SNAPSHOTS. Maven also doesn't try to coordinate the concurrent access to Maven repositories
+     * from multiple Maven process, so this helps there too.
+     *
+     * @sine 1.223
+     */
+    private boolean usePrivateRepository = false;
+
+    /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
@@ -209,6 +221,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
     public boolean isAggregatorStyleBuild() {
         return aggregatorStyleBuild;
+    }
+
+    public boolean usesPrivateRepository() {
+        return usePrivateRepository;
     }
 
     /**
@@ -500,7 +516,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         goals = Util.fixEmpty(req.getParameter("goals").trim());
         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
         mavenName = req.getParameter("maven_version");
-        aggregatorStyleBuild = req.getParameter("maven.perModuleBuild")==null;
+        aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
+        usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
 
         JSONObject json = StructuredForm.get(req);
         reporters.rebuild(req,json,MavenReporters.getConfigurableList(),"reporter");
