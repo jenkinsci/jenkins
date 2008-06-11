@@ -11,8 +11,6 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -173,9 +171,15 @@ public final class PluginManager extends AbstractModelObject {
     }
 
     public void doProxyConfigure(@QueryParameter("proxy.server") String server, @QueryParameter("proxy.port") String port, StaplerResponse rsp) throws IOException {
-        System.setProperty("http.proxyHost",Util.fixEmptyAndTrim(server));
-        System.setProperty("http.proxyPort",Util.fixEmptyAndTrim(port));
+        setProp("http.proxyHost", Util.fixEmptyAndTrim(server));
+        setProp("http.proxyPort",Util.fixEmptyAndTrim(port));
         rsp.sendRedirect("./advanced");
+    }
+
+    private void setProp(String key, String value) {
+        // System.setProperty causes NPE if t he value is null.
+        if(value==null) System.getProperties().remove(key);
+        else        System.setProperty(key,value);
     }
 
     private final class UberClassLoader extends ClassLoader {
