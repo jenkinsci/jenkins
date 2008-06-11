@@ -136,6 +136,21 @@ public class UpdateCenter implements ModelObject {
     }
 
     /**
+     * Returns a list of plugins that should be shown in the "available" tab.
+     * These are "all plugins - installed plugins".
+     */
+    public List<Plugin> getAvailables() {
+        List<Plugin> r = new ArrayList<Plugin>();
+        Data data = getData();
+        if(data ==null)     return Collections.emptyList();
+        for (Plugin p : data.plugins.values()) {
+            if(p.getInstalled()==null)
+                r.add(p);
+        }
+        return r;
+    }
+
+    /**
      * Gets the information about a specific plugin.
      *
      * @param artifactId

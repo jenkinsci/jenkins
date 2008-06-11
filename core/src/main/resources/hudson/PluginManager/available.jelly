@@ -2,5 +2,5 @@
   List of available new plugins    
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <local:table page="available" list="${app.updateCenter.data.plugins.values()}" xmlns:local="/hudson/PluginManager" />
+  <local:table page="available" list="${app.updateCenter.availables}" xmlns:local="/hudson/PluginManager" />
 </j:jelly>
