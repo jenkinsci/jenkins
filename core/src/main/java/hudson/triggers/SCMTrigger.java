@@ -10,6 +10,7 @@ import hudson.model.Project;
 import hudson.model.SCMedItem;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,8 +51,9 @@ public class SCMTrigger extends Trigger<SCMedItem> {
      */
     private transient ReentrantLock lock;
 
-    public SCMTrigger(String cronTabSpec) throws ANTLRException {
-        super(cronTabSpec);
+    @DataBoundConstructor
+    public SCMTrigger(String scmpoll_spec) throws ANTLRException {
+        super(scmpoll_spec);
         lock = new ReentrantLock();
     }
 
@@ -155,14 +157,6 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         public String getHelpFile() {
             return "/help/project-config/poll-scm.html";
-        }
-
-        public Trigger newInstance(StaplerRequest req) throws FormException {
-            try {
-                return new SCMTrigger(req.getParameter("scmpoll_spec"));
-            } catch (ANTLRException e) {
-                throw new FormException(e.toString(),e,"scmpoll_spec");
-            }
         }
 
         /**
