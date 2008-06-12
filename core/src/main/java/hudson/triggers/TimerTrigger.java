@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -21,8 +22,10 @@ import antlr.ANTLRException;
  * @author Kohsuke Kawaguchi
  */
 public class TimerTrigger extends Trigger<BuildableItem> {
-    public TimerTrigger(String cronTabSpec) throws ANTLRException {
-        super(cronTabSpec);
+	
+	@DataBoundConstructor
+	public TimerTrigger(String timer_spec) throws ANTLRException {
+        super(timer_spec);
     }
 
     public void run() {
@@ -69,14 +72,6 @@ public class TimerTrigger extends Trigger<BuildableItem> {
                     }
                 }
             }.process();
-        }
-
-        public Trigger newInstance(StaplerRequest req) throws FormException {
-            try {
-                return new TimerTrigger(req.getParameter("timer_spec"));
-            } catch (ANTLRException e) {
-                throw new FormException(e.toString(),e,"timer_spec");
-            }
         }
     }
 }

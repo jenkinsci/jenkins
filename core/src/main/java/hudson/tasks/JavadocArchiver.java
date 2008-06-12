@@ -7,6 +7,8 @@ import hudson.maven.MavenModuleSet;
 import hudson.maven.AbstractMavenProject;
 import hudson.model.*;
 import hudson.util.FormFieldValidator;
+
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -24,9 +26,10 @@ public class JavadocArchiver extends Publisher {
      * Path to the Javadoc directory in the workspace.
      */
     private final String javadocDir;
-
-    public JavadocArchiver(String javadocDir) {
-        this.javadocDir = javadocDir;
+    
+    @DataBoundConstructor
+    public JavadocArchiver(String javadoc_dir) {
+        this.javadocDir = javadoc_dir;
     }
 
     public String getJavadocDir() {
@@ -113,10 +116,6 @@ public class JavadocArchiver extends Publisher {
 
         public String getDisplayName() {
             return Messages.JavadocArchiver_DisplayName();
-        }
-
-        public Publisher newInstance(StaplerRequest req) {
-            return new JavadocArchiver(req.getParameter("javadoc_dir"));
         }
 
         /**
