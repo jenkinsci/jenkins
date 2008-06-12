@@ -61,6 +61,9 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
     /**
      * {@link Action} to be displayed in the job page.
      *
+     * @param job
+     *      Always the same as {@link #owner} but passed in anyway for backward compatibility (I guess.)
+     *      You really need not use this value at all.
      * @return
      *      null if there's no such action.
      * @since 1.102
