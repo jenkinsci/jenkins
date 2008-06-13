@@ -16,10 +16,10 @@ import hudson.model.Hudson
 */
 
 initialDirContextFactory(DefaultInitialDirContextFactory, instance.getLDAPURL() ) {
-
-  // if anonymous bind is not allowed --- but what is the use of anonymous bind?
-  // managerDn = "..."
-  // managerPassword="..."
+  if(instance.managerDN!=null) {
+    managerDn = instance.managerDN;
+    managerPassword = instance.getManagerPassword();
+  }
 }
 
 ldapUserSearch(FilterBasedLdapUserSearch, instance.userSearchBase, instance.userSearch, initialDirContextFactory) {
