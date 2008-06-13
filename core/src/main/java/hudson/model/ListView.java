@@ -166,7 +166,7 @@ public class ListView extends View {
 
         owner.save();
 
-        rsp.sendRedirect("../"+name);
+        rsp.sendRedirect2("../"+name);
     }
 
     /**
