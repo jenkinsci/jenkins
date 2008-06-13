@@ -12,7 +12,7 @@
 	  <f:textbox name="cvs.branch" value="${scm.branch}"
         checkUrl="'${rootURL}/scm/CVSSCM/branchCheck?value='+escape(this.value)"/>
     <div style="padding-left: 2em">
-      <f:checkbox name="cvs.isTag" value="${scm.isTag}" />
+      <f:checkbox name="cvs.isTag" checked="${scm.isTag()}" />
       <label class="attach-previous"> ${%This is a tag, not a branch}</label>
     </div>
   </f:entry>
