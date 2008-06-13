@@ -148,6 +148,10 @@ public final class XmlFile {
         return file.exists();
     }
 
+    public void delete() {
+        file.delete();
+    }
+    
     public void mkdirs() {
         file.getParentFile().mkdirs();
     }
