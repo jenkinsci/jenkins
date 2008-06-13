@@ -109,33 +109,33 @@ public final class DependencyGraph implements Comparator <AbstractProject> {
     /**
      * Called during the dependency graph build phase to add a dependency edge.
      */
-    public void addDependency(AbstractProject from, AbstractProject to) {
+    public void addDependency(AbstractProject upstream, AbstractProject downstream) {
         if(built)
             throw new IllegalStateException();
-        if(from==to)
+        if(upstream==downstream)
             return;
-        add(forward,from,to);
-        add(backward,to,from);
+        add(forward,upstream,downstream);
+        add(backward,downstream,upstream);
     }
 
-    public void addDependency(AbstractProject from, Collection<? extends AbstractProject> to) {
-        for (AbstractProject p : to)
-            addDependency(from,p);
+    public void addDependency(AbstractProject upstream, Collection<? extends AbstractProject> downstream) {
+        for (AbstractProject p : downstream)
+            addDependency(upstream,p);
     }
 
-    public void addDependency(Collection<? extends AbstractProject> from, AbstractProject to) {
-        for (AbstractProject p : from)
-            addDependency(p,to);
+    public void addDependency(Collection<? extends AbstractProject> upstream, AbstractProject downstream) {
+        for (AbstractProject p : upstream)
+            addDependency(p,downstream);
     }
 
     /**
      * Lists up {@link DependecyDeclarer} from the collection and let them builds dependencies.
      */
-    public void addDependencyDeclarers(AbstractProject from, Collection<?> possibleDependecyDeclarers) {
+    public void addDependencyDeclarers(AbstractProject upstream, Collection<?> possibleDependecyDeclarers) {
         for (Object o : possibleDependecyDeclarers) {
             if (o instanceof DependecyDeclarer) {
                 DependecyDeclarer dd = (DependecyDeclarer) o;
-                dd.buildDependencyGraph(from,this);
+                dd.buildDependencyGraph(upstream,this);
             }
         }
     }
