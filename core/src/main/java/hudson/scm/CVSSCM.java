@@ -17,6 +17,7 @@ import hudson.model.ModelObject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.TaskThread;
+import hudson.model.Descriptor;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
@@ -70,6 +71,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import net.sf.json.JSONObject;
 
 /**
  * CVS.
@@ -963,8 +966,9 @@ public class CVSSCM extends SCM implements Serializable {
             return "CVS";
         }
 
-        public SCM newInstance(StaplerRequest req) throws FormException {
-            CVSSCM scm = req.bindParameters(CVSSCM.class, "cvs.");
+        @Override
+        public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            CVSSCM scm = req.bindJSON(CVSSCM.class,formData);
             scm.repositoryBrowser = RepositoryBrowsers.createInstance(CVSRepositoryBrowser.class,req,"cvs.browser");
             return scm;
         }
