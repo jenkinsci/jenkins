@@ -148,7 +148,7 @@
                 <artifactItem>
                   <groupId>org.jvnet.hudson.winstone</groupId>
                   <artifactId>winstone</artifactId>
-                  <version>0.9.10-hudson-5</version>
+                  <version>0.9.10-hudson-6</version>
                   <destFileName>winstone.jar</destFileName>
                 </artifactItem>
               </artifactItems>
