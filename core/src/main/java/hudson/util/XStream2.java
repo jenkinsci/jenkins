@@ -12,7 +12,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.model.Hudson;
 
 /**
- * {@link XStream} enhanced for retroweaver support.
+ * {@link XStream} enhanced for additional Java5 support and improved robustness.
  * @author Kohsuke Kawaguchi
  */
 public class XStream2 extends XStream {
