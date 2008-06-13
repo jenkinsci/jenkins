@@ -1,6 +1,7 @@
 package hudson.tasks;
 
 import hudson.FilePath;
+import hudson.Util;
 import hudson.model.Descriptor;
 import static hudson.model.Hudson.isWindows;
 import hudson.util.FormFieldValidator;
@@ -11,6 +12,9 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Executes a series of commands by using a shell.
@@ -45,7 +49,17 @@ public class Shell extends CommandInterpreter {
     }
 
     protected String[] buildCommandLine(FilePath script) {
-        return new String[] { DESCRIPTOR.getShell(),"-xe",script.getRemote()};
+        if(command.startsWith("#!")) {
+            // interpreter override
+            int end = command.indexOf('\n');
+            if(end<0)   end=command.length();
+            List<String> args = new ArrayList<String>();
+            args.addAll(Arrays.asList(Util.tokenize(command.substring(0,end).trim())));
+            args.add(script.getRemote());
+            args.set(0,args.get(0).substring(2));   // trim off "#!"
+            return args.toArray(new String[args.size()]);
+        } else
+            return new String[] { DESCRIPTOR.getShell(),"-xe",script.getRemote()};
     }
 
     protected String getContents() {
