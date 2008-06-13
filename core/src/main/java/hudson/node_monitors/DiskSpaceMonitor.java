@@ -4,12 +4,15 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.FilePath.FileCallable;
 import hudson.model.Computer;
+import hudson.model.Descriptor;
 import hudson.remoting.VirtualChannel;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+
+import net.sf.json.JSONObject;
 
 /**
  * Checks available disk space of the node.
@@ -53,7 +56,8 @@ public class DiskSpaceMonitor extends NodeMonitor {
             return Messages.DiskSpaceMonitor_displayName();
         }
 
-        public NodeMonitor newInstance(StaplerRequest req) throws FormException {
+        @Override
+        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new DiskSpaceMonitor();
         }
     };
