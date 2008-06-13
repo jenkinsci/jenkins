@@ -66,7 +66,7 @@ public final class PluginManager extends AbstractModelObject {
      * This is used to report a message that Hudson needs to be restarted
      * for new plugins to take effect.
      */
-    public transient volatile boolean pluginUploaded =false;
+    public volatile boolean pluginUploaded =false;
 
     public PluginManager(ServletContext context) {
         this.context = context;
