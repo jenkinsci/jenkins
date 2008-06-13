@@ -1,8 +1,6 @@
 package hudson;
 
-import hudson.model.Hudson;
-import hudson.model.UpdateCenter;
-import hudson.model.AbstractModelObject;
+import hudson.model.*;
 import hudson.util.Service;
 
 import java.util.Enumeration;
@@ -22,6 +20,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -59,6 +60,13 @@ public final class PluginManager extends AbstractModelObject {
     // implementation is minimal --- just enough to run XStream
     // and load plugin-contributed classes.
     public final ClassLoader uberClassLoader = new UberClassLoader();
+
+    /**
+     * Once plugin is uploaded, this flag becomes true.
+     * This is used to report a message that Hudson needs to be restarted
+     * for new plugins to take effect.
+     */
+    public transient volatile boolean pluginUploaded =false;
 
     public PluginManager(ServletContext context) {
         this.context = context;
@@ -100,6 +108,13 @@ public final class PluginManager extends AbstractModelObject {
             }
     }
 
+    /**
+     * Retrurns true if any new plugin was added, which means a restart is required for the change to take effect.
+     */
+    public boolean isPluginUploaded() {
+        return pluginUploaded;
+    }
+    
     public List<PluginWrapper> getPlugins() {
         return plugins;
     }
@@ -182,6 +197,35 @@ public final class PluginManager extends AbstractModelObject {
         // System.setProperty causes NPE if t he value is null.
         if(value==null) System.getProperties().remove(key);
         else        System.setProperty(key,value);
+    }
+
+    /**
+     * Uploads a plugin.
+     */
+    public void doUploadPlugin( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        try {
+            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+
+            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+
+            // Parse the request
+            FileItem fileItem = (FileItem) upload.parseRequest(req).get(0);
+            String fileName = Util.getFileName(fileItem.getName());
+            if(!fileName.endsWith(".hpi")) {
+                sendError(hudson.model.Messages.Hudson_NotAPlugin(fileName),req,rsp);
+                return;
+            }
+            fileItem.write(new File(rootDir, fileName));
+            fileItem.delete();
+
+            pluginUploaded=true;
+
+            rsp.sendRedirect2(".");
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {// grrr. fileItem.write throws this
+            throw new ServletException(e);
+        }
     }
 
     private final class UberClassLoader extends ClassLoader {

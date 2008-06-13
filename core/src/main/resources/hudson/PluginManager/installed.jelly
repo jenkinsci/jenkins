@@ -57,7 +57,7 @@
         </j:choose>
       </local:tabBar>
 
-      <j:if test="${app.isPluginUploaded()}">
+      <j:if test="${it.isPluginUploaded()}">
         <div style="margin: 1em; height: 1em">
           <div class="error">
             ${%New plugins will take effect once you restart Hudson}

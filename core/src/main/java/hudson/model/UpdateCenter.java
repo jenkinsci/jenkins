@@ -405,7 +405,8 @@ public class UpdateCenter implements ModelObject {
                 byte[] buf = new byte[8192];
                 int len;
 
-                File baseDir = Hudson.getInstance().getPluginManager().rootDir;
+                PluginManager pm = Hudson.getInstance().getPluginManager();
+                File baseDir = pm.rootDir;
                 File target = new File(baseDir, plugin.name + ".tmp");
                 OutputStream out = new FileOutputStream(target);
 
@@ -425,6 +426,7 @@ public class UpdateCenter implements ModelObject {
                 }
 
                 LOGGER.info("Installation successful: "+plugin.name);
+                pm.pluginUploaded = true;
                 status = new Success();
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+plugin.name,e);

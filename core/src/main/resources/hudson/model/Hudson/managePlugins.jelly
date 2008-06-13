@@ -10,7 +10,7 @@
     <s:form method="post" action="configSubmit">
       <s:block>
         <h1>${%Installed Plugins}</h1>
-        <j:if test="${app.isPluginUploaded()}">
+        <j:if test="${app.pluginManager.isPluginUploaded()}">
           <div style="margin: 1em; height: 1em">
             <div class="error">
               ${%New plugins will take effect once you restart Hudson}

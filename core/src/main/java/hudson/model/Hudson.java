@@ -273,13 +273,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     private int slaveAgentPort =0;
 
     /**
-     * Once plugin is uploaded, this flag becomes true.
-     * This is used to report a message that Hudson needs to be restarted
-     * for new plugins to take effect.
-     */
-    private transient boolean pluginUploaded =false;
-
-    /**
      * All labels known to Hudson. This allows us to reuse the same label instances
      * as much as possible, even though that's not a strict requirement.
      */
@@ -1897,39 +1890,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 }
             }
         }.start();
-    }
-
-    public boolean isPluginUploaded() {
-        return pluginUploaded;
-    }
-
-    /**
-     * Uploads a plugin.
-     */
-    public void doUploadPlugin( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        try {
-            checkPermission(ADMINISTER);
-
-            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
-
-            // Parse the request
-            FileItem fileItem = (FileItem) upload.parseRequest(req).get(0);
-            String fileName = Util.getFileName(fileItem.getName());
-            if(!fileName.endsWith(".hpi")) {
-                sendError(Messages.Hudson_NotAPlugin(fileName),req,rsp);
-                return;
-            }
-            fileItem.write(new File(getPluginManager().rootDir, fileName));
-            fileItem.delete();
-
-            pluginUploaded=true;
-
-            rsp.sendRedirect2("managePlugins");
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {// grrr. fileItem.write throws this
-            throw new ServletException(e);
-        }
     }
 
     /**
