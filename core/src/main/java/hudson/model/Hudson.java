@@ -14,6 +14,7 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
+import hudson.ProxyConfiguration;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.model.Descriptor.FormException;
@@ -102,6 +103,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.net.Proxy;
 import java.security.SecureRandom;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -300,6 +302,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     private transient final UpdateCenter updateCenter = new UpdateCenter();
 
+    /**
+     * HTTP proxy configuration.
+     */
+    public transient volatile ProxyConfiguration proxy;
+
+
     public Hudson(File root, ServletContext context) throws IOException {
         this.root = root;
         this.servletContext = context;
@@ -326,6 +334,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             sr.nextBytes(random);
             secretKey = Util.toHexString(random);
             secretFile.write(secretKey);
+        }
+
+        try {
+            proxy = ProxyConfiguration.load();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to load proxy configuration", e);
         }
 
         // load plugins.
@@ -366,6 +380,16 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     @Exported
     public int getSlaveAgentPort() {
         return slaveAgentPort;
+    }
+
+    /**
+     * Obtains the {@link Proxy} instance to talk to other HTTP servers.
+     */
+    public Proxy createProxy() {
+        if(proxy==null)
+            return Proxy.NO_PROXY;
+        else
+            return proxy.createProxy();
     }
 
     /**

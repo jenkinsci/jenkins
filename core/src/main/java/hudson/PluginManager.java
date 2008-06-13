@@ -186,17 +186,16 @@ public final class PluginManager extends AbstractModelObject {
     }
 
     public void doProxyConfigure(@QueryParameter("proxy.server") String server, @QueryParameter("proxy.port") String port, StaplerResponse rsp) throws IOException {
-        setProp("http.proxyHost", Util.fixEmptyAndTrim(server));
-        setProp("http.proxyPort",Util.fixEmptyAndTrim(port));
-        setProp("https.proxyHost", Util.fixEmptyAndTrim(server));
-        setProp("https.proxyPort",Util.fixEmptyAndTrim(port));
+        Hudson hudson = Hudson.getInstance();
+        server = Util.fixEmptyAndTrim(server);
+        if(server==null) {
+            hudson.proxy = null;
+            ProxyConfiguration.getXmlFile().delete();
+        } else {
+            hudson.proxy = new ProxyConfiguration(server,Integer.parseInt(Util.fixEmptyAndTrim(port)));
+            hudson.proxy.save();
+        }
         rsp.sendRedirect("./advanced");
-    }
-
-    private void setProp(String key, String value) {
-        // System.setProperty causes NPE if t he value is null.
-        if(value==null) System.getProperties().remove(key);
-        else        System.setProperty(key,value);
     }
 
     /**

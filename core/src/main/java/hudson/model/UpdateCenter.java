@@ -364,7 +364,7 @@ public class UpdateCenter implements ModelObject {
         }
 
         private void testConnection(URL url) throws IOException {
-            InputStream in = url.openStream();
+            InputStream in = url.openConnection(Hudson.getInstance().createProxy()).getInputStream();
             IOUtils.copy(in,new ByteArrayOutputStream());
             in.close();
         }
@@ -404,7 +404,7 @@ public class UpdateCenter implements ModelObject {
 
                 // In the future if we are to open up update center to 3rd party, we need more elaborate scheme
                 // like signing to ensure the safety of the bits.
-                URLConnection con = new URL(plugin.url).openConnection();
+                URLConnection con = new URL(plugin.url).openConnection(Hudson.getInstance().createProxy());
                 int total = con.getContentLength();
                 CountingInputStream in = new CountingInputStream(con.getInputStream());
                 byte[] buf = new byte[8192];
