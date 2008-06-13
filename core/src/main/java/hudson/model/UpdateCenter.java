@@ -46,6 +46,9 @@ import java.util.logging.Logger;
  * @since 1.220
  */
 public class UpdateCenter implements ModelObject {
+    /**
+     * What's the time stamp of data file?
+     */
     private long dataTimestamp = -1;
 
     /**
@@ -79,6 +82,8 @@ public class UpdateCenter implements ModelObject {
      * Returns true if it's time for us to check for new version.
      */
     public boolean isDue() {
+        if(dataTimestamp==-1)
+            dataTimestamp = getDataFile().file.lastModified();
         long now = System.currentTimeMillis();
         boolean due = now - dataTimestamp > DAY && now - lastAttempt > 15000;
         if(due)     lastAttempt = now;

@@ -16,7 +16,7 @@ import java.io.StringWriter;
  * @author Kohsuke Kawaguchi
  */
 public class TextFile {
-    private final File file;
+    public final File file;
 
     public TextFile(File file) {
         this.file = file;
