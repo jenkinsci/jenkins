@@ -33,10 +33,6 @@ public class WebSVN extends SubversionRepositoryBrowser {
             public String getDisplayName() {
                 return "WebSVN";
             }
-
-            public WebSVN newInstance(StaplerRequest req) throws FormException {
-                return req.bindParameters(WebSVN.class, "websvn.");
-            }
         };
 
 

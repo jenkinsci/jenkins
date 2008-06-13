@@ -98,11 +98,6 @@ public final class FishEyeCVS extends CVSRepositoryBrowser {
             }.process();
         }
 
-        @Override
-        public FishEyeCVS newInstance(StaplerRequest req) throws FormException {
-            return req.bindParameters(FishEyeCVS.class, "fisheye.cvs.");
-        }
-
         private static final Pattern URL_PATTERN = Pattern.compile(".+/browse/[^/]+/");
 
     }

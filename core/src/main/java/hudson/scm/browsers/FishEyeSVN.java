@@ -143,10 +143,6 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
             }.process();
         }
 
-        public FishEyeSVN newInstance(StaplerRequest req) throws FormException {
-            return req.bindParameters(FishEyeSVN.class,"fisheye.svn.");
-        }
-
         private static final Pattern URL_PATTERN = Pattern.compile(".+/browse/[^/]+/");
     }
 

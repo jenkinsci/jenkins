@@ -73,9 +73,5 @@ public class ViewSVN extends SubversionRepositoryBrowser {
         public String getDisplayName() {
             return "ViewSVN";
         }
-
-        public ViewSVN newInstance(StaplerRequest req) throws FormException {
-            return req.bindParameters(ViewSVN.class,"viewsvn.");
-        }
     }
 }

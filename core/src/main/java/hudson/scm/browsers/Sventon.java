@@ -140,11 +140,6 @@ public class Sventon extends SubversionRepositoryBrowser {
                 }
             }.process();
         }
-
-        public Sventon newInstance(StaplerRequest req) throws FormException {
-            return req.bindParameters(Sventon.class,"sventon.svn.");
-        }
-
     }
 
     private static final long serialVersionUID = 1L;

@@ -64,10 +64,6 @@ public final class ViewCVS extends CVSRepositoryBrowser {
         public String getDisplayName() {
             return "ViewCVS";
         }
-
-        public ViewCVS newInstance(StaplerRequest req) throws FormException {
-            return req.bindParameters(ViewCVS.class,"viewcvs.");
-        }
     };
 
     private static final long serialVersionUID = 1L;
