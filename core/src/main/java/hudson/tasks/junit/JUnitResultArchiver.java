@@ -17,6 +17,7 @@ import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.FormFieldValidator;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -36,9 +37,10 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
      * {@link FileSet} "includes" string, like "foo/bar/*.xml"
      */
     private final String testResults;
-
-    public JUnitResultArchiver(String testResults) {
-        this.testResults = testResults;
+    
+    @DataBoundConstructor
+    public JUnitResultArchiver(String junitreport_includes) {
+        this.testResults = junitreport_includes;
     }
 
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -125,10 +127,6 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
          */
         public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             new FormFieldValidator.WorkspaceFileMask(req,rsp).process();
-        }
-
-        public Publisher newInstance(StaplerRequest req) {
-            return new JUnitResultArchiver(req.getParameter("junitreport_includes"));
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
