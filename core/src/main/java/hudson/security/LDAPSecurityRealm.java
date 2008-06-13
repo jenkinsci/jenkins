@@ -239,7 +239,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
                             props.put(Context.SECURITY_PRINCIPAL,managerDN);
                         }
                         if(managerPassword!=null && managerPassword.trim().length() > 0 && !"undefined".equals(managerPassword)) {
-                            props.put(Context.SECURITY_PRINCIPAL,managerPassword);
+                            props.put(Context.SECURITY_CREDENTIALS,managerPassword);
                         }
                         DirContext ctx = LdapCtxFactory.getLdapCtxInstance("ldap://"+server+'/', props);
                         ctx.getAttributes("");
