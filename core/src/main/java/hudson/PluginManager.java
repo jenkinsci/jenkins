@@ -173,6 +173,8 @@ public final class PluginManager extends AbstractModelObject {
     public void doProxyConfigure(@QueryParameter("proxy.server") String server, @QueryParameter("proxy.port") String port, StaplerResponse rsp) throws IOException {
         setProp("http.proxyHost", Util.fixEmptyAndTrim(server));
         setProp("http.proxyPort",Util.fixEmptyAndTrim(port));
+        setProp("https.proxyHost", Util.fixEmptyAndTrim(server));
+        setProp("https.proxyPort",Util.fixEmptyAndTrim(port));
         rsp.sendRedirect("./advanced");
     }
 
