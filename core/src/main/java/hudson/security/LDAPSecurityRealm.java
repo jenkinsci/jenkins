@@ -259,8 +259,6 @@ public class LDAPSecurityRealm extends SecurityRealm {
                                 port = Integer.parseInt(m.group(2));
                             Socket s = new Socket(adrs,port);
                             s.close();
-                        } catch (NumberFormatException x) {
-                            // impossible, because of the regexp
                         } catch (UnknownHostException x) {
                             error("Unknown host: "+x.getMessage());
                             return;
