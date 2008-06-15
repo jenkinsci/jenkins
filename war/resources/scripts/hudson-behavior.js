@@ -1290,6 +1290,7 @@ var DragDrop = function(id, sGroup, config) {
 var updateCenter = {
     postBackURL : null,
     version: "?",
+    completionHandler: null,
 
     checkUpdates : function() {
         var s = document.createElement("script");
@@ -1300,7 +1301,11 @@ var updateCenter = {
     post : function(data) {
         new Ajax.Request(updateCenter.postBackURL, {
             method:"post",
-            parameters:{json:Object.toJSON(data)}
+            parameters:{json:Object.toJSON(data)},
+            onSuccess: function() {
+                if(updateCenter.completionHandler!=null)
+                    updateCenter.completionHandler();
+            }
         });
     }
 };

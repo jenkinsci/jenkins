@@ -1,0 +1,23 @@
+<!--
+  Forcibly check updates
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="Update Center" permission="${app.ADMINISTER}" forcedUpdateCheck="true" norefresh="true">
+  <st:include page="sidepanel.jelly"/>
+  <l:main-panel>
+    <table style="width:100%; height:100%;">
+      <tr>
+        <td style="vertical-align: middle; text-align:center">
+          <h3>Checking Updates... <span id="completionMarker" /></h3>
+          <a href=".">Go back to update center</a>
+        </td>
+      </tr>
+    </table>
+    <script>
+      updateCenter.completionHandler = function() {
+          $('completionMarker').innerHTML = "Done";
+      }
+    </script>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

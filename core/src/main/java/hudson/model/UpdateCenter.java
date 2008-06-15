@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.Functions;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.Util;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.TextFile;
 import static hudson.util.TimeUnit2.DAYS;
@@ -100,6 +101,14 @@ public class UpdateCenter implements ModelObject {
         synchronized (jobs) {
             return new ArrayList<UpdateCenterJob>(jobs);
         }
+    }
+
+    /**
+     * Gets the string representing how long ago the data was obtained.
+     */
+    public String getLastUpdatedString() {
+        if(dataTimestamp<0)     return "N/A";
+        return Util.getPastTimeString(System.currentTimeMillis()-dataTimestamp);
     }
 
     /**

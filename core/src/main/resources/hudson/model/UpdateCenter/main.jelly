@@ -6,7 +6,7 @@
   This file is pulled into the layout.jelly
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:if test="${it.due}">
+  <j:if test="${it.due or forcedUpdateCheck}">
     <script>
       updateCenter.postBackURL = "${rootURL}/updateCenter/postBack";
       updateCenter.version = "${h.version}"; 

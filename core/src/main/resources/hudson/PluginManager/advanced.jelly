@@ -41,10 +41,15 @@
               <f:submit value="${%Upload}" />
             </f:block>
           </f:form>
-
         </td>
       </tr>
     </local:tabBar>
+    <div align="right" style="margin-top:1em">
+      <form method="post" action="checkUpdates">
+        ${%lastUpdated(app.updateCenter.lastUpdatedString)}
+        <f:submit value="${%Check now}" />
+      </form>
+    </div>
   </l:main-panel>
 </l:layout>
 </j:jelly>
