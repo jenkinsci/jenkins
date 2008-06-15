@@ -3,10 +3,12 @@
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <div style="float:right; background-color:white; z-index: 1; position:relative; margin-left: 1em">
-        <l:isAdmin>
+        <j:if test="${h.hasPermission(it.UPDATE)}">
           <st:include page="logKeep.jelly" />
+        </j:if>
+        <j:if test="${h.hasPermission(it.DELETE)}">
           <st:include page="delete.jelly" />
-        </l:isAdmin>
+        </j:if>
         <div style="margin-top:1em">
           ${%startedAgo(it.timestampString)}
           </div><div>
