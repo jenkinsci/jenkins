@@ -10,28 +10,22 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.management.timer.Timer;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.ref.WeakReference;
-import java.util.Map.Entry;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Build queue.
- *
- * <p>
+ * <p/>
+ * <p/>
  * This class implements the core scheduling logic. {@link Task} represents the executable
  * task that are placed in the queue. While in the queue, it's wrapped into {@link Item}
  * so that we can keep track of additional data used for deciding what to exeucte when.
- *
- * <p>
+ * <p/>
+ * <p/>
  * Items in queue goes through several stages, as depicted below:
  * <pre>
  * (enter) --> waitingList --+--> blockedProjects
@@ -40,8 +34,8 @@ import java.util.logging.Logger;
  *                           |        v
  *                           +--> buildables ---> (executed)
  * </pre>
- *
- * <p>
+ * <p/>
+ * <p/>
  * In addition, at any stage, an item can be removed from the queue (for example, when the user
  * cancels a job in the queue.) See the corresponding field for their exact meanings.
  *
@@ -50,8 +44,8 @@ import java.util.logging.Logger;
 public class Queue extends ResourceController {
     /**
      * Items that are waiting for its quiet period to pass.
-     *
-     * <p>
+     * <p/>
+     * <p/>
      * This consists of {@link Item}s that cannot be run yet
      * because its time has not yet come.
      */
@@ -62,29 +56,29 @@ public class Queue extends ResourceController {
      * but blocked because another build is in progress,
      * required {@link Resource}s are not available, or otherwise blocked
      * by {@link Task#isBuildBlocked()}.
-     *
-     * <p>
+     * <p/>
+     * <p/>
      * Conceptually a set of {@link BlockedItem}, but we often need to look up
      * {@link BlockedItem} from {@link Task}, so organized as a map.
      */
-    private final Map<Task,BlockedItem> blockedProjects = new HashMap<Task,BlockedItem>();
+    private final Map<Task, BlockedItem> blockedProjects = new HashMap<Task, BlockedItem>();
 
     /**
      * {@link Project}s that can be built immediately
      * that are waiting for available {@link Executor}.
-     *
-     * <p>
+     * <p/>
+     * <p/>
      * Conceptually, this is a list of {@link BuildableItem} (FIFO list, not a set, so that
      * the item doesn't starve in the queue), but we often need to look up
      * {@link BuildableItem} from {@link Task}, so organized as a {@link LinkedHashMap}.
      */
-    private final LinkedHashMap<Task,BuildableItem> buildables = new LinkedHashMap<Task,BuildableItem>();
+    private final LinkedHashMap<Task, BuildableItem> buildables = new LinkedHashMap<Task, BuildableItem>();
 
     /**
      * Data structure created for each idle {@link Executor}.
      * This is an offer from the queue to an executor.
-     *
-     * <p>
+     * <p/>
+     * <p/>
      * It eventually receives a {@link #item} to build.
      */
     private static class JobOffer {
@@ -124,6 +118,9 @@ public class Queue extends ResourceController {
         }
     }
 
+    /**
+     * The executors that are currently parked while waiting for a job to run.
+     */
     private final Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
 
     public Queue() {
@@ -190,8 +187,8 @@ public class Queue extends ResourceController {
 
     /**
      * Schedules a new build with a custom quiet period.
-     *
-     * <p>
+     * <p/>
+     * <p/>
      * Left for backward compatibility with &lt;1.114.
      *
      * @since 1.105
@@ -228,7 +225,7 @@ public class Queue extends ResourceController {
             LOGGER.fine(p.getName() + " added to queue");
 
             // put the item in the queue
-            waitingList.add(new WaitingItem(due,p));
+            waitingList.add(new WaitingItem(due, p));
 
         }
         scheduleMaintenance();   // let an executor know that a new item is in the queue.
@@ -251,7 +248,7 @@ public class Queue extends ResourceController {
             }
         }
         // use bitwise-OR to make sure that both branches get evaluated all the time
-        return blockedProjects.remove(p)!=null | buildables.remove(p)!=null;
+        return blockedProjects.remove(p) != null | buildables.remove(p) != null;
     }
 
     public synchronized boolean isEmpty() {
@@ -297,10 +294,10 @@ public class Queue extends ResourceController {
      */
     public synchronized Item getItem(Task t) {
         BlockedItem bp = blockedProjects.get(t);
-        if (bp!=null)
+        if (bp != null)
             return bp;
         BuildableItem bi = buildables.get(t);
-        if(bi!=null)
+        if (bi != null)
             return bi;
 
         for (Item item : waitingList) {
@@ -334,7 +331,7 @@ public class Queue extends ResourceController {
 
     /**
      * Called by the executor to fetch something to build next.
-     * <p>
+     * <p/>
      * This method blocks until a next project becomes buildable.
      */
     public Task pop() throws InterruptedException {
@@ -363,7 +360,7 @@ public class Queue extends ResourceController {
                         // one last check to make sure this build is not blocked.
                         if (isBuildBlocked(p.task)) {
                             itr.remove();
-                            blockedProjects.put(p.task,new BlockedItem(p));
+                            blockedProjects.put(p.task, new BlockedItem(p));
                             continue;
                         }
 
@@ -423,7 +420,7 @@ public class Queue extends ResourceController {
                     // someone else can schedule this build again,
                     // so check the contains method first.
                     if (!contains(offer.item.task))
-                        buildables.put(offer.item.task,offer.item);
+                        buildables.put(offer.item.task, offer.item);
                 }
 
                 // since this executor might have been chosen for
@@ -468,7 +465,7 @@ public class Queue extends ResourceController {
             for (JobOffer offer : parked.values()) {
                 if (offer.isAvailable() && offer.getNode() == n) {
                     if (isLargeHudson && offer.getNode() instanceof Slave)
-                        // but if we are a large Hudson, then we really do want to keep the master free from builds 
+                        // but if we are a large Hudson, then we really do want to keep the master free from builds
                         continue;
                     return offer;
                 }
@@ -500,10 +497,10 @@ public class Queue extends ResourceController {
 
     /**
      * Checks the queue and runs anything that can be run.
-     *
-     * <p>
+     * <p/>
+     * <p/>
      * When conditions are changed, this method should be invoked.
-     * <p>
+     * <p/>
      * This wakes up one {@link Executor} so that it will maintain a queue.
      */
     public synchronized void scheduleMaintenance() {
@@ -528,7 +525,7 @@ public class Queue extends ResourceController {
 
     /**
      * Queue maintenance.
-     * <p>
+     * <p/>
      * Move projects between {@link #waitingList}, {@link #blockedProjects}, and {@link #buildables}
      * appropriately.
      */
@@ -543,7 +540,7 @@ public class Queue extends ResourceController {
                 // ready to be executed
                 LOGGER.fine(p.task.getName() + " no longer blocked");
                 itr.remove();
-                buildables.put(p.task,new BuildableItem(p));
+                buildables.put(p.task, new BuildableItem(p));
             }
         }
 
@@ -558,20 +555,20 @@ public class Queue extends ResourceController {
                 // ready to be executed immediately
                 waitingList.remove(top);
                 LOGGER.fine(p.getName() + " ready to build");
-                buildables.put(p,new BuildableItem(top));
+                buildables.put(p, new BuildableItem(top));
             } else {
                 // this can't be built now because another build is in progress
                 // set this project aside.
                 waitingList.remove(top);
                 LOGGER.fine(p.getName() + " is blocked");
-                blockedProjects.put(p,new BlockedItem(top));
+                blockedProjects.put(p, new BlockedItem(top));
             }
         }
     }
 
     /**
      * Task whose execution is controlled by the queue.
-     * <p>
+     * <p/>
      * {@link #equals(Object) Value equality} of {@link Task}s is used
      * to collapse two tasks into one. This is used to avoid infinite
      * queue backlog.
@@ -594,8 +591,8 @@ public class Queue extends ResourceController {
         /**
          * Returns true if the execution should be blocked
          * for temporary reasons.
-         *
-         * <p>
+         * <p/>
+         * <p/>
          * This can be used to define mutual exclusion that goes beyond
          * {@link #getResourceList()}.
          */
@@ -678,7 +675,9 @@ public class Queue extends ResourceController {
          * by {@link Task#isBuildBlocked()}.
          */
         @Exported
-        public boolean isBlocked() { return this instanceof BlockedItem; }
+        public boolean isBlocked() {
+            return this instanceof BlockedItem;
+        }
 
         /**
          * Build is waiting the executor to become available.
@@ -686,7 +685,9 @@ public class Queue extends ResourceController {
          * 'pseudo' items that are actually not really in the queue.
          */
         @Exported
-        public boolean isBuildable() { return this instanceof BuildableItem; }
+        public boolean isBuildable() {
+            return this instanceof BuildableItem;
+        }
 
         protected Item(Task project) {
             this.task = project;
