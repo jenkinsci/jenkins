@@ -413,7 +413,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     public PluginManager getPluginManager() {
         return pluginManager;
     }
-    
+
     public UpdateCenter getUpdateCenter() {
         return updateCenter;
     }
@@ -1379,6 +1379,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         for( Computer c : computers.values() ) {
             c.interrupt();
             c.kill();
+            c.disconnect();
         }
         ExternalJob.reloadThread.interrupt();
         Trigger.timer.cancel();
@@ -2164,7 +2165,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * If the parameter "value" is not set then the parameter "errorText" is displayed
      * as an error text. If the parameter "errorText" is not set, then the parameter "warningText" is
      * displayed as a warning text.
-     * <p/> 
+     * <p/>
      * If the text is set and the parameter "type" is set, it will validate that the value is of the
      * correct type. Supported types are "number, "number-positive" and "number-negative".
      * @param req containing the parameter value and the errorText to display if the value isnt set
@@ -2174,7 +2175,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     public void doFieldCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         new FormFieldValidator(req, rsp, false) {
-            
+
             /**
              * Display the error text or warning text.
              */
@@ -2190,9 +2191,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                     return;
                 }
                 error("No error or warning text was set for fieldCheck().");
-                return;                
+                return;
             }
-            
+
             /**
              * Checks if the value is of the correct type.
              * @param type the type of string
@@ -2202,7 +2203,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             private boolean checkType(String type, String value) throws IOException, ServletException {
                 try {
                     if (type.equalsIgnoreCase("number")) {
-                        NumberFormat.getInstance().parse(value);                            
+                        NumberFormat.getInstance().parse(value);
                     } else if (type.equalsIgnoreCase("number-positive")) {
                         if (NumberFormat.getInstance().parse(value).floatValue() <= 0) {
                             error(Messages.Hudson_NotAPositiveNumber());
@@ -2220,7 +2221,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 }
                 return true;
             }
-            
+
             @Override
             protected void check() throws IOException, ServletException {
                 String value = fixEmpty(request.getParameter("value"));
