@@ -16,6 +16,7 @@ import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RunList;
+import hudson.util.ExceptionCatchingThreadFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -386,7 +387,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
         return RemotingDiagnostics.getThreadDump(getChannel());
     }
 
-    public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new DaemonThreadFactory());
+    public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new DaemonThreadFactory()));
 
 //
 //
