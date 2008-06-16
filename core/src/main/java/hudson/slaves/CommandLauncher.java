@@ -55,6 +55,7 @@ public class CommandLauncher extends ComputerLauncher {
         return String.format("[%1$tD %1$tT]", new Date());
     }
 
+    @Override
     public void launch(SlaveComputer computer, final StreamTaskListener listener) {
         EnvVars _cookie = null;
         Process _proc = null;
