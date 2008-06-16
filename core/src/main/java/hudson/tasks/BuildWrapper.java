@@ -7,6 +7,8 @@ import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Project;
+import hudson.model.Action;
+import hudson.model.AbstractProject;
 
 import java.io.IOException;
 import java.util.Map;
@@ -132,5 +134,18 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
      */
     public Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
         throw new UnsupportedOperationException(getClass()+" needs to implement the setUp method");
+    }
+
+    /**
+     * {@link Action} to be displayed in the job page.
+     *
+     * @param job
+     *      This object owns the {@link BuildWrapper}. The returned action will be added to this object.
+     * @return
+     *      null if there's no such action.
+     * @since 1.226
+     */
+    public Action getProjectAction(AbstractProject job) {
+        return null;
     }
 }

@@ -166,6 +166,11 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
                 if(a!=null)
                     transientActions.add(a);
             }
+            for (BuildWrapper step : buildWrappers) {
+                Action a = step.getProjectAction(this);
+                if(a!=null)
+                    transientActions.add(a);
+            }
             for (Trigger trigger : triggers) {
                 Action a = trigger.getProjectAction();
                 if(a!=null)
