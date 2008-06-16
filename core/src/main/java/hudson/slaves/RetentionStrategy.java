@@ -2,16 +2,18 @@ package hudson.slaves;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
- *
+ * <p/>
  * <b>EXPERIMENTAL: SIGNATURE MAY CHANGE IN FUTURE RELEASES</b>
  *
  * @author Stephen Connolly
@@ -48,7 +50,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
     };
 
     /**
-     * Convenient singleton instance, sine this {@link RetentionStrategy} is stateless.
+     * Convenient singleton instance, since this {@link RetentionStrategy} is stateless.
      */
     public static final Always INSTANCE = new Always();
 
@@ -151,7 +153,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         public synchronized long check(SlaveComputer c) {
             if (c.isOffline()) {
                 final long demandMilliseconds = System.currentTimeMillis() - c.getDemandStartMilliseconds();
-                if (demandMilliseconds > inDemandDelay*1000*60 /*MINS->MILLIS*/) {
+                if (demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/) {
                     // we've been in demand for long enough
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getNode().getNodeName(), Util.getTimeSpanString(demandMilliseconds)});
@@ -160,7 +162,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
-                if (idleMilliseconds > idleDelay*1000*60 /*MINS->MILLIS*/) {
+                if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
                     // we've been idle for long enough
                     logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
                             new Object[]{c.getNode().getNodeName(), Util.getTimeSpanString(idleMilliseconds)});
