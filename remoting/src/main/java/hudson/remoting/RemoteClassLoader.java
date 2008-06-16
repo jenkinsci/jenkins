@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,8 +27,8 @@ final class RemoteClassLoader extends ClassLoader {
      */
     private final Channel channel;
 
-    private final Map<String,URL> resourceMap = new HashMap<String,URL>();
-    private final Map<String,Vector<URL>> resourcesMap = new HashMap<String,Vector<URL>>();
+    private final Map<String,File> resourceMap = new HashMap<String,File>();
+    private final Map<String,Vector<File>> resourcesMap = new HashMap<String,Vector<File>>();
 
     public static ClassLoader create(ClassLoader parent, IClassLoader proxy) {
         if(proxy instanceof ClassLoaderProxy) {
@@ -54,10 +55,16 @@ final class RemoteClassLoader extends ClassLoader {
     }
 
     protected URL findResource(String name) {
-        if(resourceMap.containsKey(name))
-            return resourceMap.get(name);
-
         try {
+            if(resourceMap.containsKey(name)) {
+                File f = resourceMap.get(name);
+                if(f==null) return null;    // no such resource
+                if(f.exists())
+                    // be defensive against external factors that might have deleted this file, since we use /tmp
+                    // see http://www.nabble.com/Surefire-reports-tt17554215.html
+                    return f.toURL();
+            }
+
             long startTime = System.nanoTime();
             byte[] image = proxy.getResource(name);
             channel.resourceLoadingTime.addAndGet(System.nanoTime()-startTime);
@@ -67,33 +74,45 @@ final class RemoteClassLoader extends ClassLoader {
                 return null;
             }
     
-            URL url = makeResource(name, image);
-            resourceMap.put(name,url);
-            return url;
+            File res = makeResource(name, image);
+            resourceMap.put(name,res);
+            return res.toURL();
         } catch (IOException e) {
             throw new Error("Unable to load resource "+name,e);
         }
     }
 
+    private static Vector<URL> toURLs(Vector<File> files) throws MalformedURLException {
+        Vector<URL> r = new Vector<URL>(files.size());
+        for (File f : files) {
+            if(!f.exists()) return null;    // abort
+            r.add(f.toURL());
+        }
+        return r;
+    }
+
     protected Enumeration<URL> findResources(String name) throws IOException {
-        Vector<URL> urls = resourcesMap.get(name);
-        if(urls!=null)
-            return urls.elements();
+        Vector<File> files = resourcesMap.get(name);
+        if(files!=null) {
+            Vector<URL> urls = toURLs(files);
+            if(urls!=null)
+                return urls.elements();
+        }
 
         long startTime = System.nanoTime();
         byte[][] images = proxy.getResources(name);
         channel.resourceLoadingTime.addAndGet(System.nanoTime()-startTime);
         channel.resourceLoadingCount.incrementAndGet();
 
-        urls = new Vector<URL>();
+        files = new Vector<File>();
         for( byte[] image: images )
-            urls.add(makeResource(name,image));
-        resourcesMap.put(name,urls);
+            files.add(makeResource(name,image));
+        resourcesMap.put(name,files);
 
-        return urls.elements();
+        return toURLs(files).elements();
     }
 
-    private URL makeResource(String name, byte[] image) throws IOException {
+    private File makeResource(String name, byte[] image) throws IOException {
         int idx = name.lastIndexOf('/');
         File f = File.createTempFile("hudson-remoting","."+name.substring(idx+1));
         FileOutputStream fos = new FileOutputStream(f);
@@ -101,7 +120,7 @@ final class RemoteClassLoader extends ClassLoader {
         fos.close();
         f.deleteOnExit();
 
-        return f.toURL();
+        return f;
     }
 
     /**
