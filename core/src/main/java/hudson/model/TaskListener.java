@@ -11,6 +11,11 @@ import java.util.Formatter;
  * Receives events that happen during some task execution,
  * such as a build or SCM change polling.
  *
+ * <p>
+ * This interface is implemented by Hudson core and passed to extension points so that
+ * they can record the progress of the build without really knowing how those information
+ * and handled/stored by Hudson.
+ *
  * @author Kohsuke Kawaguchi
  */
 public interface TaskListener {
