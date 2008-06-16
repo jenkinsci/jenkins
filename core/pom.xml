@@ -265,7 +265,7 @@
     <dependency>
       <groupId>org.jvnet.hudson.svnkit</groupId>
       <artifactId>svnkit</artifactId>
-      <version>1.1.6-hudson-3</version>
+      <version>1.1.7-hudson-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>

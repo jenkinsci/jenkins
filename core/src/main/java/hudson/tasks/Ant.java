@@ -211,7 +211,15 @@ public class Ant extends Builder {
 
     private FilePath buildFilePath(FilePath base) {
         if(buildFile!=null)     return base.child(buildFile);
-        else                    return base.child("build.xml");
+        // some users specify the -f option in the targets field, so take that into account as well.
+        // see 
+        String[] tokens = Util.tokenize(targets);
+        for (int i = 0; i<tokens.length-1; i++) {
+            String a = tokens[i];
+            if(a.equals("-f") || a.equals("-file") || a.equals("-buildfile"))
+                return base.child(tokens[i+1]);
+        }
+        return base.child("build.xml");
     }
 
     public Descriptor<Builder> getDescriptor() {
