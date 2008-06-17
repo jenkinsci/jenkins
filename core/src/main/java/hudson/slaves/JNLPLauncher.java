@@ -30,7 +30,7 @@ public class JNLPLauncher extends ComputerLauncher {
 
     public static final Descriptor<ComputerLauncher> DESCRIPTOR = new Descriptor<ComputerLauncher>(JNLPLauncher.class) {
         public String getDisplayName() {
-            return "Launch slave agents via JNLP";
+            return Messages.JNLPLauncher.displayName();
         }
     };
 
