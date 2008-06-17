@@ -2,7 +2,6 @@ package hudson.slaves;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.model.Descriptor;
-import hudson.model.Messages;
 import hudson.util.StreamTaskListener;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
@@ -44,7 +43,7 @@ public class CommandLauncher extends ComputerLauncher {
 
     public static final Descriptor<ComputerLauncher> DESCRIPTOR = new Descriptor<ComputerLauncher>(CommandLauncher.class) {
         public String getDisplayName() {
-            return "Launch slave via execution of command on the Master";
+            return Messages.CommandLauncher_displayName();
         }
     };
 
@@ -60,7 +59,7 @@ public class CommandLauncher extends ComputerLauncher {
         EnvVars _cookie = null;
         Process _proc = null;
         try {
-            listener.getLogger().println(Messages.Slave_Launching(getTimestamp()));
+            listener.getLogger().println(hudson.model.Messages.Slave_Launching(getTimestamp()));
             listener.getLogger().println("$ " + getCommand());
 
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
@@ -77,7 +76,7 @@ public class CommandLauncher extends ComputerLauncher {
                 public void onClosed(Channel channel, IOException cause) {
                     if (cause != null) {
                         cause.printStackTrace(
-                            listener.error(Messages.Slave_Terminated(getTimestamp())));
+                            listener.error(hudson.model.Messages.Slave_Terminated(getTimestamp())));
                     }
                     ProcessTreeKiller.get().kill(proc, cookie);
                 }
@@ -99,7 +98,7 @@ public class CommandLauncher extends ComputerLauncher {
             } else {
                 msg = " : " + msg;
             }
-            msg = Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
+            msg = hudson.model.Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
             LOGGER.log(Level.SEVERE, msg, e);
             e.printStackTrace(listener.error(msg));
 
