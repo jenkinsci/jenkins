@@ -61,7 +61,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class Computer extends AbstractModelObject implements AccessControlled {
+public abstract class Computer extends AbstractModelObject implements AccessControlled, ExecutorListener {
 
 	private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
 
@@ -147,6 +147,27 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
         if(nodeName==null)
             return Hudson.getInstance();
         return Hudson.getInstance().getSlave(nodeName);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void taskAccepted(Executor executor, Queue.Task task) {
+        // dummy implementation
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
+        // dummy implementation
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
+        // dummy implementation
     }
 
     @Exported

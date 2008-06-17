@@ -1,10 +1,6 @@
 package hudson.slaves;
 
-import hudson.model.Computer;
-import hudson.model.Hudson;
-import hudson.model.Slave;
-import hudson.model.Messages;
-import hudson.model.Node;
+import hudson.model.*;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import hudson.remoting.VirtualChannel;
@@ -106,6 +102,49 @@ public final class SlaveComputer extends Computer {
                 launcher.launch(SlaveComputer.this, new StreamTaskListener(openLogFile()));
             }
         });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void taskAccepted(Executor executor, Queue.Task task) {
+        super.taskAccepted(executor, task);
+        if (launcher instanceof ExecutorListener) {
+            ((ExecutorListener)launcher).taskAccepted(executor, task);
+        }
+        if (getNode().getRetentionStrategy() instanceof ExecutorListener) {
+            ((ExecutorListener)getNode().getRetentionStrategy()).taskAccepted(executor, task);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
+        super.taskCompleted(executor, task, durationMS);
+        if (launcher instanceof ExecutorListener) {
+            ((ExecutorListener)launcher).taskCompleted(executor, task, durationMS);
+        }
+        if (getNode().getRetentionStrategy() instanceof ExecutorListener) {
+            ((ExecutorListener)getNode().getRetentionStrategy()).taskCompleted(executor, task, durationMS);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
+        super.taskCompletedWithProblems(executor, task, durationMS, problems);
+        if (launcher instanceof ExecutorListener) {
+            ((ExecutorListener)launcher).taskCompletedWithProblems(executor, task, durationMS, problems);
+        }
+        if (getNode().getRetentionStrategy() instanceof ExecutorListener) {
+            ((ExecutorListener)getNode().getRetentionStrategy()).taskCompletedWithProblems(executor, task, durationMS,
+                    problems);
+        }
     }
 
     public OutputStream openLogFile() {
