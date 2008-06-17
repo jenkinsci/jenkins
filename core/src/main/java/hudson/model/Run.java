@@ -9,26 +9,26 @@ import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
-import hudson.security.AccessControlled;
-import hudson.security.Permission;
-import hudson.security.PermissionGroup;
-import hudson.security.ACL;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
 import hudson.search.SearchIndexBuilder;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
 import hudson.tasks.BuildStep;
-import hudson.tasks.LogRotator;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.LogRotator;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
 import hudson.util.XStream2;
-import org.kohsuke.stapler.framework.io.LargeText;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.framework.io.LargeText;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -40,22 +40,21 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Locale;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -98,7 +97,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * When the build is scheduled.
      */
-    protected transient final Calendar timestamp;
+    protected transient final long timestamp;
 
     /**
      * The build result.
@@ -161,6 +160,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * an arbitrary state.
      */
     protected Run(JobT job, Calendar timestamp) {
+        this(job,timestamp.getTimeInMillis());
+    }
+
+    protected Run(JobT job, long timestamp) {
         this.project = job;
         this.timestamp = timestamp;
         this.state = State.NOT_STARTED;
@@ -170,19 +173,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Loads a run from a log file.
      */
     protected Run(JobT project, File buildDir) throws IOException {
-        this(project, new GregorianCalendar());
-        try {
-            this.timestamp.setTime(ID_FORMATTER.parse(buildDir.getName()));
-        } catch (ParseException e) {
-            throw new IOException2("Invalid directory name "+buildDir,e);
-        } catch (NumberFormatException e) {
-            throw new IOException2("Invalid directory name "+buildDir,e);
-        }
+        this(project, parseTimestampFromBuildDir(buildDir));
         this.state = State.COMPLETED;
         this.result = Result.FAILURE;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
         getDataFile().unmarshal(this); // load the rest of the data
     }
 
+    private static long parseTimestampFromBuildDir(File buildDir) throws IOException {
+        try {
+            return ID_FORMATTER.parse(buildDir.getName()).getTime();
+        } catch (ParseException e) {
+            throw new IOException2("Invalid directory name "+buildDir,e);
+        } catch (NumberFormatException e) {
+            throw new IOException2("Invalid directory name "+buildDir,e);
+        }
+    }
 
     /**
      * Ordering based on build numbers.
@@ -314,7 +319,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Exported
     public Calendar getTimestamp() {
-        return (Calendar)timestamp.clone();
+        GregorianCalendar c = new GregorianCalendar();
+        c.setTimeInMillis(timestamp);
+        return c;
     }
 
     @Exported
@@ -354,7 +361,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *      string like "3 minutes" "1 day" etc.
      */
     public String getTimestampString() {
-        long duration = new GregorianCalendar().getTimeInMillis()-timestamp.getTimeInMillis();
+        long duration = new GregorianCalendar().getTimeInMillis()-timestamp;
         return Util.getPastTimeString(duration);
     }
 
@@ -362,7 +369,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns the timestamp formatted in xs:dateTime.
      */
     public String getTimestampString2() {
-        return Util.XS_DATETIME_FORMATTER.format(timestamp.getTime());
+        return Util.XS_DATETIME_FORMATTER.format(new Date(timestamp));
     }
 
     /**
@@ -370,7 +377,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public String getDurationString() {
         if(isBuilding())
-            return Util.getTimeSpanString(System.currentTimeMillis()-timestamp.getTimeInMillis())+" and counting";
+            return Util.getTimeSpanString(System.currentTimeMillis()-timestamp)+" and counting";
         return Util.getTimeSpanString(duration);
     }
 
@@ -477,7 +484,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Unique ID of this build.
      */
     public String getId() {
-        return ID_FORMATTER.format(timestamp.getTime());
+        return ID_FORMATTER.format(new Date(timestamp));
     }
 
     /**
