@@ -17,6 +17,7 @@ import hudson.tasks.LabelFinder;
 import hudson.util.ClockDifference;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -86,9 +87,7 @@ public final class Slave implements Node, Serializable {
     private transient volatile Set<Label> dynamicLabels;
     private transient volatile int dynamicLabelsInstanceHash;
 
-    /**
-     * @stapler-constructor
-     */
+    @DataBoundConstructor
     public Slave(String name, String description, String remoteFS, String numExecutors,
                  Mode mode, String label) throws FormException {
         this.name = name;
