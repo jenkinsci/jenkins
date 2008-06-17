@@ -84,11 +84,11 @@ public class CommandLauncher extends ComputerLauncher {
 
             LOGGER.info("slave agent launched for " + computer.getDisplayName());
         } catch (InterruptedException e) {
-            e.printStackTrace(listener.error("aborted"));
+            e.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch));
         } catch (RuntimeException e) {
-            e.printStackTrace(listener.error("Unexpected error in launching a slave. This is probably a bug in Hudson"));
+            e.printStackTrace(listener.error(Messages.ComputerLauncher_unexpectedError()));
         } catch (Error e) {
-            e.printStackTrace(listener.error("Unexpected error in launching a slave. This is probably a bug in Hudson"));
+            e.printStackTrace(listener.error(Messages.ComputerLauncher_unexpectedError()));
         } catch (IOException e) {
             Util.displayIOException(e, listener);
 
