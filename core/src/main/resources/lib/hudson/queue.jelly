@@ -11,7 +11,7 @@
       <tr>
         <td class="pane" colspan="2" style="white-space: normal;">
           ${%Hudson is going to shut down. No further builds will be performed.}
-          <j:if test="${h.checkPermission(app.ADMINISTER)}">
+          <j:if test="${h.hasPermission(app.ADMINISTER)}">
             <a href="${rootURL}/cancelQuietDown">(${%cancel})</a>
           </j:if>
         </td>
