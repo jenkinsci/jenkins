@@ -157,6 +157,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     private int numExecutors = 2;
 
     /**
+     * Job allocation strategy.
+     */
+    private Mode mode = Mode.NORMAL;
+
+    /**
      * False to enable anyone to do anything.
      * Left as a field so that we can still read old data that uses this flag.
      *
@@ -1226,7 +1231,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     public Mode getMode() {
-        return Mode.NORMAL;
+        return mode;
     }
 
     public Set<Label> getAssignedLabels() {
@@ -1524,6 +1529,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             JSONObject json = StructuredForm.get(req);
 
             numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
+            if(req.hasParameter("master.mode"))
+                mode = Mode.valueOf(req.getParameter("master.mode"));
+            else
+                mode = Mode.NORMAL;
 
             {
                 // update slave list

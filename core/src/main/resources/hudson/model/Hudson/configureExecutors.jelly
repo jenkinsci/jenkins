@@ -3,7 +3,18 @@
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:layout norefresh="true" permission="${app.ADMINISTER}">
+  <d:taglib uri="local">
+    <d:tag name="mode">
+      <s:entry title="${%Usage}" help="/help/system-config/master-slave/usage.html">
+        <select class="setting-input" name="${name}">
+          <j:forEach var="m" items="${h.getNodeModes()}">
+            <s:option value="${m.name}" selected="${m==node.mode}">${m.description}</s:option>
+          </j:forEach>
+        </select>
+      </s:entry>
+    </d:tag>
+  </d:taglib>
+  <l:layout norefresh="true" permission="${app.ADMINISTER}" xmlns:local="local">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <s:form method="post" action="configExecutorsSubmit">
@@ -24,6 +35,9 @@
                 <b>${it.rootDir}</b>
               </s:entry>
 
+              <j:if test="${!empty(it.slaves)}">
+                <local:mode name="master.mode" node="${it}" />
+              </j:if>
             </table>
           </s:entry>
           <s:entry title="${%Slaves}">
@@ -53,13 +67,7 @@
                   <s:textbox name="slave.label" value="${s.labelString}"/>
                 </s:entry>
 
-                <s:entry title="${%Usage}" help="/help/system-config/master-slave/usage.html">
-                  <select class="setting-input" name="slave.mode">
-                    <j:forEach var="m" items="${h.getNodeModes()}">
-                      <s:option value="${m.name}" selected="${m==s.mode}">${m.description}</s:option>
-                    </j:forEach>
-                  </select>
-                </s:entry>
+                <local:mode name="slave.mode" node="${s}" />
 
                 <s:dropdownList name="slave.launcherClass" title="${%Launch method}"
                                 help="/help/system-config/master-slave/launcher.html">
