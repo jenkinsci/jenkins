@@ -210,6 +210,7 @@ public class User extends AbstractModelObject implements AccessControlled {
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        checkPermission(Hudson.ADMINISTER);
         req.setCharacterEncoding("UTF-8");
 
         description = req.getParameter("description");
