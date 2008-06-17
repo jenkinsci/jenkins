@@ -443,12 +443,14 @@ public abstract class Launcher {
      * Expands the list of environment variables by inheriting current env variables.
      */
     private static Map<String,String> inherit(String[] env) {
-        EnvVars m = new EnvVars(EnvVars.masterEnvVars);
+        // convert String[] to Map first
+        EnvVars m = new EnvVars();
         for (String e : env) {
             int index = e.indexOf('=');
-            m.override(e.substring(0,index), e.substring(index+1));
+            m.put(e.substring(0,index), e.substring(index+1));
         }
-        return m;
+        // then do the inheritance
+        return inherit(m);
     }
 
     /**
@@ -456,7 +458,8 @@ public abstract class Launcher {
      */
     private static EnvVars inherit(Map<String,String> overrides) {
         EnvVars m = new EnvVars(EnvVars.masterEnvVars);
-        m.overrideAll(overrides);
+        for (Map.Entry<String,String> o : overrides.entrySet()) 
+            m.override(o.getKey(),Util.replaceMacro(o.getValue(),m));
         return m;
     }
 

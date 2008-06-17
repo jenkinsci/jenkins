@@ -5,6 +5,7 @@ import hudson.Launcher;
 import hudson.StructuredForm;
 import hudson.Util;
 import hudson.FilePath;
+import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -343,7 +344,9 @@ public class Ant extends Builder {
             else
                 execName = "ant.bat";
 
-            return new File(getAntHome(),"bin/"+execName);
+            String antHome = Util.replaceMacro(getAntHome(),EnvVars.masterEnvVars);
+
+            return new File(antHome,"bin/"+execName);
         }
 
         /**

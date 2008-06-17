@@ -6,6 +6,7 @@ import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
+import hudson.EnvVars;
 import hudson.StructuredForm;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -304,7 +305,10 @@ public class Maven extends Builder {
         private File getExeFile(String execName) {
             if(File.separatorChar=='\\')
                 execName += ".bat";
-            return new File(getMavenHome(), "bin/" + execName);
+
+            String m2Home = Util.replaceMacro(getMavenHome(),EnvVars.masterEnvVars);
+
+            return new File(m2Home, "bin/" + execName);
         }
 
         /**
