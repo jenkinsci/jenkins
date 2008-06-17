@@ -95,7 +95,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
              * {@inheritDoc}
              */
             public String getDisplayName() {
-                return "Keep this slave on-line as much as possible";
+                return Messages.RetentionStrategy_Always_displayName();
             }
         }
 
