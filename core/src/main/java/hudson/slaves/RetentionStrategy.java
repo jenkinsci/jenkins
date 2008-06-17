@@ -191,7 +191,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
              * {@inheritDoc}
              */
             public String getDisplayName() {
-                return "Take this slave on-line when in demand and off-line when idle";
+                return Messages.RetentionStrategy_Demand_displayName();
             }
         }
 
