@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public final class SlaveComputer extends Computer {
     private volatile Channel channel;
+    private volatile transient boolean acceptingTasks = true;
     private Boolean isUnix;
     private ComputerLauncher launcher;
 
@@ -50,6 +51,25 @@ public final class SlaveComputer extends Computer {
      * trying.)
      */
     private transient int numRetryAttempt;
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isAcceptingTasks() {
+        return acceptingTasks;
+    }
+
+    /**
+     * Allows a {@linkplain hudson.slaves.ComputerLauncher} or a {@linkplain hudson.slaves.RetentionStrategy} to
+     * suspend tasks being accepted by the slave computer.
+     *
+     * @param acceptingTasks {@code true} if the slave can accept tasks.
+     */
+    public void setAcceptingTasks(boolean acceptingTasks) {
+        this.acceptingTasks = acceptingTasks;
+    }
 
     /**
      * This is where the log from the remote agent goes.

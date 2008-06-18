@@ -112,7 +112,7 @@ public class Queue extends ResourceController {
         }
 
         public boolean isAvailable() {
-            return item == null && !executor.getOwner().isOffline();
+            return item == null && !executor.getOwner().isOffline() && executor.getOwner().isAcceptingTasks();
         }
 
         public Node getNode() {

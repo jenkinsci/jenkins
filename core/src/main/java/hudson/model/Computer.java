@@ -477,4 +477,14 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     public static Computer currentComputer() {
         return Executor.currentExecutor().getOwner();
     }
+
+    /**
+     * Returns {@code true} if the computer is accepting tasks. Needed to allow slaves programmatic suspension of task
+     * scheduling that does not overlap with being offline.
+     *
+     * @return {@code true} if the computer is accepting tasks
+     */
+    public boolean isAcceptingTasks() {
+        return true;
+    }
 }
