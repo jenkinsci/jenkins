@@ -16,6 +16,7 @@
                 <j:otherwise>
                   <a href="${rootURL}/computer/(master)/">${%Master}</a>
                   <j:if test="${c.offline}">(${%offline})</j:if>
+                  <j:if test="${!c.acceptingTasks}">(${%suspended})</j:if>
                 </j:otherwise>
               </j:choose>
             </th>
@@ -27,6 +28,7 @@
 	          <th class="pane" colspan="3">
 	            <a href="${rootURL}/computer/${c.displayName}">${c.displayName}</a>
 	            <j:if test="${c.offline}">(${%offline})</j:if>
+                <j:if test="${!c.acceptingTasks}">(${%suspended})</j:if>                    
               </th>
 	        </tr>
 	      </j:otherwise>
