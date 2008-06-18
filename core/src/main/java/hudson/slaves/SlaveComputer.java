@@ -189,7 +189,7 @@ public final class SlaveComputer extends Computer {
             }
 
             isUnix = channel.call(new DetectOS());
-            log.println(isUnix? Messages.Slave_UnixSlave():Messages.Slave_WindowsSlave());
+            log.println(isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
 
             // install log handler
             channel.call(new LogInstaller());
