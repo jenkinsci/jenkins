@@ -5,6 +5,8 @@ import hudson.model.Descriptor;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.scm.SCM;
+
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +35,22 @@ public class LogRotator implements Describable<LogRotator> {
      * If not -1, only this number of build logs are kept.
      */
     private final int numToKeep;
+    
+    @DataBoundConstructor
+    public LogRotator (String logrotate_days, String logrotate_nums) {
+        this (parse(logrotate_days),parse(logrotate_nums));     	
+    }
 
+    public static int parse(String p) {
+        if(p==null)     return -1;
+        try {
+            return Integer.parseInt(p);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    
     public LogRotator(int daysToKeep, int numToKeep) {
         this.daysToKeep = daysToKeep;
         this.numToKeep = numToKeep;
@@ -93,22 +110,6 @@ public class LogRotator implements Describable<LogRotator> {
 
         public String getDisplayName() {
             return "Log Rotation";
-        }
-
-        public LogRotator newInstance(StaplerRequest req) {
-            return new LogRotator(
-                    parse(req,"logrotate_days"),
-                    parse(req,"logrotate_nums") );
-        }
-
-        private int parse(HttpServletRequest req, String name) {
-            String p = req.getParameter(name);
-            if(p==null)     return -1;
-            try {
-                return Integer.parseInt(p);
-            } catch (NumberFormatException e) {
-                return -1;
-            }
-        }
+        }        
     }
 }

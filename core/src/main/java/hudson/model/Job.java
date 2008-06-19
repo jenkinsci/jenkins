@@ -800,11 +800,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
 		description = req.getParameter("description");
 
-		if (req.getParameter("logrotate") != null)
-			logRotator = LogRotator.DESCRIPTOR.newInstance(req);
-		else
-			logRotator = null;
-
 		keepDependencies = req.getParameter("keepDependencies") != null;
 
 		try {
@@ -812,6 +807,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
 			JSONObject json = StructuredForm.get(req);
 
+			if (req.getParameter("logrotate") != null)
+				logRotator = LogRotator.DESCRIPTOR.newInstance(req,json.getJSONObject("logrotate"));
+			else
+				logRotator = null;
+			
 			int i = 0;
 			for (JobPropertyDescriptor d : JobPropertyDescriptor
 					.getPropertyDescriptors(Job.this.getClass())) {
