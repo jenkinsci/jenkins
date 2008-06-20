@@ -157,7 +157,7 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
 
         private static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>(Unsecured.class) {
             public String getDisplayName() {
-                return "Anyone can do anything";
+                return Messages.AuthorizationStrategy_DisplayName();
             }
 
             public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {

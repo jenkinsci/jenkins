@@ -345,12 +345,12 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         }
 
         public String getDisplayName() {
-            return "Manage Users";
+            return Messages.HudsonPrivateSecurityRealm_ManageUserLinks_DisplayName();
         }
 
         @Override
         public String getDescription() {
-            return "Create/delete/modify users that can log in to this Hudson";
+            return Messages.HudsonPrivateSecurityRealm_ManageUserLinks_Description();
         }
     }
 
@@ -362,7 +362,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         }
 
         public String getDisplayName() {
-            return "Hudson's own user database";
+            return Messages.HudsonPrivateSecurityRealm_DisplayName();
         }
 
         public String getHelpFile() {

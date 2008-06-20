@@ -224,7 +224,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
         }
 
         public String getDisplayName() {
-            return "LDAP";
+            return Messages.LDAPSecurityRealm_DisplayName();
         }
 
         public void doServerCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter("server") final String server,

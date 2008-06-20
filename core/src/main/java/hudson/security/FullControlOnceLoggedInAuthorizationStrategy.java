@@ -1,11 +1,13 @@
 package hudson.security;
 
 import hudson.model.Descriptor;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
 
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link AuthorizationStrategy} that grants full-control to authenticated user
@@ -37,7 +39,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
 
     public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>(FullControlOnceLoggedInAuthorizationStrategy.class) {
         public String getDisplayName() {
-            return "Logged-in users can do anything";
+            return Messages.FullControlOnceLoggedInAuthorizationStrategy_DisplayName();
         }
 
         public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {

@@ -50,7 +50,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         }
 
         public String getDisplayName() {
-            return "Delegate to servlet container";
+            return Messages.LegacySecurityRealm_Displayname();
         }
 
         public String getHelpFile() {
