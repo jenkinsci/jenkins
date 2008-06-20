@@ -796,7 +796,7 @@ public class SubversionSCM extends SCM implements Serializable {
         return tokens[tokens.length-1]; // return the last token
     }
 
-    public static final class DescriptorImpl extends SCMDescriptor<SubversionSCM> {
+    public static class DescriptorImpl extends SCMDescriptor<SubversionSCM> {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         /**
@@ -1010,6 +1010,10 @@ public class SubversionSCM extends SCM implements Serializable {
         private DescriptorImpl() {
             super(SubversionSCM.class,SubversionRepositoryBrowser.class);
             load();
+        }
+
+        protected DescriptorImpl(Class clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
+            super(clazz,repositoryBrowser);
         }
 
         public String getDisplayName() {
