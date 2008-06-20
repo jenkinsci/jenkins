@@ -52,15 +52,10 @@ public class MavenJavadocArchiver extends MavenReporter {
         if(destDir.exists()) {
             // javadoc:javadoc just skips itself when the current project is not a java project 
             FilePath target;
-            if(aggregated) {
+            if(aggregated)
                 // store at MavenModuleSet level. 
-                target = build.execute(new MavenBuildProxy.BuildCallable<FilePath,IOException>() {
-                    public FilePath call(MavenBuild build) throws IOException, InterruptedException {
-                        return new FilePath(build.getProject().getParent().getRootDir());
-                    }
-                    private static final long serialVersionUID = 1L;
-                });
-            } else
+                target = build.getModuleSetRootDir();
+            else
                 target = build.getProjectRootDir();
 
             target = target.child("javadoc");

@@ -285,6 +285,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             return new FilePath(MavenBuild.this.getParent().getRootDir());
         }
 
+        public FilePath getModuleSetRootDir() {
+            return new FilePath(MavenBuild.this.getParent().getParent().getRootDir());
+        }
+
         public FilePath getArtifactsDir() {
             return new FilePath(MavenBuild.this.getArtifactsDir());
         }

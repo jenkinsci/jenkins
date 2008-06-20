@@ -62,6 +62,11 @@ public interface MavenBuildProxy {
     FilePath getProjectRootDir();
 
     /**
+     * Root directory of the owner {@link MavenModuleSet}
+     */
+    FilePath getModuleSetRootDir();
+
+    /**
      * @see MavenBuild#getArtifactsDir()
      */
     FilePath getArtifactsDir();
@@ -142,6 +147,10 @@ public interface MavenBuildProxy {
 
         public FilePath getProjectRootDir() {
             return core.getProjectRootDir();
+        }
+
+        public FilePath getModuleSetRootDir() {
+            retur ncore.getModuleSetRootDir();
         }
 
         public FilePath getArtifactsDir() {
