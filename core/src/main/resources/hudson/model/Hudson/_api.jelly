@@ -12,4 +12,9 @@
     To copy a job, send a POST request to <a href="../createItem">this URL</a> with
     three query parameters <tt>name=<i>NEWJOBNAME</i>&amp;mode=copyJob&amp;from=<i>FROMJOBNAME</i></tt>
   </p>
+
+  <h2>Build Queue</h2>
+  <p>
+    Build queue has <a href="../queue/api/">its own separate API</a>.
+  </p>
 </j:jelly>
