@@ -93,6 +93,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import net.sf.json.JSONObject;
+
 /**
  * Subversion SCM.
  *
@@ -1020,12 +1022,12 @@ public class SubversionSCM extends SCM implements Serializable {
             return "Subversion";
         }
 
-        public SCM newInstance(StaplerRequest req) throws FormException {
+        public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new SubversionSCM(
                 req.getParameterValues("svn.location_remote"),
                 req.getParameterValues("svn.location_local"),
                 req.getParameter("svn_use_update") != null,
-                    RepositoryBrowsers.createInstance(SubversionRepositoryBrowser.class, req, "svn.browser"));
+                    RepositoryBrowsers.createInstance(SubversionRepositoryBrowser.class, req, formData, "browser"));
         }
 
         /**

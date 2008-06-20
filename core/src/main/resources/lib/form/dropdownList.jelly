@@ -33,7 +33,7 @@
 
     <!-- generate the actual form entries -->
     <f:nested>
-        <table width="100%">
+        <table width="100%" name="${name}">
             <j:set var="dropdownListMode" value="generateEntries"/>
             <d:invokeBody/>
         </table>

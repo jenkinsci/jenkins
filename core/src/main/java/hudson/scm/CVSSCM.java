@@ -969,7 +969,7 @@ public class CVSSCM extends SCM implements Serializable {
         @Override
         public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             CVSSCM scm = req.bindJSON(CVSSCM.class,formData);
-            scm.repositoryBrowser = RepositoryBrowsers.createInstance(CVSRepositoryBrowser.class,req,"cvs.browser");
+            scm.repositoryBrowser = RepositoryBrowsers.createInstance(CVSRepositoryBrowser.class,req,formData,"browser");
             return scm;
         }
 
