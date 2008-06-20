@@ -1163,7 +1163,7 @@ public class CVSSCM extends SCM implements Serializable {
         }
 
         private static final Pattern CVSROOT_PSERVER_PATTERN =
-            Pattern.compile(":(ext|pserver):[^@:]+(:[^@:]+)?@[^:]+:(\\d+:)?.+");
+            Pattern.compile(":(ext|extssh|pserver):[^@:]+(:[^@:]+)?@[^:]+:(\\d+:)?.+");
 
         /**
          * Runs cvs login command.
