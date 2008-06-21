@@ -32,9 +32,10 @@ def addfile(fullpath,attributes={}):
     mkdirs(components[0])
     pkg["files"][fullpath] = attributes;
 
-mkdirs("/var/run/hudson")
-mkdirs("/var/log/hudson")
 addfile("/usr/local/bin/hudson.war",{"file":"./hudson.war"})
 addfile("/var/svc/manifest/local/hudson.xml",{"file":"hudson.xml"})
+# this is the Hudson home directory
+mkdirs("/var/run/hudson")
+
 # TODO: how do I register SMF?
 # see http://www.pauloswald.com/article/29/hudson-solaris-smf-manifest
