@@ -38,14 +38,15 @@ THE SOFTWARE.
 		</dependency>
 
 		<method_context>
-			<method_credential user='dev' group='teamsdev' />
+			<method_credential user='root' group='root' />
 			<method_environment>
 				<envvar name='PATH' value='/usr/bin:/usr/sbin:/usr/ccs/bin:/usr/local/bin:/usr/local/sbin:/usr/sfw/bin' />
+				<envvar name='HUDSON_HOME' value='/var/run/hudson' />
 			</method_environment>
 		</method_context>
 
 		<!-- Set the HUDSON_HOME env variable, and run the war file in /apps/hudson/hudson.war -->
-		<exec_method type="method" name="start"	exec="java -Xmx512m -DHUDSON_HOME=/apps/hudson/ -jar /apps/hudson/hudson.war --prefix=/hudson" timeout_seconds="0"/>
+		<exec_method type="method" name="start"	exec="java -Xmx512m -jar /usr/local/bin/hudson.war" timeout_seconds="0"/>
 		<exec_method type="method" name="stop" exec=":kill -TERM" timeout_seconds="30"/>
 
 		<!-- We are going to be kicking off a single child process so we want Wait mode-->
@@ -60,7 +61,7 @@ THE SOFTWARE.
 				<loctext xml:lang='C'>Hudson Continuous Build Server</loctext>
 			</common_name>
 			<documentation>
-				<doc_link name='hudson.dev.java.net' uri='http://hudson.dev.java.net' />
+				<doc_link name='hudson.dev.java.net' uri='https://hudson.dev.java.net/' />
 			</documentation>
 		</template>
 	</service>
