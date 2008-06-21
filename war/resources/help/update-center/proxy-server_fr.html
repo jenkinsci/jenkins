@@ -1,6 +1,6 @@
 <div>
-  Si votre serveur Hudson est placé derrière un firewell, n'a pas d'accès direct à internet et
-  la JVM de votre serveur n'est pas configurée de façon à permettre l'accès à internet (voir
+  Si votre serveur Hudson se trouve derrière un firewall, qu'il n'a pas d'accès direct à internet et
+  que la JVM de votre serveur n'est pas configurée de façon à permettre l'accès à internet (voir
   <a  href="http://java.sun.com/j2se/1.5.0/docs/guide/net/properties.html">les propriétés réseau du JDK pour plus d'informations</a>),
   vous pouvez spécifier le nom d'un serveur proxy HTTP pour permettre à Hudson
   d'installer des plugins pour vous.
@@ -8,7 +8,7 @@
 
   <p>
   La valeur placée ici sera positionnée dans la propriété système <tt>http.proxyHost</tt>.
-  Si ce champ est vide, la propriété ne sera pas positionnée, ce qui signifie que Hudson tentera de se
+  Si ce champ est vide, la propriété ne sera pas positionnée; Hudson tentera donc de se
   connecter directement au site.
 
   <p>
