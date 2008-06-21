@@ -41,7 +41,7 @@ THE SOFTWARE.
 			<method_credential user='root' group='root' />
 			<method_environment>
 				<envvar name='PATH' value='/usr/bin:/usr/sbin:/usr/ccs/bin:/usr/local/bin:/usr/local/sbin:/usr/sfw/bin' />
-				<envvar name='HUDSON_HOME' value='/var/run/hudson' />
+				<envvar name='HUDSON_HOME' value='/var/lib/hudson' />
 			</method_environment>
 		</method_context>
 
