@@ -393,6 +393,13 @@ public class SubversionSCM extends SCM implements Serializable {
                                 update = false;
                                 return invoke(ws,channel);
                             }
+                            if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_OBSTRUCTED_UPDATE) {
+                                // HUDSON-1882. If existence of local files cause an update to fail,
+                                // revert to fresh check out
+                                listener.getLogger().println("Updated failed due to local files. Getting a fresh workspace");
+                                update = false;
+                                return invoke(ws,channel);
+                            }
 
                             e.printStackTrace(listener.error("Failed to update "+l.remote));
                             // trouble-shooting probe for #591
