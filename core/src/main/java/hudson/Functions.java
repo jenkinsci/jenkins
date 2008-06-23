@@ -30,6 +30,7 @@ import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.util.Area;
+import hudson.util.Iterators;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
@@ -446,6 +447,27 @@ public class Functions {
     public static void checkPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
         if (permission != null) {
             object.checkPermission(permission);
+        }
+    }
+
+    /**
+     * This version is so that the 'checkPermission' on <tt>layout.jelly</tt>
+     * degrades gracefully if "it" is not an {@link AccessControlled} object.
+     * Otherwise it will perform no check and that problem is hard to notice.
+     */
+    public static void checkPermission(Object object, Permission permission) throws IOException, ServletException {
+        if (object instanceof AccessControlled)
+            checkPermission((AccessControlled) object,permission);
+        else {
+            List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
+            for(Ancestor anc : Iterators.reverse(ancs)) {
+                Object o = anc.getObject();
+                if (o instanceof AccessControlled) {
+                    checkPermission((AccessControlled) o,permission);
+                    return;
+                }
+            }
+            throw new AssertionError(); // ancestor must include Hudson, which is AccessControlled.
         }
     }
 

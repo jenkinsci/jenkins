@@ -186,6 +186,8 @@ public final class PluginManager extends AbstractModelObject {
     }
 
     public void doProxyConfigure(@QueryParameter("proxy.server") String server, @QueryParameter("proxy.port") String port, StaplerResponse rsp) throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+
         Hudson hudson = Hudson.getInstance();
         server = Util.fixEmptyAndTrim(server);
         if(server==null) {
