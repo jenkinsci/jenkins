@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +53,7 @@ import java.awt.image.BufferedImage;
  * @see Hudson#getDependencyGraph() 
  * @author Kohsuke Kawaguchi
  */
-public final class DependencyGraph implements Comparator <AbstractProject> {
+public final class DependencyGraph  {
 
     private Map<AbstractProject, List<AbstractProject>> forward = new HashMap<AbstractProject, List<AbstractProject>>();
     private Map<AbstractProject, List<AbstractProject>> backward = new HashMap<AbstractProject, List<AbstractProject>>();
@@ -313,16 +314,54 @@ public final class DependencyGraph implements Comparator <AbstractProject> {
 
     public static final DependencyGraph EMPTY = new DependencyGraph(false);
 
+       
     /**
-     * Compare to Projects based on the topological order defined by this Dependency Graph
-     */
-    public int compare(AbstractProject o1, AbstractProject o2) {
-        Set<AbstractProject> o1sdownstreams = getTransitiveDownstream(o1);
-        Set<AbstractProject> o2sdownstreams = getTransitiveDownstream(o2);
-        if (o1sdownstreams.contains(o2)) {
-            if (o2sdownstreams.contains(o1)) return 0; else return 1;                       
-        } else {
-            if (o2sdownstreams.contains(o1)) return -1; else return 0; 
-        }               
-    }
+	 * Sort the given in their Buildorder. Note that there may be more than 
+	 * one possible order.
+	 *
+	 * @param list to be ordered
+	 */
+
+	public void sort(List<AbstractProject> list) {
+		// Record the Ingrade of each Node in the graph
+		Map<AbstractProject, Integer> inGrade = new HashMap<AbstractProject, Integer>();
+		// Holds nodes/Projects with ingrade 0
+		Set<AbstractProject> roots = new HashSet<AbstractProject>();
+		// For each Project calculate the ingrade
+		for (AbstractProject p : Hudson.getInstance().getProjects()) {
+			List<AbstractProject> ancestors = new ArrayList<AbstractProject>(
+					getUpstream(p));
+			if (ancestors.size() == 0) {
+				roots.add(p);
+				inGrade.put(p, 0);
+			} else
+				inGrade.put(p, ancestors.size());
+		}
+
+		List<AbstractProject> result = new ArrayList<AbstractProject>(list.size());
+		while (!roots.isEmpty()) {
+			AbstractProject current = roots.iterator().next();
+			// Since we took all existing Projects in account for sorting this may
+			// contain projects that have not been in the original list.
+			if (list.contains(current)) {
+				result.add(current);
+			}
+			roots.remove(current);
+			// Reduce the ingrade of successor of the current node. Some of them may become new roots
+			for (AbstractProject p : getDownstream(current)) {
+				Integer newIngrade = inGrade.get(p);
+				if (newIngrade == null)
+					continue;
+				newIngrade = newIngrade - 1;
+				inGrade.put(p, newIngrade);
+				if (newIngrade == 0) {
+					roots.add(p);
+				}
+			}
+		}
+		// Write the result back to the list
+		for (int i = 0; i < list.size(); i++) {
+			list.set(i, result.get(i));
+		}
+	}        
 }
