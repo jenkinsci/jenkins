@@ -83,6 +83,7 @@ public class WorkspaceCleanupThread extends PeriodicWork {
         if (item instanceof AbstractProject) {
             AbstractProject p = (AbstractProject) item;
             Node lb = p.getLastBuiltOn();
+            LOGGER.finer("Directory "+dir+" is last built on "+lb);
             if(lb!=null && lb.equals(n)) {
                 // this is the active workspace. keep it.
                 LOGGER.fine("Directory "+dir+" is the last workspace for "+p);
