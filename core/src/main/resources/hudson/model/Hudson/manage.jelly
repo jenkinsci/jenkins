@@ -19,6 +19,19 @@
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1>${%Manage Hudson}</h1>
+    <j:if test="${it.checkURIEncodingEnabled}">
+      <script>
+        var url='checkURIEncoding';
+        var params='value=\u57f7\u4e8b';
+        var checkAjax=new Ajax.Updater(
+          'message', url,
+          {
+            method: 'get', parameters: params
+          }
+        );
+      </script>
+      <span id="message"></span>
+    </j:if>
     <table style="padding-left: 2em;">
       <local:feature icon="setting.gif"          href="configure"    title="${%Configure System}">
         ${%Configure global settings and paths.}  

@@ -1,27 +1,27 @@
 package hudson.model;
 
-import com.thoughtworks.xstream.XStream;
+import static hudson.Util.fixEmpty;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.Launcher.LocalLauncher;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.ProxyConfiguration;
 import hudson.StructuredForm;
 import hudson.TcpSlaveAgentListener;
 import hudson.Util;
-import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
-import hudson.ProxyConfiguration;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.RetentionStrategy;
+import hudson.Launcher.LocalLauncher;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
-import hudson.model.listeners.JobListener.JobListenerAdapter;
 import hudson.model.listeners.SCMListener;
+import hudson.model.listeners.JobListener.JobListenerAdapter;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.CVSSCM;
@@ -42,8 +42,10 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
-import hudson.security.SecurityRealm.SecurityComponents;
 import hudson.security.TokenBasedRememberMeServices2;
+import hudson.security.SecurityRealm.SecurityComponents;
+import hudson.slaves.ComputerLauncher;
+import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -67,43 +69,15 @@ import hudson.util.RemotingDiagnostics;
 import hudson.util.TextFile;
 import hudson.util.XStream2;
 import hudson.widgets.Widget;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONArray;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.GrantedAuthorityImpl;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
-import org.acegisecurity.ui.AbstractProcessingFilter;
-import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.kohsuke.stapler.MetaClass;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.net.Proxy;
+import java.net.URL;
 import java.security.SecureRandom;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -118,12 +92,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -137,6 +111,33 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.GrantedAuthorityImpl;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.acegisecurity.ui.AbstractProcessingFilter;
+import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * Root object of the system.
@@ -2287,6 +2288,39 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 
+    /**
+     * Checks if container uses UTF-8 to decode URLs. See
+     * http://hudson.gotdns.com/wiki/display/HUDSON/Tomcat#Tomcat-i18n
+     * 
+     * @param req containing the parameter value
+     * @param rsp used by FormFieldValidator
+     * @throws IOException thrown by FormFieldValidator.check()
+     * @throws ServletException thrown by FormFieldValidator.check()
+     */
+    public void doCheckURIEncoding(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        new FormFieldValidator(req, rsp, true) {
+            @Override
+            protected void check() throws IOException, ServletException {
+                request.setCharacterEncoding("UTF-8");
+                // expected is non-ASCII String
+                final String expected = "\u57f7\u4e8b";
+                final String value = fixEmpty(request.getParameter("value"));
+                if (!expected.equals(value)) {
+                    warningWithMarkup(Messages.Hudson_NotUsesUTF8ToDecodeURL());
+                    return;
+                }
+                ok();
+            }
+        }.process();
+    }
+    
+    /**
+     * Does not check when system default encoding is "ISO-8859-1".
+     */
+    public static boolean isCheckURIEncodingEnabled() {
+        return !"ISO-8859-1".equalsIgnoreCase(System.getProperty("file.encoding"));
+    }
+        
     /**
      * Extension list that {@link #doResources(StaplerRequest, StaplerResponse)} can serve.
      * This set is mutable to allow plugins to add additional extensions.
