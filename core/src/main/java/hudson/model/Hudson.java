@@ -551,6 +551,39 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     /**
+     * Gets the plugin object from its class.
+     *
+     * <p>
+     * This allows easy storage of plugin information in the plugin singleton without
+     * every plugin reimplementing the singleton pattern.
+     *
+     * @param clazz The plugin class (beware class-loader fun, this will probably only work
+     * from within the hpi that defines the plugin class, it may or may not work in other cases)
+     *
+     * @return The plugin instance.
+     */
+    public Plugin getPlugin(Class<? extends Plugin> clazz) {
+        PluginWrapper p = pluginManager.getPlugin(clazz);
+        if(p==null)     return null;
+        return p.getPlugin();
+    }
+
+    /**
+     * Gets the plugin objects from their super-class.
+     *
+     * @param clazz The plugin class (beware class-loader fun)
+     *
+     * @return The plugin instances.
+     */
+    public List<Plugin> getPlugins(Class<? extends Plugin> clazz) {
+        List<Plugin> result = new ArrayList<Plugin>();
+        for (PluginWrapper w: pluginManager.getPlugins(clazz)) {
+            result.add(w.getPlugin());
+        }
+        return Collections.unmodifiableList(result);
+    }
+
+    /**
      * Synonym to {@link #getNodeDescription()}.
      */
     public String getSystemMessage() {

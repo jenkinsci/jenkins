@@ -131,6 +131,35 @@ public final class PluginManager extends AbstractModelObject {
         return null;
     }
 
+    /**
+     * Get the plugin instance that implements a specific class, use to find your plugin singleton.
+     * Note: beware the classloader fun.
+     * @param pluginClazz The class that your plugin implements.
+     * @return The plugin singleton or <code>null</code> if for some reason the plugin is not loaded.
+     */
+    public PluginWrapper getPlugin(Class<? extends Plugin> pluginClazz) {
+        for (PluginWrapper p : plugins) {
+            if(pluginClazz.isInstance(p.getPlugin()))
+                return p;
+        }
+        return null;
+    }
+
+    /**
+     * Get the plugin instances that extend a specific class, use to find similar plugins.
+     * Note: beware the classloader fun.
+     * @param pluginSuperclass The class that your plugin is derived from.
+     * @return The list of plugins implementing the specified class.
+     */
+    public List<PluginWrapper> getPlugins(Class<? extends Plugin> pluginSuperclass) {
+        List<PluginWrapper> result = new ArrayList<PluginWrapper>();
+        for (PluginWrapper p : plugins) {
+            if(pluginSuperclass.isInstance(p.getPlugin()))
+                result.add(p);
+        }
+        return Collections.unmodifiableList(result);
+    }
+
     public String getDisplayName() {
         return "Plugin Manager";
     }
