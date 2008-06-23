@@ -1,3 +1,11 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <t:queue items="${it.queueItems}"/>
+  <j:if test="${!it.isAggregatorStyleBuild()}">
+    <!--
+      The purpose of showing a build queue here is to know
+      what modules are scheduled to build. This only makes
+      sense when modules are built in parallel.
+      See related HUDSON-1892 for how this confuses users.
+    -->
+    <t:queue items="${it.queueItems}"/>
+  </j:if>
 </j:jelly>
