@@ -562,10 +562,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      *
      * @return The plugin instance.
      */
-    public Plugin getPlugin(Class<? extends Plugin> clazz) {
+    @SuppressWarnings("unchecked")
+    public <P extends Plugin> P getPlugin(Class<P> clazz) {
         PluginWrapper p = pluginManager.getPlugin(clazz);
         if(p==null)     return null;
-        return p.getPlugin();
+        return (P) p.getPlugin();
     }
 
     /**
