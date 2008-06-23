@@ -1293,7 +1293,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         }
         File[] subdirs = projectsDir.listFiles(new FileFilter() {
             public boolean accept(File child) {
-                return child.isDirectory();
+                return child.isDirectory() && Items.getConfigFile(child).exists();
             }
         });
         items.clear();
