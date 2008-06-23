@@ -277,12 +277,17 @@ public class UpdateCenter implements ModelObject {
          * beware of XSS vulnerability since this data comes from Wiki 
          */
         public final String title;
+        /**
+         * Optional excerpt string.
+         */
+        public final String excerpt;
 
         @DataBoundConstructor
         public Plugin(JSONObject o) {
             super(o);
             this.wiki = get(o,"wiki");
             this.title = get(o,"title");
+            this.excerpt = get(o,"excerpt");
         }
 
         private String get(JSONObject o, String prop) {
