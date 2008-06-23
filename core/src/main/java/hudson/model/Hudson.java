@@ -1587,10 +1587,19 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             throws FormException {
 
         if(!j.has(name + "Class"))  return null;
-        final String clazz = j.getString(name + "Class");
-        final JSONObject data = j.getJSONObject(name);
+
+        // work around ISSUE-1913... the nesting has changed in dropDownList 
+
+        final Object container = j.get(name + "Class");
         j.remove(name + "Class");
-        j.remove(name);
+
+        final String clazz = container instanceof JSONArray
+                ? ((JSONArray) container).getString(0)
+                : (String) container;
+        final JSONObject data = container instanceof JSONArray
+                ? ((JSONArray)container).getJSONObject(1).getJSONObject(name)
+                : null;
+
         for (Descriptor<T> d: descriptors) {
             if (d.getClass().getName().equals(clazz)) {
                 return d.newInstance(req, data);
