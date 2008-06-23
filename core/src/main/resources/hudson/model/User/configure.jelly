@@ -4,7 +4,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <!-- TODO: we need a different permission for this page -->
   <!--     <j:when test="${h.currentUser==it or h.hasPermission(app.ADMINISTER)}"> -->
-  <l:layout norefresh="true" permission="${app.ADMINISTER}">
+  <l:layout norefresh="true" permission="${app.ADMINISTER}" title="${%title(it.fullName)}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <f:form method="post" action="configSubmit">
