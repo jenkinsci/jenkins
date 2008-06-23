@@ -5,7 +5,7 @@
     <td id="prepStatus${size(statuses)}">
       <ul>
         <j:forEach var="s" items="${statuses}">
-          <li><pre>${s}</pre></li>
+          <li>${s}</li>
         </j:forEach>
       </ul>
     </td>

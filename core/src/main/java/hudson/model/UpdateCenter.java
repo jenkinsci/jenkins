@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -366,9 +367,16 @@ public class UpdateCenter implements ModelObject {
                 testConnection(new URL("https://hudson.dev.java.net/?uctest"));
 
                 statuses.add("Success");
+            } catch (UnknownHostException e) {
+                statuses.add("<span class=error>Failed to resolve host name "+e.getMessage()+". Perhaps you need to <a href='../pluginManager/advanced'>configure HTTP proxy?</a></span>");
+                addStatus(e);
             } catch (IOException e) {
                 statuses.add(Functions.printThrowable(e));
             }
+        }
+
+        private void addStatus(UnknownHostException e) {
+            statuses.add("<pre>"+ Functions.xmlEscape(Functions.printThrowable(e))+"</pre>");
         }
 
         public String[] getStatuses() {
