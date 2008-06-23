@@ -27,7 +27,18 @@
                          original="${h.ifThenElse(p.active,'true','false')}"/>
                 </td>
                 <td class="pane">
-                  <h4>${p.longName}</h4>
+                  <h4>
+                    <j:choose>
+                      <j:when test="${p.updateInfo!=null}">
+                        <a href="${p.updateInfo.wiki}">
+                          ${p.updateInfo.title}
+                        </a>
+                      </j:when>
+                      <j:otherwise>
+                        ${p.longName}
+                      </j:otherwise>
+                    </j:choose>
+                  </h4>
                   <div stlyle="padding-left: 1em">
                     <j:set var="indexPage" value="${p.indexPage.toString()}" />
                     <j:if test="${!empty(indexPage)}">
