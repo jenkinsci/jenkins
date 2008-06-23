@@ -576,10 +576,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      *
      * @return The plugin instances.
      */
-    public List<Plugin> getPlugins(Class<? extends Plugin> clazz) {
-        List<Plugin> result = new ArrayList<Plugin>();
+    public <P extends Plugin> List<P> getPlugins(Class<P> clazz) {
+        List<P> result = new ArrayList<P>();
         for (PluginWrapper w: pluginManager.getPlugins(clazz)) {
-            result.add(w.getPlugin());
+            result.add((P)w.getPlugin());
         }
         return Collections.unmodifiableList(result);
     }
