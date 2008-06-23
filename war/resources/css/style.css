@@ -740,3 +740,12 @@ TEXTAREA.rich-editor {
     background-repeat: repeat-y;
     padding-left: 20px;
 }
+
+/* ========================= plugin update center ========================= */
+
+#plugins .excerpt {
+    white-space: normal;
+    margin-top: 0.5em;
+    padding-left: 2em;
+    color: #888a85;
+}

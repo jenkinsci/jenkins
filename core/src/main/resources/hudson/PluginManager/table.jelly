@@ -23,7 +23,12 @@
                   <tr>
                     <td class="pane" align="center"><input type="checkbox" name="plugin.${p.name}"/></td>
                     <td class="pane">
-                      <a href="${p.wiki}"><st:out value="${p.displayName}"/></a>
+                      <div>
+                        <a href="${p.wiki}"><st:out value="${p.displayName}"/></a>
+                      </div>
+                      <j:if test="${p.excerpt!=null}">
+                        <div class="excerpt">${p.excerpt}</div>
+                      </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
                   </tr>
