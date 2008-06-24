@@ -1119,6 +1119,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return null;
     }
 
+    /**
+     * {@inheritDoc}.
+     *
+     * Note that the look up is case-insensitive.
+     */
     @Override
     public TopLevelItem getItem(String name) {
         return items.get(name);
