@@ -456,6 +456,9 @@ public class Functions {
      * Otherwise it will perform no check and that problem is hard to notice.
      */
     public static void checkPermission(Object object, Permission permission) throws IOException, ServletException {
+        if (permission == null)
+            return;
+        
         if (object instanceof AccessControlled)
             checkPermission((AccessControlled) object,permission);
         else {
