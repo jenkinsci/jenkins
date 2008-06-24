@@ -1,30 +1,30 @@
-<div>
-  Pour chaque job, Hudson alloue un "répertoire de travail" unique. Il s'agit du répertoire
-  où le code est placé en provenance de l'outil de gestion de configuration et où les builds ont lieu.
-  En règle générale, vous devriez laisser Hudson allouer et nettoyer les répertoires de travail, mais
-  dans certaines circonstances, cela peut poser problème. Cette option vous permet de spécifier
-  le répertoire de travail manuellement.
+ï»¿<div>
+  Pour chaque job, Hudson alloue un "rÃ©pertoire de travail" unique. Il s'agit du rÃ©pertoire
+  oÃ¹ le code est placÃ© en provenance de l'outil de gestion de configuration et oÃ¹ les builds ont lieu.
+  En rÃ¨gle gÃ©nÃ©rale, vous devriez laisser Hudson allouer et nettoyer les rÃ©pertoires de travail, mais
+  dans certaines circonstances, cela peut poser problÃ¨me. Cette option vous permet de spÃ©cifier
+  le rÃ©pertoire de travail manuellement.
 
   <p>
-  Un exemple d'une telle situation est quand les chemins sont codés en dur et que le code a besoin
-  d'être construit à partir d'un emplacement spécifique (voir la discussion 
+  Un exemple d'une telle situation est quand les chemins sont codÃ©s en dur et que le code a besoin
+  d'Ãªtre construit Ã  partir d'un emplacement spÃ©cifique (voir la discussion 
   <a href="http://www.nabble.com/Customize-Workspace-directory-tt17194310.html">ici</a>).
-  Il est certain qu'une telle configuration de build est déconseillée, mais cette option vous
-  permet néanmoins d'avencer dans ces circonstances.
+  Il est certain qu'une telle configuration de build est dÃ©conseillÃ©e, mais cette option vous
+  permet nÃ©anmoins d'avencer dans ces circonstances.
 
   <p>
-  Un autre cas où cette option est utile est lorsque vous utilisez le type de projet 'free-style', non
-  pour construire un projet logiciel mais pour exécuter certaines tâches en batch, par exemple à la
-  place d'un cron. Dans ce cas, utilisez cette option pour allouer un répertoire spécifique
-  au répertoire de travail du batch, afin que les utilisateurs puissent accéder aux fichiers directement
-  à travers l'interface web de Hudson. Il sera également possible de lancer les commandes plus
+  Un autre cas oÃ¹ cette option est utile est lorsque vous utilisez le type de projet 'free-style', non
+  pour construire un projet logiciel mais pour exÃ©cuter certaines tÃ¢ches en batch, par exemple Ã  la
+  place d'un cron. Dans ce cas, utilisez cette option pour allouer un rÃ©pertoire spÃ©cifique
+  au rÃ©pertoire de travail du batch, afin que les utilisateurs puissent accÃ©der aux fichiers directement
+  Ã  travers l'interface web de Hudson. Il sera Ã©galement possible de lancer les commandes plus
   facilement.
 
   <p>
-  Si vous êtes dans un environnement distribué, à moins d'associer un job à un noeud (une machine) spécifique,
-  Hudson sera toujours capable de déporter des jobs sur différentes machines esclaves, même si cette option
-  est utilisée. Parfois, cela est souhaitable; parfois, non.<br>
-  Par ailleurs, il est possible d'associer plusieurs projets à un même répertoire de travail;
-  assurez-vous dans ce cas que des exécutions concurrentes de ces jobs n'interfèrent pas de façon
+  Si vous Ãªtes dans un environnement distribuÃ©, Ã  moins d'associer un job Ã  un noeud (une machine) spÃ©cifique,
+  Hudson sera toujours capable de dÃ©porter des jobs sur diffÃ©rentes machines esclaves, mÃªme si cette option
+  est utilisÃ©e. Parfois, cela est souhaitable; parfois, non.<br>
+  Par ailleurs, il est possible d'associer plusieurs projets Ã  un mÃªme rÃ©pertoire de travail;
+  assurez-vous dans ce cas que des exÃ©cutions concurrentes de ces jobs n'interfÃ¨rent pas de faÃ§on
   adverse les unes avec les autres.
 </div>
