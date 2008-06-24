@@ -373,7 +373,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 // sanity check
                 if (newName == null)
                     throw new IllegalArgumentException("New name is not given");
-                if (parent.getItem(newName) != null)
+                TopLevelItem existing = parent.getItem(newName);
+                if (existing != null && existing!=this)
+                    // the look up is case insensitive, so we need "existing!=this"
+                    // to allow people to rename "Foo" to "foo", for example.
+                    // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
                     throw new IllegalArgumentException("Job " + newName
                             + " already exists");
 
