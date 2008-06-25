@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.MalformedURLException;
 
 /**
  * Locates where a given class is loaded from.
@@ -27,10 +28,10 @@ public class Which {
             throw new IllegalArgumentException("Unable to locate class file for "+clazz);
         String resURL = res.toExternalForm();
         String originalURL = resURL;
-        if(resURL.startsWith("jar:")) {
-            resURL = resURL.substring(4, resURL.lastIndexOf('!')); // cut off jar: and the file name portion
-            return new File(decode(new URL(resURL).getPath()));
-        }
+        if(resURL.startsWith("jar:"))
+            return fromJarUrlToFile(resURL, 4);
+        if(resURL.startsWith("wsjar:"))
+            return fromJarUrlToFile(resURL, 6);
 
         if(resURL.startsWith("code-source:/")) {
             // OC4J apparently uses this. See http://www.nabble.com/Hudson-on-OC4J-tt16702113.html
@@ -56,6 +57,11 @@ public class Which {
         }
 
         throw new IllegalArgumentException(originalURL + " - " + resURL);
+    }
+
+    private static File fromJarUrlToFile(String resURL, int prefixLength) throws MalformedURLException {
+        resURL = resURL.substring(prefixLength, resURL.lastIndexOf('!')); // cut off jar: and the file name portion
+        return new File(decode(new URL(resURL).getPath()));
     }
 
     /**
