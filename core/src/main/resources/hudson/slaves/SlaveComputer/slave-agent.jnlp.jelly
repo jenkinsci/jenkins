@@ -2,7 +2,7 @@
   <st:contentType value="application/x-java-jnlp-file" />
   <j:new var="h" className="hudson.Functions" />
   <j:set var="rootURL"
-         value="${request.scheme}://${request.serverName}:${request.serverPort}${request.contextPath}" />
+         value="${app.rootUrl}" />
 
   <!--
     See http://www.dallaway.com/acad/webstart/ for obtaining the certificate.
