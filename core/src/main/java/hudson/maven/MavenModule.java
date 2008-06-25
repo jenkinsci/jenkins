@@ -20,6 +20,7 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Resource;
 import hudson.tasks.LogRotator;
+import hudson.tasks.Publisher;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -218,6 +219,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     @Override
     public FilePath getWorkspace() {
         return getParent().getModuleRoot().child(relativePath);
+    }
+
+    public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
+        // TODO
+        return new DescribableList<Publisher,Descriptor<Publisher>>(this);
     }
 
     @Override

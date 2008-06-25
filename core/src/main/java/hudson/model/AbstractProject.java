@@ -18,11 +18,13 @@ import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.Permission;
 import hudson.tasks.BuildTrigger;
+import hudson.tasks.Publisher;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
 import hudson.util.EditDistance;
+import hudson.util.DescribableList;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import net.sf.json.JSONObject;
@@ -280,6 +282,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
+    /**
+     * Returns the live list of all {@link Publisher}s configured for this project.
+     *
+     * <p>
+     * This method couldn't be called <tt>getPublishers()</tt> because existing methods
+     * in sub-classes return different inconsistent types.
+     */
+    public abstract DescribableList<Publisher,Descriptor<Publisher>> getPublishersList();
+
     @Override
     public void addProperty(JobProperty<? super P> jobProp) throws IOException {
         super.addProperty(jobProp);
@@ -312,11 +323,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         // this needs to be done after we release the lock on 'this',
         // or otherwise we could dead-lock
 
-        for (Project p : Hudson.getInstance().getProjects()) {
+        for (AbstractProject<?,?> p : Hudson.getInstance().getAllItems(AbstractProject.class)) {
             boolean isUpstream = upstream.contains(p);
             synchronized(p) {
                 // does 'p' include us in its BuildTrigger? 
-                BuildTrigger trigger = (BuildTrigger) p.getPublisher(BuildTrigger.DESCRIPTOR);
+                DescribableList<Publisher,Descriptor<Publisher>> pl = p.getPublishersList();
+                BuildTrigger trigger = (BuildTrigger) pl.get(BuildTrigger.DESCRIPTOR);
                 List<AbstractProject> newChildProjects = trigger == null ? new ArrayList<AbstractProject>():trigger.getChildProjects();
                 if(isUpstream) {
                     if(!newChildProjects.contains(this))
@@ -326,12 +338,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
 
                 if(newChildProjects.isEmpty()) {
-                    p.removePublisher(BuildTrigger.DESCRIPTOR);
+                    pl.remove(BuildTrigger.DESCRIPTOR);
                 } else {
-                    BuildTrigger existing = (BuildTrigger)p.getPublisher(BuildTrigger.DESCRIPTOR);
+                    BuildTrigger existing = (BuildTrigger)pl.get(BuildTrigger.DESCRIPTOR);
                     if(existing!=null && existing.hasSame(newChildProjects))
                         continue;   // no need to touch
-                    p.addPublisher(new BuildTrigger(newChildProjects,
+                    pl.add(new BuildTrigger(newChildProjects,
                         existing==null?Result.SUCCESS:existing.getThreshold()));
                 }
             }
@@ -999,7 +1011,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Finds a {@link AbstractProject} that has the name closest to the given name.
      */
     public static AbstractProject findNearest(String name) {
-        List<AbstractProject> projects = Hudson.getInstance().getAllItems(AbstractProject.class);
+        List<AbstractProject> projects = Hudson.getInstance().getItems(AbstractProject.class);
         String[] names = new String[projects.size()];
         for( int i=0; i<projects.size(); i++ )
             names[i] = projects.get(i).getName();

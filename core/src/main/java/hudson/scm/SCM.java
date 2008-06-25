@@ -31,6 +31,11 @@ import java.util.Map;
  * The view gets the "builds" variable which is a list of builds that are
  * selected for the display.
  *
+ * <p>
+ * If you are interested in writing a subclass in a plugin,
+ * also take a look at <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Writing+an+SCM+plugin">
+ * "Writing an SCM plugin"</a> wiki article.
+ *
  * @author Kohsuke Kawaguchi
  */
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {

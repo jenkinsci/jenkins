@@ -1,17 +1,18 @@
 package hudson.model;
 
-import hudson.CopyOnWrite;
-import hudson.Util;
 import hudson.StructuredForm;
+import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.Publisher;
-import hudson.tasks.BuildStepDescriptor;
 import hudson.triggers.Trigger;
+import hudson.util.DescribableList;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -21,8 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
-import java.util.Collections;
 
 /**
  * Buildable software project.
@@ -30,25 +29,25 @@ import java.util.Collections;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
-    extends AbstractProject<P,B> implements SCMedItem {
+    extends AbstractProject<P,B> implements SCMedItem, DescribableList.Owner {
 
     /**
      * List of active {@link Builder}s configured for this project.
      */
-    @CopyOnWrite
-    private volatile List<Builder> builders = new Vector<Builder>();
+    private DescribableList<Builder,Descriptor<Builder>> builders =
+            new DescribableList<Builder,Descriptor<Builder>>(this);
 
     /**
      * List of active {@link Publisher}s configured for this project.
      */
-    @CopyOnWrite
-    private volatile List<Publisher> publishers = new Vector<Publisher>();
+    private DescribableList<Publisher,Descriptor<Publisher>> publishers =
+            new DescribableList<Publisher,Descriptor<Publisher>>(this);
 
     /**
      * List of active {@link BuildWrapper}s configured for this project.
      */
-    @CopyOnWrite
-    private volatile List<BuildWrapper> buildWrappers = new Vector<BuildWrapper>();
+    private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
+            new DescribableList<BuildWrapper,Descriptor<BuildWrapper>>(this);
 
     /**
      * Creates a new project.
@@ -62,7 +61,10 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
         if(buildWrappers==null)
             // it didn't exist in < 1.64
-            buildWrappers = new Vector<BuildWrapper>();
+            buildWrappers = new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+        builders.setOwner(this);
+        publishers.setOwner(this);
+        buildWrappers.setOwner(this);
     }
 
     public AbstractProject<?, ?> asProject() {
@@ -70,15 +72,19 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     }
 
     public List<Builder> getBuilders() {
-        return Collections.unmodifiableList(builders);
+        return builders.toList();
     }
 
     public Map<Descriptor<Publisher>,Publisher> getPublishers() {
-        return Descriptor.toMap(publishers);
+        return publishers.toMap();
+    }
+
+    public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
+        return publishers;
     }
 
     public Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
-        return Descriptor.toMap(buildWrappers);
+        return buildWrappers.toMap();
     }
 
     @Override
@@ -97,14 +103,14 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
      * Adds a new {@link BuildStep} to this {@link Project} and saves the configuration.
      */
     public void addPublisher(Publisher buildStep) throws IOException {
-        addToList(buildStep,publishers);
+        publishers.add(buildStep);
     }
 
     /**
      * Removes a publisher from this project, if it's active.
      */
     public void removePublisher(Descriptor<Publisher> descriptor) throws IOException {
-        removeFromList(descriptor, publishers);
+        publishers.remove(descriptor);
     }
 
     public Publisher getPublisher(Descriptor<Publisher> descriptor) {
@@ -116,9 +122,9 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
-        graph.addDependencyDeclarers(this,publishers);
-        graph.addDependencyDeclarers(this,builders);
-        graph.addDependencyDeclarers(this,buildWrappers);
+        publishers.buildDependencyGraph(this,graph);
+        builders.buildDependencyGraph(this,graph);
+        buildWrappers.buildDependencyGraph(this,graph);
     }
 
     @Override
@@ -144,11 +150,11 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         super.submit(req,rsp);
 
         req.setCharacterEncoding("UTF-8");
+        JSONObject json = StructuredForm.get(req);
 
-        buildWrappers = buildDescribable(req, BuildWrappers.getFor(this), "wrapper");
-        builders = Descriptor.newInstancesFromHeteroList(req,
-                StructuredForm.get(req), "builder", BuildStep.BUILDERS);
-        publishers = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.PUBLISHERS, this.getClass()), "publisher");
+        buildWrappers.rebuild(req,json, BuildWrappers.getFor(this), "wrapper");
+        builders.rebuildHetero(req,json, BuildStep.BUILDERS, "builder");
+        publishers.rebuild(req, json, BuildStepDescriptor.filter(BuildStep.PUBLISHERS, this.getClass()), "publisher");
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }
 

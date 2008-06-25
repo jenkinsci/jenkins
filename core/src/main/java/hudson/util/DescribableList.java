@@ -9,6 +9,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.model.*;
 import hudson.model.Descriptor.FormException;
+import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.apache.maven.model.Dependency;
@@ -19,10 +20,19 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 /**
  * Persisted list of {@link Describable}s with some operations specific
  * to {@link Descriptor}s.
+ *
+ * <p>
+ * This class allows multiple instances of the same descriptor. Some clients
+ * use this semantics, while other clients use it as "up to one instance per
+ * one descriptor" model.
+ *
+ * Some of the methods defined in this class only makes sense in the latter model,
+ * such as {@link #remove(Descriptor)}.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -77,6 +87,13 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     }
 
     /**
+     * Returns the snapshot view of instances as list.
+     */
+    public List<T> toList() {
+        return data.getView();
+    }
+
+    /**
      * Gets all the {@link Describable}s in an array.
      */
     public T[] toArray(T[] array) {
@@ -109,6 +126,18 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
 
         data.replaceBy(newList);
+    }
+
+    /**
+     * Rebuilds the list by creating a fresh instances from the submitted form.
+     *
+     * <p>
+     * This version works with the the &lt;f:hetero-list> UI tag, where the user
+     * is allowed to create multiple instances of the same descriptor. Order is also
+     * significant.
+     */
+    public void rebuildHetero(StaplerRequest req, JSONObject formData, Collection<Descriptor<T>> descriptors, String key) throws FormException {
+        data.replaceBy(Descriptor.newInstancesFromHeteroList(req,formData,key,descriptors));
     }
 
     /**

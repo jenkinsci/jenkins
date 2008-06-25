@@ -297,9 +297,15 @@ public class RobustReflectionConverter implements Converter {
 
     private Class determineType(HierarchicalStreamReader reader, boolean validField, Object result, String fieldName, Class definedInCls) {
         String classAttribute = reader.getAttribute(mapper.aliasForAttribute("class"));
+        Class fieldType = reflectionProvider.getFieldType(result, fieldName, definedInCls);
         if (classAttribute != null) {
-            return mapper.realClass(classAttribute);
-        } else if (!validField) {
+            Class specifiedType = mapper.realClass(classAttribute);
+            if(fieldType.isAssignableFrom(specifiedType))
+                // make sure that the specified type in XML is compatible with the field type.
+                // this allows the code to evolve in more flexible way.
+                return specifiedType;
+        }
+        if (!validField) {
             Class itemType = mapper.getItemTypeForItemFieldName(result.getClass(), fieldName);
             if (itemType != null) {
                 return itemType;
@@ -307,7 +313,7 @@ public class RobustReflectionConverter implements Converter {
                 return mapper.realClass(reader.getNodeName());
             }
         } else {
-            return mapper.defaultImplementationOf(reflectionProvider.getFieldType(result, fieldName, definedInCls));
+            return mapper.defaultImplementationOf(fieldType);
         }
     }
 

@@ -2,10 +2,10 @@ package hudson.matrix;
 
 import hudson.CopyOnWrite;
 import hudson.FilePath;
-import hudson.XmlFile;
 import hudson.StructuredForm;
-import hudson.triggers.Trigger;
+import hudson.XmlFile;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
@@ -20,14 +20,16 @@ import hudson.model.Node;
 import hudson.model.SCMedItem;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.model.Action;
 import hudson.tasks.BuildStep;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
-import hudson.tasks.BuildStepDescriptor;
+import hudson.triggers.Trigger;
 import hudson.util.CopyOnWriteMap;
+import hudson.util.DescribableList;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -38,15 +40,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,7 +57,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> implements TopLevelItem, SCMedItem, ItemGroup<MatrixConfiguration> {
+public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> implements TopLevelItem, SCMedItem, ItemGroup<MatrixConfiguration>, DescribableList.Owner {
     /**
      * Other configuration axes.
      *
@@ -67,17 +68,20 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     /**
      * List of active {@link Builder}s configured for this project.
      */
-    private volatile List<Builder> builders = new Vector<Builder>();
+    private DescribableList<Builder,Descriptor<Builder>> builders =
+            new DescribableList<Builder,Descriptor<Builder>>(this);
 
     /**
      * List of active {@link Publisher}s configured for this project.
      */
-    private volatile List<Publisher> publishers = new Vector<Publisher>();
+    private DescribableList<Publisher,Descriptor<Publisher>> publishers =
+            new DescribableList<Publisher,Descriptor<Publisher>>(this);
 
     /**
      * List of active {@link BuildWrapper}s configured for this project.
      */
-    private volatile List<BuildWrapper> buildWrappers = new Vector<BuildWrapper>();
+    private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
+            new DescribableList<BuildWrapper,Descriptor<BuildWrapper>>(this);
 
     /**
      * All {@link MatrixConfiguration}s, keyed by their {@link MatrixConfiguration#getName() names}.
@@ -147,7 +151,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent,name);
         Collections.sort(axes); // perhaps the file was edited on disk and the sort order might have been broken
-
+        builders.setOwner(this);
+        publishers.setOwner(this);
+        buildWrappers.setOwner(this);
         rebuildConfigurations();
     }
 
@@ -353,15 +359,19 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     public List<Builder> getBuilders() {
-        return Collections.unmodifiableList(builders);
+        return builders.toList();
     }
 
     public Map<Descriptor<Publisher>,Publisher> getPublishers() {
-        return Descriptor.toMap(publishers);
+        return publishers.toMap();
+    }
+
+    public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
+        return publishers;
     }
 
     public Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
-        return Descriptor.toMap(buildWrappers);
+        return buildWrappers.toMap();
     }
 
     public Publisher getPublisher(Descriptor<Publisher> descriptor) {
@@ -388,7 +398,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
-        graph.addDependencyDeclarers(this,publishers);
+        publishers.buildDependencyGraph(this,graph);
+        builders.buildDependencyGraph(this,graph);
+        buildWrappers.buildDependencyGraph(this,graph);
     }
 
     public MatrixProject asProject() {
@@ -427,11 +439,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             newAxes.add(Axis.parsePrefixed(req,"label"));
         this.axes = newAxes;
 
-        buildWrappers = buildDescribable(req, BuildWrappers.getFor(this), "wrapper");
-        builders = Descriptor.newInstancesFromHeteroList(req,
-                StructuredForm.get(req), "builder", BuildStep.BUILDERS);
+        JSONObject json = StructuredForm.get(req);
 
-        publishers = buildDescribable(req, BuildStepDescriptor.filter(BuildStep.PUBLISHERS,this.getClass()), "publisher");
+        buildWrappers.rebuild(req, json, BuildWrappers.getFor(this), "wrapper");
+        builders.rebuildHetero(req, json, BuildStep.BUILDERS, "builder");
+        publishers.rebuild(req, json, BuildStepDescriptor.filter(BuildStep.PUBLISHERS,this.getClass()), "publisher");
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
 
         rebuildConfigurations();

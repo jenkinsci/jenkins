@@ -241,6 +241,11 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return publishers;
     }
 
+    @Override
+    public DescribableList<Publisher, Descriptor<Publisher>> getPublishersList() {
+        return publishers;
+    }
+
     /**
      * List of active {@link BuildWrapper}s. Can be empty but never null.
      */
@@ -337,10 +342,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
         if(reporters==null)
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
+        reporters.setOwner(this);
         if(publishers==null)
             publishers = new DescribableList<Publisher,Descriptor<Publisher>>(this);
+        publishers.setOwner(this);
         if(buildWrappers==null)
             buildWrappers = new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+        buildWrappers.setOwner(this);
 
         updateTransientActions();
     }
