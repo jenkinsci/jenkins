@@ -1,2 +1,14 @@
 usr/bin
 usr/sbin
+
+# moved from rules install
+usr/local/bin
+var/lib/hudson
+
+# Need to create hudson's own directory to track the pid since the daemon is not run as root 
+# and doesn't have permission to write the pid to /var/run (which would be the preferred location).
+var/run/hudson
+
+# Store hudson log file in it's own directory since they can become rather large and in the future
+# rotating logs can be easily added.
+var/log/hudson

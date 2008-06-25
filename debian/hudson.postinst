@@ -20,6 +20,18 @@ set -e
 
 case "$1" in
     configure)
+    
+        # Create hudson user if it doesn't exist.
+	    if ! id hudson > /dev/null 2>&1 ; then
+	        adduser --system --home /var/lib/hudson --no-create-home \
+		    --ingroup nogroup --disabled-password --shell /bin/false \
+		    hudson
+	    fi
+	
+    	# Fix permissions on runtime directories/files.
+    	chown -R hudson:adm /var/run/hudson /var/lib/hudson /var/log/hudson
+    	chmod -R 770 /var/run/hudson /var/lib/hudson
+    	chmod 750 /var/log/hudson
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

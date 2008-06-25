@@ -7,12 +7,12 @@ NAME=hudson
 JAVA=/usr/bin/java
 
 # arguments to pass to java
-JAVA_ARGS="-Xmx256m -jar"
+#JAVA_ARGS="-Xmx256m"
 
 PIDFILE=/var/run/hudson/hudson.pid
 
 # user id to be invoked as (otherwise will run as root; not wise!)
-HUDSON_USER=root
+HUDSON_USER=hudson
 
 # location of the hudson war file
 HUDSON_WAR=/usr/local/bin/hudson.war
@@ -21,7 +21,7 @@ HUDSON_WAR=/usr/local/bin/hudson.war
 HUDSON_HOME=/var/lib/hudson
 
 # log location.  this may be a syslog facility.priority
-HUDSON_LOG=/var/log/$NAME.log
+HUDSON_LOG=/var/log/hudson/$NAME.log
 #HUDSON_LOG=daemon.info
 
 # arguments to pass to hudson.
@@ -30,4 +30,5 @@ HUDSON_LOG=/var/log/$NAME.log
 # --httpsPort=$HTTP_PORT
 # --argumentsRealm.passwd.$ADMIN_USER=[password]
 # --argumentsRealm.$ADMIN_USER=admin
-#HUDSON_ARGS=
+# --webroot=~/.hudson/war
+HUDSON_ARGS=--webroot=/var/run/hudson/war

@@ -18,9 +18,15 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
+# TODO: Remove cached/temp files
 
 case "$1" in
-    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    purge)
+	userdel hudson || true
+    # TODO: remove log files rm -rf /var/log/hudson
+    ;;
+    
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
     ;;
 
     *)

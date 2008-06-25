@@ -41,13 +41,15 @@ install: build
 	dh_testroot
 	dh_clean -k 
 	dh_installdirs
-    
+	dh_install
+	    
 	# Add here commands to install the package into debian/hudson.
-	mkdir -p $(CURDIR)/debian/hudson/usr/local/bin
-	mkdir -p $(CURDIR)/debian/hudson/var/run/hudson
-	mkdir -p $(CURDIR)/debian/hudson/var/lib/hudson
-	cp hudson.war $(CURDIR)/debian/hudson/usr/local/bin/hudson.war
 	
+	# Moved creation of dirs to dirs template to be invoked by dh_installdirs
+
+    # Moved copying of 'upstream' files (hudson.war) to install template to be invoked by dh_install
+	#cp hudson.war $(CURDIR)/debian/hudson/usr/local/bin/hudson.war
+
 
 
 # Build architecture-independent files here.
@@ -61,7 +63,6 @@ binary-arch: build install
 	dh_installchangelogs 
 	dh_installdocs
 	dh_installexamples
-#	dh_install
 #	dh_installmenu
 #	dh_installdebconf	
 #	dh_installlogrotate
