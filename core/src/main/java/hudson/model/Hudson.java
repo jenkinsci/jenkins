@@ -689,6 +689,17 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     /**
+     * Gets just the immediate children of {@link Hudson} but of the given type.
+     */
+    public <T extends TopLevelItem> List<T> getItems(Class<T> type) {
+        List<T> r = new ArrayList<T>();
+        for (TopLevelItem i : items.values())
+            if (type.isInstance(i))
+                 r.add(type.cast(i));
+        return r;
+    }
+
+    /**
      * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
      * and filter them by the given type.
      */
