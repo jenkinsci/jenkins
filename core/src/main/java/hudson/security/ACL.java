@@ -12,6 +12,7 @@ import hudson.model.Hudson;
  * Gate-keeper that controls access to Hudson's model objects.
  *
  * @author Kohsuke Kawaguchi
+ * @see http://hudson.gotdns.com/wiki/display/HUDSON/Making+your+plugin+behave+in+secured+Hudson
  */
 public abstract class ACL {
     /**

@@ -4,6 +4,7 @@ package hudson.security;
  * Object that has an {@link ACL}
  *
  * @since 1.220
+ * @see http://hudson.gotdns.com/wiki/display/HUDSON/Making+your+plugin+behave+in+secured+Hudson
  */
 public interface AccessControlled {
     /**

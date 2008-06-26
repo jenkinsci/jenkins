@@ -14,6 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Each permission is represented by a specific instance of {@link Permission}.
  *
  * @author Kohsuke Kawaguchi
+ * @see http://hudson.gotdns.com/wiki/display/HUDSON/Making+your+plugin+behave+in+secured+Hudson
  */
 public final class Permission {
     public final Class owner;
