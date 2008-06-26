@@ -470,7 +470,7 @@ public class Functions {
                     return;
                 }
             }
-            throw new AssertionError(); // ancestor must include Hudson, which is AccessControlled.
+            checkPermission(Hudson.getInstance(),permission);
         }
     }
 
