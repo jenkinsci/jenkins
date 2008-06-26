@@ -44,6 +44,7 @@ import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
 import hudson.security.SecurityRealm.SecurityComponents;
 import hudson.security.TokenBasedRememberMeServices2;
+import hudson.security.AccessControlled;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -2518,7 +2519,18 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * has the admin access.
      *
      * @deprecated
-     *      Define a custom {@link Permission} and check against ACL.
+     *      This method is deprecated when Hudson moved from simple Unix root-like model
+     *      of "admin gets to do everything, and others don't have any privilege" to more
+     *      complex {@link ACL} and {@link Permission} based scheme.
+     *
+     *      <p>
+     *      For a quick migration, use {@code Hudson.getInstance().getACL().hasPermission(Hudson.ADMINISTER)}
+     *      To check if the user has the 'administer' role in Hudson.
+     *
+     *      <p>
+     *      But ideally, your plugin should first identify a suitable {@link Permission} (or create one,
+     *      if appropriate), then identify a suitable {@link AccessControlled} object to check its permission
+     *      against. 
      */
     public static boolean isAdmin() {
         return Hudson.getInstance().getACL().hasPermission(ADMINISTER);
@@ -2527,6 +2539,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /**
      * @deprecated
      *      Define a custom {@link Permission} and check against ACL.
+     *      See {@link #isAdmin()} for more instructions.
      */
     public static boolean isAdmin(StaplerRequest req) {
         return isAdmin();
