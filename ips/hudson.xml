@@ -27,8 +27,7 @@ THE SOFTWARE.
 <service_bundle type="manifest" name="Hudson">
 	<service name="application/hudson" type="service" version="1">
 		
-		<!-- Initial state of the service is disabled -->
-		<create_default_instance enabled="false" />
+		<create_default_instance enabled="true" />
 		
 		<!-- Only one instance of Hudson should ever run per server -->
 		<single_instance />
