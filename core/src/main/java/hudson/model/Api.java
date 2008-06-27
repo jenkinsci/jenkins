@@ -135,5 +135,12 @@ public class Api extends AbstractModelObject {
         rsp.serveExposedBean(req,bean, Flavor.JSON);
     }
 
+    /**
+     * Exposes the bean as Python literal.
+     */
+    public void doPython(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        rsp.serveExposedBean(req,bean, Flavor.PYTHON);
+    }
+
     private static final ModelBuilder MODEL_BUILDER = new ModelBuilder();
 }

@@ -29,6 +29,16 @@
           <a href="http://ajaxian.com/archives/jsonp-json-with-padding">JSONP</a> through
           the optional <tt>jsonp=<i>callbackname</i></tt> query parameter.
         </dd>
+
+        <dt><a href="python">Python API</a></dt>
+        <dd>
+          Access the same data as Python for Python clients. This can be parsed into Python
+          object as <tt>eval(urllib.urlopen("...").read())</tt> and the resulting object
+          tree is identical to that of JSON.
+
+          However, when you do this, beware of the security implication. If you are connecting
+          to a non-trusted Hudson, the server can send you malicious Python programs. 
+        </dd>
       </dl>
 
       <p>
