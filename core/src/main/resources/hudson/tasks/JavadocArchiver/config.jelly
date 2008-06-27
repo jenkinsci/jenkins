@@ -4,4 +4,8 @@
     <f:textbox name="javadoc_dir" value="${instance.javadocDir}"
         checkUrl="'${rootURL}/publisher/JavadocArchiver/check?job=${it.fullName}&amp;value='+escape(this.value)"/>
   </f:entry>
+  <f:entry help="/help/project-config/javadoc-keep-all.html">
+    <f:checkbox name="keep_all" checked="${instance.keepAll}" />
+    <label class="attach-previous">${%Retain javadoc for each successful build}</label>
+  </f:entry>
 </j:jelly>
