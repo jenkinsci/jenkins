@@ -2,11 +2,11 @@ import org.acegisecurity.providers.ProviderManager
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider
 import org.acegisecurity.providers.ldap.LdapAuthenticationProvider
 import org.acegisecurity.providers.ldap.authenticator.BindAuthenticator2
-import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator
 import org.acegisecurity.ldap.DefaultInitialDirContextFactory
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
 import hudson.model.Hudson
+import hudson.security.DeferredCreationLdapAuthoritiesPopulator
 
 /*
     Configure LDAP as the authentication realm.
@@ -35,7 +35,7 @@ bindAuthenticator(BindAuthenticator2,initialDirContextFactory) {
     userSearch = ldapUserSearch;
 }
 
-authoritiesPopulator(DefaultLdapAuthoritiesPopulator,initialDirContextFactory,"ou=groups") {
+authoritiesPopulator(DeferredCreationLdapAuthoritiesPopulator,initialDirContextFactory,"ou=groups") {
   // groupRoleAttribute = "ou";
 }
 

@@ -13,6 +13,9 @@
     <f:entry title="${%User search filter}" help="/help/security/ldap/userSearchFilter.html">
       <f:textbox name="ldap.userSearch" value="${instance.userSearch}" />
     </f:entry>
+    <f:entry title="${%Group search base}" help="/help/security/ldap/groupSearchBase.html">
+      <f:textbox name="ldap.groupSearchBase" value="${instance.groupSearchBase}" />
+    </f:entry>
     <f:entry title="${%Manager DN}" help="/help/security/ldap/managerDN.html">
       <f:textbox name="ldap.managerDN" value="${instance.managerDN}"
       checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=managerDN&amp;server='+escape(this.form.elements['ldap.server'].value)+'&amp;managerDN='+escape(this.value)+'&amp;managerPassword='+escape(this.form.elements['ldap.managerPassword'].value)"

@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 /**
  * {@link SecurityRealm} implementation that uses LDAP for authentication.
  * 
@@ -78,6 +79,15 @@ public class LDAPSecurityRealm extends SecurityRealm {
      * @see FilterBasedLdapUserSearch
      */
     public final String userSearch;
+    
+    /**
+     * This defines the organizational unit that contains groups.
+     *
+     * Normally "ou=groups"
+     *
+     * @see FilterBasedLdapUserSearch
+     */
+    public final String groupSearchBase;
 
     /*
         Other configurations that are needed:
@@ -106,13 +116,14 @@ public class LDAPSecurityRealm extends SecurityRealm {
     private final String managerPassword;
 
     @DataBoundConstructor
-    public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch, String managerDN, String managerPassword) {
+    public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch, String groupSearchBase, String managerDN, String managerPassword) {
         this.server = server.trim();
         if(Util.fixEmptyAndTrim(rootDN)==null)    rootDN=Util.fixNull(inferRootDN(server));
         this.rootDN = rootDN.trim();
         this.userSearchBase = userSearchBase.trim();
         if(Util.fixEmptyAndTrim(userSearch)==null)    userSearch="uid={0}";
         this.userSearch = userSearch.trim();
+        this.groupSearchBase = Util.fixEmptyAndTrim(groupSearchBase);
         this.managerDN = Util.fixEmpty(managerDN);
         if(Util.fixEmpty(managerPassword)==null)
             this.managerPassword = null;
@@ -165,6 +176,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
         BeanBuilder builder = new BeanBuilder();
         builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/LDAPBindSecurityRealm.groovy"),binding);
         final WebApplicationContext appContext = builder.createApplicationContext();
+        correctAuthoritiesPopulator(appContext);
 
         return new SecurityComponents(
             findBean(AuthenticationManager.class, appContext),
@@ -181,6 +193,15 @@ public class LDAPSecurityRealm extends SecurityRealm {
             });
     }
 
+    /**
+     * Adjust the authoritiesPopulator bean to have the correct groupSearchBase
+     * @param appContext 
+     */
+    private void correctAuthoritiesPopulator(WebApplicationContext appContext) {
+        DeferredCreationLdapAuthoritiesPopulator factory = (DeferredCreationLdapAuthoritiesPopulator) appContext.getBean("authoritiesPopulator");
+        factory.setGroupSearchBase(groupSearchBase==null ? "ou=groups" : groupSearchBase);
+    }
+    
     /**
      * If the security realm is LDAP, try to pick up e-mail address from LDAP.
      */
