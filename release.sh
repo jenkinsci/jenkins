@@ -49,9 +49,13 @@ ruby push-m2-repo.rb $id
 chmod u+x publish-javadoc.sh
 ./publish-javadoc.sh
 
+# create and publish debian package
 chmod u+x release-debian.sh
 ./release-debian.sh $id
 svn commit -m "updated changelog as a part of the release" debian/changelog
+
+# publish IPS
+cat war/target/hudson-war-$id.ipstgz | ssh wsinterop.sun.com "cd ips/repository; tar xvzf -"
 
 cd $WWW
 svn commit -m "Hudson $id released" changelog.html hudson.jnlp
