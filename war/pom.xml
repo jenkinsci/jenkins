@@ -407,5 +407,27 @@
         </repository>
       </repositories>
     </profile>
+    <profile>
+      <!-- profile for creating Hudson IPS package -->
+      <id>ips</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jvnet.updatecenter2</groupId>
+            <artifactId>maven-makepkgs-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>package</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <proto>../ips/proto.py</proto>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
