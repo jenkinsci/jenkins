@@ -165,9 +165,11 @@ public abstract class MailAddressResolver implements ExtensionPoint {
             }
 
             {// source forge
+                Pattern svnUrl = Pattern.compile("(http|https)://[^.]+.svn.(sourceforge|sf).net/svnroot/([^/]+)(/.*)?");
                 Pattern cvsUrl = Pattern.compile(":(pserver|ext):([^@]+)@([^.]+).cvs.(sourceforge|sf).net:.+");
+
+                RULE_TABLE.put(svnUrl,"@users.sourceforge.net");
                 RULE_TABLE.put(cvsUrl,"@users.sourceforge.net");
-                // SVN URL?
             }
 
             // TODO: read some file under $HUDSON_HOME?
