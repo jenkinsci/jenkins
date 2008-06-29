@@ -89,7 +89,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * such as mixing SNAPSHOTS. Maven also doesn't try to coordinate the concurrent access to Maven repositories
      * from multiple Maven process, so this helps there too.
      *
-     * @sine 1.223
+     * @since 1.223
      */
     private boolean usePrivateRepository = false;
 

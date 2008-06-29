@@ -32,7 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * </pre>
  *
  * @author Kohsuke Kawaguchi
- * @sine 1.192
+ * @since 1.192
  */
 public abstract class MailAddressResolver implements ExtensionPoint {
     /**

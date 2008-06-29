@@ -45,7 +45,7 @@ import javax.imageio.ImageIO;
  * </dl>
  *
  * @author Kohsuke Kawaguchi
- * @sicne 1.160
+ * @since 1.160
  */
 public abstract class SecurityRealm implements Describable<SecurityRealm>, ExtensionPoint {
     /**
