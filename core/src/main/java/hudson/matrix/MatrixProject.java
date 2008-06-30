@@ -292,6 +292,13 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return configurations.values();
     }
 
+    @Override
+    public Collection<? extends Job> getAllJobs() {
+        Set<Job> jobs = new HashSet<Job>(getItems());
+        jobs.add(this);
+        return jobs;
+    }
+
     public String getUrlChildPrefix() {
         return ".";
     }
