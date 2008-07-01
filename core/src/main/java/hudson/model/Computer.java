@@ -1,7 +1,6 @@
 package hudson.model;
 
 import hudson.EnvVars;
-import hudson.Util;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.node_monitors.NodeMonitor;
@@ -10,7 +9,6 @@ import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
-import hudson.security.PermissionGroup;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
@@ -31,7 +29,6 @@ import java.util.logging.LogRecord;
 
 import javax.servlet.ServletException;
 
-import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -138,6 +135,13 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     // ugly name to let EL access this
     public int getNumExecutors() {
         return numExecutors;
+    }
+
+    /**
+     * Returns the name of the node.
+     */
+    public String getName() {
+        return nodeName;
     }
 
     /**
