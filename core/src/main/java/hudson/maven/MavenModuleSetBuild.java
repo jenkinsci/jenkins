@@ -296,6 +296,9 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                             buildEnvironments.add(e);
                         }
 
+                        if(!preBuild(listener, project.getPublishers()))
+                            return Result.FAILURE;
+
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
                         proxies = new HashMap<ModuleName, ProxyImpl2>();
                         for (MavenModule m : project.sortedActiveModules)

@@ -315,6 +315,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         protected final boolean preBuild(BuildListener listener,Collection<? extends BuildStep> steps) {
+            return preBuild(listener,(Iterable<? extends BuildStep>)steps);
+        }
+
+        protected final boolean preBuild(BuildListener listener,Iterable<? extends BuildStep> steps) {
             for( BuildStep bs : steps )
                 if(!bs.prebuild(AbstractBuild.this,listener))
                     return false;
