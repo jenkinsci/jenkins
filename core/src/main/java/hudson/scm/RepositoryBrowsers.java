@@ -77,6 +77,6 @@ public class RepositoryBrowsers {
             return type.cast(list.get(a.getInt(0)).newInstance(req,a.getJSONObject(1)));
         }
 
-        throw new AssertionError(o.getClass());
+        throw new AssertionError(o.getClass()+" : "+o);
     }
 }
