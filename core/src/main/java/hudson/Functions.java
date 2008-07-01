@@ -894,7 +894,8 @@ public class Functions {
      * that the slaves talk to.
      */
     public String getServerName() {
-        // try to infer this from the request URL
+        // Try to infer this from the configured root URL.
+        // This makes it work correctly when Hudson runs behind a reverse proxy.
         String url = Hudson.getInstance().getRootUrl();
         try {
             if(url!=null) {
