@@ -55,6 +55,8 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.MalformedURLException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -883,6 +885,27 @@ public class Functions {
 
     public String getSystemProperty(String key) {
         return System.getProperty(key);
+    }
+
+    /**
+     * Obtains the host name of the Hudson server that clients can use to talk back to.
+     * <p>
+     * This is primarily used in <tt>slave-agent.jnlp.jelly</tt> to specify the destination
+     * that the slaves talk to.
+     */
+    public String getServerName() {
+        // try to infer this from the request URL
+        String url = Hudson.getInstance().getRootUrl();
+        try {
+            if(url!=null) {
+                String host = new URL(url).getHost();
+                if(host!=null)
+                    return host;
+            }
+        } catch (MalformedURLException e) {
+            // fall back to HTTP request
+        }
+        return Stapler.getCurrentRequest().getServerName();
     }
 
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
