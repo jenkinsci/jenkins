@@ -1649,7 +1649,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 : (String) container;
         final JSONObject data = container instanceof JSONArray
                 ? ((JSONArray)container).getJSONObject(1).getJSONObject(name)
-                : null;
+                : new JSONObject();
 
         for (Descriptor<T> d: descriptors) {
             if (d.getClass().getName().equals(clazz)) {
