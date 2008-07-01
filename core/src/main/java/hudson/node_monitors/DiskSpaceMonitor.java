@@ -1,18 +1,17 @@
 package hudson.node_monitors;
 
 import hudson.FilePath;
-import hudson.Util;
 import hudson.FilePath.FileCallable;
+import hudson.Util;
 import hudson.model.Computer;
-import hudson.model.Descriptor;
 import hudson.remoting.VirtualChannel;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-
-import net.sf.json.JSONObject;
+import java.util.logging.Logger;
 
 /**
  * Checks available disk space of the node.
@@ -49,7 +48,16 @@ public class DiskSpaceMonitor extends NodeMonitor {
             FilePath p = c.getNode().getRootPath();
             if(p==null) return null;
 
-            return p.act(new GetUsableSpace());
+            Long size = p.act(new GetUsableSpace());
+            if(size!=null && size!=0 && size/(1024*1024*1024)==0) {
+                // TODO: this scheme should be generalized, so that Hudson can remember why it's marking the node
+                // as offline, as well as allowing the user to force Hudson to use it.
+                if(!c.isTemporarilyOffline()) {
+                    LOGGER.warning("Making "+c.getName()+" offline temporarily due to the lack of disk space");
+                    c.setTemporarilyOffline(true);
+                }
+            }
+            return size;
         }
 
         public String getDisplayName() {
@@ -77,4 +85,6 @@ public class DiskSpaceMonitor extends NodeMonitor {
     static {
         LIST.add(DESCRIPTOR);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(DiskSpaceMonitor.class.getName());
 }
