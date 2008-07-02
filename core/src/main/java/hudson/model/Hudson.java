@@ -1670,9 +1670,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         }
 
         if(mode!=null && mode.equals("copyJob")) {
-            TopLevelItem src = getItem(req.getParameter("from"));
+            String from = req.getParameter("from");
+            TopLevelItem src = getItem(from);
             if(src==null) {
-                rsp.sendError(SC_BAD_REQUEST);
+                rsp.setStatus(SC_BAD_REQUEST);
+                if(Util.fixEmpty(from)==null)
+                    sendError("Specify which job to copy",req,rsp);
+                else
+                    sendError("No such job: "+from,req,rsp);
                 return null;
             }
 
