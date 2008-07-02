@@ -18,6 +18,9 @@ public final class CronTabList {
         this.tabs = new Vector<CronTab>(tabs);
     }
 
+    /**
+     * Returns true if the given calendar matches
+     */
     public synchronized boolean check(Calendar cal) {
         for (CronTab tab : tabs) {
             if(tab.check(cal))
