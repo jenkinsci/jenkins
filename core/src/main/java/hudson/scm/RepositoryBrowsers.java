@@ -66,17 +66,9 @@ public class RepositoryBrowsers {
     T createInstance(Class<T> type, StaplerRequest req, JSONObject parent, String fieldName) throws FormException {
         List<Descriptor<RepositoryBrowser<?>>> list = filter(type);
 
-        Object o = parent.get(fieldName);
+        JSONObject o = (JSONObject)parent.get(fieldName);
         if(o==null) return null;
 
-        if(o instanceof String && "auto".equals(o))
-            return null;
-
-        if (o instanceof JSONArray) {
-            JSONArray a = (JSONArray) o;
-            return type.cast(list.get(a.getInt(0)).newInstance(req,a.getJSONObject(1)));
-        }
-
-        throw new AssertionError(o.getClass()+" : "+o);
+        return req.bindJSON(type,o);
     }
 }

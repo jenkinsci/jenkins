@@ -9,12 +9,11 @@
     <j:set var="currentBrowser" value="${scm.browser}"/>
     <j:forEach var="d" items="${scmd.browserDescriptors}" varStatus="loop">
       <f:dropdownListBlock value="${loop.index}" title="${d.displayName}" selected="${currentBrowser.descriptor==d}">
-        <f:nested>
-          <table width="100%">
-            <j:set var="browser" value="${h.ifThenElse(currentBrowser.descriptor==d, currentBrowser, null)}"/>
-            <st:include from="${d}" page="${d.configPage}"/>
-          </table>
-        </f:nested>
+        <j:set var="browser" value="${h.ifThenElse(currentBrowser.descriptor==d, currentBrowser, null)}"/>
+        <tr><td>
+          <input type="hidden" name="stapler-class" value="${d.clazz.name}" /> 
+        </td></tr>
+        <st:include from="${d}" page="${d.configPage}"/>
       </f:dropdownListBlock>
     </j:forEach>
   </f:dropdownList>
