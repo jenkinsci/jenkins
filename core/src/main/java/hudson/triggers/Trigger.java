@@ -189,7 +189,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                     LOGGER.fine("cron checking "+p.getName());
 
                     if (t.tabs.check(cal)) {
-                        LOGGER.fine("cron triggered "+p.getName());
+                        LOGGER.config("cron triggered "+p.getName());
                         t.run();
                     }
                 }
