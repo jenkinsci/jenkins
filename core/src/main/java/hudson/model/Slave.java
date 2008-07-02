@@ -89,13 +89,15 @@ public final class Slave implements Node, Serializable {
 
     @DataBoundConstructor
     public Slave(String name, String description, String remoteFS, String numExecutors,
-                 Mode mode, String label) throws FormException {
+                 Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException {
         this.name = name;
         this.description = description;
         this.numExecutors = Util.tryParseNumber(numExecutors, 1).intValue();
         this.mode = mode;
         this.remoteFS = remoteFS;
         this.label = Util.fixNull(label).trim();
+        this.launcher = launcher;
+        this.retentionStrategy = retentionStrategy;
         getAssignedLabels();    // compute labels now
 
         if (name.equals(""))

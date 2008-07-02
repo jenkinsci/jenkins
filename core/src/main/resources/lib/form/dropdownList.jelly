@@ -15,7 +15,7 @@
         </td>
         <td class="setting-main">
             <!-- create drop-down list -->
-            <select class="setting-input" name="${name}" id="${id}" onchange="updateDropDownList(this)">
+            <select class="setting-input" id="${id}" onchange="updateDropDownList(this)">
                 <j:set var="dropdownListMode" value="createSelectField"/>
                 <d:invokeBody/>
             </select>

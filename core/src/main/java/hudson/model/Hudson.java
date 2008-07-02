@@ -15,7 +15,6 @@ import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
 import hudson.ProxyConfiguration;
-import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
@@ -78,9 +77,6 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
 import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
@@ -1572,91 +1568,32 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * Accepts submission from the configuration page.
      */
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        try {
-            checkPermission(ADMINISTER);
+        checkPermission(ADMINISTER);
 
-            req.setCharacterEncoding("UTF-8");
+        JSONObject json = StructuredForm.get(req);
 
-            JSONObject json = StructuredForm.get(req);
+        numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
+        if(req.hasParameter("master.mode"))
+            mode = Mode.valueOf(req.getParameter("master.mode"));
+        else
+            mode = Mode.NORMAL;
 
-            numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
-            if(req.hasParameter("master.mode"))
-                mode = Mode.valueOf(req.getParameter("master.mode"));
-            else
-                mode = Mode.NORMAL;
+        {
+            // update slave list
+            this.slaves = req.bindJSONToList(Slave.class,json.get("slaves"));
+            updateComputerList();
 
-            {
-                // update slave list
-                Object src = json.get("slaves");
-                ArrayList<Slave> r = new ArrayList<Slave>();
-                if (src instanceof JSONObject) {
-                    r.add(newSlave(req, (JSONObject) src));
-                }
-                if (src instanceof JSONArray) {
-                    JSONArray a = (JSONArray) src;
-                    for (Object o : a) {
-                        if (o instanceof JSONObject) {
-                            r.add(newSlave(req, (JSONObject) o));
-                        }
-                    }
-                }
-                this.slaves = r;
-                updateComputerList();
-
-                // label trim off
-                for (Label l : labels.values()) {
-                    l.reset();
-                    if(l.getNodes().isEmpty())
-                        labels.remove(l);
-                }
-            }
-
-            boolean result = true;
-
-            save();
-
-            if(result)
-                rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
-            else
-                rsp.sendRedirect("configure"); // back to config
-        } catch (FormException e) {
-            sendError(e,req,rsp);
-        }
-    }
-
-    private Slave newSlave(StaplerRequest req, JSONObject j) throws FormException {
-        final ComputerLauncher launcher = newDescribedChild(req, j, "launcher", ComputerLauncher.LIST);
-        final RetentionStrategy retentionStrategy = newDescribedChild(req, j, "retentionStrategy", RetentionStrategy.LIST);
-        final Slave slave = req.bindJSON(Slave.class, j);
-        slave.setLauncher(launcher);
-        slave.setRetentionStrategy(retentionStrategy);
-        return slave;
-    }
-
-    private <T extends Describable<T>> T newDescribedChild(StaplerRequest req, JSONObject j,
-                                                           String name, List<Descriptor<T>> descriptors)
-            throws FormException {
-
-        if(!j.has(name + "Class"))  return null;
-
-        // work around ISSUE-1913... the nesting has changed in dropDownList 
-
-        final Object container = j.get(name + "Class");
-        j.remove(name + "Class");
-
-        final String clazz = container instanceof JSONArray
-                ? ((JSONArray) container).getString(0)
-                : (String) container;
-        final JSONObject data = container instanceof JSONArray
-                ? ((JSONArray)container).getJSONObject(1).getJSONObject(name)
-                : new JSONObject();
-
-        for (Descriptor<T> d: descriptors) {
-            if (d.getClass().getName().equals(clazz)) {
-                return d.newInstance(req, data);
+            // label trim off
+            for (Label l : labels.values()) {
+                l.reset();
+                if(l.getNodes().isEmpty())
+                    labels.remove(l);
             }
         }
-        return null;
+
+        save();
+
+        rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
     }
 
     /**
