@@ -34,8 +34,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
         // check every hour
         Trigger.timer.scheduleAtFixedRate(new SafeTimerTask() {
             public void doRun() {
-                // start checking
-                new Record().start();
+                triggerUpdate();
             }
         }, interval, interval);
     }
@@ -79,6 +78,22 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
             return null;
         }
         return record.data.get(c);
+    }
+
+    /**
+     * Starts updating the data asynchronously.
+     * If there's any precious updating activity going on, it'll be interrupted and aborted.
+     *
+     * @return
+     *      {@link Thread} object that carries out the update operation.
+     *      You can use this to interrupt the execution or waits for the completion.
+     *      Always non-null
+     * @since 1.232 
+     */
+    public Thread triggerUpdate() {
+        Record t = new Record();
+        t.start();
+        return t;
     }
 
     /**
