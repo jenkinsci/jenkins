@@ -29,12 +29,8 @@ import java.io.IOException;
  */
 public class MavenSiteArchiver extends MavenReporter {
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        if(!mojo.pluginName.matches("org.apache.maven.plugins","maven-site-plugin"))
+        if(!mojo.is("org.apache.maven.plugins","maven-site-plugin","site"))
             return true;
-
-        if(!mojo.getGoal().equals("site"))
-            return true;
-
 
         File destDir;
         try {

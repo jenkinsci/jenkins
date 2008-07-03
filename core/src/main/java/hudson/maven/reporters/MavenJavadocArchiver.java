@@ -26,12 +26,8 @@ import java.io.IOException;
  */
 public class MavenJavadocArchiver extends MavenReporter {
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        if(!mojo.pluginName.matches("org.apache.maven.plugins","maven-javadoc-plugin"))
+        if(!mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","javadoc"))
             return true;
-
-        if(!mojo.getGoal().equals("javadoc"))
-            return true;
-
 
         File destDir;
         boolean aggregated;
