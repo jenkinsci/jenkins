@@ -10,6 +10,12 @@ import org.codehaus.plexus.component.configurator.converters.ConfigurationConver
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+import java.lang.reflect.Method;
+
+import hudson.util.InvocationInterceptor;
 
 /**
  * Information about Mojo to be executed. This object provides
@@ -111,5 +117,85 @@ public final class MojoInfo {
      */
     public boolean is(String groupId, String artifactId, String mojoName) {
         return pluginName.matches(groupId,artifactId) && getGoal().equals(mojoName);
+    }
+
+    /**
+     * Injects the specified value (designated by the specified field name) into the mojo,
+     * and returns its old value.
+     *
+     * @throws NoSuchFieldException
+     *      if the mojo doesn't have any field of the given name.
+     */
+    public <T> T inject(String name, T value) throws NoSuchFieldException {
+        for(Class c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {
+            try {
+                Field f = c.getDeclaredField(name);
+                f.setAccessible(true);
+                Object oldValue = f.get(mojo);
+                f.set(mojo,value);
+            } catch (NoSuchFieldException e) {
+                continue;
+            } catch (IllegalAccessException e) {
+                // shouldn't happen because we made it accessible
+                IllegalAccessError x = new IllegalAccessError(e.getMessage());
+                x.initCause(e);
+                throw x;
+            }
+        }
+
+        throw new NoSuchFieldException(name);
+    }
+
+    /**
+     * Intercept the invocation from the mojo to its injected component (designated by the given field name.)
+     *
+     * <p>
+     * Often for a {@link MavenReporter} to really figure out what's going on in a build, you'd like
+     * to intercept one of the components that Maven is injecting into the mojo, and inspect its parameter
+     * and return values.
+     *
+     * <p>
+     * This mehod provides a way to do this. You specify the name of the field in the Mojo class that receives
+     * the injected component, then pass in {@link InvocationInterceptor}, which will in turn be invoked
+     * for every invocation on that component.
+     *
+     * @throws NoSuchFieldException
+     *      if the specified field is not found on the mojo class, or it is found but the type is not an interface.
+     */
+    public void intercept(String fieldName, final InvocationInterceptor interceptor) throws NoSuchFieldException {
+        for(Class c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {
+            Field f;
+            try {
+                f = c.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                continue;
+            }
+
+            f.setAccessible(true);
+            Class<?> type = f.getType();
+            if(!type.isInterface())
+                throw new NoSuchFieldException(fieldName+" is of type "+type+" and it's not an interface");
+
+            try {
+                final Object oldObject = f.get(mojo);
+
+                Object newObject = Proxy.newProxyInstance(type.getClassLoader(), new Class[]{type}, new InvocationHandler() {
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        return interceptor.invoke(proxy,method,args,new InvocationHandler() {
+                            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                                return method.invoke(oldObject,args);
+                            }
+                        });
+                    }
+                });
+
+                f.set(mojo,newObject);
+            } catch (IllegalAccessException e) {
+                // shouldn't happen because we made it accessible
+                IllegalAccessError x = new IllegalAccessError(e.getMessage());
+                x.initCause(e);
+                throw x;
+            }
+        }
     }
 }
