@@ -105,4 +105,11 @@ public final class MojoInfo {
             mojoExecution.getMojoDescriptor().getPluginDescriptor().getClassRealm().getClassLoader(),
             expressionEvaluator));
     }
+
+    /**
+     * Returns true if this {@link MojoInfo} wraps the mojo of the given ID tuple.
+     */
+    public boolean is(String groupId, String artifactId, String mojoName) {
+        return pluginName.matches(groupId,artifactId) && getGoal().equals(mojoName);
+    }
 }
