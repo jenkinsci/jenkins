@@ -49,6 +49,20 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
     }
 
     /**
+     * Starts updating the data asynchronously.
+     * If there's any precious updating activity going on, it'll be interrupted and aborted.
+     *
+     * @return
+     *      {@link Thread} object that carries out the update operation.
+     *      You can use this to interrupt the execution or waits for the completion.
+     *      Always non-null
+     * @since 1.232
+     */
+    public Thread triggerUpdate() {
+        return getDescriptor().triggerUpdate();
+    }
+
+    /**
      * Obtains all the instances of {@link NodeMonitor}s that are alive.
      * @since 1.187
      */
