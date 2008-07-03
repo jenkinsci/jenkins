@@ -2,7 +2,7 @@
   If JavaScript is off, this form is used to edit the description
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName}">
+  <l:layout title="${it.displayName}" norefresh="true">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <form action="submitDescription" method="post">
