@@ -248,6 +248,13 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
+     * Exposes the executor to the remote API.
+     */
+    public Api getApi() {
+        return new Api(this);
+    }
+
+    /**
      * Returns the executor of the current thread.
      */
     public static Executor currentExecutor() {
