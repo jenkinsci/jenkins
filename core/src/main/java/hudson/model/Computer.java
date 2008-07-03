@@ -60,7 +60,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 @ExportedBean
 public abstract class Computer extends AbstractModelObject implements AccessControlled, ExecutorListener {
 
-	private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
+    private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
 
     private int numExecutors;
 
