@@ -125,6 +125,7 @@ public final class MojoInfo {
      *
      * @throws NoSuchFieldException
      *      if the mojo doesn't have any field of the given name.
+     * @since 1.232
      */
     public <T> T inject(String name, T value) throws NoSuchFieldException {
         for(Class c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {
@@ -161,6 +162,7 @@ public final class MojoInfo {
      *
      * @throws NoSuchFieldException
      *      if the specified field is not found on the mojo class, or it is found but the type is not an interface.
+     * @since 1.232
      */
     public void intercept(String fieldName, final InvocationInterceptor interceptor) throws NoSuchFieldException {
         for(Class c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {

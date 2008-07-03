@@ -14,6 +14,7 @@ import org.apache.maven.project.MavenProject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.reflect.Proxy;
 
 /**
  * Archives artifacts of the build.
@@ -26,11 +27,20 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class MavenArtifactArchiver extends MavenReporter {
+
+    @Override
+    public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
+        if(mojo.is("org.apache.maven.plugins","maven-assembly-plugin","assembly")) {
+            ClassLoader cl = mojo.mojo.getClass().getClassLoader();
+            Class<?> assemblyArchiver = cl.loadClass("org.apache.maven.plugin.assembly.archive.AssemblyArchiver");
+            Proxy.newProxyInstance(cl,new Class[]{assemblyArchiver},
+        }
+    }
+
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        if(!mojo.pluginName.matches("org.apache.maven.plugins","maven-install-plugin"))
-            return true;
-        if(!mojo.getGoal().equals("install"))
-            return true;
+        if(mojo.pluginName.matches("org.apache.maven.plugins","maven-assembly-plugin") && mojo.getGoal().equals("assembly")) {
+            
+        }
 
         return true;
     }
