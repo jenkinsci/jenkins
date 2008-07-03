@@ -129,7 +129,8 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
                 new ArrayList<AbstractProject> (build.getProject().getDownstreamProjects()); 
                 
             // Sort topologically            
-            Hudson.getInstance().getDependencyGraph().sort(downstreamProjects);
+            Collections.sort(downstreamProjects, 
+                    Collections.reverseOrder (Hudson.getInstance().getDependencyGraph()));
             
             for (AbstractProject p : downstreamProjects) {
                 if(p.isDisabled()) {
