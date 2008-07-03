@@ -4,6 +4,8 @@ import hudson.Util;
 import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 import org.acegisecurity.context.SecurityContextHolder;
 
 import javax.servlet.ServletException;
@@ -17,6 +19,7 @@ import java.util.logging.Level;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public class Executor extends Thread implements ModelObject {
     private final Computer owner;
     private final Queue queue;
@@ -133,6 +136,7 @@ public class Executor extends Thread implements ModelObject {
      * @return
      *      a sequential number starting from 0.
      */
+    @Exported
     public int getNumber() {
         return number;
     }
@@ -140,6 +144,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Returns true if this {@link Executor} is ready for action.
      */
+    @Exported
     public boolean isIdle() {
         return executable==null;
     }
@@ -160,6 +165,7 @@ public class Executor extends Thread implements ModelObject {
      * @return -1
      *      if it's impossible to estimate the progress.
      */
+    @Exported
     public int getProgress() {
         Queue.Executable e = executable;
         if(e==null)     return -1;
@@ -186,6 +192,23 @@ public class Executor extends Thread implements ModelObject {
         if(eta<=0)      return Messages.Executor_NotAvailable();
 
         return Util.getTimeSpanString(eta);
+    }
+
+    /**
+     * The same as {@link #getEstimatedRemainingTime()} but return
+     * it as a number of milli-seconds.
+     */
+    public long getEstimatedRemainingTimeMillis() {
+        Queue.Executable e = executable;
+        if(e==null)     return -1;
+
+        long d = e.getParent().getEstimatedDuration();
+        if(d<0)         return -1;
+
+        long eta = d-(System.currentTimeMillis()-startTime);
+        if(eta<=0)      return -1;
+
+        return eta;
     }
 
     /**

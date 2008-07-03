@@ -133,6 +133,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
      * for {@link #executors} to have a larger number than this.
      */
     // ugly name to let EL access this
+    @Exported
     public int getNumExecutors() {
         return numExecutors;
     }
@@ -301,6 +302,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     /**
      * Gets the read-only snapshot view of all {@link Executor}s.
      */
+    @Exported
     public List<Executor> getExecutors() {
         return new ArrayList<Executor>(executors);
     }
@@ -308,6 +310,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     /**
      * Returns true if all the executors of this computer is idle.
      */
+    @Exported
     public final boolean isIdle() {
         for (Executor e : executors)
             if(!e.isIdle())
