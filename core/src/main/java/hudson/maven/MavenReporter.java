@@ -129,7 +129,10 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
 
     /**
      * Called before execution of a single mojo.
-     * 
+     *
+     * <p>
+     * When this method is invoked, {@link MojoInfo#mojo} is fully injected with its configuration values.
+     *
      * @return
      *      See {@link #preBuild}
      * @throws InterruptedException
