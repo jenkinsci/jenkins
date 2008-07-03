@@ -26,6 +26,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -70,6 +71,9 @@ public final class PluginManager extends AbstractModelObject {
 
     public PluginManager(ServletContext context) {
         this.context = context;
+        // JSON binding needs to be able to see all the classes from all the plugins
+        Stapler.setClassLoader(context,uberClassLoader);
+
         rootDir = new File(Hudson.getInstance().getRootDir(),"plugins");
         if(!rootDir.exists())
             rootDir.mkdirs();
