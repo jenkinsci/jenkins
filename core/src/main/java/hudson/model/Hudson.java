@@ -68,7 +68,6 @@ import hudson.util.TextFile;
 import hudson.util.XStream2;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
-import net.sf.json.JSONArray;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
@@ -1553,6 +1552,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
             for( JobPropertyDescriptor d : Jobs.PROPERTIES )
                 result &= d.configure(req);
+
+            for( JSONObject o : StructuredForm.toList(json,"plugin"))
+                pluginManager.getPlugin(o.getString("name")).getPlugin().configure(o);
 
             save();
             if(result)

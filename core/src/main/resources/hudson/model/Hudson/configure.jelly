@@ -81,6 +81,18 @@
         </s:entry>
       </s:section>
 
+      <!-- list config pages from plugins, if any -->
+      <j:forEach var="p" items="${it.pluginManager.plugins}">
+        <j:if test="${h.hasView(p.plugin,'config.jelly')}">
+          <s:rowSet name="plugin">
+            <tr><td>
+              <input type="hidden" name="name" value="${p.shortName}"/>
+            </td></tr>
+            <st:include page="config.jelly" from="${p.plugin}" optional="true"/>
+          </s:rowSet>
+        </j:if>
+      </j:forEach>
+
       <d:taglib uri="local">
         <!-- display global config pages for the given descriptors -->
         <d:tag name="globalConfig">

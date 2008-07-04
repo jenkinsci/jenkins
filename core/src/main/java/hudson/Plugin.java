@@ -1,6 +1,8 @@
 package hudson;
 
 import hudson.model.Hudson;
+import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.scm.SCM;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
@@ -13,6 +15,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
+
+import net.sf.json.JSONObject;
 
 /**
  * Base class of Hudson plugin.
@@ -31,6 +35,12 @@ import java.net.URL;
  * views against your Plugin class, and those are visible in this URL, too.
  *
  * <p>
+ * {@link Plugin} can have an optional <tt>config.jelly</tt> page. If present,
+ * it will become a part of the system configuration page (http://server/hudson/configure).
+ * This is convenient for exposing/maintaining configuration that doesn't
+ * fit any {@link Descriptor}s.
+ *
+ * <p>
  * Up until Hudson 1.150 or something, subclasses of {@link Plugin} required
  * <tt>@plugin</tt> javadoc annotation, but that is no longer a requirement.
  *
@@ -41,8 +51,10 @@ public abstract class Plugin {
 
     /**
      * Set by the {@link PluginManager}.
+     * This points to the {@link PluginWrapper} that wraps
+     * this {@link Plugin} object.
      */
-    /*package*/ PluginWrapper wrapper;
+    /*package*/ transient PluginWrapper wrapper;
 
     /**
      * Called when a plugin is loaded to make the {@link ServletContext} object available to a plugin.
@@ -99,6 +111,18 @@ public abstract class Plugin {
      * @since 1.42
      */
     public void stop() throws Exception {
+    }
+
+    /**
+     * Handles the submission for the system configuration.
+     *
+     * <p>
+     * If this class defines <tt>config.jelly</tt> view, be sure to
+     * override this method and persists the submitted values accordingly.
+     *
+     * @since 1.233
+     */
+    public void configure(JSONObject formData) throws IOException, ServletException, FormException {
     }
 
     /**

@@ -758,6 +758,12 @@ public class Functions {
         return buf.toString();
     }
 
+    public static boolean hasView(Object it, String path) {
+        if(it==null)    return false;
+        return it.getClass().getClassLoader().getResource(
+            it.getClass().getName().replace('.','/').replace('$','/')+'/'+path)!=null;
+    }
+
     /**
      * Can be used to check a checkbox by default.
      * Used from views like {@code h.defaultToTrue(scm.useUpdate)}.
