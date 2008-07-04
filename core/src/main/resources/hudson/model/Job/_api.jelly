@@ -10,4 +10,9 @@
   <p>
     To programatically schedule a new build, post to <a href="../build">this URL</a>.
   </p>
+
+  <h2>Dlete a job</h2>
+  <p>
+    To programmatically delete this job, do HTTP POST to <a href="../doDelete">this URL</a>. 
+  </p>
 </j:jelly>

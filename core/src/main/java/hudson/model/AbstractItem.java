@@ -19,6 +19,7 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.HttpDeletable;
 
 import javax.servlet.ServletException;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 /**
  * Partial default implementation of {@link Item}.
@@ -208,8 +209,13 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Deletes this item.
      */
-    public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(DELETE);
+        if(!"POST".equals(req.getMethod())) {
+            rsp.setStatus(SC_BAD_REQUEST);
+            sendError("Delete request has to be POST",req,rsp);
+            return;
+        }
         delete();
         rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
     }
