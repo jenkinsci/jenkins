@@ -88,7 +88,7 @@
             <tr><td>
               <input type="hidden" name="name" value="${p.shortName}"/>
             </td></tr>
-            <st:include page="config.jelly" from="${p.plugin}" optional="true"/>
+            <st:include page="config.jelly" it="${p.plugin}" optional="true"/>
           </s:rowSet>
         </j:if>
       </j:forEach>
