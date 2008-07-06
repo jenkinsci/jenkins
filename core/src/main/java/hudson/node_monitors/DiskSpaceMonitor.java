@@ -37,7 +37,7 @@ public class DiskSpaceMonitor extends NodeMonitor {
         space/=1024L;   // convert to MB
         if(space<1024) {
             // less than a GB
-            return Util.wrapToErrorSpan(new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString());
+            return Util.wrapToErrorSpan(new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString()+"GB");
         }
 
         return space/1024+"GB";
