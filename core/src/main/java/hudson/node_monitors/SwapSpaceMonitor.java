@@ -32,10 +32,20 @@ public class SwapSpaceMonitor extends NodeMonitor {
         free/=1024L;   // convert to KB
         free/=1024L;   // convert to MB
         if(free>256 || usage.totalSwapSpace/usage.availableSwapSpace<5)
-            return usage+"MB"; // if we have more than 256MB free or less than 80% filled up, it's OK
+            return free+"MB"; // if we have more than 256MB free or less than 80% filled up, it's OK
 
         // Otherwise considered dangerously low.
-        return Util.wrapToErrorSpan(usage+"MB");
+        return Util.wrapToErrorSpan(free+"MB");
+    }
+
+    public long toMB(MemoryUsage usage) {
+        if(usage.availableSwapSpace==-1)
+            return -1;
+
+        long free = usage.availableSwapSpace;
+        free/=1024L;   // convert to KB
+        free/=1024L;   // convert to MB
+        return free;
     }
 
     public static final AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR = new AbstractNodeMonitorDescriptor<MemoryUsage>(DiskSpaceMonitor.class) {
