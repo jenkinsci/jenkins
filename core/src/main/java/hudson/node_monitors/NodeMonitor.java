@@ -80,6 +80,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
             LIST.load(ClockMonitor.class);
             if(Functions.isMustangOrAbove())
                 LIST.load(DiskSpaceMonitor.class);
+            LIST.load(SwapSpaceMonitor.class);
             LIST.load(ArchitectureMonitor.class);
         } catch (Throwable e) {
             Logger.getLogger(NodeMonitor.class.getName()).log(Level.SEVERE, "Failed to load built-in monitors",e);
