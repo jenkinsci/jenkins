@@ -114,7 +114,7 @@ public class MavenArtifactArchiver extends MavenReporter {
 
         // do we have any assembly artifacts?
 //        System.out.println("Considering "+assemblies+" at "+MavenArtifactArchiver.this);
-        new Exception().fillInStackTrace().printStackTrace();
+//        new Exception().fillInStackTrace().printStackTrace();
         for (File assembly : assemblies) {
             if(mavenArtifacts.contains(assembly))
                 continue;   // looks like this is already archived
