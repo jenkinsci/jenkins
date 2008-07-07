@@ -49,9 +49,12 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
 
         try {
             final long buildTime = build.getTimestamp().getTimeInMillis();
+            final long nowMaster = System.currentTimeMillis();
 
             TestResult result = build.getProject().getWorkspace().act(new FileCallable<TestResult>() {
                 public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
+                    final long nowSlave = System.currentTimeMillis();
+
                     FileSet fs = Util.createFileSet(ws,testResults);
                     DirectoryScanner ds = fs.getDirectoryScanner();
 
@@ -61,7 +64,7 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
                         throw new AbortException(Messages.JUnitResultArchiver_NoTestReportFound());
                     }
 
-                    return new TestResult(buildTime, ds);
+                    return new TestResult(buildTime+(nowSlave-nowMaster), ds);
                 }
             });
 
