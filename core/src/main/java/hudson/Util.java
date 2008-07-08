@@ -11,6 +11,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.kohsuke.stapler.Stapler;
 
 import java.io.BufferedReader;
@@ -786,17 +787,11 @@ public class Util {
         }
     }
 
-    public static final SimpleDateFormat XS_DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!
-    public static final SimpleDateFormat RFC822_DATETIME_FORMATTER
-            = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
-
-    static {
-        XS_DATETIME_FORMATTER.setTimeZone(new SimpleTimeZone(0,"GMT"));
-    }
-
-
+    public static final FastDateFormat RFC822_DATETIME_FORMATTER
+            = FastDateFormat.getInstance("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 }

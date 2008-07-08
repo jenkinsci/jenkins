@@ -55,8 +55,11 @@ class ChangeLogParser {
      *
      * Some users reported that they see different formats,
      * so this is extended from original Ant version to cover different formats.
+     *
+     * <p>
+     * KK: {@link SimpleDateFormat} is not thread safe, so make it per-instance.
      */
-    private static final SimpleDateFormat[] c_inputDate
+    private final SimpleDateFormat[] c_inputDate
         = new SimpleDateFormat[]{
             new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z"),
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z"),
@@ -64,7 +67,7 @@ class ChangeLogParser {
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
         };
 
-    static {
+    {
         TimeZone utc = TimeZone.getTimeZone("UTC");
         for (SimpleDateFormat df : c_inputDate) {
             df.setTimeZone(utc);

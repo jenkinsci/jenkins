@@ -16,8 +16,9 @@
  */
 package hudson.org.apache.tools.ant.taskdefs.cvslib;
 
+import org.apache.commons.lang.time.FastDateFormat;
+
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.Enumeration;
 import java.util.TimeZone;
 
@@ -27,18 +28,14 @@ import java.util.TimeZone;
  * @version $Revision$ $Date$
  */
 class ChangeLogWriter {
-    /** output format for dates written to xml file */
-    private static final SimpleDateFormat c_outputDate
-        = new SimpleDateFormat("yyyy-MM-dd");
-    /** output format for times written to xml file */
-    private static final SimpleDateFormat c_outputTime
-        = new SimpleDateFormat("HH:mm");
+    private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
-    static {
-        TimeZone utc = TimeZone.getTimeZone("UTC");
-        c_outputDate.setTimeZone(utc);
-        c_outputTime.setTimeZone(utc);
-    }
+    /** output format for dates written to xml file */
+    private static final FastDateFormat c_outputDate
+        = FastDateFormat.getInstance("yyyy-MM-dd", UTC);
+    /** output format for times written to xml file */
+    private static final FastDateFormat c_outputTime
+        = FastDateFormat.getInstance("HH:mm", UTC);
 
     /**
      * Print out the specified entries.

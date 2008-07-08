@@ -145,7 +145,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private boolean keepLog;
 
-    protected static final SimpleDateFormat ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    protected static final ThreadLocal<SimpleDateFormat> ID_FORMATTER =
+            new ThreadLocal<SimpleDateFormat>() {
+                @Override
+                protected SimpleDateFormat initialValue() {
+                    return new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+                }
+            };
 
     /**
      * Creates a new {@link Run}.
@@ -181,7 +187,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private static long parseTimestampFromBuildDir(File buildDir) throws IOException {
         try {
-            return ID_FORMATTER.parse(buildDir.getName()).getTime();
+            return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
         } catch (ParseException e) {
             throw new IOException2("Invalid directory name "+buildDir,e);
         } catch (NumberFormatException e) {
@@ -484,7 +490,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Unique ID of this build.
      */
     public String getId() {
-        return ID_FORMATTER.format(new Date(timestamp));
+        return ID_FORMATTER.get().format(new Date(timestamp));
     }
 
     /**
