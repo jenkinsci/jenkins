@@ -54,8 +54,9 @@ chmod u+x release-debian.sh
 ./release-debian.sh $id
 svn commit -m "updated changelog as a part of the release" debian/changelog
 
-# publish IPS
+# publish IPS. The server needs to be restarted for it to see the new package.
 cat war/target/hudson-war-$id.ipstgz | ssh wsinterop.sun.com "cd ips/repository; gtar xvzf -"
+ssh wsinterop.sun.com "cd ips; ./start.sh"
 
 cd $WWW
 svn commit -m "Hudson $id released" changelog.html hudson.jnlp
