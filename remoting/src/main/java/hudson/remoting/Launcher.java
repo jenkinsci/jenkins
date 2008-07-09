@@ -5,6 +5,7 @@ import hudson.remoting.Channel.Mode;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Console;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,12 +37,31 @@ public class Launcher {
             System.exit(-1);
         }
 
+        ttyCheck();
+
         // this will prevent programs from accidentally writing to System.out
         // and messing up the stream.
         OutputStream os = System.out;
         System.setOut(System.err);
         main(System.in,os,m,ping);
         System.exit(0);
+    }
+
+    private static void ttyCheck() {
+        try {
+            Console console = System.console();
+            if(console!=null) {
+                // we seem to be running from interactive console. issue a warning.
+                // but since this diagnosis could be wrong, go on and do what we normally do anyway. Don't exit.
+                System.out.println(
+                        "WARNING: Are you running slave agent from an interactive console?\n" +
+                        "If so, you are probably using it incorrectly.\n" +
+                        "See http://hudson.gotdns.com/wiki/display/HUDSON/Launching+slave.jar+from+from+console");
+            }
+        } catch (LinkageError e) {
+            // we are probably running on JDK5 that doesn't have System.console()
+            // we can't check
+        }
     }
 
     public static void main(InputStream is, OutputStream os) throws IOException, InterruptedException {
