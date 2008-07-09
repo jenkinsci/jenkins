@@ -8,6 +8,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
+import javax.servlet.ServletException;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
@@ -47,6 +48,21 @@ public final class ComputerSet implements ModelObject {
             c.launch();
         }
         rsp.sendRedirect(".");
+    }
+
+    /**
+     * Triggers the schedule update now.
+     *
+     * TODO: ajax on the client side to wait until the update completion might be nice.
+     */
+    public void doUpdateNow( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        
+        for (NodeMonitor nodeMonitor : NodeMonitor.getAll()) {
+            Thread t = nodeMonitor.triggerUpdate();
+            t.setName(nodeMonitor.getColumnCaption());
+        }
+        rsp.forwardToPreviousPage(req);
     }
 
     public Api getApi() {
