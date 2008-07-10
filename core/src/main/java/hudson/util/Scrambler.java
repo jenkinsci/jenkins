@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
  */
 public class Scrambler {
     public static String scramble(String secret) {
+        if(secret==null)    return null;
         try {
             return new String(Base64.encode(secret.getBytes("UTF-8")));
         } catch (UnsupportedEncodingException e) {
@@ -26,6 +27,7 @@ public class Scrambler {
     }
 
     public static String descramble(String scrambled) {
+        if(scrambled==null)    return null;
         try {
             return new String(Base64.decode(scrambled.toCharArray()),"UTF-8");
         } catch (IOException e) {
