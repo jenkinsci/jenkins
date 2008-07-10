@@ -125,10 +125,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
         this.userSearch = userSearch.trim();
         this.groupSearchBase = Util.fixEmptyAndTrim(groupSearchBase);
         this.managerDN = Util.fixEmpty(managerDN);
-        if(Util.fixEmpty(managerPassword)==null)
-            this.managerPassword = null;
-        else
-            this.managerPassword = Scrambler.scramble(managerPassword);
+        this.managerPassword = Scrambler.scramble(Util.fixEmpty(managerPassword));
     }
 
     /**
