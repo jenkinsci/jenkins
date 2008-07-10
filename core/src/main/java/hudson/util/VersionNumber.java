@@ -70,7 +70,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
         StringTokenizer tokens = new StringTokenizer(num,".");
         digits = new int[tokens.countTokens()];
         if(digits.length<2)
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Failed to parse "+num+" as version number");
 
         int i=0;
         while( tokens.hasMoreTokens() ) {
