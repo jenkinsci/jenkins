@@ -14,13 +14,19 @@
           <h1>${%HTTP Proxy Configuration}</h1>
           <f:form method="post" action="proxyConfigure">
             <f:block>
-              <f:entry title="HTTP proxy server" help="/help/update-center/proxy-server.html">
+              <f:entry title="Server" help="/help/update-center/proxy-server.html">
                 <f:textbox name="proxy.server" value="${app.proxy.name}" />
               </f:entry>
-              <f:entry title="HTTP proxy port" help="/help/update-center/proxy-port.html">
+              <f:entry title="Port" help="/help/update-center/proxy-port.html">
                 <f:textbox name="proxy.port" value="${app.proxy.port}" />
               </f:entry>
             </f:block>
+            <f:entry title="User name">
+              <f:textbox name="proxy.userName" value="${app.proxy.userName}" />
+            </f:entry>
+            <f:entry title="Password">
+              <f:password name="proxy.password" value="${app.proxy.password}" />
+            </f:entry>
             <f:block>
               <f:submit value="${%Submit}" />
             </f:block>

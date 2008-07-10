@@ -4,6 +4,7 @@ import hudson.Functions;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
+import hudson.ProxyConfiguration;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.TextFile;
 import static hudson.util.TimeUnit2.DAYS;
@@ -386,7 +387,7 @@ public class UpdateCenter implements ModelObject {
         }
 
         private void testConnection(URL url) throws IOException {
-            InputStream in = url.openConnection(Hudson.getInstance().createProxy()).getInputStream();
+            InputStream in = ProxyConfiguration.open(url).getInputStream();
             IOUtils.copy(in,new ByteArrayOutputStream());
             in.close();
         }
@@ -426,7 +427,7 @@ public class UpdateCenter implements ModelObject {
 
                 // In the future if we are to open up update center to 3rd party, we need more elaborate scheme
                 // like signing to ensure the safety of the bits.
-                URLConnection con = new URL(plugin.url).openConnection(Hudson.getInstance().createProxy());
+                URLConnection con = ProxyConfiguration.open(new URL(plugin.url));
                 int total = con.getContentLength();
                 CountingInputStream in = new CountingInputStream(con.getInputStream());
                 byte[] buf = new byte[8192];

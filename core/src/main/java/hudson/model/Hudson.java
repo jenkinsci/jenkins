@@ -384,16 +384,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     /**
-     * Obtains the {@link Proxy} instance to talk to other HTTP servers.
-     */
-    public Proxy createProxy() {
-        if(proxy==null)
-            return Proxy.NO_PROXY;
-        else
-            return proxy.createProxy();
-    }
-
-    /**
      * If you are calling this on Hudson something is wrong.
      *
      * @deprecated

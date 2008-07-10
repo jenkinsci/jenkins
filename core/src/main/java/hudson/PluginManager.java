@@ -218,7 +218,12 @@ public final class PluginManager extends AbstractModelObject {
         rsp.sendRedirect("../updateCenter/");
     }
 
-    public void doProxyConfigure(@QueryParameter("proxy.server") String server, @QueryParameter("proxy.port") String port, StaplerResponse rsp) throws IOException {
+    public void doProxyConfigure(
+            @QueryParameter("proxy.server") String server,
+            @QueryParameter("proxy.port") String port,
+            @QueryParameter("proxy.userName") String userName,
+            @QueryParameter("proxy.password") String password,
+            StaplerResponse rsp) throws IOException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
         Hudson hudson = Hudson.getInstance();
@@ -227,7 +232,8 @@ public final class PluginManager extends AbstractModelObject {
             hudson.proxy = null;
             ProxyConfiguration.getXmlFile().delete();
         } else {
-            hudson.proxy = new ProxyConfiguration(server,Integer.parseInt(Util.fixEmptyAndTrim(port)));
+            hudson.proxy = new ProxyConfiguration(server,Integer.parseInt(Util.fixEmptyAndTrim(port)),
+                    Util.fixEmptyAndTrim(userName),Util.fixEmptyAndTrim(password));
             hudson.proxy.save();
         }
         rsp.sendRedirect("./advanced");
