@@ -5,9 +5,10 @@ import hudson.remoting.Channel.Mode;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Console;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Entry point for running a {@link Channel} that uses stdin/stdout.
@@ -49,7 +50,8 @@ public class Launcher {
 
     private static void ttyCheck() {
         try {
-            Console console = System.console();
+            Method m = System.class.getMethod("console");
+            Object console = m.invoke(null);
             if(console!=null) {
                 // we seem to be running from interactive console. issue a warning.
                 // but since this diagnosis could be wrong, go on and do what we normally do anyway. Don't exit.
@@ -61,6 +63,14 @@ public class Launcher {
         } catch (LinkageError e) {
             // we are probably running on JDK5 that doesn't have System.console()
             // we can't check
+        } catch (InvocationTargetException e) {
+            // this is impossible
+            throw new AssertionError(e);
+        } catch (NoSuchMethodException e) {
+            // must be running on JDK5
+        } catch (IllegalAccessException e) {
+            // this is impossible
+            throw new AssertionError(e);
         }
     }
 
