@@ -736,6 +736,7 @@ public class MavenEmbedder
                 // for us. So we need to override this private field.
                 try {
                     Field field = settingsBuilder.getClass().getDeclaredField("globalSettingsFile");
+                    field.setAccessible(true);
                     // getAbsoluteFile is probably not necessary, but just following what DefaultMavenSettingsBuilder does
                     field.set(settingsBuilder,new File(mavenHome,"conf/settings.xml").getAbsoluteFile());
                 } catch (NoSuchFieldException e) {
