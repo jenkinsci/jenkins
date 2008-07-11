@@ -87,6 +87,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.lang.reflect.Field;
 
 import hudson.Util;
 
@@ -165,6 +166,21 @@ public class MavenEmbedder
      * installation.
      */
     private boolean alignWithUserInstallation;
+
+    /**
+     * Installation of Maven. We don't really read jar files from here,
+     * but we do read <tt>conf/settings.xml</tt>.
+     *
+     * <p>
+     * For compatibility reasons, this field may be null,
+     * when {@link MavenEmbedder} is invoked from old plugins
+     * who don't give us this value.
+     */
+    private final File mavenHome;
+
+    public MavenEmbedder(File mavenHome) {
+        this.mavenHome = mavenHome; 
+    }
 
     // ----------------------------------------------------------------------
     // Accessors
@@ -713,6 +729,21 @@ public class MavenEmbedder
             // ----------------------------------------------------------------------
 
             settingsBuilder = (MavenSettingsBuilder) embedder.lookup( MavenSettingsBuilder.ROLE );
+
+            if(mavenHome!=null) {
+                // set global settings.xml.
+                // Maven figures this out from system property, which is obviously not set
+                // for us. So we need to override this private field.
+                try {
+                    Field field = settingsBuilder.getClass().getDeclaredField("globalSettingsFile");
+                    // getAbsoluteFile is probably not necessary, but just following what DefaultMavenSettingsBuilder does
+                    field.set(settingsBuilder,new File(mavenHome,"conf/settings.xml").getAbsoluteFile());
+                } catch (NoSuchFieldException e) {
+                    throw new MavenEmbedderException(e);
+                } catch (IllegalAccessException e) {
+                    throw new MavenEmbedderException(e);
+                }
+            }
 
             try
             {

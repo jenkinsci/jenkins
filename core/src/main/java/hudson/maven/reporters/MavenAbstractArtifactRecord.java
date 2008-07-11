@@ -170,7 +170,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         new TaskThread(this,ListenerAndText.forFile(logFile)) {
             protected void perform(TaskListener listener) throws Exception {
                 try {
-                    MavenEmbedder embedder = MavenUtil.createEmbedder(listener, null);
+                    MavenEmbedder embedder = MavenUtil.createEmbedder(listener,getBuild().getProject(),null);
                     ArtifactRepositoryLayout layout =
                         (ArtifactRepositoryLayout) embedder.getContainer().lookup( ArtifactRepositoryLayout.ROLE,"default");
                     ArtifactRepositoryFactory factory =

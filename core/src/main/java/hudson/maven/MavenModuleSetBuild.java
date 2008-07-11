@@ -6,6 +6,7 @@ import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.model.AbstractBuild;
@@ -371,7 +372,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             logger.println("Parsing POMs");
             List<PomInfo> poms;
             try {
-                poms = project.getModuleRoot().act(new PomParser(listener,project.getRootPOM(),project.getProfiles()));
+                poms = project.getModuleRoot().act(new PomParser(listener,project.getMaven(),project.getRootPOM(),project.getProfiles()));
             } catch (IOException e) {
                 if (e.getCause() instanceof AbortException)
                     throw (AbortException) e.getCause();
@@ -621,10 +622,12 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
          * takes an effect even when {@link PomParser} runs in a slave.
          */
         private final boolean versbose = debug;
+        private final MavenInstallation mavenHome;
         private final String profiles;
 
-        public PomParser(BuildListener listener, String rootPOM, String profiles) {
+        public PomParser(BuildListener listener, MavenInstallation mavenHome, String rootPOM, String profiles) {
             this.listener = listener;
+            this.mavenHome = mavenHome;
             this.rootPOM = rootPOM;
             this.profiles = profiles;
         }
@@ -662,7 +665,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 logger.println("Parsing "+pom);
 
             try {
-                MavenEmbedder embedder = MavenUtil.createEmbedder(listener, profiles);
+                MavenEmbedder embedder = mavenHome.createEmbedder(listener,profiles);
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
                 MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener);

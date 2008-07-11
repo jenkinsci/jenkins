@@ -10,6 +10,9 @@ import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.Publisher;
+import hudson.tasks.Maven;
+import hudson.tasks.Maven.ProjectWithMaven;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.triggers.Trigger;
 import hudson.util.DescribableList;
 import net.sf.json.JSONObject;
@@ -29,7 +32,7 @@ import java.util.Set;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
-    extends AbstractProject<P,B> implements SCMedItem, DescribableList.Owner {
+    extends AbstractProject<P,B> implements SCMedItem, DescribableList.Owner, ProjectWithMaven {
 
     /**
      * List of active {@link Builder}s configured for this project.
@@ -129,18 +132,23 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     @Override
     public boolean isFingerprintConfigured() {
-        synchronized(publishers) {
-            for (Publisher p : publishers) {
-                if(p instanceof Fingerprinter)
-                    return true;
-            }
+        for (Publisher p : publishers) {
+            if(p instanceof Fingerprinter)
+                return true;
         }
         return false;
     }
 
+    @Override
+    public MavenInstallation inferMavenInstallation() {
+        for (Builder builder : builders) {
+            if (builder instanceof Maven)
+                return ((Maven) builder).getMaven();
+        }
+        return null;
+    }
 
-
-//
+    //
 //
 // actions
 //

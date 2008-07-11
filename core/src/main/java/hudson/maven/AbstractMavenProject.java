@@ -5,6 +5,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.ItemGroup;
 import hudson.triggers.Trigger;
+import hudson.tasks.Maven.ProjectWithMaven;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,7 +15,8 @@ import java.util.Set;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class AbstractMavenProject<P extends AbstractMavenProject<P,R>,R extends AbstractBuild<P,R>> extends AbstractProject<P,R>  {
+public abstract class AbstractMavenProject<P extends AbstractMavenProject<P,R>,R extends AbstractBuild<P,R>> extends AbstractProject<P,R>
+    implements ProjectWithMaven {
     protected AbstractMavenProject(ItemGroup parent, String name) {
         super(parent, name);
     }

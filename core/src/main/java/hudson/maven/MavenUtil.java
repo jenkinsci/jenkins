@@ -1,20 +1,14 @@
 package hudson.maven;
 
-import hudson.model.TaskListener;
-import hudson.model.BuildListener;
 import hudson.AbortException;
+import hudson.model.BuildListener;
+import hudson.model.TaskListener;
+import hudson.model.AbstractProject;
+import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Maven.ProjectWithMaven;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.settings.Settings;
-import org.apache.maven.settings.Proxy;
-import org.apache.maven.settings.Server;
-import org.apache.maven.settings.Mirror;
-import org.apache.maven.SettingsConfigurationException;
-import org.apache.maven.artifact.manager.WagonManager;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.component.repository.exception.ComponentLifecycleException;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,22 +17,46 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
-import java.util.Iterator;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class MavenUtil {
     /**
+     * @deprecated
+     *      Use {@link MavenInstallation#createEmbedder(BuildListener, String)}
+     *      or other overloaded versions that infers maven home.
+     */
+    public static MavenEmbedder createEmbedder(TaskListener listener, String profiles) throws MavenEmbedderException, IOException {
+        return createEmbedder(listener,(File)null,profiles);
+    }
+
+    /**
+     * This version tries to infer mavenHome by looking at a project.
+     *
+     * @see #createEmbedder(TaskListener, File, String)
+     */
+    public static MavenEmbedder createEmbedder(TaskListener listener, AbstractProject<?,?> project, String profiles) throws MavenEmbedderException, IOException {
+        MavenInstallation m=null;
+        if (project instanceof ProjectWithMaven)
+            m = ((ProjectWithMaven) project).inferMavenInstallation();
+
+        return createEmbedder(listener,m!=null?m.getHomeDir():null,profiles);
+    }
+
+    /**
      * Creates a fresh {@link MavenEmbedder} instance.
      *
      * @param listener
      *      This is where the log messages from Maven will be recorded.
+     * @param mavenHome
+     *      Directory of the Maven installation. We read {@code conf/settings.xml}
+     *      from here. Can be null.
      * @param profiles
      *      Profiles to activate/deactivate. Can be null.
      */
-    public static MavenEmbedder createEmbedder(TaskListener listener, String profiles) throws MavenEmbedderException, IOException {
-        MavenEmbedder maven = new MavenEmbedder();
+    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles) throws MavenEmbedderException, IOException {
+        MavenEmbedder maven = new MavenEmbedder(mavenHome);
 
         ClassLoader cl = MavenUtil.class.getClassLoader();
         maven.setClassLoader(new MaskingClassLoader(cl));

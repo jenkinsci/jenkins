@@ -21,6 +21,7 @@ import hudson.model.Node;
 import hudson.model.Resource;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -373,6 +374,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
             if(a!=null)
                 transientActions.add(a);
         }
+    }
+
+    @Override
+    public MavenInstallation inferMavenInstallation() {
+        return getParent().inferMavenInstallation();
     }
 
     /**

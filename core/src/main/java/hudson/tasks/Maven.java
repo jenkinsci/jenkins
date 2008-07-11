@@ -8,6 +8,9 @@ import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.EnvVars;
 import hudson.StructuredForm;
+import hudson.maven.MavenEmbedder;
+import hudson.maven.MavenUtil;
+import hudson.maven.RedeployPublisher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -21,6 +24,7 @@ import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.apache.maven.embedder.MavenEmbedderException;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -324,6 +328,34 @@ public class Maven extends Builder {
             }
         }
 
+        public MavenEmbedder createEmbedder(BuildListener listener, String profiles) throws MavenEmbedderException, IOException {
+            return MavenUtil.createEmbedder(listener,getHomeDir(),profiles);
+        }
+
         private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * Optional interface that can be implemented by {@link AbstractProject}
+     * that has "contextual" {@link MavenInstallation} associated with it.
+     *
+     * <p>
+     * Code like {@link RedeployPublisher} uses this interface in an attempt
+     * to use the consistent Maven installation attached to the project.
+     *
+     * @since 1.235
+     */
+    public interface ProjectWithMaven {
+        /**
+         * Gets the {@link MavenInstallation} associated with the project.
+         * Can be null.
+         *
+         * <p>
+         * If the Maven installation can not be uniquely determined,
+         * it's often better to return just one of them, rather than returning
+         * null, since this method is currently ultimately only used to
+         * decide where to parse <tt>conf/settings.xml</tt> from.
+         */
+        MavenInstallation inferMavenInstallation();
     }
 }

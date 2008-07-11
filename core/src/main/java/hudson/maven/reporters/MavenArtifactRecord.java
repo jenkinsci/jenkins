@@ -6,14 +6,13 @@ import hudson.maven.MavenBuild;
 import hudson.maven.MavenEmbedder;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSetBuild;
-import hudson.maven.MavenUtil;
 import hudson.model.Action;
 import hudson.model.TaskListener;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.deployer.ArtifactDeployer;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -106,8 +105,7 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
     /**
      * Installs the artifact to the local Maven repository.
      */
-    public void install(TaskListener listener) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactInstallationException {
-        MavenEmbedder embedder = MavenUtil.createEmbedder(listener,null);
+    public void install(MavenEmbedder embedder) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactInstallationException {
         ArtifactHandlerManager handlerManager = (ArtifactHandlerManager) embedder.lookup(ArtifactHandlerManager.ROLE);
         ArtifactInstaller installer = (ArtifactInstaller) embedder.lookup(ArtifactInstaller.class.getName());
         ArtifactFactory factory = (ArtifactFactory) embedder.lookup(ArtifactFactory.class.getName());
@@ -119,8 +117,6 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
 
         for (MavenArtifact aa : attachedArtifacts)
             installer.install(aa.getFile(parent),aa.toArtifact(handlerManager,factory,parent),embedder.getLocalRepository());
-
-        embedder.stop();
     }
 
     public void recordFingerprints() throws IOException {
