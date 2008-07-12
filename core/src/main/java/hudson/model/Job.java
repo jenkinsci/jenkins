@@ -980,8 +980,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 // TODO: consider gradation. See
                 // http://www.javadrive.jp/java2d/shape/index9.html
                 Result r = run.getResult();
-                if (r == Result.FAILURE || r == Result.ABORTED)
+                if (r == Result.FAILURE)
                     return ColorPalette.RED;
+                else if (r == Result.UNSTABLE)
+                    return ColorPalette.YELLOW;
+                else if (r == Result.ABORTED || r == Result.NOT_BUILT)
+                    return ColorPalette.GREY;
                 else
                     return ColorPalette.BLUE;
             }
