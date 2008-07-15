@@ -74,7 +74,10 @@ import org.kohsuke.stapler.export.Exported;
  * 
  * <p>
  * Every time it "runs", it will be recorded as a {@link Run} object.
- * 
+ *
+ * <p>
+ * To create a custom job type, add it to {@link Items#LIST}.
+ *
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
