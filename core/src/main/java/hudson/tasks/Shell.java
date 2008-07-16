@@ -98,7 +98,7 @@ public class Shell extends CommandInterpreter {
         }
 
         public void setShell(String shell) {
-            this.shell = shell;
+            this.shell = Util.fixEmptyAndTrim(shell);
             save();
         }
 
