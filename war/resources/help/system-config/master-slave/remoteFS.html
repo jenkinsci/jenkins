@@ -2,7 +2,9 @@
   <p>
   A slave needs to have a directory dedicated to Hudson. Specify
   the absolute path of this work directory on the slave, such as
-  '/export/home/hudson'.
+  '/var/hudson' or 'c:\hudson'. This should be a path local to the slave
+  machine. There's no need for this path to be visible from the master,
+  and under normal circumstances.
 
   <p>
   Slaves do not maintain important data (other than active workspaces
