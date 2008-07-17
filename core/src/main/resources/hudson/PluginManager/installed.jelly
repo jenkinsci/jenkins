@@ -35,8 +35,17 @@
                         </a>
                       </j:when>
                       <j:otherwise>
-                        ${p.longName}
-                      </j:otherwise>
+	                      <j:choose>
+		                      <j:when test="${p.info!=null}">
+			                      <div>
+			                        <a href="${p.info.wiki}"><st:out value="${p.longName}"/></a>
+			                      </div>
+		                      </j:when>
+		                      <j:otherwise>
+		                        ${p.longName}
+		                      </j:otherwise>
+	                      </j:choose>
+	                  </j:otherwise>    
                     </j:choose>
                   </h4>
                   <div stlyle="padding-left: 1em">

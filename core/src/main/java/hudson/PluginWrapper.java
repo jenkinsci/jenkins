@@ -483,6 +483,14 @@ public final class PluginWrapper {
             return null;
         }
     }
+    
+    /**
+     * returns the {@link UpdateCenter.Plugin} object, or null.
+     */
+    public UpdateCenter.Plugin getInfo() {
+        UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+        return uc.getPlugin(getShortName());
+    }
 
     /**
      * Returns true if this plugin has update in the update center.
