@@ -620,17 +620,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         try {
-        	FilePath workspace = getWorkspace();
-        	if (scm.requiresWorkspaceForPolling() && (workspace==null || !workspace.exists())) {
+            FilePath workspace = getWorkspace();
+            if (scm.requiresWorkspaceForPolling() && (workspace == null || !workspace.exists())) {
                 // workspace offline. build now, or nothing will ever be built
                 Label label = getAssignedLabel();
-                if(label!=null && label.isSelfLabel()) {
+                if (label != null && label.isSelfLabel()) {
                     // if the build is fixed on a node, then attempting a build will do us
                     // no good. We should just wait for the slave to come back.
                     listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
                     return false;
                 }
-                if(workspace==null)
+                if (workspace == null)
                     listener.getLogger().println(Messages.AbstractProject_WorkspaceOffline());
                 else
                     listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
@@ -638,9 +638,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return true;
             }
 
-        	Launcher launcher = workspace != null ? workspace.createLauncher(listener) : null;
-            LOGGER.fine("Polling SCM changes of "+ getName());
-            return scm.pollChanges(this, launcher, workspace, listener );
+            Launcher launcher = workspace != null ? workspace.createLauncher(listener) : null;
+            LOGGER.fine("Polling SCM changes of " + getName());
+            return scm.pollChanges(this, launcher, workspace, listener);
         } catch (AbortException e) {
             listener.fatalError(Messages.AbstractProject_Aborted());
             return false;
