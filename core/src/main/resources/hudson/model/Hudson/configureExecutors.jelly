@@ -60,7 +60,7 @@
 
                 <s:entry title="${%Remote FS root}" help="/help/system-config/master-slave/remoteFS.html">
                   <s:textbox name="slave.remoteFS" value="${s.remoteFS}"
-                             checkUrl="'fieldCheck?errorText='+escape('${%Remote directory is mandatory.}')+'&amp;value='+escape(this.value)"/>
+                             checkUrl="'remoteFSCheck?value='+escape(this.value)"/>
                 </s:entry>
 
                 <s:entry title="${%Labels}" help="/help/system-config/master-slave/label.html">
