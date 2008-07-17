@@ -312,9 +312,14 @@ public class ChangeLogTask extends AbstractCvsTask {
     }
     protected @Override ExecuteStreamHandler getExecuteStreamHandler(InputStream input) {
         return handler = new RedirectingStreamHandler(
+                // stdout goes to the changelog parser,
+                // but we also send this to Ant logger so that we can see it at sufficient debug level
                 new ForkOutputStream(new RedirectingOutputStream(parser),
                     new LogOutputStream(this,Project.MSG_VERBOSE)),
-                    input);
+                // stderr goes to the logger, too
+                new LogOutputStream(this,Project.MSG_WARN),
+                
+                input);
     }
 
     private static final long VERSION_1_11_2 = 11102;

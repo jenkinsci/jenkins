@@ -38,7 +38,7 @@ class RedirectingStreamHandler extends PumpStreamHandler {
         this(out, new ByteArrayOutputStream(), in);
     }
 
-    RedirectingStreamHandler(OutputStream out, OutputStream err, InputStream in) {
+     RedirectingStreamHandler(OutputStream out, OutputStream err, InputStream in) {
         super(out, err, in);
     }
 

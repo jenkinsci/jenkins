@@ -17,7 +17,6 @@ import hudson.model.ModelObject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.TaskThread;
-import hudson.model.Descriptor;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
@@ -729,10 +728,13 @@ public class CVSSCM extends SCM implements Serializable {
 
                     ChangeLogTask task = new ChangeLogTask() {
                         public void log(String msg, int msgLevel) {
-                            // send error to listener. This seems like the route in which the changelog task
-                            // sends output
-                            if(msgLevel==org.apache.tools.ant.Project.MSG_ERR) {
+                            if(msgLevel==org.apache.tools.ant.Project.MSG_ERR)
                                 hadError[0] = true;
+                            // send error to listener. This seems like the route in which the changelog task
+                            // sends output.
+                            // Also in ChangeLogTask.getExecuteStreamHandler, we send stderr from CVS
+                            // at WARN level.
+                            if(msgLevel<=org.apache.tools.ant.Project.MSG_WARN) {
                                 errorOutput.write(msg);
                                 errorOutput.write('\n');
                                 return;
