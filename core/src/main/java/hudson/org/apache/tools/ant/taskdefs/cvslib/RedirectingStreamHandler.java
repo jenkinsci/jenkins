@@ -35,7 +35,11 @@ class RedirectingStreamHandler extends PumpStreamHandler {
     }
 
     RedirectingStreamHandler(OutputStream out, InputStream in) {
-        super(out, new ByteArrayOutputStream(), in);
+        this(out, new ByteArrayOutputStream(), in);
+    }
+
+    RedirectingStreamHandler(OutputStream out, OutputStream err, InputStream in) {
+        super(out, err, in);
     }
 
     String getErrors() {
