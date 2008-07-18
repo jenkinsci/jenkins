@@ -537,7 +537,7 @@ public class Queue extends ResourceController {
      * Move projects between {@link #waitingList}, {@link #blockedProjects}, and {@link #buildables}
      * appropriately.
      */
-    private synchronized void maintain() {
+    public synchronized void maintain() {
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Queue maintenance started " + this);
 
