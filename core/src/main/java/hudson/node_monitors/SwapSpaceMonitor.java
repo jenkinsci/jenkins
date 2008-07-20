@@ -7,6 +7,8 @@ import net.sf.json.JSONObject;
 import org.jvnet.hudson.MemoryMonitor;
 import org.jvnet.hudson.MemoryUsage;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 
 import java.io.IOException;
 
@@ -68,10 +70,55 @@ public class SwapSpaceMonitor extends NodeMonitor {
      */
     private static class MonitorTask implements Callable<MemoryUsage,IOException> {
         public MemoryUsage call() throws IOException {
-            return MemoryMonitor.get().monitor();
+            return new MemoryUsage2(MemoryMonitor.get().monitor());
         }
 
         private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * Memory Usage.
+     *
+     * <p>
+     * {@link MemoryUsage} + stapler annotations.
+     */
+    @ExportedBean
+    public static class MemoryUsage2 extends MemoryUsage {
+        public MemoryUsage2(MemoryUsage mem) {
+            super(mem.totalPhysicalMemory, mem.availablePhysicalMemory, mem.totalSwapSpace, mem.availableSwapSpace);
+        }
+
+        /**
+         * Total physical memory of the system, in bytes.
+         */
+        @Exported
+        public long getTotalPhysicalMemory() {
+            return totalPhysicalMemory;
+        }
+
+        /**
+         * Of the total physical memory of the system, available bytes.
+         */
+        @Exported
+        public long getAvailablePhysicalMemory() {
+            return availablePhysicalMemory;
+        }
+
+        /**
+         * Total number of swap space in bytes.
+         */
+        @Exported
+        public long getTotalSwapSpace() {
+            return totalSwapSpace;
+        }
+
+        /**
+         * Available swap space in bytes.
+         */
+        @Exported
+        public long getAvailableSwapSpace() {
+            return availableSwapSpace;
+        }
     }
 
     static {
