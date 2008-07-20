@@ -2,6 +2,7 @@ package hudson.model;
 
 import com.thoughtworks.xstream.converters.basic.AbstractBasicConverter;
 import hudson.Util;
+import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -12,6 +13,9 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  * @see BuildableItem
+ * @deprecated
+ *      Use {@link ACL} and {@link AbstractProject#BUILD}. This code is only here
+ *      for the backward compatibility.
  */
 public final class BuildAuthorizationToken {
     private final String token;
@@ -21,10 +25,13 @@ public final class BuildAuthorizationToken {
     }
 
     public static BuildAuthorizationToken create(StaplerRequest req) {
-        if (req.getParameter("pseudoRemoteTrigger") != null)
-            return new BuildAuthorizationToken(Util.fixEmpty(req.getParameter("authToken")));
-        else
-            return null;
+        if (req.getParameter("pseudoRemoteTrigger") != null) {
+            String token = Util.fixEmpty(req.getParameter("authToken"));
+            if(token!=null)
+                return new BuildAuthorizationToken(token);
+        }
+        
+        return null;
     }
 
     public static void checkPermission(AbstractProject project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
