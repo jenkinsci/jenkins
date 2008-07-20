@@ -1,3 +1,6 @@
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.naming.Context;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -60,7 +63,7 @@ public class Main {
         if(!hasWebRoot(arguments))
             // defaults to ~/.hudson/war since many users reported that cron job attempts to clean up
             // the contents in the temporary directory.
-            arguments.add("--webroot="+new File(System.getProperty("user.home"),".hudson/war"));
+            arguments.add("--webroot="+new File(getHomeDir(),"war"));
 
         // run
         mainMethod.invoke(null,new Object[]{arguments.toArray(new String[0])});
@@ -105,5 +108,60 @@ public class Main {
             }
         }
         file.delete();
+    }
+
+    /**
+     * Determines the home directory for Hudson.
+     *
+     * People makes configuration mistakes, so we are trying to be nice
+     * with those by doing {@link String#trim()}.
+     */
+    private static File getHomeDir() {
+        // check JNDI for the home directory first
+        try {
+            InitialContext iniCtxt = new InitialContext();
+            Context env = (Context) iniCtxt.lookup("java:comp/env");
+            String value = (String) env.lookup("HUDSON_HOME");
+            if(value!=null && value.trim().length()>0)
+                return new File(value.trim());
+            // look at one more place. See issue #1314
+            value = (String) iniCtxt.lookup("HUDSON_HOME");
+            if(value!=null && value.trim().length()>0)
+                return new File(value.trim());
+        } catch (NamingException e) {
+            // ignore
+        }
+
+        // finally check the system property
+        String sysProp = System.getProperty("HUDSON_HOME");
+        if(sysProp!=null)
+            return new File(sysProp.trim());
+
+        // look at the env var next
+        try {
+            String env = System.getenv("HUDSON_HOME");
+            if(env!=null)
+            return new File(env.trim()).getAbsoluteFile();
+        } catch (Throwable _) {
+            // when this code runs on JDK1.4, this method fails
+            // fall through to the next method
+        }
+
+        // otherwise pick a place by ourselves
+
+/* ServletContext not available yet
+        String root = event.getServletContext().getRealPath("/WEB-INF/workspace");
+        if(root!=null) {
+            File ws = new File(root.trim());
+            if(ws.exists())
+                // Hudson <1.42 used to prefer this before ~/.hudson, so
+                // check the existence and if it's there, use it.
+                // otherwise if this is a new installation, prefer ~/.hudson
+                return ws;
+        }
+*/
+
+        // if for some reason we can't put it within the webapp, use home directory.
+        return new File(new File(System.getProperty("user.home")),".hudson");
     }
 }
