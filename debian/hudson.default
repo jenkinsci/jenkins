@@ -9,7 +9,7 @@ JAVA=/usr/bin/java
 # arguments to pass to java
 #JAVA_ARGS="-Xmx256m"
 
-PIDFILE=/var/run/hudson/hudson.pid
+PIDFILE=/var/run/hudson.pid
 
 # user id to be invoked as (otherwise will run as root; not wise!)
 HUDSON_USER=hudson
