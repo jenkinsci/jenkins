@@ -164,6 +164,8 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
     @Override
     public MavenReport getReport(MavenProject project, MojoExecution mojoExecution, MavenSession session) throws ArtifactNotFoundException, PluginConfigurationException, PluginManagerException, ArtifactResolutionException {
         MavenReport r = super.getReport(project, mojoExecution, session);
+        if(r==null)     return null;
+        
         r = new ComponentInterceptor<MavenReport>() {
             /**
              * Intercepts the execution of methods on {@link MavenReport}.
