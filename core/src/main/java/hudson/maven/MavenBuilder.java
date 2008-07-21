@@ -116,7 +116,7 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
     /**
      * Called after a {@link MavenReport} is successfully generated.
      */
-    abstract void onReportGenerated(MavenProject project, MavenReport report) throws IOException, InterruptedException, AbortException;
+    abstract void onReportGenerated(MavenProject project, MavenReportInfo report) throws IOException, InterruptedException, AbortException;
 
     /**
      * This code is executed inside the maven jail process.
@@ -257,9 +257,9 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
             overheadTime += System.nanoTime()-startTime;
         }
 
-        public void onReportGenerated(MavenReport report) throws InterruptedException, IOException {
+        public void onReportGenerated(MavenReport report, MojoExecution mojoExecution, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException {
             long startTime = System.nanoTime();
-            listener.onReportGenerated(lastModule,report);
+            listener.onReportGenerated(lastModule,new MavenReportInfo(mojoExecution,report,mergedConfig,eval));
             overheadTime += System.nanoTime()-startTime;
         }
 

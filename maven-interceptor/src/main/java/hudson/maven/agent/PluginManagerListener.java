@@ -55,5 +55,5 @@ public interface PluginManagerListener {
      * @param report
      *      The {@link MavenReport} object that just successfully completed.
      */
-    void onReportGenerated(MavenReport report) throws IOException, InterruptedException;
+    void onReportGenerated(MavenReport report, MojoExecution mojoExecution, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException;
 }

@@ -34,7 +34,7 @@ public class RunCommand implements Callable {
                 System.out.println("==== "+exec.getMojoDescriptor().getGoal());
             }
 
-            public void onReportGenerated(MavenReport report) {
+            public void onReportGenerated(MavenReport report, MojoExecution mojoExecution, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException {
                 System.out.println("//// "+report);
             }
         });

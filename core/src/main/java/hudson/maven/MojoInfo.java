@@ -28,8 +28,9 @@ import hudson.util.InvocationInterceptor;
  *
  * @author Kohsuke Kawaguchi
  * @see MavenReporter
+ * @see MavenReportInfo
  */
-public final class MojoInfo {
+public class MojoInfo {
     /**
      * Object from Maven that describes the Mojo to be executed.
      */

@@ -9,11 +9,13 @@ import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenReportInfo;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.JavadocArchiver.JavadocAction;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.reporting.MavenReport;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 
 import java.io.File;
@@ -75,6 +77,10 @@ public class MavenJavadocArchiver extends MavenReporter {
         return true;
     }
 
+    @Override
+    public boolean reportGenerated(MavenBuildProxy build, MavenProject pom, MavenReportInfo report, BuildListener listener) throws InterruptedException, IOException {
+        return true;
+    }
 
     public Action getProjectAction(MavenModule project) {
         return new JavadocAction(project);

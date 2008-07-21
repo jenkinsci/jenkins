@@ -96,54 +96,73 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
         };
     }
 
-    @Override
-    public void executeMojo(final MavenProject project, final MojoExecution mojoExecution, MavenSession session) throws ArtifactResolutionException, MojoExecutionException, MojoFailureException, ArtifactNotFoundException, InvalidDependencyVersionException, PluginManagerException, PluginConfigurationException {
-        class MojoConfig {
-            PlexusConfiguration config;
-            ExpressionEvaluator eval;
-            Mojo mojo;
+    /**
+     * Intercepts the {@link Mojo} configuration and grabs some key Maven objects that are used for configuration,
+     * then call {@link #pre(Object, PlexusConfiguration, ExpressionEvaluator)} to provide an opportunity
+     * to alter the configuration.
+     */
+    private abstract class MojoIntercepter extends ComponentConfiguratorFilter {
+        // these are the key objects involved in configuring a mojo
+        PlexusConfiguration config;
+        ExpressionEvaluator eval;
+        Mojo mojo;
 
-            void callPost(Exception exception) throws IOException, InterruptedException {
-                if(listener!=null)
-                    listener.postExecute(project,mojoExecution, mojo, config,eval,exception);
+        MojoIntercepter() {
+            super(null);
+            // it is the caller's responsibility to set 'configuratorFilter' to null when the interception is over.
+            configuratorFilter = this;
+        }
+
+        @Override
+        public void configureComponent(Object component, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator, ClassRealm containerRealm, ConfigurationListener configListener) throws ComponentConfigurationException {
+            try {
+                this.config = configuration;
+                this.eval = expressionEvaluator;
+                this.mojo = (Mojo)component;
+                pre(component, configuration, expressionEvaluator);
+                super.configureComponent(component, configuration, expressionEvaluator, containerRealm, configListener);
+            } catch (IOException e) {
+                throw new ComponentConfigurationException(e);
+            } catch (InterruptedException e) {
+                // orderly abort
+                throw new AbortException("Execution aborted",e);
             }
         }
 
-        final MojoConfig config = new MojoConfig();
+        protected abstract void pre(Object component, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator) throws IOException, InterruptedException;
+    }
+
+    @Override
+    public void executeMojo(final MavenProject project, final MojoExecution mojoExecution, MavenSession session) throws ArtifactResolutionException, MojoExecutionException, MojoFailureException, ArtifactNotFoundException, InvalidDependencyVersionException, PluginManagerException, PluginConfigurationException {
+        class MojoIntercepterImpl extends MojoIntercepter {
+            @Override
+            protected void pre(Object component, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator) throws IOException, InterruptedException {
+                if(listener!=null)
+                    // this lets preExecute a chance to modify the mojo configuration
+                    listener.preExecute(project,mojoExecution, (Mojo)component, configuration,expressionEvaluator);
+            }
+
+            void callPost(Exception exception) throws IOException, InterruptedException {
+                if(listener!=null)
+                    listener.postExecute(project,mojoExecution,mojo,config,eval,exception);
+            }
+        }
 
         // prepare interception of ComponentConfigurator, so that we can get the final PlexusConfiguration object
         // representing the configuration before Mojo object is filled with that.
-        configuratorFilter = new ComponentConfiguratorFilter(null) {
-            @Override
-            public void configureComponent(Object component, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator, ClassRealm containerRealm, ConfigurationListener configListener) throws ComponentConfigurationException {
-                try {
-                    config.config = configuration;
-                    config.eval = expressionEvaluator;
-                    config.mojo = (Mojo)component;
-                    if(listener!=null)
-                        // this lets preExecute a chance to modify the mojo configuration
-                        listener.preExecute(project,mojoExecution, (Mojo)component, configuration,expressionEvaluator);
-                    super.configureComponent(component, configuration, expressionEvaluator, containerRealm, configListener);
-                } catch (IOException e) {
-                    throw new ComponentConfigurationException(e);
-                } catch (InterruptedException e) {
-                    // orderly abort
-                    throw new AbortException("Execution aborted",e);
-                }
-            }
-        };
+        MojoIntercepterImpl interceptor = new MojoIntercepterImpl();
 
         try {
             try {
                 // inside the executeMojo but before the mojo actually gets executed,
                 // we should be able to trap the mojo configuration.
                 super.executeMojo(project, mojoExecution, session);
-                config.callPost(null);
+                interceptor.callPost(null);
             } catch (MojoExecutionException e) {
-                config.callPost(e);
+                interceptor.callPost(e);
                 throw e;
             } catch (MojoFailureException e) {
-                config.callPost(e);
+                interceptor.callPost(e);
                 throw e;
             }
         } catch (InterruptedException e) {
@@ -162,8 +181,19 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
      * of certain reporting.
      */
     @Override
-    public MavenReport getReport(MavenProject project, MojoExecution mojoExecution, MavenSession session) throws ArtifactNotFoundException, PluginConfigurationException, PluginManagerException, ArtifactResolutionException {
-        MavenReport r = super.getReport(project, mojoExecution, session);
+    public MavenReport getReport(MavenProject project, final MojoExecution mojoExecution, MavenSession session) throws ArtifactNotFoundException, PluginConfigurationException, PluginManagerException, ArtifactResolutionException {
+        // intercept the MavenReport object creation. 
+        final MojoIntercepter interceptor = new MojoIntercepter() {
+            protected void pre(Object component, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator) throws IOException, InterruptedException {
+            }
+        };
+
+        MavenReport r;
+        try {
+            r = super.getReport(project, mojoExecution, session);
+        } finally {
+            configuratorFilter = null;
+        }
         if(r==null)     return null;
         
         r = new ComponentInterceptor<MavenReport>() {
@@ -175,7 +205,7 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
                     Object r = super.invoke(proxy, method, args);
                     // on successul execution of the generate method, raise an event
                     try {
-                        listener.onReportGenerated(delegate);
+                        listener.onReportGenerated(delegate,mojoExecution,interceptor.config,interceptor.eval);
                     } catch (InterruptedException e) {
                         // orderly abort
                         throw new AbortException("Execution aborted",e);

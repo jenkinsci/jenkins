@@ -215,7 +215,7 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
      *      See {@link #preBuild}
      * @since 1.237
      */
-    public boolean reportGenerated(MavenBuildProxy build, MavenProject pom, MavenReport report, BuildListener listener) throws InterruptedException, IOException {
+    public boolean reportGenerated(MavenBuildProxy build, MavenProject pom, MavenReportInfo report, BuildListener listener) throws InterruptedException, IOException {
         return true;
     }
 

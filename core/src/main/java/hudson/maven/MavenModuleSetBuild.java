@@ -22,7 +22,6 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.StreamTaskListener;
 import org.apache.maven.BuildFailureException;
-import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
@@ -593,7 +592,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 proxy.setResult(Result.FAILURE);
         }
 
-        void onReportGenerated(MavenProject project, MavenReport report) throws IOException, InterruptedException, hudson.maven.agent.AbortException {
+        void onReportGenerated(MavenProject project, MavenReportInfo report) throws IOException, InterruptedException, hudson.maven.agent.AbortException {
             ModuleName name = new ModuleName(project);
             MavenBuildProxy proxy = proxies.get(name);
             for (MavenReporter r : reporters.get(name))
