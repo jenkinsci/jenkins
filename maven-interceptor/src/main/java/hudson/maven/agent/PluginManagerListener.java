@@ -5,10 +5,13 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.reporting.MavenReport;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
+import org.codehaus.doxia.sink.Sink;
 
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * Receives notification from {@link PluginManagerInterceptor},
@@ -45,4 +48,12 @@ public interface PluginManagerListener {
      *      If mojo executed successfully, this parameter is null.
      */
     void postExecute(MavenProject project, MojoExecution exec, Mojo mojo, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException;
+
+    /**
+     * Called after a successful execution of {@link MavenReport#generate(Sink, Locale)}.
+     *
+     * @param report
+     *      The {@link MavenReport} object that just successfully completed.
+     */
+    void onReportGenerated(MavenReport report) throws IOException, InterruptedException;
 }

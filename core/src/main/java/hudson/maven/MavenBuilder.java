@@ -14,6 +14,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.Future;
 import hudson.util.IOException2;
 import org.apache.maven.BuildFailureException;
+import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
@@ -113,6 +114,11 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
     abstract void postExecute(MavenProject project, MojoInfo mojoInfo, Exception exception) throws IOException, InterruptedException, AbortException;
 
     /**
+     * Called after a {@link MavenReport} is successfully generated.
+     */
+    abstract void onReportGenerated(MavenProject project, MavenReport report) throws IOException, InterruptedException, AbortException;
+
+    /**
      * This code is executed inside the maven jail process.
      */
     public Result call() throws IOException {
@@ -194,8 +200,8 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
     }
 
     /**
-     * Receives {@link PluginManagerListener} and {@link LifecycleExecutorListener}
-     * and converts them to {@link MavenBuilder}.
+     * Receives {@link PluginManagerListener} and {@link LifecycleExecutorListener} events
+     * and converts them to {@link MavenBuilder} events.
      */
     private static final class Adapter implements PluginManagerListener, LifecycleExecutorListener {
         /**
@@ -248,6 +254,12 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
         public void postExecute(MavenProject project, MojoExecution exec, Mojo mojo, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException {
             long startTime = System.nanoTime();
             listener.postExecute(project, new MojoInfo(exec, mojo, mergedConfig, eval),exception);
+            overheadTime += System.nanoTime()-startTime;
+        }
+
+        public void onReportGenerated(MavenReport report) throws InterruptedException, IOException {
+            long startTime = System.nanoTime();
+            listener.onReportGenerated(lastModule,report);
             overheadTime += System.nanoTime()-startTime;
         }
 

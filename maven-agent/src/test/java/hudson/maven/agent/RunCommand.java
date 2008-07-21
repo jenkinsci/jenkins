@@ -4,6 +4,7 @@ import hudson.remoting.Callable;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.Mojo;
+import org.apache.maven.reporting.MavenReport;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 
@@ -31,6 +32,10 @@ public class RunCommand implements Callable {
 
             public void postExecute(MavenProject project, MojoExecution exec, Mojo mojo, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException, AbortException {
                 System.out.println("==== "+exec.getMojoDescriptor().getGoal());
+            }
+
+            public void onReportGenerated(MavenReport report) {
+                System.out.println("//// "+report);
             }
         });
 

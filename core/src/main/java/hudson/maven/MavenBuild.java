@@ -15,6 +15,7 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.ArgumentListBuilder;
 import org.apache.maven.BuildFailureException;
+import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
@@ -238,6 +239,13 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
             for (MavenReporter r : reporters)
                 if(!r.postExecute(buildProxy,project,info,listener,exception))
+                    throw new AbortException(r+" failed");
+        }
+
+        @Override
+        void onReportGenerated(MavenProject project, MavenReport report) throws IOException, InterruptedException, AbortException {
+            for (MavenReporter r : reporters)
+                if(!r.reportGenerated(buildProxy,project,report,listener))
                     throw new AbortException(r+" failed");
         }
 

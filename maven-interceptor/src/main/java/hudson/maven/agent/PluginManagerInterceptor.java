@@ -12,6 +12,8 @@ import org.apache.maven.plugin.PluginManagerException;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.InvalidDependencyVersionException;
+import org.apache.maven.reporting.MavenReport;
+import org.apache.maven.reporting.MavenReportException;
 import org.codehaus.classworlds.ClassRealm;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
@@ -23,6 +25,7 @@ import org.codehaus.plexus.component.repository.exception.ComponentLifecycleExce
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 /**
  * Description in META-INF/plexus/components.xml makes it possible to use this instead of the default
@@ -93,6 +96,7 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
         };
     }
 
+    @Override
     public void executeMojo(final MavenProject project, final MojoExecution mojoExecution, MavenSession session) throws ArtifactResolutionException, MojoExecutionException, MojoFailureException, ArtifactNotFoundException, InvalidDependencyVersionException, PluginManagerException, PluginConfigurationException {
         class MojoConfig {
             PlexusConfiguration config;
@@ -150,5 +154,39 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
         } finally {
             configuratorFilter = null;
         }
+    }
+
+    /**
+     * Intercepts the creation of {@link MavenReport}, to intercept
+     * the execution of it. This is used to discover the execution
+     * of certain reporting.
+     */
+    @Override
+    public MavenReport getReport(MavenProject project, MojoExecution mojoExecution, MavenSession session) throws ArtifactNotFoundException, PluginConfigurationException, PluginManagerException, ArtifactResolutionException {
+        MavenReport r = super.getReport(project, mojoExecution, session);
+        r = new ComponentInterceptor<MavenReport>() {
+            /**
+             * Intercepts the execution of methods on {@link MavenReport}.
+             */
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                if(method.getName().equals("generate")) {
+                    Object r = super.invoke(proxy, method, args);
+                    // on successul execution of the generate method, raise an event
+                    try {
+                        listener.onReportGenerated(delegate);
+                    } catch (InterruptedException e) {
+                        // orderly abort
+                        throw new AbortException("Execution aborted",e);
+                    } catch (IOException e) {
+                        throw new MavenReportException(e.getMessage(),e);
+                    }
+                    return r;
+                }
+
+                // delegate by default
+                return super.invoke(proxy, method, args);
+            }
+        }.wrap(r);
+        return r;
     }
 }

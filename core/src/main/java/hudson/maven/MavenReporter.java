@@ -12,6 +12,7 @@ import hudson.tasks.Publisher;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.reporting.MavenReport;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -184,6 +185,37 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
      * Works like {@link Publisher#perform(Build, Launcher, BuildListener)}.
      */
     public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        return true;
+    }
+
+    /**
+     * Called after a {@link MavenReport} is successfully generated.
+     *
+     * <p>
+     * {@link MavenReport} is an execution unit inside the Maven site plugin mojos,
+     * such as <tt>site:generate</tt>. These are what's configured through
+     * &lt;reporting> tag inside POM, although there's normally more
+     * {@link MavenReport}s than what's specified explicitly, due to defaulting
+     * and inheritance and all the other Maven processing.
+     *
+     * <p>
+     * This provides an opportunity for
+     * plugins to auto-perform some action when a certain reporting is generated.
+     *
+     * <p>
+     * This method is invoked during the execution of site mojos, between its
+     * {@link #preExecute(MavenBuildProxy, MavenProject, MojoInfo, BuildListener)}
+     * and {@link #postExecute(MavenBuildProxy, MavenProject, MojoInfo, BuildListener, Throwable)}  
+     *
+     * @return
+     *      See {@link #preBuild}
+     * @throws InterruptedException
+     *      See {@link #preBuild}
+     * @throws IOException
+     *      See {@link #preBuild}
+     * @since 1.237
+     */
+    public boolean reportGenerated(MavenBuildProxy build, MavenProject pom, MavenReport report, BuildListener listener) throws InterruptedException, IOException {
         return true;
     }
 
