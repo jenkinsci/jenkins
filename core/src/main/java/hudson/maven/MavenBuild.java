@@ -314,7 +314,9 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
 
         public void registerAsAggregatedProjectAction(MavenReporter reporter) {
-            getParentBuild().registerAsProjectAction(reporter);
+            MavenModuleSetBuild pb = getParentBuild();
+            if(pb!=null)
+                pb.registerAsProjectAction(reporter);
         }
 
         public void setExecutedMojos(List<ExecutedMojo> executedMojos) {
