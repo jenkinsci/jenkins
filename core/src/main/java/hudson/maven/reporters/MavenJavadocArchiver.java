@@ -59,7 +59,7 @@ public class MavenJavadocArchiver extends MavenReporter {
             target = target.child("javadoc");
 
             try {
-                listener.getLogger().println("Archiving javadoc");
+                listener.getLogger().println("[HUDSON] Archiving javadoc");
                 new FilePath(destDir).copyRecursiveTo("**/*",target);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
@@ -79,7 +79,7 @@ public class MavenJavadocArchiver extends MavenReporter {
 
     @Override
     public boolean reportGenerated(MavenBuildProxy build, MavenProject pom, MavenReportInfo report, BuildListener listener) throws InterruptedException, IOException {
-        return true;
+        return postExecute(build,pom,report,listener,null);
     }
 
     public Action getProjectAction(MavenModule project) {
