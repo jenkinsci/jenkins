@@ -75,4 +75,14 @@ public class SuiteResultTest extends TestCase {
         assertEquals("make_test.t_basic_meta_t",sr1.getName());
         assertTrue(!sr0.getStdout().equals(sr1.getStdout()));
     }
+
+    public void testErrorDetails() throws Exception {
+        SuiteResult result = parseOne(getDataFile("junit-report-errror-details.xml"));
+
+        List<CaseResult> cases = result.getCases();
+        for (CaseResult caseResult : cases) {
+            assertEquals("Test class name is incorrect in " + caseResult.getDisplayName(), "some.package.somewhere.WhooHoo", caseResult.getClassName());
+        }
+        assertEquals("this normally has the string like, expected mullet, but got bream", cases.get(0).getErrorDetails());
+    }
 }

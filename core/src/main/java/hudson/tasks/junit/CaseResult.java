@@ -19,6 +19,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     private final String testName;
     private final boolean skipped;
     private final String errorStackTrace;
+    private final String errorDetails;
     private transient SuiteResult parent;
 
     private transient ClassResult classResult;
@@ -31,7 +32,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     private /*final*/ int failedSince;
 
     CaseResult(SuiteResult parent, String testClassName, Element testCase) {
-        this(parent,testClassName,testCase.attributeValue("name"), getError(testCase), parseTime(testCase), isMarkedAsSkipped(testCase));
+        this(parent,testClassName,testCase.attributeValue("name"), getError(testCase), getErrorMessage(testCase), parseTime(testCase), isMarkedAsSkipped(testCase));
     }
 
     private static float parseTime(Element testCase) {
@@ -67,6 +68,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         testName = safe(testCaseName);
         duration = parseTime(testCase); 
         errorStackTrace = getError(testCase);
+        errorDetails = getErrorMessage(testCase);
         skipped = isMarkedAsSkipped(testCase);
     }
 
@@ -74,13 +76,14 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      * Used to create a fake failure, when Hudson fails to load data from XML files.
      */
     CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
-        this( parent, parent.getName(), testName, errorStackTrace, 0.0f, false );
+        this( parent, parent.getName(), testName, errorStackTrace, "", 0.0f, false );
     }
 
-    CaseResult(SuiteResult parent, String testClassName, String testName, String errorStackTrace, float duration, boolean skipped) {
+    CaseResult(SuiteResult parent, String testClassName, String testName, String errorStackTrace, String errorDetails, float duration, boolean skipped) {
         this.className = testClassName;
         this.testName = testName;
         this.errorStackTrace = errorStackTrace;
+        this.errorDetails = errorDetails;
         this.parent = parent;
         this.duration = duration;
         this.skipped = skipped;
@@ -91,6 +94,19 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         if(msg!=null)
             return msg;
         return testCase.elementText("failure");
+    }
+
+    private static String getErrorMessage(Element testCase) {
+
+        Element msg = testCase.element("error");
+        if (msg == null) {
+            msg = testCase.element("failure");
+        }
+        if (msg == null) {
+            return null; // no error or failure elements! damn!
+        }
+
+        return msg.attributeValue("message");
     }
 
     /**
@@ -199,6 +215,14 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     @Exported
     public String getErrorStackTrace() {
         return errorStackTrace;
+    }
+
+    /**
+     * If there was an error or a failure, this is the text from the message.
+     */
+    @Exported
+    public String getErrorDetails() {
+        return errorDetails;
     }
 
     /**
