@@ -184,39 +184,49 @@ public final class SlaveComputer extends Computer {
      * Creates a {@link Channel} from the given stream and sets that to this slave.
      */
     public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
-        synchronized(channelLock) {
-            if(this.channel!=null)
-                throw new IllegalStateException("Already connected");
+        if(this.channel!=null)
+            throw new IllegalStateException("Already connected");
 
-            Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE,
-                in,out, launchLog);
-            channel.addListener(new Channel.Listener() {
-                public void onClosed(Channel c,IOException cause) {
-                    SlaveComputer.this.channel = null;
-                }
-            });
-            channel.addListener(listener);
-
-            PrintWriter log = new PrintWriter(launchLog,true);
-
-            {// send jars that we need for our operations
-                // TODO: maybe I should generalize this kind of "post initialization" processing
-                FilePath dst = new FilePath(channel,getNode().getRemoteFS());
-                new FilePath(Which.jarFile(Main.class)).copyTo(dst.child("maven-agent.jar"));
-                log.println("Copied maven-agent.jar");
-                new FilePath(Which.jarFile(PluginManagerInterceptor.class)).copyTo(dst.child("maven-interceptor.jar"));
-                log.println("Copied maven-interceptor.jar");
+        Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE,
+            in,out, launchLog);
+        channel.addListener(new Channel.Listener() {
+            public void onClosed(Channel c,IOException cause) {
+                SlaveComputer.this.channel = null;
             }
+        });
+        channel.addListener(listener);
 
-            isUnix = channel.call(new DetectOS());
-            log.println(isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
+        PrintWriter log = new PrintWriter(launchLog,true);
 
-            // install log handler
-            channel.call(new LogInstaller());
+        {// send jars that we need for our operations
+            // TODO: maybe I should generalize this kind of "post initialization" processing
+            FilePath dst = new FilePath(channel,getNode().getRemoteFS());
+            new FilePath(Which.jarFile(Main.class)).copyTo(dst.child("maven-agent.jar"));
+            log.println("Copied maven-agent.jar");
+            new FilePath(Which.jarFile(PluginManagerInterceptor.class)).copyTo(dst.child("maven-interceptor.jar"));
+            log.println("Copied maven-interceptor.jar");
+        }
 
+        Boolean _isUnix = channel.call(new DetectOS());
+        log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
+
+        // install log handler
+        channel.call(new LogInstaller());
+
+        // update the data structure atomically to prevent others from seeing a channel that's not properly initialized yet
+        synchronized(channelLock) {
+            if(this.channel!=null) {
+                // check again. we used to have this entire method in a big sycnhronization block,
+                // but Channel constructor blocks for an external process to do the connection
+                // if CommandLauncher is used, and that cannot be interrupted because it blocks at InputStream.
+                // so if the process hangs, it hangs the thread in a lock, and since Hudson will try to relaunch,
+                // we'll end up queuing the lot of threads in a pseudo deadlock.
+                // This implementation prevents that by avoiding a lock. HUDSON-1705 is likely a manifestation of this.
+                channel.close();
+                throw new IllegalStateException("Already connected");
+            }
+            isUnix = _isUnix;
             numRetryAttempt = 0;
-
-            // prevent others from seeing a channel that's not properly initialized yet
             this.channel = channel;
         }
         Hudson.getInstance().getQueue().scheduleMaintenance();
