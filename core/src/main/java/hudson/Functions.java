@@ -12,6 +12,7 @@ import hudson.model.Job;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
+import hudson.model.ParameterDefinition;
 import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TopLevelItem;
@@ -552,6 +553,10 @@ public class Functions {
 
     public static List<Descriptor<RetentionStrategy<?>>> getRetentionStrategyDescriptors() {
         return RetentionStrategy.LIST;
+    }
+
+    public static List<Descriptor<ParameterDefinition>> getParameterDescriptors() {
+        return ParameterDefinition.LIST;
     }
 
     /**

@@ -203,7 +203,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * This timer is available for all the components inside Hudson to schedule
      * some work.
      */
-    public static final Timer timer = new Timer("Hudson cron thread");
+    public static Timer timer;
 
     public static void init() {
         long MIN = 1000*60;

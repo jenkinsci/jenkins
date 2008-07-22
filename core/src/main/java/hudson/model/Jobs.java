@@ -17,5 +17,6 @@ public class Jobs {
      * @see JobPropertyDescriptor#getPropertyDescriptors(Class)
      */
     public static final List<JobPropertyDescriptor> PROPERTIES = Descriptor.toList(
+    		ParametersDefinitionProperty.DESCRIPTOR
     );
 }

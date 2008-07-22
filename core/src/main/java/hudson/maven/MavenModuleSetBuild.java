@@ -17,6 +17,7 @@ import hudson.model.BuildListener;
 import hudson.model.Fingerprint;
 import hudson.model.Hudson;
 import hudson.model.Result;
+import hudson.model.ParametersAction;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
@@ -289,8 +290,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 } else {
                     // do builds here
                     try {
+                        List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>();
+                        for (BuildWrapper w : project.getBuildWrappers())
+                            wrappers.add(w);
+                        ParametersAction parameters = getAction(ParametersAction.class);
+                        if (parameters != null)
+                            parameters.createBuildWrappers(MavenModuleSetBuild.this,wrappers);
+
                         buildEnvironments = new ArrayList<BuildWrapper.Environment>();
-                        for( BuildWrapper w : project.getBuildWrappers()) {
+                        for( BuildWrapper w : wrappers) {
                             BuildWrapper.Environment e = w.setUp((AbstractBuild)MavenModuleSetBuild.this, launcher, listener);
                             if(e==null)
                                 return Result.FAILURE;

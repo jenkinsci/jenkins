@@ -1,0 +1,115 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<f:block xmlns:local="local">
+    <j:set var="groups" value="${descriptor.allGroups}"/>
+    <d:taglib uri="local">
+      <!-- generate one row for the sid name @sid -->
+      <d:tag name="row">
+        <td class="left-most">${title}</td>
+        <j:forEach var="g" items="${groups}">
+          <j:forEach var="p" items="${g.permissions}">
+            <td width="*">
+              <f:checkbox name="[${p.id}]" checked="${instance.hasPermission(attrs.sid,p)}"/>
+            </td>
+          </j:forEach>
+        </j:forEach>
+        <td class="stop">
+          <j:if test="${attrs.sid!='anonymous'}">
+            <a href="#">
+              <img alt="remove" src="${imagesURL}/16x16/stop.gif"/>
+            </a>
+          </j:if>
+        </td>
+      </d:tag>
+    </d:taglib>
+    <link rel="stylesheet" href="${h.getViewResource(descriptor,'table.css')}" type="text/css" />
+    <table id="global-matrix-authorization-strategy-table" class="center-align" name="data" width="100%">
+
+      <!-- The first row will show grouping -->
+      <tr class="group-row">
+        <td rowspan="2" class="pane-header blank">
+          ${%User/group}
+        </td>
+        <j:forEach var="g" items="${groups}">
+          <td class="pane-header" colspan="${g.size()}">
+            ${g.title}
+          </td>
+        </j:forEach>
+        <td rowspan="2" class="stop" />
+      </tr>
+      <!-- The second row for individual permission -->
+      <tr class="caption-row">
+        <j:forEach var="g" items="${groups}">
+          <j:forEach var="p" items="${g.permissions}">
+            <th class="pane">
+              ${p.name}
+            </th>
+          </j:forEach>
+        </j:forEach>
+      </tr>
+
+      <j:forEach var="sid" items="${instance.allSIDs}">
+        <tr name="[${sid}]">
+          <local:row title="${sid}" sid="${sid}"/>
+        </tr>
+      </j:forEach>
+      <tr name="anonymous">
+        <local:row sid="anonymous" title="${%Anonymous}" />
+      </tr>
+
+
+      <!-- template row to be used for adding a new row -->
+      <j:set var="id" value="${h.generateId()}"/>
+      <tr id="${id}" style="display:none">
+        <local:row sid="${null}" />
+      </tr>
+    </table>
+    <div style="margin-top:0.5em; margin-left: 2em;">
+      ${%User/group to add}:
+      <input type="text" id="${id}text" />
+      <input type="button" value="${%Add}" id="${id}button"/>
+    </div>
+    <script>
+      (function() {
+        <!-- place master outside the DOM tree so that it won't creep into the submitted form -->
+        var master = document.getElementById('${id}');
+        var table = master.parentNode;
+        table.removeChild(master);
+      
+        makeButton("${id}button", function (e) {
+          <!-- when 'add' is clicked... -->
+          var name = $$('${id}text').value;
+          if(name=="") {
+            alert("Please enter an user name or a group name");
+            return;
+          }
+          if(findElementsBySelector(table,"TR").find(function(n){return n.getAttribute("name")==name;})!=null) {
+            alert("Entry for '"+name+"' already exists");
+            return;
+          }
+
+          if(document.importNode!=null)
+            copy = document.importNode(master,true);
+          else
+            copy = master.cloneNode(true); <!-- for IE -->
+          copy.removeAttribute("id");
+          copy.removeAttribute("style");
+          copy.firstChild.innerHTML = name;
+          copy.setAttribute("name",'['+name+']');
+          table.appendChild(copy);
+          Behaviour.applySubtree(findAncestor(table,"TABLE"));
+        });
+      })();
+
+      Behaviour.register({
+        "#global-matrix-authorization-strategy-table TD.stop A" : function(e) {
+          e.onclick = function() {
+            var tr = findAncestor(this,"TR");
+            tr.parentNode.removeChild(tr);
+            return false;
+          }
+          e = null; <!-- avoid memory leak -->
+        }
+      });
+    </script>
+  </f:block>
+</j:jelly>

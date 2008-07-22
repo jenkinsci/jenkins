@@ -16,14 +16,29 @@ import java.util.Collection;
  */
 public class PluginServletFilter implements Filter {
 
-	public static CopyOnWriteList<Filter> LIST = new CopyOnWriteList<Filter>();
+	private static CopyOnWriteList<Filter> LIST = new CopyOnWriteList<Filter>();
+	
+	private static FilterConfig filterConfig;
     
     public PluginServletFilter() {
     }
 
     public void init(FilterConfig filterConfig) throws ServletException {
-        for (Filter f : LIST)
-            f.init(filterConfig);
+    	this.filterConfig = filterConfig;
+    	synchronized (LIST)  {
+    		for (Filter f : LIST) {
+    			f.init(filterConfig);
+    		}
+    	}
+    }
+    
+    public static void addFilter(Filter filter) throws ServletException {
+    	synchronized (LIST) {
+    		if (filterConfig != null) {
+    			filter.init(filterConfig);
+    		}
+    		LIST.add(filter);
+    	}
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, final FilterChain chain) throws IOException, ServletException {

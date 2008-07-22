@@ -1,0 +1,33 @@
+#global-matrix-authorization-strategy-table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  border: 1px solid #D3D7CF;
+}
+
+#global-matrix-authorization-strategy-table TH {
+  padding: 0.2em;
+}
+
+#global-matrix-authorization-strategy-table TD.blank {
+  vertical-align: middle;
+  padding: 0.2em;
+}
+
+#global-matrix-authorization-strategy-table .caption-row TH {
+  font-weight: bold;
+}
+
+#global-matrix-authorization-strategy-table TD {
+  border: 1px solid #D3D7CF;
+}
+
+#global-matrix-authorization-strategy-table TD.left-most {
+  text-align: left;
+  border-left: none;
+}
+
+#global-matrix-authorization-strategy-table TD.stop {
+  border-top: 1px solid white;
+  border-right: 1px solid white;
+  border-bottom: 1px solid white;
+}

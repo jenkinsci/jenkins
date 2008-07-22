@@ -36,6 +36,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -151,6 +152,8 @@ public class WebAppMain implements ServletContextListener {
                 public void run() {
                     try {
                         computeVersion(context);
+
+                        Trigger.timer = new Timer("Hudson cron thread");
 
                         try {
                             context.setAttribute(APP,new Hudson(home,context));

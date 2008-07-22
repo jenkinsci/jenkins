@@ -175,6 +175,8 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
                     builds.put( b.getNumber(), b );
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (InstantiationError e) {
+                    e.printStackTrace();
                 }
             }
         }

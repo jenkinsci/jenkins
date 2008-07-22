@@ -13,7 +13,7 @@ import java.util.StringTokenizer;
  * 
  * @author Kohsuke Kawaguchi
  */
-final class EmbedderLoggerImpl extends AbstractMavenEmbedderLogger {
+public final class EmbedderLoggerImpl extends AbstractMavenEmbedderLogger {
     private final PrintStream logger;
 
     public EmbedderLoggerImpl(TaskListener listener) {

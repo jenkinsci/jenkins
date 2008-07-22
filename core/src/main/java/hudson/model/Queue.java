@@ -1,27 +1,41 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.Node.Mode;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.util.OneShotEvent;
+import hudson.util.XStream2;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.management.timer.Timer;
+
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import javax.management.timer.Timer;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.lang.ref.WeakReference;
-import java.util.Map.Entry;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 
 /**
  * Build queue.
@@ -130,7 +144,52 @@ public class Queue extends ResourceController {
      */
     private final Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
 
+    private final XStream xstream = new XStream2();
+    
     public Queue() {
+        xstream.registerConverter(new AbstractSingleValueConverter() {
+
+			@Override
+			@SuppressWarnings("unchecked")
+			public boolean canConvert(Class klazz) {
+				return TopLevelItem.class.isAssignableFrom(klazz);
+			}
+
+			@Override
+			public Object fromString(String string) {
+				return Hudson.getInstance().getItem(string);
+			}
+
+			@Override
+			public String toString(Object item) {
+				return ((TopLevelItem) item).getName();
+			}
+        });
+        xstream.registerConverter(new AbstractSingleValueConverter() {
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public boolean canConvert(Class klazz) {
+				return Run.class.isAssignableFrom(klazz);
+			}
+
+			@Override
+			public Object fromString(String string) {
+				String[] split = string.split("#");
+				String projectName = split[0];
+				int buildNumber = Integer.parseInt(split[1]);
+				Job<?,?> job = (Job<?,?>) Hudson.getInstance().getItem(projectName);
+				Run<?,?> run = job.getBuildByNumber(buildNumber);
+				return run;
+			}
+
+			@Override
+			public String toString(Object object) {
+				Run<?,?> run = (Run<?,?>) object;
+				return run.getParent().getName() + "#" + run.getNumber();
+			}
+        });
+ 
         // if all the executors are busy doing something, then the queue won't be maintained in
         // timely fashion, so use another thread to make sure it happens.
         new MaintainTask(this);
@@ -140,22 +199,32 @@ public class Queue extends ResourceController {
      * Loads the queue contents that was {@link #save() saved}.
      */
     public synchronized void load() {
-        // write out the contents of the queue
         try {
+        	// first try the old format
             File queueFile = getQueueFile();
-            if (!queueFile.exists())
-                return;
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(queueFile)));
-            String line;
-            while ((line = in.readLine()) != null) {
-                AbstractProject j = Hudson.getInstance().getItemByFullName(line, AbstractProject.class);
-                if (j != null)
-                    j.scheduleBuild();
-            }
-            in.close();
-            // discard the queue file now that we are done
-            queueFile.delete();
+            if (queueFile.exists()) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(queueFile)));
+	            String line;
+	            while ((line = in.readLine()) != null) {
+	                AbstractProject j = Hudson.getInstance().getItemByFullName(line, AbstractProject.class);
+	                if (j != null)
+	                    j.scheduleBuild();
+	            }
+	            in.close();
+	            // discard the queue file now that we are done
+	            queueFile.delete();
+	            
+	            return;
+	        } else {
+	        	queueFile = getXMLQueueFile();
+	        	if (queueFile.exists()) {
+	        		List<Task> tasks = (List<Task>) new XmlFile(xstream, queueFile).read();
+	        		for (Task task: tasks) {
+	        			add(task, 0);
+	        		}
+	        		queueFile.delete();
+	        	}
+	        }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getQueueFile(), e);
         }
@@ -165,21 +234,26 @@ public class Queue extends ResourceController {
      * Persists the queue contents to the disk.
      */
     public synchronized void save() {
-        // write out the contents of the queue
+        // write out the tasks on the queue
+    	ArrayList<Task> tasks = new ArrayList<Task>();
+    	for (Item item: getItems()) {
+    		tasks.add(item.task);
+    	}
+    	
         try {
-            PrintWriter w = new PrintWriter(new FileOutputStream(
-                    getQueueFile()));
-            for (Item i : getItems())
-                w.println(i.task.getName());
-            w.close();
+        	new XmlFile(xstream, getXMLQueueFile()).write(tasks);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to write out the queue file " + getQueueFile(), e);
         }
     }
 
     private File getQueueFile() {
-        return new File(Hudson.getInstance().getRootDir(), "queue.txt");
-    }
+	    return new File(Hudson.getInstance().getRootDir(), "queue.txt");
+	}
+
+    private File getXMLQueueFile() {
+	    return new File(Hudson.getInstance().getRootDir(), "queue.xml");
+	}
 
     /**
      * Schedule a new build for this project.
@@ -245,10 +319,10 @@ public class Queue extends ResourceController {
      * @return true if the project was indeed in the queue and was removed.
      *         false if this was no-op.
      */
-    public synchronized boolean cancel(AbstractProject<?, ?> p) {
+    public synchronized boolean cancel(Task p) {
         LOGGER.fine("Cancelling " + p.getName());
-        for (Iterator itr = waitingList.iterator(); itr.hasNext();) {
-            Item item = (Item) itr.next();
+        for (Iterator<WaitingItem> itr = waitingList.iterator(); itr.hasNext();) {
+            Item item = itr.next();
             if (item.task == p) {
                 itr.remove();
                 return true;
@@ -319,10 +393,10 @@ public class Queue extends ResourceController {
      * Left for backward compatibility.
      *
      * @see #getItem(Task)
-     */
     public synchronized Item getItem(AbstractProject p) {
         return getItem((Task) p);
     }
+     */
 
     /**
      * Returns true if this queue contains the said project.

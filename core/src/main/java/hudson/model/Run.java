@@ -781,6 +781,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     listener.started();
 
+                    RunListener.fireStarted(this,listener);
+
                     setResult(job.run(listener));
 
                     LOGGER.info(toString()+" main build action completed: "+result);

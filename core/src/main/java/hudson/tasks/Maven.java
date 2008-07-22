@@ -15,6 +15,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.ParametersAction;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
@@ -124,6 +125,11 @@ public class Maven extends Builder {
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         AbstractProject proj = build.getProject();
+
+        String targets = this.targets;
+        ParametersAction parameters = build.getAction(ParametersAction.class);
+        if (parameters != null)
+            targets = parameters.substitute(build,targets);
 
         int startIndex = 0;
         int endIndex;

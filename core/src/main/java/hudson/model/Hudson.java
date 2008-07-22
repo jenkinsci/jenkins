@@ -76,6 +76,7 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
 import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
+import org.apache.commons.logging.LogFactory;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
@@ -1424,6 +1425,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         }
         ExternalJob.reloadThread.interrupt();
         Trigger.timer.cancel();
+        Trigger.timer = null;
         if(tcpSlaveAgentListener!=null)
             tcpSlaveAgentListener.shutdown();
 
@@ -1436,6 +1438,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             getQueue().save();
 
         threadPoolForLoad.shutdown();
+        
+        LogFactory.releaseAll();
     }
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {

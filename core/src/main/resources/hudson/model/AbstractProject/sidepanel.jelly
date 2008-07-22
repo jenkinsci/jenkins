@@ -1,7 +1,7 @@
 <!--
   Side panel for the project view.
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:header title="${it.name}">
     <st:include page="rssHeader.jelly" />
     <link rel="alternate" title="Hudson:${it.name} (changelog)" href="rssChangelog" type="application/rss+xml" />
@@ -16,7 +16,8 @@
       <l:task icon="images/24x24/folder.gif"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}" />
       <j:if test="${it.configurable}">
         <j:if test="${!it.disabled}">
-          <l:task icon="images/24x24/clock.gif" href="${url}/build?delay=0sec" title="${%Build Now}" onclick="return build(this)" permission="${it.BUILD}" />
+          <l:task icon="images/24x24/clock.gif" href="${url}/build?delay=0sec" title="${%Build Now}"
+                  onclick="${h.ifThenElse(it.parameterized,null,'return build(this)')}" permission="${it.BUILD}" />
           <script>
             function build(a) {
               new Ajax.Request(a.href,{method:"post"});

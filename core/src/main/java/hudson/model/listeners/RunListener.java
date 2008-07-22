@@ -36,6 +36,19 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      the build is considered completed, so its status cannot be changed anymore.
      */
     public void onCompleted(R r, TaskListener listener) {}
+    
+    /**
+     * Called when a build is started (i.e. it was in the queue, and will now start running
+     * on an executor)
+     *
+     * @param r
+     *      The started build.
+     * @param listener
+     *      The listener for this build. This can be used to produce log messages, for example,
+     *      which becomes a part of the "console output" of this build. But when this method runs,
+     *      the build is considered completed, so its status cannot be changed anymore.
+     */
+    public void onStarted(R r, TaskListener listener) {}
 
     /**
      * Registers this object as an active listener so that it can start getting
@@ -64,6 +77,16 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
         for (RunListener l : LISTENERS) {
             if(l.targetType.isInstance(r))
                 l.onCompleted(r,listener);
+        }
+    }
+
+    /**
+     * Fires the {@link #onStarted} event.
+     */
+    public static void fireStarted(Run r, TaskListener listener) {
+        for (RunListener l : LISTENERS) {
+            if(l.targetType.isInstance(r))
+                l.onStarted(r,listener);
         }
     }
 }

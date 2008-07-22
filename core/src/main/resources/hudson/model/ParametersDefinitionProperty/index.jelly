@@ -1,0 +1,28 @@
+<!--
+  This view is rendered as /hudson/job/XYZ/build
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+  <!--
+    send back 4xx code so that machine agents don't confuse this form with successful build triggering
+    405 is "Method Not Allowed" and this fits here because we need POST.
+  -->
+  <st:statusCode value="405" />
+  <l:layout title="${it.displayName}">
+	<st:include page="sidepanel.jelly" it="${it.project}" />
+		<l:main-panel>
+			<h1>${it.owner.pronoun} ${it.owner.displayName}</h1>
+      <p>${%description}</p>
+      <f:form method="post" action="build">
+				<j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
+					<st:include it="${parameterDefinition}"
+						page="${parameterDefinition.descriptor.valuePage}" />
+				</j:forEach>
+				<f:block>
+					<f:submit value="${%Build}" />
+				</f:block>
+			</f:form>
+		</l:main-panel>
+	</l:layout>
+</j:jelly>

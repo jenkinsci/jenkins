@@ -56,7 +56,7 @@ public class Executor extends Thread implements ModelObject {
         try {
             finishTime = System.currentTimeMillis();
             while(true) {
-                if(Hudson.getInstance().isTerminating())
+                if(Hudson.getInstance() == null || Hudson.getInstance().isTerminating())
                     return;
 
                 synchronized(owner) {

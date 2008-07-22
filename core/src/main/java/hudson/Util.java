@@ -5,6 +5,7 @@ import hudson.model.Hudson;
 import static hudson.model.Hudson.isWindows;
 import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
+import hudson.util.VariableResolver;
 import hudson.Proc.LocalProc;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -99,6 +100,16 @@ public class Util {
      *
      */
     public static String replaceMacro(String s, Map<String,String> properties) {
+        return replaceMacro(s,new VariableResolver.ByMap<String>(properties));
+    }
+
+    /**
+     * Replaces the occurrence of '$key' by <tt>resolver.get('key')</tt>.
+     *
+     * <p>
+     * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)
+     */
+    public static String replaceMacro(String s, VariableResolver<String> resolver) {
         int idx=0;
         while(true) {
             Matcher m = VARIABLE.matcher(s);
@@ -107,7 +118,7 @@ public class Util {
             String key = m.group().substring(1);
             if(key.charAt(0)=='{')  key = key.substring(1,key.length()-1);
 
-            String value = properties.get(key);
+            String value = resolver.resolve(key);
             if(value==null)
                 idx = m.start()+1; // skip this
             else {

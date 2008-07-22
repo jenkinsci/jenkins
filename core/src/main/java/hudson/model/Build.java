@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 import java.util.Collection;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
@@ -94,13 +93,18 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
             buildEnvironments = new ArrayList<Environment>();
             try {
-                for( BuildWrapper w : project.getBuildWrappers().values() ) {
+                List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(project.getBuildWrappers().values());
+
+                ParametersAction parameters = getAction(ParametersAction.class);
+                if (parameters != null)
+                    parameters.createBuildWrappers(Build.this,wrappers);
+
+                for( BuildWrapper w : wrappers ) {
                     Environment e = w.setUp((AbstractBuild)Build.this, launcher, listener);
                     if(e==null)
                         return Result.FAILURE;
                     buildEnvironments.add(e);
                 }
-
 
                 if(!build(listener,project.getBuilders()))
                     return Result.FAILURE;
