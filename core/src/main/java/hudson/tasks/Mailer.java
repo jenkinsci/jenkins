@@ -343,7 +343,7 @@ public class Mailer extends Publisher {
                 
                 writer.println("Email was successfully sent");
             } catch (MessagingException e) {
-                writer.println(e.getMessage());
+                e.printStackTrace(writer);
             }
             writer.flush();
         }
