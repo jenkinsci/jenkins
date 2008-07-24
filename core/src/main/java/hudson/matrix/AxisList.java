@@ -1,8 +1,22 @@
 package hudson.matrix;
 
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter;
+import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.alias.CannotResolveClassException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import hudson.util.CopyOnWriteList;
 
 /**
  * List of {@link Axis}.
@@ -70,4 +84,42 @@ public class AxisList extends ArrayList<Axis> {
             }
         };
     }
+
+    /**
+     * {@link Converter} implementation for XStream.
+     */
+    public static final class ConverterImpl extends AbstractCollectionConverter {
+        public ConverterImpl(Mapper mapper) {
+            super(mapper);
+        }
+
+        public boolean canConvert(Class type) {
+            return type==AxisList.class;
+        }
+
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            for (Object o : (AxisList) source)
+                writeItem(o, context, writer);
+        }
+
+        @SuppressWarnings("unchecked")
+        public AxisList unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            // read the items from xml into a list
+            List items = new ArrayList();
+            while (reader.hasMoreChildren()) {
+                reader.moveDown();
+                try {
+                    Object item = readItem(reader, context, items);
+                    items.add(item);
+                } catch (CannotResolveClassException e) {
+                    LOGGER.log(Level.WARNING,"Failed to resolve class",e);
+                }
+                reader.moveUp();
+            }
+
+            return new AxisList(items);
+        }
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(AxisList.class.getName());
 }
