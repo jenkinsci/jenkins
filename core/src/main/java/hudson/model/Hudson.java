@@ -100,7 +100,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.net.Proxy;
 import java.security.SecureRandom;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -347,11 +346,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         // load plugins.
         pluginManager = new PluginManager(context);
 
-        if(slaveAgentPort!=-1)
-            tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-        else
-            tcpSlaveAgentListener = null;
-
         // if we are loading old data that doesn't have this field
         if(slaves==null)    slaves = new ArrayList<Slave>();
 
@@ -360,6 +354,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         Items.LIST.hashCode();
 
         load();
+
+        if(slaveAgentPort!=-1)
+            tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+        else
+            tcpSlaveAgentListener = null;
+
         updateComputerList();
 
         getQueue().load();
