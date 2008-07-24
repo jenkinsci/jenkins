@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.FilterOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 
 /**
  * Tunnels byte stream into another byte stream so that binary data
@@ -149,6 +151,25 @@ public final class BinarySafeStream {
                         int c1 = DECODING_TABLE[b[base++]];
                         int c2 = DECODING_TABLE[b[base++]];
                         int c3 = DECODING_TABLE[b[base++]];
+                        if(c0<0 || c1<0 || c2<-1 || c3<-1) {
+                            // illegal input. note that '=' never shows up as 1st or 2nd char
+                            // hence the check for the 1st half and 2nd half are different.
+
+                            // now try to report what we saw.
+                            // the remaining buffer is b[base-4 ... base-4+l]
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            baos.write(b,base-4,l);
+                            // plus we might be able to read more bytes from the underlying stream
+                            int avail = super.available();
+                            if(avail >0) {
+                                byte[] buf = new byte[avail];
+                                baos.write(buf,0,super.read(buf));
+                            }
+                            StringBuilder buf = new StringBuilder("Invalid encoded sequence encountered:");
+                            for (byte ch : baos.toByteArray())
+                                buf.append(String.format(" %02X",ch));
+                            throw new IOException(buf.toString());
+                        }
                         b[off++] = (byte) ((c0<<2) | (c1>>4));
                         totalRead++;
                         if(c2!=-1) {
@@ -264,6 +285,10 @@ public final class BinarySafeStream {
     }
 
     private static final byte[] ENCODING_TABLE;
+    /**
+     * 0-63 are the index value, -1 is '='.
+     * -2 indicates all the other illegal characters.
+     */
     private static final int[] DECODING_TABLE = new int[128];
 
     static {
@@ -272,6 +297,8 @@ public final class BinarySafeStream {
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
+
+        Arrays.fill(DECODING_TABLE,-2);
         for (int i = 0; i < ENCODING_TABLE.length; i++)
             DECODING_TABLE[ENCODING_TABLE[i]] = i;
         DECODING_TABLE['='] = -1;
