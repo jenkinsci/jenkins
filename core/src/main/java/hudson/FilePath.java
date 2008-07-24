@@ -159,7 +159,7 @@ public final class FilePath implements Serializable {
 
     public FilePath(FilePath base, String rel) {
         this.channel = base.channel;
-        if(rel.startsWith("/") || DRIVE_PATTERN.matcher(rel).matches()) {
+        if(isAbsolute(rel)) {
             // absolute
             this.remote = rel;
         } else 
@@ -168,6 +168,10 @@ public final class FilePath implements Serializable {
         } else {
             this.remote = base.remote+'\\'+rel;
         }
+    }
+
+    private static boolean isAbsolute(String rel) {
+        return rel.startsWith("/") || DRIVE_PATTERN.matcher(rel).matches();
     }
 
     private static final Pattern DRIVE_PATTERN = Pattern.compile("[A-Za-z]:\\\\.+");
@@ -613,7 +617,9 @@ public final class FilePath implements Serializable {
      * @return
      *      A set of relative file names from the base directory.
      */
-    private static String[] glob(File dir, String includes) {
+    private static String[] glob(File dir, String includes) throws IOException {
+        if(isAbsolute(includes))
+            throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See http://ant.apache.org/manual/CoreTypes/fileset.html for syntax");
         FileSet fs = Util.createFileSet(dir,includes);
         DirectoryScanner ds = fs.getDirectoryScanner(new Project());
         String[] files = ds.getIncludedFiles();
