@@ -297,11 +297,21 @@ public class Queue extends ResourceController {
                 return false;
 
             WaitingItem wi = (WaitingItem) item;
-            if (wi.timestamp.before(due))
-                return false; // no double queueing
 
-            // allow the due date to be pulled in
-            wi.timestamp = due;
+            if(quietPeriod<=0) {
+                // the user really wants to build now, and they mean NOW.
+                // so let's pull in the timestamp if we can.
+                if (wi.timestamp.after(due))
+                    wi.timestamp = due;
+                else
+                    return false;
+            } else {
+                // otherwise we do the normal quiet period implementation
+                if (wi.timestamp.before(due))
+                    wi.timestamp = due; // quiet period timer reset. start the period over again
+                else
+                    return false;
+            }
         } else {
             LOGGER.fine(p.getName() + " added to queue");
 
