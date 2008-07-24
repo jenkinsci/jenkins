@@ -301,17 +301,19 @@ public class Queue extends ResourceController {
             if(quietPeriod<=0) {
                 // the user really wants to build now, and they mean NOW.
                 // so let's pull in the timestamp if we can.
-                if (wi.timestamp.after(due))
-                    wi.timestamp = due;
-                else
+                if (wi.timestamp.before(due))
                     return false;
             } else {
                 // otherwise we do the normal quiet period implementation
-                if (wi.timestamp.before(due))
-                    wi.timestamp = due; // quiet period timer reset. start the period over again
-                else
+                if (wi.timestamp.after(due))
                     return false;
+                // quiet period timer reset. start the period over again
             }
+
+            // waitingList is sorted, so when we change a timestamp we need to maintain order
+            waitingList.remove(wi);
+            wi.timestamp = due;
+            waitingList.add(wi);
         } else {
             LOGGER.fine(p.getName() + " added to queue");
 
