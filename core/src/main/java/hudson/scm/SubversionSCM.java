@@ -53,7 +53,7 @@ import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
 import org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.wc.SVNErrorManager;
-import org.tmatesoft.svn.core.internal.wc.SVNExternalInfo;
+import org.tmatesoft.svn.core.internal.wc.SVNExternal;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
@@ -558,10 +558,10 @@ public class SubversionSCM extends SCM implements Serializable {
          *      Since we call svnkit multiple times in general case to check out from multiple locations,
          *      we use this to make the path relative to the entire workspace, not just the particular module.
          */
-        External(String modulePath,SVNExternalInfo ext) {
+        External(String modulePath,SVNExternal ext) {
             this.path = modulePath+'/'+ext.getPath();
-            this.url = ext.getNewURL().toDecodedString();
-            this.revision = ext.getNewRevision();
+            this.url = ext.getResolvedURL().toDecodedString();
+            this.revision = ext.getRevision().getNumber();
         }
 
         /**

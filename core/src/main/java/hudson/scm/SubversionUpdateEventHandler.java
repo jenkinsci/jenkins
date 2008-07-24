@@ -12,7 +12,9 @@
 package hudson.scm;
 
 import org.tmatesoft.svn.core.SVNCancelException;
-import org.tmatesoft.svn.core.internal.wc.SVNExternalInfo;
+import org.tmatesoft.svn.core.internal.wc.SVNExternal;
+import org.tmatesoft.svn.core.internal.wc.SVNFileUtil;
+import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
 import org.tmatesoft.svn.core.wc.ISVNEventHandler;
 import org.tmatesoft.svn.core.wc.SVNEvent;
 import org.tmatesoft.svn.core.wc.SVNEventAction;
@@ -49,6 +51,13 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
     }
 
     public void handleEvent(SVNEvent event, double progress) {
+        File file = event.getFile();
+        String path = null;
+        if (file != null) {
+            path = getRelativePath(file);
+            path = getLocalPath(path);
+        }
+
         /*
          * Gets the current action. An action is represented by SVNEventAction.
          * In case of an update an  action  can  be  determined  via  comparing
@@ -98,22 +107,22 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
             }
         } else if (action == SVNEventAction.UPDATE_EXTERNAL) {
             // for externals definitions
-            SVNExternalInfo ext = event.getExternalInfo();
+            SVNExternal ext = event.getExternalInfo();
             if(ext==null) {
                 // prepare for the situation where the user created their own svnkit
-                File path = null;
+                File jarFile = null;
                 try {
-                    path = Which.jarFile(SVNEvent.class);
+                    jarFile = Which.jarFile(SVNEvent.class);
                 } catch (IOException e) {
                     // ignore this failure
                 }
-                out.println("AssertionError: appears to be using unpatched svnkit at "+ path);
+                out.println("AssertionError: appears to be using unpatched svnkit at "+ jarFile);
             } else {
                 out.println(Messages.SubversionUpdateEventHandler_FetchExternal(
-                        ext.getNewURL(), ext.getNewRevision(), event.getFile()));
+                        ext.getResolvedURL(), ext.getRevision().getNumber(), event.getFile()));
                 //#1539 - an external inside an external needs to have the path appended 
-                externals.add(new SubversionSCM.External(modulePath + "/" + event.getPath().substring(0
-                		,event.getPath().length() - ext.getPath().length())
+                externals.add(new SubversionSCM.External(modulePath + "/" + path.substring(0
+                		,path.length() - ext.getPath().length())
                 		,ext));
             }
             return;
@@ -124,16 +133,16 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
             out.println("At revision " + event.getRevision());
             return;
         } else if (action == SVNEventAction.ADD){
-            out.println("A     " + event.getPath());
+            out.println("A     " + path);
             return;
         } else if (action == SVNEventAction.DELETE){
-            out.println("D     " + event.getPath());
+            out.println("D     " + path);
             return;
         } else if (action == SVNEventAction.LOCKED){
-            out.println("L     " + event.getPath());
+            out.println("L     " + path);
             return;
         } else if (action == SVNEventAction.LOCK_FAILED){
-            out.println("failed to lock    " + event.getPath());
+            out.println("failed to lock    " + path);
             return;
         }
 
@@ -186,11 +195,62 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
                 + propertiesChangeType
                 + lockLabel
                 + "       "
-                + event.getPath());
+                + path);
     }
 
     public void checkCancelled() throws SVNCancelException {
         if(Thread.interrupted())
             throw new SVNCancelException();
+    }
+
+    public String getRelativePath(File file) {
+        String inPath = file.getAbsolutePath().replace(File.separatorChar, '/');
+        String basePath = new File("").getAbsolutePath().replace(File.separatorChar, '/');
+        String commonRoot = getCommonAncestor(inPath, basePath);
+        if (commonRoot != null) {
+            if (equals(inPath , commonRoot)) {
+                return "";
+            } else if (startsWith(inPath, commonRoot + "/")) {
+                return inPath.substring(commonRoot.length() + 1);
+            }
+        }
+        return inPath;
+    }
+
+    private static String getCommonAncestor(String p1, String p2) {
+        if (SVNFileUtil.isWindows || SVNFileUtil.isOpenVMS) {
+            String ancestor = SVNPathUtil.getCommonPathAncestor(p1.toLowerCase(), p2.toLowerCase());
+            if (equals(ancestor, p1)) {
+                return p1;
+            } else if (equals(ancestor, p2)) {
+                return p2;
+            } else if (startsWith(p1, ancestor)) {
+                return p1.substring(0, ancestor.length());
+            }
+            return ancestor;
+        }
+        return SVNPathUtil.getCommonPathAncestor(p1, p2);
+    }
+
+    private static boolean startsWith(String p1, String p2) {
+        if (SVNFileUtil.isWindows || SVNFileUtil.isOpenVMS) {
+            return p1.toLowerCase().startsWith(p2.toLowerCase());
+        }
+        return p1.startsWith(p2);
+    }
+
+    private static boolean equals(String p1, String p2) {
+        if (SVNFileUtil.isWindows || SVNFileUtil.isOpenVMS) {
+            return p1.toLowerCase().equals(p2.toLowerCase());
+        }
+        return p1.equals(p2);
+    }
+
+    public static String getLocalPath(String path) {
+        path = path.replace('/', File.separatorChar);
+        if ("".equals(path)) {
+            path = ".";
+        }
+        return path;
     }
 }

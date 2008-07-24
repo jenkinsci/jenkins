@@ -15,6 +15,7 @@ import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNCopyClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
+import org.tmatesoft.svn.core.wc.SVNCopySource;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -164,7 +165,10 @@ public class SubversionTagAction extends AbstractScmTagAction {
                             SVNURL dst = SVNURL.parseURIDecoded(e.getValue());
 
                             SVNCopyClient svncc = cm.getCopyClient();
-                            svncc.doCopy(src, SVNRevision.create(e.getKey().revision), dst, false, true, "Tagged from "+build );
+                            SVNCopySource csrc = new SVNCopySource(SVNRevision.UNDEFINED,SVNRevision.create(e.getKey().revision),src);
+                            svncc.doCopy(
+                                    new SVNCopySource[]{csrc},
+                                    dst, false, true, false, "Tagged from "+build, null );
                         } catch (SVNException x) {
                             x.printStackTrace(listener.error("Failed to tag"));
                             return;
