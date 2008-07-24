@@ -114,49 +114,49 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         int getPort();
     }
 
-    static final class AcceptorImpl implements Acceptor, Serializable {
-        private final ServerSocket serverSocket;
-        private Socket socket;
-
-        AcceptorImpl(ServerSocket serverSocket) {
-            this.serverSocket = serverSocket;
-        }
-
-        public Connection accept() throws IOException {
-            socket = serverSocket.accept();
-            // we'd only accept one connection
-            serverSocket.close();
-
-            return new Connection(new SocketInputStream(socket),new SocketOutputStream(socket));
-        }
-
-        public int getPort() {
-            return serverSocket.getLocalPort();
-        }
-
-        /**
-         * When sent to the remote node, send a proxy.
-         */
-        private Object writeReplace() {
-            return Channel.current().export(Acceptor.class, this);
-        }
-    }
-
     /**
      * Opens a server socket and returns {@link Acceptor} so that
      * we can accept a connection later on it.
      */
     private static final class SocketHandler implements Callable<Acceptor,IOException> {
         public Acceptor call() throws IOException {
-            // open a TCP socket to talk to the launched Maven process.
-            // let the OS pick up a random open port
-            ServerSocket ss = new ServerSocket();
-            ss.bind(null); // new InetSocketAddress(InetAddress.getLocalHost(),0));
-
-            return new AcceptorImpl(ss);
+            return new AcceptorImpl();
         }
 
         private static final long serialVersionUID = 1L;
+
+        static final class AcceptorImpl implements Acceptor, Serializable {
+            private final ServerSocket serverSocket;
+            private Socket socket;
+
+            AcceptorImpl() throws IOException {
+                // open a TCP socket to talk to the launched Maven process.
+                // let the OS pick up a random open port
+                this.serverSocket = new ServerSocket();
+                serverSocket.bind(null); // new InetSocketAddress(InetAddress.getLocalHost(),0));
+                // prevent a hang at the accept method in case the forked process didn't start successfully
+                serverSocket.setSoTimeout(10*1000);
+            }
+
+            public Connection accept() throws IOException {
+                socket = serverSocket.accept();
+                // we'd only accept one connection
+                serverSocket.close();
+
+                return new Connection(new SocketInputStream(socket),new SocketOutputStream(socket));
+            }
+
+            public int getPort() {
+                return serverSocket.getLocalPort();
+            }
+
+            /**
+             * When sent to the remote node, send a proxy.
+             */
+            private Object writeReplace() {
+                return Channel.current().export(Acceptor.class, this);
+            }
+        }
     }
 
     /**
