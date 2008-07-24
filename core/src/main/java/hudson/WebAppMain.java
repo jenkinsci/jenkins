@@ -153,8 +153,6 @@ public class WebAppMain implements ServletContextListener {
                     try {
                         computeVersion(context);
 
-                        Trigger.timer = new Timer("Hudson cron thread");
-
                         try {
                             context.setAttribute(APP,new Hudson(home,context));
                         } catch( IOException e ) {
