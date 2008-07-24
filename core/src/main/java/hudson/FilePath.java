@@ -609,6 +609,9 @@ public final class FilePath implements Serializable {
 
     /**
      * Runs Ant glob expansion.
+     *
+     * @return
+     *      A set of relative file names from the base directory.
      */
     private static String[] glob(File dir, String includes) {
         FileSet fs = Util.createFileSet(dir,includes);
