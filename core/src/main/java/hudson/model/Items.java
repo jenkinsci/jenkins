@@ -4,6 +4,7 @@ import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixConfiguration;
+import hudson.matrix.Axis;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.ModuleDependency;
@@ -110,6 +111,7 @@ public class Items {
         XSTREAM.alias("dependency", ModuleDependency.class);
         XSTREAM.alias("maven2-module-set", MavenModule.class);
         XSTREAM.alias("matrix-project",MatrixProject.class);
+        XSTREAM.alias("axis", Axis.class);
         XSTREAM.alias("matrix-config",MatrixConfiguration.class);
     }
 }
