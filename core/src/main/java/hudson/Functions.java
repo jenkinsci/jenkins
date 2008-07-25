@@ -920,5 +920,17 @@ public class Functions {
         return Stapler.getCurrentRequest().getServerName();
     }
 
+    /**
+     * Determines the form validation check URL. See textbox.jelly
+     */
+    public String getCheckUrl(String userDefined, Object descriptor, String field) {
+        if(userDefined!=null || field==null)   return userDefined;
+        if (descriptor instanceof Descriptor) {
+            Descriptor d = (Descriptor) descriptor;
+            return d.getCheckUrl(field);
+        }
+        return null;
+    }
+
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 }

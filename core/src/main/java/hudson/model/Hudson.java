@@ -471,6 +471,19 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     /**
+     * Exposes {@link Descriptor} by its name to URL.
+     *
+     * After doing all the {@code getXXX(shortClassName)} methods, I finally realized that
+     * this just doesn't scale.
+     */
+    public Descriptor getDescriptor(String fullyQualifiedClassName) {
+        for( Descriptor d : Descriptor.ALL )
+            if(d.clazz.getName().equals(fullyQualifiedClassName))
+                return d;
+        return null;
+    }
+
+    /**
      * Gets the {@link SecurityRealm} descriptors by name. Primarily used for making them web-visible.
      */
     public Descriptor<SecurityRealm> getSecurityRealms(String shortClassName) {
@@ -982,6 +995,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      *      The caller must gracefully deal with this situation.
      *      The returned URL will always have the trailing '/'.
      * @since 1.66
+     * @see Descriptor#getCheckUrl(String) 
      */
     public String getRootUrl() {
         // for compatibility. the actual data is stored in Mailer

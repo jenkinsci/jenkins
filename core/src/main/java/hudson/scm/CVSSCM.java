@@ -1066,7 +1066,7 @@ public class CVSSCM extends SCM implements Serializable {
         /**
          * Checks the correctness of the branch name.
          */
-        public void doBranchCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public void doCheckBranch(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             new FormFieldValidator(req,rsp,false) {
                 protected void check() throws IOException, ServletException {
                     String v = fixNull(request.getParameter("value"));

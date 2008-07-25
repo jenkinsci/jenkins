@@ -1,8 +1,22 @@
 <!--
 	<input type="textbox">
+
+	Attributes:
+
+	If @field is specified:
+	   no other mandatory fields.
+	   in this case, name and value are inferred from field,
+	   and checkUrl is auto-generated if the check method is present.
+	Otherwise
+	   @name and @value are mandatory.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
-  <input class="setting-input ${h.ifThenElse(attrs.checkUrl!=null,'validated','')}" name="${attrs.name}" id="${attrs.id}"
-         type="text" value="${attrs.value}" checkUrl="${attrs.checkUrl}" checkMethod="${attrs.checkMethod}"
+  <j:set var="checkUrl" value="${h.getCheckUrl(attrs.checkUrl,descriptor,attrs.field)}" />
+  <input class="setting-input ${h.ifThenElse(checkUrl!=null,'validated','')}"
+         name ="${h.defaulted(attrs.name,'_.'+attrs.field)}"
+         value="${h.defaulted(attrs.value,instance[attrs.field])}"
+         id="${attrs.id}"
+         type="text"
+         checkUrl="${checkUrl}" checkMethod="${attrs.checkMethod}"
          onchange="${attrs.onchange}" onkeyup="${attrs.onkeyup}"/>
 </j:jelly>

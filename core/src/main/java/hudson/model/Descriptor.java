@@ -1,10 +1,13 @@
 package hudson.model;
 
 import hudson.XmlFile;
+import hudson.util.CopyOnWriteList;
 import hudson.scm.CVSSCM;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.Stapler;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -14,6 +17,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.lang.reflect.Method;
@@ -77,8 +81,11 @@ public abstract class Descriptor<T extends Describable<T>> {
      */
     public transient final Class<? extends T> clazz;
 
+    private transient final Map<String,Method> checkMethods = new ConcurrentHashMap<String,Method>();
+
     protected Descriptor(Class<? extends T> clazz) {
         this.clazz = clazz;
+        ALL.add(this);
         // doing this turns out to be very error prone,
         // as field initializers in derived types will override values.
         // load();
@@ -88,6 +95,34 @@ public abstract class Descriptor<T extends Describable<T>> {
      * Human readable name of this kind of configurable object.
      */
     public abstract String getDisplayName();
+
+    /**
+     * If the field "xyz" of a {@link Describable} has the corresponding "doCheckXyz" method,
+     * return the form-field validation string. Otherwise null.
+     * <p>
+     * This method is used to hook up the form validation method to
+     */
+    public String getCheckUrl(String fieldName) {
+        String capitalizedFieldName = StringUtils.capitalize(fieldName);
+
+        Method method = checkMethods.get(fieldName);
+        if(method==null) {
+            method = NONE;
+            String methodName = "doCheck"+ capitalizedFieldName;
+            for( Method m : getClass().getMethods() ) {
+                if(m.getName().equals(methodName)) {
+                    method = m;
+                    break;
+                }
+            }
+            checkMethods.put(fieldName,method);
+        }
+
+        if(method==NONE)
+            return null;
+
+        return '\''+Stapler.getCurrentRequest().getContextPath()+"/descriptor/"+clazz.getName()+"/check"+capitalizedFieldName+"?value='+encode(this.value)";
+    }
 
     /**
      * @deprecated
@@ -339,4 +374,24 @@ public abstract class Descriptor<T extends Describable<T>> {
     }
 
     private static final Logger LOGGER = Logger.getLogger(Descriptor.class.getName());
+
+    /**
+     * All the live instances of {@link Descriptor}.
+     * {@link Descriptor}s are all supposed to have the singleton semantics, so
+     * this shouldn't cause a memory leak. 
+     */
+    public static final CopyOnWriteList<Descriptor> ALL = new CopyOnWriteList<Descriptor>();
+
+    /**
+     * Used in {@link #checkMethods} to indicate that there's no check method.
+     */
+    private static final Method NONE;
+
+    static {
+        try {
+            NONE = Object.class.getMethod("toString");
+        } catch (NoSuchMethodException e) {
+            throw new AssertionError();
+        }
+    }
 }
