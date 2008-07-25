@@ -64,6 +64,25 @@ public abstract class Launcher {
         return channel;
     }
 
+    /**
+     * If this {@link Launcher} is encapsulating an execution on a specific {@link Computer},
+     * return it.
+     *
+     * <p>
+     * Because of the way internal Hudson abstractions are set up (that is, {@link Launcher} only
+     * needs a {@link VirtualChannel} to do its job and isn't really required that the channel
+     * comes from an existing {@link Computer}), this method may not always the right {@link Computer} instance.
+     *
+     * @return
+     *      null if this launcher is not created from a {@link Computer} object.
+     */
+    public Computer getComputer() {
+        for( Computer c : Hudson.getInstance().getComputers() )
+            if(c.getChannel()==channel)
+                return c;
+        return null;
+    }
+
     public final Proc launch(String cmd, Map<String,String> env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd,Util.mapToEnv(env),out,workDir);
     }
