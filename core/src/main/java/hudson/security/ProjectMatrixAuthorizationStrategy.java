@@ -198,7 +198,7 @@ public class ProjectMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public String getDisplayName() {
-            return "Project-based Matrix Authorization Strategy";
+            return Messages.ProjectMatrixAuthorizationStrategy_DisplayName();
         }
 
         public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
