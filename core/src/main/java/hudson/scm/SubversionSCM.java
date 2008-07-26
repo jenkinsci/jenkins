@@ -383,8 +383,9 @@ public class SubversionSCM extends SCM implements Serializable {
                         try {
                             listener.getLogger().println("Updating "+ l.remote);
 
-                            svnuc.setEventHandler(new SubversionUpdateEventHandler(listener.getLogger(), externals, l.local));
-                            svnuc.doUpdate(new File(ws, l.local).getCanonicalFile(), revision, true);
+                            File local = new File(ws, l.local);
+                            svnuc.setEventHandler(new SubversionUpdateEventHandler(listener.getLogger(), externals,local,l.local));
+                            svnuc.doUpdate(local.getCanonicalFile(), revision, true);
 
                         } catch (final SVNException e) {
                             if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_LOCKED) {
@@ -423,8 +424,9 @@ public class SubversionSCM extends SCM implements Serializable {
                             final SVNURL url = SVNURL.parseURIEncoded(l.remote);
                             listener.getLogger().println("Checking out "+url);
 
-                            svnuc.setEventHandler(new SubversionUpdateEventHandler(new PrintStream(pos), externals, l.local));
-                            svnuc.doCheckout(url, new File(ws, l.local).getCanonicalFile(), SVNRevision.HEAD, revision, true);
+                            File local = new File(ws, l.local);
+                            svnuc.setEventHandler(new SubversionUpdateEventHandler(new PrintStream(pos), externals, local, l.local));
+                            svnuc.doCheckout(url, local.getCanonicalFile(), SVNRevision.HEAD, revision, true);
                         } catch (SVNException e) {
                             e.printStackTrace(listener.error("Failed to check out "+l.remote));
                             return null;
