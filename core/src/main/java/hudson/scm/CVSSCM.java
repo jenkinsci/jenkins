@@ -35,6 +35,7 @@ import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -117,14 +118,12 @@ public class CVSSCM extends SCM implements Serializable {
 
     private boolean isTag;
 
-    /**
-     * @stapler-constructor
-     */
-    public CVSSCM(String cvsroot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy, boolean isTag) {
+    @DataBoundConstructor
+    public CVSSCM(String cvsRoot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy, boolean isTag) {
         if(fixNull(branch).equals("HEAD"))
             branch = null;
 
-        this.cvsroot = cvsroot;
+        this.cvsroot = cvsRoot;
         this.module = module.trim();
         this.branch = nullify(branch);
         this.cvsRsh = nullify(cvsRsh);
@@ -1084,7 +1083,7 @@ public class CVSSCM extends SCM implements Serializable {
          * <p>
          * Also checks if .cvspass file contains the entry for this.
          */
-        public void doCvsrootCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public void doCheckCvsRoot(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             new FormFieldValidator(req,rsp,false) {
                 protected void check() throws IOException, ServletException {
                     String v = fixEmpty(request.getParameter("value"));

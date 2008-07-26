@@ -1,21 +1,30 @@
 <!--
+	Attributes:
+
+	If @field is specified:
+	   in this case, name and value are inferred from field,
+	   and checkUrl is auto-generated if the check method is present.
+	Otherwise
+	   @name and @value are mandatory.
+
 	<%@attribute name="id" required="true" %>
 	<%@attribute name="clazz" required="false" %>
-	<%@attribute name="name" required="false" %>
-	<%@attribute name="value" required="false" %>
 	<%@attribute name="items" type="java.lang.Object" description="Optional list of possible values" %>
 -->
 <!-- Tomcat doesn't like us using the attribute called 'class' -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<j:if test="${editableComboBox_source_loaded==null}">
-	  <script type="text/javascript" src="${request.contextPath}/scripts/utilities.js"></script>
-	  <script type="text/javascript" src="${request.contextPath}/scripts/combobox.js"></script>
+	  <script type="text/javascript" src="${request.contextPath}/scripts/utilities.js"/>
+    <script type="text/javascript" src="${request.contextPath}/scripts/combobox.js"/>
 	  <j:set target="${requestScope}" property="editableComboBox_source_loaded" value="true" />
 	</j:if>
 
-	<input id="${attrs.id}" autocomplete="off" class="${attrs.clazz}"
-         name="${attrs.name}" value="${attrs.value}"
-         checkUrl="${attrs.checkUrl}" />
+  <j:set var="checkUrl" value="${h.getCheckUrl(attrs.checkUrl,descriptor,attrs.field)}" />
+
+  <input id="${attrs.id}" autocomplete="off" class="${attrs.clazz} ${h.ifThenElse(checkUrl!=null,'validated','')}"
+         name ="${h.defaulted(attrs.name,'_.'+attrs.field)}"
+         value="${h.defaulted(attrs.value,instance[attrs.field])}"
+         checkUrl="${checkUrl}" />
 	<j:set target="${requestScope}" property="editableComboBox" value="${attrs.id}" />
 	<script type="text/javascript">
 	  var ${id}_values = new Array();
