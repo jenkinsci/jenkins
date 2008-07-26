@@ -31,7 +31,7 @@ DAEMON_ARGS="--name=$NAME --inherit --env=HUDSON_HOME=$HUDSON_HOME --output=$HUD
 do_start()
 {
     # the default location is /var/run/hudson/hudson.pid but the parent directory needs to be created
-    mkdir `dirname $PIDFILE` || true
+    mkdir `dirname $PIDFILE` > /dev/null 2>&1 || true
     chown $HUDSON_USER `dirname $PIDFILE`
     # Return
     #   0 if daemon has been started
