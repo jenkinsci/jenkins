@@ -10,7 +10,12 @@ public class JNLPMain {
     public static void main(String[] args) throws Exception {
         // don't know if this is really necessary, but jnlp-agent benefited from this,
         // so I'm doing it here, too.
-        System.setSecurityManager(null);
+        try {
+            System.setSecurityManager(null);
+        } catch (SecurityException e) {
+            // ignore and move on.
+            // some user reported that this happens on their JVM: http://d.hatena.ne.jp/tueda_wolf/20080723
+        }
 
         boolean headlessMode = Boolean.getBoolean("hudson.webstart.headless");
         if (!headlessMode) {
