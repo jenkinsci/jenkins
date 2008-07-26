@@ -42,11 +42,19 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
      * We add to this collection as we find them.
      */
     private final List<SubversionSCM.External> externals;
+    /**
+     * {@link File} representation of the directory that {@link #modulePath} points to.
+     */
+    private final File moduleDir;
+    /**
+     * Relative path from the workspace root to the module root. 
+     */
     private final String modulePath;
     
-    public SubversionUpdateEventHandler(PrintStream out, List<SubversionSCM.External> externals, String modulePath) {
+    public SubversionUpdateEventHandler(PrintStream out, List<SubversionSCM.External> externals, File moduleDir, String modulePath) {
         this.out = out;
         this.externals = externals;
+        this.moduleDir = moduleDir;
         this.modulePath = modulePath;
     }
 
@@ -205,7 +213,7 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
 
     public String getRelativePath(File file) {
         String inPath = file.getAbsolutePath().replace(File.separatorChar, '/');
-        String basePath = new File("").getAbsolutePath().replace(File.separatorChar, '/');
+        String basePath = moduleDir.getAbsolutePath().replace(File.separatorChar, '/');
         String commonRoot = getCommonAncestor(inPath, basePath);
         if (commonRoot != null) {
             if (equals(inPath , commonRoot)) {
