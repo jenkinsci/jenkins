@@ -35,8 +35,8 @@
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
-          <!-- enable release profile during the release -->
-          <prepareVerifyArgs>-P release,ips</prepareVerifyArgs>
+          <!-- enable release profile during the release, create IPS package, and sign bits. -->
+          <prepareVerifyArgs>-P release,ips,sign</prepareVerifyArgs>
           <!--
             also run assembly during the release.
             http://www.nabble.com/Release-Plugin%3A-Include-assemblies-for-deploying-tf2642295s177.html#a7377938
