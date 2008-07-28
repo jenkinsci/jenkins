@@ -4,7 +4,6 @@ import hudson.AbortException;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.StructuredForm;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
@@ -946,7 +945,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix)
         throws FormException {
 
-        JSONObject data = StructuredForm.get(req);
+        JSONObject data = req.getSubmittedForm();
         List<T> r = new Vector<T>();
         for( int i=0; i< descriptors.size(); i++ ) {
             String name = prefix + i;

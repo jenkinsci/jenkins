@@ -1,7 +1,5 @@
 package hudson.model;
 
-import hudson.StructuredForm;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +60,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
 
         List<ParameterValue> values = new ArrayList<ParameterValue>();
 
-        JSONObject formData = StructuredForm.get(req);
+        JSONObject formData = req.getSubmittedForm();
         JSONArray a = JSONArray.fromObject(formData.get("parameter"));
 
         for (Object o : a) {

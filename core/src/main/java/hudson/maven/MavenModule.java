@@ -2,7 +2,6 @@ package hudson.maven;
 
 import hudson.CopyOnWrite;
 import hudson.FilePath;
-import hudson.StructuredForm;
 import hudson.Util;
 import hudson.Functions;
 import hudson.maven.reporters.MavenMailer;
@@ -391,7 +390,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
 
-        reporters.rebuild(req,StructuredForm.get(req),MavenReporters.getConfigurableList(),"reporter");
+        reporters.rebuild(req, req.getSubmittedForm(),MavenReporters.getConfigurableList(),"reporter");
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
 

@@ -2,7 +2,6 @@ package hudson.tasks;
 
 import hudson.CopyOnWrite;
 import hudson.Launcher;
-import hudson.StructuredForm;
 import hudson.Util;
 import hudson.FilePath;
 import hudson.EnvVars;
@@ -263,7 +262,7 @@ public class Ant extends Builder {
 
         public boolean configure(StaplerRequest req) {
             installations = req.bindJSONToList(
-                    AntInstallation.class,StructuredForm.get(req).get("ant")).toArray(new AntInstallation[0]);
+                    AntInstallation.class, req.getSubmittedForm().get("ant")).toArray(new AntInstallation[0]);
             save();
             return true;
         }

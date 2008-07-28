@@ -1478,7 +1478,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
             req.setCharacterEncoding("UTF-8");
 
-            JSONObject json = StructuredForm.get(req);
+            JSONObject json = req.getSubmittedForm();
 
             // keep using 'useSecurity' field as the main configuration setting
             // until we get the new security implementation working
@@ -1580,7 +1580,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(ADMINISTER);
 
-        JSONObject json = StructuredForm.get(req);
+        JSONObject json = req.getSubmittedForm();
 
         numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
         if(req.hasParameter("master.mode"))

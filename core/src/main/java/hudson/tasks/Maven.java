@@ -7,7 +7,6 @@ import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.EnvVars;
-import hudson.StructuredForm;
 import hudson.maven.MavenEmbedder;
 import hudson.maven.MavenUtil;
 import hudson.maven.RedeployPublisher;
@@ -227,7 +226,7 @@ public class Maven extends Builder {
         }
 
         public boolean configure(StaplerRequest req) {
-            this.installations = req.bindJSONToList(MavenInstallation.class,StructuredForm.get(req).get("maven"))
+            this.installations = req.bindJSONToList(MavenInstallation.class, req.getSubmittedForm().get("maven"))
                     .toArray(new MavenInstallation[0]);
             save();
             return true;

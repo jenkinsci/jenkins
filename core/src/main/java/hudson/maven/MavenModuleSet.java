@@ -532,7 +532,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
         usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
 
-        JSONObject json = StructuredForm.get(req);
+        JSONObject json = req.getSubmittedForm();
         reporters.rebuild(req,json,MavenReporters.getConfigurableList(),"reporter");
         publishers.rebuild(req,json,BuildStepDescriptor.filter(BuildStep.PUBLISHERS,this.getClass()),"publisher");
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this),"wrapper");

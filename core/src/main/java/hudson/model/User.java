@@ -3,7 +3,6 @@ package hudson.model;
 import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
-import hudson.StructuredForm;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
@@ -386,7 +385,7 @@ public class User extends AbstractModelObject implements AccessControlled {
             fullName = req.getParameter("fullName");
             description = req.getParameter("description");
 
-            JSONObject json = StructuredForm.get(req);
+            JSONObject json = req.getSubmittedForm();
 
             List<UserProperty> props = new ArrayList<UserProperty>();
             int i=0;

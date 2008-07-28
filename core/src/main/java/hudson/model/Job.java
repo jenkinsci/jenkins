@@ -2,7 +2,6 @@ package hudson.model;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import hudson.ExtensionPoint;
-import hudson.StructuredForm;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
@@ -813,7 +812,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         try {
             properties.clear();
 
-            JSONObject json = StructuredForm.get(req);
+            JSONObject json = req.getSubmittedForm();
 
             if (req.getParameter("logrotate") != null)
                 logRotator = LogRotator.DESCRIPTOR.newInstance(req,json.getJSONObject("logrotate"));
@@ -856,7 +855,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             PrintWriter pw = new PrintWriter(sw);
             pw
                     .println("Failed to parse form data. Please report this probelm as a bug");
-            pw.println("JSON=" + StructuredForm.get(req));
+            pw.println("JSON=" + req.getSubmittedForm());
             pw.println();
             e.printStackTrace(pw);
 

@@ -2,7 +2,6 @@ package hudson.matrix;
 
 import hudson.CopyOnWrite;
 import hudson.FilePath;
-import hudson.StructuredForm;
 import hudson.XmlFile;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -446,7 +445,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             newAxes.add(Axis.parsePrefixed(req,"label"));
         this.axes = newAxes;
 
-        JSONObject json = StructuredForm.get(req);
+        JSONObject json = req.getSubmittedForm();
 
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this), "wrapper");
         builders.rebuildHetero(req, json, BuildStep.BUILDERS, "builder");
