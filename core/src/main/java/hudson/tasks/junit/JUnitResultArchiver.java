@@ -71,6 +71,10 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
             action = new TestResultAction(build, result, listener);
             if(result.getPassCount()==0 && result.getFailCount()==0)
                 new AbortException(Messages.JUnitResultArchiver_ResultIsEmpty());
+        } catch (IOException e) {
+            e.printStackTrace(listener.error("Failed to archive JUnit reports"));
+            build.setResult(Result.FAILURE);
+            return true;
         } catch (AbortException e) {
             if(build.getResult()==Result.FAILURE)
                 // most likely a build failed before it gets to the test phase.
