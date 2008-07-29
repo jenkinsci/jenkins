@@ -229,7 +229,13 @@ public abstract class Descriptor<T extends Describable<T>> {
     }
 
     protected final String getViewPage(Class<?> clazz, String pageName) {
-        return '/'+ clazz.getName().replace('.','/').replace('$','/')+"/"+ pageName;
+        while(clazz!=Object.class) {
+            String name = '/' + clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
+            if(clazz.getClassLoader().getResource(name)!=null)
+                return name;
+            clazz = clazz.getSuperclass();
+        }
+        return null;
     }
 
 
