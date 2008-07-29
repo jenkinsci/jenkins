@@ -133,7 +133,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new DescriptorImpl();
+    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new DescriptorImpl(GlobalMatrixAuthorizationStrategy.class);
 
     /**
      * Persist {@link GlobalMatrixAuthorizationStrategy} as a list of IDs that
@@ -176,9 +176,9 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         LIST.add(DESCRIPTOR);
     }
 
-    public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
-        public DescriptorImpl() {
-            super(GlobalMatrixAuthorizationStrategy.class);
+    public static class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
+        protected DescriptorImpl(Class<? extends GlobalMatrixAuthorizationStrategy> clazz) {
+            super(clazz);
         }
 
         public String getDisplayName() {
@@ -186,7 +186,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy();
+            GlobalMatrixAuthorizationStrategy gmas = create();
             for(Map.Entry<String,JSONObject> r : (Set<Map.Entry<String,JSONObject>>)formData.getJSONObject("data").entrySet()) {
                 String sid = r.getKey();
                 for(Map.Entry<String,Boolean> e : (Set<Map.Entry<String,Boolean>>)r.getValue().entrySet()) {
@@ -197,6 +197,10 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 }
             }
             return gmas;
+        }
+
+        protected GlobalMatrixAuthorizationStrategy create() {
+            return new GlobalMatrixAuthorizationStrategy();
         }
 
         public String getHelpFile() {
