@@ -1,38 +1,35 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<f:optionalBlock xmlns:local="local" name="useProjectSecurity"
 		title="${%Enable project-based security}" checked="${instance.isUseProjectSecurity()}">
-		<f:block>
-			<j:set var="groups" value="${descriptor.allGroups}" />
-			<d:taglib uri="local">
+    <f:block>
+      <j:set var="groups" value="${descriptor.allGroups}" />
+      <d:taglib uri="local">
       <!-- generate one row for the sid name @sid -->
-				<d:tag name="row">
-					<td class="left-most">${title}</td>
-					<j:forEach var="g" items="${groups}">
-						<j:forEach var="p" items="${g.permissions}">
-							<td width="*">
-								<f:checkbox name="[${p.id}]"
-									checked="${instance.hasPermission(attrs.sid,p)}" />
-							</td>
-						</j:forEach>
-					</j:forEach>
-					<td class="stop">
-						<j:if test="${attrs.sid!='anonymous'}">
-							<a href="#">
-								<img alt="remove" src="${imagesURL}/16x16/stop.gif" />
-							</a>
-						</j:if>
-					</td>
-				</d:tag>
-			</d:taglib>
-			<link rel="stylesheet" href="${h.getViewResource(descriptor,'table.css')}"
-				type="text/css" />
-			<table id="global-matrix-authorization-strategy-table" class="center-align"
-				name="data" width="100%">
+        <d:tag name="row">
+          <td class="left-most">${title}</td>
+          <j:forEach var="g" items="${groups}">
+            <j:forEach var="p" items="${g.permissions}">
+              <td width="*">
+                <f:checkbox name="[${p.id}]" checked="${instance.hasPermission(attrs.sid,p)}" />
+              </td>
+            </j:forEach>
+          </j:forEach>
+          <td class="stop">
+            <j:if test="${attrs.sid!='anonymous'}">
+              <a href="#">
+                <img alt="remove" src="${imagesURL}/16x16/stop.gif" />
+              </a>
+            </j:if>
+          </td>
+        </d:tag>
+      </d:taglib>
+      <link rel="stylesheet" href="${app.VIEW_RESOURCE_PATH}/hudson/security/table.css" type="text/css" />
+			<table id="global-matrix-authorization-strategy-table" class="center-align" name="data" width="100%">
 
       <!-- The first row will show grouping -->
-				<tr class="group-row">
-					<td rowspan="2" class="pane-header blank"> ${%User/group}
+      <tr class="group-row">
+        <td rowspan="2" class="pane-header blank">
+          ${%User/group}
         </td>
         <j:forEach var="g" items="${groups}">
           <td class="pane-header" colspan="${g.size()}">
