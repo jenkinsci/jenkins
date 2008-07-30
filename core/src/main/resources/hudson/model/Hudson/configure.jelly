@@ -99,7 +99,10 @@
           <j:getStatic var="descriptors" className="${className}" field="${field}" />
           <j:forEach var="idx" begin="0" end="${size(descriptors)-1}">
             <j:set var="descriptor" value="${descriptors[idx]}" />
-            <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
+            <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
+            <s:rowSet name="${descriptor.jsonSafeClassName}">
+              <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
+            </s:rowSet>
           </j:forEach>
         </d:tag>
       </d:taglib>

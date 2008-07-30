@@ -125,6 +125,13 @@ public abstract class Descriptor<T extends Describable<T>> {
     }
 
     /**
+     * Gets the class name nicely escaped to be usable as a key in the structured form submission.
+     */
+    public String getJsonSafeClassName() {
+        return clazz.getName().replace('.','-');
+    }
+
+    /**
      * @deprecated
      *      Implement {@link #newInstance(StaplerRequest, JSONObject)} method instead.
      *      Deprecated as of 1.145. 
@@ -208,16 +215,28 @@ public abstract class Descriptor<T extends Describable<T>> {
     }
 
     /**
-     * Invoked when the global configuration page is submitted.
-     *
-     * Can be overriden to store descriptor-specific information.
-     *
-     * @return false
-     *      to keep the client in the same config page.
+     * @deprecated
+     *      As of 1.239, use {@link #configure(StaplerRequest, JSONObject)}.
      */
     public boolean configure( StaplerRequest req ) throws FormException {
         // compatibility
         return configure( (HttpServletRequest) req );
+    }
+
+    /**
+     * Invoked when the global configuration page is submitted.
+     *
+     * Can be overriden to store descriptor-specific information.
+     *
+     * @param formData
+     *      The JSON object that captures the configuration data for this {@link Descriptor}.
+     *      See http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
+     * @return false
+     *      to keep the client in the same config page.
+     */
+    public boolean configure( StaplerRequest req, JSONObject json ) throws FormException {
+        // compatibility
+        return configure(req);
     }
 
     public String getConfigPage() {
