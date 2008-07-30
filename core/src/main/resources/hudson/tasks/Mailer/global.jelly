@@ -1,6 +1,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:section title="${%E-mail Notification}">
-      <f:description>
+    <f:description>
       <div align="right">
         <a href="${rootURL}/publisher/Mailer/sendTestMail">
           ${%Test configuration by sending e-mail to System Admin Address}
@@ -24,8 +24,7 @@
     </f:entry>
     <f:entry title="${%Hudson URL}"
              help="/help/tasks/mailer/url.html">
-      <input class="setting-input" name="mailer_hudson_url"
-        type="text" value="${h.ifThenElse(descriptor.url!=null,descriptor.url,h.inferHudsonURL(request))}"/>
+      <f:textbox field="url" value="${h.ifThenElse(descriptor.url!=null,descriptor.url,h.inferHudsonURL(request))}" />
     </f:entry>
     <f:advanced>
       <f:optionalBlock name="mailer.useSMTPAuth" title="${%Use SMTP Authentication}" checked="${descriptor.smtpAuthUserName!=null}"
