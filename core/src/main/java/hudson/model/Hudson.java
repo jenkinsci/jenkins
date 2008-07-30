@@ -1040,7 +1040,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * restrictions in place.
      */
     public boolean isUseSecurity() {
-        return securityRealm!=SecurityRealm.NO_AUTHENTICATION;
+        return securityRealm!=SecurityRealm.NO_AUTHENTICATION || authorizationStrategy!=AuthorizationStrategy.UNSECURED;
     }
 
     /**
