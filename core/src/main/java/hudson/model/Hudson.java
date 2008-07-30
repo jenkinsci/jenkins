@@ -1544,10 +1544,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             boolean result = true;
 
             for( Descriptor<Builder> d : BuildStep.BUILDERS )
-                result &= d.configure(req);
+                result &= d.configure(req,json.getJSONObject(d.getJsonSafeClassName()));
 
             for( Descriptor<Publisher> d : BuildStep.PUBLISHERS )
-                result &= d.configure(req);
+                result &= d.configure(req,json.getJSONObject(d.getJsonSafeClassName()));
 
             for( Descriptor<BuildWrapper> d : BuildWrappers.WRAPPERS )
                 result &= d.configure(req);

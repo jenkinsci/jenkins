@@ -36,6 +36,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.json.JSONObject;
+
 /**
  * {@link Publisher} that sends the build result in e-mail.
  *
@@ -219,7 +221,8 @@ public class Mailer extends Publisher {
             };
         }
 
-        public boolean configure(StaplerRequest req) throws FormException {
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             // this code is brain dead
             smtpHost = nullify(req.getParameter("mailer_smtp_server"));
             adminAddress = req.getParameter("mailer_admin_address");
@@ -230,7 +233,7 @@ public class Mailer extends Publisher {
             }
 
             defaultSuffix = nullify(req.getParameter("mailer_default_suffix"));
-            String url = nullify(req.getParameter("mailer_hudson_url"));
+            String url = nullify(json.getString("url"));
             if(url!=null && !url.endsWith("/"))
                 url += '/';
             hudsonUrl = url;
@@ -244,7 +247,7 @@ public class Mailer extends Publisher {
             smtpPort = nullify(req.getParameter("mailer_smtp_port"));
             useSsl = req.getParameter("mailer_smtp_use_ssl")!=null;
             save();
-            return super.configure(req);
+            return true;
         }
 
         private String nullify(String v) {
@@ -294,6 +297,21 @@ public class Mailer extends Publisher {
             }
 
             return m;
+        }
+
+        /**
+         * Checks the URL in <tt>global.jelly</tt>
+         */
+        public void doCheckUrl(StaplerRequest req, StaplerResponse rsp,
+                                   @QueryParameter("value") final String value) throws IOException, ServletException {
+            new FormFieldValidator(req,rsp,false) {
+                protected void check() throws IOException, ServletException {
+                    if(value.startsWith("http://localhost"))
+                        warning("Please set a valid host name, instead of localhost");
+                    else
+                        ok();
+                }
+            }.process();
         }
 
         public void doAddressCheck(StaplerRequest req, StaplerResponse rsp,
