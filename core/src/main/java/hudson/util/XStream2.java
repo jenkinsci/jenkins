@@ -10,6 +10,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.model.Hudson;
+import hudson.matrix.AxisList;
 
 /**
  * {@link XStream} enhanced for additional Java5 support and improved robustness.
@@ -46,6 +47,7 @@ public class XStream2 extends XStream {
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteList.ConverterImpl(getMapper()),10);
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10);
+        registerConverter(new AxisList.ConverterImpl(getMapper()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
 
         // this should come after all the XStream's default simpler converters,
