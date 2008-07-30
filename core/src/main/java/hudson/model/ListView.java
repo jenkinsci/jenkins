@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.text.ParseException;
@@ -67,7 +68,7 @@ public class ListView extends View {
      */
     public synchronized List<TopLevelItem> getItems() {
         Set<String> names = (Set<String>) ((TreeSet<String>) jobNames).clone();
-        
+
         if (includeRegex != null) {
             try {
                 if (includePattern == null) {
@@ -75,20 +76,22 @@ public class ListView extends View {
                 }
 
                 for (TopLevelItem item : owner.getItems()) {
-                	String itemName = item.getName();
-					if (includePattern.matcher(itemName).matches()) {
+                    String itemName = item.getName();
+                    if (includePattern.matcher(itemName).matches()) {
                         names.add(itemName);
                     }
                 }
             } catch (PatternSyntaxException pse) {
             }
         }
-        
-        TopLevelItem[] items = new TopLevelItem[names.size()];
-        int i=0;
-        for (String name : names)
-            items[i++] = owner.getItem(name);
-        return Arrays.asList(items);
+
+        List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
+        for (String name : names) {
+            TopLevelItem item = owner.getItem(name);
+            if(item!=null)
+                items.add(item);
+        }
+        return items;
     }
 
     public TopLevelItem getItem(String name) {
