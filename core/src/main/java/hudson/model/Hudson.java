@@ -1544,10 +1544,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             boolean result = true;
 
             for( Descriptor<Builder> d : BuildStep.BUILDERS )
-                result &= d.configure(req,json.getJSONObject(d.getJsonSafeClassName()));
+                result &= configureDescriptor(req,json,d);
 
             for( Descriptor<Publisher> d : BuildStep.PUBLISHERS )
-                result &= d.configure(req,json.getJSONObject(d.getJsonSafeClassName()));
+                result &= configureDescriptor(req,json,d);
 
             for( Descriptor<BuildWrapper> d : BuildWrappers.WRAPPERS )
                 result &= d.configure(req);
@@ -1572,6 +1572,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         } catch (FormException e) {
             sendError(e,req,rsp);
         }
+    }
+
+    private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws FormException {
+        // collapse the structure to remain backward compatible with the JSON structure before 1.238
+        JSONObject js = json.getJSONObject(d.getJsonSafeClassName());
+        json.putAll(js);
+        return d.configure(req, js);
     }
 
     /**

@@ -260,9 +260,10 @@ public class Ant extends Builder {
             return installations;
         }
 
-        public boolean configure(StaplerRequest req) {
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             installations = req.bindJSONToList(
-                    AntInstallation.class, req.getSubmittedForm().get("ant")).toArray(new AntInstallation[0]);
+                    AntInstallation.class, json.get("ant")).toArray(new AntInstallation[0]);
             save();
             return true;
         }

@@ -225,9 +225,9 @@ public class Maven extends Builder {
             return installations;
         }
 
-        public boolean configure(StaplerRequest req) {
-            this.installations = req.bindJSONToList(MavenInstallation.class, req.getSubmittedForm().get("maven"))
-                    .toArray(new MavenInstallation[0]);
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            this.installations = req.bindJSONToList(MavenInstallation.class, json.get("maven")).toArray(new MavenInstallation[0]);
             save();
             return true;
         }
