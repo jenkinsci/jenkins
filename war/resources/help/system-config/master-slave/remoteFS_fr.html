@@ -1,15 +1,16 @@
 <div>
-    <!-- OUTDATED -->
   <p>
-  Un esclave a besoin d'un rÃ©pertoire dÃ©diÃ© Ã  Hudson. SpÃ©cifiez ici le
-  chemin absolu vers ce rÃ©pertoire, par exemple
-  '/export/home/hudson'.
+  Un esclave a besoin d'un répertoire dédié à Hudson. Spécifiez ici le
+  chemin absolu vers le répertoire de travail sur l'esclave, par exemple
+  '/var/hudson' ou 'c:\hudson'. Cela doit être un chemin local à la machine
+  esclave. Il n'est pas nécessaire que ce chemin soit visible depuis le
+  maître, en règle générale.
 
   <p>
-  Les esclaves ne conservent pas de donnÃ©es importantes (autres que les
-  rÃ©pertoires de travail des derniers builds des projets); vous pouvez donc
-  positionner le rÃ©pertoire du travail de l'esclave dans un rÃ©pertoire
+  Les esclaves ne conservent pas de données importantes (autres que les
+  répertoires de travail des derniers builds des projets); vous pouvez donc
+  positionner le répertoire du travail de l'esclave dans un répertoire
   temporaire.
-  Le seul dÃ©faut de ce choix est que vous perdrez le dernier workspace Ã 
-  jour si la machine esclave est Ã©teinte.
+  Le seul défaut de ce choix est que vous perdrez le dernier workspace à
+  jour si la machine esclave est éteinte.
 </div>
