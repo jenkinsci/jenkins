@@ -8,9 +8,9 @@
         help="/help/project-config/triggerRemotely.html"
         title="Trigger builds remotely (e.g., from scripts)"
         checked="${it.authToken!=null}">
-      <f:entry title="Authentication Token">
+      <f:entry title="${%Authentication Token}">
         <f:textbox name="authToken" value="${it.authToken.token}" />
-        Use the following URL to trigger build remotely:
+        ${%Use the following URL to trigger build remotely:}
         <tt>HUDSON_URL</tt>/${it.url}build?token=<tt>TOKEN_NAME</tt>
       </f:entry>
   </f:optionalBlock>

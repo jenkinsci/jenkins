@@ -7,7 +7,7 @@
     <l:main-panel>
       <form action="submitDescription" method="post">
         <f:textarea name="description" value="${it.description}" />
-        <f:submit value="Submit" />
+        <f:submit value="${%Submit}" />
       </form>
     </l:main-panel>
   </l:layout>

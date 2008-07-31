@@ -3,7 +3,7 @@
     <l:header title="Hudson" />
     <l:side-panel />
     <l:main-panel>
-      <h1>Error</h1>
+      <h1>${%Error}</h1>
       <j:choose>
         <j:when test="${pre}">
           <pre><st:out value="${message}"/></pre>
@@ -13,7 +13,7 @@
         </j:otherwise>
       </j:choose>
       <j:if test="${exception!=null}">
-        <input type="button" value="Detail..." onclick="showDetails()" id="button"/>
+        <input type="button" value="${%Detail...}" onclick="showDetails()" id="button"/>
         <pre id="details" style="display:none">${h.printThrowable(exception)}</pre>
         <script>
           function showDetails() {

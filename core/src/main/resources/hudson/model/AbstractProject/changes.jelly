@@ -2,7 +2,7 @@
   Displays the console output
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.name} Changes">
+  <l:layout title="${%changes.title(it.name)}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <j:set var="from" value="${request.getParameter('from')}"/>
@@ -11,8 +11,8 @@
 
       <h1>
         ${%Changes}
-        <j:if test="${from!=null}"> from #${from}</j:if>
-        <j:if test="${to!=null}"> to #${to}</j:if>
+        <j:if test="${from!=null}"> ${%from.label(from)}</j:if>
+        <j:if test="${to!=null}"> ${%to.label(to)}</j:if>
       </h1>
       <j:set var="builds" value="${h.filter(it.buildsAsMap,from,to).values()}" />
       <st:include it="${it.scm}" page="project-changes.jelly" />

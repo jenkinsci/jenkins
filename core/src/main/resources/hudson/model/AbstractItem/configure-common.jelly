@@ -10,7 +10,7 @@
     <f:entry title="JDK"
              description="${%JDK to be used for this project}">
       <select class="setting-input validated" name="jdk" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value">
-        <option>(Default)</option>
+        <option>${%default.value}</option>
         <j:forEach var="inst" items="${jdks}">
           <f:option selected="${inst.name==it.JDK.name}">${inst.name}</f:option>
         </j:forEach>

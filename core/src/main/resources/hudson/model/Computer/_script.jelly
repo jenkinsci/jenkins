@@ -5,7 +5,7 @@
   <t:scriptConsole>
     <pre>println System.getenv("PATH")</pre>
     <p>
-      This execution happens in the slave agent JVM.
+      ${%This execution happens in the slave agent JVM.}
     </p>
   </t:scriptConsole>
 </j:jelly>

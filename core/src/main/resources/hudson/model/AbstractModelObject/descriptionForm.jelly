@@ -6,7 +6,7 @@
     <form action="submitDescription" method="post">
       <f:textarea name="description" value="${it.description}" />
       <div align="right">
-        <f:submit value="Submit" />
+        <f:submit value="${%Submit}" />
       </div>
     </form>
   </l:ajax>

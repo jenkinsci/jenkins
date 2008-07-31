@@ -19,7 +19,7 @@
         <!-- No deployment is in progress. Display the form. -->
         <j:otherwise>
           <p>
-            This page allows you to redeploy the build artifacts to a repository after the fact.
+            ${%This page allows you to redeploy the build artifacts to a repository after the fact.}
           </p>
 
           <f:form method="post" action="redeploy">
