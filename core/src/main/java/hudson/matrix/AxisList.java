@@ -4,6 +4,8 @@ import com.thoughtworks.xstream.alias.CannotResolveClassException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.reflection.SerializableConverter;
+import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
@@ -87,8 +89,10 @@ public class AxisList extends ArrayList<Axis> {
      * {@link Converter} implementation for XStream.
      */
     public static final class ConverterImpl extends AbstractCollectionConverter {
-        public ConverterImpl(Mapper mapper) {
+        private final SerializableConverter sc;
+        public ConverterImpl(Mapper mapper, ReflectionProvider reflectionProvider) {
             super(mapper);
+            sc = new SerializableConverter(mapper,reflectionProvider);
         }
 
         public boolean canConvert(Class type) {
@@ -102,6 +106,13 @@ public class AxisList extends ArrayList<Axis> {
 
         @SuppressWarnings("unchecked")
         public AxisList unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            // AxisList used to serialize as custom serialization,
+            // so read it in a compatible fashion.
+            String s = reader.getAttribute("serialization");
+            if(s!=null && s.equals("custom")) {
+                return (AxisList)sc.unmarshal(reader,context);
+            }
+
             // read the items from xml into a list
             List items = new ArrayList();
             while (reader.hasMoreChildren()) {
