@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import hudson.util.RobustCollectionConverter;
+
 /**
  * List of {@link Axis}.
  * 
@@ -88,47 +90,18 @@ public class AxisList extends ArrayList<Axis> {
     /**
      * {@link Converter} implementation for XStream.
      */
-    public static final class ConverterImpl extends AbstractCollectionConverter {
-        private final SerializableConverter sc;
+    public static final class ConverterImpl extends RobustCollectionConverter {
         public ConverterImpl(Mapper mapper, ReflectionProvider reflectionProvider) {
-            super(mapper);
-            sc = new SerializableConverter(mapper,reflectionProvider);
+            super(mapper,reflectionProvider);
         }
 
         public boolean canConvert(Class type) {
             return type==AxisList.class;
         }
 
-        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            for (Object o : (AxisList) source)
-                writeItem(o, context, writer);
-        }
-
-        @SuppressWarnings("unchecked")
-        public AxisList unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            // AxisList used to serialize as custom serialization,
-            // so read it in a compatible fashion.
-            String s = reader.getAttribute("serialization");
-            if(s!=null && s.equals("custom")) {
-                return (AxisList)sc.unmarshal(reader,context);
-            }
-
-            // read the items from xml into a list
-            List items = new ArrayList();
-            while (reader.hasMoreChildren()) {
-                reader.moveDown();
-                try {
-                    Object item = readItem(reader, context, items);
-                    items.add(item);
-                } catch (CannotResolveClassException e) {
-                    LOGGER.log(Level.WARNING,"Failed to resolve class",e);
-                }
-                reader.moveUp();
-            }
-
-            return new AxisList(items);
+        @Override
+        protected Object createCollection(Class type) {
+            return new AxisList();
         }
     }
-
-    private static final Logger LOGGER = Logger.getLogger(AxisList.class.getName());
 }
