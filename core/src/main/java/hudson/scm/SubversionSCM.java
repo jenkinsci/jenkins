@@ -98,6 +98,14 @@ import net.sf.json.JSONObject;
 /**
  * Subversion SCM.
  *
+ * <h2>Plugin Developer Notes</h2>
+ * <p>
+ * Plugins that interact with Subversion can use {@link DescriptorImpl#createAuthenticationProvider()}
+ * so that it can use the credentials (username, password, etc.) that the user entered for Hudson.
+ * See the javadoc of this method for the precautions you need to take if you run Subversion operations
+ * remotely on slaves.
+ * 
+ * <h2>Implementation Notes</h2>
  * <p>
  * Because this instance refers to some other classes that are not necessarily
  * Java serializable (like {@link #browser}), remotable {@link FileCallable}s all
@@ -1042,6 +1050,13 @@ public class SubversionSCM extends SCM implements Serializable {
         /**
          * Creates {@link ISVNAuthenticationProvider} backed by {@link #credentials}.
          * This method must be invoked on the master, but the returned object is remotable.
+         *
+         * <p>
+         * Therefore, to access {@link ISVNAuthenticationProvider}, you need to call this method
+         * on the master, then pass the object to the slave side, then call
+         * {@link SubversionSCM#createSvnClientManager(ISVNAuthenticationProvider)} on the slave.
+         *
+         * @see SubversionSCM#createSvnClientManager(ISVNAuthenticationProvider)
          */
         public ISVNAuthenticationProvider createAuthenticationProvider() {
             return new SVNAuthenticationProviderImpl(remotableProvider);
