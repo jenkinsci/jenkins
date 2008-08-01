@@ -132,7 +132,11 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
 
             System.getProperties().putAll(systemProps);
 
-            int r = Main.launch(goals.toArray(new String[goals.size()]));
+            List<String> args = new ArrayList<String>(goals.size()+1);
+            args.add("-B"); // run Maven in the non-interactive mode
+            args.addAll(goals);
+            listener.getLogger().println(formatArgs(args));
+            int r = Main.launch(args.toArray(new String[args.size()]));
 
             // now check the completion status of async ops
             boolean messageReported = false;
@@ -188,6 +192,13 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
             PluginManagerInterceptor.setListener(null);
             LifecycleExecutorInterceptor.setListener(null);
         }
+    }
+
+    private String formatArgs(List<String> args) {
+        StringBuilder buf = new StringBuilder("Executing Maven: ");
+        for (String arg : args)
+            buf.append(' ').append(arg);
+        return buf.toString();
     }
 
     private String format(NumberFormat n, long nanoTime) {
