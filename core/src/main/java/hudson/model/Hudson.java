@@ -29,6 +29,7 @@ import hudson.scm.RepositoryBrowsers;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
+import hudson.scm.SubversionWorkspaceSelector;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -84,6 +85,7 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.tmatesoft.svn.core.internal.wc.admin.SVNAdminAreaFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -342,6 +344,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to load proxy configuration", e);
         }
+
+        // do this before we load plugins so that plugins can change the selector.
+        SVNAdminAreaFactory.setSelector(new SubversionWorkspaceSelector());
 
         // load plugins.
         pluginManager = new PluginManager(context);
