@@ -6,7 +6,7 @@
   <j:if test="${app.useSecurity}">
     <f:optionalBlock name="pseudoRemoteTrigger"
         help="/help/project-config/triggerRemotely.html"
-        title="Trigger builds remotely (e.g., from scripts)"
+        title="${%Trigger builds remotely} (${%e.g., from scripts})"
         checked="${it.authToken!=null}">
       <f:entry title="${%Authentication Token}">
         <f:textbox name="authToken" value="${it.authToken.token}" />
