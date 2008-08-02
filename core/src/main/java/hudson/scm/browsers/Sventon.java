@@ -68,7 +68,7 @@ public class Sventon extends SubversionRepositoryBrowser {
         if (path.getEditType() == EditType.DELETE)
            return null; // no file if it's gone
         int r = path.getLogEntry().getRevision();
-        return new URL(url, String.format("showfile.svn?name=%s&revision=%d&path=%s",
+        return new URL(url, String.format("goto.svn?name=%s&revision=%d&path=%s",
                 repositoryInstance,r,URLEncoder.encode(getPath(path))));
     }
 
