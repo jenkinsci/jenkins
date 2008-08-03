@@ -13,9 +13,9 @@
         <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager">
           <table id="plugins" class="sortable pane bigtable" style="margin-top:0px; border-top: none;">
             <tr style="border-top: 0px;">
-              <th width="32" tooltip="Check to install the plugin">Install</th>
-              <th initialSortDir="down">Name</th>
-              <th>Version</th>
+              <th width="32" tooltip="${%Check to install the plugin}">${%Install}</th>
+              <th initialSortDir="down">${%Name}</th>
+              <th>${%Version}</th>
             </tr>
             <j:choose>
               <j:when test="${!empty(list)}">
@@ -38,7 +38,7 @@
                 <tr>
                   <td colspan="3" align="center">
                     <div style="padding:1em">
-                      No updates
+                      ${%No updates}
                     </div>
                   </td>
                 </tr>
@@ -48,7 +48,7 @@
 
           <j:if test="${!empty(list)}">
             <div style="float:right; margin-top:1em">
-              <f:submit value="Install" />
+              <f:submit value="${%Install}" />
             </div>
           </j:if>
           <d:invokeBody />
