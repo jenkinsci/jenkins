@@ -14,9 +14,9 @@
           </j:when>
           <j:otherwise>
             <tr style="border-top: 0px;">
-              <th width="32" tooltip="Uncheck to disable the plugin">Enabled</th>
-              <th initialSortDir="down">Name</th>
-              <th width="32">Version</th>
+              <th width="32" tooltip="${%Uncheck to disable the plugin}">${%Enabled}</th>
+              <th initialSortDir="down">${%Name}</th>
+              <th width="32">${%Version}</th>
             </tr>
             <j:forEach var="p" items="${app.pluginManager.plugins}">
               <tr>
