@@ -40,7 +40,7 @@
           </j:otherwise>
         </j:choose>
 
-        <h2>Create more tags</h2>
+        <h2>${%Create more tags}</h2>
       </j:if>
       <form action="submit" method="get">
         <table class="middle-align">

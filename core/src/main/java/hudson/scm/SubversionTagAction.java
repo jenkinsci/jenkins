@@ -67,11 +67,11 @@ public class SubversionTagAction extends AbstractScmTagAction {
             }
         }
         if(nonNullTag==0)
-            return "Tag this build";
+            return Messages.SubversionTagAction_DisplayName_HasNoTag();
         if(nonNullTag==1)
-            return "Subversion tag";
+            return Messages.SubversionTagAction_DisplayName_HasATag();
         else
-            return "Subversion tags";
+            return Messages.SubversionTagAction_DisplayName_HasTags();
     }
 
     /**
