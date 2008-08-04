@@ -30,6 +30,7 @@ import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
 import hudson.scm.SubversionWorkspaceSelector;
+import hudson.scm.SubversionSCM;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -345,8 +346,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             LOGGER.log(Level.SEVERE, "Failed to load proxy configuration", e);
         }
 
-        // do this before we load plugins so that plugins can change the selector.
-        SVNAdminAreaFactory.setSelector(new SubversionWorkspaceSelector());
+        // run the init code of SubversionSCM before we load plugins so that plugins can change SubversionWorkspaceSelector.
+        SubversionSCM.DescriptorImpl.DESCRIPTOR.getDisplayName();
 
         // load plugins.
         pluginManager = new PluginManager(context);

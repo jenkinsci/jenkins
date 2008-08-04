@@ -54,6 +54,7 @@ import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
 import org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.wc.SVNErrorManager;
 import org.tmatesoft.svn.core.internal.wc.SVNExternal;
+import org.tmatesoft.svn.core.internal.wc.admin.SVNAdminAreaFactory;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
@@ -1397,6 +1398,9 @@ public class SubversionSCM extends SCM implements Serializable {
             // http://www.nabble.com/SSH-connection-problems-p12028339.html
             if(System.getProperty("svnkit.ssh2.persistent")==null)
                 System.setProperty("svnkit.ssh2.persistent","false");
+
+            // use SVN1.4 compatible workspace by default.
+            SVNAdminAreaFactory.setSelector(new SubversionWorkspaceSelector());
         }
     }
 
