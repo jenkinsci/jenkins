@@ -122,7 +122,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
 
                 for( Computer c : Hudson.getInstance().getComputers() ) {
                     try {
-                        if(c.isOffline())
+                        if(c.getChannel()==null)
                             data.put(c,null);
                         else
                             data.put(c,monitor(c));
