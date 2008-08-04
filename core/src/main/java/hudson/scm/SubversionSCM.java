@@ -308,6 +308,14 @@ public class SubversionSCM extends SCM implements Serializable {
         return Collections.emptyList();
     }
 
+    /**
+     * Polling can happen on the master and does not require a workspace.
+     */
+    @Override
+    public boolean requiresWorkspaceForPolling() {
+        return false;
+    }
+    
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, final BuildListener listener, File changelogFile) throws IOException, InterruptedException {
         List<External> externals = checkout(build,workspace,listener);
 
@@ -1436,12 +1444,4 @@ public class SubversionSCM extends SCM implements Serializable {
             }
         };
     }
-
-    /**
-     * Polling can happen on the master and does not require a workspace.
-     */
-	@Override
-	public boolean requiresWorkspaceForPolling() {
-		return false;
-	}
 }
