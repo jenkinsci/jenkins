@@ -83,13 +83,20 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
         }
 
         synchronized(this) {
+            // set the thread name to represent the channel we are blocked on,
+            // so that thread dump would give us more useful information.
+            Thread t = Thread.currentThread();
+            final String name = t.getName();
             try {
+                t.setName(name+" / waiting for "+channel);
                 while(response==null)
                     wait(); // wait until the response arrives
             } catch (InterruptedException e) {
                 // if we are cancelled, abort the remote computation, too
                 channel.send(new Cancel(id));
                 throw e;
+            } finally {
+                t.setName(name);
             }
 
             Object exc = response.exception;
