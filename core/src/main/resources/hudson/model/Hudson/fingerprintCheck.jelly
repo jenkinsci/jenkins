@@ -12,9 +12,7 @@
       <f:form method="post" action="doFingerprintCheck" enctype="multipart/form-data">
         <f:block>
           <div style="margin-bottom: 1em;">
-          Got a jar file but don't know which version it is? <br />
-          Find that out by checking the fingerprint against
-          the database in Hudson (<a href="https://hudson.dev.java.net/fingerprint.html">more details</a>)
+          ${%description}(<a href="${%fingerprint.link}">${%more details}</a>)
           </div>
         </f:block>
         <f:entry title="${%File to check}">
