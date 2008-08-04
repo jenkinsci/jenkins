@@ -1,10 +1,10 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:choose>
     <j:when test="${data==null}">
-      <td data="-1">N/A</td>
+      <td align="right" data="-1">N/A</td>
     </j:when>
     <j:otherwise>
-      <td data="${from.toMB(data)}">${from.toHtml(data)}</td>
+      <td align="right" data="${from.toMB(data)}">${from.toHtml(data)}</td>
     </j:otherwise>
   </j:choose>
 </j:jelly>

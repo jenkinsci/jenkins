@@ -4,6 +4,13 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 <l:layout title="Nodes" permission="${app.ADMINISTER}">
   <st:include page="sidepanel.jelly" />
+  <l:header>
+    <style><!-- create some spaces between cells -->
+      #computers TD {
+        padding-right: 1em;
+      }
+    </style>
+  </l:header>
   <l:main-panel>
     <j:set var="monitors" value="${it._monitors}"/>
     <table id="computers" class="sortable pane bigtable">
