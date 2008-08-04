@@ -200,31 +200,29 @@ public class Queue extends ResourceController {
      */
     public synchronized void load() {
         try {
-        	// first try the old format
+            // first try the old format
             File queueFile = getQueueFile();
             if (queueFile.exists()) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(queueFile)));
-	            String line;
-	            while ((line = in.readLine()) != null) {
-	                AbstractProject j = Hudson.getInstance().getItemByFullName(line, AbstractProject.class);
-	                if (j != null)
-	                    j.scheduleBuild();
-	            }
-	            in.close();
-	            // discard the queue file now that we are done
-	            queueFile.delete();
-	            
-	            return;
-	        } else {
-	        	queueFile = getXMLQueueFile();
-	        	if (queueFile.exists()) {
-	        		List<Task> tasks = (List<Task>) new XmlFile(xstream, queueFile).read();
-	        		for (Task task: tasks) {
-	        			add(task, 0);
-	        		}
-	        		queueFile.delete();
-	        	}
-	        }
+                String line;
+                while ((line = in.readLine()) != null) {
+                    AbstractProject j = Hudson.getInstance().getItemByFullName(line, AbstractProject.class);
+                    if (j != null)
+                        j.scheduleBuild();
+                }
+                in.close();
+                // discard the queue file now that we are done
+                queueFile.delete();
+            } else {
+                queueFile = getXMLQueueFile();
+                if (queueFile.exists()) {
+                    List<Task> tasks = (List<Task>) new XmlFile(xstream, queueFile).read();
+                    for (Task task : tasks) {
+                        add(task, 0);
+                    }
+                    queueFile.delete();
+                }
+            }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getQueueFile(), e);
         }
@@ -237,23 +235,23 @@ public class Queue extends ResourceController {
         // write out the tasks on the queue
     	ArrayList<Task> tasks = new ArrayList<Task>();
     	for (Item item: getItems()) {
-    		tasks.add(item.task);
+    	    tasks.add(item.task);
     	}
     	
         try {
-        	new XmlFile(xstream, getXMLQueueFile()).write(tasks);
+            new XmlFile(xstream, getXMLQueueFile()).write(tasks);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to write out the queue file " + getQueueFile(), e);
         }
     }
 
     private File getQueueFile() {
-	    return new File(Hudson.getInstance().getRootDir(), "queue.txt");
-	}
+        return new File(Hudson.getInstance().getRootDir(), "queue.txt");
+    }
 
     private File getXMLQueueFile() {
-	    return new File(Hudson.getInstance().getRootDir(), "queue.xml");
-	}
+        return new File(Hudson.getInstance().getRootDir(), "queue.xml");
+    }
 
     /**
      * Schedule a new build for this project.
