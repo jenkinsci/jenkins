@@ -220,6 +220,15 @@ public class Queue extends ResourceController {
                     for (Task task : tasks) {
                         add(task, 0);
                     }
+
+                    // I just had an incident where all the executors are dead at AbstractProject._getRuns()
+                    // because runs is null. Debugger revealed that this is caused by a MatrixConfiguration
+                    // object that doesn't appear to be de-serialized properly.
+                    // I don't know how this problem happened, but to diagnose this problem better
+                    // when it happens again, save the old queue file for introspection.
+                    File bk = new File(queueFile.getPath() + ".bak");
+                    bk.delete();
+                    queueFile.renameTo(bk);
                     queueFile.delete();
                 }
             }
