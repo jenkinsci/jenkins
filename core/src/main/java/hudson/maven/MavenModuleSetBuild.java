@@ -6,6 +6,7 @@ import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
@@ -378,9 +379,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
         private void parsePoms(BuildListener listener, PrintStream logger) throws IOException, InterruptedException {
             logger.println("Parsing POMs");
+            MavenInstallation mvn = project.getMaven();
+            if(mvn==null) {
+                logger.println("A Maven configuration needs to be associated with this project. Please reconfigure this project");
+                throw new AbortException();
+            }
+
             List<PomInfo> poms;
             try {
-                poms = project.getModuleRoot().act(new PomParser(listener,project.getMaven(),project.getRootPOM(),project.getProfiles()));
+                poms = project.getModuleRoot().act(new PomParser(listener, mvn,project.getRootPOM(),project.getProfiles()));
             } catch (IOException e) {
                 if (e.getCause() instanceof AbortException)
                     throw (AbortException) e.getCause();
