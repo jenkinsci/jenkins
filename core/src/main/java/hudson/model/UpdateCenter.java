@@ -514,6 +514,19 @@ public class UpdateCenter implements ModelObject {
     }
 
     /**
+     * Adds the update center data retriever to HTML.
+     */
+    public static class PageDecoratorImpl extends PageDecorator {
+        public PageDecoratorImpl() {
+            super(PageDecoratorImpl.class);
+        }
+    }
+
+    static {
+        PageDecorator.ALL.add(new PageDecoratorImpl());
+    }
+
+    /**
      * Sequence number generator.
      */
     private static final AtomicInteger iota = new AtomicInteger();

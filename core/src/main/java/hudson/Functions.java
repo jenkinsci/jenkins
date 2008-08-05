@@ -17,6 +17,7 @@ import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
+import hudson.model.PageDecorator;
 import hudson.search.SearchableModelObject;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
@@ -930,6 +931,13 @@ public class Functions {
             return d.getCheckUrl(field);
         }
         return null;
+    }
+
+    /**
+     * Gets all the {@link PageDecorator}s.
+     */
+    public static List<PageDecorator> getPageDecorators() {
+        return (List)PageDecorator.ALL;
     }
 
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");

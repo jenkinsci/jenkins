@@ -74,6 +74,9 @@
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
     <d:invokeBody />
+    <j:forEach var="pd" items="${h.pageDecorators}">
+      <st:include it="${pd}" page="header.jelly" optional="true" />
+    </j:forEach>
   </head>
   <body class="yui-skin-sam">
     <table id="header" cellpadding="0" cellspacing="0" width="100%" border="0">
@@ -176,6 +179,9 @@
     </table>
     <!-- during the loading 'app' object is not Hudson, so it may not have update center -->
     <st:include it="${app.updateCenter}" page="main.jelly" optional="true" />
+    <j:forEach var="pd" items="${h.pageDecorators}">
+      <st:include it="${pd}" page="footer.jelly" optional="true" />
+    </j:forEach>
   </body>
 </html>
 </j:jelly>
