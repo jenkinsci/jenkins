@@ -4,8 +4,9 @@ import java.io.IOException;
 
 /**
  * Signals a failure where the error message was reported.
- * The stack trace shouldn't be printed.
- * 
+ * When this exception is caughted,
+ * the stack trace will not be printed, and the build will be marked as a failure.
+ *
  * @author Kohsuke Kawaguchi
 */
 public final class AbortException extends IOException {
