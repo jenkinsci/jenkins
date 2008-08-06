@@ -689,6 +689,17 @@ public class Fingerprint implements ModelObject {
                 logger.fine("Loading fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
             return f;
         } catch (IOException e) {
+            if(file.exists() && file.length()==0) {
+                // Despite the use of AtomicFile, there are reports indicating that people often see
+                // empty XML file, presumably either due to file system corruption (perhaps by sudden
+                // power loss, etc.) or abnormal program termination.
+                // generally we don't want to wipe out user data just because we can't load it,
+                // but if the file size is 0, which is what's reported in HUDSON-2012, then it seems
+                // like recovering it silently by deleting the file is not a bad idea.
+                logger.log(Level.WARNING, "Size zero fingerprint. Disk corruption? "+configFile,e);
+                file.delete();
+                return null;
+            }
             logger.log(Level.WARNING, "Failed to load "+configFile,e);
             throw e;
         }
