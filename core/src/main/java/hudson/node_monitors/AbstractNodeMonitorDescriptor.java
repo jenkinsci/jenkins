@@ -99,11 +99,6 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
          */
         private final Map<Computer,T> data = new HashMap<Computer,T>();
 
-        /**
-         * When was {@link #data} last updated?
-         */
-        private Date lastUpdated;
-
         public Record() {
             super("Monitoring thread for "+getDisplayName()+" started on "+new Date());
             synchronized(AbstractNodeMonitorDescriptor.this) {
@@ -130,8 +125,6 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
                         LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
                     }
                 }
-
-                lastUpdated = new Date();
 
                 synchronized(AbstractNodeMonitorDescriptor.this) {
                     assert inProgress==this;
