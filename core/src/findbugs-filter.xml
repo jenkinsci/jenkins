@@ -3,9 +3,49 @@
     <!-- It's hard to imagine a scenario where Hudson is granted higher privilege but called by a lower privileged client. -->
     <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED" />
   </Match>
+
   <Match>
     <!-- Hudson defines mutable static field throughout the code so that debug features can be selectively made on and off at runtime -->
     <Bug pattern="MS_SHOULD_BE_FINAL" />
+  </Match>
+
+  <Match>
+    <!-- archiveReader.readLine() may never return null since it's the first invocation -->
+    <Class name="hudson.PluginWrapper"/>
+    <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" />
+  </Match>
+
+  <Match>
+    <!-- PrintWriter doesn't carry any resource, so let it GC-ed is harmless. -->
+    <Class name="hudson.TcpSlaveAgentListener$ConnectionHandler" />
+    <Bug pattern="OS_OPEN_STREAM" />
+  </Match>
+
+  <Match>
+    <!-- these classes are not meant to be serializable -->
+    <Or>
+      <Class name="hudson.maven.MavenBuild$ProxyImpl" />
+      <Class name="hudson.maven.MavenBuild$ProxyImpl2" />
+    </Or>
+    <Bug code="SE" />
+  </Match>
+
+  <Match>
+    <!-- this use of mutable static field is necessary to propagate a value inside Maven. -->
+    <Class name="hudson.maven.MavenBuilder" />
+    <Bug pattern="MS_CANNOT_BE_FINAL" />
+  </Match>
+
+  <Match>
+    <!-- this class is not really serialized -->
+    <Class name="hudson.maven.MavenProbeAction" />
+    <Bug code="SE" />
+  </Match>
+
+  <Match>
+    <!-- FindBugs fail to take the writeObject method into account. -->
+    <Class name="hudson.maven.MavenProcessFactory$Connection" />
+    <Bug code="SE" />
   </Match>
 
 </FindBugsFilter>
