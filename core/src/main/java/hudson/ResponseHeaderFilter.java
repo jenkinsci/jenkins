@@ -59,12 +59,10 @@ import java.net.URLEncoder;
  * @author Mike Wille
  */
 public class ResponseHeaderFilter implements Filter {
-	private ServletContext servletContext;
 	private FilterConfig config;
 
 	public void init(FilterConfig filterConfig) throws ServletException {
 		config = filterConfig;
-		servletContext = config.getServletContext();
 	}
 
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException,
