@@ -53,8 +53,13 @@ public class TextFile {
     public void write(String text) throws IOException {
         file.getParentFile().mkdirs();
         AtomicFileWriter w = new AtomicFileWriter(file);
-        w.write(text);
-        w.commit();
+        try {
+            w.write(text);
+            w.commit();
+        } catch (IOException e) {
+            w.abort();
+            throw e;
+        }
     }
 
     public String readTrim() throws IOException {
