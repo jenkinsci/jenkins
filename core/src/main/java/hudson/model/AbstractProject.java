@@ -411,7 +411,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Overwrites the JDK setting.
      */
-    public synchronized void setJDK(JDK jdk) throws IOException {
+    public void setJDK(JDK jdk) throws IOException {
         this.jdk = jdk.getName();
         save();
     }
