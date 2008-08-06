@@ -147,12 +147,17 @@ public final class PluginWrapper {
 
         if(isLinked) {
             // resolve the .hpl file to the location of the manifest file
-            String firstLine = new BufferedReader(new FileReader(archive)).readLine();
-            if(firstLine.startsWith("Manifest-Version:")) {
-                // this is the manifest already
-            } else {
-                // indirection
-                archive = resolve(archive, firstLine);
+            BufferedReader archiveReader = new BufferedReader(new FileReader(archive));
+            try {
+                String firstLine = archiveReader.readLine();
+                if(firstLine.startsWith("Manifest-Version:")) {
+                    // this is the manifest already
+                } else {
+                    // indirection
+                    archive = resolve(archive, firstLine);
+                }
+            } finally {
+                archiveReader.close();
             }
             // then parse manifest
             FileInputStream in = new FileInputStream(archive);
