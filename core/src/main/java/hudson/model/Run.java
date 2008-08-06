@@ -924,15 +924,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         int lineCount = 0;
         List<String> logLines = new LinkedList<String>();
         BufferedReader reader = new BufferedReader(new FileReader(getLogFile()));
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            logLines.add(line);
-            ++lineCount;
-            // If we have too many lines, remove the oldest line.  This way we
-            // never have to hold the full contents of a huge log file in memory.
-            // Adding to and removing from the ends of a linked list are cheap
-            // operations.
-            if (lineCount > maxLines)
-                logLines.remove(0);
+        try {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                logLines.add(line);
+                ++lineCount;
+                // If we have too many lines, remove the oldest line.  This way we
+                // never have to hold the full contents of a huge log file in memory.
+                // Adding to and removing from the ends of a linked list are cheap
+                // operations.
+                if (lineCount > maxLines)
+                    logLines.remove(0);
+            }
+        } finally {
+            reader.close();
         }
 
         // If the log has been truncated, include that information.
