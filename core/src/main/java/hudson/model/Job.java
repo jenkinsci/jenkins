@@ -974,6 +974,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
 
             public boolean equals(Object o) {
+                if(!(o instanceof ChartLabel))  return false;
                 ChartLabel that = (ChartLabel) o;
                 return run == that.run;
             }
