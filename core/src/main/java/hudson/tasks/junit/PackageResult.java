@@ -17,7 +17,7 @@ import java.util.TreeMap;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class PackageResult extends MetaTabulatedResult {
+public final class PackageResult extends MetaTabulatedResult implements Comparable<PackageResult> {
     private final String packageName;
 
     /**
