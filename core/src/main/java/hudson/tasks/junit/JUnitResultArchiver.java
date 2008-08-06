@@ -3,7 +3,6 @@ package hudson.tasks.junit;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.maven.MavenModuleSet;
 import hudson.maven.AbstractMavenProject;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
@@ -70,7 +69,7 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
 
             action = new TestResultAction(build, result, listener);
             if(result.getPassCount()==0 && result.getFailCount()==0)
-                new AbortException(Messages.JUnitResultArchiver_ResultIsEmpty());
+                throw new AbortException(Messages.JUnitResultArchiver_ResultIsEmpty());
         } catch (IOException e) {
             e.printStackTrace(listener.error("Failed to archive JUnit reports"));
             build.setResult(Result.FAILURE);
