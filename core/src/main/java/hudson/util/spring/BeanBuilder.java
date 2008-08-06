@@ -199,7 +199,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 *
 	 * @author Graeme Rocher
 	 */
-	private class DeferredProperty {
+	private static class DeferredProperty {
 		private BeanConfiguration config;
 		private String name;
 		private Object value;
