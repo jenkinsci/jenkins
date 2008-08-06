@@ -14,7 +14,7 @@ public class RingBufferLogHandler extends Handler {
 
     private int start = 0;
     private final LogRecord[] records;
-    private int size = 0;
+    private volatile int size = 0;
 
     public RingBufferLogHandler() {
         this(256);
@@ -44,7 +44,9 @@ public class RingBufferLogHandler extends Handler {
         return new AbstractList<LogRecord>() {
             public LogRecord get(int index) {
                 // flip the order
-                return records[(start+(size-(index+1)))%records.length];
+                synchronized (RingBufferLogHandler.this) {
+                    return records[(start+(size-(index+1)))%records.length];
+                }
             }
 
             public int size() {
