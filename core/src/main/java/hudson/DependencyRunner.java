@@ -20,10 +20,9 @@ public class DependencyRunner implements Runnable {
 
     List<AbstractProject> polledProjects = new ArrayList<AbstractProject>();
 
-    @SuppressWarnings("unchecked")
-        public DependencyRunner(ProjectRunnable runnable) {
-            this.runnable = runnable;
-        }
+    public DependencyRunner(ProjectRunnable runnable) {
+        this.runnable = runnable;
+    }
 
     public void run() {
         Set<AbstractProject> topLevelProjects = new HashSet<AbstractProject>();
