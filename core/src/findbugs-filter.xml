@@ -1,7 +1,16 @@
 <FindBugsFilter>
   <Match>
-    <!-- It's hard to imagine a scenario where Hudson is granted higher privilege but called by a lower privileged client. -->
-    <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED" />
+    <Or>
+      <!-- It's hard to imagine a scenario where Hudson is granted higher privilege but called by a lower privileged client. -->
+      <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED" />
+
+      <!-- exposing internal data structure via array is considered OK in Hudson. Hudson really doesn't try to defend against the malicious code -->
+      <Bug pattern="EI_EXPOSE_REP" />
+      <Bug pattern="EI_EXPOSE_REP2" />
+
+      <!-- FindBugs detect false positives. -->
+      <Bug pattern="SBSC_USE_STRINGBUFFER_CONCATENATION" />
+    </Or>
   </Match>
 
   <Match>
@@ -22,8 +31,16 @@
   </Match>
 
   <Match>
-    <!-- these classes are not meant to be serializable -->
+    <!-- this use of mutable static field is necessary to propagate a value inside Maven. -->
+    <Class name="hudson.maven.MavenBuilder" />
+    <Bug pattern="MS_CANNOT_BE_FINAL" />
+  </Match>
+
+  <Match>
+    <!-- this class is not serialized -->
     <Or>
+      <Class name="hudson.maven.MavenProbeAction" />
+      <Class name="hudson.maven.SplittableBuildListener" />
       <Class name="hudson.maven.MavenBuild$ProxyImpl" />
       <Class name="hudson.maven.MavenBuild$ProxyImpl2" />
     </Or>
@@ -31,21 +48,20 @@
   </Match>
 
   <Match>
-    <!-- this use of mutable static field is necessary to propagate a value inside Maven. -->
-    <Class name="hudson.maven.MavenBuilder" />
-    <Bug pattern="MS_CANNOT_BE_FINAL" />
-  </Match>
-
-  <Match>
-    <!-- this class is not really serialized -->
-    <Class name="hudson.maven.MavenProbeAction" />
-    <Bug code="SE" />
-  </Match>
-
-  <Match>
     <!-- FindBugs fail to take the writeObject method into account. -->
     <Class name="hudson.maven.MavenProcessFactory$Connection" />
     <Bug code="SE" />
+  </Match>
+
+  <Match>
+    <Class name="hudson.util.ProcessTreeKiller$Unix$UnixSystem" />
+    <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME" />
+  </Match>
+
+  <Match>
+    <!-- Can't change this for backward compatibility -->
+    <Class name="hudson.tasks.BuildWrapper$Environment" />
+    <Bug pattern="SIC_INNER_SHOULD_BE_STATIC" />
   </Match>
 
 </FindBugsFilter>
