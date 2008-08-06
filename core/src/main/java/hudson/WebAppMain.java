@@ -45,7 +45,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class WebAppMain implements ServletContextListener {
+public final class WebAppMain implements ServletContextListener {
     private final RingBufferLogHandler handler = new RingBufferLogHandler();
     private static final String APP = "app";
 
