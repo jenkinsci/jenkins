@@ -128,6 +128,25 @@
       </properties>
     </profile>
     <profile>
+      <!-- run findbugs for better error detection -->
+      <id>findbugs</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>1.2</version>
+            <configuration>
+              <effort>Max</effort>
+              <threshold>Normal</threshold>
+              <onlyAnalyze>hudson.-</onlyAnalyze>
+              <excludeFilterFile>src/findbugs-filter.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
+    <profile>
       <id>hudson-libs-local</id>
       <!-- if we have the libs checked out of CVS, use them directly -->
       <activation>

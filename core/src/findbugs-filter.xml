@@ -1,0 +1,11 @@
+<FindBugsFilter>
+  <Match>
+    <!-- It's hard to imagine a scenario where Hudson is granted higher privilege but called by a lower privileged client. -->
+    <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED" />
+  </Match>
+  <Match>
+    <!-- Hudson defines mutable static field throughout the code so that debug features can be selectively made on and off at runtime -->
+    <Bug pattern="MS_SHOULD_BE_FINAL" />
+  </Match>
+
+</FindBugsFilter>
