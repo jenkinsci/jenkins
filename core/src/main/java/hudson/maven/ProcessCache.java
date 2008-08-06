@@ -108,7 +108,7 @@ public final class ProcessCache {
         }
     }
 
-    class PerChannel {
+    static class PerChannel {
         /**
          * Cached processes.
          */
