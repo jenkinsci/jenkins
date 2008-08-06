@@ -368,4 +368,6 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
             return lhs.getAge()-rhs.getAge();
         }
     };
+
+    private static final long serialVersionUID = 1L;
 }
