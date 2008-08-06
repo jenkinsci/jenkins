@@ -60,7 +60,7 @@ public interface VariableResolver<V> {
         private final VariableResolver<? extends V>[] resolvers;
 
         public Union(VariableResolver<? extends V>... resolvers) {
-            this.resolvers = resolvers;
+            this.resolvers = resolvers.clone();
         }
 
         public Union(Collection<? extends VariableResolver<? extends V>> resolvers) {
