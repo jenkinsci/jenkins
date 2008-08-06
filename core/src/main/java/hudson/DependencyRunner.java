@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Collection;
 import java.util.logging.Logger;
 
 /**
@@ -44,8 +45,8 @@ public class DependencyRunner implements Runnable {
         }
     }
 
-    private void populate(Set<AbstractProject> projectList) {
-        for (AbstractProject p : projectList) {
+    private void populate(Collection<? extends AbstractProject> projectList) {
+        for (AbstractProject<?,?> p : projectList) {
             if (polledProjects.contains(p)) {
                 // Project will be readded at the queue, so that we always use
                 // the longest path
@@ -57,7 +58,7 @@ public class DependencyRunner implements Runnable {
             polledProjects.add(p);
 
             // Add all downstream dependencies
-            populate(new HashSet<AbstractProject>(p.getDownstreamProjects()));
+            populate(p.getDownstreamProjects());
         }
     }
 
