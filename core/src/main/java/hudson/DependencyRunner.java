@@ -16,8 +16,6 @@ public class DependencyRunner implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(DependencyRunner.class.getName());
 	
-	AbstractProject currentProject;
-
     ProjectRunnable runnable;
 
     List<AbstractProject> polledProjects = new ArrayList<AbstractProject>();
