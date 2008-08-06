@@ -264,4 +264,6 @@ public final class TestResult extends MetaTabulatedResult {
         for (PackageResult pr : byPackages.values())
             pr.freeze();
     }
+
+    private static final long serialVersionUID = 1L;
 }
