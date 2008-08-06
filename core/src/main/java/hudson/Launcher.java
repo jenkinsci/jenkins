@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.List;
 
 /**
  * Starts a process.
@@ -322,7 +323,7 @@ public abstract class Launcher {
             map.putAll(cookie);
             final Process proc = Runtime.getRuntime().exec(cmd, Util.mapToEnv(map), toFile(workDir));
 
-            final Thread t2 = new StreamCopyThread(cmd+": stderr copier", proc.getErrorStream(), out);
+            final Thread t2 = new StreamCopyThread(Arrays.asList(cmd)+": stderr copier", proc.getErrorStream(), out);
             t2.start();
 
             return new Channel("locally launched channel on "+ Arrays.toString(cmd),
@@ -445,9 +446,10 @@ public abstract class Launcher {
                 Util.mapToEnv(inherit(envOverrides)),
                 workDir == null ? null : new File(workDir));
 
-            new StreamCopyThread("stdin copier for remote agent on "+cmd,
+            List<String> cmdLines = Arrays.asList(cmd);
+            new StreamCopyThread("stdin copier for remote agent on "+cmdLines,
                 p.getInputStream(), out.getOut()).start();
-            new StreamCopyThread("stderr copier for remote agent on "+cmd,
+            new StreamCopyThread("stderr copier for remote agent on "+cmdLines,
                 p.getErrorStream(), err).start();
 
             // TODO: don't we need to join?
