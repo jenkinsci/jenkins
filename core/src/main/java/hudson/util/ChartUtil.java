@@ -40,6 +40,7 @@ public class ChartUtil {
         }
 
         public boolean equals(Object o) {
+            if(!(o instanceof NumberOnlyBuildLabel))    return false;
             NumberOnlyBuildLabel that = (NumberOnlyBuildLabel) o;
             return build==that.build;
         }
