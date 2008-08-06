@@ -49,6 +49,15 @@ public class AtomicFileWriter extends Writer {
         core.close();
     }
 
+    /**
+     * When the write operation failed and you'd like to leave the original file intact,
+     * you can optionally call this method to clean up a temporary file that was created by this writer.
+     */
+    public void abort() throws IOException {
+        core.close();
+        tmpFile.delete();
+    }
+
     public void commit() throws IOException {
         close();
         if(destFile.exists() && !destFile.delete())
