@@ -126,8 +126,8 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         private static final long serialVersionUID = 1L;
 
         static final class AcceptorImpl implements Acceptor, Serializable {
-            private final ServerSocket serverSocket;
-            private Socket socket;
+            private transient final ServerSocket serverSocket;
+            private transient Socket socket;
 
             AcceptorImpl() throws IOException {
                 // open a TCP socket to talk to the launched Maven process.
