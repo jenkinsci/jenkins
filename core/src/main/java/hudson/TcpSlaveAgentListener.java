@@ -43,7 +43,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class TcpSlaveAgentListener extends Thread {
+public final class TcpSlaveAgentListener extends Thread {
 
     private final ServerSocket serverSocket;
     private volatile boolean shuttingDown;
