@@ -57,7 +57,9 @@ public class MavenArtifactArchiver extends MavenReporter {
                         Object ret = delegate.invoke(proxy, method, args);
                         if(method.getName().equals("createArchive") && method.getReturnType()==File.class) {
 //                            System.out.println("Discovered "+ret+" at "+MavenArtifactArchiver.this);
-                            assemblies.add((File)ret);
+                            File f = (File) ret;
+                            if(!f.isDirectory())
+                                assemblies.add(f);
                         }
                         return ret;
                     }
