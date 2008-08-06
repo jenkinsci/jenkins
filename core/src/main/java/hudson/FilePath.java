@@ -682,15 +682,11 @@ public final class FilePath implements Serializable {
                 File f = new File(remote);
                 f.getParentFile().mkdirs();
                 FileOutputStream fos = new FileOutputStream(f);
+                Writer w = encoding != null ? new OutputStreamWriter(fos, encoding) : new OutputStreamWriter(fos);
                 try {
-                    Writer w;
-                    if(encoding!=null)
-                    w = new OutputStreamWriter(fos, encoding);
-                    else
-                        w = new OutputStreamWriter(fos);
                     w.write(content);
                 } finally {
-                    fos.close();
+                    w.close();
                 }
                 return null;
             }
