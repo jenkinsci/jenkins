@@ -111,7 +111,7 @@ public class DoubleLaunchChecker {
      */
     public void schedule() {
         // randomize the scheduling so that multiple Hudson instances will write at the file at different time
-        int MINUTE = 1000*60;
+        long MINUTE = 1000*60;
         Trigger.timer.schedule(new SafeTimerTask() {
             protected void doRun() {
                 execute();
