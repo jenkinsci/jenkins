@@ -184,4 +184,6 @@ public final class SuiteResult implements Serializable {
             c.freeze(this);
         return true;
     }
+
+    private static final long serialVersionUID = 1L;
 }
