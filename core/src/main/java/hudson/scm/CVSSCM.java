@@ -657,7 +657,7 @@ public class CVSSCM extends SCM implements Serializable {
     /**
      * Used to communicate the result of the detection in {@link CVSSCM#calcChangeLog(AbstractBuild, FilePath, List, File, BuildListener)}
      */
-    class ChangeLogResult implements Serializable {
+    static class ChangeLogResult implements Serializable {
         boolean hadError;
         String errorOutput;
 
@@ -672,7 +672,7 @@ public class CVSSCM extends SCM implements Serializable {
     /**
      * Used to propagate {@link BuildException} and error log at the same time.
      */
-    class BuildExceptionWithLog extends RuntimeException {
+    static class BuildExceptionWithLog extends RuntimeException {
         final String errorOutput;
 
         public BuildExceptionWithLog(BuildException cause, String errorOutput) {
