@@ -9,6 +9,9 @@ import javax.servlet.ServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * Servlet {@link Filter} that chains multiple {@link Filter}s, provided by plugins
@@ -16,7 +19,7 @@ import java.util.Collection;
  */
 public class PluginServletFilter implements Filter {
 
-	private static CopyOnWriteList<Filter> LIST = new CopyOnWriteList<Filter>();
+	private static final List<Filter> LIST = new Vector<Filter>();
 	
 	private static FilterConfig filterConfig;
     
@@ -24,7 +27,7 @@ public class PluginServletFilter implements Filter {
     }
 
     public void init(FilterConfig filterConfig) throws ServletException {
-    	this.filterConfig = filterConfig;
+    	PluginServletFilter.filterConfig = filterConfig;
     	synchronized (LIST)  {
     		for (Filter f : LIST) {
     			f.init(filterConfig);
@@ -45,7 +48,7 @@ public class PluginServletFilter implements Filter {
         new FilterChain() {
             private int position=0;
             // capture the array for thread-safety
-            private final Filter[] filters = LIST.toArray(new Filter[0]);
+            private final Filter[] filters = LIST.toArray(new Filter[LIST.size()]);
 
             public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
                 if(position==filters.length) {
@@ -60,7 +63,9 @@ public class PluginServletFilter implements Filter {
     }
 
     public void destroy() {
-        for (Filter f : LIST)
-            f.destroy();
+        synchronized (LIST)  {
+            for (Filter f : LIST)
+                f.destroy();
+        }
     }
 }
