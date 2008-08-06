@@ -1,5 +1,6 @@
 <FindBugsFilter>
   <Match>
+    <!-- elimination of certain bug patterns by policy -->
     <Or>
       <!-- It's hard to imagine a scenario where Hudson is granted higher privilege but called by a lower privileged client. -->
       <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED" />
@@ -10,14 +11,51 @@
 
       <!-- FindBugs detect false positives. -->
       <Bug pattern="SBSC_USE_STRINGBUFFER_CONCATENATION" />
+
+      <!-- Hudson defines mutable static field throughout the code so that debug features can be selectively made on and off at runtime -->
+      <Bug pattern="MS_SHOULD_BE_FINAL" />
+
+      <!-- Hudson depends on singletons in many places. I actually think this is bad, but we can't fix this in one day. -->
+      <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />
     </Or>
   </Match>
 
   <Match>
-    <!-- Hudson defines mutable static field throughout the code so that debug features can be selectively made on and off at runtime -->
-    <Bug pattern="MS_SHOULD_BE_FINAL" />
+    <!-- generated class -->
+    <Or>
+      <Class name="hudson.scheduler.CrontabParser" />
+      <Class name="hudson.scheduler.CrontabLexer" />
+    </Or>
   </Match>
 
+  <Match>
+    <!-- fields left for backward compatibility -->
+    <Or>
+      <Class name="hudson.model.FingerprintMap" />
+      <Class name="hudson.scm.CVSSCM$DescriptorImpl" />
+      <Class name="hudson.scm.CVSSCM$DescriptorImpl$RepositoryBrowser" />
+      <Class name="hudson.tasks.Mailer" />
+    </Or>
+    <Or>
+      <Bug pattern="UUF_UNUSED_FIELD" />
+      <Bug pattern="URF_UNREAD_FIELD" />
+    </Or>
+  </Match>
+
+  <Match>
+    <!-- this class is not serialized -->
+    <Or>
+      <Class name="hudson.maven.MavenProbeAction" />
+      <Class name="hudson.maven.SplittableBuildListener" />
+      <Class name="hudson.maven.MavenBuild$ProxyImpl" />
+      <Class name="hudson.maven.MavenBuild$ProxyImpl2" />
+      <Class name="hudson.maven.MavenProcessFactory$SocketHandler$AcceptorImpl" />
+    </Or>
+    <Bug code="Se" />
+  </Match>
+
+
+<!-- individual exclusions -->
   <Match>
     <!-- archiveReader.readLine() may never return null since it's the first invocation -->
     <Class name="hudson.PluginWrapper"/>
@@ -37,20 +75,9 @@
   </Match>
 
   <Match>
-    <!-- this class is not serialized -->
-    <Or>
-      <Class name="hudson.maven.MavenProbeAction" />
-      <Class name="hudson.maven.SplittableBuildListener" />
-      <Class name="hudson.maven.MavenBuild$ProxyImpl" />
-      <Class name="hudson.maven.MavenBuild$ProxyImpl2" />
-    </Or>
-    <Bug code="SE" />
-  </Match>
-
-  <Match>
     <!-- FindBugs fail to take the writeObject method into account. -->
     <Class name="hudson.maven.MavenProcessFactory$Connection" />
-    <Bug code="SE" />
+    <Bug code="Se" />
   </Match>
 
   <Match>
@@ -62,6 +89,16 @@
     <!-- Can't change this for backward compatibility -->
     <Class name="hudson.tasks.BuildWrapper$Environment" />
     <Bug pattern="SIC_INNER_SHOULD_BE_STATIC" />
+  </Match>
+
+  <Match>
+    <Class name="hudson.org.apache.tools.ant..+" />
+  </Match>
+
+  <Match>
+    <!-- just a diagnostics method -->
+    <Class name="hudson.model.Hudson" />
+    <Bug pattern="DM_GC" />
   </Match>
 
 </FindBugsFilter>
