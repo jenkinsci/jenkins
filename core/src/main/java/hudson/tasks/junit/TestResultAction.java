@@ -45,7 +45,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     /**
      * Overwrites the {@link TestResult} by a new data set.
      */
-    public void setResult(TestResult result, BuildListener listener) {
+    public synchronized void setResult(TestResult result, BuildListener listener) {
         result.freeze(this);
 
         totalCount = result.getTotalCount();
