@@ -21,7 +21,7 @@
         </td>
       </d:tag>
     </d:taglib>
-    <link rel="stylesheet" href="${app.VIEW_RESOURCE_PATH}/hudson/security/table.css" type="text/css" />
+    <link rel="stylesheet" href="${rootURL}${app.VIEW_RESOURCE_PATH}/hudson/security/table.css" type="text/css" />
     <table id="global-matrix-authorization-strategy-table" class="center-align" name="data" width="100%">
 
       <!-- The first row will show grouping -->
