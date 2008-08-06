@@ -19,7 +19,7 @@ public abstract class Actionable extends AbstractModelObject {
     /**
      * Actions contributed to this model object.
      */
-    private List<Action> actions;
+    private volatile List<Action> actions;
 
     /**
      * Gets actions contributed to this build.
