@@ -121,15 +121,15 @@ public class Ant extends Builder {
         String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
 
         AntInstallation ai = getAnt();
-        if (!ai.getExists()) {
-        	listener.fatalError(Messages.Ant_ExecutableNotFound(ai.name));
-        	return false;
-        }
         if(ai==null)
             args.add(execName);
-        else
+        else {
+            if (!ai.getExists()) {
+                listener.fatalError(Messages.Ant_ExecutableNotFound(ai.name));
+                return false;
+            }
             args.add(ai.getExecutable(launcher));
-
+        }
 
         FilePath buildFilePath = buildFilePath(proj.getModuleRoot());
 
