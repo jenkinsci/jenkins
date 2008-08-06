@@ -198,6 +198,15 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return false;
     }
 
+    /**
+     * Gets the version of Hudson that was used to build this job.
+     *
+     * @since 1.246
+     */
+    public String getHudsonVersion() {
+        return hudsonVersion;
+    }
+
     protected abstract class AbstractRunner implements Runner {
         /**
          * Since configuration can be changed while a build is in progress,
