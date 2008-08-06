@@ -29,7 +29,6 @@ import hudson.scm.RepositoryBrowsers;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
-import hudson.scm.SubversionWorkspaceSelector;
 import hudson.scm.SubversionSCM;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -86,7 +85,6 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
-import org.tmatesoft.svn.core.internal.wc.admin.SVNAdminAreaFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -123,6 +121,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -1608,10 +1607,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             updateComputerList();
 
             // label trim off
-            for (Label l : labels.values()) {
+            for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
+                Label l = itr.next();
                 l.reset();
                 if(l.getNodes().isEmpty())
-                    labels.remove(l);
+                    itr.remove();
             }
         }
 
