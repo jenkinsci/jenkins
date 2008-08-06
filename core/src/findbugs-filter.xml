@@ -14,6 +14,7 @@
 
       <!-- Hudson defines mutable static field throughout the code so that debug features can be selectively made on and off at runtime -->
       <Bug pattern="MS_SHOULD_BE_FINAL" />
+      <Bug pattern="MS_CANNOT_BE_FINAL" />
 
       <!-- Hudson depends on singletons in many places. I actually think this is bad, but we can't fix this in one day. -->
       <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />
@@ -50,8 +51,15 @@
       <Class name="hudson.maven.MavenBuild$ProxyImpl" />
       <Class name="hudson.maven.MavenBuild$ProxyImpl2" />
       <Class name="hudson.maven.MavenProcessFactory$SocketHandler$AcceptorImpl" />
+      <Class name="hudson.util.StreamTaskListener" />
+      <Class name="hudson.util.StreamBuildListener" />
+      <Class name="hudson.security.ContainerAuthentication" />
+      <Class name="hudson.scm.SubversionSCM$DescriptorImpl$RemotableSVNAuthenticationProviderImpl" />
     </Or>
-    <Bug code="Se" />
+    <Or>
+      <Bug code="SE_NO_SERIALVERSIONID" />
+      <Bug code="Se" />
+    </Or>
   </Match>
 
 
@@ -69,12 +77,6 @@
   </Match>
 
   <Match>
-    <!-- this use of mutable static field is necessary to propagate a value inside Maven. -->
-    <Class name="hudson.maven.MavenBuilder" />
-    <Bug pattern="MS_CANNOT_BE_FINAL" />
-  </Match>
-
-  <Match>
     <!-- FindBugs fail to take the writeObject method into account. -->
     <Class name="hudson.maven.MavenProcessFactory$Connection" />
     <Bug code="Se" />
@@ -87,7 +89,10 @@
 
   <Match>
     <!-- Can't change this for backward compatibility -->
-    <Class name="hudson.tasks.BuildWrapper$Environment" />
+    <Or>
+      <Class name="hudson.scm.CVSSCM$DescriptorImpl$RepositoryBrowser" />
+      <Class name="hudson.tasks.BuildWrapper$Environment" />
+    </Or>
     <Bug pattern="SIC_INNER_SHOULD_BE_STATIC" />
   </Match>
 
