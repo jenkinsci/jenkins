@@ -108,6 +108,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
 
 
     public boolean equals( Object o ) {
+        if (!(o instanceof VersionNumber))  return false;
         return compareTo((VersionNumber)o)==0;
     }
 
