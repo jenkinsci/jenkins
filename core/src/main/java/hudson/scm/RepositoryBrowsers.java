@@ -64,8 +64,6 @@ public class RepositoryBrowsers {
      */
     public static <T extends RepositoryBrowser>
     T createInstance(Class<T> type, StaplerRequest req, JSONObject parent, String fieldName) throws FormException {
-        List<Descriptor<RepositoryBrowser<?>>> list = filter(type);
-
         JSONObject o = (JSONObject)parent.get(fieldName);
         if(o==null) return null;
 
