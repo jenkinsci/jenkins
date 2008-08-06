@@ -334,8 +334,9 @@ public class LargeText {
             in.close();
         }
 
-        public void skip(long start) throws IOException {
-            in.skip(start);
+        public void skip(long n) throws IOException {
+            while(n>0)
+                n -= in.skip(n);
         }
 
         public int read(byte[] buf) throws IOException {
