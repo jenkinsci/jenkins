@@ -122,7 +122,7 @@ public class Ant extends Builder {
 
         AntInstallation ai = getAnt();
         if (!ai.getExists()) {
-        	listener.fatalError("Cannot find executable from the choosen Ant installation \"" + ai.name + "\"");
+        	listener.fatalError(Messages.Ant_ExecutableNotFound(ai.name));
         	return false;
         }
         if(ai==null)
