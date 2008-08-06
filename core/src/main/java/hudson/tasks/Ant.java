@@ -121,6 +121,10 @@ public class Ant extends Builder {
         String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
 
         AntInstallation ai = getAnt();
+        if (!ai.getExists()) {
+        	listener.fatalError("Cannot find executable from the choosen Ant installation \"" + ai.name + "\"");
+        	return false;
+        }
         if(ai==null)
             args.add(execName);
         else
