@@ -122,6 +122,25 @@ public abstract class Plugin {
      * If this class defines <tt>config.jelly</tt> view, be sure to
      * override this method and persists the submitted values accordingly.
      *
+     * <p>
+     * The following is a sample <tt>config.jelly</tt> that you can start yours with:
+     * <pre><xmp>
+     * <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+     *   <f:section title="Locale">
+     *     <f:entry title="${%Default Language}" help="/plugin/locale/help/default-language.html">
+     *       <f:textbox name="systemLocale" value="${it.systemLocale}" />
+     *     </f:entry>
+     *   </f:section>
+     * </j:jelly>
+     * </xmp></pre>
+     *
+     * <p>
+     * This allows you to access data as {@code formData.getString("systemLocale")}
+     *
+     * <p>
+     * If you are using this method, you'll likely be interested in
+     * using {@link #save()} and {@link #load()}.
+     *
      * @since 1.233
      */
     public void configure(JSONObject formData) throws IOException, ServletException, FormException {
@@ -154,6 +173,8 @@ public abstract class Plugin {
      *
      * <p>
      * If there was no previously persisted state, this method is no-op.
+     *
+     * @since 1.245
      */
     protected void load() throws IOException {
         XmlFile xml = getConfigXml();
@@ -163,6 +184,8 @@ public abstract class Plugin {
 
     /**
      * Saves serializable fields of this instance to the persisted storage.
+     *
+     * @since 1.245
      */
     protected void save() throws IOException {
         getConfigXml().write(this);
@@ -174,6 +197,8 @@ public abstract class Plugin {
      *
      * This method can be also overriden if the plugin wants to
      * use a custom {@link XStream} instance to persist data.
+     *
+     * @since 1.245
      */
     protected XmlFile getConfigXml() {
         return new XmlFile(Hudson.XSTREAM,
