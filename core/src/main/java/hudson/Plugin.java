@@ -14,9 +14,11 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.File;
 import java.net.URL;
 
 import net.sf.json.JSONObject;
+import com.thoughtworks.xstream.XStream;
 
 /**
  * Base class of Hudson plugin.
@@ -142,5 +144,39 @@ public abstract class Plugin {
 
         // use serveLocalizedFile to support automatic locale selection
         rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL,'.'+path));
+    }
+
+//
+// Convenience methods for those plugins that persist configuration
+//
+    /**
+     * Loads serializable fields of this instance from the persisted storage.
+     *
+     * <p>
+     * If there was no previously persisted state, this method is no-op.
+     */
+    protected void load() throws IOException {
+        XmlFile xml = getConfigXml();
+        if(xml.exists())
+            xml.unmarshal(this);
+    }
+
+    /**
+     * Saves serializable fields of this instance to the persisted storage.
+     */
+    protected void save() throws IOException {
+        getConfigXml().write(this);
+    }
+
+    /**
+     * Controls the file where {@link #load()} and {@link #save()}
+     * persists data.
+     *
+     * This method can be also overriden if the plugin wants to
+     * use a custom {@link XStream} instance to persist data.
+     */
+    protected XmlFile getConfigXml() {
+        return new XmlFile(Hudson.XSTREAM,
+                new File(Hudson.getInstance().getRootDir(),wrapper.getShortName()+".xml"));
     }
 }
