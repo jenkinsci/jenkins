@@ -3,12 +3,12 @@
     <f:textbox name="redeploy.url" value="${instance.url}" />
   </f:entry>
   <f:advanced>
-    <f:entry title="Repository ID" help="/help/maven/redeploy-id.html">
+    <f:entry title="${%Repository ID}" help="/help/maven/redeploy-id.html">
       <f:textbox name="redeploy.id" value="${instance.id}" />
     </f:entry>
     <f:entry help="/help/maven/redeploy-uniqueVersion.html">
       <f:checkbox name="redeploy.uniqueVersion" checked="${instance.uniqueVersion}" />
-      <label class="attach-previous">Assign unique versions to snapshots</label>
+      <label class="attach-previous">${%Assign unique versions to snapshots}</label>
     </f:entry>
   </f:advanced>
 </j:jelly>

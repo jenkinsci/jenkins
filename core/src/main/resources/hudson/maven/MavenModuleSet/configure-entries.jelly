@@ -12,8 +12,8 @@
       <!-- no maven installation is configured. this will be an error, so warn the user now -->
       <f:entry title="${%Maven Version}">
         <div class="error">
-          Hudson needs to know where your Maven2 is installed.&lt;br>
-          Please do so from <a href="${rootURL}/configure" target="_new">the system configuration</a>.
+          ${%Maven Version.error.1}&lt;br>
+          ${%Maven Version.error.2(rootURL)}
         </div>
       </f:entry>
     </j:if>

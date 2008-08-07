@@ -10,12 +10,12 @@
       <!-- nothing -->
     </j:when>
     <j:when test="${size(rev)==1}">
-      Revision:
+      ${%Revision}:
       <j:forEach var="r" items="${rev}">${r.value}</j:forEach><!-- just print that one value-->
       <br/>
     </j:when>
     <j:otherwise>
-      Revisions
+      ${%Revisions}
       <ul>
         <j:forEach var="r" items="${rev}">
           <li>${r.key} : ${r.value}</li>
@@ -28,12 +28,12 @@
       ${%No changes.}
     </j:when>
     <j:otherwise>
-      Changes
+      ${%Changes}
       <ol>
         <j:forEach var="cs" items="${it.logs}" varStatus="loop">
           <li>
             ${cs.msgAnnotated}
-            (<a href="changes#detail${loop.index}">detail</a>
+            (<a href="changes#detail${loop.index}">${%detail}</a>
 
             <j:set var="cslink" value="${browser.getChangeSetLink(cs)}"/>
             <j:if test="${cslink!=null}">

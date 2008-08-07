@@ -7,10 +7,10 @@
       ${%No changes.}
     </j:when>
     <j:otherwise>
-      Changes
+      ${%Changes}
       <ol>
         <j:forEach var="cs" items="${it.logs}" varStatus="loop">
-          <li>${cs.msgAnnotated} (<a href="changes#detail${loop.index}">detail</a>)
+          <li>${cs.msgAnnotated} (<a href="changes#detail${loop.index}">${%detail}</a>)
           </li>
         </j:forEach>
       </ol>
