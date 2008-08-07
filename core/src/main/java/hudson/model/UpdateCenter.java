@@ -361,15 +361,15 @@ public class UpdateCenter implements ModelObject {
 
         public void run() {
             try {
-                statuses.add("Checking internet connectivity");
+                statuses.add(Messages.UpdateCenter_Status_CheckingInternet());
                 testConnection(new URL("http://www.google.com/"));
 
-                statuses.add("Checking java.net connectivity");
+                statuses.add(Messages.UpdateCenter_Status_CheckingJavaNet());
                 testConnection(new URL("https://hudson.dev.java.net/?uctest"));
 
-                statuses.add("Success");
+                statuses.add(Messages.UpdateCenter_Status_Success());
             } catch (UnknownHostException e) {
-                statuses.add("<span class=error>Failed to resolve host name "+e.getMessage()+". Perhaps you need to <a href='../pluginManager/advanced'>configure HTTP proxy?</a></span>");
+                statuses.add(Messages.UpdateCenter_Status_UnknownHostException(e.getMessage()));
                 addStatus(e);
             } catch (IOException e) {
                 statuses.add(Functions.printThrowable(e));
