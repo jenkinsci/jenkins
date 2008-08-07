@@ -871,7 +871,7 @@ public class Functions {
             return urlName; // absolute URL
         else
             // relative URL name
-            return Stapler.getCurrentRequest().getContextPath()+'/'+itUrl+urlName;
+            return Stapler.getCurrentRequest().getContextPath()+'/'+itUrl+urlName+'/';
     }
 
     /**
