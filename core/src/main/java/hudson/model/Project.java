@@ -81,6 +81,10 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return publishers.toMap();
     }
 
+    public DescribableList<Builder,Descriptor<Builder>> getBuildersList() {
+        return builders;
+    }
+    
     public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
         return publishers;
     }
