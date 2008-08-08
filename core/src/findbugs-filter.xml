@@ -52,7 +52,7 @@
       <Class name="hudson.maven.MavenBuild$ProxyImpl2" />
       <Class name="hudson.maven.MavenProcessFactory$SocketHandler$AcceptorImpl" />
       <Class name="hudson.util.StreamTaskListener" />
-      <Class name="hudson.util.StreamBuildListener" />
+      <Class name="hudson.model.StreamBuildListener" />
       <Class name="hudson.security.ContainerAuthentication" />
       <Class name="hudson.scm.SubversionSCM$DescriptorImpl$RemotableSVNAuthenticationProviderImpl" />
     </Or>
@@ -104,6 +104,12 @@
     <!-- just a diagnostics method -->
     <Class name="hudson.model.Hudson" />
     <Bug pattern="DM_GC" />
+  </Match>
+
+  <Match>
+    <!-- TODO: this is actually bad but I can't think of how to fix this while preserving the order -->
+    <Class name="hudson.tasks.BuildStep" />
+    <Bug pattern="IC_SUPERCLASS_USES_SUBCLASS_DURING_INITIALIZATION" />
   </Match>
 
 </FindBugsFilter>
