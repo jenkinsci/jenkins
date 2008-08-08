@@ -229,6 +229,8 @@ public final class SlaveComputer extends Computer {
             numRetryAttempt = 0;
             this.channel = channel;
         }
+        for (ComputerListener cl : Hudson.getInstance().getComputerListeners())
+            cl.onOnline(this);
         Hudson.getInstance().getQueue().scheduleMaintenance();
     }
 
@@ -336,6 +338,8 @@ public final class SlaveComputer extends Computer {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
         }
+        for (ComputerListener cl : Hudson.getInstance().getComputerListeners())
+            cl.onOffline(this);
     }
 
     @Override

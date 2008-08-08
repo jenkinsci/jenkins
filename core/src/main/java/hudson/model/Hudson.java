@@ -16,6 +16,7 @@ import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
 import hudson.ProxyConfiguration;
 import hudson.slaves.RetentionStrategy;
+import hudson.slaves.ComputerListener;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -270,6 +271,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * List of registered {@link SCMListener}s.
      */
     private transient final CopyOnWriteList<SCMListener> scmListeners = new CopyOnWriteList<SCMListener>();
+
+    /**
+     * List of registered {@link ComputerListener}s.
+     */
+    private transient final CopyOnWriteList<ComputerListener> computerListeners = new CopyOnWriteList<ComputerListener>();
 
     /**
      * TCP slave agent port.
@@ -540,6 +546,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     public CopyOnWriteList<SCMListener> getSCMListeners() {
         return scmListeners;
+    }
+
+    /**
+     * Gets all the installed {@link ComputerListener}s.
+     */
+    public CopyOnWriteList<ComputerListener> getComputerListeners() {
+        return computerListeners;
     }
 
     /**
