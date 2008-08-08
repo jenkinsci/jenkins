@@ -80,6 +80,13 @@ public class WorkspaceCleanupThread extends PeriodicWork {
         if(!dir.exists())
             return false;
 
+        // if younger than a month, keep it
+        long now = new Date().getTime();
+        if(dir.lastModified() + 30 * DAY > now) {
+            LOGGER.fine("Directory "+dir+" is only "+ Util.getTimeSpanString(now-dir.lastModified())+" old, so not deleting");
+            return false;
+        }
+
         if (item instanceof AbstractProject) {
             AbstractProject p = (AbstractProject) item;
             Node lb = p.getLastBuiltOn();
@@ -89,15 +96,15 @@ public class WorkspaceCleanupThread extends PeriodicWork {
                 LOGGER.fine("Directory "+dir+" is the last workspace for "+p);
                 return false;
             }
+            
+            if(!p.getScm().processWorkspaceBeforeDeletion(p,dir,n)) {
+                LOGGER.fine("Directory deletion of "+dir+" is vetoed by SCM");
+                return false;
+            }
         }
 
-        // if older than a month, delete
-        long now = new Date().getTime();
-        boolean r = dir.lastModified() + 30 * DAY < now;
-        if(LOGGER.isLoggable(Level.FINE))
-            LOGGER.fine("Directory "+dir+" is "+ Util.getTimeSpanString(now-dir.lastModified())+" old, so "+
-                    (r?"":"NOT ")+"deleting");
-        return r;
+        LOGGER.finer("Going to delete directory "+dir);
+        return true;
     }
 
     private void process(Slave s) throws InterruptedException {
