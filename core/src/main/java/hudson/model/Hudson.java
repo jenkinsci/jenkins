@@ -123,6 +123,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.Iterator;
+import java.util.Timer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -323,6 +324,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         if(theInstance!=null)
             throw new IllegalStateException("second instance");
         theInstance = this;
+        Trigger.timer = new Timer("Hudson cron thread");
 
         try {
             dependencyGraph = DependencyGraph.EMPTY;
