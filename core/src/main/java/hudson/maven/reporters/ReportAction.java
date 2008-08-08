@@ -5,12 +5,13 @@ import org.apache.maven.reporting.MavenReport;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.io.Serializable;
 
 /**
  * {@link Action} to display links to the generated {@link MavenReport Maven reports}.
  * @author Kohsuke Kawaguchi
  */
-public final class ReportAction implements Action {
+public final class ReportAction implements Action, Serializable {
 
     private final List<Entry> entries = new ArrayList<Entry>();
 
@@ -46,4 +47,6 @@ public final class ReportAction implements Action {
     public String getUrlName() {
         return "mavenReports";
     }
+
+    private static final long serialVersionUID = 1L;
 }
