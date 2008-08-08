@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Experimenting with Hudson test suite.
@@ -30,10 +31,18 @@ public class AppTest extends HudsonTestCase
     }
 
     public void test1() throws Exception {
+        meat();
+    }
+
+    public void test2() throws Exception {
+        meat();
+    }
+
+    private void meat() throws IOException, InterruptedException, ExecutionException {
         FreeStyleProject project = (FreeStyleProject)hudson.createProject(FreeStyleProject.DESCRIPTOR, "test" );
         project.setScm(new NullSCM());
         project.getBuildersList().add(new Shell("echo hello"));
-        
+
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName()+" completed");
 
