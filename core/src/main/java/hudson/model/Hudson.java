@@ -144,7 +144,7 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node, StaplerProxy {
-    private transient final Queue queue = new Queue();
+    private transient final Queue queue;
 
     /**
      * {@link Computer}s in this Hudson system. Read-only.
@@ -325,6 +325,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             throw new IllegalStateException("second instance");
         theInstance = this;
         Trigger.timer = new Timer("Hudson cron thread");
+        queue = new Queue();
 
         try {
             dependencyGraph = DependencyGraph.EMPTY;
