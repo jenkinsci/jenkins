@@ -4,10 +4,12 @@ import hudson.AbortException;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.remoting.AsyncFutureImpl;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
+import hudson.model.listeners.RunListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
@@ -48,6 +50,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.concurrent.Future;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -365,8 +370,40 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      was noop
      */
     public boolean scheduleBuild() {
+        return scheduleBuild(getQuietPeriod());
+    }
+
+    public boolean scheduleBuild(int quietPeriod) {
         if(isDisabled())    return false;
-        return Hudson.getInstance().getQueue().add(this, getQuietPeriod());
+        return Hudson.getInstance().getQueue().add(this,quietPeriod);
+    }
+
+    /**
+     * Schedules a build of this project, and returns a {@link Future} object
+     * to wait for the completion of the build.
+     */
+    public Future<R> scheduleBuild2(int quietPeriod) {
+        R lastBuild = getLastBuild();
+        final int n;
+        if(lastBuild!=null) n = lastBuild.getNumber();
+        else                n = -1;
+
+        Future<R> f = new AsyncFutureImpl<R>() {
+            final RunListener r = new RunListener<AbstractBuild>(AbstractBuild.class) {
+                public void onCompleted(AbstractBuild r, TaskListener listener) {
+                    if(r.getProject()==AbstractProject.this && r.getNumber()>n) {
+                        set((R)r);
+                        unregister();
+                    }
+                }
+            };
+
+            { r.register(); }
+        };
+
+        scheduleBuild(quietPeriod);
+
+        return f;
     }
 
     /**
