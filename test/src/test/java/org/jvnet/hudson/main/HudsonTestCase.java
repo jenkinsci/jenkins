@@ -26,6 +26,7 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     protected void tearDown() throws Exception {
+        hudson.cleanUp();
         new FilePath(hudson.root).deleteRecursive();
     }
 
