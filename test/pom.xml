@@ -1,0 +1,30 @@
+<?xml version="1.0"?><project>
+  <parent>
+    <artifactId>pom</artifactId>
+    <groupId>org.jvnet.hudson.main</groupId>
+    <version>1.246-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.jvnet.hudson.main</groupId>
+  <artifactId>test</artifactId>
+  <name>test</name>
+  
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>hudson-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mortbay.jetty</groupId>
+      <artifactId>jetty</artifactId>
+      <version>6.1.11</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
