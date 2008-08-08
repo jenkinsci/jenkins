@@ -11,6 +11,8 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.TaskListener;
+import hudson.model.Node;
+import hudson.model.WorkspaceCleanupThread;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -104,6 +106,46 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public boolean requiresWorkspaceForPolling() {
     	return true;
+    }
+
+    /**
+     * Called before a workspace is deleted on the given node, to provide SCM an opportunity to perform clean up.
+     *
+     * <p>
+     * Hudson periodically scans through all the slaves and removes old workspaces that are deemed unnecesasry.
+     * This behavior is implemented in {@link WorkspaceCleanupThread}, and it is necessary to control the
+     * disk consumption on slaves. If we don't do this, in a long run, all the slaves will have workspaces
+     * for all the projects, which will be prohibitive in big Hudson.
+     *
+     * <p>
+     * However, some SCM implementations require that the server be made aware of deletion of the local workspace,
+     * and this method provides an opportunity for SCMs to perform such a clean-up act.
+     *
+     * <p>
+     * This call back is invoked after Hudson determines that a workspace is unnecessary, but before the actual
+     * recursive directory deletion happens.
+     *
+     * <p>
+     * Note that this method does not guarantee that such a clean up will happen. For example, slaves can be
+     * taken offline by being physically removed from the network, and in such a case there's no opporunity
+     * to perform this clean up. Similarly, when a project is deleted or renamed, SCMs do not get any notifications.
+     *
+     * @param project
+     *      The project that owns this {@link SCM}. This is always the same object for a particular instance
+     *      of {@link SCM}. Just passed in here so that {@link SCM} itself doesn't have to remember the value.
+     * @param workspace
+     *      The workspace which is about to be deleted. Never null. This can be a remote file path.
+     * @param node
+     *      The node that hosts the workspace. SCM can use this information to determine the course of action.
+     *
+     * @return
+     *      true if {@link SCM} is OK to let Hudson proceed with deleting the workspace.
+     *      False to veto the workspace deletion.
+     * 
+     * @since 1.246
+     */
+    public boolean processWorkspaceBeforeDeletion(AbstractProject<?,?> project, FilePath workspace, Node node) {
+        return true;
     }
 
     /**
@@ -244,7 +286,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * For normal SCMs, the array will be of length <code>1</code> and it's contents
-     * will be identical to calling {@link getModuleRoot(FilePath)}.
+     * will be identical to calling {@link #getModuleRoot(FilePath)}.
      *
      * @param workspace The workspace root directory
      * @return An array of all module roots.
