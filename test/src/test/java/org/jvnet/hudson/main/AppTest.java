@@ -1,24 +1,13 @@
 package org.jvnet.hudson.main;
 
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
 import hudson.model.FreeStyleBuild;
 import hudson.scm.NullSCM;
-import hudson.FilePath;
 import hudson.tasks.Shell;
-import junit.framework.TestCase;
-import org.kohsuke.stapler.Stapler;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FileUtils;
+import org.jvnet.hudson.test.HudsonTestCase;
 
-import javax.servlet.ServletContext;
-import java.io.File;
 import java.io.IOException;
-import java.io.FileInputStream;
-import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 
 /**
