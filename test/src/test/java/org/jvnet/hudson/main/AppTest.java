@@ -1,11 +1,9 @@
 package org.jvnet.hudson.main;
 
-import hudson.model.FreeStyleProject;
 import hudson.model.FreeStyleBuild;
-import hudson.scm.NullSCM;
+import hudson.model.FreeStyleProject;
 import hudson.tasks.Shell;
 import org.apache.commons.io.FileUtils;
-import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -29,7 +27,6 @@ public class AppTest extends HudsonTestCase
 
     private void meat() throws IOException, InterruptedException, ExecutionException {
         FreeStyleProject project = (FreeStyleProject)hudson.createProject(FreeStyleProject.DESCRIPTOR, "test" );
-        project.setScm(new NullSCM());
         project.getBuildersList().add(new Shell("echo hello"));
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
