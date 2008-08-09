@@ -285,6 +285,30 @@ public class Mailer extends Publisher {
         	return smtpPort;
         }
 
+        public void setDefaultSuffix(String defaultSuffix) {
+            this.defaultSuffix = defaultSuffix;
+        }
+
+        public void setHudsonUrl(String hudsonUrl) {
+            this.hudsonUrl = hudsonUrl;
+        }
+
+        public void setAdminAddress(String adminAddress) {
+            this.adminAddress = adminAddress;
+        }
+
+        public void setSmtpHost(String smtpHost) {
+            this.smtpHost = smtpHost;
+        }
+
+        public void setUseSsl(boolean useSsl) {
+            this.useSsl = useSsl;
+        }
+
+        public void setSmtpPort(String smtpPort) {
+            this.smtpPort = smtpPort;
+        }
+
         public Publisher newInstance(StaplerRequest req) {
             Mailer m = new Mailer();
             req.bindParameters(m,"mailer_");
