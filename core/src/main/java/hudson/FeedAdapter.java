@@ -5,6 +5,11 @@ import java.util.Calendar;
 /**
  * Provides a RSS feed view of the data.
  *
+ * <p>
+ * This interface allows data structure of any form to be exposed
+ * as RSS feeds, just by writing a stateless singleton adapter code that
+ * implements this interface.
+ *
  * @author Kohsuke Kawaguchi
  */
 public interface FeedAdapter<E> {
