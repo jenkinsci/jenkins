@@ -19,6 +19,7 @@ warUrl=$(cat target/war-upload.log | grep "^Posted" | sed -e "s/Posted //g")
 javanettasks uploadFile hudson /releases/source-bundles/$id "`date +"%Y/%m/%d"` release" Stable target/checkout/target/hudson-$id-src.zip
 javanettasks announce hudson "Hudson $id released" "$warUrl" << EOF
 See <a href="https://hudson.dev.java.net/changelog.html">the changelog</a> for details.
+Download is available from <a href="$warUrl">here</a>.
 EOF
 
 # this is for the JNLP start
