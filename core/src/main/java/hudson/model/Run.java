@@ -422,6 +422,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public String toString() {
+        return getFullDisplayName();
+    }
+
+    public String getFullDisplayName() {
         return project.getFullDisplayName()+" #"+number;
     }
 
