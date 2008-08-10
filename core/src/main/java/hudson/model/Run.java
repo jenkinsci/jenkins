@@ -20,6 +20,7 @@ import hudson.security.PermissionGroup;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.LogRotator;
+import hudson.tasks.Mailer;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
 import hudson.util.XStream2;
@@ -1228,6 +1229,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         public Calendar getEntryTimestamp(Run entry) {
             return entry.getTimestamp();
+        }
+
+        public String getEntryAuthor(Run entry) {
+            return Mailer.DESCRIPTOR.getAdminAddress();
         }
     }
 }

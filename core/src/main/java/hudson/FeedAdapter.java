@@ -38,4 +38,9 @@ public interface FeedAdapter<E> {
      * Timestamp of the last change in this entry.
      */
     Calendar getEntryTimestamp(E entry);
+
+    /**
+     * Author of this entry.
+     */
+    String getEntryAuthor(E entry);
 }

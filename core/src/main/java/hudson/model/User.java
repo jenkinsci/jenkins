@@ -5,6 +5,7 @@ import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.tasks.Mailer;
 import hudson.model.Descriptor.FormException;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -458,6 +459,10 @@ public class User extends AbstractModelObject implements AccessControlled {
 
         public Calendar getEntryTimestamp(Run entry) {
             return entry.getTimestamp();
+        }
+
+        public String getEntryAuthor(Run entry) {
+            return Mailer.DESCRIPTOR.getAdminAddress();
         }
     };
 

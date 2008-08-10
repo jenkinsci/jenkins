@@ -9,14 +9,12 @@ import hudson.Launcher.LocalLauncher;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.ProxyConfiguration;
 import hudson.StructuredForm;
 import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
-import hudson.ProxyConfiguration;
-import hudson.slaves.RetentionStrategy;
-import hudson.slaves.ComputerListener;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -34,6 +32,7 @@ import hudson.scm.SubversionSCM;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
+import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.BasicAuthenticationFilter;
 import hudson.security.HudsonFilter;
@@ -45,7 +44,8 @@ import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
 import hudson.security.SecurityRealm.SecurityComponents;
 import hudson.security.TokenBasedRememberMeServices2;
-import hudson.security.AccessControlled;
+import hudson.slaves.ComputerListener;
+import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -114,16 +114,16 @@ import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.Timer;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.Iterator;
-import java.util.Timer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -1941,6 +1941,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 GregorianCalendar cal = new GregorianCalendar();
                 cal.setTimeInMillis(entry.getMillis());
                 return cal;
+            }
+
+            public String getEntryAuthor(LogRecord entry) {
+                return Mailer.DESCRIPTOR.getAdminAddress();
             }
         },req,rsp);
     }

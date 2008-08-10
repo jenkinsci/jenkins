@@ -4,12 +4,12 @@ import hudson.AbortException;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.remoting.AsyncFutureImpl;
 import hudson.maven.MavenModule;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
 import hudson.model.listeners.RunListener;
+import hudson.remoting.AsyncFutureImpl;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
@@ -18,15 +18,16 @@ import hudson.scm.SCMS;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.Permission;
-import hudson.tasks.BuildTrigger;
-import hudson.tasks.Publisher;
 import hudson.tasks.BuildStep;
+import hudson.tasks.BuildTrigger;
+import hudson.tasks.Mailer;
+import hudson.tasks.Publisher;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.triggers.Triggers;
-import hudson.util.EditDistance;
 import hudson.util.DescribableList;
+import hudson.util.EditDistance;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import net.sf.json.JSONObject;
@@ -51,8 +52,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.Future;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1059,6 +1058,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
                 public Calendar getEntryTimestamp(FeedItem item) {
                     return item.getBuild().getTimestamp();
+                }
+
+                public String getEntryAuthor(FeedItem entry) {
+                    return Mailer.DESCRIPTOR.getAdminAddress();
                 }
             },
             req, rsp );
