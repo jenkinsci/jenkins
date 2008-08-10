@@ -23,6 +23,8 @@ public interface FeedAdapter<E> {
     /**
      * Unique ID of each entry.
      * RSS readers use this to determine what feeds are new and what are not.
+     *
+     * This needs to produce a tag URL as per RFC 4151, required by Atom 1.0.
      */
     String getEntryID(E entry);
 
