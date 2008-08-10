@@ -90,7 +90,7 @@ public class RunList extends ArrayList<Run> {
 
     /**
      * Reduce the size of the list by only leaving relatively new ones.
-     * This also removed on-going builds, as RSS cannot be used to publish information
+     * This also removes on-going builds, as RSS cannot be used to publish information
      * if it changes.
      */
     public RunList newBuilds() {
