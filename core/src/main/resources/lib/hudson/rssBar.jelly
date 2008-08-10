@@ -1,9 +1,14 @@
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div align="right" style="margin:1em">
     <a href="${rootURL}/legend">${%Legend}</a>
-    <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
-    <a href="rssAll"><img src="${imagesURL}/atom.gif" border="0"/> ${%for all}</a>
-    <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
-    <a href="rssFailed"><img src="${imagesURL}/atom.gif" border="0"/> ${%for failures}</a>
+    <span style="padding-left:1em">
+      <a href="rssAll"><img src="${imagesURL}/atom.gif" border="0"/> ${%for all}</a>
+    </span>
+    <span style="padding-left:1em">
+      <a href="rssFailed"><img src="${imagesURL}/atom.gif" border="0"/> ${%for failures}</a>
+    </span>
+    <span style="padding-left:1em">
+      <a href="rssLatest"><img src="${imagesURL}/atom.gif" border="0"/> ${%for just last builds}</a>
+    </span>
   </div>
 </j:jelly>

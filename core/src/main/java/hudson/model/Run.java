@@ -1176,29 +1176,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * {@link FeedAdapter} to produce feed from the summary of this build.
      */
-    public static final FeedAdapter<Run> FEED_ADAPTER = new FeedAdapter<Run>() {
-        public String getEntryTitle(Run entry) {
-            return entry+" ("+entry.getResult()+")";
-        }
+    public static final FeedAdapter<Run> FEED_ADAPTER = new DefaultFeedAdapter();
 
-        public String getEntryUrl(Run entry) {
-            return entry.getUrl();
-        }
-
-        // produces a tag URL as per RFC 4151, required by Atom 1.0
-        public String getEntryID(Run entry) {
-            return "tag:" + "hudson.dev.java.net,"
-                + entry.getTimestamp().get(Calendar.YEAR) + ":"
-                + entry.getParent().getName()+':'+entry.getId();
-        }
-
-        public String getEntryDescription(Run entry) {
-            // TODO: this could provide some useful details
-            return null;
-        }
-
-        public Calendar getEntryTimestamp(Run entry) {
-            return entry.getTimestamp();
+    /**
+     * {@link FeedAdapter} to produce feeds to show one build per project.
+     */
+    public static final FeedAdapter<Run> FEED_ADAPTER_LATEST = new DefaultFeedAdapter() {
+        /**
+         * The entry unique ID needs to be tied to a project, so that
+         * new builds will replace the old result.
+         */
+        public String getEntryID(Run e) {
+            // can't use a meaningful year field unless we remember when the job was created.
+            return "tag:hudson.dev.java.net,2008:"+e.getParent().getAbsoluteUrl();
         }
     };
 
@@ -1215,4 +1205,29 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Run.class,Messages._Run_Permissions_Title());
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Permission.DELETE);
     public static final Permission UPDATE = new Permission(PERMISSIONS,"Update", Permission.UPDATE);
+
+    private static class DefaultFeedAdapter implements FeedAdapter<Run> {
+        public String getEntryTitle(Run entry) {
+            return entry+" ("+entry.getResult()+")";
+        }
+
+        public String getEntryUrl(Run entry) {
+            return entry.getUrl();
+        }
+
+        public String getEntryID(Run entry) {
+            return "tag:" + "hudson.dev.java.net,"
+                + entry.getTimestamp().get(Calendar.YEAR) + ":"
+                + entry.getParent().getName()+':'+entry.getId();
+        }
+
+        public String getEntryDescription(Run entry) {
+            // TODO: this could provide some useful details
+            return null;
+        }
+
+        public Calendar getEntryTimestamp(Run entry) {
+            return entry.getTimestamp();
+        }
+    }
 }

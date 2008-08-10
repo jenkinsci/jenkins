@@ -282,6 +282,19 @@ public abstract class View extends AbstractModelObject implements AccessControll
             runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
     }
 
+    public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        List<Run> lastBuilds = new ArrayList<Run>();
+        for (TopLevelItem item : getItems()) {
+            if (item instanceof Job) {
+                Job job = (Job) item;
+                Run lb = job.getLastBuild();
+                if(lb!=null)    lastBuilds.add(lb);
+            }
+        }
+        RSS.forwardToRss(getDisplayName()+" last builds only", getUrl(),
+            lastBuilds, Run.FEED_ADAPTER_LATEST, req, rsp );
+    }
+
     public static final Comparator<View> SORTER = new Comparator<View>() {
         public int compare(View lhs, View rhs) {
             return lhs.getViewName().compareTo(rhs.getViewName());
