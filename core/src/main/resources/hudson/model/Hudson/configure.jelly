@@ -1,26 +1,26 @@
 <!--
   Config page
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout norefresh="true" permission="${it.ADMINISTER}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel xmlns:local="local">
-    <s:form method="post" action="configSubmit">
-      <s:entry title="${%Home directory}" help="/help/system-config/homeDirectory.html">
+    <f:form method="post" action="configSubmit">
+      <f:entry title="${%Home directory}" help="/help/system-config/homeDirectory.html">
         ${it.rootDir}
-      </s:entry>
-      <s:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
-        <s:textarea name="system_message" value="${it.systemMessage}" />
-      </s:entry>
-      <s:entry title="${%Quiet period}" help="/help/project-config/quietPeriod.html">
+      </f:entry>
+      <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
+        <f:textarea name="system_message" value="${it.systemMessage}" />
+      </f:entry>
+      <f:entry title="${%Quiet period}" help="/help/project-config/quietPeriod.html">
         <input class="setting-input number" name="quiet_period"
           type="text" value="${it.quietPeriod}"/>
-      </s:entry>
-      <s:optionalBlock name="use_security" title="${%Enable security}"
+      </f:entry>
+      <f:optionalBlock name="use_security" title="${%Enable security}"
                        checked="${it.useSecurity}" help="/help/system-config/enableSecurity.html">
-        <s:entry title="${%TCP port for JNLP slave agents}"
+        <f:entry title="${%TCP port for JNLP slave agents}"
             help="/help/system-config/master-slave/slave-agent-port.html">
-          <s:radio name="slaveAgentPortType" value="fixed" id="sat.fixed"
+          <f:radio name="slaveAgentPortType" value="fixed" id="sat.fixed"
                    checked="${it.slaveAgentPort &gt; 0}" onclick="$('sat.port').disabled=false"/>
           <label for="sat.fixed">${%Fixed}</label> :
           <input type="text" class="number" name="slaveAgentPort" id="sat.port"
@@ -29,67 +29,67 @@
 
           <st:nbsp />
 
-          <s:radio name="slaveAgentPortType" value="random" id="sat.random"
+          <f:radio name="slaveAgentPortType" value="random" id="sat.random"
                    checked="${it.slaveAgentPort==0}" onclick="$('sat.port').disabled=true" />
           <label for="sat.random">${%Random}</label>
 
           <st:nbsp />
 
-          <s:radio name="slaveAgentPortType" value="disable" id="sat.disabled"
+          <f:radio name="slaveAgentPortType" value="disable" id="sat.disabled"
                    checked="${it.slaveAgentPort==-1}" onclick="$('sat.port').disabled=true" />
           <label for="sat.disabled">${%Disable}</label>
-        </s:entry>
+        </f:entry>
 
-        <s:entry title="${%Access Control}">
+        <f:entry title="${%Access Control}">
           <table style="width:100%">
-            <s:descriptorRadioList title="${%Security Realm}" varName="realm"
+            <f:descriptorRadioList title="${%Security Realm}" varName="realm"
                                    instance="${it.securityRealm}"
                                    descriptors="${h.securityRealmDescriptors}"/>
-            <s:descriptorRadioList title="${%Authorization}" varName="authorization"
+            <f:descriptorRadioList title="${%Authorization}" varName="authorization"
                                    instance="${it.authorizationStrategy}"
                                    descriptors="${h.authorizationStrategyDescriptors}"/>
           </table>
-        </s:entry>
-      </s:optionalBlock>
+        </f:entry>
+      </f:optionalBlock>
 
-      <s:section title="${%JDKs}">
-        <s:entry title="${%JDK installations}"
+      <f:section title="${%JDKs}">
+        <f:entry title="${%JDK installations}"
                  description="${%List of JDK installations on this system}">
-          <s:repeatable var="inst" items="${it.JDKs}" name="jdks">
+          <f:repeatable var="inst" items="${it.JDKs}" name="jdks">
             <table width="100%">
-              <s:entry title="${%name}">
+              <f:entry title="${%name}">
                 <input class="setting-input" name="jdk_name"
                   type="text" value="${inst.name}" />
-              </s:entry>
+              </f:entry>
 
               <j:set var="status" value="${null}" />
               <j:if test="${inst!=null and !inst.exists and inst.name!=''}">
                 <j:set var="status" value="${%no.such.JDK}" />
               </j:if>
-              <s:entry title="JAVA_HOME" description="${status}">
+              <f:entry title="JAVA_HOME" description="${status}">
                 <input class="setting-input validated" name="jdk_home"
                   type="text" value="${inst.javaHome}"
                   checkUrl="'javaHomeCheck?value='+escape(this.value)"/>
-              </s:entry>
-              <s:entry title="">
+              </f:entry>
+              <f:entry title="">
                 <div align="right">
-                  <s:repeatableDeleteButton />
+                  <f:repeatableDeleteButton />
                 </div>
-              </s:entry>
+              </f:entry>
             </table>
-          </s:repeatable>
-        </s:entry>
-      </s:section>
+          </f:repeatable>
+        </f:entry>
+      </f:section>
 
       <!-- list config pages from plugins, if any -->
       <j:forEach var="p" items="${it.pluginManager.plugins}">
         <j:if test="${h.hasView(p.plugin,'config.jelly')}">
-          <s:rowSet name="plugin">
+          <f:rowSet name="plugin">
             <tr><td>
               <input type="hidden" name="name" value="${p.shortName}"/>
             </td></tr>
             <st:include page="config.jelly" it="${p.plugin}" optional="true"/>
-          </s:rowSet>
+          </f:rowSet>
         </j:if>
       </j:forEach>
 
@@ -100,9 +100,9 @@
           <j:forEach var="idx" begin="0" end="${size(descriptors)-1}">
             <j:set var="descriptor" value="${descriptors[idx]}" />
             <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
-            <s:rowSet name="${descriptor.jsonSafeClassName}">
+            <f:rowSet name="${descriptor.jsonSafeClassName}">
               <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
-            </s:rowSet>
+            </f:rowSet>
           </j:forEach>
         </d:tag>
       </d:taglib>
@@ -114,10 +114,10 @@
       <local:globalConfig className="hudson.tasks.BuildStep" field="PUBLISHERS" />
       <local:globalConfig className="hudson.model.Jobs" field="PROPERTIES" />
 
-      <s:block>
-        <s:submit value="${%Save}" />
-      </s:block>
-    </s:form>
+      <f:block>
+        <f:submit value="${%Save}" />
+      </f:block>
+    </f:form>
   </l:main-panel>
 </l:layout>
 </j:jelly>
