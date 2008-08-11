@@ -2586,7 +2586,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /**
      * Version number of this Hudson.
      */
-    public static String VERSION;
+    public static String VERSION="?";
 
     /**
      * Prefix to static resources like images and javascripts in the war file.
