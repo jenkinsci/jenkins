@@ -26,9 +26,21 @@
       <version>1.7</version>
     </dependency>
     <dependency>
+      <groupId>org.openqa.selenium.client-drivers</groupId>
+      <artifactId>selenium-java-client-driver</artifactId>
+      <version>1.0-beta-1</version>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
     </dependency>
   </dependencies>
+
+  <repositories>
+    <repository>
+      <id>selenium</id>
+      <url>http://archiva.openqa.org/repository/releases/</url>
+    </repository>
+  </repositories>
 </project>
