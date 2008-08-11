@@ -229,13 +229,17 @@ public class Ant extends Builder {
 
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static final class DescriptorImpl extends Descriptor<Builder> {
+    public static class DescriptorImpl extends Descriptor<Builder> {
         @CopyOnWrite
         private volatile AntInstallation[] installations = new AntInstallation[0];
 
         private DescriptorImpl() {
             super(Ant.class);
             load();
+        }
+
+        protected DescriptorImpl(Class<? extends Ant> clazz) {
+            super(clazz);
         }
 
         protected void convert(Map<String,Object> oldPropertyBag) {
