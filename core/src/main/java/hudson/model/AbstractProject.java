@@ -979,7 +979,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix)
-        throws FormException {
+        throws FormException, ServletException {
 
         JSONObject data = req.getSubmittedForm();
         List<T> r = new Vector<T>();

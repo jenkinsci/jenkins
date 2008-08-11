@@ -7,6 +7,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Collections;
@@ -23,7 +24,7 @@ public class StructuredForm {
      * @deprecated
      *      Use {@link StaplerRequest#getSubmittedForm()}. Since 1.238.
      */
-    public static JSONObject get(StaplerRequest req) {
+    public static JSONObject get(StaplerRequest req) throws ServletException {
         return req.getSubmittedForm();
     }
     /**

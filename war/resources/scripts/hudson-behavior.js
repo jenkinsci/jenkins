@@ -1110,6 +1110,26 @@ function buildFormTree(form) {
                         addProperty(p, e.name, e.formDom = {});
                 }
                 break;
+            case "file":
+                // to support structured form submission with file uploads,
+                // rename form field names to unique ones, and leave this name mapping information
+                // in JSON. this behavior is backward incompatible, so only do
+                // this when
+                p = findParent(e);
+                if(e.getAttribute("jsonAware")!=null) {
+                    var on = e.getAttribute("originalName");
+                    if(on!=null) {
+                        addProperty(p,on,e.name);
+                    } else {
+                        var uniqName = "file"+(iota++);
+                        addProperty(p,e.name,uniqName);
+                        e.setAttribute("originalName",e.name);
+                        e.name = uniqName;
+                    }
+                }
+                // switch to multipart/form-data to support file submission
+                form.enctype = "multipart/form-data";
+                break;
             case "radio":
                 if(!e.checked)  break;
                 if(e.groupingNode) {

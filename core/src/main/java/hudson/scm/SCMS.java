@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.servlet.ServletException;
+
 /**
  * List of all installed SCMs.
  * 
@@ -26,7 +28,7 @@ public class SCMS {
     /**
      * Parses {@link SCM} configuration from the submitted form.
      */
-    public static SCM parseSCM(StaplerRequest req) throws FormException {
+    public static SCM parseSCM(StaplerRequest req) throws FormException, ServletException {
         String scm = req.getParameter("scm");
         if(scm==null)   return new NullSCM();
 

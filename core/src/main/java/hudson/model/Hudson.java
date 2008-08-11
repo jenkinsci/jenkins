@@ -1597,6 +1597,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         }
     }
 
+    public synchronized void doTestPost( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        JSONObject form = req.getSubmittedForm();
+        rsp.sendRedirect("foo");
+    }
+
     private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws FormException {
         // collapse the structure to remain backward compatible with the JSON structure before 1.
         String name = d.getJsonSafeClassName();

@@ -310,7 +310,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <version>1.80</version>
+      <version>1.81</version>
     </dependency>
     <dependency>
       <!-- until the next rev of stapler picks up localizer 1.5 -->
@@ -354,11 +354,6 @@
       <artifactId>servlet-api</artifactId>
       <version>2.4</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-fileupload</groupId>
-      <artifactId>commons-fileupload</artifactId>
-      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
