@@ -268,7 +268,7 @@ public class Ant extends Builder {
         }
 
         public Ant newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return req.bindJSON(Ant.class,formData);
+            return (Ant)req.bindJSON(clazz,formData);
         }
 
     //
