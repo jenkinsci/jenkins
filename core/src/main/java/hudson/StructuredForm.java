@@ -1,16 +1,12 @@
 package hudson;
 
-import net.sf.json.JSONObject;
 import net.sf.json.JSONArray;
-import org.kohsuke.stapler.Stapler;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Obtains the structured form data from {@link StaplerRequest}.
