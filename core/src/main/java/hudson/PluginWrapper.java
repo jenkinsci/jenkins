@@ -477,16 +477,8 @@ public final class PluginWrapper {
     public UpdateCenter.Plugin getUpdateInfo() {
         UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
         UpdateCenter.Plugin p = uc.getPlugin(getShortName());
-        if(p==null)     return null;
-
-        try {
-            if(new VersionNumber(getVersion()).compareTo(new VersionNumber(p.version)) < 0)
-                return p;
-            return null;
-        } catch (IllegalArgumentException e) {
-            // couldn't parse it as the version number. ignore. 
-            return null;
-        }
+        if(p!=null && p.isNewerThan(getVersion())) return p;
+        return null;
     }
     
     /**

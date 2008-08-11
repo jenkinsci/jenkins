@@ -7,6 +7,7 @@ import hudson.Util;
 import hudson.ProxyConfiguration;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.TextFile;
+import hudson.util.VersionNumber;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.input.CountingInputStream;
@@ -263,6 +264,24 @@ public class UpdateCenter implements ModelObject {
             this.name = o.getString("name");
             this.version = o.getString("version");
             this.url = o.getString("url");
+        }
+
+        /**
+         * Checks if the specified "current version" is older than the version of this entry.
+         *
+         * @param currentVersion
+         *      The string that represents the version number to be compared.
+         * @return
+         *      true if the version listed in this entry is newer.
+         *      false otherwise, including the situation where the strings couldn't be parsed as version numbers.
+         */
+        public boolean isNewerThan(String currentVersion) {
+            try {
+                return new VersionNumber(currentVersion).compareTo(new VersionNumber(version)) < 0;
+            } catch (IllegalArgumentException e) {
+                // couldn't parse as the version number.
+                return false;
+            }
         }
     }
 
