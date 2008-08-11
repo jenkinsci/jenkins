@@ -105,25 +105,12 @@ public class Ant extends Builder {
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         AbstractProject proj = build.getProject();
 
-        String targets = this.targets;
-        ParametersAction parameters = build.getAction(ParametersAction.class);
-        if (parameters != null)
-            targets = parameters.substitute(build,targets);
-
         ArgumentListBuilder args = new ArgumentListBuilder();
 
-        String execName;
-        if(launcher.isUnix())
-            execName = "ant";
-        else
-            execName = "ant.bat";
-
-        String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
-
         AntInstallation ai = getAnt();
-        if(ai==null)
-            args.add(execName);
-        else {
+        if(ai==null) {
+            args.add(launcher.isUnix() ? "ant" : "ant.bat");
+        } else {
             if (!ai.getExists()) {
                 listener.fatalError(Messages.Ant_ExecutableNotFound(ai.name));
                 return false;
@@ -173,7 +160,11 @@ public class Ant extends Builder {
             }
         }
 
-        args.addTokenized(normalizedTarget);
+        String targets = this.targets;
+        ParametersAction parameters = build.getAction(ParametersAction.class);
+        if (parameters != null)
+            targets = parameters.substitute(build,targets);
+        args.addTokenized(targets.replaceAll("[\t\r\n]+"," "));
 
         Map<String,String> env = build.getEnvVars();
         if(ai!=null)
