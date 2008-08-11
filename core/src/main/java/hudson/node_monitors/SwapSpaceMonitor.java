@@ -70,10 +70,24 @@ public class SwapSpaceMonitor extends NodeMonitor {
      */
     private static class MonitorTask implements Callable<MemoryUsage,IOException> {
         public MemoryUsage call() throws IOException {
-            return new MemoryUsage2(MemoryMonitor.get().monitor());
+            MemoryMonitor mm;
+            try {
+                mm = MemoryMonitor.get();
+            } catch (IOException e) {
+                if(!warned) {
+                    // report the problem just once, and avoid filling up the log with the same error. see HUDSON-2194.
+                    warned = true;
+                    throw e;
+                } else {
+                    return null;
+                }
+            }
+            return new MemoryUsage2(mm.monitor());
         }
 
         private static final long serialVersionUID = 1L;
+
+        private static boolean warned = false;
     }
 
     /**
