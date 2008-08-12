@@ -111,11 +111,12 @@ public class Ant extends Builder {
         if(ai==null) {
             args.add(launcher.isUnix() ? "ant" : "ant.bat");
         } else {
-            if (!ai.getExists()) {
+            String exe = ai.getExecutable(launcher);
+            if (exe==null) {
                 listener.fatalError(Messages.Ant_ExecutableNotFound(ai.name));
                 return false;
             }
-            args.add(ai.getExecutable(launcher));
+            args.add(exe);
         }
 
         FilePath buildFilePath = buildFilePath(proj.getModuleRoot());
