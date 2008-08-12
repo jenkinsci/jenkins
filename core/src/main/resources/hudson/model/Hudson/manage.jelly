@@ -32,6 +32,10 @@
       </script>
       <span id="message"></span>
     </j:if>
+    <j:set var="ucData" value="${it.updateCenter.data}" />
+    <j:if test="${ucData.hasCoreUpdates()}">
+      <div class="warning">${%NewVersionAvailable(ucData.core.version,ucData.core.url)}</div>
+    </j:if>
     <table style="padding-left: 2em;">
       <local:feature icon="setting.gif"          href="configure"    title="${%Configure System}">
         ${%Configure global settings and paths.}  

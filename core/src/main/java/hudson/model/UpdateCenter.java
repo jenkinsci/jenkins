@@ -244,6 +244,13 @@ public class UpdateCenter implements ModelObject {
                 plugins.put(e.getKey(),new Plugin(e.getValue()));
             }
         }
+
+        /**
+         * Is there a new version of the core?
+         */
+        public boolean hasCoreUpdates() {
+            return core.isNewerThan(Hudson.VERSION);
+        }
     }
 
     public static class Entry {
