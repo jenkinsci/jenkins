@@ -48,7 +48,7 @@ install: build
 	# Moved creation of dirs to dirs template to be invoked by dh_installdirs
 
     # Moved copying of 'upstream' files (hudson.war) to install template to be invoked by dh_install
-	#cp hudson.war $(CURDIR)/debian/hudson/usr/local/bin/hudson.war
+	#cp hudson.war $(CURDIR)/debian/hudson/usr/share/hudson/hudson.war
 
 
 

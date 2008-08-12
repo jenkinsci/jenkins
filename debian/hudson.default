@@ -15,7 +15,7 @@ PIDFILE=/var/run/hudson/hudson.pid
 HUDSON_USER=hudson
 
 # location of the hudson war file
-HUDSON_WAR=/usr/local/bin/hudson.war
+HUDSON_WAR=/usr/share/hudson/hudson.war
 
 # hudson home location
 HUDSON_HOME=/var/lib/hudson

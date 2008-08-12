@@ -2,7 +2,7 @@ usr/bin
 usr/sbin
 
 # moved from rules install
-usr/local/bin
+usr/share/hudson
 var/lib/hudson
 
 # Need to create hudson's own directory to track the pid since the daemon is not run as root 
