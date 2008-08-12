@@ -9,7 +9,6 @@ import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.FilePath;
-import hudson.Util;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerInterceptor;
 
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.framework.io.LargeText;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -69,13 +67,6 @@ public final class SlaveComputer extends Computer {
      */
     public void setAcceptingTasks(boolean acceptingTasks) {
         this.acceptingTasks = acceptingTasks;
-    }
-
-    /**
-     * This is where the log from the remote agent goes.
-     */
-    private File getLogFile() {
-        return new File(Hudson.getInstance().getRootDir(),"slave-"+nodeName+".log");
     }
 
     public SlaveComputer(Slave slave) {
@@ -290,20 +281,6 @@ public final class SlaveComputer extends Computer {
             logger.info("Attempting to reconnect "+nodeName);
             launch();
         }
-    }
-
-    /**
-     * Gets the string representation of the slave log.
-     */
-    public String getLog() throws IOException {
-        return Util.loadFile(getLogFile());
-    }
-
-    /**
-     * Handles incremental log.
-     */
-    public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        new LargeText(getLogFile(),false).doProgressText(req,rsp);
     }
 
     /**

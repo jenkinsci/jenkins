@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.Util;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.node_monitors.NodeMonitor;
@@ -18,6 +19,7 @@ import hudson.util.ExceptionCatchingThreadFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +33,7 @@ import javax.servlet.ServletException;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.framework.io.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -78,6 +81,20 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     public Computer(Node node) {
         assert node.getNumExecutors()!=0 : "Computer created with 0 executors";
         setNode(node);
+    }
+
+    /**
+     * This is where the log from the remote agent goes.
+     */
+    protected File getLogFile() {
+        return new File(Hudson.getInstance().getRootDir(),"slave-"+nodeName+".log");
+    }
+
+    /**
+     * Gets the string representation of the slave log.
+     */
+    public String getLog() throws IOException {
+        return Util.loadFile(getLogFile());
     }
 
     public ACL getACL() {
@@ -476,6 +493,13 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
         req.getView(this,"_script.jelly").forward(req,rsp);
     }
 
+    /**
+     * Handles incremental log.
+     */
+    public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
+        new org.kohsuke.stapler.framework.io.LargeText(getLogFile(),false).doProgressText(req,rsp);
+    }
+    
     /**
      * Gets the current {@link Computer} that the build is running.
      * This method only works when called during a build, such as by
