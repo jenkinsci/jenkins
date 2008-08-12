@@ -13,7 +13,7 @@ import java.io.Serializable;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class ArgumentListBuilder implements Serializable {
+public class ArgumentListBuilder implements Serializable {
     private final List<String> args = new ArrayList<String>();
 
     public ArgumentListBuilder add(Object a) {
