@@ -9,6 +9,7 @@ import hudson.FilePath;
 import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
+import hudson.AbortException;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
@@ -793,6 +794,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     LOGGER.info(toString()+" main build action completed: "+result);
                 } catch (ThreadDeath t) {
                     throw t;
+                } catch( AbortException e ) {
+                    result = Result.FAILURE;
                 } catch( RunnerAbortedException e ) {
                     result = Result.FAILURE;
                 } catch( InterruptedException e) {
