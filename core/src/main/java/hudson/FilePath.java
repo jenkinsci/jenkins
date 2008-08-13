@@ -24,6 +24,8 @@ import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
 import org.apache.tools.zip.ZipOutputStream;
 import org.apache.tools.zip.ZipEntry;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -52,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipInputStream;
 
 /**
  * {@link File} like object with remoting support.
@@ -275,6 +278,47 @@ public final class FilePath implements Serializable {
                 }
 
                 zip.close();
+                return null;
+            }
+
+            private static final long serialVersionUID = 1L;
+        });
+    }
+
+    /**
+     * When this {@link FilePath} represents a zip file, extracts that zip file.
+     *
+     * @param target
+     *      Target directory to expand files to. All the necessary directories will be created.
+     * @since 1.248
+     */
+    public void unzip(FilePath target) throws IOException, InterruptedException {
+        target.act(new FileCallable<Void>() {
+            public Void invoke(File dir, VirtualChannel channel) throws IOException {
+                ZipInputStream zip = new ZipInputStream(FilePath.this.read());
+                java.util.zip.ZipEntry e;
+
+                try {
+                    while((e=zip.getNextEntry())!=null) {
+                        File f = new File(dir,e.getName());
+                        if(e.isDirectory()) {
+                            f.mkdirs();
+                        } else {
+                            File p = f.getParentFile();
+                            if(p!=null) p.mkdirs();
+                            FileOutputStream out = new FileOutputStream(f);
+                            try {
+                                IOUtils.copy(zip, out);
+                            } finally {
+                                out.close();
+                            }
+                            f.setLastModified(e.getTime());
+                            zip.closeEntry();
+                        }
+                    }
+                } finally {
+                    zip.close();
+                }
                 return null;
             }
 
