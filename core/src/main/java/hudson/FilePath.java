@@ -25,7 +25,6 @@ import org.apache.tools.tar.TarOutputStream;
 import org.apache.tools.zip.ZipOutputStream;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
