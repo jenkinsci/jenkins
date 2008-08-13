@@ -1,8 +1,8 @@
 package hudson.tasks;
 
-import org.jvnet.hudson.main.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.FailureBuilder;
+import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.mock_javamail.Mailbox;
 
 import javax.mail.internet.InternetAddress;

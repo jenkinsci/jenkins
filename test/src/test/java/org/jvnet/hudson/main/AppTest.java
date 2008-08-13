@@ -4,6 +4,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Shell;
 import org.apache.commons.io.FileUtils;
+import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
