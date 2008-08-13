@@ -814,6 +814,11 @@ public final class FilePath implements Serializable {
     /**
      * Copies the files that match the given file mask to the specified target node.
      *
+     * @param fileMask
+     *      Ant GLOB pattern.
+     *      String like "foo/bar/*.xml" Multiple patterns can be separated
+     *      by ',', and whitespace can surround ',' (so that you can write
+     *      "abc, def" and "abc,def" to mean the same thing.
      * @param excludes
      *      Files to be excluded. Can be null.
      * @return
