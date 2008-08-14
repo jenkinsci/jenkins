@@ -7,8 +7,8 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jvnet.hudson.main</groupId>
-  <artifactId>test</artifactId>
-  <name>test</name>
+  <artifactId>hudson-test-harness</artifactId>
+  <name>Test harness for Hudson and plugins</name>
 
   <build>
     <plugins>
