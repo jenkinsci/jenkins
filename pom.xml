@@ -22,6 +22,7 @@
     <module>maven-agent</module>
     <module>maven-interceptor</module>
     <module>war</module>
+    <module>test</module>
   </modules>
   
   <scm>
