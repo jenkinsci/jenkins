@@ -1,0 +1,12 @@
+<!-- ask the user if he's ready to wipe out the workspace -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout>
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1><img src="${imagesURL}/48x48/folder-delete.gif"/> ${%title}</h1>
+      <form method="post" action="doWipeOutWorkspace">
+        <f:submit value="${%Yes}" />
+      </form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

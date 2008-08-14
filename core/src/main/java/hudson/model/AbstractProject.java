@@ -1008,6 +1008,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
+     * Wipes out the workspace.
+     */
+    public void doDoWipeOutWorkspace(StaplerResponse rsp) throws IOException, InterruptedException {
+        checkPermission(AbstractProject.BUILD);
+        getWorkspace().deleteRecursive();
+        rsp.sendRedirect2(".");
+    }
+
+    /**
      * RSS feed for changes in this project.
      */
     public void doRssChangelog(  StaplerRequest req, StaplerResponse rsp  ) throws IOException, ServletException {

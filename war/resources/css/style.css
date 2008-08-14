@@ -233,6 +233,10 @@ pre.console {
   white-space: nowrap;
 }
 
+.subtasks {
+  padding-left: 1em;
+}
+
 .main-table {
 }
 

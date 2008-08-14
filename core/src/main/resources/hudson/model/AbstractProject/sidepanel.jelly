@@ -13,7 +13,9 @@
       <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
       <l:task icon="images/24x24/search.gif"  href="${url}/" title="${%Status}" />
       <l:task icon="images/24x24/notepad.gif" href="${url}/changes" title="${%Changes}" />
-      <l:task icon="images/24x24/folder.gif"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}" />
+      <l:task icon="images/24x24/folder.gif"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}">
+        <l:task icon="images/24x24/folder-delete.gif"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" permission="${it.BUILD}" />
+      </l:task>
       <j:if test="${it.configurable}">
         <j:if test="${!it.disabled}">
           <l:task icon="images/24x24/clock.gif" href="${url}/build?delay=0sec" title="${%Build Now}"
