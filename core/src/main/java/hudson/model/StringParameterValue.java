@@ -4,6 +4,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Map;
 
+import hudson.util.VariableResolver;
+
 /**
  * {@link ParameterValue} created from {@link StringParameterDefinition}.
  */
@@ -22,5 +24,14 @@ public class StringParameterValue extends ParameterValue {
     @Override
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
         env.put(name.toUpperCase(),value);
+    }
+
+    @Override
+    public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
+        return new VariableResolver<String>() {
+            public String resolve(String name) {
+                return StringParameterValue.this.name.equals(name) ? value : null;
+            }
+        };
     }
 }
