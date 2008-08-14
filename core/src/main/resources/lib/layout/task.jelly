@@ -7,27 +7,54 @@
     title:      human readable caption text. (required)
     permission: permission object. If specified, the link will be displayed only if you have a permission (optional)
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+  <!--
+    Much of the following horrible code is to implement hierarchy support in <task> tag.
+    The semantics is that when one of the nested <task> matches, the parent is also considered as a match
+    and thus gets a highlight.
+  -->
+  <j:invokeStatic var="requestURL" className="java.net.URLDecoder" method="decode">
+    <j:arg value="${request.requestURL.toString()}"/>
+    <j:arg value="UTF-8"/>
+  </j:invokeStatic>
+  <j:set var="match" value="${size(href) gt 1 and requestURL.endsWith(href)}" />
+  <j:scope>
+    <j:set var="taskMatching" value="${context.parent}"/>
+    <d:invokeBody />
+  </j:scope>
+
   <j:if test="${attrs.permission==null or h.hasPermission(it,attrs.permission)}">
-    <div class="task">
-      <a href="${href}" onclick="${attrs.onclick}">
-        <img width="24" height="24" style="margin: 2px;" src="${rootURL}${h.ifThenElse(icon.startsWith('images/'),h.resourcePath,'')}/${icon}"/>
-      </a>
-      <st:nbsp />
-      <a href="${href}" onclick="${attrs.onclick}">
-        <j:choose>
-          <j:invokeStatic var="requestURL" className="java.net.URLDecoder" method="decode">
-            <j:arg value="${request.requestURL.toString()}"/>
-            <j:arg value="UTF-8"/>
-          </j:invokeStatic>
-          <j:when test="${size(href) gt 1 and requestURL.endsWith(href)}">
-            <b>${title}</b>
-          </j:when>
-          <j:otherwise>
-            ${title}
-          </j:otherwise>
-        </j:choose>
-      </a>
-    </div>
+    <j:choose>
+      <j:when test="${taskMatching!=null}">
+        <j:if test="${match}">
+          <j:set target="${taskMatching.variables}" property="match" value="true"/>
+        </j:if>
+      </j:when>
+      <j:otherwise>
+        <div class="task">
+          <a href="${href}" onclick="${attrs.onclick}">
+            <img width="24" height="24" style="margin: 2px;" src="${rootURL}${h.ifThenElse(icon.startsWith('images/'),h.resourcePath,'')}/${icon}"/>
+          </a>
+          <st:nbsp />
+
+          <a href="${href}" onclick="${attrs.onclick}">
+            <j:choose>
+              <j:when test="${match}">
+                <b>${title}</b>
+              </j:when>
+              <j:otherwise>
+                ${title}
+              </j:otherwise>
+            </j:choose>
+          </a>
+
+          <j:if test="${match}">
+            <div class="subtasks">
+              <d:invokeBody />
+            </div>
+          </j:if>
+        </div>
+      </j:otherwise>
+    </j:choose>
   </j:if>
 </j:jelly>
