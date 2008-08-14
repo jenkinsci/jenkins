@@ -1,14 +1,13 @@
 package hudson.tasks;
 
+import hudson.model.FreeStyleProject;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.mock_javamail.Mailbox;
 
-import javax.mail.internet.InternetAddress;
 import javax.mail.Address;
-
-import hudson.model.FreeStyleProject;
+import javax.mail.internet.InternetAddress;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -28,7 +27,7 @@ public class MailerTest extends HudsonTestCase {
         yourInbox.clear();
 
         // create a project to simulate a build failure
-        FreeStyleProject project = (FreeStyleProject)hudson.createProject(FreeStyleProject.DESCRIPTOR, "test" );
+        FreeStyleProject project = createFreeStyleProject();
         project.getBuildersList().add(new FailureBuilder());
         Mailer m = new Mailer();
         m.recipients = recipient;

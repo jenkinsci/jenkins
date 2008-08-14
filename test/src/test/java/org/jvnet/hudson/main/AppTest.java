@@ -27,7 +27,7 @@ public class AppTest extends HudsonTestCase
     }
 
     private void meat() throws IOException, InterruptedException, ExecutionException {
-        FreeStyleProject project = (FreeStyleProject)hudson.createProject(FreeStyleProject.DESCRIPTOR, "test" );
+        FreeStyleProject project = createFreeStyleProject();
         project.getBuildersList().add(new Shell("echo hello"));
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
