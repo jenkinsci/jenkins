@@ -1,6 +1,6 @@
 package org.jvnet.hudson.test;
 
-import com.meterware.httpunit.WebResponse;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -115,12 +115,16 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     /**
-     * Extends {@link com.meterware.httpunit.WebConversation} and provide convenience methods
+     * Extends {@link com.gargoylesoftware.htmlunit.WebClient} and provide convenience methods
      * for accessing Hudson.
      */
-    public class WebConversation extends com.meterware.httpunit.WebConversation {
-        public WebResponse getResponse(Item item) throws IOException, SAXException {
-            return getResponse("http://localhost:"+localPort+contextPath+item.getUrl());
+    public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
+        public WebClient() {
+            setJavaScriptEnabled(false);
+        }
+
+        public HtmlPage getPage(Item item) throws IOException, SAXException {
+            return (HtmlPage)getPage("http://localhost:"+localPort+contextPath+item.getUrl());
         }
     }
 }

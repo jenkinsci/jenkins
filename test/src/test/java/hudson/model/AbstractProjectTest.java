@@ -1,8 +1,9 @@
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.tasks.Shell;
 import org.jvnet.hudson.test.HudsonTestCase;
-import com.meterware.httpunit.WebResponse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -25,10 +26,12 @@ public class AbstractProjectTest extends HudsonTestCase {
                 project.getWorkspace().exists());
 
         // emulate the user behavior
-        WebResponse rsp = new WebConversation().getResponse(project);
-        rsp = rsp.getLinkWith("Workspace").click();
-        rsp = rsp.getLinkWith("Wipe Out Workspace").click();
-        rsp = rsp.getFormWithID("confirmation").submit();
+        WebClient webClient = new WebClient();
+        HtmlPage page = webClient.getPage(project);
+
+        page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
+        page = (HtmlPage)page.getFirstAnchorByText("Wipe Out Workspace").click();
+        page = (HtmlPage)((HtmlForm)page.getElementById("confirmation")).submit(null);
 
         assertFalse("Workspace should be gone by now",
                 project.getWorkspace().exists());
