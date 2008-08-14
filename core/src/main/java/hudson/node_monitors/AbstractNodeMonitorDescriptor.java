@@ -132,7 +132,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
                     record = this;
                 }
 
-                LOGGER.info("Node monitoring "+getDisplayName()+" completed in "+(System.currentTimeMillis()-startTime)+"ms");
+                LOGGER.fine("Node monitoring "+getDisplayName()+" completed in "+(System.currentTimeMillis()-startTime)+"ms");
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING,"Node monitoring "+getDisplayName()+" aborted.",e);
             }
