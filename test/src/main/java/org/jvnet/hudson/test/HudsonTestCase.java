@@ -54,6 +54,9 @@ public abstract class HudsonTestCase extends TestCase {
         super(name);
     }
 
+    protected HudsonTestCase() {
+    }
+
     protected void setUp() throws Exception {
         env.pin();
         recipe();
