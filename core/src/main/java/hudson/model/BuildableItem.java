@@ -10,7 +10,6 @@ import hudson.model.Queue.Task;
  * This interface is used by utility code.
  *
  * @author Kohsuke Kawaguchi
- * @see BuildAuthorizationToken
  */
 public interface BuildableItem extends Item, Task {
     boolean scheduleBuild();
