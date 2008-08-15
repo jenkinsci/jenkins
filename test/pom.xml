@@ -37,11 +37,11 @@
       <artifactId>mock-javamail</artifactId>
       <version>1.7</version>
     </dependency>
-    <dependency>
+    <!--dependency>
       <groupId>org.openqa.selenium.client-drivers</groupId>
       <artifactId>selenium-java-client-driver</artifactId>
       <version>1.0-beta-1</version>
-    </dependency>
+    </dependency-->
     <dependency>
       <groupId>net.sourceforge.htmlunit</groupId>
       <artifactId>htmlunit</artifactId>
