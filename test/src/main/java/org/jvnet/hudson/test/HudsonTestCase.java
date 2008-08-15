@@ -16,6 +16,7 @@ import org.xml.sax.SAXException;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * Base class for all Hudson test cases.
@@ -111,6 +112,20 @@ public abstract class HudsonTestCase extends TestCase {
 
     protected HudsonTestCase withExistingHome(File source) {
         homeLoader = new CopyExisting(source);
+        return this;
+    }
+
+    /**
+     * Declares that this test case expects to start with one of the preset data sets.
+     * See https://svn.dev.java.net/svn/hudson/trunk/hudson/main/test/src/main/preset-data/
+     * for available datasets and what they mean.
+     */
+    protected HudsonTestCase withPresetData(String name) {
+        name = "/" + name + ".zip";
+        URL res = getClass().getResource(name);
+        if(res==null)   throw new IllegalArgumentException("No such data set found: "+name);
+
+        homeLoader = new CopyExisting(res);
         return this;
     }
 
