@@ -143,7 +143,7 @@ import java.util.regex.Pattern;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node, StaplerProxy {
+public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node, StaplerProxy, PersistenceRoot {
     private transient final Queue queue;
 
     /**
