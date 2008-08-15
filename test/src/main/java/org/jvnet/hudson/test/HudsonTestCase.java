@@ -105,12 +105,12 @@ public abstract class HudsonTestCase extends TestCase {
         withNewHome();
     }
 
-    protected HudsonTestCase withNewHome() {
+    public HudsonTestCase withNewHome() {
         homeLoader = HudsonHomeLoader.NEW;
         return this;
     }
 
-    protected HudsonTestCase withExistingHome(File source) {
+    public HudsonTestCase withExistingHome(File source) {
         homeLoader = new CopyExisting(source);
         return this;
     }
@@ -120,7 +120,7 @@ public abstract class HudsonTestCase extends TestCase {
      * See https://svn.dev.java.net/svn/hudson/trunk/hudson/main/test/src/main/preset-data/
      * for available datasets and what they mean.
      */
-    protected HudsonTestCase withPresetData(String name) {
+    public HudsonTestCase withPresetData(String name) {
         name = "/" + name + ".zip";
         URL res = getClass().getResource(name);
         if(res==null)   throw new IllegalArgumentException("No such data set found: "+name);
