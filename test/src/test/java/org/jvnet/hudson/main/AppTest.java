@@ -14,10 +14,6 @@ import java.util.concurrent.ExecutionException;
  */
 public class AppTest extends HudsonTestCase
 {
-    public AppTest(String name) {
-        super(name);
-    }
-
     public void test1() throws Exception {
         meat();
     }

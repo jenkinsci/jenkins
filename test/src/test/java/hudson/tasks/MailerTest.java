@@ -13,10 +13,6 @@ import javax.mail.internet.InternetAddress;
  * @author Kohsuke Kawaguchi
  */
 public class MailerTest extends HudsonTestCase {
-    public MailerTest(String name) {
-        super(name);
-    }
-
     @Bug(1566)
     public void testSenderAddress() throws Exception {
         // intentionally give the whole thin in a double quote

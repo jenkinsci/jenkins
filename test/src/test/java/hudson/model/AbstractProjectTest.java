@@ -9,10 +9,6 @@ import org.jvnet.hudson.test.HudsonTestCase;
  * @author Kohsuke Kawaguchi
  */
 public class AbstractProjectTest extends HudsonTestCase {
-    public AbstractProjectTest(String name) {
-        super(name);
-    }
-
     /**
      * Tests the workspace deletion.
      */
