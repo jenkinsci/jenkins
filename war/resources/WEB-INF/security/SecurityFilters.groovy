@@ -50,16 +50,16 @@ filter(ChainedServletFilter) {
                 realmName = "Hudson"
             }
         },
-        bean(RememberMeProcessingFilter) {
-            rememberMeServices = rememberMeServicesProxy;
-            authenticationManager = authenticationManagerProxy;
-        },
         bean(AuthenticationProcessingFilter2) {
             authenticationManager = authenticationManagerProxy
             rememberMeServices = rememberMeServicesProxy;
             authenticationFailureUrl = "/loginError"
             defaultTargetUrl = "/"
             filterProcessesUrl = "/j_acegi_security_check"
+        },
+        bean(RememberMeProcessingFilter) {
+            rememberMeServices = rememberMeServicesProxy;
+            authenticationManager = authenticationManagerProxy;
         },
     ] + commonProviders(AuthenticationProcessingFilterEntryPoint.class,"/login")
 }
