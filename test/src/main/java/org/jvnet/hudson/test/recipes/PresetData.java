@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * @author Kohsuke Kawaguchi
  */
 @Documented
-@Recipe(@PresetData.RunnerImpl.class)
+@Recipe(PresetData.RunnerImpl.class)
 @Target(METHOD)
 @Retention(RUNTIME)
 public @interface PresetData {
