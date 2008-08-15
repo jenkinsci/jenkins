@@ -32,6 +32,7 @@
   </scm>
   
   <build>
+    <defaultGoal>install</defaultGoal>
     <plugins>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
