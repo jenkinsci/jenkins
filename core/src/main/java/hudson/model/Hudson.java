@@ -959,6 +959,24 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     /**
+     * Updates the slave list.
+     */
+    public void setSlaves(List<Slave> slaves) throws IOException {
+        this.slaves = new ArrayList<Slave>(slaves);
+        updateComputerList();
+
+        // label trim off
+        for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
+            Label l = itr.next();
+            l.reset();
+            if(l.getNodes().isEmpty())
+                itr.remove();
+        }
+
+        save();
+    }
+
+    /**
      * Gets the system default quiet period.
      */
     public int getQuietPeriod() {
@@ -1618,29 +1636,20 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(ADMINISTER);
 
-        JSONObject json = req.getSubmittedForm();
+        BulkChange bc = new BulkChange(this);
+        try {
+            JSONObject json = req.getSubmittedForm();
 
-        numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
-        if(req.hasParameter("master.mode"))
-            mode = Mode.valueOf(req.getParameter("master.mode"));
-        else
-            mode = Mode.NORMAL;
+            numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
+            if(req.hasParameter("master.mode"))
+                mode = Mode.valueOf(req.getParameter("master.mode"));
+            else
+                mode = Mode.NORMAL;
 
-        {
-            // update slave list
-            this.slaves = req.bindJSONToList(Slave.class,json.get("slaves"));
-            updateComputerList();
-
-            // label trim off
-            for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
-                Label l = itr.next();
-                l.reset();
-                if(l.getNodes().isEmpty())
-                    itr.remove();
-            }
+            setSlaves(req.bindJSONToList(Slave.class,json.get("slaves")));
+        } finally {
+            bc.commit();
         }
-
-        save();
 
         rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
     }
