@@ -37,7 +37,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -727,7 +726,7 @@ public class Util {
      * If there's a prior symlink at baseDir+symlinkPath, it will be overwritten.
      */
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
-        if(!isWindows()) {
+        if(!isWindows() && !NO_SYMLINK) {
             try {
                 // ignore a failure.
                 new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
@@ -805,4 +804,9 @@ public class Util {
             = FastDateFormat.getInstance("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
+
+    /**
+     * On Unix environment that cannot run "ln", set this to true.
+     */
+    public static boolean NO_SYMLINK = Boolean.getBoolean(Util.class.getName()+".noSymLink");
 }
