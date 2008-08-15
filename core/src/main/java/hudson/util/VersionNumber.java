@@ -38,10 +38,11 @@ package hudson.util;
 import java.util.StringTokenizer;
 
 /**
- * Immutable representation of a dot-separated digits (such as "1.0.1").
+ * Immutable representation of a dot or '-'-separated digits (such as "1.0.1" or "1.0-52").
  *
  * {@link VersionNumber}s are {@link Comparable}.
  *
+ * <h2>Special tokens</h2>
  * <p>
  * We allow a component to be not just a number, but also "ea", "ea1", "ea2".
  * "ea" is treated as "ea0", and eaN &lt; M for any M > 0.
@@ -49,8 +50,11 @@ import java.util.StringTokenizer;
  * <p>
  * '*' is also allowed as a component, and '*' > M for any M > 0.
  *
+ * <p>
+ * 'SNAPSHOT' is also allowed as a component, and "N.SNAPSHOT" is interpreted as "N-1.*"
+ *
  * <pre>
- * 2.0.* > 2.0.1 > 2.0.0 > 2.0.ea > 2.0
+ * 2.0.* > 2.0.1 > 2.0.1-SNAPSHOT > 2.0.0.99 > 2.0.0 > 2.0.ea > 2.0
  * </pre>
  *
  * @author
@@ -67,7 +71,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
      *      if the parsing fails.
      */
     public VersionNumber( String num ) {
-        StringTokenizer tokens = new StringTokenizer(num,".");
+        StringTokenizer tokens = new StringTokenizer(num,".-");
         digits = new int[tokens.countTokens()];
         if(digits.length<2)
             throw new IllegalArgumentException("Failed to parse "+num+" as version number");
@@ -77,6 +81,10 @@ public class VersionNumber implements Comparable<VersionNumber> {
             String token = tokens.nextToken().toLowerCase();
             if(token.equals("*")) {
                 digits[i++] = 1000;
+            } else
+            if(token.equals("SNAPSHOT")) {
+                digits[i-1]--;
+                digits[i++] = 1000; 
             } else
             if(token.startsWith("ea")) {
                 if(token.length()==2)
