@@ -6,6 +6,8 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
+import org.jvnet.hudson.test.recipes.Recipe;
+import org.jvnet.hudson.test.recipes.Recipe.Runner;
 import org.kohsuke.stapler.Stapler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
@@ -16,7 +18,11 @@ import org.xml.sax.SAXException;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base class for all Hudson test cases.
@@ -27,7 +33,7 @@ public abstract class HudsonTestCase extends TestCase {
     protected Hudson hudson;
 
     protected final TestEnvironment env = new TestEnvironment();
-    protected HudsonHomeLoader homeLoader;
+    protected HudsonHomeLoader homeLoader = HudsonHomeLoader.NEW;
     /**
      * TCP/IP port that the server is listening on.
      */
@@ -38,6 +44,11 @@ public abstract class HudsonTestCase extends TestCase {
      * Where in the {@link Server} is Hudson deploed?
      */
     protected String contextPath = "/";
+
+    /**
+     * {@link Runnable}s to be invoked at {@link #tearDown()}.
+     */
+    protected List<LenientRunnable> tearDowns = new ArrayList<LenientRunnable>();
 
     protected HudsonTestCase(String name) {
         super(name);
@@ -51,6 +62,8 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     protected void tearDown() throws Exception {
+        for (LenientRunnable r : tearDowns)
+            r.run();
         hudson.cleanUp();
         env.dispose();
         server.stop();
@@ -101,8 +114,20 @@ public abstract class HudsonTestCase extends TestCase {
      * <p>
      * From here, call a series of {@code withXXX} methods.
      */
-    protected void recipe() {
-        withNewHome();
+    protected void recipe() throws Exception {
+        // look for recipe meta-annotation
+        Method runMethod= getClass().getMethod(getName());
+        for( final Annotation a : runMethod.getAnnotations() ) {
+            Recipe r = a.getClass().getAnnotation(Recipe.class);
+            if(r==null)     continue;
+            final Runner runner = r.value().newInstance();
+            tearDowns.add(new LenientRunnable() {
+                public void run() throws Exception {
+                    runner.tearDown(HudsonTestCase.this,a);
+                }
+            });
+            runner.setup(this,a);
+        }
     }
 
     public HudsonTestCase withNewHome() {

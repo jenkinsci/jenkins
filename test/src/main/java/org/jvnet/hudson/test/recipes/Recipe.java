@@ -39,10 +39,10 @@ public @interface Recipe {
         /**
          * Called during {@link TestCase#setUp()} to prepare the test environment.
          */
-        public void setup(HudsonTestCase testCase, T recipe) {}
+        public void setup(HudsonTestCase testCase, T recipe) throws Exception {}
         /**
          * Called during {@link TestCase#tearDown()} to shut down the test environment.
          */
-        public void tearDown(HudsonTestCase testCase, T recipe) {}
+        public void tearDown(HudsonTestCase testCase, T recipe) throws Exception {}
     }
 }
