@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
+import java.security.acl.Owner;
 
 /**
  * Persisted list of {@link Describable}s with some operations specific
@@ -38,16 +39,32 @@ import java.util.Collections;
  */
 public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> implements Iterable<T> {
     private final CopyOnWriteList<T> data = new CopyOnWriteList<T>();
-    private Owner owner;
+    private Saveable owner;
 
     private DescribableList() {
     }
 
+    /**
+     * @deprecated
+     *      Use {@link #DescribableList(Saveable)} 
+     */
     public DescribableList(Owner owner) {
         setOwner(owner);
     }
 
+    public DescribableList(Saveable owner) {
+        setOwner(owner);
+    }
+
+    /**
+     * @deprecated
+     *      Use {@link #setOwner(Saveable)}
+     */
     public void setOwner(Owner owner) {
+        this.owner = owner;
+    }
+
+    public void setOwner(Saveable owner) {
         this.owner = owner;
     }
 
@@ -152,11 +169,11 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
     }
 
-    public interface Owner {
-        /**
-         * Called whenever the list is changed, so that it can be saved.
-         */
-        void save() throws IOException;
+    /**
+     * @deprecated 
+     *      Just implement {@link Saveable}.
+     */
+    public interface Owner extends Saveable {
     }
 
     /**

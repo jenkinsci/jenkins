@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.XmlFile;
+import hudson.BulkChange;
 import hudson.util.CopyOnWriteList;
 import hudson.scm.CVSSCM;
 import net.sf.json.JSONArray;
@@ -65,7 +66,7 @@ import java.lang.reflect.Modifier;
  * @author Kohsuke Kawaguchi
  * @see Describable
  */
-public abstract class Descriptor<T extends Describable<T>> {
+public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * Up to Hudson 1.61 this was used as the primary persistence mechanism.
      * Going forward Hudson simply persists all the non-transient fields
@@ -261,7 +262,8 @@ public abstract class Descriptor<T extends Describable<T>> {
     /**
      * Saves the configuration info to the disk.
      */
-    protected synchronized void save() {
+    public synchronized void save() {
+        if(BulkChange.contains(this))   return;
         try {
             getConfigFile().write(this);
         } catch (IOException e) {

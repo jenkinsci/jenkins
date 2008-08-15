@@ -9,6 +9,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.BulkChange;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.util.HexBinaryConverter;
@@ -35,7 +36,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Fingerprint implements ModelObject {
+public class Fingerprint implements ModelObject, Saveable {
     /**
      * Pointer to a {@link Build}.
      */
@@ -637,6 +638,8 @@ public class Fingerprint implements ModelObject {
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
+        if(BulkChange.contains(this))   return;
+
         long start=0;
         if(logger.isLoggable(Level.FINE))
             start = System.currentTimeMillis();

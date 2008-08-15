@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.BulkChange;
 import hudson.model.Node.Mode;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
@@ -62,7 +63,7 @@ import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Queue extends ResourceController {
+public class Queue extends ResourceController implements Saveable {
     /**
      * Items that are waiting for its quiet period to pass.
      *
@@ -241,6 +242,8 @@ public class Queue extends ResourceController {
      * Persists the queue contents to the disk.
      */
     public synchronized void save() {
+        if(BulkChange.contains(this))  return;
+        
         // write out the tasks on the queue
     	ArrayList<Task> tasks = new ArrayList<Task>();
     	for (Item item: getItems()) {

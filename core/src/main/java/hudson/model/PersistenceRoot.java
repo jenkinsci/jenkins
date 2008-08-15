@@ -8,7 +8,7 @@ import java.io.File;
  *
  * @author Kohsuke Kawaguchi
  */
-public interface PersistenceRoot {
+public interface PersistenceRoot extends Saveable {
     /**
      * Gets the root directory on the file system that this
      * {@link Item} can use freely fore storing the configuration data.

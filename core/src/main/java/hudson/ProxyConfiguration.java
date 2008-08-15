@@ -2,6 +2,7 @@ package hudson;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.model.Hudson;
+import hudson.model.Saveable;
 import hudson.util.XStream2;
 import hudson.util.Scrambler;
 
@@ -20,7 +21,7 @@ import java.net.URL;
  *
  * @see Hudson#proxy
  */
-public final class ProxyConfiguration {
+public final class ProxyConfiguration implements Saveable {
     public final String name;
     public final int port;
 
@@ -54,6 +55,7 @@ public final class ProxyConfiguration {
     }
 
     public void save() throws IOException {
+        if(BulkChange.contains(this))   return;
         getXmlFile().write(this);
     }
 

@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
+import hudson.BulkChange;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
@@ -187,6 +188,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
+        if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
     }
 

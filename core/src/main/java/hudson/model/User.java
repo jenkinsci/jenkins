@@ -5,6 +5,7 @@ import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.BulkChange;
 import hudson.tasks.Mailer;
 import hudson.model.Descriptor.FormException;
 import hudson.security.ACL;
@@ -65,7 +66,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled {
+public class User extends AbstractModelObject implements AccessControlled, Saveable {
 
     private transient final String id;
 
@@ -364,6 +365,7 @@ public class User extends AbstractModelObject implements AccessControlled {
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
+        if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
     }
 

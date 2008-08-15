@@ -10,6 +10,7 @@ import hudson.Util;
 import static hudson.Util.combine;
 import hudson.XmlFile;
 import hudson.AbortException;
+import hudson.BulkChange;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
@@ -901,6 +902,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
+        if(BulkChange.contains(this))   return;
         getDataFile().write(this);
     }
 

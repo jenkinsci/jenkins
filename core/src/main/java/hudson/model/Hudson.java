@@ -15,6 +15,7 @@ import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
+import hudson.BulkChange;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -1444,6 +1445,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
+        if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
     }
 

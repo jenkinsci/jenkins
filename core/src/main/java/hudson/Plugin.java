@@ -2,6 +2,7 @@ package hudson;
 
 import hudson.model.Hudson;
 import hudson.model.Descriptor;
+import hudson.model.Saveable;
 import hudson.model.Descriptor.FormException;
 import hudson.scm.SCM;
 import hudson.tasks.Builder;
@@ -49,7 +50,7 @@ import com.thoughtworks.xstream.XStream;
  * @author Kohsuke Kawaguchi
  * @since 1.42
  */
-public abstract class Plugin {
+public abstract class Plugin implements Saveable {
 
     /**
      * Set by the {@link PluginManager}.
@@ -187,7 +188,8 @@ public abstract class Plugin {
      *
      * @since 1.245
      */
-    protected void save() throws IOException {
+    public void save() throws IOException {
+        if(BulkChange.contains(this))   return;
         getConfigXml().write(this);
     }
 
