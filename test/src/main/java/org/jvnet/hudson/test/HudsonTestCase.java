@@ -190,7 +190,11 @@ public abstract class HudsonTestCase extends TestCase {
         }
 
         public HtmlPage getPage(Item item) throws IOException, SAXException {
-            return (HtmlPage)getPage("http://localhost:"+localPort+contextPath+item.getUrl());
+            return getPage(item,"");
+        }
+
+        public HtmlPage getPage(Item item, String relative) throws IOException, SAXException {
+            return (HtmlPage)getPage("http://localhost:"+localPort+contextPath+item.getUrl()+relative);
         }
     }
 }
