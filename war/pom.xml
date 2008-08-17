@@ -71,7 +71,7 @@
                                  property="executable-war.jar"/>
                 <unjar src="${executable-war.jar}" dest="target/generated-resources">
                   <patternset>
-                    <include name="*.class" />
+                    <include name="**/*.class" />
                   </patternset>
                 </unjar>
 
@@ -230,7 +230,7 @@
       -->
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.0</version>
+      <version>1.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

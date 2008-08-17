@@ -8,11 +8,13 @@ import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.recipes.Recipe.Runner;
-import org.kohsuke.stapler.Stapler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
+import org.mortbay.jetty.security.HashUserRealm;
+import org.mortbay.jetty.security.UserRealm;
+import org.mortbay.jetty.webapp.Configuration;
+import org.mortbay.jetty.webapp.WebAppContext;
+import org.mortbay.jetty.webapp.WebXmlConfiguration;
 import org.xml.sax.SAXException;
 
 import javax.servlet.ServletContext;
@@ -82,16 +84,36 @@ public abstract class HudsonTestCase extends TestCase {
      */
     protected ServletContext createWebServer() throws Exception {
         server = new Server();
-        Context root = new Context(server, contextPath, Context.SESSIONS);
-        ServletHolder holder = new ServletHolder(new Stapler());
-        root.addServlet(holder, "/");
+
+        WebAppContext context = new WebAppContext(WarExploder.EXPLODE_DIR.getPath(), contextPath);
+        context.setClassLoader(getClass().getClassLoader());
+        context.setConfigurations(new Configuration[]{new WebXmlConfiguration(),new NoListenerConfiguration()});
+        server.setHandler(context);
+
         SocketConnector connector = new SocketConnector();
         server.addConnector(connector);
+        server.addUserRealm(configureUserRealm());
         server.start();
 
         localPort = connector.getLocalPort();
 
-        return holder.getServletHandler().getServletContext();
+        return context.getServletContext();
+    }
+
+    /**
+     * Configures a security realm for a test.
+     */
+    protected UserRealm configureUserRealm() {
+        HashUserRealm realm = new HashUserRealm();
+        realm.put("alice","alice");
+        realm.put("bob","bob");
+        realm.put("charlie","charlie");
+
+        realm.addUserToRole("alice","female");
+        realm.addUserToRole("bob","male");
+        realm.addUserToRole("charlie","male");
+
+        return realm;
     }
 
 //

@@ -45,9 +45,14 @@
   
   <dependencies>
     <dependency>
+      <!--
+        put hudson.war in the classpath. we can't pull in the war artifact directly
+        because Maven excludes all wars from classpath automatically. so we need a jar artifact.
+      -->
       <groupId>${project.groupId}</groupId>
-      <artifactId>hudson-core</artifactId>
+      <artifactId>hudson-war</artifactId>
       <version>${project.version}</version>
+      <classifier>war-for-test</classifier>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
