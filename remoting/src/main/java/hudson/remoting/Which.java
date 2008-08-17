@@ -29,9 +29,9 @@ public class Which {
         String resURL = res.toExternalForm();
         String originalURL = resURL;
         if(resURL.startsWith("jar:"))
-            return fromJarUrlToFile(resURL, 4);
+            return fromJarUrlToFile(resURL);
         if(resURL.startsWith("wsjar:"))
-            return fromJarUrlToFile(resURL, 6);
+            return fromJarUrlToFile(resURL);
 
         if(resURL.startsWith("code-source:/")) {
             // OC4J apparently uses this. See http://www.nabble.com/Hudson-on-OC4J-tt16702113.html
@@ -59,8 +59,8 @@ public class Which {
         throw new IllegalArgumentException(originalURL + " - " + resURL);
     }
 
-    private static File fromJarUrlToFile(String resURL, int prefixLength) throws MalformedURLException {
-        resURL = resURL.substring(prefixLength, resURL.lastIndexOf('!')); // cut off jar: and the file name portion
+    private static File fromJarUrlToFile(String resURL) throws MalformedURLException {
+        resURL = resURL.substring(resURL.indexOf(':')+1, resURL.lastIndexOf('!')); // cut off "scheme:" and the file name portion
         return new File(decode(new URL(resURL).getPath()));
     }
 
