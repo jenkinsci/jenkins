@@ -32,13 +32,13 @@ final class WarExploder {
             File timestamp = new File(explodeDir,".timestamp");
 
             if(!timestamp.exists() || (timestamp.lastModified()==war.lastModified())) {
-                System.out.println("Picking up hudson.war at "+war);
+                System.out.println("Exploding hudson.war at "+war);
                 new FilePath(explodeDir).deleteRecursive();
                 new FilePath(war).unzip(new FilePath(explodeDir));
                 new FileOutputStream(timestamp).close();
                 timestamp.setLastModified(war.lastModified());
             } else {
-                System.out.println("Picking up existing exploded hudson.war");
+                System.out.println("Picking up existing exploded hudson.war at "+explodeDir.getAbsolutePath());
             }
 
             return explodeDir;
