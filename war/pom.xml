@@ -65,8 +65,15 @@
             <configuration>
               <tasks>
                 <mkdir dir="target/generated-resources" />
-                <!-- needs to be forked because Maven doesn't seem to put tools.jar in classpath -->
-                <javac srcdir="src/launcher/java" includes="*.java" source="1.4" target="1.4" destdir="target/generated-resources" fork="true" debug="on" />
+
+                <!-- put executable war header -->
+                <resolveArtifact artifactId="executable-war"
+                                 property="executable-war.jar"/>
+                <unjar src="${executable-war.jar}" dest="target/generated-resources">
+                  <patternset>
+                    <include name="*.class" />
+                  </patternset>
+                </unjar>
 
                 <!-- dependencies that goes to unusual locations -->
                 <resolveArtifact artifactId="remoting"
@@ -218,8 +225,18 @@
     </dependency>
     <dependency>
       <!--
+        classes in this jar will be rebundled into the war.
+        marking it provided so that this won't show up in WEB-INF/lib
+      -->
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>executable-war</artifactId>
+      <version>1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <!--
         this dependency is just so that we can put winstone.jar in the war.
-        marking it provided so that other folks who depend on this war won't pick it up unnecessarily
+        marking it provided so that this won't show up in WEB-INF/lib
       -->
       <groupId>org.jvnet.hudson.winstone</groupId>
       <artifactId>winstone</artifactId>
