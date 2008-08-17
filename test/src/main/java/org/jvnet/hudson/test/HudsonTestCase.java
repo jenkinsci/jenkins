@@ -105,6 +105,7 @@ public abstract class HudsonTestCase extends TestCase {
      */
     protected UserRealm configureUserRealm() {
         HashUserRealm realm = new HashUserRealm();
+        realm.setName("default");   // this is the magic realm name to make it effective on everywhere
         realm.put("alice","alice");
         realm.put("bob","bob");
         realm.put("charlie","charlie");
