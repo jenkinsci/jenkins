@@ -143,7 +143,7 @@ public abstract class HudsonTestCase extends TestCase {
         // look for recipe meta-annotation
         Method runMethod= getClass().getMethod(getName());
         for( final Annotation a : runMethod.getAnnotations() ) {
-            Recipe r = a.getClass().getAnnotation(Recipe.class);
+            Recipe r = a.annotationType().getAnnotation(Recipe.class);
             if(r==null)     continue;
             final Runner runner = r.value().newInstance();
             tearDowns.add(new LenientRunnable() {
