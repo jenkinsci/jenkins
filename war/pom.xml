@@ -40,105 +40,44 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
+        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+        <artifactId>maven-antrun-extended-plugin</artifactId>
         <executions>
-          <!-- compile src/launcher/java/Main.java into hudson.war -->
           <execution>
+            <id>package</id>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <!-- deploy the war as a jar, so that the tests can pull this into the classpath -->
+                <attachArtifact file="target/hudson.war" classifier="war-for-test" type="jar" />
+              </tasks>
+            </configuration>
+          </execution>
+          <execution>
+            <id>resgen</id>
             <phase>generate-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
             <configuration>
               <tasks>
                 <mkdir dir="target/generated-resources" />
                 <!-- needs to be forked because Maven doesn't seem to put tools.jar in classpath -->
                 <javac srcdir="src/launcher/java" includes="*.java" source="1.4" target="1.4" destdir="target/generated-resources" fork="true" debug="on" />
+
+                <!-- dependencies that goes to unusual locations -->
+                <resolveArtifact artifactId="remoting"
+                                 tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
+                <resolveArtifact artifactId="remoting"
+                                 tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
+                <resolveArtifact artifactId="jnlp-agent"
+                                 tofile="${basedir}/target/generated-resources/WEB-INF/jnlp-agent.jar" />
+                <resolveArtifact artifactId="winstone"
+                                 tofile="${basedir}/target/generated-resources/winstone.jar"/>
               </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>dependency-maven-plugin</artifactId>
-        <executions>
-          <!-- for copying remoting jar to $WAR/WEB-INF/slave.jar -->
-          <execution>
-            <id>copy-slave.jar</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.jvnet.hudson.main</groupId>
-                  <artifactId>remoting</artifactId>
-                  <version>${version}</version>
-                  <destFileName>slave.jar</destFileName>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>${basedir}/target/generated-resources/WEB-INF</outputDirectory>
-            </configuration>
-          </execution>
-          <!--
-            for copying remoting jar to $WAR/WEB-INF/remoting.jar
-          -->
-          <execution>
-            <id>copy-remoting.jar</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.jvnet.hudson.main</groupId>
-                  <artifactId>remoting</artifactId>
-                  <version>${version}</version>
-                  <destFileName>remoting.jar</destFileName>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>${basedir}/target/generated-resources/WEB-INF</outputDirectory>
-            </configuration>
-          </execution>
-          <!-- for copying remoting jar to $WAR/WEB-INF/jnlp-agent.jar -->
-          <execution>
-            <id>copy-jnlp-agent.jar</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.jvnet.hudson.main</groupId>
-                  <artifactId>jnlp-agent</artifactId>
-                  <version>${version}</version>
-                  <destFileName>jnlp-agent.jar</destFileName>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>${basedir}/target/generated-resources/WEB-INF</outputDirectory>
-            </configuration>
-          </execution>
-          <!-- for copying winstone.jar -->
-          <execution>
-            <id>copy-winstone.jar</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.jvnet.hudson.winstone</groupId>
-                  <artifactId>winstone</artifactId>
-                  <version>0.9.10-hudson-6</version>
-                  <destFileName>winstone.jar</destFileName>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>${basedir}/target/generated-resources</outputDirectory>
             </configuration>
           </execution>
         </executions>
@@ -276,6 +215,16 @@
           <artifactId>pull-parser</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <!--
+        this dependency is just so that we can put winstone.jar in the war.
+        marking it provided so that other folks who depend on this war won't pick it up unnecessarily
+      -->
+      <groupId>org.jvnet.hudson.winstone</groupId>
+      <artifactId>winstone</artifactId>
+      <version>0.9.10-hudson-6</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   
