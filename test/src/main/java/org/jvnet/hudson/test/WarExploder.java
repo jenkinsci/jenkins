@@ -31,7 +31,7 @@ final class WarExploder {
             File explodeDir = new File("./target/hudson-for-test");
             File timestamp = new File(explodeDir,".timestamp");
 
-            if(!timestamp.exists() || (timestamp.lastModified()==war.lastModified())) {
+            if(!timestamp.exists() || (timestamp.lastModified()!=war.lastModified())) {
                 System.out.println("Exploding hudson.war at "+war);
                 new FilePath(explodeDir).deleteRecursive();
                 new FilePath(war).unzip(new FilePath(explodeDir));
