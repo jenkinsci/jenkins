@@ -1,6 +1,11 @@
 package org.jvnet.hudson.test;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -23,6 +28,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -189,12 +195,64 @@ public abstract class HudsonTestCase extends TestCase {
             setJavaScriptEnabled(false);
         }
 
+        /**
+         * Logs in to Hudson.
+         */
+        public WebClient login(String username, String password) throws Exception {
+            HtmlPage page = goTo("login");
+//            page = (HtmlPage) page.getFirstAnchorByText("Login").click();
+
+            HtmlForm form = page.getFormByName("login");
+            form.getInputByName("j_username").setValueAttribute(username);
+            form.getInputByName("j_password").setValueAttribute(password);
+            form.submit(null);
+            return this;
+        }
+
+        /**
+         * Logs in to Hudson, by using the user name as the password.
+         *
+         * <p>
+         * See {@link HudsonTestCase#configureUserRealm()} for how the container is set up with the user names
+         * and passwords. All the test accounts have the same user name and password.
+         */
+        public WebClient login(String username) throws Exception {
+            login(username,username);
+            return this;
+        }
+
         public HtmlPage getPage(Item item) throws IOException, SAXException {
             return getPage(item,"");
         }
 
         public HtmlPage getPage(Item item, String relative) throws IOException, SAXException {
-            return (HtmlPage)getPage("http://localhost:"+localPort+contextPath+item.getUrl()+relative);
+            return goTo(item.getUrl()+relative);
+        }
+
+        /**
+         * @deprecated
+         *      This method expects a full URL. This method is marked as deprecated to warn you
+         *      that you probably should be using {@link #goTo(String)} method, which accepts
+         *      a relative path within the Hudson being tested. (IOW, if you really need to hit
+         *      a website on the internet, there's nothing wrong with using this method.)
+         */
+        public Page getPage(String url) throws IOException, FailingHttpStatusCodeException {
+            return super.getPage(url);
+        }
+
+        /**
+         * Requests a page within Hudson.
+         *
+         * @param relative
+         *      Relative path within Hudson. Starts without '/'.
+         *      For example, "job/test/" to go to a job top page.
+         */
+        public HtmlPage goTo(String relative) throws IOException, SAXException {
+            return (HtmlPage)goTo(relative, "text/html");
+        }
+
+        public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
+            return super.getPage("http://localhost:"+localPort+contextPath+relative);
         }
     }
 }

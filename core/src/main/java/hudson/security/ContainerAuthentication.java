@@ -38,6 +38,7 @@ public final class ContainerAuthentication implements Authentication {
                 if(request.isUserInRole(g))
                     l.add(new GrantedAuthorityImpl(g));
             }
+            l.add(AUTHENTICATED);
             authorities = l.toArray(new GrantedAuthority[l.size()]);
         }
         return authorities;
@@ -67,7 +68,5 @@ public final class ContainerAuthentication implements Authentication {
         return getPrincipal();
     }
 
-    private static final GrantedAuthority[] ADMIN_AUTHORITY = {new GrantedAuthorityImpl("admin")};
-    // Acegi doesn't like empty array, so we need to set something
-    private static final GrantedAuthority[] NO_AUTHORITY = {new GrantedAuthorityImpl("authenticated")};
+    private static final GrantedAuthorityImpl AUTHENTICATED = new GrantedAuthorityImpl("authenticated");
 }
