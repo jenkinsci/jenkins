@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Base class for all Hudson test cases.
@@ -253,5 +254,9 @@ public abstract class HudsonTestCase extends TestCase {
         public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
             return super.getPage("http://localhost:"+localPort+contextPath+relative);
         }
+    }
+
+    static {
+        Locale.setDefault(Locale.ENGLISH);
     }
 }
