@@ -31,7 +31,7 @@ final class WarExploder {
                     break;
             }
             if(d!=null) {
-                File dir = new File(d,"war/resources");
+                File dir = new File(d,"war/target/hudson");
                 if(dir.exists()) {
                     System.out.println("Using hudson.war resources from "+dir);
                     return dir;
