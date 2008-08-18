@@ -25,6 +25,11 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
     extends AbstractBuild<P,B> {
 
     /**
+     * If the build required a lock, remember it so that we can release it.
+     */
+    private transient ReentrantLock buildLock;
+
+    /**
      * Creates a new build.
      */
     protected Build(P project) throws IOException {
@@ -48,16 +53,16 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         SCMTrigger t = (SCMTrigger)project.getTriggers().get(SCMTrigger.DESCRIPTOR);
         if(t!=null) {
             // acquire the lock
-            ReentrantLock lock = t.getLock();
-            synchronized(lock) {
+            buildLock = t.getLock();
+            synchronized(buildLock) {
                 try {
-                    if(lock.isLocked()) {
+                    if(buildLock.isLocked()) {
                         long time = System.currentTimeMillis();
                         LOGGER.info("Waiting for the polling of "+getParent()+" to complete");
-                        lock.lockInterruptibly();
+                        buildLock.lockInterruptibly();
                         LOGGER.info("Polling completed. Waited "+(System.currentTimeMillis()-time)+"ms");
                     } else
-                        lock.lockInterruptibly();
+                        buildLock.lockInterruptibly();
                 } catch (InterruptedException e) {
                     // handle the interrupt later
                     Thread.currentThread().interrupt();
@@ -69,9 +74,8 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
     @Override
     protected void onEndBuilding() {
         super.onEndBuilding();
-        SCMTrigger t = (SCMTrigger)project.getTriggers().get(SCMTrigger.DESCRIPTOR);
-        if(t!=null)
-            t.getLock().unlock();
+        if(buildLock!=null)
+            buildLock.unlock();
     }
 
 //
