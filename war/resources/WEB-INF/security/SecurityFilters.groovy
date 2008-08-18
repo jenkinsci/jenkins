@@ -7,18 +7,17 @@ import hudson.security.AccessDeniedHandlerImpl
 import hudson.security.AuthenticationProcessingFilter2
 import hudson.security.BasicAuthenticationFilter
 import hudson.security.ChainedServletFilter
-import hudson.security.LegacyAuthenticationProcessingFilterEntryPoint
 import hudson.security.UnwrapSecurityExceptionFilter
+import hudson.security.HudsonAuthenticationEntryPoint
 import org.acegisecurity.providers.anonymous.AnonymousProcessingFilter
 import org.acegisecurity.ui.ExceptionTranslationFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
 import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
-import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint
 import hudson.security.HttpSessionContextIntegrationFilter2
 
 // providers that apply to both patterns
-def commonProviders(entryPointClass,redirectUrl) {
+def commonProviders(redirectUrl) {
     return [
         bean(AnonymousProcessingFilter) {
             key = "anonymous" // must match with the AnonymousProvider
@@ -26,7 +25,7 @@ def commonProviders(entryPointClass,redirectUrl) {
         },
         bean(ExceptionTranslationFilter) {
             accessDeniedHandler = new AccessDeniedHandlerImpl()
-            authenticationEntryPoint = bean(entryPointClass) {
+            authenticationEntryPoint = bean(HudsonAuthenticationEntryPoint) {
                 loginFormUrl = redirectUrl;
             }
         },
@@ -61,7 +60,7 @@ filter(ChainedServletFilter) {
             rememberMeServices = rememberMeServicesProxy;
             authenticationManager = authenticationManagerProxy;
         },
-    ] + commonProviders(AuthenticationProcessingFilterEntryPoint.class,"/login")
+    ] + commonProviders("/login?from={0}")
 }
 
 // this filter set up is used to emulate the legacy Hudson behavior
@@ -69,7 +68,7 @@ filter(ChainedServletFilter) {
 legacy(ChainedServletFilter) {
     filters = [
         bean(BasicAuthenticationFilter)
-    ] + commonProviders(LegacyAuthenticationProcessingFilterEntryPoint.class,"/loginEntry")
+    ] + commonProviders("/loginEntry?from={0}")
     // when using container-authentication we can't hit /login directly.
     // we first have to hit protected /loginEntry, then let the container
     // trap that into /login.
