@@ -32,13 +32,13 @@
             <j2se version="1.5+" />
           </j:otherwise>
         </j:choose>
-        <jar href="jnlpJars/jnlp-agent.jar"/>
-        <jar href="jnlpJars/remoting.jar"/>
+        <jar href="${rootURL}jnlpJars/jnlp-agent.jar"/>
+        <jar href="${rootURL}jnlpJars/remoting.jar"/>
       </resources>
 
       <application-desc main-class="hudson.jnlp.Main">
         <argument>${h.getServerName()}</argument>
-        <argument>${rootURL}/tcpSlaveAgentListener/</argument>
+        <argument>${rootURL}tcpSlaveAgentListener/</argument>
         <argument>${app.secretKey}</argument>
         <argument>${it.node.nodeName}</argument>
       </application-desc>

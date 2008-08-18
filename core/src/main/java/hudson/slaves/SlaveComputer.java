@@ -285,6 +285,10 @@ public final class SlaveComputer extends Computer {
 
     /**
      * Serves jar files for JNLP slave agents.
+     *
+     * @deprecated
+     *      This URL binding is no longer used and moved up directly under to {@link Hudson},
+     *      but it's left here for now just in case some old JNLP slave agents request it.
      */
     public Slave.JnlpJar getJnlpJars(String fileName) {
         return new Slave.JnlpJar(fileName);

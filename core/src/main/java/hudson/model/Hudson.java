@@ -1917,6 +1917,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     /**
+     * Serves jar files for JNLP slave agents.
+     */
+    public Slave.JnlpJar getJnlpJars(String fileName) {
+        return new Slave.JnlpJar(fileName);
+    }
+
+    /**
      * RSS feed for log entries.
      */
     public void doLogRss( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -2468,6 +2475,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             || rest.startsWith("/logout")
             || rest.startsWith("/accessDenied")
             || rest.startsWith("/signup")
+            || rest.startsWith("/jnlpJars/")
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
             throw e;
