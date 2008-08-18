@@ -36,7 +36,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
