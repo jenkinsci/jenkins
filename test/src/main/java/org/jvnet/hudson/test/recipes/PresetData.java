@@ -28,7 +28,12 @@ public @interface PresetData {
          * Secured Hudson that has no anonymous read access.
          * Any logged in user can do anything.
          */
-        NO_ANONYMOUS_READACCESS
+        NO_ANONYMOUS_READACCESS,
+        /**
+         * Secured Hudson where anonymous user is read-only,
+         * and any logged in user has a full access.
+         */
+        ANONYMOUS_READONLY,
     }
 
     public class RunnerImpl extends Recipe.Runner<PresetData> {
