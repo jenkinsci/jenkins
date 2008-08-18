@@ -27,6 +27,7 @@ import java.util.Set;
  *
  * @author Kohsuke Kawaguchi
  */
+// TODO: think about the concurrency commitment of this class
 public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
     private transient ACL acl = new AclImpl();
 
@@ -45,7 +46,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      * Use of this method should be limited during construction,
      * as this object itself is considered immutable once populated.
      */
-    private void add(Permission p, String sid) {
+    public void add(Permission p, String sid) {
         Set<String> set = grantedPermissions.get(p);
         if(set==null)
             grantedPermissions.put(p,set = new HashSet<String>());
