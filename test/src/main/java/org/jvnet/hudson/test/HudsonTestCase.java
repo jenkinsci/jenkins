@@ -191,6 +191,7 @@ public abstract class HudsonTestCase extends TestCase {
     public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
         public WebClient() {
             setJavaScriptEnabled(false);
+            setPageCreator(HudsonPageCreator.INSTANCE);
         }
 
         /**
