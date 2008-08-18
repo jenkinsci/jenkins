@@ -17,10 +17,27 @@ final class WarExploder {
     public static final File EXPLODE_DIR = explode();
 
     /**
-     * Explodes a war, if necesasry, and returns its root dir.
+     * Explodes hudson.war, if necesasry, and returns its root dir.
      */
     private static File explode() {
         try {
+            // are we in the hudson main workspace? If so, pick up hudson/main/war/resources
+            // this saves the effort of packaging a war file and makes the debug cycle faster
+            File d = new File(".").getAbsoluteFile();
+            for( ; d!=null; d=d.getParentFile()) {
+                if(!d.getName().equals("main")) continue;
+                File p = d.getParentFile();
+                if(p!=null && p.getName().equals("hudson"))
+                    break;
+            }
+            if(d!=null) {
+                File dir = new File(d,"war/resources");
+                if(dir.exists()) {
+                    System.out.println("Using hudson.war resources from "+dir);
+                    return dir;
+                }
+            }
+
             // locate hudson.war
             URL winstone = WarExploder.class.getResource("/winstone.jar");
             if(winstone==null)
