@@ -1,11 +1,9 @@
 package org.jvnet.hudson.test;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -28,7 +26,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,6 +67,7 @@ public abstract class HudsonTestCase extends TestCase {
         recipe();
         hudson = newHudson();
         hudson.servletContext.setAttribute("app",hudson);
+        hudson.servletContext.setAttribute("version","?");
     }
 
     protected void tearDown() throws Exception {
