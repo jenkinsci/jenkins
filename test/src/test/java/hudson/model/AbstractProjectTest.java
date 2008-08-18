@@ -1,8 +1,10 @@
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.tasks.Shell;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.PresetData;
@@ -55,6 +57,30 @@ public class AbstractProjectTest extends HudsonTestCase {
             fail("Should have failed");
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(e.getStatusCode(),403);
+        }
+    }
+
+    /**
+     * Makes sure that the workspace deletion link is not provided
+     * when the user doesn't have an access.
+     */
+    @PresetData(DataSet.ANONYMOUS_READONLY)
+    public void testWipeWorkspaceProtected2() throws Exception {
+        ((GlobalMatrixAuthorizationStrategy)hudson.getAuthorizationStrategy()).add(AbstractProject.WORKSPACE,"anonymous");
+
+        // make sure that the deletion is protected in the same way
+        testWipeWorkspaceProtected();
+
+        // there shouldn't be any "wipe out workspace" link for anonymous user
+        WebClient webClient = new WebClient();
+        HtmlPage page = webClient.getPage(hudson.getItem("test"));
+
+        page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
+        try {
+            page.getFirstAnchorByText("Wipe Out Workspace");
+            fail("shouldn't find a link");
+        } catch (ElementNotFoundException e) {
+            // OK
         }
     }
 }
