@@ -294,6 +294,7 @@ public final class FilePath implements Serializable {
     public void unzip(FilePath target) throws IOException, InterruptedException {
         target.act(new FileCallable<Void>() {
             public Void invoke(File dir, VirtualChannel channel) throws IOException {
+                dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
                 ZipInputStream zip = new ZipInputStream(FilePath.this.read());
                 java.util.zip.ZipEntry e;
 
