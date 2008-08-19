@@ -5,7 +5,7 @@
 <l:layout norefresh="true" permission="${it.ADMINISTER}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel xmlns:local="local">
-    <f:form method="post" action="configSubmit">
+    <f:form method="post" name="config" action="configSubmit">
       <f:entry title="${%Home directory}" help="/help/system-config/homeDirectory.html">
         ${it.rootDir}
       </f:entry>
