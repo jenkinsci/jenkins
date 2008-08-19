@@ -1,5 +1,7 @@
 package hudson.util;
 
+import hudson.ExtensionPoint;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -16,8 +18,11 @@ import java.util.Vector;
 /**
  * Servlet {@link Filter} that chains multiple {@link Filter}s, provided by plugins
  *
+ * <p>
+ * While this class by itself is not an extension point, I'm marking this class
+ * as an extension point so that this class will be more discoverable.
  */
-public class PluginServletFilter implements Filter {
+public class PluginServletFilter implements Filter, ExtensionPoint {
 
 	private static final List<Filter> LIST = new Vector<Filter>();
 	
