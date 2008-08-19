@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.249-SNAPSHOT</version>
+    <version>1.249</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -67,8 +67,7 @@
                 <mkdir dir="target/generated-resources" />
 
                 <!-- put executable war header -->
-                <resolveArtifact artifactId="executable-war"
-                                 property="executable-war.jar"/>
+                <resolveArtifact artifactId="executable-war" property="executable-war.jar" />
                 <unjar src="${executable-war.jar}" dest="target/generated-resources">
                   <patternset>
                     <include name="**/*.class" />
@@ -76,14 +75,10 @@
                 </unjar>
 
                 <!-- dependencies that goes to unusual locations -->
-                <resolveArtifact artifactId="remoting"
-                                 tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
-                <resolveArtifact artifactId="remoting"
-                                 tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
-                <resolveArtifact artifactId="jnlp-agent"
-                                 tofile="${basedir}/target/generated-resources/WEB-INF/jnlp-agent.jar" />
-                <resolveArtifact artifactId="winstone"
-                                 tofile="${basedir}/target/generated-resources/winstone.jar"/>
+                <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
+                <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
+                <resolveArtifact artifactId="jnlp-agent" tofile="${basedir}/target/generated-resources/WEB-INF/jnlp-agent.jar" />
+                <resolveArtifact artifactId="winstone" tofile="${basedir}/target/generated-resources/winstone.jar" />
               </tasks>
             </configuration>
           </execution>
