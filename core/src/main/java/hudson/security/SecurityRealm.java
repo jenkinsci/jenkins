@@ -5,6 +5,7 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.util.DescriptorList;
+import hudson.util.PluginServletFilter;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.userdetails.UserDetailsService;
@@ -22,6 +23,7 @@ import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
 import com.octo.captcha.service.CaptchaServiceException;
 
 import javax.imageio.ImageIO;
+import javax.servlet.Filter;
 
 /**
  * Pluggable security realm that connects external user database to Hudson.
@@ -46,6 +48,7 @@ import javax.imageio.ImageIO;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.160
+ * @see PluginServletFilter
  */
 public abstract class SecurityRealm implements Describable<SecurityRealm>, ExtensionPoint {
     /**
@@ -58,6 +61,10 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * (for example, if the authentication is based on LDAP, the host name of the LDAP server
      * depends on the user configuration), and such configuration is expected to be
      * captured as instance variables of {@link SecurityRealm} implementation.
+     *
+     * <p>
+     * Your {@link SecurityRealm} may also wants to install a servlet {@link Filter}
+     * through {@link PluginServletFilter} to do a part of the authentication.
      */
     public abstract SecurityComponents createSecurityComponents();
 
