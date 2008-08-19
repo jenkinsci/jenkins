@@ -5,6 +5,7 @@ import hudson.FilePath;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.lang.reflect.Method;
 
 /**
  * Controls how a {@link HudsonTestCase} initializes <tt>HUDSON_HOME</tt>.
@@ -32,7 +33,7 @@ public interface HudsonHomeLoader {
     /**
      * Allocates a new directory by copying from an existing directory, or unzipping from a zip file.
      */
-    public static class CopyExisting implements HudsonHomeLoader {
+    public static final class CopyExisting implements HudsonHomeLoader {
         private final File source;
 
         /**
@@ -65,5 +66,44 @@ public interface HudsonHomeLoader {
                 new FilePath(source).unzip(new FilePath(target));
             return target;
         }
+    }
+
+    /**
+     * Allocates a new directory by copying from a test resource
+     */
+    public static final class Local implements HudsonHomeLoader {
+        private final Method testMethod;
+
+        public Local(Method testMethod) {
+            this.testMethod = testMethod;
+        }
+
+        public File allocate() throws Exception {
+            URL res = findDataResource();
+            if(!res.getProtocol().equals("file"))
+                throw new AssertionError("Test data is not available in the file system: "+res);
+            // if we picked up a directory, it's one level above config.xml
+            File home = new File(res.getPath());
+            if(!home.getName().endsWith(".zip"))
+                home = home.getParentFile();
+
+            return new CopyExisting(home).allocate();
+        }
+
+        private URL findDataResource() {
+            // first, check method specific resource
+            Class<?> clazz = testMethod.getDeclaringClass();
+            
+            for( String middle : new String[]{ '/'+testMethod.getName(), "" }) {
+                for( String suffix : SUFFIXES ) {
+                    URL res = clazz.getResource(clazz.getSimpleName() + middle+suffix);
+                    if(res!=null)   return res;
+                }
+            }
+
+            throw new AssertionError("No test resource was found for "+testMethod);
+        }
+
+        private static final String[] SUFFIXES = {"/config.xml",".zip"};
     }
 }

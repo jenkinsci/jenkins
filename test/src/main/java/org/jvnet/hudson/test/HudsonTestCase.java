@@ -162,13 +162,11 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     public HudsonTestCase withNewHome() {
-        homeLoader = HudsonHomeLoader.NEW;
-        return this;
+        return with(HudsonHomeLoader.NEW);
     }
 
     public HudsonTestCase withExistingHome(File source) {
-        homeLoader = new CopyExisting(source);
-        return this;
+        return with(new CopyExisting(source));
     }
 
     /**
@@ -181,7 +179,11 @@ public abstract class HudsonTestCase extends TestCase {
         URL res = getClass().getResource(name);
         if(res==null)   throw new IllegalArgumentException("No such data set found: "+name);
 
-        homeLoader = new CopyExisting(res);
+        return with(new CopyExisting(res));
+    }
+
+    public HudsonTestCase with(HudsonHomeLoader homeLoader) {
+        this.homeLoader = homeLoader;
         return this;
     }
 
