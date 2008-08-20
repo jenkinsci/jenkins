@@ -76,7 +76,8 @@ public class Engine extends Thread {
      * Connects to TCP slave port, with a few retries.
      */
     private Socket connect(String port) throws IOException, InterruptedException {
-        listener.status("Connecting");
+        String msg = "Connecting to " + host + ':' + port;
+        listener.status(msg);
         int retry = 1;
         while(true) {
             try {
@@ -85,7 +86,7 @@ public class Engine extends Thread {
                 if(retry++>10)
                     throw e;
                 Thread.sleep(1000*10);
-                listener.status("Connecting (retrying:"+retry+")");
+                listener.status(msg+" (retrying:"+retry+")");
             }
         }
     }
