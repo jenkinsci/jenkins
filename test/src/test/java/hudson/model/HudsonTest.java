@@ -9,6 +9,7 @@ import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class HudsonTest extends HudsonTestCase {
      * This makes sure that the structured form submission is working (to some limited extent.)
      */
     @LocalData
+    @Email("http://www.nabble.com/Hudson.configure-calling-deprecated-Descriptor.configure-td19051815.html")
     public void testSimpleConfigSubmit() throws Exception {
         // just load the page and resubmit
         HtmlPage configPage = new WebClient().goTo("configure");
