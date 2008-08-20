@@ -7,6 +7,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
+import hudson.model.UpdateCenter;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -72,11 +73,11 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     protected void tearDown() throws Exception {
+        server.stop();
         for (LenientRunnable r : tearDowns)
             r.run();
         hudson.cleanUp();
         env.dispose();
-        server.stop();
     }
 
     protected Hudson newHudson() throws Exception {
@@ -193,7 +194,7 @@ public abstract class HudsonTestCase extends TestCase {
      */
     public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
         public WebClient() {
-            setJavaScriptEnabled(false);
+//            setJavaScriptEnabled(false);
             setPageCreator(HudsonPageCreator.INSTANCE);
         }
 
@@ -260,5 +261,6 @@ public abstract class HudsonTestCase extends TestCase {
 
     static {
         Locale.setDefault(Locale.ENGLISH);
+        UpdateCenter.neverUpdate = true;
     }
 }
