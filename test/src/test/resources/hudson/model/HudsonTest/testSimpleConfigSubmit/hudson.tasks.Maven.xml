@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.tasks.Maven_-DescriptorImpl>
+  <installations>
+    <hudson.tasks.Maven_-MavenInstallation>
+      <name>maven1</name>
+      <mavenHome>/tmp</mavenHome>
+    </hudson.tasks.Maven_-MavenInstallation>
+    <hudson.tasks.Maven_-MavenInstallation>
+      <name>maven2</name>
+      <mavenHome>/tmp</mavenHome>
+    </hudson.tasks.Maven_-MavenInstallation>
+  </installations>
+</hudson.tasks.Maven_-DescriptorImpl>

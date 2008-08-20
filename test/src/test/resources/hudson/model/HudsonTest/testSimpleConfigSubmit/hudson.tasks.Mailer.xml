@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.tasks.Mailer_-DescriptorImpl>
+  <hudsonUrl>http://localhost:8080/</hudsonUrl>
+  <adminAddress>address not configured yet &lt;nobody@nowhere&gt;</adminAddress>
+  <useSsl>false</useSsl>
+</hudson.tasks.Mailer_-DescriptorImpl>

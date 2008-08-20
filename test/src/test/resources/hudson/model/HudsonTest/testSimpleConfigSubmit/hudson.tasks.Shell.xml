@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.tasks.Shell_-DescriptorImpl>
+  <shell>/bin/sh</shell>
+</hudson.tasks.Shell_-DescriptorImpl>
