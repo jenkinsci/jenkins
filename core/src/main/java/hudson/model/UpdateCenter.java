@@ -86,6 +86,7 @@ public class UpdateCenter implements ModelObject {
      * Returns true if it's time for us to check for new version.
      */
     public boolean isDue() {
+        if(neverUpdate)     return false;
         if(dataTimestamp==-1)
             dataTimestamp = getDataFile().file.lastModified();
         long now = System.currentTimeMillis();
@@ -560,4 +561,6 @@ public class UpdateCenter implements ModelObject {
     private static final long DAY = DAYS.toMillis(1);
 
     private static final Logger LOGGER = Logger.getLogger(UpdateCenter.class.getName());
+
+    public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 }
