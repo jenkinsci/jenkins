@@ -9,7 +9,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <local:table page="updates" list="${app.updateCenter.updates}" xmlns:local="/hudson/PluginManager">
     <div style="margin-top:1em">
-      ${%This page lists updates to the plugins you currently use.}
+      ${%UpdatePageDescription}
     </div>
   </local:table>
 </j:jelly>
