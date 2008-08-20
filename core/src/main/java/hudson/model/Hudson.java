@@ -1593,16 +1593,16 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 result &= configureDescriptor(req,json,d);
 
             for( Descriptor<BuildWrapper> d : BuildWrappers.WRAPPERS )
-                result &= d.configure(req);
+                result &= configureDescriptor(req,json,d);
 
             for( SCMDescriptor scmd : SCMS.SCMS )
-                result &= scmd.configure(req);
+                result &= configureDescriptor(req,json,scmd);
 
             for( TriggerDescriptor d : Triggers.TRIGGERS )
-                result &= d.configure(req);
+                result &= configureDescriptor(req,json,d);
 
             for( JobPropertyDescriptor d : Jobs.PROPERTIES )
-                result &= d.configure(req);
+                result &= configureDescriptor(req,json,d);
 
             for( JSONObject o : StructuredForm.toList(json,"plugin"))
                 pluginManager.getPlugin(o.getString("name")).getPlugin().configure(o);
