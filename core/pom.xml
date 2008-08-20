@@ -398,6 +398,10 @@
           <groupId>dom4j</groupId>
           <artifactId>dom4j</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>xom</groupId>
+          <artifactId>xom</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -421,6 +425,10 @@
         <exclusion>
           <groupId>commons-jelly</groupId>
           <artifactId>commons-jelly-tags-junit</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xalan</groupId>
+          <artifactId>xalan</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
