@@ -41,6 +41,10 @@
         <argument>${rootURL}tcpSlaveAgentListener/</argument>
         <argument>${app.secretKey}</argument>
         <argument>${it.node.nodeName}</argument>
+        <j:if test="${it.launcher.tunnel!=null}">
+          <argument>-tunnel</argument>
+          <argument>${it.launcher.tunnel}</argument>
+        </j:if>
       </application-desc>
     </jnlp>
   </l:isAdminOrTest>
