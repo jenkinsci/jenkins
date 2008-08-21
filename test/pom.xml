@@ -34,9 +34,9 @@
         </executions>
         <dependencies>
           <dependency>
-            <groupId>org.apache.ant</groupId>
+            <groupId>ant</groupId>
             <artifactId>ant</artifactId>
-            <version>1.7.0</version>
+            <version>1.6.5</version>
           </dependency>
         </dependencies>
       </plugin>
