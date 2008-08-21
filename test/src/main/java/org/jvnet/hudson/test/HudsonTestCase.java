@@ -2,6 +2,7 @@ package org.jvnet.hudson.test;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
@@ -20,6 +21,9 @@ import org.mortbay.jetty.webapp.Configuration;
 import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
 import org.xml.sax.SAXException;
+import org.w3c.css.sac.ErrorHandler;
+import org.w3c.css.sac.CSSParseException;
+import org.w3c.css.sac.CSSException;
 
 import javax.servlet.ServletContext;
 import java.io.File;
@@ -30,6 +34,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 /**
  * Base class for all Hudson test cases.
@@ -260,7 +265,36 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     static {
+        // screen scraping relies on locale being fixed.
         Locale.setDefault(Locale.ENGLISH);
+        // don't waste bandwidth talking to the update center
         UpdateCenter.neverUpdate = true;
+        
+        // we don't care CSS errors in YUI
+        final ErrorHandler defaultHandler = Stylesheet.CSS_ERROR_HANDLER;
+        Stylesheet.CSS_ERROR_HANDLER = new ErrorHandler() {
+            public void warning(CSSParseException exception) throws CSSException {
+                if(!ignore(exception))
+                    defaultHandler.warning(exception);
+            }
+
+            public void error(CSSParseException exception) throws CSSException {
+                if(!ignore(exception))
+                    defaultHandler.warning(exception);
+            }
+
+            public void fatalError(CSSParseException exception) throws CSSException {
+                if(!ignore(exception))
+                    defaultHandler.warning(exception);
+            }
+
+            private boolean ignore(CSSParseException e) {
+                return e.getURI().contains("/yui/");
+            }
+        };
     }
+
+
+
+    private static final Logger LOGGER = Logger.getLogger(HudsonTestCase.class.getName());
 }
