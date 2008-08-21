@@ -279,7 +279,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * (If we do that in the base class, the derived class won't
      * get a chance to set default values.)
      */
-    protected synchronized void load() {
+    public synchronized void load() {
         XmlFile file = getConfigFile();
         if(!file.exists())
             return;
