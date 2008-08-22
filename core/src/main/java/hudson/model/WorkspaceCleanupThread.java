@@ -111,7 +111,10 @@ public class WorkspaceCleanupThread extends PeriodicWork {
         listener.getLogger().println("Scanning "+s.getNodeName());
 
         try {
-            List<FilePath> dirs = s.getWorkspaceRoot().list(DIR_FILTER);
+            FilePath path = s.getWorkspaceRoot();
+            if(path==null)  return;
+
+            List<FilePath> dirs = path.list(DIR_FILTER);
             if(dirs ==null) return;
             for (FilePath dir : dirs) {
                 if(shouldBeDeleted(dir.getName(),dir,s))
