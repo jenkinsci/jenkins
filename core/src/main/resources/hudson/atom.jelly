@@ -5,7 +5,7 @@
   <!-- ATOM. See http://atompub.org/rfc4287.html for the format -->
   <feed xmlns="http://www.w3.org/2005/Atom">
     <title>${title}</title>
-    <link rel="alternate" type="text/html" href="${rootURL}/${url}"/>
+    <link rel="alternate" type="text/html" href="${rootURL}${url}"/>
 
     <j:choose>
       <j:when test="${empty(entries)}">
@@ -23,7 +23,7 @@
     <j:forEach var="e" items="${entries}" >
       <entry>
         <title>${h.xmlEscape(adapter.getEntryTitle(e))}</title>
-        <link rel="alternate" type="text/html" href="${rootURL}/${h.encode(adapter.getEntryUrl(e))}"/>
+        <link rel="alternate" type="text/html" href="${rootURL}${h.encode(adapter.getEntryUrl(e))}"/>
         <id>${adapter.getEntryID(e)}</id>
         <published>${h.xsDate(adapter.getEntryTimestamp(e))}</published>
         <updated>${h.xsDate(adapter.getEntryTimestamp(e))}</updated>

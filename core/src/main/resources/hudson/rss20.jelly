@@ -6,13 +6,13 @@
   <rss version="2.0">
     <channel>
       <title>${title}</title>
-      <link>${rootURL}/${url}</link>
+      <link>${rootURL}${url}</link>
       <description>${title}</description>
 
       <j:forEach var="e" items="${entries}" >
         <item>
           <title>${h.xmlEscape(adapter.getEntryTitle(e))}</title>
-          <link>${rootURL}/${h.encode(adapter.getEntryUrl(e))}</link>
+          <link>${rootURL}${h.encode(adapter.getEntryUrl(e))}</link>
           <guid isPermaLink="false">${adapter.getEntryID(e)}</guid>
           <pubDate>${h.rfc822Date(adapter.getEntryTimestamp(e))}</pubDate>
           <author>${adapter.getEntryAuthor(e)}</author>
