@@ -237,10 +237,6 @@ public class LDAPSecurityRealm extends SecurityRealm {
             super(LDAPSecurityRealm.class);
         }
 
-        public LDAPSecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return req.bindJSON(LDAPSecurityRealm.class,formData);
-        }
-
         public String getDisplayName() {
             return Messages.LDAPSecurityRealm_DisplayName();
         }
