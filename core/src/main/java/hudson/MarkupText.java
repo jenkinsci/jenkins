@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  * @since 1.70
  */
-public class MarkupText {
+public class MarkupText extends AbstractMarkupText {
     private final String text;
 
     /**
@@ -45,24 +45,34 @@ public class MarkupText {
     /**
      * Represents a substring of a {@link MarkupText}.
      */
-    public final class SubText {
+    public final class SubText extends AbstractMarkupText {
         private final int start,end;
         private final int[] groups;
 
-        public SubText(Matcher m) {
-            start = m.start();
-            end   = m.end();
+        public SubText(Matcher m, int textOffset) {
+            start = m.start() + textOffset;
+            end   = m.end() + textOffset;
 
             int cnt = m.groupCount();
             groups = new int[cnt*2];
             for( int i=0; i<cnt; i++ ) {
-                groups[i*2  ] = m.start(i+1);
-                groups[i*2+1] = m.end(i+1);
+                groups[i*2  ] = m.start(i+1) + textOffset;
+                groups[i*2+1] = m.end(i+1) + textOffset;
             }
         }
 
+        @Override
+        public String getText() {
+            return text.substring(start,end);
+        }
+
+        @Override
+        public void addMarkup(int startPos, int endPos, String startTag, String endTag) {
+            MarkupText.this.addMarkup(startPos+start,  endPos+start, startTag, endTag);
+        }
+
         /**
-         * Surrounds this subext with the specifid start tag and the end tag.
+         * Surrounds this subtext with the specified start tag and the end tag.
          *
          * <p>
          * Start/end tag text can contain special tokens "$0", "$1", ...
@@ -70,7 +80,7 @@ public class MarkupText {
          * "\\c" can be used to escape characters. 
          */
         public void surroundWith(String startTag, String endTag) {
-            addMarkup(start,end,replace(startTag),replace(endTag));
+            addMarkup(0,length(),replace(startTag),replace(endTag));
         }
 
         /**
@@ -105,6 +115,13 @@ public class MarkupText {
          */
         public int end() {
             return end;
+        }
+
+        /**
+         * Returns {@code getText().length()}
+         */
+        public int length() {
+            return end-start;
         }
 
         /**
@@ -145,27 +162,23 @@ public class MarkupText {
 
             return buf.toString();
         }
+
+        @Override
+        protected SubText createSubText(Matcher m) {
+            return new SubText(m,start);
+        }
     }
 
     public MarkupText(String text) {
         this.text = text;
     }
 
-    /**
-     * Returns the plain text portion of this {@link MarkupText} without
-     * any markup.
-     */
+    @Override
     public String getText() {
         return text;
     }
 
-    /**
-     * Adds a start tag and end tag at the specified position.
-     *
-     * <p>
-     * For example, if the text was "abc", then <tt>addMarkup(1,2,"&lt;b>","&lt;/b>")</tt>
-     * would generate <tt>"a&lt;b>b&lt;/b>c"</tt>
-     */
+    @Override
     public void addMarkup( int startPos, int endPos, String startTag, String endTag ) {
         rangeCheck(startPos);
         rangeCheck(endPos);
@@ -203,39 +216,15 @@ public class MarkupText {
         return buf.toString();
     }
 
-    /**
-     * Find all "tokens" that match the given pattern in this text.
-     *
-     * <p>
-     * A token is like a substring, except that it's aware of word boundaries.
-     * For example, while "bc" is a string of "abc", calling {@code findTokens}
-     * with "bc" as a pattern on string "abc" won't match anything.
-     *
-     * <p>
-     * This method is convenient for finding keywords that follow a certain syntax
-     * from natural text. You can then use {@link SubText#surroundWith(String,String)}
-     * to put mark up around such text.
-     */
+    // perhaps this method doesn't need to be here to remain binary compatible with past versions,
+    // but having this seems to be safer.
+    @Override
     public List<SubText> findTokens(Pattern pattern) {
-        Matcher m = pattern.matcher(text);
-        List<SubText> r = new ArrayList<SubText>();
+        return super.findTokens(pattern);
+    }
 
-        while(m.find()) {
-            int idx = m.start();
-            if(idx>0) {
-                char ch = text.charAt(idx-1);
-                if(Character.isLetter(ch) || Character.isDigit(ch))
-                    continue;   // not at a word boundary
-            }
-            idx = m.end();
-            if(idx<text.length()) {
-                char ch = text.charAt(idx);
-                if(Character.isLetter(ch) || Character.isDigit(ch))
-                    continue;   // not at a word boundary
-            }
-            r.add(new SubText(m));
-        }
-
-        return r;
+    @Override
+    protected SubText createSubText(Matcher m) {
+        return new SubText(m,0);
     }
 }
