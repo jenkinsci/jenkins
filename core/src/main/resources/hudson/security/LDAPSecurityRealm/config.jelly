@@ -5,16 +5,16 @@
 	</f:entry>
   <f:advanced>
     <f:entry title="${%root DN}" help="/help/security/ldap/rootDN.html">
-      <f:textbox name="ldap.rootDN" value="${instance.rootDN}" />
+      <f:textbox field="rootDN" />
     </f:entry>
     <f:entry title="${%User search base}" help="/help/security/ldap/userSearchBase.html">
-      <f:textbox name="ldap.userSearchBase" value="${instance.userSearchBase}" />
+      <f:textbox field="userSearchBase" />
     </f:entry>
     <f:entry title="${%User search filter}" help="/help/security/ldap/userSearchFilter.html">
-      <f:textbox name="ldap.userSearch" value="${instance.userSearch}" />
+      <f:textbox field="userSearch" />
     </f:entry>
     <f:entry title="${%Group search base}" help="/help/security/ldap/groupSearchBase.html">
-      <f:textbox name="ldap.groupSearchBase" value="${instance.groupSearchBase}" />
+      <f:textbox field="groupSearchBase" />
     </f:entry>
     <f:entry title="${%Manager DN}" help="/help/security/ldap/managerDN.html">
       <f:textbox name="ldap.managerDN" value="${instance.managerDN}"
