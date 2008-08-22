@@ -3,12 +3,14 @@
 # publish Hudson javadoc and deploy that into the java.net CVS repository
 # 
 
+# make sure we have up-to-date copy so that the commit won't fail later
 pushd ../../../www/javadoc
 svn revert -R .
 svn update
 popd
 
 cp -R target/checkout/core/target/apidocs/* ../../../www/javadoc
+cp -R target/checkout/test/target/apidocs/*  ../../../www/javadoc/test
 
 cd ../../../www/javadoc
 
