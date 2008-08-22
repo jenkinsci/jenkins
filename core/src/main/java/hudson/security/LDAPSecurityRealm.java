@@ -10,7 +10,6 @@ import hudson.model.User;
 import hudson.util.FormFieldValidator;
 import hudson.util.Scrambler;
 import hudson.util.spring.BeanBuilder;
-import net.sf.json.JSONObject;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
@@ -128,6 +127,10 @@ public class LDAPSecurityRealm extends SecurityRealm {
         this.managerPassword = Scrambler.scramble(Util.fixEmpty(managerPassword));
     }
 
+    public String getServerUrl() {
+        return addPrefix(server);
+    }
+
     /**
      * Infer the root DN.
      *
@@ -140,7 +143,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 props.put(Context.SECURITY_PRINCIPAL,managerDN);
                 props.put(Context.SECURITY_CREDENTIALS,getManagerPassword());
             }
-            DirContext ctx = LdapCtxFactory.getLdapCtxInstance("ldap://"+server+'/', props);
+            DirContext ctx = LdapCtxFactory.getLdapCtxInstance(getServerUrl()+'/', props);
             Attributes atts = ctx.getAttributes("");
             Attribute a = atts.get("defaultNamingContext");
             if(a!=null) // this entry is available on Active Directory. See http://msdn2.microsoft.com/en-us/library/ms684291(VS.85).aspx
@@ -163,7 +166,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
     }
 
     public String getLDAPURL() {
-        return "ldap://"+server+'/'+Util.fixNull(rootDN);
+        return getServerUrl()+'/'+Util.fixNull(rootDN);
     }
 
     public SecurityComponents createSecurityComponents() {
@@ -255,7 +258,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
                         if(managerPassword!=null && managerPassword.trim().length() > 0 && !"undefined".equals(managerPassword)) {
                             props.put(Context.SECURITY_CREDENTIALS,managerPassword);
                         }
-                        DirContext ctx = LdapCtxFactory.getLdapCtxInstance("ldap://"+server+'/', props);
+                        DirContext ctx = LdapCtxFactory.getLdapCtxInstance(addPrefix(server)+'/', props);
                         ctx.getAttributes("");
                         ok();   // connected
                     } catch (NamingException e) {
@@ -291,6 +294,15 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 }
             }.check();
         }
+    }
+
+    /**
+     * If the given "server name" is just a host name (plus optional host name), add ldap:// prefix.
+     * Otherwise assume it already contains the scheme, and leave it intact.
+     */
+    private static String addPrefix(String server) {
+        if(server.contains("://"))  return server;
+        else    return "ldap://"+server;
     }
 
     static {
