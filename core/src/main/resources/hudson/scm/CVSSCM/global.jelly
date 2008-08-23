@@ -9,7 +9,7 @@
 	    <f:textbox name="cvs_exe" value="${descriptor.cvsExe}"
         checkUrl="'${rootURL}/scm/CVSSCM/cvsExeCheck?value='+escape(this.value)" />
 	  </f:entry>
-    <f:entry title="${%.cvspass file}" help="/help/_cvs/cvspass.jelly">
+    <f:entry title="${%.cvspass file}" help="/help/_cvs/cvspass.html">
 	    <input class="setting-input validated" name="cvs_cvspass"
 	      type="text" value="${descriptor.cvspassFile}"
         checkUrl="'${rootURL}/scm/CVSSCM/cvsPassCheck?value='+escape(this.value)" />

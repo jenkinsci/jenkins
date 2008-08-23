@@ -1,0 +1,30 @@
+<!-- TODO: The Jelly tags do not work in this context and are left here
+     just for reference, until a solution is found -->
+
+<j:jelly xmlns:j="jelly:core">
+  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+  <div>
+    CVS speichert Benutzernamen und Kennwörter in einer Datei namens ".cvspass".
+    Normalerweise lädt CVS diese Datei aus Ihrem Home-Verzeichnis. Wenn CVS
+    diese Datei aus einem anderen Verzeichnis laden soll, geben Sie hier
+    den vollständigen Pfadnamen der Datei an, ansonsten lassen Sie 
+    dieses Feld leer.
+    <br/>
+    <j:if test="${h.isWindows()}">
+      Wenn Sie CVSNT verwenden <a href="scm/CVSSCM/version">(tue ich das?)</a>, dann
+      wird diese Einstellung wahrscheinlich ignoriert. Mehr Informationen dazu
+      finden Sie in <a href="http://ant.apache.org/manual/CoreTasks/cvspass.html">
+      dieser Notiz</a>.  Geben Sie in diesem Fall mit dem Kommando  "cvs login" manuell
+      Ihr Kennwort ein. Wenn Hudson unter Ihrem eigenen Benutzerkonto läuft, sollte
+      das kein Problem sein. Falls Hudson jedoch als Dienst läuft, müssen Sie zunächst
+      CMD.EXE als SYSTEM-Benutzer aufrufen und von dort cvs ausführen. Mehr dazu
+      steht in <a href="http://blogs.msdn.com/adioltean/articles/271063.aspx">diesem 
+      Dokument</a>.
+      <br/>
+    </j:if>
+    <!-- TODO: this doesn't work
+    You can also <a href="scm/CVSSCM/enterPassword">interactively enter password into the cvs password list</a>.
+    <j:if test="${h.isWindows()}">This works even with CVSNT.</j:if>
+    -->
+  </div>
+</j:jelly>
