@@ -2,6 +2,10 @@ package org.jvnet.hudson.test;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
+import com.gargoylesoftware.htmlunit.AjaxController;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -27,11 +31,13 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Base class for all Hudson test cases.
@@ -59,6 +65,11 @@ public abstract class HudsonTestCase extends TestCase {
      */
     protected List<LenientRunnable> tearDowns = new ArrayList<LenientRunnable>();
 
+    /**
+     * Remember {@link WebClient}s that are created, to release them properly.
+     */
+    private List<WeakReference<WebClient>> clients = new ArrayList<WeakReference<WebClient>>();
+
     protected HudsonTestCase(String name) {
         super(name);
     }
@@ -79,6 +90,15 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     protected void tearDown() throws Exception {
+        // cancel pending asynchronous operations, although this doesn't really seem to be working
+        for (WeakReference<WebClient> client : clients) {
+            WebClient c = client.get();
+            if(c==null) continue;
+            // unload the page to cancel asynchronous operations 
+            c.getPage("about:blank");
+        }
+        clients.clear();
+
         server.stop();
         for (LenientRunnable r : tearDowns)
             r.run();
@@ -206,6 +226,13 @@ public abstract class HudsonTestCase extends TestCase {
         public WebClient() {
 //            setJavaScriptEnabled(false);
             setPageCreator(HudsonPageCreator.INSTANCE);
+            clients.add(new WeakReference<WebClient>(this));
+            // make ajax calls synchronous for predictable behaviors that simplify debugging
+            setAjaxController(new AjaxController() {
+                public boolean processSynchron(HtmlPage page, WebRequestSettings settings, boolean async) {
+                    return true;
+                }
+            });
         }
 
         /**
@@ -297,6 +324,9 @@ public abstract class HudsonTestCase extends TestCase {
                 return e.getURI().contains("/yui/");
             }
         };
+
+        // suppress INFO output from Spring, which is verbose
+        Logger.getLogger("org.springframework").setLevel(Level.WARNING);
     }
 
 
