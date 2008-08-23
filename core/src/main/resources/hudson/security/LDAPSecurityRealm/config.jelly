@@ -1,23 +1,23 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<f:entry title="${%Server}" help="/help/security/ldap/server.html">
-	  <f:textbox field="server"
+	  <f:textbox name="ldap.server" value="${instance.server}"
             checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=server&amp;server='+escape(this.value)+'&amp;managerDN='+escape(this.form.elements['ldap.managerDN'].value)+'&amp;managerPassword='+escape(this.form.elements['ldap.managerPassword'].value)"/>
 	</f:entry>
   <f:advanced>
     <f:entry title="${%root DN}" help="/help/security/ldap/rootDN.html">
-      <f:textbox field="rootDN" />
+      <f:textbox name="ldap.rootDN" value="${instance.rootDN}" />
     </f:entry>
     <f:entry title="${%User search base}" help="/help/security/ldap/userSearchBase.html">
-      <f:textbox field="userSearchBase" />
+      <f:textbox name="ldap.userSearchBase" value="${instance.userSearchBase}" />
     </f:entry>
     <f:entry title="${%User search filter}" help="/help/security/ldap/userSearchFilter.html">
-      <f:textbox field="userSearch" />
+      <f:textbox name="ldap.userSearch" value="${instance.userSearch}" />
     </f:entry>
     <f:entry title="${%Group search base}" help="/help/security/ldap/groupSearchBase.html">
-      <f:textbox field="groupSearchBase" />
+      <f:textbox name="ldap.groupSearchBase" value="${instance.groupSearchBase}" />
     </f:entry>
     <f:entry title="${%Manager DN}" help="/help/security/ldap/managerDN.html">
-      <f:textbox field="managerDN"
+      <f:textbox name="ldap.managerDN" value="${instance.managerDN}"
       checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=managerDN&amp;server='+escape(this.form.elements['ldap.server'].value)+'&amp;managerDN='+escape(this.value)+'&amp;managerPassword='+escape(this.form.elements['ldap.managerPassword'].value)"
       />
     </f:entry>
