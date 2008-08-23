@@ -437,7 +437,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             if(mms.usesPrivateRepository())
                 // use the per-project repository. should it be per-module? But that would cost too much in terms of disk
                 // the workspace must be on this node, so getRemote() is safe.
-                margs.add("-D").add("maven.repo.local="+mms.getWorkspace().child(".repository").getRemote());
+                margs.add("-Dmaven.repo.local="+mms.getWorkspace().child(".repository").getRemote());
             margs.add("-f",getProject().getModuleRoot().child("pom.xml").getRemote());
             margs.addTokenized(getProject().getGoals());
 

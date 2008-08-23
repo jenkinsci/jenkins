@@ -332,7 +332,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         ArgumentListBuilder margs = new ArgumentListBuilder();
                         margs.add("-B").add("-f", pom.getRemote());
                         if(project.usesPrivateRepository())
-                            margs.add("-D").add("maven.repo.local="+project.getWorkspace().child(".repository"));
+                            margs.add("-Dmaven.repo.local="+project.getWorkspace().child(".repository"));
                         margs.addTokenized(project.getGoals());
 
                         Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
