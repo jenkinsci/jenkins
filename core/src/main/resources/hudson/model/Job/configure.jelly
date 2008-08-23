@@ -5,7 +5,7 @@
   <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.CONFIGURE}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <f:form method="post" action="configSubmit">
+      <f:form method="post" action="configSubmit" name="config">
         <j:if test="${it.isNameEditable()}">
           <f:entry title="${%name(it.pronoun)}">
             <f:textbox name="name" value="${it.name}" />
