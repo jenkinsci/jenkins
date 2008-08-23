@@ -48,10 +48,6 @@ public class HudsonTest extends HudsonTestCase {
         assertAnt(ants[1],"ant2","/tmp");
     }
 
-    private <T> T last(List<T> items) {
-        return items.get(items.size()-1);
-    }
-
     private void assertAnt(AntInstallation ant, String name, String home) {
         assertEquals(ant.getName(),name);
         assertEquals(ant.getAntHome(),home);

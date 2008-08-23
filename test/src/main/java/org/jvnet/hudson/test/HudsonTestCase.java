@@ -165,6 +165,13 @@ public abstract class HudsonTestCase extends TestCase {
         return (FreeStyleProject)hudson.createProject(FreeStyleProject.DESCRIPTOR,name);
     }
 
+    /**
+     * Returns the last item in the list.
+     */
+    protected <T> T last(List<T> items) {
+        return items.get(items.size()-1);
+    }
+
 //
 // recipe methods. Control the test environments.
 //
