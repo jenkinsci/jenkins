@@ -319,12 +319,12 @@ public abstract class HudsonTestCase extends TestCase {
 
             public void error(CSSParseException exception) throws CSSException {
                 if(!ignore(exception))
-                    defaultHandler.warning(exception);
+                    defaultHandler.error(exception);
             }
 
             public void fatalError(CSSParseException exception) throws CSSException {
                 if(!ignore(exception))
-                    defaultHandler.warning(exception);
+                    defaultHandler.fatalError(exception);
             }
 
             private boolean ignore(CSSParseException e) {
