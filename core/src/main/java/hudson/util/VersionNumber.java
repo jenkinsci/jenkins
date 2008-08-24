@@ -82,9 +82,10 @@ public class VersionNumber implements Comparable<VersionNumber> {
             if(token.equals("*")) {
                 digits[i++] = 1000;
             } else
-            if(token.equals("SNAPSHOT")) {
+            if(token.startsWith("snapshot")) {
                 digits[i-1]--;
-                digits[i++] = 1000; 
+                digits[i++] = 1000;
+                break;
             } else
             if(token.startsWith("ea")) {
                 if(token.length()==2)
