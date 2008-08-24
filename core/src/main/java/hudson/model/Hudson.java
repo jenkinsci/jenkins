@@ -16,6 +16,7 @@ import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.XmlFile;
 import hudson.BulkChange;
+import hudson.WebAppMain;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -2611,15 +2612,19 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * Prefix to static resources like images and javascripts in the war file.
      * Either "" or strings like "/static/VERSION", which avoids Hudson to pick up
      * stale cache when the user upgrades to a different version.
+     * <p>
+     * Value computed in {@link WebAppMain}.
      */
-    public static String RESOURCE_PATH;
+    public static String RESOURCE_PATH = "";
 
     /**
      * Prefix to resources alongside view scripts.
      * Strings like "/resources/VERSION", which avoids Hudson to pick up
      * stale cache when the user upgrades to a different version.
+     * <p>
+     * Value computed in {@link WebAppMain}.
      */
-    public static String VIEW_RESOURCE_PATH;
+    public static String VIEW_RESOURCE_PATH = "/resources/TBD";
 
     public static boolean parallelLoad = Boolean.getBoolean(Hudson.class.getName()+".parallelLoad");
 
