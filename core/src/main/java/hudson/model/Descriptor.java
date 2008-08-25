@@ -229,7 +229,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *
      * Can be overriden to store descriptor-specific information.
      *
-     * @param formData
+     * @param json
      *      The JSON object that captures the configuration data for this {@link Descriptor}.
      *      See http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
      * @return false
