@@ -170,11 +170,12 @@ function findElementsBySelector(startNode,selector) {
       continue; // Skip to next token
     }
     // Code to deal with attribute selectors
-    if (token.match(/^(\w*)\[(\w+)([=~\|\^\$\*]?)=?"?([^\]"]*)"?\]$/)) {
-      var tagName = RegExp.$1;
-      var attrName = RegExp.$2;
-      var attrOperator = RegExp.$3;
-      var attrValue = RegExp.$4;
+    bits = /^(\w*)\[(\w+)([=~\|\^\$\*]?)=?"?([^\]"]*)"?\]$/.exec(token);
+    if (bits!=null) {
+      var tagName = bits[1];
+      var attrName = bits[2];
+      var attrOperator = bits[3];
+      var attrValue = bits[4];
       if (!tagName) {
         tagName = '*';
       }
