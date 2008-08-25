@@ -6,6 +6,7 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
@@ -16,6 +17,7 @@ import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.recipes.Recipe.Runner;
+import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.security.HashUserRealm;
@@ -23,6 +25,8 @@ import org.mortbay.jetty.security.UserRealm;
 import org.mortbay.jetty.webapp.Configuration;
 import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ContextFactory;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
@@ -72,6 +76,17 @@ public abstract class HudsonTestCase extends TestCase {
      */
     private List<WeakReference<WebClient>> clients = new ArrayList<WeakReference<WebClient>>();
 
+    /**
+     * JavaScript "debugger" that provides you information about the JavaScript call stack
+     * and the current values of the local variables in those stack frame.
+     *
+     * <p>
+     * Unlike Java debugger, which you as a human interfaces directly and interactively,
+     * this JavaScript debugger is to be interfaced by your program (or through the
+     * expression evaluation capability of your Java debugger.) 
+     */
+    protected JavaScriptDebugger jsDebugger = new JavaScriptDebugger();
+
     protected HudsonTestCase(String name) {
         super(name);
     }
@@ -106,6 +121,19 @@ public abstract class HudsonTestCase extends TestCase {
             r.run();
         hudson.cleanUp();
         env.dispose();
+    }
+
+    protected void runTest() throws Throwable {
+        new JavaScriptEngine(null);   // ensure that ContextFactory is initialized
+        Context cx= ContextFactory.getGlobal().enterContext();
+        try {
+            cx.setOptimizationLevel(-1);
+            cx.setDebugger(jsDebugger,null);
+
+            super.runTest();
+        } finally {
+            Context.exit();
+        }
     }
 
     /**
