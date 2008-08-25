@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 /**
  * Base class for all Hudson test cases.
  *
+ * @see <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Unit+Test">Wiki article about unit testing in Hudson</a>
  * @author Kohsuke Kawaguchi
  */
 public abstract class HudsonTestCase extends TestCase {
