@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.net.URL;
 
 /**
  * Represents a communication channel to the remote peer.
@@ -379,6 +380,66 @@ public class Channel implements VirtualChannel {
 
     /*package*/ void unexport(int id) {
         exportedObjects.unexport(id);
+    }
+
+    /**
+     * Preloads jar files on the remote side.
+     *
+     * <p>
+     * This is a performance improvement method that can be safely
+     * ignored if your goal is to make things working.
+     *
+     * <p>
+     * Normally, classes are transferred over the network one at a time,
+     * on-demand. This design is mainly driven by how Java classloading works
+     * &mdash; we can't predict what classes will be necessarily upfront very easily.
+     *
+     * <p>
+     * Classes are loaded only once, so for long-running {@link Channel},
+     * this is normally an acceptable overhead. But sometimes, for example
+     * when a channel is short-lived, or when you know that you'll need
+     * a majority of classes in certain jar files, then it is more efficient
+     * to send a whole jar file over the network upfront and thereby
+     * avoiding individual class transfer over the network.
+     *
+     * <p>
+     * That is what this method does. It ensures that a series of jar files
+     * are copied to the remote side (AKA "preloading.")
+     * Classloading will consult the preloaded jars before performing
+     * network transfer of class files.
+     *
+     * @param classLoaderRef
+     *      This parameter is used to identify the remote classloader
+     *      that will prefetch the specified jar files. That is, prefetching
+     *      will ensure that prefetched jars will kick in
+     *      when this {@link Callable} object is actually executed remote side.
+     *
+     *      <p>
+     *      {@link RemoteClassLoader}s are created wisely, one per local {@link ClassLoader},
+     *      so this parameter doesn't have to be exactly the same {@link Callable}
+     *      to be executed later &mdash; it just has to be of the same class.
+     * @param classesInJar
+     *      {@link Class} objects that identify jar files to be preloaded.
+     *      Jar files that contain the specified classes will be preloaded into the remote peer.
+     *      You just need to specify one class per one jar.
+     * @return
+     *      true if the preloading actually happened. false if all the jars
+     *      are already preloaded. This method is implemented in such a way that
+     *      unnecessary jar file transfer will be avoided, and the return value
+     *      will tell you if this optimization kicked in. Under normal circumstances
+     *      your program shouldn't depend on this return value. It's just a hint.
+     * @throws IOException
+     *      if the preloading fails.
+     */
+    public boolean preloadJar(Callable<?,?> classLoaderRef, Class... classesInJar) throws IOException, InterruptedException {
+        return preloadJar(UserRequest.getClassLoader(classLoaderRef),classesInJar);
+    }
+
+    public boolean preloadJar(ClassLoader local, Class... classesInJar) throws IOException, InterruptedException {
+        URL[] jars = new URL[classesInJar.length];
+        for (int i = 0; i < classesInJar.length; i++)
+            jars[i] = Which.jarFile(classesInJar[i]).toURI().toURL();
+        return call(new PreloadJarTask(jars,local));
     }
 
     /**

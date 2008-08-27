@@ -8,19 +8,22 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * Loads class files from the other peer through {@link Channel}.
  *
  * @author Kohsuke Kawaguchi
  */
-final class RemoteClassLoader extends ClassLoader {
+final class RemoteClassLoader extends URLClassLoader {
     /**
      * Proxy to the code running on remote end.
      */
@@ -33,6 +36,14 @@ final class RemoteClassLoader extends ClassLoader {
     private final Map<String,File> resourceMap = new HashMap<String,File>();
     private final Map<String,Vector<File>> resourcesMap = new HashMap<String,Vector<File>>();
 
+    /**
+     * List of jars that are already pre-fetched through {@link #addURL(URL)}.
+     *
+     * <p>
+     * Note that URLs in this set are URLs on the other peer.
+     */
+    private final Set<URL> prefetchedJars = new HashSet<URL>();
+
     public static ClassLoader create(ClassLoader parent, IClassLoader proxy) {
         if(proxy instanceof ClassLoaderProxy) {
             // when the remote sends 'RemoteIClassLoader' as the proxy, on this side we get it
@@ -44,20 +55,30 @@ final class RemoteClassLoader extends ClassLoader {
     }
 
     private RemoteClassLoader(ClassLoader parent, IClassLoader proxy) {
-        super(parent);
+        super(new URL[0],parent);
         this.proxy = proxy;
         this.channel = RemoteInvocationHandler.unwrap(proxy);
     }
 
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        long startTime = System.nanoTime();
-        byte[] bytes = proxy.fetch(name);
-        channel.classLoadingTime.addAndGet(System.nanoTime()-startTime);
-        channel.classLoadingCount.incrementAndGet();
-        return defineClass(name, bytes, 0, bytes.length);
+        try {
+            // first attempt to load from locally fetched jars
+            return super.findClass(name);
+        } catch (ClassNotFoundException e) {
+            // delegate to remote
+            long startTime = System.nanoTime();
+            byte[] bytes = proxy.fetch(name);
+            channel.classLoadingTime.addAndGet(System.nanoTime()-startTime);
+            channel.classLoadingCount.incrementAndGet();
+            return defineClass(name, bytes, 0, bytes.length);
+        }
     }
 
-    protected URL findResource(String name) {
+    public URL findResource(String name) {
+        // first attempt to load from locally fetched jars
+        URL url = super.findResource(name);
+        if(url!=null)   return url;
+
         try {
             if(resourceMap.containsKey(name)) {
                 File f = resourceMap.get(name);
@@ -94,7 +115,11 @@ final class RemoteClassLoader extends ClassLoader {
         return r;
     }
 
-    protected Enumeration<URL> findResources(String name) throws IOException {
+    public Enumeration<URL> findResources(String name) throws IOException {
+        // TODO: use the locally fetched jars to speed up the look up
+        // the challenge is how to combine the list from local jars
+        // and the remote list
+
         Vector<File> files = resourcesMap.get(name);
         if(files!=null) {
             Vector<URL> urls = toURLs(files);
@@ -127,9 +152,34 @@ final class RemoteClassLoader extends ClassLoader {
     }
 
     /**
+     * Prefetches the jar into this class loader.
+     *
+     * @param jar
+     *      Jar to be prefetched. Note that this file is an file on the other end,
+     *      and doesn't point to anything meaningful locally.
+     * @return
+     *      true if the prefetch happened. false if the jar is already prefetched.
+     * @see Channel#preloadJar(Callable, Class...)
+     */
+    /*package*/ boolean prefetch(URL jar) throws IOException {
+        synchronized (prefetchedJars) {
+            if(prefetchedJars.contains(jar))
+                return false;
+
+            String p = jar.getPath().replace('\\','/');
+            p = p.substring(p.lastIndexOf('/')+1);
+            File localJar = makeResource(p,proxy.fetchJar(jar));
+            addURL(localJar.toURI().toURL());
+            prefetchedJars.add(jar);
+            return true;
+        }
+    }
+
+    /**
      * Remoting interface.
      */
     /*package*/ static interface IClassLoader {
+        byte[] fetchJar(URL url) throws IOException;
         byte[] fetch(String className) throws ClassNotFoundException;
         byte[] getResource(String name) throws IOException;
         byte[][] getResources(String name) throws IOException;
@@ -159,6 +209,10 @@ final class RemoteClassLoader extends ClassLoader {
 
         public ClassLoaderProxy(ClassLoader cl) {
             this.cl = cl;
+        }
+
+        public byte[] fetchJar(URL url) throws IOException {
+            return readFully(url.openStream());
         }
 
         public byte[] fetch(String className) throws ClassNotFoundException {
@@ -231,6 +285,10 @@ final class RemoteClassLoader extends ClassLoader {
         private RemoteIClassLoader(int oid, IClassLoader proxy) {
             this.proxy = proxy;
             this.oid = oid;
+        }
+
+        public byte[] fetchJar(URL url) throws IOException {
+            return proxy.fetchJar(url);
         }
 
         public byte[] fetch(String className) throws ClassNotFoundException {
