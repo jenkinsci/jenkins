@@ -46,7 +46,9 @@ final class ExportTable<T> {
             this.id = iota++;
             this.object = object;
             this.allocationTrace = new Exception();
-            allocationTrace.fillInStackTrace();
+            // force the computation of the stack trace in a Java friendly data structure,
+            // so that the call stack can be seen from the heap dump after the fact. 
+            allocationTrace.getStackTrace();
             addRef();
 
             table.put(id,this);
