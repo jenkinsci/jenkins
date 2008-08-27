@@ -21,6 +21,9 @@ import java.util.ArrayList;
  * @author Kohsuke Kawaguchi
  */
 final class RemoteClassLoader extends ClassLoader {
+    /**
+     * Proxy to the code running on remote end.
+     */
     private final IClassLoader proxy;
     /**
      * Remote peer that the {@link #proxy} is connected to.
