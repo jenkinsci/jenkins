@@ -33,7 +33,6 @@ import javax.servlet.ServletException;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.framework.io.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -156,7 +155,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     }
 
     /**
-     * Returns the name of the node.
+     * Returns {@link Node#getNodeName() the name of the node}.
      */
     public String getName() {
         return nodeName;

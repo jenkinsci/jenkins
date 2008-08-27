@@ -2489,6 +2489,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             super(Hudson.getInstance());
         }
 
+        /**
+         * Returns "" to match with {@link Hudson#getNodeName()}.
+         */
+        public String getName() {
+            return "";
+        }
+
         @Override
         public String getDisplayName() {
             return Messages.Hudson_Computer_DisplayName();
