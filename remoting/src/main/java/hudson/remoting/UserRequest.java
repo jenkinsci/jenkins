@@ -45,10 +45,10 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
     }
 
     /*package*/ static ClassLoader getClassLoader(Callable<?,?> c) {
-        ClassLoader cl = c.getClass().getClassLoader();
         if(c instanceof DelegatingCallable)
-            cl = ((DelegatingCallable)c).getClassLoader();
-        return cl;
+            return ((DelegatingCallable)c).getClassLoader();
+        else
+            return c.getClass().getClassLoader();
     }
 
     protected UserResponse<RSP,EXC> perform(Channel channel) throws EXC {
