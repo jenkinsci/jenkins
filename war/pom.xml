@@ -87,7 +87,7 @@
       <plugin>
         <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
         <groupId>org.jvnet.hudson.tools</groupId>
-        <artifactId>maven-hudson-plugin</artifactId>
+        <artifactId>maven-hudson-dev-plugin</artifactId>
         <version>6.1.7</version>
         <configuration>
           <contextPath>/</contextPath>
