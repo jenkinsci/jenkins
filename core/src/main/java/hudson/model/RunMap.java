@@ -162,7 +162,11 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
         buildDir.mkdirs();
         String[] buildDirs = buildDir.list(new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                return new File(dir,name).isDirectory();
+                // HUDSON-1461 sometimes create bogus data directories with impossible dates, such as year 0.
+                // Date object doesn't roundtrip year 0 (year is -2,-1,+1,+2,... and there's no zero),
+                // so we eventually fail to load this data.
+                // so don't even bother trying.k
+                return !name.startsWith("0000") && new File(dir,name).isDirectory();
             }
         });
 
