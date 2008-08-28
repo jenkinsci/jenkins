@@ -1,6 +1,7 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
+import hudson.BulkChange;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Functions;
@@ -14,9 +15,8 @@ import hudson.StructuredForm;
 import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
-import hudson.XmlFile;
-import hudson.BulkChange;
 import hudson.WebAppMain;
+import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -132,7 +132,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -370,6 +370,19 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         Items.LIST.hashCode();
 
         load();
+
+//        try {
+//            // fill up the cache
+//            load();
+//
+//            Controller c = new Controller();
+//            c.startCPUProfiling(ProfilingModes.CPU_TRACING,""); // "java.*");
+//            load();
+//            c.stopCPUProfiling();
+//            c.captureSnapshot(ProfilingModes.SNAPSHOT_WITHOUT_HEAP);
+//        } catch (Exception e) {
+//            throw new Error(e);
+//        }
 
         if(slaveAgentPort!=-1)
             tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
@@ -1391,6 +1404,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         items.clear();
         if(parallelLoad) {
             // load jobs in parallel for better performance
+            LOGGER.info("Loading in parallel");
             List<Future<TopLevelItem>> loaders = new ArrayList<Future<TopLevelItem>>();
             for (final File subdir : subdirs) {
                 loaders.add(threadPoolForLoad.submit(new Callable<TopLevelItem>() {
@@ -1413,7 +1427,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         } else {
             for (File subdir : subdirs) {
                 try {
+                    long start = System.currentTimeMillis();
                     TopLevelItem item = (TopLevelItem)Items.load(this,subdir);
+                    PERFORMANCE_LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms");
                     items.put(item.getName(), item);
                 } catch (Error e) {
                     LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
@@ -2606,7 +2622,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     /*package*/ static final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
         0, Runtime.getRuntime().availableProcessors() * 2,
-        5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
+        5L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new DaemonThreadFactory());
 
 
 
@@ -2636,6 +2652,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     public static boolean parallelLoad = Boolean.getBoolean(Hudson.class.getName()+".parallelLoad");
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
+    private static final Logger PERFORMANCE_LOGGER = Logger.getLogger(Hudson.class.getName()+".performance");
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
 
