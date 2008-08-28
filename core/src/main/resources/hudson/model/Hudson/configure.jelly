@@ -113,6 +113,7 @@
       <local:globalConfig className="hudson.scm.SCMS" field="SCMS" />
       <local:globalConfig className="hudson.tasks.BuildStep" field="PUBLISHERS" />
       <local:globalConfig className="hudson.model.Jobs" field="PROPERTIES" />
+      <local:globalConfig className="hudson.model.PageDecorator" field="ALL" />
 
       <f:block>
         <f:submit value="${%Save}" />
