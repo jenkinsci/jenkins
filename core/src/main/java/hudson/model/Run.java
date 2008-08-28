@@ -188,7 +188,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         getDataFile().unmarshal(this); // load the rest of the data
     }
 
-    private static long parseTimestampFromBuildDir(File buildDir) throws IOException {
+    /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException {
         try {
             return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
         } catch (ParseException e) {

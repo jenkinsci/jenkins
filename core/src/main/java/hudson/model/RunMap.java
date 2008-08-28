@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Logger;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 
 /**
  * {@link Map} from build number to {@link Run}.
@@ -157,16 +160,31 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
      *      Used to create new instance of {@link Run}.
      */
     public synchronized void load(Job job, Constructor<R> cons) {
+        final SimpleDateFormat formatter = Run.ID_FORMATTER.get();
+
         TreeMap<Integer,R> builds = new TreeMap<Integer,R>(RunMap.COMPARATOR);
         File buildDir = job.getBuildDir();
         buildDir.mkdirs();
         String[] buildDirs = buildDir.list(new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                // HUDSON-1461 sometimes create bogus data directories with impossible dates, such as year 0.
-                // Date object doesn't roundtrip year 0 (year is -2,-1,+1,+2,... and there's no zero),
-                // so we eventually fail to load this data.
-                // so don't even bother trying.k
+                // HUDSON-1461 sometimes create bogus data directories with impossible dates, such as year 0, April 31st,
+                // or August 0th. Date object doesn't roundtrip those, so we eventually fail to load this data.
+                // Don't even bother trying.
+                if (!isCorrectDate(name)) {
+                    LOGGER.fine("Skipping "+new File(dir,name));
+                    return false;
+                }
                 return !name.startsWith("0000") && new File(dir,name).isDirectory();
+            }
+
+            private boolean isCorrectDate(String name) {
+                try {
+                    if(formatter.format(formatter.parse(name)).equals(name))
+                        return true;
+                } catch (ParseException e) {
+                    // fall through
+                }
+                return false;
             }
         });
 
@@ -187,4 +205,6 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
 
         reset(builds);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(RunMap.class.getName());
 }
