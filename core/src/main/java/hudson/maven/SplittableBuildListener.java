@@ -28,7 +28,7 @@ final class SplittableBuildListener implements BuildListener, Serializable {
      * Used to accumulate data when no one is claiming the {@link #side},
      * so that the next one who set the {@link #side} can claim all the data.
      */
-    private final ByteArrayOutputStream unclaimed = new ByteArrayOutputStream();
+    private ByteArrayOutputStream unclaimed = new ByteArrayOutputStream();
 
     private OutputStream side = unclaimed;
 
@@ -69,7 +69,7 @@ final class SplittableBuildListener implements BuildListener, Serializable {
             os = unclaimed;
         } else {
             os.write(unclaimed.toByteArray());
-            unclaimed.reset();
+            unclaimed = new ByteArrayOutputStream();
         }
         this.side = os;
     }
