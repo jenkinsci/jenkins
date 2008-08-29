@@ -132,9 +132,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -1409,12 +1409,15 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         items.clear();
         if(parallelLoad) {
             // load jobs in parallel for better performance
-            LOGGER.info("Loading in parallel");
+            LOGGER.info("Loading in "+TWICE_CPU_NUM+" parallel threads");
             List<Future<TopLevelItem>> loaders = new ArrayList<Future<TopLevelItem>>();
             for (final File subdir : subdirs) {
                 loaders.add(threadPoolForLoad.submit(new Callable<TopLevelItem>() {
                     public TopLevelItem call() throws Exception {
-                        return (TopLevelItem) Items.load(Hudson.this, subdir);
+                        long start = System.currentTimeMillis();
+                        TopLevelItem item = (TopLevelItem) Items.load(Hudson.this, subdir);
+                        PERFORMANCE_LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms by "+Thread.currentThread().getName());
+                        return item;
                     }
                 }));
             }
@@ -2622,14 +2625,16 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     public static final XStream XSTREAM = new XStream2();
 
+    private static final int TWICE_CPU_NUM = Runtime.getRuntime().availableProcessors() * 2;
+
     /**
      * Thread pool used to load configuration in parallel, to improve the start up time.
      * <p>
      * The idea here is to overlap the CPU and I/O, so we want more threads than CPU numbers.
      */
     /*package*/ static final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
-        0, Runtime.getRuntime().availableProcessors() * 2,
-        5L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new DaemonThreadFactory());
+        TWICE_CPU_NUM, TWICE_CPU_NUM,
+        5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
 
 
 
