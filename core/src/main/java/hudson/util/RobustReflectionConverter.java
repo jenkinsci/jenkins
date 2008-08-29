@@ -224,11 +224,7 @@ public class RobustReflectionConverter implements Converter {
     private boolean fieldDefinedInClass(Object result, String attrName) {
         // during unmarshalling, unmarshal into transient fields like XStream 1.1.3
         //boolean fieldExistsInClass = reflectionProvider.fieldDefinedInClass(attrName, result.getClass());
-        try {
-            return reflectionProvider.getField(result.getClass(),attrName)!=null;
-        } catch (ObjectAccessException e) {
-            return false;
-        }
+        return reflectionProvider.getFieldOrNull(result.getClass(),attrName)!=null;
     }
 
     protected Object unmarshallField(final UnmarshallingContext context, final Object result, Class type, Field field) {
