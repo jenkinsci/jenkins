@@ -1164,6 +1164,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return terminating;
     }
 
+    public void setNumExecutors(int n) throws IOException {
+        this.numExecutors = n;
+        save();
+    }
+
     /**
      * @deprecated
      *      Left only for the compatibility of URLs.
@@ -1474,6 +1479,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
 
         LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
+        if(KILL_AFTER_LOAD)
+            System.exit(0);
     }
 
     /**
@@ -1657,7 +1664,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         try {
             JSONObject json = req.getSubmittedForm();
 
-            numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
+            setNumExecutors(Integer.parseInt(req.getParameter("numExecutors")));
             if(req.hasParameter("master.mode"))
                 mode = Mode.valueOf(req.getParameter("master.mode"));
             else
@@ -2650,6 +2657,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     public static String VIEW_RESOURCE_PATH = "/resources/TBD";
 
     public static boolean parallelLoad = Boolean.getBoolean(Hudson.class.getName()+".parallelLoad");
+    public static boolean KILL_AFTER_LOAD = Boolean.getBoolean(Hudson.class.getName()+".killAfterLoad");
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
     private static final Logger PERFORMANCE_LOGGER = Logger.getLogger(Hudson.class.getName()+".performance");
