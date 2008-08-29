@@ -1631,6 +1631,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             for( JobPropertyDescriptor d : Jobs.PROPERTIES )
                 result &= configureDescriptor(req,json,d);
 
+            for( PageDecorator d : PageDecorator.ALL )
+                result &= configureDescriptor(req,json,d);
+
             for( JSONObject o : StructuredForm.toList(json,"plugin"))
                 pluginManager.getPlugin(o.getString("name")).getPlugin().configure(o);
 
