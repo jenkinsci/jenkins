@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -145,52 +146,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     private final Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
 
-    private final XStream xstream = new XStream2();
-    
     public Queue() {
-        xstream.registerConverter(new AbstractSingleValueConverter() {
-
-			@Override
-			@SuppressWarnings("unchecked")
-			public boolean canConvert(Class klazz) {
-				return TopLevelItem.class.isAssignableFrom(klazz);
-			}
-
-			@Override
-			public Object fromString(String string) {
-				return Hudson.getInstance().getItem(string);
-			}
-
-			@Override
-			public String toString(Object item) {
-				return ((TopLevelItem) item).getName();
-			}
-        });
-        xstream.registerConverter(new AbstractSingleValueConverter() {
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public boolean canConvert(Class klazz) {
-				return Run.class.isAssignableFrom(klazz);
-			}
-
-			@Override
-			public Object fromString(String string) {
-				String[] split = string.split("#");
-				String projectName = split[0];
-				int buildNumber = Integer.parseInt(split[1]);
-				Job<?,?> job = (Job<?,?>) Hudson.getInstance().getItem(projectName);
-				Run<?,?> run = job.getBuildByNumber(buildNumber);
-				return run;
-			}
-
-			@Override
-			public String toString(Object object) {
-				Run<?,?> run = (Run<?,?>) object;
-				return run.getParent().getName() + "#" + run.getNumber();
-			}
-        });
- 
         // if all the executors are busy doing something, then the queue won't be maintained in
         // timely fashion, so use another thread to make sure it happens.
         new MaintainTask(this);
@@ -217,7 +173,7 @@ public class Queue extends ResourceController implements Saveable {
             } else {
                 queueFile = getXMLQueueFile();
                 if (queueFile.exists()) {
-                    List<Task> tasks = (List<Task>) new XmlFile(xstream, queueFile).read();
+                    List<Task> tasks = (List<Task>) new XmlFile(XSTREAM, queueFile).read();
                     for (Task task : tasks) {
                         add(task, 0);
                     }
@@ -251,17 +207,27 @@ public class Queue extends ResourceController implements Saveable {
     	}
     	
         try {
-            new XmlFile(xstream, getXMLQueueFile()).write(tasks);
+            new XmlFile(XSTREAM, getXMLQueueFile()).write(tasks);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to write out the queue file " + getQueueFile(), e);
         }
+    }
+
+    /**
+     * Wipes out all the items currently in the queue, as if all of them are cancelled at once.
+     */
+    public synchronized void clear() {
+        waitingList.clear();
+        blockedProjects.clear();
+        buildables.clear();
+        scheduleMaintenance();
     }
 
     private File getQueueFile() {
         return new File(Hudson.getInstance().getRootDir(), "queue.txt");
     }
 
-    private File getXMLQueueFile() {
+    /*package*/ File getXMLQueueFile() {
         return new File(Hudson.getInstance().getRootDir(), "queue.xml");
     }
 
@@ -676,10 +642,15 @@ public class Queue extends ResourceController implements Saveable {
 
     /**
      * Task whose execution is controlled by the queue.
+     *
      * <p>
      * {@link #equals(Object) Value equality} of {@link Task}s is used
      * to collapse two tasks into one. This is used to avoid infinite
      * queue backlog.
+     *
+     * <p>
+     * Pending {@link Task}s are persisted when Hudson shuts down, so
+     * it needs to be persistable.
      */
     public interface Task extends ModelObject, ResourceActivity {
         /**
@@ -935,6 +906,60 @@ public class Queue extends ResourceController implements Saveable {
     private int iota = 0;
 
     private static final Logger LOGGER = Logger.getLogger(Queue.class.getName());
+
+    /**
+     * This {@link XStream} instance is used to persist {@link Task}s.
+     */
+    public static final XStream XSTREAM = new XStream2();
+
+    static {
+        XSTREAM.registerConverter(new AbstractSingleValueConverter() {
+
+			@Override
+			@SuppressWarnings("unchecked")
+			public boolean canConvert(Class klazz) {
+				return hudson.model.Item.class.isAssignableFrom(klazz);
+			}
+
+			@Override
+			public Object fromString(String string) {
+                Object item = Hudson.getInstance().getItemByFullName(string);
+                if(item==null)  throw new NoSuchElementException("No such job exists: "+string);
+                return item;
+			}
+
+			@Override
+			public String toString(Object item) {
+				return ((hudson.model.Item) item).getFullName();
+			}
+        });
+        XSTREAM.registerConverter(new AbstractSingleValueConverter() {
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public boolean canConvert(Class klazz) {
+				return Run.class.isAssignableFrom(klazz);
+			}
+
+			@Override
+			public Object fromString(String string) {
+				String[] split = string.split("#");
+				String projectName = split[0];
+				int buildNumber = Integer.parseInt(split[1]);
+				Job<?,?> job = (Job<?,?>) Hudson.getInstance().getItemByFullName(projectName);
+                if(job==null)  throw new NoSuchElementException("No such job exists: "+projectName);
+				Run<?,?> run = job.getBuildByNumber(buildNumber);
+                if(job==null)  throw new NoSuchElementException("No such build: "+string);
+				return run;
+			}
+
+			@Override
+			public String toString(Object object) {
+				Run<?,?> run = (Run<?,?>) object;
+				return run.getParent().getFullName() + "#" + run.getNumber();
+			}
+        });
+    }
 
     /**
      * Regularly invokes {@link Queue#maintain()} and clean itself up when
