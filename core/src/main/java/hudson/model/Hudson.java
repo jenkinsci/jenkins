@@ -1407,7 +1407,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             }
         });
         items.clear();
-        if(parallelLoad) {
+        if(PARALLEL_LOAD) {
             // load jobs in parallel for better performance
             LOGGER.info("Loading in "+TWICE_CPU_NUM+" parallel threads");
             List<Future<TopLevelItem>> loaders = new ArrayList<Future<TopLevelItem>>();
@@ -1416,7 +1416,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                     public TopLevelItem call() throws Exception {
                         long start = System.currentTimeMillis();
                         TopLevelItem item = (TopLevelItem) Items.load(Hudson.this, subdir);
-                        PERFORMANCE_LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms by "+Thread.currentThread().getName());
+                        if(LOG_STARTUP_PERFORMANCE)
+                            LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms by "+Thread.currentThread().getName());
                         return item;
                     }
                 }));
@@ -1437,7 +1438,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 try {
                     long start = System.currentTimeMillis();
                     TopLevelItem item = (TopLevelItem)Items.load(this,subdir);
-                    PERFORMANCE_LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms");
+                    if(LOG_STARTUP_PERFORMANCE)
+                        LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms");
                     items.put(item.getName(), item);
                 } catch (Error e) {
                     LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
@@ -2664,11 +2666,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     public static String VIEW_RESOURCE_PATH = "/resources/TBD";
 
-    public static boolean parallelLoad = Boolean.getBoolean(Hudson.class.getName()+".parallelLoad");
+    public static boolean PARALLEL_LOAD = Boolean.getBoolean(Hudson.class.getName()+".parallelLoad");
     public static boolean KILL_AFTER_LOAD = Boolean.getBoolean(Hudson.class.getName()+".killAfterLoad");
+    public static boolean LOG_STARTUP_PERFORMANCE = Boolean.getBoolean(Hudson.class.getName()+".logStartupPerformance");
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
-    private static final Logger PERFORMANCE_LOGGER = Logger.getLogger(Hudson.class.getName()+".performance");
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
 
