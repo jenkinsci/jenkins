@@ -43,9 +43,9 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             rsp.sendError(SC_FORBIDDEN);
         } else {
             // give the opportunity to include the target URL
-            String loginForm = getLoginFormUrl();
+            String loginForm = req.getContextPath()+getLoginFormUrl();
             loginForm = MessageFormat.format(loginForm, URLEncoder.encode(req.getRequestURI(),"UTF-8"));
-            req.setAttribute("loginForm", req.getContextPath()+loginForm);
+            req.setAttribute("loginForm", loginForm);
 
             rsp.setStatus(SC_FORBIDDEN);
             rsp.setContentType("text/html;charset=UTF-8");

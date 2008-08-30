@@ -90,7 +90,7 @@
         <artifactId>maven-hudson-dev-plugin</artifactId>
         <version>6.1.7</version>
         <configuration>
-          <contextPath>/</contextPath>
+          <contextPath>${contextPath}</contextPath>
           <!--
             read directly from core module's output directory,
             so that changes are picked up right away without running mvn.
@@ -250,6 +250,7 @@
   
   <properties>
     <HUDSON_HOME>${basedir}/work</HUDSON_HOME>
+    <contextPath>/</contextPath><!-- context path during test -->
   </properties>
 
   <pluginRepositories>
