@@ -13,6 +13,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.UpdateCenter;
+import hudson.tasks.Mailer;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -101,8 +102,10 @@ public abstract class HudsonTestCase extends TestCase {
         hudson = newHudson();
         hudson.servletContext.setAttribute("app",hudson);
         hudson.servletContext.setAttribute("version","?");
+
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
+        Mailer.DESCRIPTOR.setHudsonUrl(null);
         for( Descriptor d : Descriptor.ALL )
             d.load();
     }
