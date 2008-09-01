@@ -176,6 +176,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected void performDelete() throws IOException {
         // prevent a new build while a delete operation is in progress
         makeDisabled(true);
+        FilePath ws = getWorkspace();
+        if(ws!=null)
+            getScm().processWorkspaceBeforeDeletion(this, ws,getLastBuiltOn());
         super.performDelete();
     }
 
