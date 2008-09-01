@@ -43,7 +43,7 @@
       <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>remoting</artifactId>
       <version>${project.version}</version>
-      <scope>compile</scope><!-- always rely on JDK15 version during compilation, even if we are targeting 1.4 -->
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 </project>
