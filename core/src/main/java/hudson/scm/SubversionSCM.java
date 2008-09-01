@@ -13,6 +13,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -85,6 +87,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -171,6 +174,16 @@ public class SubversionSCM extends SCM implements Serializable {
      * @since 1.91
      */
     public ModuleLocation[] getLocations() {
+    	return getLocations(null);
+    }
+    
+    /**
+     * list of all configured svn locations, expanded according to 
+     * build parameters values;
+     *
+     * @since 1.91
+     */
+    public ModuleLocation[] getLocations(AbstractBuild<?, ?> build) {
         // check if we've got a old location
         if (modules != null) {
             // import the old configuration
@@ -187,7 +200,16 @@ public class SubversionSCM extends SCM implements Serializable {
             locations = oldLocations.toArray(new ModuleLocation[oldLocations.size()]);
             modules = null;
         }
-        return locations;
+
+        if(build == null)
+        	return locations;
+        
+        ModuleLocation[] outLocations = new ModuleLocation[locations.length];
+        for (int i = 0; i < outLocations.length; i++) {
+			outLocations[i] = locations[i].getExpandedLocation(build);
+		}
+
+        return outLocations;
     }
 
     public boolean isUseUpdate() {
@@ -205,6 +227,8 @@ public class SubversionSCM extends SCM implements Serializable {
     @Override
     public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
         super.buildEnvVars(build, env);
+        
+        ModuleLocation[] locations = getLocations(build);
 
         try {
             Map<String,Long> revisions = parseRevisionFile(build);
@@ -326,7 +350,7 @@ public class SubversionSCM extends SCM implements Serializable {
         // write out the revision file
         PrintWriter w = new PrintWriter(new FileOutputStream(getRevisionFile(build)));
         try {
-            Map<String,SvnInfo> revMap = workspace.act(new BuildRevisionMapTask(this, listener, externals));
+            Map<String,SvnInfo> revMap = workspace.act(new BuildRevisionMapTask(build, this, listener, externals));
             for (Entry<String,SvnInfo> e : revMap.entrySet()) {
                 w.println( e.getKey() +'/'+ e.getValue().revision );
             }
@@ -354,10 +378,14 @@ public class SubversionSCM extends SCM implements Serializable {
      */
     private List<External> checkout(AbstractBuild build, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         try {
-            if (!repositoryLocationsExist() && build.getProject().getLastSuccessfulBuild()!=null) {
+        	ArrayList<String> warnings = new ArrayList<String>();
+        	
+            if (!repositoryLocationsExist(build, warnings) && build.getProject().getLastSuccessfulBuild()!=null) {
                 // Disable this project, see issue #763
                 // but only do so if there was at least some successful build,
                 // to make sure that initial configuration error won't disable the build. see issue #1567
+            	listenerPrintln(listener, warnings);
+            	
                 listener.getLogger().println("One or more repository locations do not exist anymore for " + build.getProject().getName() + ", project will be disabled.");
                 build.getProject().makeDisabled(true);
                 return null;
@@ -366,11 +394,20 @@ public class SubversionSCM extends SCM implements Serializable {
             e.printStackTrace(listener.error(e.getMessage()));
             return null;
         }
-        Boolean isUpdatable = useUpdate && workspace.act(new IsUpdatableTask(this, listener));
-        return workspace.act(new CheckOutTask(this, build.getTimestamp().getTime(), isUpdatable, listener));
+        Boolean isUpdatable = useUpdate && workspace.act(new IsUpdatableTask(build, this, listener));
+        return workspace.act(new CheckOutTask(build, this, build.getTimestamp().getTime(), isUpdatable, listener));
     }
 
-    /**
+    private void listenerPrintln(TaskListener listener,
+			ArrayList<String> messages) {
+    	PrintStream out = listener.getLogger();
+		for (String string : messages) {
+			out.println(string);
+		}
+		
+	}
+
+	/**
      * Either run "svn co" or "svn up" equivalent.
      */
     private static class CheckOutTask implements FileCallable<List<External>> {
@@ -381,12 +418,12 @@ public class SubversionSCM extends SCM implements Serializable {
         private final TaskListener listener;
         private final ModuleLocation[] locations;
 
-        public CheckOutTask(SubversionSCM parent, Date timestamp, boolean update, TaskListener listener) {
+        public CheckOutTask(AbstractBuild<?, ?> build, SubversionSCM parent, Date timestamp, boolean update, TaskListener listener) {
             this.authProvider = parent.getDescriptor().createAuthenticationProvider();
             this.timestamp = timestamp;
             this.update = update;
             this.listener = listener;
-            this.locations = parent.getLocations();
+            this.locations = parent.getLocations(build);
         }
 
         public List<External> invoke(File ws, VirtualChannel channel) throws IOException {
@@ -643,11 +680,11 @@ public class SubversionSCM extends SCM implements Serializable {
         private final List<External> externals;
         private final ModuleLocation[] locations;
 
-        public BuildRevisionMapTask(SubversionSCM parent, TaskListener listener, List<External> externals) {
+        public BuildRevisionMapTask(AbstractBuild<?, ?> build, SubversionSCM parent, TaskListener listener, List<External> externals) {
             this.authProvider = parent.getDescriptor().createAuthenticationProvider();
             this.listener = listener;
             this.externals = externals;
-            this.locations = parent.getLocations();
+            this.locations = parent.getLocations(build);
         }
 
         public Map<String,SvnInfo> invoke(File ws, VirtualChannel channel) throws IOException {
@@ -705,10 +742,10 @@ public class SubversionSCM extends SCM implements Serializable {
         private final ISVNAuthenticationProvider authProvider;
         private final ModuleLocation[] locations;
 
-        IsUpdatableTask(SubversionSCM parent,TaskListener listener) {
+        IsUpdatableTask(AbstractBuild<?, ?> build, SubversionSCM parent,TaskListener listener) {
             this.authProvider = parent.getDescriptor().createAuthenticationProvider();
             this.listener = listener;
-            this.locations = parent.getLocations();
+            this.locations = parent.getLocations(build);
         }
 
         public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
@@ -749,8 +786,11 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         try {
-            if (!repositoryLocationsExist()) {
+        	ArrayList<String> warnings = new ArrayList<String>();
+        	
+            if (!repositoryLocationsExist(lastBuild, warnings)) {
                 // Disable this project, see issue #763
+            	listenerPrintln(listener, warnings);
                 listener.getLogger().println("One or more repository locations do not exist anymore for " + project + ", project will be disabled.");
                 project.makeDisabled(true);
                 return false;
@@ -1364,10 +1404,21 @@ public class SubversionSCM extends SCM implements Serializable {
         }
     }
 
-    public boolean repositoryLocationsExist() throws SVNException {
-        for (ModuleLocation l : getLocations())
-            if (getDescriptor().checkRepositoryPath(SVNURL.parseURIDecoded(l.remote)) == SVNNodeKind.NONE)
+    public boolean repositoryLocationsExist(AbstractBuild<?, ?> build, ArrayList<String> warningList) throws SVNException {
+        for (ModuleLocation l : getLocations(build))
+            if (getDescriptor().checkRepositoryPath(SVNURL.parseURIDecoded(l.remote)) == SVNNodeKind.NONE) {
+            	warningList.add("Location '" + l.remote + "' does not exist");
+            	
+            	ParametersAction params = build.getAction(ParametersAction.class);
+            	if(params != null) {
+            		warningList.add("[expanded on build '" + build + "' parameters values]");
+            		
+            		for (ParameterValue paramValue : params) {
+						warningList.add("[" + paramValue + "]");
+					}
+             	}
                 return false;
+            }
         return true;
     }
 
@@ -1426,6 +1477,32 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         private static final long serialVersionUID = 1L;
+
+        /*
+         * (2008/08/10,Luca Milanesio)
+         * I need to access 'remote' field with a getter to allow Project-based
+         * parameter substitution.
+         */
+		private String getExpandedRemote(AbstractBuild<?,?> build) {
+			String outRemote = remote;
+			
+		       ParametersAction parameters = build.getAction(ParametersAction.class);
+		        if (parameters != null)
+		            outRemote = parameters.substitute(build,remote);
+		        
+			return outRemote;
+		}
+		
+		/**
+		 * Expand location value based on Build parametric execution.
+		 *  
+		 *  @param build Build instance for expanding parameters into their values
+		 *  
+		 *  @return Output ModuleLocation expanded according to Build parameters values.
+		 */
+		public ModuleLocation getExpandedLocation(AbstractBuild<?,?> build) {
+			return new ModuleLocation(getExpandedRemote(build), local);
+		}
     }
 
     private static final Logger LOGGER = Logger.getLogger(SubversionSCM.class.getName());

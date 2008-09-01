@@ -3,6 +3,7 @@ package hudson.tasks;
 import hudson.Launcher;
 import hudson.Functions;
 import hudson.maven.AbstractMavenProject;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -414,12 +415,19 @@ public class Mailer extends Publisher {
 
         @Exported
         public String getAddress() {
+        	return getAddress(null);
+        }
+        
+        public String getAddress(AbstractBuild<?, ?> build) {
             if(emailAddress!=null)
                 return emailAddress;
 
             // try the inference logic
-            return MailAddressResolver.resolve(user);
-        }
+            if(build != null)
+            return MailAddressResolver.resolve(build, user);
+            else
+            	return MailAddressResolver.resolve(user);
+        }        
 
         public DescriptorImpl getDescriptor() {
             return DESCRIPTOR;

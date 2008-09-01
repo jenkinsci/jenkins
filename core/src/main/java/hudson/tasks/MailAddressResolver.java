@@ -5,6 +5,7 @@ import hudson.Plugin;
 import hudson.scm.SCM;
 import hudson.scm.CVSSCM;
 import hudson.scm.SubversionSCM;
+import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.model.AbstractProject;
 
@@ -59,9 +60,15 @@ public abstract class MailAddressResolver implements ExtensionPoint {
      */
     public abstract String findMailAddressFor(User u);
     
-    public static String resolve(User u) {
+	public static String resolve(AbstractBuild<?, ?> build, User u) {
         for (MailAddressResolver r : LIST) {
-            String email = r.findMailAddressFor(u);
+        	String email = null;
+        	
+        	if(build != null)
+            email = r.findMailAddressFor(build, u);
+        	else
+        		email = r.findMailAddressFor(u);
+        	
             if(email!=null) return email;
         }
 
@@ -79,6 +86,14 @@ public abstract class MailAddressResolver implements ExtensionPoint {
             return u.getId()+ds;
         else
             return null;
+	}
+	
+    protected String findMailAddressFor(AbstractBuild<?, ?> build, User u) {
+    	return findMailAddressFor(u);
+	}
+
+	public static String resolve(User u) {
+    	return resolve(null, u);
     }
 
     /**
@@ -117,6 +132,10 @@ public abstract class MailAddressResolver implements ExtensionPoint {
      */
     public static class DefaultAddressResolver extends MailAddressResolver {
         public String findMailAddressFor(User u) {
+        	return findMailAddressFor(null, u);
+        }
+        
+        public String findMailAddressFor(AbstractBuild<?, ?>build, User u) {
             for (AbstractProject<?,?> p : u.getProjects()) {
                 SCM scm = p.getScm();
                 if (scm instanceof CVSSCM) {
@@ -127,7 +146,7 @@ public abstract class MailAddressResolver implements ExtensionPoint {
                 }
                 if (scm instanceof SubversionSCM) {
                     SubversionSCM svn = (SubversionSCM) scm;
-                    for (SubversionSCM.ModuleLocation loc : svn.getLocations()) {
+                    for (SubversionSCM.ModuleLocation loc : svn.getLocations(build)) {
                         String s = findMailAddressFor(u,loc.remote);
                         if(s!=null) return s;
                     }

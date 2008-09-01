@@ -34,4 +34,9 @@ public class StringParameterValue extends ParameterValue {
             }
         };
     }
+    
+    @Override
+    public String toString() {
+    	return "(StringParameterValue) " + getName() + "='" + value + "'";
+    }
 }

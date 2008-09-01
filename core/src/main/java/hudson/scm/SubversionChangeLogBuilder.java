@@ -70,7 +70,7 @@ public final class SubversionChangeLogBuilder {
             th.setDocumentLocator(DUMMY_LOCATOR);
             logHandler.startDocument();
 
-            for (ModuleLocation l : scm.getLocations()) {
+            for (ModuleLocation l : scm.getLocations(build)) {
                 changelogFileCreated |= buildModule(l.remote, svnlc, logHandler);
             }
             for(SubversionSCM.External ext : externals) {
