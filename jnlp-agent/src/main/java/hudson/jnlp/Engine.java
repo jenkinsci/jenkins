@@ -13,6 +13,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
+ * Slave agent engine that proactively connects to Hudson master.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Engine extends Thread {
@@ -24,12 +26,21 @@ public class Engine extends Thread {
     private final String secretKey;
     private final String slaveName;
 
+    /**
+     * @see Main#tunnel
+     */
+    private String tunnel;
+
     public Engine(Listener listener, String host, String hudsonUrl, String secretKey, String slaveName) {
         this.listener = listener;
         this.host = host;
         this.hudsonUrl = hudsonUrl;
         this.secretKey = secretKey;
         this.slaveName = slaveName;
+    }
+
+    public void setTunnel(String tunnel) {
+        this.tunnel = tunnel;
     }
 
     public void run() {
@@ -76,6 +87,16 @@ public class Engine extends Thread {
      * Connects to TCP slave port, with a few retries.
      */
     private Socket connect(String port) throws IOException, InterruptedException {
+        String host = this.host;
+
+        if(tunnel!=null) {
+            String[] tokens = tunnel.split(":");
+            if(tokens.length!=2)
+                throw new IOException("Illegal tunneling parameter: "+tunnel);
+            if(tokens[0].length()>0)    host = tokens[0];
+            if(tokens[1].length()>0)    port = tokens[1];
+        }
+
         String msg = "Connecting to " + host + ':' + port;
         listener.status(msg);
         int retry = 1;
