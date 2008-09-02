@@ -13,10 +13,13 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.UpdateCenter;
+import hudson.model.Saveable;
 import hudson.tasks.Mailer;
 import hudson.Launcher.LocalLauncher;
 import hudson.util.StreamTaskListener;
 import hudson.util.ProcessTreeKiller;
+import hudson.remoting.Channel;
+import hudson.maven.MavenBuildProxy;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -270,6 +273,14 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     /**
+     * Sometimes a part of a test case may ends up creeping into the serialization tree of {@link Saveable#save()},
+     * so detect that and flag that as an error. 
+     */
+    private Object writeReplace() {
+        throw new AssertionError("HudsonTestCase "+getName()+" is not supposed to be serialized");
+    }
+
+    /**
      * Extends {@link com.gargoylesoftware.htmlunit.WebClient} and provide convenience methods
      * for accessing Hudson.
      */
@@ -385,8 +396,6 @@ public abstract class HudsonTestCase extends TestCase {
         // hudson-behavior.js relies on this to decide whether it's running unit tests.
         System.setProperty("hudson.unitTest","true");
     }
-
-
 
     private static final Logger LOGGER = Logger.getLogger(HudsonTestCase.class.getName());
 }
