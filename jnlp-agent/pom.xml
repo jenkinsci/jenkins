@@ -35,6 +35,25 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+        <artifactId>maven-antrun-extended-plugin</artifactId>
+        <executions>
+          <execution>
+            <!-- rejar args4j contents -->
+            <phase>process-classes</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <resolveArtifact artifactId="args4j" property="args4j.jar" />
+                <unjar src="${args4j.jar}" dest="target/classes" />
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -44,6 +63,12 @@
       <artifactId>remoting</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>args4j</groupId>
+      <artifactId>args4j</artifactId>
+      <version>2.0.9</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>
