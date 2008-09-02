@@ -49,7 +49,7 @@ public class Main {
         Main m = new Main();
         CmdLineParser p = new CmdLineParser(m);
         try {
-            p.parseArgument();
+            p.parseArgument(args);
             if(m.args.size()!=4)
                 throw new CmdLineException("four arguments required");
         } catch (CmdLineException e) {
