@@ -14,6 +14,9 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.UpdateCenter;
 import hudson.tasks.Mailer;
+import hudson.Launcher.LocalLauncher;
+import hudson.util.StreamTaskListener;
+import hudson.util.ProcessTreeKiller;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -200,6 +203,13 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     /**
+     * Creates {@link LocalLauncher}. Useful for launching processes.
+     */
+    protected LocalLauncher createLocalLauncher() {
+        return new LocalLauncher(new StreamTaskListener(System.out));
+    }
+
+    /**
      * Returns the last item in the list.
      */
     protected <T> T last(List<T> items) {
@@ -365,6 +375,9 @@ public abstract class HudsonTestCase extends TestCase {
                 return e.getURI().contains("/yui/");
             }
         };
+
+        // clean up run-away processes extra hard
+        ProcessTreeKiller.enabled = true;
 
         // suppress INFO output from Spring, which is verbose
         Logger.getLogger("org.springframework").setLevel(Level.WARNING);
