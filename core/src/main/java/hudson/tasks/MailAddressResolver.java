@@ -127,7 +127,7 @@ public abstract class MailAddressResolver implements ExtensionPoint {
                 }
                 if (scm instanceof SubversionSCM) {
                     SubversionSCM svn = (SubversionSCM) scm;
-                    for (SubversionSCM.ModuleLocation loc : svn.getLocations()) {
+                    for (SubversionSCM.ModuleLocation loc : svn.getLocations(p.getLastBuild())) {
                         String s = findMailAddressFor(u,loc.remote);
                         if(s!=null) return s;
                     }

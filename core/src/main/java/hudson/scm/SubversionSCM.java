@@ -181,7 +181,7 @@ public class SubversionSCM extends SCM implements Serializable {
      * list of all configured svn locations, expanded according to 
      * build parameters values;
      *
-     * @since 1.91
+     * @since 1.252
      */
     public ModuleLocation[] getLocations(AbstractBuild<?, ?> build) {
         // check if we've got a old location
@@ -378,13 +378,11 @@ public class SubversionSCM extends SCM implements Serializable {
      */
     private List<External> checkout(AbstractBuild build, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         try {
-        	ArrayList<String> warnings = new ArrayList<String>();
         	
-            if (!repositoryLocationsExist(build, warnings) && build.getProject().getLastSuccessfulBuild()!=null) {
+            if (!repositoryLocationsExist(build, listener) && build.getProject().getLastSuccessfulBuild()!=null) {
                 // Disable this project, see issue #763
                 // but only do so if there was at least some successful build,
                 // to make sure that initial configuration error won't disable the build. see issue #1567
-            	listenerPrintln(listener, warnings);
             	
                 listener.getLogger().println("One or more repository locations do not exist anymore for " + build.getProject().getName() + ", project will be disabled.");
                 build.getProject().makeDisabled(true);
@@ -398,14 +396,6 @@ public class SubversionSCM extends SCM implements Serializable {
         return workspace.act(new CheckOutTask(build, this, build.getTimestamp().getTime(), isUpdatable, listener));
     }
 
-    private void listenerPrintln(TaskListener listener,
-			ArrayList<String> messages) {
-    	PrintStream out = listener.getLogger();
-		for (String string : messages) {
-			out.println(string);
-		}
-		
-	}
 
 	/**
      * Either run "svn co" or "svn up" equivalent.
@@ -778,20 +768,24 @@ public class SubversionSCM extends SCM implements Serializable {
         private static final long serialVersionUID = 1L;
     }
 
-    public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+    public boolean pollChanges(AbstractProject project, Launcher launcher,
+            FilePath workspace, TaskListener listener) throws IOException,
+            InterruptedException {
         AbstractBuild lastBuild = (AbstractBuild) project.getLastBuild();
-        if(lastBuild==null) {
-            listener.getLogger().println("No existing build. Starting a new one");
+        if (lastBuild == null) {
+            listener.getLogger().println(
+                    "No existing build. Starting a new one");
             return true;
         }
 
         try {
-        	ArrayList<String> warnings = new ArrayList<String>();
-        	
-            if (!repositoryLocationsExist(lastBuild, warnings)) {
+
+            if (!repositoryLocationsExist(lastBuild, listener)) {
                 // Disable this project, see issue #763
-            	listenerPrintln(listener, warnings);
-                listener.getLogger().println("One or more repository locations do not exist anymore for " + project + ", project will be disabled.");
+
+                listener.getLogger().println(
+                        "One or more repository locations do not exist anymore for "
+                                + project + ", project will be disabled.");
                 project.makeDisabled(true);
                 return false;
             }
@@ -1404,19 +1398,26 @@ public class SubversionSCM extends SCM implements Serializable {
         }
     }
 
-    public boolean repositoryLocationsExist(AbstractBuild<?, ?> build, ArrayList<String> warningList) throws SVNException {
+    public boolean repositoryLocationsExist(AbstractBuild<?, ?> build,
+            TaskListener listener) throws SVNException {
+
+        PrintStream out = listener.getLogger();
+
         for (ModuleLocation l : getLocations(build))
-            if (getDescriptor().checkRepositoryPath(SVNURL.parseURIDecoded(l.remote)) == SVNNodeKind.NONE) {
-            	warningList.add("Location '" + l.remote + "' does not exist");
-            	
-            	ParametersAction params = build.getAction(ParametersAction.class);
-            	if(params != null) {
-            		warningList.add("[expanded on build '" + build + "' parameters values]");
-            		
-            		for (ParameterValue paramValue : params) {
-						warningList.add("[" + paramValue + "]");
-					}
-             	}
+            if (getDescriptor().checkRepositoryPath(
+                    SVNURL.parseURIDecoded(l.remote)) == SVNNodeKind.NONE) {
+                out.println("Location '" + l.remote + "' does not exist");
+
+                ParametersAction params = build
+                        .getAction(ParametersAction.class);
+                if (params != null) {
+                    out.println("Location could be expanded on build '" + build
+                            + "' parameters values:");
+
+                    for (ParameterValue paramValue : params) {
+                        out.println("  " + paramValue);
+                    }
+                }
                 return false;
             }
         return true;
@@ -1478,31 +1479,30 @@ public class SubversionSCM extends SCM implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
-        /*
-         * (2008/08/10,Luca Milanesio)
-         * I need to access 'remote' field with a getter to allow Project-based
-         * parameter substitution.
+
+		private String getExpandedRemote(AbstractBuild<?, ?> build) {
+            String outRemote = remote;
+
+            ParametersAction parameters = build
+                    .getAction(ParametersAction.class);
+            if (parameters != null)
+                outRemote = parameters.substitute(build, remote);
+
+            return outRemote;
+        }
+
+        /**
+         * Expand location value based on Build parametric execution.
+         * 
+         * @param build
+         *            Build instance for expanding parameters into their values
+         * 
+         * @return Output ModuleLocation expanded according to Build parameters
+         *         values.
          */
-		private String getExpandedRemote(AbstractBuild<?,?> build) {
-			String outRemote = remote;
-			
-		       ParametersAction parameters = build.getAction(ParametersAction.class);
-		        if (parameters != null)
-		            outRemote = parameters.substitute(build,remote);
-		        
-			return outRemote;
-		}
-		
-		/**
-		 * Expand location value based on Build parametric execution.
-		 *  
-		 *  @param build Build instance for expanding parameters into their values
-		 *  
-		 *  @return Output ModuleLocation expanded according to Build parameters values.
-		 */
-		public ModuleLocation getExpandedLocation(AbstractBuild<?,?> build) {
-			return new ModuleLocation(getExpandedRemote(build), local);
-		}
+        public ModuleLocation getExpandedLocation(AbstractBuild<?, ?> build) {
+            return new ModuleLocation(getExpandedRemote(build), local);
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(SubversionSCM.class.getName());
