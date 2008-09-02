@@ -24,6 +24,10 @@ public class ScmTest extends HudsonTestCase {
                 callback[0] = true;
                 return true;
             }
+
+            private Object writeReplace() { // don't really care about save
+                return new NullSCM();
+            }
         });
         p.scheduleBuild2(0).get();
         p.delete();
