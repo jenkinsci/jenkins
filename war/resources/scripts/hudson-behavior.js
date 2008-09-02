@@ -14,6 +14,15 @@ function object(o) {
 // id generator
 var iota = 0;
 
+// are we run as unit tests?
+var isRunAsTest = (function() {
+    try {
+        return Packages.java.lang.System.getProperty("hudson.unitTest")!=null;
+    } catch(e) {
+        return false;
+    }
+})();
+
 // Form check code
 //========================================================
 var FormChecker = {
@@ -634,6 +643,7 @@ function expandTextArea(button,id) {
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
 function refreshPart(id,url) {
+    if(isRunAsTest) return;
     window.setTimeout(function() {
         new Ajax.Request(url, {
             method: "post",
@@ -892,6 +902,7 @@ function addRadioBlock(id) {
 
 
 function updateBuildHistory(ajaxUrl,nBuild) {
+    if(isRunAsTest) return;
     $('buildHistory').headers = ["n",nBuild];
 
     function updateBuilds() {

@@ -381,6 +381,9 @@ public abstract class HudsonTestCase extends TestCase {
 
         // suppress INFO output from Spring, which is verbose
         Logger.getLogger("org.springframework").setLevel(Level.WARNING);
+
+        // hudson-behavior.js relies on this to decide whether it's running unit tests.
+        System.setProperty("hudson.unitTest","true");
     }
 
 
