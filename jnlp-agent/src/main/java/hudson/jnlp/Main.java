@@ -10,6 +10,7 @@ import javax.swing.JOptionPane;
 import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -114,7 +115,7 @@ public class Main {
         }
 
         public void error(final Throwable t) {
-            LOGGER.severe(t.getMessage());
+            LOGGER.log(Level.SEVERE, t.getMessage(), t);
             System.exit(-1);
         }
     }
