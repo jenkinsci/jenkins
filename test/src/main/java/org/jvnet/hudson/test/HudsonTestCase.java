@@ -161,7 +161,7 @@ public abstract class HudsonTestCase extends TestCase {
     protected ServletContext createWebServer() throws Exception {
         server = new Server();
 
-        WebAppContext context = new WebAppContext(WarExploder.EXPLODE_DIR.getPath(), contextPath);
+        WebAppContext context = new WebAppContext(WarExploder.getExplodedDir().getPath(), contextPath);
         context.setClassLoader(getClass().getClassLoader());
         context.setConfigurations(new Configuration[]{new WebXmlConfiguration(),new NoListenerConfiguration()});
         server.setHandler(context);
