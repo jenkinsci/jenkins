@@ -5,6 +5,8 @@ import hudson.MarkupText.SubText;
 
 import java.util.List;
 import java.util.regex.Pattern;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -35,6 +37,14 @@ public class MarkupTextTest extends TestCase {
             st.surroundWith("<$1>","<$1>");
 
         assertEquals("Fixed 2 issues in this commit, fixing issue <155>155<155>, <145>145<145>", t.toString());
+    }
+
+    public void testLiteralTextSurround() {
+        MarkupText text = new MarkupText("AAA test AAA");
+        for(SubText token : text.findTokens(Pattern.compile("AAA"))) {
+            token.surroundWithLiteral("$9","$9");
+        }
+        assertEquals("$9AAA$9 test $9AAA$9",text.toString());
     }
 
     private static final Pattern pattern = Pattern.compile("issue #([0-9]+)");
