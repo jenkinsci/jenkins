@@ -84,6 +84,14 @@ public class MarkupText extends AbstractMarkupText {
         }
 
         /**
+         * Works like {@link #surroundWith(String, String)} except
+         * that the token replacement is not performed on parameters.
+         */
+        public void surroundWithLiteral(String startTag, String endTag) {
+            addMarkup(0,length(),startTag,endTag);
+        }
+
+        /**
          * Gets the start index of the captured group within {@link MarkupText#getText()}.
          *
          * @param groupIndex
