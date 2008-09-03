@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -95,6 +96,13 @@ public class CopyOnWriteList<E> implements Iterable<E> {
      */
     public void replaceBy(Collection<? extends E> that) {
         this.core = new ArrayList<E>(that);
+    }
+
+    /**
+     * Completely replaces this list by the contents of the given list.
+     */
+    public void replaceBy(E... that) {
+        replaceBy(Arrays.asList(that));
     }
 
     public void clear() {
