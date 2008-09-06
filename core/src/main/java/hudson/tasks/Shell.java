@@ -59,7 +59,7 @@ public class Shell extends CommandInterpreter {
             args.set(0,args.get(0).substring(2));   // trim off "#!"
             return args.toArray(new String[args.size()]);
         } else
-            return new String[] { DESCRIPTOR.getShell(),"-xe",script.getRemote()};
+            return new String[] { DESCRIPTOR.getShellOrDefault(),"-xe",script.getRemote()};
     }
 
     protected String getContents() {
@@ -92,6 +92,10 @@ public class Shell extends CommandInterpreter {
         }
 
         public String getShell() {
+            return shell;
+        }
+
+        public String getShellOrDefault() {
             if(shell==null)
                 return isWindows()?"sh":"/bin/sh";
             return shell;

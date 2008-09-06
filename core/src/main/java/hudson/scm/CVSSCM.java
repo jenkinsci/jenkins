@@ -310,7 +310,7 @@ public class CVSSCM extends SCM implements Serializable {
         dir.deleteContents();
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.add(getDescriptor().getCvsExe(), debug ?"-t":"-Q",compression(),"-d",cvsroot,"co","-P");
+        cmd.add(getDescriptor().getCvsExeOrDefault(), debug ?"-t":"-Q",compression(),"-d",cvsroot,"co","-P");
         if(branch!=null)
             cmd.add("-r",branch);
         if(flatten)
@@ -412,7 +412,7 @@ public class CVSSCM extends SCM implements Serializable {
         List<String> changedFileNames = new ArrayList<String>();    // file names relative to the workspace
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.add(getDescriptor().getCvsExe(),"-q",compression());
+        cmd.add(getDescriptor().getCvsExeOrDefault(),"-q",compression());
         if(dryRun)
             cmd.add("-n");
         cmd.add("update","-PdC");
@@ -710,7 +710,7 @@ public class CVSSCM extends SCM implements Serializable {
         listener.getLogger().println("$ computing changelog");
 
         final String cvspassFile = getDescriptor().getCvspassFile();
-        final String cvsExe = getDescriptor().getCvsExe();
+        final String cvsExe = getDescriptor().getCvsExeOrDefault();
 
         OutputStream o = null;
         try {
@@ -981,6 +981,10 @@ public class CVSSCM extends SCM implements Serializable {
         }
 
         public String getCvsExe() {
+            return cvsExe;
+        }
+
+        public String getCvsExeOrDefault() {
             if(cvsExe==null)    return "cvs";
             else                return cvsExe;
         }
@@ -1051,7 +1055,7 @@ public class CVSSCM extends SCM implements Serializable {
             ByteBuffer baos = new ByteBuffer();
             try {
                 Proc proc = Hudson.getInstance().createLauncher(TaskListener.NULL).launch(
-                    new String[]{getCvsExe(), "--version"}, new String[0], baos, null);
+                    new String[]{getCvsExeOrDefault(), "--version"}, new String[0], baos, null);
                 proc.join();
                 rsp.setContentType("text/plain");
                 baos.writeTo(rsp.getOutputStream());
@@ -1184,7 +1188,7 @@ public class CVSSCM extends SCM implements Serializable {
 
             rsp.setContentType("text/plain");
             Proc proc = Hudson.getInstance().createLauncher(TaskListener.NULL).launch(
-                new String[]{getCvsExe(), "-d",cvsroot,"login"}, new String[0],
+                new String[]{getCvsExeOrDefault(), "-d",cvsroot,"login"}, new String[0],
                 new ByteArrayInputStream((password+"\n").getBytes()),
                 rsp.getOutputStream());
             proc.join();
@@ -1383,7 +1387,7 @@ public class CVSSCM extends SCM implements Serializable {
                     boolean isDir = path.isDirectory();
 
                     ArgumentListBuilder cmd = new ArgumentListBuilder();
-                    cmd.add(getDescriptor().getCvsExe(),"tag");
+                    cmd.add(getDescriptor().getCvsExeOrDefault(),"tag");
                     if(isDir) {
                         cmd.add("-R");
                     }
