@@ -444,8 +444,19 @@ public abstract class FormFieldValidator {
             } else {
                 // look in PATH
                 String path = EnvVars.masterEnvVars.get("PATH");
+                String tokenizedPath = "";
+                String delimiter = null;
                 if(path!=null) {
                     for (String _dir : Util.tokenize(path,File.pathSeparator)) {
+                        if (delimiter == null) {
+                          delimiter = ", ";
+                        }
+                        else {
+                          tokenizedPath += delimiter;
+                        }
+
+                        tokenizedPath += _dir.replace('\\', '/');
+                        
                         File dir = new File(_dir);
 
                         File f = new File(dir,exe);
@@ -460,10 +471,15 @@ public abstract class FormFieldValidator {
                             return;
                         }
                     }
+                    
+                    tokenizedPath += ".";
+                }
+                else {
+                  tokenizedPath = "unavailable.";
                 }
 
                 // didn't find it
-                error("There's no such executable "+exe+" in PATH:"+path);
+                error("There's no such executable "+exe+" in PATH: "+tokenizedPath);
             }
         }
 
