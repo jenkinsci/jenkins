@@ -447,7 +447,7 @@ public abstract class FormFieldValidator {
                 String tokenizedPath = "";
                 String delimiter = null;
                 if(path!=null) {
-                    for (String _dir : Util.tokenize(path,File.pathSeparator)) {
+                    for (String _dir : Util.tokenize(path.replace("\\", "\\\\"),File.pathSeparator)) {
                         if (delimiter == null) {
                           delimiter = ", ";
                         }
