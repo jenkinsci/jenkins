@@ -51,6 +51,9 @@ public class Maven extends Builder {
      * Identifies {@link MavenInstallation} to be used.
      */
     private final String mavenName;
+    
+    private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
+    private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
 
     @DataBoundConstructor
     public Maven(String targets,String name) {
@@ -257,8 +260,13 @@ public class Maven extends Builder {
                         return;
                     }
 
-                    // I couldn't come up with a simple logic to test for a maven installation
-                    // there seems to be just too much difference between m1 and m2.
+                    File maven1File = new File(f,MAVEN_1_INSTALLATION_COMMON_FILE);
+                    File maven2File = new File(f,MAVEN_2_INSTALLATION_COMMON_FILE);
+
+                    if(!maven1File.exists() && !maven2File.exists()) {
+                        error(Messages.Maven_NotMavenDirectory(f));
+                        return;
+                    }
 
                     ok();
                 }
