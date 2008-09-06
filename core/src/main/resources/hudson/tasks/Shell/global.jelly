@@ -1,6 +1,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:section title="${%Shell}">
-    <f:entry title="${%Shell executable}">
+    <f:entry title="${%Shell executable}" help="/help/shell/shellexe.html">
       <f:textbox name="shell" value="${descriptor.shell}" checkUrl="'${rootURL}/builder/Shell/check?value='+encode(this.value)"/>
     </f:entry>
   </f:section>
