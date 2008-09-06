@@ -131,7 +131,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
     }
 
     public final String getDisplayName() {
-        return "Redeploy Artifacts";
+        return Messages.MavenAbstractArtifactRecord_Displayname();
     }
 
     public final String getUrlName() {
@@ -213,7 +213,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         }
 
         public String getDisplayName() {
-            return "Deployment History";
+            return Messages.HistoryWidgetImpl_Displayname();
         }
     }
 

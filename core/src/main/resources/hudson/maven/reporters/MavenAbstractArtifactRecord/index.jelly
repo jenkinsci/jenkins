@@ -7,7 +7,7 @@
     <l:main-panel>
       <h1>
         <img src="${imagesURL}/48x48/redo.gif" width="48" height="48" />
-        Redeploy Artifacts
+        ${%Redeploy Artifacts}
       </h1>
 
       <j:choose>
@@ -25,7 +25,7 @@
           <f:form method="post" action="redeploy">
             <st:include page="/hudson/maven/RedeployPublisher/config.jelly" />
             <f:block>
-              <f:submit value="OK" style="margin-top:1em;" />
+              <f:submit value="${%OK}" style="margin-top:1em;" />
             </f:block>
           </f:form>
         </j:otherwise>
