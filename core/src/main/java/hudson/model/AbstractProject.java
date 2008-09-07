@@ -376,8 +376,36 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public boolean scheduleBuild(int quietPeriod) {
-        if(isDisabled())    return false;
-        return Hudson.getInstance().getQueue().add(this,quietPeriod);
+        if (isDisabled())
+            return false;
+
+        if (isParameterized())
+            return Hudson.getInstance().getQueue().add(
+                    new ParameterizedProjectTask(this, getDefaultParametersValues()), quietPeriod);
+        else
+            return Hudson.getInstance().getQueue().add(this, quietPeriod);
+    }
+
+    private List<ParameterValue> getDefaultParametersValues() {
+        ParametersDefinitionProperty paramDefProp = getProperty(ParametersDefinitionProperty.class);
+        ArrayList<ParameterValue> defValues = new ArrayList<ParameterValue>();
+        
+        /*
+         * This check is made ONLY if someone will call this method even if isParametrized() is false.
+         */
+        if(paramDefProp == null)
+            return defValues;
+        
+        /* Scan for all parameter with an associated default values */
+        for(ParameterDefinition paramDefinition : paramDefProp.getParameterDefinitions())
+        {
+           ParameterValue defaultValue  = paramDefinition.getDefaultParameterValue();
+            
+            if(defaultValue != null)
+                defValues.add(defaultValue);           
+        }
+        
+        return defValues;
     }
 
     /**

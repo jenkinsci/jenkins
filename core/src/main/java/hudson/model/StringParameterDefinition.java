@@ -41,6 +41,10 @@ public class StringParameterDefinition extends ParameterDefinition {
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
     }
+    
+    public StringParameterValue getDefaultParameterValue() {
+        return new StringParameterValue(getName(), defaultValue);
+    }
 
     public static final ParameterDescriptor DESCRIPTOR = new DescriptorImpl();
 

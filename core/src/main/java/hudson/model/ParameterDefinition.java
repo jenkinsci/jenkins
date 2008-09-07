@@ -81,6 +81,16 @@ public abstract class ParameterDefinition implements
     public abstract ParameterDescriptor getDescriptor();
 
     public abstract ParameterValue createValue(StaplerRequest req, JSONObject jo);
+    
+    /**
+     * Returns default parameter value for this definition.
+     * 
+     * @return default parameter value or null if no defaults are available
+     * @since 1.253
+     */
+    public ParameterValue getDefaultParameterValue() {
+        return null;
+    }
 
     /**
      * A list of available parameter definition types
