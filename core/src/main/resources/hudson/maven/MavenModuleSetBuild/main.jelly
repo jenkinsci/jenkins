@@ -1,5 +1,5 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <h2>Module Builds</h2>
+  <h2>${%Module Builds}</h2>
   <j:choose>
     <!-- there's 1:1 relationship between modules and the module set -->
     <j:when test="${it.project.aggregatorStyleBuild}">
