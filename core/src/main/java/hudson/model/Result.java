@@ -13,11 +13,12 @@ import java.io.Serializable;
  */
 public final class Result implements Serializable, CustomExportedBean {
     /**
-     * The build didn't have any fatal errors not errors.
+     * The build had no errors.
      */
     public static final Result SUCCESS = new Result("SUCCESS",BallColor.BLUE,0);
     /**
-     * The build didn't have any fatal errors but some errors.
+     * The build had some errors but they were not fatal.
+     * For example, some tests failed.
      */
     public static final Result UNSTABLE = new Result("UNSTABLE",BallColor.YELLOW,1);
     /**

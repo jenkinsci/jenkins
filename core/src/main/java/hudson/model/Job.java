@@ -614,7 +614,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Returns the last successful build, if any. Otherwise null. A stable build
+     * Returns the last successful build, if any. Otherwise null. A successful build
      * would include either {@link Result#SUCCESS} or {@link Result#UNSTABLE}.
      * 
      * @see #getLastStableBuild()
@@ -633,6 +633,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Returns the last stable build, if any. Otherwise null.
+     * @see #getLastSuccessfulBuild
      */
     @Exported
     @QuickSilver
