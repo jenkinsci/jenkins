@@ -199,7 +199,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
      */
     private void correctAuthoritiesPopulator(WebApplicationContext appContext) {
         DeferredCreationLdapAuthoritiesPopulator factory = (DeferredCreationLdapAuthoritiesPopulator) appContext.getBean("authoritiesPopulator");
-        factory.setGroupSearchBase(groupSearchBase==null ? "ou=groups" : groupSearchBase);
+        factory.setGroupSearchBase(groupSearchBase==null ? "" : groupSearchBase);
     }
     
     /**
