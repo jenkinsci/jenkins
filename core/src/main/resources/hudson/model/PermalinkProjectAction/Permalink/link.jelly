@@ -1,17 +1,13 @@
 <!--
   Permalink to a build from a project page
 
-  @attrs property
-      The build property name
-  @attrs title
-      Title of the link
+  'job' must be bound to the parent job scope.
 -->
-        <!-- TODO: delete once batch-task plugin is updated. -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
-  <j:set var="b" value="${it[property]}"/>
+  <j:set var="b" value="${it.resolve(job)}"/>
   <j:if test="${b!=null}">
     <li>
-      <a href="${property}/">${%format(title,b.number,b.timestampString)}</a>
+      <a href="${it.url}/">${%format(it.displayName,b.number,b.timestampString)}</a>
     </li>
   </j:if>
 </j:jelly>

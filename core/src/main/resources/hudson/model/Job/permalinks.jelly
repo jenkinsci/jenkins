@@ -1,0 +1,10 @@
+<!-- display permalinks of the page -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+  <h2>${%Permalinks}</h2>
+  <ul>
+    <j:set var="job" value="${it}" />
+    <j:forEach var="p" items="${it.permalinks}">
+      <st:include page="link.jelly" it="${p}"/>
+    </j:forEach>
+  </ul>
+</j:jelly>

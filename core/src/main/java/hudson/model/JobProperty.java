@@ -65,12 +65,18 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
      * Returning non-null from this method allows a job property to add an item
      * to the left navigation bar in the job page.
      *
+     * <p>
+     * {@link Action} can implement additional marker interface to integrate
+     * with the UI in different ways.
+     *
      * @param job
      *      Always the same as {@link #owner} but passed in anyway for backward compatibility (I guess.)
      *      You really need not use this value at all.
      * @return
      *      null if there's no such action.
      * @since 1.102
+     * @see ProminentProjectAction
+     * @see PermalinkProjectAction
      */
     public Action getJobAction(J job) {
         return null;

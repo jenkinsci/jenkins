@@ -24,7 +24,7 @@
       </t:buildCaption>
 
       <div>
-        <t:editableDescription permission="${app.ADMINISTER}" />
+        <t:editableDescription permission="${it.UPDATE}" />
       </div>
 
       <table style="margin-top: 1em; margin-left:1em;">

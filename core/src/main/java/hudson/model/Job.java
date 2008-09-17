@@ -6,6 +6,7 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
+import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.search.QuickSilver;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -554,6 +555,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     return w;
             }
 
+            // is this a permalink?
+            for (Permalink p : getPermalinks()) {
+                if(p.getUrl().equals(token))
+                    return p.resolve(this);
+            }
+
             return super.getDynamic(token, req, rsp);
         }
     }
@@ -667,6 +674,21 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         while (r != null && r.isBuilding())
             r = r.getPreviousBuild();
         return r;
+    }
+
+    /**
+     * Gets all the {@link Permalink}s defined for this job.
+     */
+    public List<Permalink> getPermalinks() {
+        // TODO: shall we cache this?
+        List<Permalink> permalinks = new ArrayList<Permalink>(Permalink.BUILTIN);
+        for (Action a : getActions()) {
+            if (a instanceof PermalinkProjectAction) {
+                PermalinkProjectAction ppa = (PermalinkProjectAction) a;
+                permalinks.addAll(ppa.getPermalinks());
+            }
+        }
+        return permalinks;
     }
 
     /**

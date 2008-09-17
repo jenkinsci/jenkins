@@ -9,6 +9,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
 import hudson.model.listeners.RunListener;
+import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -621,6 +622,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Gets the {@link Resource} that represents the workspace of this project.
+     * Useful for locking and mutual exclusion control.
      */
     public Resource getWorkspaceResource() {
         return new Resource(getFullDisplayName()+" workspace");
