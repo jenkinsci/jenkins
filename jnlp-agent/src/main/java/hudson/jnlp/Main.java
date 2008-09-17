@@ -47,7 +47,12 @@ public class Main {
         // not sure if this is the cause, but attempting to fix
         // https://hudson.dev.java.net/issues/show_bug.cgi?id=310
         // by overwriting the security manager.
-        System.setSecurityManager(null);
+        try {
+            System.setSecurityManager(null);
+        } catch (SecurityException e) {
+            // ignore and move on.
+            // some user reported that this happens on their JVM: http://d.hatena.ne.jp/tueda_wolf/20080723
+        }
 
         Main m = new Main();
         CmdLineParser p = new CmdLineParser(m);
@@ -69,6 +74,8 @@ public class Main {
         Engine engine = new Engine(
                 headlessMode ? new CuiListener() : new GuiListener(),
                 args.get(0), args.get(1), args.get(2), args.get(3));
+        if(tunnel!=null)
+            engine.setTunnel(tunnel);
         engine.start();
     }
 
