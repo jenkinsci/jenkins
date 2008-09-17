@@ -486,7 +486,7 @@ div.healthReport:hover div.healthReportDetails, div.healthReport.hover div.healt
     display: block;
     position: absolute;
     background-color: #ffe;
-    border: 1 solid #bbb;
+    border: 1px solid #bbb;
     margin-left: 32px; /* move it across a bit */
 }
 
