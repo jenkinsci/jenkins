@@ -1,4 +1,4 @@
-package hudson.jnlp;
+package hudson.remoting.jnlp;
 
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.CmdLineParser;

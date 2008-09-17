@@ -77,7 +77,6 @@
                 <!-- dependencies that goes to unusual locations -->
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
-                <resolveArtifact artifactId="jnlp-agent" tofile="${basedir}/target/generated-resources/WEB-INF/jnlp-agent.jar" />
                 <resolveArtifact artifactId="winstone" tofile="${basedir}/target/generated-resources/winstone.jar" />
               </tasks>
             </configuration>
@@ -134,16 +133,6 @@
   <dependencies>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
-      <artifactId>jnlp-agent</artifactId>
-      <version>${project.version}</version>
-      <!--
-        not really a test scope, but we use dependency-maven-plugin to copy this jar,
-        so we don't want this to be bundled in war by maven-war-plugin.
-      -->
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>hudson-core</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -195,10 +184,6 @@
         <exclusion>
           <groupId>commons-cli</groupId>
           <artifactId>commons-cli</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-discovery</groupId>
-          <artifactId>commons-discovery</artifactId>
         </exclusion>
         <exclusion>
           <groupId>jaxme</groupId>
@@ -305,7 +290,12 @@
                 </goals>
                 <configuration>
                   <tasks>
-                    <!-- see ../jnlp-agent/pom.xml for details -->
+                    <!--
+                      during the development, debug profile defined in ../pom.xml will cause
+                      the jars to be signed by a self-certified dummy public key.
+
+                      For release, you should define the real values in ~/.m2/settings.xml
+                    -->
                     <signjar jar="target/hudson.war" alias="${hudson.sign.alias}" keystore="${hudson.sign.keystore}" storepass="${hudson.sign.storepass}" />
                   </tasks>
                 </configuration>

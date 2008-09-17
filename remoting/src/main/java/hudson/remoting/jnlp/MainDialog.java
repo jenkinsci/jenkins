@@ -1,4 +1,6 @@
-package hudson.jnlp;
+package hudson.remoting.jnlp;
+
+import hudson.remoting.jnlp.GUI;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;

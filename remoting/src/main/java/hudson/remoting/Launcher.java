@@ -1,17 +1,24 @@
 package hudson.remoting;
 
 import hudson.remoting.Channel.Mode;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
-import java.io.OutputStream;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
 
 /**
- * Entry point for running a {@link Channel} that uses stdin/stdout.
+ * Entry point for running a {@link Channel}.
  *
  * <p>
  * This can be used as the main class for launching a channel on
@@ -23,8 +30,10 @@ public class Launcher {
     public static void main(String[] args) throws Exception {
         Mode m = Mode.BINARY;
         boolean ping = false;
+        URL slaveJnlpURL = null;
 
-        for (String arg : args) {
+        for(int i=0; i<args.length; i++) {
+            String arg = args[i];
             if(arg.equals("-text")) {
                 System.out.println("Running in text mode");
                 m = Mode.TEXT;
@@ -34,10 +43,38 @@ public class Launcher {
                 ping = true;
                 continue;
             }
+            if(arg.equals("-jnlpUrl")) {
+                if(i+1==args.length) {
+                    System.err.println("The -jnlpUrl option is missing a URL parameter");
+                    System.exit(1);
+                }
+                slaveJnlpURL = new URL(args[i+1]);
+                continue;
+            }
             System.err.println("Invalid option: "+arg);
             System.exit(-1);
         }
 
+
+        if(slaveJnlpURL!=null) {
+            // exec into the JNLP launcher, to fetch the connection parameter through JNLP.
+            DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document dom = db.parse(slaveJnlpURL.toExternalForm());
+            NodeList argElements = dom.getElementsByTagName("argument");
+            List<String> jnlpArgs = new ArrayList<String>();
+            for( int i=0; i<argElements.getLength(); i++ )
+                jnlpArgs.add(argElements.item(i).getTextContent());
+            // force a headless mode
+            jnlpArgs.add("-headless");
+            hudson.remoting.jnlp.Main.main(jnlpArgs.toArray(new String[jnlpArgs.size()]));
+        } else
+            runWithStdinStdout(m, ping);
+
+        System.exit(0);
+    }
+
+    private static void runWithStdinStdout(Mode m, boolean ping) throws IOException, InterruptedException {
+        // use stdin/stdout for channel communication
         ttyCheck();
 
         // this will prevent programs from accidentally writing to System.out
@@ -45,7 +82,6 @@ public class Launcher {
         OutputStream os = System.out;
         System.setOut(System.err);
         main(System.in,os,m,ping);
-        System.exit(0);
     }
 
     private static void ttyCheck() {

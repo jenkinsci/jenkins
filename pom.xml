@@ -18,7 +18,6 @@
   <modules>
     <module>remoting</module>
     <module>core</module>
-    <module>jnlp-agent</module>
     <module>maven-agent</module>
     <module>maven-interceptor</module>
     <module>war</module>

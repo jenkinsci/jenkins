@@ -1,4 +1,4 @@
-package hudson.jnlp;
+package hudson.remoting.jnlp;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
