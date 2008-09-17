@@ -1,4 +1,4 @@
-package hudson.jnlp;
+package hudson.remoting;
 
 /**
  * Receives status notification from {@link Engine}.
@@ -7,7 +7,7 @@ package hudson.jnlp;
  *
  * @author Kohsuke Kawaguchi
  */
-public interface Listener {
+public interface EngineListener {
     void status(String msg);
     void error(Throwable t);
 }

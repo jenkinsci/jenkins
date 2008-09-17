@@ -1,11 +1,9 @@
-package hudson.jnlp;
+package hudson.remoting;
 
-import hudson.remoting.Channel;
-
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
@@ -20,18 +18,18 @@ import java.util.concurrent.Executors;
 public class Engine extends Thread {
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    private Listener listener;
+    private EngineListener listener;
     private final String host;
     private final String hudsonUrl;
     private final String secretKey;
     private final String slaveName;
 
     /**
-     * @see Main#tunnel
+     * See Main#tunnel in the jnlp-agent module for the details.
      */
     private String tunnel;
 
-    public Engine(Listener listener, String host, String hudsonUrl, String secretKey, String slaveName) {
+    public Engine(EngineListener listener, String host, String hudsonUrl, String secretKey, String slaveName) {
         this.listener = listener;
         this.host = host;
         this.hudsonUrl = hudsonUrl;

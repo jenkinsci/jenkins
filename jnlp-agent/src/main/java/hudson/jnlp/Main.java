@@ -14,6 +14,9 @@ import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
 
+import hudson.remoting.Engine;
+import hudson.remoting.EngineListener;
+
 /**
  * Entry point to JNLP slave agent.
  * 
@@ -70,9 +73,9 @@ public class Main {
     }
 
     /**
-     * {@link Listener} implementation that shows GUI.
+     * {@link EngineListener} implementation that shows GUI.
      */
-    private static final class GuiListener implements Listener {
+    private static final class GuiListener implements EngineListener {
         private final MainDialog frame;
 
         public GuiListener() {
@@ -104,9 +107,9 @@ public class Main {
     }
 
     /**
-     * {@link Listener} implementation that sends output to {@link Logger}.
+     * {@link EngineListener} implementation that sends output to {@link Logger}.
      */
-    private static final class CuiListener implements Listener {
+    private static final class CuiListener implements EngineListener {
         private CuiListener() {
             LOGGER.info("Hudson agent is running in headless mode.");
         }
