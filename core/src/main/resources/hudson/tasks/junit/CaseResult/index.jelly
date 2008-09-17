@@ -26,9 +26,9 @@
         <div style="text-align:right;">
           ${%took(it.durationString)}
         </div>
-	<h3>Error Message</h3>
+    <h3>${%Error Message}</h3>
       <pre><st:out value="${it.errorDetails}"/></pre>
-	<h3>Stacktrace</h3>
+    <h3>${%Stacktrace}</h3>
       <pre><st:out value="${it.errorStackTrace}"/></pre>
 
       <j:if test="${!empty(it.parent.stdout)}">

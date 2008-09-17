@@ -36,7 +36,7 @@
                     <a href="${cslink}">${browser.descriptor.displayName}</a>
                   </j:when>
                   <j:otherwise>
-                    <a href="${b.number}/changes#detail${loop.index}">detail</a>
+                    <a href="${b.number}/changes#detail${loop.index}">${%detail}</a>
                   </j:otherwise>
                 </j:choose>
               </li>

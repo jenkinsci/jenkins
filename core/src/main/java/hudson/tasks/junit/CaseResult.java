@@ -14,7 +14,7 @@ import java.text.ParseException;
  * @author Kohsuke Kawaguchi
  */
 public final class CaseResult extends TestObject implements Comparable<CaseResult> {
-    private final float duration; 
+    private final float duration;
     private final String className;
     private final String testName;
     private final boolean skipped;
@@ -57,7 +57,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         // so I don't know for sure what means what.
         // reports in http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
         // indicates that maybe I shouldn't use @classname altogether.
-        
+
         //String cn = testCase.attributeValue("classname");
         //if(cn==null)
         //    // Maven seems to skip classname, and that shows up in testSuite/@name
@@ -66,7 +66,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         String cn = parent.getName();
         className = safe(cn);
         testName = safe(testCaseName);
-        duration = parseTime(testCase); 
+        duration = parseTime(testCase);
         errorStackTrace = getError(testCase);
         errorDetails = getErrorMessage(testCase);
         skipped = isMarkedAsSkipped(testCase);
@@ -256,7 +256,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     public String getRelativePathFrom(TestObject it) {
         if(it==this)
             return ".";
-        
+
         // package, then class
         StringBuffer buf = new StringBuffer();
         buf.append(getSafeName());
@@ -318,24 +318,24 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         /**
          * This test runs OK, just like its previous run.
          */
-        PASSED("result-passed","Passed",true),
+        PASSED("result-passed",Messages.CaseResult_Status_Passed(),true),
         /**
          * This test was skipped due to configuration or the
          * failure or skipping of a method that it depends on.
          */
-        SKIPPED("result-skipped","Skipped",false),
+        SKIPPED("result-skipped",Messages.CaseResult_Status_Skipped(),false),
         /**
          * This test failed, just like its previous run.
          */
-        FAILED("result-failed","Failed",false),
+        FAILED("result-failed",Messages.CaseResult_Status_Failed(),false),
         /**
          * This test has been failing, but now it runs OK.
          */
-        FIXED("result-fixed","Fixed",true),
+        FIXED("result-fixed",Messages.CaseResult_Status_Fixed(),true),
         /**
          * This test has been running OK, but now it failed.
          */
-        REGRESSION("result-regression","Regression",false);
+        REGRESSION("result-regression",Messages.CaseResult_Status_Regression(),false);
 
         private final String cssClass;
         private final String message;
