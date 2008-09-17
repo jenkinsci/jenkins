@@ -35,7 +35,7 @@ bindAuthenticator(BindAuthenticator2,initialDirContextFactory) {
     userSearch = ldapUserSearch;
 }
 
-authoritiesPopulator(DeferredCreationLdapAuthoritiesPopulator,initialDirContextFactory,"ou=groups") {
+authoritiesPopulator(DeferredCreationLdapAuthoritiesPopulator,initialDirContextFactory,"") {
   // groupRoleAttribute = "ou";
 }
 
