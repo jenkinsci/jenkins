@@ -30,6 +30,9 @@ import java.util.Set;
 /**
  * {@link GlobalMatrixAuthorizationStrategy} plus per-project ACL.
  *
+ * <p>
+ * Per-project ACL is stored in {@link AuthorizationMatrixProperty}.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizationStrategy {
