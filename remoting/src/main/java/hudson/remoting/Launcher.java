@@ -3,14 +3,17 @@ package hudson.remoting;
 import hudson.remoting.Channel.Mode;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +51,7 @@ public class Launcher {
                     System.err.println("The -jnlpUrl option is missing a URL parameter");
                     System.exit(1);
                 }
-                slaveJnlpURL = new URL(args[i+1]);
+                slaveJnlpURL = new URL(args[++i]);
                 continue;
             }
             System.err.println("Invalid option: "+arg);
@@ -57,20 +60,36 @@ public class Launcher {
 
 
         if(slaveJnlpURL!=null) {
-            // exec into the JNLP launcher, to fetch the connection parameter through JNLP.
-            DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document dom = db.parse(slaveJnlpURL.toExternalForm());
-            NodeList argElements = dom.getElementsByTagName("argument");
-            List<String> jnlpArgs = new ArrayList<String>();
-            for( int i=0; i<argElements.getLength(); i++ )
-                jnlpArgs.add(argElements.item(i).getTextContent());
-            // force a headless mode
-            jnlpArgs.add("-headless");
+            List<String> jnlpArgs = parseJnlpArguments(slaveJnlpURL);
             hudson.remoting.jnlp.Main.main(jnlpArgs.toArray(new String[jnlpArgs.size()]));
-        } else
+        } else {
             runWithStdinStdout(m, ping);
+            System.exit(0);
+        }
+    }
 
-        System.exit(0);
+    /**
+     * Parses the connection arguments from JNLP file given in the URL.
+     */
+    private static List<String> parseJnlpArguments(URL slaveJnlpURL) throws ParserConfigurationException, SAXException, IOException {
+        HttpURLConnection con = (HttpURLConnection) slaveJnlpURL.openConnection();
+        con.connect();
+
+        // check if this URL points to a .jnlp file
+        String contentType = con.getHeaderField("Content-Type");
+        if(contentType==null || !contentType.startsWith("application/x-java-jnlp-file"))
+            throw new IOException(slaveJnlpURL+" doesn't look like a JNLP file");
+
+        // exec into the JNLP launcher, to fetch the connection parameter through JNLP.
+        DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document dom = db.parse(con.getInputStream(),slaveJnlpURL.toExternalForm());
+        NodeList argElements = dom.getElementsByTagName("argument");
+        List<String> jnlpArgs = new ArrayList<String>();
+        for( int i=0; i<argElements.getLength(); i++ )
+            jnlpArgs.add(argElements.item(i).getTextContent());
+        // force a headless mode
+        jnlpArgs.add("-headless");
+        return jnlpArgs;
     }
 
     private static void runWithStdinStdout(Mode m, boolean ping) throws IOException, InterruptedException {
