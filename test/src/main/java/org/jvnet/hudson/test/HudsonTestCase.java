@@ -8,6 +8,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
+import hudson.matrix.MatrixProject;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
