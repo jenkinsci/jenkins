@@ -4,10 +4,7 @@
 	<f:entry title="Name">
 		<f:textbox name="parameter.name" value="${instance.name}" />
 	</f:entry>
-	<f:entry title="Default Value">
+	<f:entry title="Default Value" help="/help/parameter/string-default.html">
 		<f:textbox name="parameter.defaultValue" value="${instance.defaultValue}" />
-	</f:entry>
-	<f:entry title="Optional">
-		<f:checkbox name="parameter.optional" value="${instance.optional}" />
 	</f:entry>
 </j:jelly>

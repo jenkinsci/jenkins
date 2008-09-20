@@ -113,4 +113,17 @@ public abstract class ParameterValue {
     public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
         return VariableResolver.NONE;
     }
+
+    /**
+     * Accessing {@link ParameterDefinition} is not a good idea.
+     *
+     * @deprecated
+     *    parameter definition may change any time. So if you find yourself
+     *    in need of accessing the information from {@link ParameterDefinition},
+     *    instead copy them in {@link ParameterDefinition#createValue(StaplerRequest, JSONObject)}
+     *    into {@link ParameterValue}.
+     */
+    public ParameterDefinition getDefinition() {
+        throw new UnsupportedOperationException();
+    }
 }

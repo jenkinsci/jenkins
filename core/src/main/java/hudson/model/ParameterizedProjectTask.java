@@ -12,11 +12,10 @@ import java.util.List;
  */
 public class ParameterizedProjectTask extends QueueTaskFilter {
 
-    private final AbstractProject<?, ?> project;
+    private final AbstractProject<?,?> project;
     private final List<ParameterValue> parameters;
 
-    public ParameterizedProjectTask(AbstractProject<?, ?> project,
-                                    List<ParameterValue> parameters) {
+    public ParameterizedProjectTask(AbstractProject<?,?> project, List<ParameterValue> parameters) {
         super(project);
         this.project = project;
         this.parameters = parameters;

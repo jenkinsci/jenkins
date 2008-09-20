@@ -10,28 +10,17 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class StringParameterDefinition extends ParameterDefinition {
 
-    private boolean optional;
     private String defaultValue;
 
     @DataBoundConstructor
-    public StringParameterDefinition(String name, String defaultValue,
-                                     boolean optional) {
+    public StringParameterDefinition(String name, String defaultValue) {
         super(name);
         this.defaultValue = defaultValue;
-        this.optional = optional;
     }
 
     @Override
     public ParameterDescriptor getDescriptor() {
         return DESCRIPTOR;
-    }
-
-    public boolean isOptional() {
-        return optional;
-    }
-
-    public void setOptional(boolean optional) {
-        this.optional = optional;
     }
 
     public String getDefaultValue() {
@@ -60,11 +49,9 @@ public class StringParameterDefinition extends ParameterDefinition {
         }
 
         @Override
-        public ParameterDefinition newInstance(StaplerRequest req,
-                                               JSONObject formData) throws FormException {
-            return req.bindJSON(StringParameterDefinition.class, formData);
+        public String getHelpFile() {
+            return "/help/parameter/string.html";
         }
-
     }
 
     @Override
