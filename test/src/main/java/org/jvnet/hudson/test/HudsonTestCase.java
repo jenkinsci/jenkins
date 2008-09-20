@@ -205,6 +205,14 @@ public abstract class HudsonTestCase extends TestCase {
         return (FreeStyleProject)hudson.createProject(FreeStyleProject.DESCRIPTOR,name);
     }
 
+    protected MatrixProject createMatrixProject() throws IOException {
+        return createMatrixProject("test");
+    }
+
+    protected MatrixProject createMatrixProject(String name) throws IOException {
+        return (MatrixProject)hudson.createProject(MatrixProject.DESCRIPTOR,name);
+    }
+
     /**
      * Creates {@link LocalLauncher}. Useful for launching processes.
      */
