@@ -7,6 +7,7 @@ import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Job;
 import hudson.model.TaskListener;
+import hudson.model.listeners.RunListener;
 import hudson.util.DescriptorList;
 
 import java.io.BufferedOutputStream;
@@ -63,7 +64,8 @@ import java.io.OutputStream;
  *   the retention policy.
  *
  * Can't the 2nd step happen automatically, when someone else depends on
- * the workspace snapshot of the upstream?
+ * the workspace snapshot of the upstream? Yes, by using {@link RunListener}.
+ * So this becomes like a special SCM type.
  *
  * To support promoted builds, we need an abstraction for permalinks.
  * This is also needed for other UI.
@@ -127,12 +129,18 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      */
     public static final DescriptorList<FileSystemProvisioner> LIST = new DescriptorList<FileSystemProvisioner>();
 
+    /**
+     * Default implementation.
+     */
+    public static final FileSystemProvisioner DEFAULT = new Default();
 
     /**
      * Default implementation that doesn't rely on any file system specific capability,
      * and thus can be used anywhere that Hudson runs.
      */
     public static final class Default extends FileSystemProvisioner {
+        private Default() {}
+
         public void prepareWorkspace(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
             ws.mkdirs();
         }

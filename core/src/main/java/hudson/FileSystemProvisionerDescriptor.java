@@ -31,7 +31,7 @@ public abstract class FileSystemProvisionerDescriptor extends Descriptor<FileSys
      * <p>
      * This method is called to do this, after Hudson determines that the workspace should be deleted
      * to reclaim disk space. The implementation of this method is expected to sniff the contents of
-     * the workspace, and if it looks like the one created by {@link FileSystemProvisioner#prepareWorkspace(AbstractBuild, TaskListener)},
+     * the workspace, and if it looks like the one created by {@link FileSystemProvisioner#prepareWorkspace(AbstractBuild, FilePath, TaskListener)},
      * perform the necessary deletion operation, and return <tt>true</tt>.
      *
      * <p>

@@ -25,6 +25,7 @@ import org.apache.tools.tar.TarOutputStream;
 import org.apache.tools.zip.ZipOutputStream;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.fileupload.FileItem;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -324,6 +325,30 @@ public final class FilePath implements Serializable {
 
             private static final long serialVersionUID = 1L;
         });
+    }
+
+    /**
+     * Place the data from {@link FileItem} into the file location specified by this {@link FilePath} object.
+     */
+    public void copyFrom(FileItem file) throws IOException, InterruptedException {
+        if(channel==null) {
+            try {
+                file.write(new File(remote));
+            } catch (IOException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new IOException2(e);
+            }
+        } else {
+            InputStream i = file.getInputStream();
+            OutputStream o = write();
+            try {
+                IOUtils.copy(i,o);
+            } finally {
+                o.close();
+                i.close();
+            }
+        }
     }
 
     /**
