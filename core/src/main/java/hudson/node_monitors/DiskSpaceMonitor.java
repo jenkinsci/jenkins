@@ -53,7 +53,7 @@ public class DiskSpaceMonitor extends NodeMonitor {
                 // TODO: this scheme should be generalized, so that Hudson can remember why it's marking the node
                 // as offline, as well as allowing the user to force Hudson to use it.
                 if(!c.isTemporarilyOffline()) {
-                    LOGGER.warning("Making "+c.getName()+" offline temporarily due to the lack of disk space");
+                    LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getName()));
                     c.setTemporarilyOffline(true);
                 }
             }
