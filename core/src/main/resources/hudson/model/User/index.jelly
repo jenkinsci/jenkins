@@ -7,6 +7,10 @@
         ${it.fullName}
       </h1>
       <t:editableDescription />
+      <!-- give properties a chance to contribute summary item -->
+      <j:forEach var="p" items="${it.allProperties}">
+        <st:include page="summary.jelly" from="${p}" optional="true" it="${p}" />
+      </j:forEach>
     </l:main-panel>
   </l:layout>
 </j:jelly>
