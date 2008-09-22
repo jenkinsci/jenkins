@@ -1,0 +1,7 @@
+<!-- display permalinks of the page -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+	<!-- give properties a chance to contribute summary item -->
+	<j:forEach var="p" items="${it.properties.values()}">     
+	   <st:include page="summary.jelly" from="${p}" optional="true" it="${p}" />
+	</j:forEach>
+</j:jelly>

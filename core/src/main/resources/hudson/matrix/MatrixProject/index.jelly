@@ -8,6 +8,7 @@
       <st:include page="ajaxMatrix.jelly" />
 
       <p:projectActionFloatingBox/>
+      <st:include page="jobpropertysummaries.jelly" />
       <p:upstream-downstream />
     </l:main-panel>
   </l:layout>

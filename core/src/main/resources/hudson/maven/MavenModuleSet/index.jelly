@@ -34,6 +34,7 @@
         </j:if>
       </table>
 
+      <st:include page="jobpropertysummaries.jelly" />  
       <p:upstream-downstream />
       
       <st:include page="permalinks.jelly" />

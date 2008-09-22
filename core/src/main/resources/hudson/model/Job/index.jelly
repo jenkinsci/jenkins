@@ -11,6 +11,7 @@
         </div>
       </j:if>
 
+      <st:include page="jobpropertysummaries.jelly" />
       <!-- inject main part here -->
       <st:include page="main.jelly" />
 
