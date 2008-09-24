@@ -20,8 +20,6 @@ import hudson.tasks.Mailer;
 import hudson.Launcher.LocalLauncher;
 import hudson.util.StreamTaskListener;
 import hudson.util.ProcessTreeKiller;
-import hudson.remoting.Channel;
-import hudson.maven.MavenBuildProxy;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -44,6 +42,8 @@ import org.xml.sax.SAXException;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
@@ -227,6 +227,16 @@ public abstract class HudsonTestCase extends TestCase {
      */
     protected <T> T last(List<T> items) {
         return items.get(items.size()-1);
+    }
+
+    /**
+     * Pauses the execution until ENTER is hit in the console.
+     * <p>
+     * This is often very useful so that you can interact with Hudson
+     * from an browser, while developing a test case.
+     */
+    protected void pause() throws IOException {
+        new BufferedReader(new InputStreamReader(System.in)).readLine();
     }
 
 //
