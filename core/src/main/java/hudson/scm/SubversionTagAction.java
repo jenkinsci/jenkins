@@ -51,8 +51,18 @@ public class SubversionTagAction extends AbstractScmTagAction {
         tags.putAll(m);
     }
 
+    /**
+     * Was any tag created by the user already?
+     */
+    public boolean hasTags() {
+        for (Entry<SvnInfo, List<String>> e : tags.entrySet())
+            if(!e.getValue().isEmpty())
+                return true;
+        return false;
+    }
+
     public String getIconFileName() {
-        if(tags==null && !Hudson.isAdmin())
+        if(!hasTags() && !getACL().hasPermission(getPermission()))
             return null;
         return "save.gif";
     }
