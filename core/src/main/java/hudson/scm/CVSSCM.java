@@ -1267,7 +1267,7 @@ public class CVSSCM extends SCM implements Serializable {
          * Invoked to actually tag the workspace.
          */
         public synchronized void doSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            build.checkPermission(TAG);
+            build.checkPermission(getPermission());
 
             Map<AbstractBuild,String> tagSet = new HashMap<AbstractBuild,String>();
 
