@@ -122,10 +122,10 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         if(selfRegistration && !validateCaptcha(si.captcha))
             si.errorMessage = "Text didn't match the word shown in the image";
 
-        if(!si.password1.equals(si.password2))
+        if(si.password1 != null && !si.password1.equals(si.password2))
             si.errorMessage = "Password didn't match";
 
-        if(si.password1.length()==0)
+        if(!(si.password1 != null && si.password1.length() != 0))
             si.errorMessage = "Password is required";
 
         if(si.username.length()==0)
