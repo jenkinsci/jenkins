@@ -15,6 +15,7 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.UpdateCenter;
 import hudson.model.Saveable;
+import hudson.model.Run;
 import hudson.tasks.Mailer;
 import hudson.Launcher.LocalLauncher;
 import hudson.util.StreamTaskListener;
@@ -330,6 +331,23 @@ public abstract class HudsonTestCase extends TestCase {
         public WebClient login(String username) throws Exception {
             login(username,username);
             return this;
+        }
+
+        /**
+         * Short for {@code getPage(r,"")}, to access the top page of a build.
+         */
+        public HtmlPage getPage(Run r) throws IOException, SAXException {
+            return getPage(r,"");
+        }
+
+        /**
+         * Accesses a page inside {@link Run}.
+         *
+         * @param relative
+         *      Relative URL within the build URL, like "changes". Doesn't start with '/'. Can be empty.
+         */
+        public HtmlPage getPage(Run r, String relative) throws IOException, SAXException {
+            return goTo(r.getUrl()+relative);
         }
 
         public HtmlPage getPage(Item item) throws IOException, SAXException {
