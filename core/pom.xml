@@ -219,7 +219,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <version>1.83-SNAPSHOT</version>
+      <version>1.83</version>
     </dependency>
     <dependency>
       <!-- until the next rev of stapler picks up localizer 1.5 -->
