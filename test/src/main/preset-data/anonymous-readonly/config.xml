@@ -15,6 +15,7 @@
     <permission>hudson.model.Item.Delete:authenticated</permission>
     <permission>hudson.model.View.Create:authenticated</permission>
     <permission>hudson.model.View.Delete:authenticated</permission>
+    <permission>hudson.scm.SCM.Tag:authenticated</permission>
     <permission>hudson.model.Hudson.Read:anonymous</permission>
   </authorizationStrategy>
   <securityRealm class="hudson.security.LegacySecurityRealm"/>
