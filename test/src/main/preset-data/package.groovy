@@ -8,7 +8,8 @@ targetDir.mkdirs();
 
 File dataSetRoot = new File(baseDir,"src/main/preset-data");
 dataSetRoot.eachDir { d ->
-    if(!new File(d,"config.xml").exists())  return;
+    if(d.name==".svn") return;
+    // if(!new File(d,"config.xml").exists())  return;
 
     Zip zip = new Zip();
     zip.project = new Project();
