@@ -42,7 +42,7 @@
 
         <h2>${%Create more tags}</h2>
       </j:if>
-      <form action="submit" method="get">
+      <form action="submit" method="get" name="tag">
         <table class="middle-align">
           <tr>
             <j:if test="${tags.size()!=1}">
