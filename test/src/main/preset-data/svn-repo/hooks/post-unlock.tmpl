@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# POST-UNLOCK HOOK
+#
+# The post-unlock hook runs after a path is unlocked.  Subversion runs
+# this hook by invoking a program (script, executable, binary, etc.)
+# named 'post-unlock' (for which this file is a template) with the 
+# following ordered arguments:
+#
+#   [1] REPOS-PATH   (the path to this repository)
+#   [2] USER         (the user who destroyed the lock)
+#
+# The paths that were just unlocked are passed to the hook via STDIN
+# (as of Subversion 1.2, only one path is passed per invocation, but
+# the plan is to pass all unlocked paths at once, so the hook program
+# should be written accordingly).
+#
+# The default working directory for the invocation is undefined, so
+# the program should set one explicitly if it cares.
+#
+# Because the lock has already been destroyed and cannot be undone,
+# the exit code of the hook program is ignored.
+#
+# On a Unix system, the normal procedure is to have 'post-unlock'
+# invoke other programs to do the real work, though it may do the
+# work itself too.
+#
+# Note that 'post-unlock' must be executable by the user(s) who will
+# invoke it (typically the user httpd runs as), and that user must
+# have filesystem-level permission to access the repository.
+#
+# On a Windows system, you should name the hook program
+# 'post-unlock.bat' or 'post-unlock.exe',
+# but the basic idea is the same.
+# 
+# Here is an example hook script, for a Unix /bin/sh interpreter:
+
+REPOS="$1"
+USER="$2"
+
+# Send email to interested parties, let them know a lock was removed:
+/usr/share/subversion/hook-scripts/mailer.py unlock \
+  "$REPOS" "$USER" "$REPOS"/mailer.conf

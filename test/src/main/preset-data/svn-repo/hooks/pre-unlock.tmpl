@@ -1,0 +1,61 @@
+#!/bin/sh
+
+# PRE-UNLOCK HOOK
+#
+# The pre-unlock hook is invoked before an exclusive lock is
+# destroyed.  Subversion runs this hook by invoking a program 
+# (script, executable, binary, etc.) named 'pre-unlock' (for which
+# this file is a template), with the following ordered arguments:
+#
+#   [1] REPOS-PATH   (the path to this repository)
+#   [2] PATH         (the path in the repository about to be unlocked)
+#   [3] USER         (the user destroying the lock)
+#
+# The default working directory for the invocation is undefined, so
+# the program should set one explicitly if it cares.
+#
+# If the hook program exits with success, the lock is destroyed; but
+# if it exits with failure (non-zero), the unlock action is aborted
+# and STDERR is returned to the client.
+
+# On a Unix system, the normal procedure is to have 'pre-unlock'
+# invoke other programs to do the real work, though it may do the
+# work itself too.
+#
+# Note that 'pre-unlock' must be executable by the user(s) who will
+# invoke it (typically the user httpd runs as), and that user must
+# have filesystem-level permission to access the repository.
+#
+# On a Windows system, you should name the hook program
+# 'pre-unlock.bat' or 'pre-unlock.exe',
+# but the basic idea is the same.
+#
+# Here is an example hook script, for a Unix /bin/sh interpreter:
+
+REPOS="$1"
+PATH="$2"
+USER="$3"
+
+# If a lock is owned by a different person, don't allow it be broken.
+# (Maybe this script could send email to the lock owner?)
+
+SVNLOOK=/usr/bin/svnlook
+GREP=/bin/grep
+SED=/bin/sed
+
+LOCK_OWNER=`$SVNLOOK lock "$REPOS" "$PATH" | \
+            $GREP '^Owner: ' | $SED 's/Owner: //'`
+
+# If we get no result from svnlook, there's no lock, return success:
+if [ "$LOCK_OWNER" = "" ]; then
+  exit 0
+fi
+
+# If the person unlocking matches the lock's owner, return success:
+if [ "$LOCK_OWNER" = "$USER" ]; then
+  exit 0
+fi
+
+# Otherwise, we've got an owner mismatch, so return failure:
+echo "Error: $PATH locked by ${LOCK_OWNER}." 1>&2
+exit 1
