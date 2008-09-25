@@ -4,6 +4,7 @@ import com.gargoylesoftware.htmlunit.AjaxController;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
@@ -306,6 +307,10 @@ public abstract class HudsonTestCase extends TestCase {
      */
     public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
         public WebClient() {
+            // default is IE6, but this causes 'n.doScroll('left')' to fail in event-debug.js:1907 as HtmlUnit doesn't implement such a method,
+            // so trying something else, until we discover another problem.
+            super(BrowserVersion.FIREFOX_2);
+
 //            setJavaScriptEnabled(false);
             setPageCreator(HudsonPageCreator.INSTANCE);
             clients.add(new WeakReference<WebClient>(this));
