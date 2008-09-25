@@ -10,6 +10,7 @@ import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.converters.reflection.SerializationMethodInvoker;
 import com.thoughtworks.xstream.converters.reflection.ObjectAccessException;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
+import com.thoughtworks.xstream.converters.reflection.NonExistentFieldException;
 import com.thoughtworks.xstream.core.util.Primitives;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
@@ -211,6 +212,8 @@ public class RobustReflectionConverter implements Converter {
                         implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
                     }
                 }
+            } catch (NonExistentFieldException e) {
+                LOGGER.log(Level.WARNING,"Skipping a non-existent field "+e.getFieldName(),e);
             } catch (CannotResolveClassException e) {
                 LOGGER.log(Level.WARNING,"Skipping a non-existend type",e);
             }

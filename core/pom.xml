@@ -241,7 +241,7 @@
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.3-hudson-1</version>
+      <version>1.3-hudson-2</version>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>
