@@ -1,0 +1,40 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout permission="${app.ADMINISTER}">
+    <st:include it="${app}" page="sidepanel.jelly" />
+    <l:main-panel>
+      <j:choose>
+        <j:when test="${!it.installed}">
+          <h1>
+            <img src="${imagesURL}/48x48/installer.gif" />
+            ${%Install as Windows Service}
+          </h1>
+
+          <form action="doInstall" method="post">
+            <table>
+              <f:entry title="${%Installation Directory}">
+                <f:textbox name="dir" value="${app.rootDir}" /><!-- checkUrl="'/install/checkDir?value='+escape(this.value)" -->
+              </f:entry>
+              <f:block>
+                <f:submit value="${%Install}" />
+              </f:block>
+            </table>
+          </form>
+        </j:when>
+
+        <!-- already installed -->
+        <j:otherwise>
+          <h1>
+            <img src="${imagesURL}/48x48/blue.gif" />
+            ${%Installation Complete}
+          </h1>
+
+          <p>${%restartBlurb}</p>
+
+          <form action="restart" method="post">
+            <f:submit value="${%Yes}" />
+          </form>
+        </j:otherwise>
+      </j:choose>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

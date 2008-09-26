@@ -1,0 +1,16 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:statusCode value="503" /><!-- SERVICE NOT AVAILABLE -->
+  <l:layout permission="${app.ADMINISTER}">
+    <st:include it="${app}" page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1 style="margin-top:4em">
+        ${%Please wait while Hudson is restarting}<span id="progress">...</span>
+      </h1>
+      <p style="color:grey">
+        ${%blurb}
+      </p>
+      
+      <script>applySafeRedirector('${rootURL}/')</script>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

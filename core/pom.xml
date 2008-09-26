@@ -72,8 +72,8 @@
         end using Ant seems to be the easiest.
       -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
+        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+        <artifactId>maven-antrun-extended-plugin</artifactId>
         <executions>
           <execution>
             <phase>generate-resources</phase>
@@ -89,6 +89,10 @@
                 <mkdir dir="target/classes/hudson" />
                 <echo file="target/classes/hudson/hudson-version.properties">version=${build.version}
                 </echo>
+
+                <!-- download winsw.exe -->
+                <mkdir dir="target/classes/windows-service" />
+                <resolveArtifact artifactId="winsw" tofile="target/classes/windows-service/hudson.exe" />
               </tasks>
             </configuration>
             <goals>
@@ -468,6 +472,14 @@
           <artifactId>concurrent</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.winsw</groupId>
+      <artifactId>winsw</artifactId>
+      <version>1.0</version>
+      <classifier>bin</classifier>
+      <type>exe</type>
+      <scope>provided</scope><!-- this isn't really a dependency that Maven should care about, so putting 'provided' -->
     </dependency>
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>

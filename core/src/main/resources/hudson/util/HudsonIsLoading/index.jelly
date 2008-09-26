@@ -13,34 +13,7 @@
         ${%Your browser will reload automatically when Hudson is ready.}
       </p>
 
-      <script><![CDATA[
-        var i=0;
-        new PeriodicalExecuter(function() {
-          i = (i+1)%4;
-          var s = "";
-          for( var j=0; j<i; j++ )
-            s+='.';
-          $('progress').innerHTML = s;
-        },1);
-
-        window.setTimeout(function() {
-          var statusChecker = arguments.callee;
-            new Ajax.Request(".", {
-                method: "get",
-                onFailure: function(rsp) {
-                    if(rsp.status==503) {
-                      // redirect as long as we are still loading
-                      window.setTimeout(statusChecker,5000);
-                    } else {
-                      window.location.reload();
-                    }
-                },
-                onSuccess: function(rsp) {
-                    window.location.reload();
-                }
-            });
-        }, 5000);
-      ]]></script>
+      <script>applySafeRedirector('.')</script>
     </l:main-panel>
   </l:layout>
 </j:jelly>

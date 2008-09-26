@@ -17,6 +17,7 @@ import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.WebAppMain;
 import hudson.XmlFile;
+import hudson.lifecycle.WindowsInstallerLink;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -402,6 +403,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         rms.setKey(getSecretKey());
         rms.setParameter("remember_me"); // this is the form field name in login.jelly
         HudsonFilter.REMEMBER_ME_SERVICES_PROXY.setDelegate(rms);
+
+        WindowsInstallerLink.registerIfApplicable();
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
@@ -1530,6 +1533,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         for (Action a : getActions())
+            if(a.getUrlName().equals(token))
+                return a;
+        for (Action a : getManagementLinks())
             if(a.getUrlName().equals(token))
                 return a;
         return null;
