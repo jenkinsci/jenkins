@@ -193,8 +193,16 @@ public class WindowsInstallerLink extends ManagementLink {
         // this system property is set by the launcher when we run "java -jar hudson.war"
         // and this is how we know where is hudson.war.
         String war = System.getProperty("executable-war");
-        if(war!=null && new File(war).exists())
-            LIST.add(new WindowsInstallerLink(new File(war)));
+        if(war!=null && new File(war).exists()) {
+            WindowsInstallerLink link = new WindowsInstallerLink(new File(war));
+            LIST.add(link);
+
+            // in certain situations where we know the user is just trying Hudson (like when Hudson is launched
+            // from JNLP from https://hudson.dev.java.net/), also put this link on the navigation bar to increase
+            // visibility
+            if(System.getProperty(WindowsInstallerLink.class.getName()+".prominent")!=null)
+                Hudson.getInstance().getActions().add(link);
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(WindowsInstallerLink.class.getName());
