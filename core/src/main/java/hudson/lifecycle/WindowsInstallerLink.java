@@ -160,6 +160,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                     fs.setExcludes("war/**"); // we can't really move the exploded war. 
                                     mv.addFileset(fs);
                                     mv.setTodir(installationDir);
+                                    mv.setFailOnError(false); // plugins can also fail to move
                                     mv.execute();
                                 }
                                 LOGGER.info("Starting a Windows service");
