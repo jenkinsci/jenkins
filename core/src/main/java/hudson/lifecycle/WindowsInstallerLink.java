@@ -11,6 +11,10 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.tools.ant.taskdefs.Move;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.DefaultLogger;
+import org.apache.tools.ant.types.FileSet;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -133,6 +137,7 @@ public class WindowsInstallerLink extends ManagementLink {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
         rsp.forward(this,"_restart",req);
+        final File oldRoot = Hudson.getInstance().getRootDir();
 
         // initiate an orderly shutdown after we finished serving this request
         new Thread("terminator") {
@@ -144,6 +149,19 @@ public class WindowsInstallerLink extends ManagementLink {
                     Runtime.getRuntime().addShutdownHook(new Thread("service starter") {
                         public void run() {
                             try {
+                                if(!oldRoot.equals(installationDir)) {
+                                    LOGGER.info("Moving data");
+                                    Move mv = new Move();
+                                    Project p = new Project();
+                                    p.addBuildListener(new DefaultLogger());
+                                    mv.setProject(p);
+                                    FileSet fs = new FileSet();
+                                    fs.setDir(oldRoot);
+                                    fs.setExcludes("war/**"); // we can't really move the exploded war. 
+                                    mv.addFileset(fs);
+                                    mv.setTodir(installationDir);
+                                    mv.execute();
+                                }
                                 LOGGER.info("Starting a Windows service");
                                 StreamTaskListener task = new StreamTaskListener(System.out);
                                 int r = new LocalLauncher(task).launch(new String[]{new File(installationDir, "hudson.exe").getPath(), "start"}, new String[0], task.getLogger(), new FilePath(installationDir)).join();
