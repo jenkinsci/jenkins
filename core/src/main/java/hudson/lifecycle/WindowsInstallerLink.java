@@ -64,9 +64,6 @@ public class WindowsInstallerLink extends ManagementLink {
         return installationDir!=null;
     }
 
-//    public void doCheckDir(StaplerRequest req, StaplerResponse rsp, @QueryParameter("value") String value) {
-//    }
-
     /**
      * Performs installation.
      */
