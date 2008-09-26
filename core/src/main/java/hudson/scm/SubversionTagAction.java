@@ -175,7 +175,8 @@ public class SubversionTagAction extends AbstractScmTagAction {
                             SVNURL dst = SVNURL.parseURIDecoded(e.getValue());
 
                             SVNCopyClient svncc = cm.getCopyClient();
-                            SVNCopySource csrc = new SVNCopySource(SVNRevision.UNDEFINED,SVNRevision.create(e.getKey().revision),src);
+                            SVNRevision sourceRevision = SVNRevision.create(e.getKey().revision);
+                            SVNCopySource csrc = new SVNCopySource(sourceRevision, sourceRevision, src);
                             svncc.doCopy(
                                     new SVNCopySource[]{csrc},
                                     dst, false, true, false, "Tagged from "+build, null );
