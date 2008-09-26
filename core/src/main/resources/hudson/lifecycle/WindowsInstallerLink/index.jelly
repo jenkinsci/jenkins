@@ -9,6 +9,8 @@
             ${%Install as Windows Service}
           </h1>
 
+          <p>${%installBlurb}</p>
+
           <form action="doInstall" method="post">
             <table>
               <f:entry title="${%Installation Directory}">
