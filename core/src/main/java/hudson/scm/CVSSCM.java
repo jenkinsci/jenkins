@@ -226,8 +226,9 @@ public class CVSSCM extends SCM implements Serializable {
     }
 
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException, InterruptedException {
-        if(!isUpdatable(dir)) {
-            listener.getLogger().println(Messages.CVSSCM_WorkspaceInconsistent());
+        String why = isUpdatable(dir);
+        if(why!=null) {
+            listener.getLogger().println(Messages.CVSSCM_WorkspaceInconsistent(why));
             return true;
         }
 
@@ -246,7 +247,7 @@ public class CVSSCM extends SCM implements Serializable {
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath ws, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
         List<String> changedFiles = null; // files that were affected by update. null this is a check out
 
-        if(canUseUpdate && isUpdatable(ws)) {
+        if(canUseUpdate && isUpdatable(ws)==null) {
             changedFiles = update(false, launcher, ws, listener, build.getTimestamp().getTime());
             if(changedFiles==null)
                 return false;   // failed
@@ -299,7 +300,7 @@ public class CVSSCM extends SCM implements Serializable {
 
     public boolean checkout(Launcher launcher, FilePath dir, TaskListener listener) throws IOException, InterruptedException {
         Date now = new Date();
-        if(canUseUpdate && isUpdatable(dir)) {
+        if(canUseUpdate && isUpdatable(dir)==null) {
             return update(false, launcher, dir, listener, now)!=null;
         } else {
             return checkout(launcher,dir,listener, now);
@@ -550,58 +551,63 @@ public class CVSSCM extends SCM implements Serializable {
     }
 
     /**
-     * Returns true if we can use "cvs update" instead of "cvs checkout"
+     * Returns null if we can use "cvs update" instead of "cvs checkout"
+     *
+     * @return
+     *      If update is impossible, return the text explaining why.
      */
-    private boolean isUpdatable(FilePath dir) throws IOException, InterruptedException {
-        return dir.act(new FileCallable<Boolean>() {
-            public Boolean invoke(File dir, VirtualChannel channel) throws IOException {
+    private String isUpdatable(FilePath dir) throws IOException, InterruptedException {
+        return dir.act(new FileCallable<String>() {
+            public String invoke(File dir, VirtualChannel channel) throws IOException {
                 if(flatten) {
                     return isUpdatableModule(dir);
                 } else {
                     for (String m : getAllModulesNormalized()) {
                         File module = new File(dir,m);
-                        if(!isUpdatableModule(module))
-                            return false;
+                        String reason = isUpdatableModule(module);
+                        if(reason!=null)
+                            return reason;
                     }
-                    return true;
+                    return null;
                 }
+            }
+
+            private String isUpdatableModule(File module) {
+                if(!module.isDirectory())
+                    // module is a file, like "foo/bar.txt". Then CVS information is "foo/CVS".
+                    module = module.getParentFile();
+
+                File cvs = new File(module,"CVS");
+                if(!cvs.exists())
+                    return "No CVS dir in "+module;
+
+                // check cvsroot
+                if(!checkContents(new File(cvs,"Root"),cvsroot))
+                    return cvs+"/Root content mismatch";
+                if(branch!=null) {
+                    if(!checkContents(new File(cvs,"Tag"),(isTag()?'N':'T')+branch))
+                        return cvs+" branch mismatch";
+                } else {
+                    File tag = new File(cvs,"Tag");
+                    if (tag.exists()) {
+                        try {
+                            BufferedReader r = new BufferedReader(new FileReader(tag));
+                            try {
+                                String s = r.readLine();
+                                if(s != null && s.startsWith("D"))  return null;    // OK
+                                return "Workspace is on branch "+s;
+                            } finally {
+                                r.close();
+                            }
+                        } catch (IOException e) {
+                            return e.getMessage();
+                        }
+                    }
+                }
+
+                return null;
             }
         });
-    }
-
-    private boolean isUpdatableModule(File module) {
-        if(!module.isDirectory())
-            // module is a file, like "foo/bar.txt". Then CVS information is "foo/CVS".
-            module = module.getParentFile();
-
-        File cvs = new File(module,"CVS");
-        if(!cvs.exists())
-            return false;
-
-        // check cvsroot
-        if(!checkContents(new File(cvs,"Root"),cvsroot))
-            return false;
-        if(branch!=null) {
-            if(!checkContents(new File(cvs,"Tag"),(isTag()?'N':'T')+branch))
-                return false;
-        } else {
-            File tag = new File(cvs,"Tag");
-            if (tag.exists()) {
-                try {
-                    BufferedReader r = new BufferedReader(new FileReader(tag));
-                    try {
-                        String s = r.readLine();
-                        return s != null && s.startsWith("D");
-                    } finally {
-                        r.close();
-                    }
-                } catch (IOException e) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     /**
