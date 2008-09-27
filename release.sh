@@ -9,8 +9,9 @@ svn update
 rm hudson.war || true
 
 tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
+export MAVEN_OPTS="-Xmx512m -XX:MaxPermSize=128m"
 mvn -B -Dtag=$tag release:prepare || mvn -B -Dtag=$tag install release:prepare
-MAVEN_OPTS="-Xmx256m -XX:MaxPermSize=128m" mvn release:perform
+mvn release:perform
 
 id=$(show-pom-version target/checkout/pom.xml)
 #./publish-javadoc.sh
