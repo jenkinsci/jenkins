@@ -115,9 +115,6 @@ public class DeferredCreationLdapAuthoritiesPopulator implements LdapAuthorities
      * @return a DefaultLdapAuthoritiesPopulator.
      */
     private DefaultLdapAuthoritiesPopulator create() {
-        Assert
-                .hasText(groupSearchBase,
-                        "groupSearchBase must be non-null by the time DefaultLdapAuthoritiesPopulator is instantiated.");
         DefaultLdapAuthoritiesPopulator populator = new DefaultLdapAuthoritiesPopulator(
                 initialDirContextFactory, groupSearchBase);
         populator.setConvertToUpperCase(convertToUpperCase);
