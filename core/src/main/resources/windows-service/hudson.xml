@@ -15,5 +15,4 @@
   -->
   <executable>java</executable>
   <arguments>-Xmx256m -Dhudson.lifecycle=hudson.lifecycle.WindowsServiceLifecycle -jar "%BASE%\hudson.war" --httpPort=8080</arguments>
-  <interactive />
 </service>

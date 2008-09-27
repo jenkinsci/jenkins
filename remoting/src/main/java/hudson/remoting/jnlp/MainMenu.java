@@ -37,8 +37,9 @@ public final class MainMenu extends JMenuBar {
         repaint();
         if(getComponentCount()>0) {
             owner.setJMenuBar(this);
-            owner.invalidate();
-            owner.repaint();
+            // work around for paint problem. see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4949810
+            if(owner.isVisible())
+                owner.setVisible(true);
         }
     }
 }

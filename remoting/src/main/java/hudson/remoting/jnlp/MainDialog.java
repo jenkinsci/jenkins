@@ -1,5 +1,7 @@
 package hudson.remoting.jnlp;
 
+import hudson.remoting.Engine;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -61,5 +63,16 @@ public class MainDialog extends JFrame {
 
     public void status(String msg) {
         statusLabel.setText(msg);
+    }
+
+    /**
+     * If the current JVM runs a {@link MainDialog} as a JNLP slave agent,
+     * return its reference, otherwise null.
+     */
+    public static MainDialog get() {
+        Engine e = Engine.current();
+        if(e==null)     return null;
+        if (!(e.listener instanceof GuiListener))   return null;
+        return ((GuiListener) e.listener).frame;
     }
 }

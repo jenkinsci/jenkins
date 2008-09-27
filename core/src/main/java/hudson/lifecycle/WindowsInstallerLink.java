@@ -54,7 +54,7 @@ public class WindowsInstallerLink extends ManagementLink {
     }
 
     public String getDisplayName() {
-        return "Install as Windows Service";
+        return Messages.WindowsInstallerLink_DisplayName();
     }
 
     public String getDescription() {

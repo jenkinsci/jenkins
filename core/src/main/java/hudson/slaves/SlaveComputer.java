@@ -9,6 +9,7 @@ import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.FilePath;
+import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerInterceptor;
 
@@ -201,8 +202,8 @@ public final class SlaveComputer extends Computer {
         Boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
 
-        // install log handler
         channel.call(new LogInstaller());
+        channel.call(new WindowsSlaveInstaller(getNode().getRemoteFS()));
 
         // update the data structure atomically to prevent others from seeing a channel that's not properly initialized yet
         synchronized(channelLock) {
