@@ -71,7 +71,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue> {
 
     @Override
     public String getDisplayName() {
-        return "Parameters";
+        return Messages.ParameterAction_DisplayName();
     }
 
     @Override

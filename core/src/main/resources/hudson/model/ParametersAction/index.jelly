@@ -5,7 +5,7 @@
 		<st:include page="sidepanel.jelly" it="${it.build}" />
 		<l:main-panel>
 			<h1>${%Build} #${it.build.number}</h1>
-			<l:pane title="Parameters" width="3">
+			<l:pane title="${%Parameters}" width="3">
 			<j:forEach var="parameterValue" items="${it.parameters}">
 				<st:include it="${parameterValue}"
 					page="value.jelly" />

@@ -38,7 +38,7 @@ public class FileParameterDefinition extends ParameterDefinition {
 
         @Override
         public String getDisplayName() {
-            return "File Parameter";
+            return Messages.FileParameterDefinition_DisplayName();
         }
 
         @Override

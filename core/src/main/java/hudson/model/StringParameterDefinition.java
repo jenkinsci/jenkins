@@ -45,7 +45,7 @@ public class StringParameterDefinition extends ParameterDefinition {
 
         @Override
         public String getDisplayName() {
-            return "String Parameter";
+            return Messages.StringParameterDefinition_DisplayName();
         }
 
         @Override

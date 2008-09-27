@@ -125,7 +125,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
 
         @Override
         public String getDisplayName() {
-            return "Parameters";
+            return Messages.ParametersDefinitionProperty_DisplayName();
         }
 
     }
