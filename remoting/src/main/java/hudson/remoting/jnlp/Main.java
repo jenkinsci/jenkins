@@ -82,8 +82,8 @@ public class Main {
     /**
      * {@link EngineListener} implementation that shows GUI.
      */
-    private static final class GuiListener implements EngineListener {
-        private final MainDialog frame;
+    public static final class GuiListener implements EngineListener {
+        public final MainDialog frame;
 
         public GuiListener() {
             GUI.setUILookAndFeel();

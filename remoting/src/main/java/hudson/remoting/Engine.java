@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Slave agent engine that proactively connects to Hudson master.
@@ -16,13 +17,26 @@ import java.util.concurrent.Executors;
  * @author Kohsuke Kawaguchi
  */
 public class Engine extends Thread {
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    /**
+     * Thread pool that sets {@link #CURRENT}.
+     */
+    private final ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactory() {
+        private final ThreadFactory defaultFactory = Executors.defaultThreadFactory();
+        public Thread newThread(final Runnable r) {
+            return defaultFactory.newThread(new Runnable() {
+                public void run() {
+                    CURRENT.set(Engine.this);
+                    r.run();
+                }
+            });
+        }
+    });
 
-    private EngineListener listener;
-    private final String host;
-    private final String hudsonUrl;
+    public final EngineListener listener;
+    public final String host;
+    public final String hudsonUrl;
     private final String secretKey;
-    private final String slaveName;
+    public final String slaveName;
 
     /**
      * See Main#tunnel in the jnlp-agent module for the details.
@@ -126,4 +140,16 @@ public class Engine extends Thread {
             }
         }
     }
+
+    /**
+     * When invoked from within remoted {@link Callable} (that is,
+     * from the thread that carries out the remote requests),
+     * this method returns the {@link Engine} in which the remote operations
+     * run.
+     */
+    public static Engine current() {
+        return CURRENT.get();
+    }
+
+    private static final ThreadLocal<Engine> CURRENT = new ThreadLocal<Engine>();
 }
