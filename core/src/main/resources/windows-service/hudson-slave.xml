@@ -14,4 +14,9 @@
   -->
   <executable>@JAVA@</executable>
   <arguments>-jar "%BASE%\slave.jar" -jnlpUrl @URL@</arguments>
+  <!--
+    interactive flag causes the empty black Java window to be displayed.
+    I'm still debugging this.
+  <interactive />
+  -->
 </service>
