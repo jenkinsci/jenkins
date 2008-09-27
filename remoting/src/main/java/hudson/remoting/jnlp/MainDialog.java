@@ -1,24 +1,17 @@
 package hudson.remoting.jnlp;
 
-import hudson.remoting.jnlp.GUI;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.WindowConstants;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.HeadlessException;
+import javax.swing.*;
+import java.awt.*;
 
 /**
+ * Main window for JNLP slave agent.
+ * 
  * @author Kohsuke Kawaguchi
  */
 public class MainDialog extends JFrame {
 
-    private JLabel statusLabel;
+    private MainMenu mainMenu;
+    private final JLabel statusLabel;
 
     public MainDialog() throws HeadlessException {
         super("Hudson slave agent");
@@ -33,6 +26,8 @@ public class MainDialog extends JFrame {
         foregroundPanel.add(statusLabel, BorderLayout.CENTER);
 
         setContentPane(GUI.wrapInBackgroundImage(foregroundPanel, background,JLabel.BOTTOM,JLabel.LEADING));
+        resetMenuBar();
+
         pack();
 
         setSize(new Dimension(250,150));
@@ -40,6 +35,28 @@ public class MainDialog extends JFrame {
 
         setLocationByPlatform(true);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    }
+
+    /**
+     * Gets the main menu of this window, so that the caller can add
+     * additional menu items.
+     *
+     * @return never null.
+     */
+    public MainMenu getMainMenu() {
+        return mainMenu;
+    }
+
+    public void resetMenuBar() {
+        mainMenu = new MainMenu(this);
+        if(mainMenu.getComponentCount()>0) {
+            setJMenuBar(mainMenu);
+            mainMenu.commit();
+        } else {
+            setJMenuBar(null);
+            if(isVisible())
+                setVisible(true); // work around for paint problem. see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4949810
+        }
     }
 
     public void status(String msg) {

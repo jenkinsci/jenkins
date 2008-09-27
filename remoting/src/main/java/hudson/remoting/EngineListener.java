@@ -10,4 +10,9 @@ package hudson.remoting;
 public interface EngineListener {
     void status(String msg);
     void error(Throwable t);
+
+    /**
+     * Called when a connection is terminated.
+     */
+    void onDisconnect();
 }

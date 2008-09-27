@@ -86,6 +86,7 @@ public class Engine extends Thread {
                 listener.status("Connected");
                 channel.join();
                 listener.status("Terminated");
+                listener.onDisconnect();
 
                 // try to connect back to the server every 10 secs.
                 waitForServerToBack();

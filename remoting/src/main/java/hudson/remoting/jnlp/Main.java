@@ -5,10 +5,6 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 
-import javax.swing.SwingUtilities;
-import javax.swing.JOptionPane;
-import java.io.StringWriter;
-import java.io.PrintWriter;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.List;
@@ -80,40 +76,6 @@ public class Main {
     }
 
     /**
-     * {@link EngineListener} implementation that shows GUI.
-     */
-    public static final class GuiListener implements EngineListener {
-        public final MainDialog frame;
-
-        public GuiListener() {
-            GUI.setUILookAndFeel();
-            frame = new MainDialog();
-            frame.setVisible(true);
-        }
-
-        public void status(final String msg) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    frame.status(msg);
-                }
-            });
-        }
-
-        public void error(final Throwable t) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    StringWriter sw = new StringWriter();
-                    t.printStackTrace(new PrintWriter(sw));
-                    JOptionPane.showMessageDialog(
-                        frame,sw.toString(),"Error",
-                        JOptionPane.ERROR_MESSAGE);
-                    System.exit(-1);
-                }
-            });
-        }
-    }
-
-    /**
      * {@link EngineListener} implementation that sends output to {@link Logger}.
      */
     private static final class CuiListener implements EngineListener {
@@ -128,6 +90,9 @@ public class Main {
         public void error(final Throwable t) {
             LOGGER.log(Level.SEVERE, t.getMessage(), t);
             System.exit(-1);
+        }
+
+        public void onDisconnect() {
         }
     }
 
