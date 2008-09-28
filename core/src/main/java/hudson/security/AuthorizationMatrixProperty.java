@@ -149,7 +149,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				if (set != null && set.contains(s))
 					return true;
 			}
-			return false;
+			return null;
 		}
 
 		protected Boolean _hasPermission(Authentication a, Permission permission) {
