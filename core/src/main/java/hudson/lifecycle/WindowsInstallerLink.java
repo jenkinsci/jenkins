@@ -58,7 +58,7 @@ public class WindowsInstallerLink extends ManagementLink {
     }
 
     public String getDescription() {
-        return "Installs Hudson as a Windows service to this system, so that Hudson starts automatically when the machine boots.";
+        return Messages.WindowsInstallerLink_Description();
     }
 
     /**
