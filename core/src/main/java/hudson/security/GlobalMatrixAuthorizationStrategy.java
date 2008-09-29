@@ -140,9 +140,9 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      * Persist {@link GlobalMatrixAuthorizationStrategy} as a list of IDs that
      * represent {@link GlobalMatrixAuthorizationStrategy#grantedPermissions}.
      */
-    public static final class ConverterImpl implements Converter {
+    public static class ConverterImpl implements Converter {
         public boolean canConvert(Class type) {
-            return type== GlobalMatrixAuthorizationStrategy.class;
+            return type==GlobalMatrixAuthorizationStrategy.class;
         }
 
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
@@ -160,7 +160,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
-            GlobalMatrixAuthorizationStrategy as = new GlobalMatrixAuthorizationStrategy();
+            GlobalMatrixAuthorizationStrategy as = create();
 
             while (reader.hasMoreChildren()) {
                 reader.moveDown();
@@ -170,6 +170,10 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             }
 
             return as;
+        }
+
+        protected GlobalMatrixAuthorizationStrategy create() {
+            return new GlobalMatrixAuthorizationStrategy();
         }
     }
     
@@ -212,6 +216,10 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             List<PermissionGroup> groups = new ArrayList<PermissionGroup>(PermissionGroup.getAll());
             groups.remove(PermissionGroup.get(Permission.class));
             return groups;
+        }
+
+        public boolean showPermission(Permission p) {
+            return true;
         }
     }
 }

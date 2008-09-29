@@ -7,9 +7,11 @@
         <td class="left-most">${title}</td>
         <j:forEach var="g" items="${groups}">
           <j:forEach var="p" items="${g.permissions}">
-            <td width="*">
-              <f:checkbox name="[${p.id}]" checked="${instance.hasPermission(attrs.sid,p)}"/>
-            </td>
+            <j:if test="${descriptor.showPermission(p)}">
+              <td width="*">
+                <f:checkbox name="[${p.id}]" checked="${instance.hasPermission(attrs.sid,p)}"/>
+              </td>
+            </j:if>
           </j:forEach>
         </j:forEach>
         <td class="stop">
@@ -30,7 +32,14 @@
           ${%User/group}
         </td>
         <j:forEach var="g" items="${groups}">
-          <td class="pane-header" colspan="${g.size()}">
+          <j:set var="cnt" value="${0}" />
+          <j:forEach var="p" items="${g.permissions}">
+            <j:if test="${descriptor.showPermission(p)}">
+              <j:set var="cnt" value="${cnt+1}"/>
+            </j:if>
+          </j:forEach>
+
+          <td class="pane-header" colspan="${cnt}">
             ${g.title}
           </td>
         </j:forEach>
@@ -40,9 +49,11 @@
       <tr class="caption-row">
         <j:forEach var="g" items="${groups}">
           <j:forEach var="p" items="${g.permissions}">
-            <th class="pane">
-              ${p.name}
-            </th>
+            <j:if test="${descriptor.showPermission(p)}">
+              <th class="pane">
+                ${p.name}
+              </th>
+            </j:if>
           </j:forEach>
         </j:forEach>
       </tr>

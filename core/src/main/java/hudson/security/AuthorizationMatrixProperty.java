@@ -139,6 +139,9 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 			return Collections.singletonList(PermissionGroup.get(Item.class));
 		}
 
+        public boolean showPermission(Permission p) {
+            return p!=Item.CREATE;
+        }
 	}
 
 	private final class AclImpl extends SidACL {
