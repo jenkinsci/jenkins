@@ -519,7 +519,7 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Creates a temporary file.
+     * Creates a temporary file in the directory that this {@link FilePath} object designates.
      */
     public FilePath createTempFile(final String prefix, final String suffix) throws IOException, InterruptedException {
         try {
