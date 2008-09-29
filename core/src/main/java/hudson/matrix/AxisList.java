@@ -1,24 +1,12 @@
 package hudson.matrix;
 
-import com.thoughtworks.xstream.alias.CannotResolveClassException;
+import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.converters.reflection.SerializableConverter;
-import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
-import com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.mapper.Mapper;
+import hudson.util.RobustCollectionConverter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import hudson.util.RobustCollectionConverter;
 
 /**
  * List of {@link Axis}.
@@ -91,8 +79,8 @@ public class AxisList extends ArrayList<Axis> {
      * {@link Converter} implementation for XStream.
      */
     public static final class ConverterImpl extends RobustCollectionConverter {
-        public ConverterImpl(Mapper mapper, ReflectionProvider reflectionProvider) {
-            super(mapper,reflectionProvider);
+        public ConverterImpl(XStream xs) {
+            super(xs);
         }
 
         public boolean canConvert(Class type) {

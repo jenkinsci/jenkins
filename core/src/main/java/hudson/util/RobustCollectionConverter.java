@@ -7,6 +7,7 @@ import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.converters.reflection.SerializableConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.XStream;
 
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -22,6 +23,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class RobustCollectionConverter extends CollectionConverter {
     private final SerializableConverter sc;
+
+    public RobustCollectionConverter(XStream xs) {
+        this(xs.getMapper(),xs.getReflectionProvider());
+    }
+
     public RobustCollectionConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
         super(mapper);
         sc = new SerializableConverter(mapper,reflectionProvider);
