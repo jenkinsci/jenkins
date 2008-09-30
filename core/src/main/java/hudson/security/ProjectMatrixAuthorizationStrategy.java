@@ -3,6 +3,11 @@ package hudson.security;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Jobs;
+import hudson.util.RobustReflectionConverter;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.core.JVM;
 
 /**
  * {@link GlobalMatrixAuthorizationStrategy} plus per-project ACL.
@@ -38,6 +43,32 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
             return Messages.ProjectMatrixAuthorizationStrategy_DisplayName();
         }
     };
+
+    public static class ConverterImpl extends GlobalMatrixAuthorizationStrategy.ConverterImpl {
+        private RobustReflectionConverter ref;
+
+        public ConverterImpl(Mapper m) {
+            ref = new RobustReflectionConverter(m,new JVM().bestReflectionProvider());
+        }
+
+        protected GlobalMatrixAuthorizationStrategy create() {
+            return new GlobalMatrixAuthorizationStrategy();
+        }
+
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            String name = reader.peekNextChild();
+            if(name!=null && name.equals("permission"))
+                // the proper serialization form
+                return super.unmarshal(reader, context);
+            else
+                // remain compatible with earlier problem where we used reflection converter
+                return ref.unmarshal(reader,context);
+        }
+
+        public boolean canConvert(Class type) {
+            return type==ProjectMatrixAuthorizationStrategy.class;
+        }
+    }
 
     static {
         LIST.add(DESCRIPTOR);
