@@ -1,31 +1,21 @@
 package hudson;
 
-import hudson.util.IOException2;
-import hudson.util.VersionNumber;
 import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Expand;
-import org.apache.tools.ant.types.FileSet;
-import org.apache.commons.logging.LogFactory;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
+
+import org.apache.commons.logging.LogFactory;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Represents a Hudson plug-in and associated control information
@@ -89,18 +79,16 @@ public final class PluginWrapper {
      */
     private final String shortName;
 
-    /**
+	/**
      * True if this plugin is activated for this session.
      * The snapshot of <tt>disableFile.exists()</tt> as of the start up.
      */
     private final boolean active;
 
-    private final File archive;
+    private final List<Dependency> dependencies;
+	private final List<Dependency> optionalDependencies;
 
-    private final List<Dependency> dependencies = new ArrayList<Dependency>();
-    private final List<Dependency> optionalDependencies = new ArrayList<Dependency>();
-
-    private static final class Dependency {
+    static final class Dependency {
         public final String shortName;
         public final String version;
         public final boolean optional;
@@ -132,106 +120,35 @@ public final class PluginWrapper {
     /**
      * @param archive
      *      A .hpi archive file jar file, or a .hpl linked plugin.
-     *
-     * @throws IOException
-     *      if an installation of this plugin failed. The caller should
-     *      proceed to work with other plugins.
+     *  @param manifest
+     *  	The manifest for the plugin
+     *  @param baseResourceURL
+     *  	A URL pointing to the resources for this plugin
+     *  @param classLoader
+     *  	a classloader that loads classes from this plugin and its dependencies
+     *  @param disableFile
+     *  	if this file exists on startup, the plugin will not be activated
+     *  @param dependencies a list of mandatory dependencies
+     *  @param optionalDependencies a list of optional dependencies
      */
-    public PluginWrapper(PluginManager owner, File archive) throws IOException {
-        LOGGER.info("Loading plugin: "+archive);
-        this.archive = archive;
+	public PluginWrapper(File archive, Manifest manifest, URL baseResourceURL, 
+			ClassLoader classLoader, File disableFile, 
+			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
+		this.manifest = manifest;
+		this.shortName = computeShortName(manifest, archive);
+		this.baseResourceURL = baseResourceURL;
+		this.classLoader = classLoader;
+		this.disableFile = disableFile;
+		this.active = !disableFile.exists();
+		this.dependencies = dependencies;
+		this.optionalDependencies = optionalDependencies;
+	}
 
-        boolean isLinked = archive.getName().endsWith(".hpl");
-
-        File expandDir = null;  // if .hpi, this is the directory where war is expanded
-
-        if(isLinked) {
-            // resolve the .hpl file to the location of the manifest file
-            BufferedReader archiveReader = new BufferedReader(new FileReader(archive));
-            try {
-                String firstLine = archiveReader.readLine();
-                if(firstLine.startsWith("Manifest-Version:")) {
-                    // this is the manifest already
-                } else {
-                    // indirection
-                    archive = resolve(archive, firstLine);
-                }
-            } finally {
-                archiveReader.close();
-            }
-            // then parse manifest
-            FileInputStream in = new FileInputStream(archive);
-            try {
-                manifest = new Manifest(in);
-            } catch(IOException e) {
-                throw new IOException2("Failed to load "+archive,e);
-            } finally {
-                in.close();
-            }
-        } else {
-            expandDir = new File(archive.getParentFile(), getBaseName(archive));
-            explode(archive,expandDir);
-
-            File manifestFile = new File(expandDir,"META-INF/MANIFEST.MF");
-            if(!manifestFile.exists()) {
-                throw new IOException("Plugin installation failed. No manifest at "+manifestFile);
-            }
-            FileInputStream fin = new FileInputStream(manifestFile);
-            try {
-                manifest = new Manifest(fin);
-            } finally {
-                fin.close();
-            }
-        }
-
-        this.shortName = computeShortName(manifest,archive);
-
-        // TODO: define a mechanism to hide classes
-        // String export = manifest.getMainAttributes().getValue("Export");
-
-        List<URL> paths = new ArrayList<URL>();
-        if(isLinked) {
-            parseClassPath(archive, paths, "Libraries", ",");
-            parseClassPath(archive, paths, "Class-Path", " +"); // backward compatibility
-
-            this.baseResourceURL = resolve(archive,
-                manifest.getMainAttributes().getValue("Resource-Path")).toURL();
-        } else {
-            File classes = new File(expandDir,"WEB-INF/classes");
-            if(classes.exists())
-                paths.add(classes.toURL());
-            File lib = new File(expandDir,"WEB-INF/lib");
-            File[] libs = lib.listFiles(JAR_FILTER);
-            if(libs!=null) {
-                for (File jar : libs)
-                    paths.add(jar.toURL());
-            }
-
-            this.baseResourceURL = expandDir.toURL();
-        }
-        ClassLoader dependencyLoader = new DependencyClassLoader(getClass().getClassLoader(),owner);
-        this.classLoader = new URLClassLoader(paths.toArray(new URL[0]), dependencyLoader);
-
-        disableFile = new File(archive.getPath()+".disabled");
-        if(disableFile.exists()) {
-            LOGGER.info("Plugin is disabled");
-            this.active = false;
-        } else {
-            this.active = true;
-        }
-
-        // compute dependencies
-        String v = manifest.getMainAttributes().getValue("Plugin-Dependencies");
-        if(v!=null) {
-            for(String s : v.split(",")) {
-                Dependency d = new Dependency(s);
-                if (d.optional) {
-                    optionalDependencies.add(d);
-                } else {
-                    dependencies.add(d);
-                }
-            }
-        }
+    /**
+     * Returns the URL of the index page jelly script.
+     */
+    public URL getIndexPage() {
+        return classLoader.getResource("index.jelly");
     }
 
     private String computeShortName(Manifest manifest, File archive) {
@@ -249,121 +166,26 @@ public final class PluginWrapper {
         return getBaseName(archive);
     }
 
-    /**
-     * Loads the plugin and starts it.
-     *
-     * <p>
-     * This should be done after all the classloaders are constructed for
-     * all the plugins, so that dependencies can be properly loaded by plugins.
-     */
-    /*package*/ void load(PluginManager owner) throws IOException {
-        String className = manifest.getMainAttributes().getValue("Plugin-Class");
-        if(className ==null) {
-            throw new IOException("Plugin installation failed. No 'Plugin-Class' entry in the manifest of "+archive);
-        }
-
-        loadPluginDependencies(owner);
-
-        if(!active)
-            return;
-
-        // override the context classloader so that XStream activity in plugin.start()
-        // will be able to resolve classes in this plugin
-        ClassLoader old = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(classLoader);
-        try {
-            try {
-                Class clazz = classLoader.loadClass(className);
-                Object plugin = clazz.newInstance();
-                if(!(plugin instanceof Plugin)) {
-                    throw new IOException(className+" doesn't extend from hudson.Plugin");
-                }
-                this.plugin = (Plugin)plugin;
-                this.plugin.wrapper = this;
-            } catch (ClassNotFoundException e) {
-                throw new IOException2("Unable to load " + className + " from " + archive,e);
-            } catch (IllegalAccessException e) {
-                throw new IOException2("Unable to create instance of " + className + " from " + archive,e);
-            } catch (InstantiationException e) {
-                throw new IOException2("Unable to create instance of " + className + " from " + archive,e);
-            }
-
-            // initialize plugin
-            try {
-                plugin.setServletContext(owner.context);
-                plugin.start();
-            } catch(Throwable t) {
-                // gracefully handle any error in plugin.
-                throw new IOException2("Failed to initialize",t);
-            }
-        } finally {
-            Thread.currentThread().setContextClassLoader(old);
-        }
-    }
 
     /**
-     * Loads the dependencies to other plugins.
-     * @param owner plugin manager to determine if the dependency is installed or not.
-     * @throws IOException thrown if one or several mandatory dependencies doesnt exists.
+     * Gets the "abc" portion from "abc.ext".
      */
-    private void loadPluginDependencies(PluginManager owner) throws IOException {
-        List<String> missingDependencies = new ArrayList<String>();
-        // make sure dependencies exist
-        for (Dependency d : dependencies) {
-            if(owner.getPlugin(d.shortName)==null)
-                missingDependencies.add(d.toString());
-        }
-        if (! missingDependencies.isEmpty()) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Dependency ");
-            builder.append(Util.join(missingDependencies, ", "));
-            builder.append(" doesn't exist");
-            throw new IOException(builder.toString());
-        }
-        
-        // add the optional dependencies that exists
-        for (Dependency d : optionalDependencies) {
-            if(owner.getPlugin(d.shortName)!=null)
-                dependencies.add(d);
-        }
+    static String getBaseName(File archive) {
+        String n = archive.getName();
+        int idx = n.lastIndexOf('.');
+        if(idx>=0)
+            n = n.substring(0,idx);
+        return n;
     }
 
-    private void parseClassPath(File archive, List<URL> paths, String attributeName, String separator) throws IOException {
-        String classPath = manifest.getMainAttributes().getValue(attributeName);
-        if(classPath==null) return; // attribute not found
-        for (String s : classPath.split(separator)) {
-            File file = resolve(archive, s);
-            if(file.getName().contains("*")) {
-                // handle wildcard
-                FileSet fs = new FileSet();
-                File dir = file.getParentFile();
-                fs.setDir(dir);
-                fs.setIncludes(file.getName());
-                for( String included : fs.getDirectoryScanner(new Project()).getIncludedFiles() ) {
-                    paths.add(new File(dir,included).toURL());
-                }
-            } else {
-                if(!file.exists())
-                    throw new IOException("No such file: "+file);
-                paths.add(file.toURL());
-            }
-        }
-    }
+    public List<Dependency> getDependencies() {
+		return dependencies;
+	}
 
-    private static File resolve(File base, String relative) {
-        File rel = new File(relative);
-        if(rel.isAbsolute())
-            return rel;
-        else
-            return new File(base.getParentFile(),relative);
-    }
+	public List<Dependency> getOptionalDependencies() {
+		return optionalDependencies;
+	}
 
-    /**
-     * Returns the URL of the index page jelly script.
-     */
-    public URL getIndexPage() {
-        return classLoader.getResource("index.jelly");
-    }
 
     /**
      * Returns the short name suitable for URL.
@@ -405,17 +227,6 @@ public final class PluginWrapper {
         if(v!=null)      return v;
 
         return "???";
-    }
-
-    /**
-     * Gets the "abc" portion from "abc.ext".
-     */
-    private static String getBaseName(File archive) {
-        String n = archive.getName();
-        int idx = n.lastIndexOf('.');
-        if(idx>=0)
-            n = n.substring(0,idx);
-        return n;
     }
 
     /**
@@ -466,6 +277,19 @@ public final class PluginWrapper {
         return !disableFile.exists();
     }
 
+    public Manifest getManifest() {
+		return manifest;
+	}
+
+	public void setPlugin(Plugin plugin) {
+		this.plugin = plugin;
+		plugin.wrapper = this;
+	}
+	
+	public String getPluginClass() {
+		return manifest.getMainAttributes().getValue("Plugin-Class");		
+	}
+
     /**
      * If the plugin has {@link #getUpdateInfo() an update},
      * returns the {@link UpdateCenter.Plugin} object.
@@ -500,40 +324,6 @@ public final class PluginWrapper {
         return getUpdateInfo()!=null;
     }
 
-    /**
-     * Explodes the plugin into a directory, if necessary.
-     */
-    private void explode(File archive, File destDir) throws IOException {
-        if(!destDir.exists())
-            destDir.mkdirs();
-
-        // timestamp check
-        File explodeTime = new File(destDir,".timestamp");
-        if(explodeTime.exists() && explodeTime.lastModified()>archive.lastModified())
-            return; // no need to expand
-
-        LOGGER.info("Extracting "+archive);
-
-        // delete the contents so that old files won't interfere with new files
-        Util.deleteContentsRecursive(destDir);
-
-        try {
-            Expand e = new Expand();
-            e.setProject(new Project());
-            e.setTaskType("unzip");
-            e.setSrc(archive);
-            e.setDest(destDir);
-            e.execute();
-        } catch (BuildException x) {
-            IOException ioe = new IOException("Failed to expand " + archive);
-            ioe.initCause(x);
-            throw ioe;
-        }
-
-        Util.touch(explodeTime);
-    }
-
-
 //
 //
 // Action methods
@@ -553,40 +343,4 @@ public final class PluginWrapper {
 
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());
 
-    /**
-     * Filter for jar files.
-     */
-    private static final FilenameFilter JAR_FILTER = new FilenameFilter() {
-        public boolean accept(File dir,String name) {
-            return name.endsWith(".jar");
-        }
-    };
-
-    /**
-     * Used to load classes from dependency plugins.
-     */
-    final class DependencyClassLoader extends ClassLoader {
-        private final PluginManager manager;
-
-        public DependencyClassLoader(ClassLoader parent, PluginManager manager) {
-            super(parent);
-            this.manager = manager;
-        }
-
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
-            for (Dependency dep : dependencies) {
-                PluginWrapper p = manager.getPlugin(dep.shortName);
-                if(p!=null)
-                    try {
-                        return p.classLoader.loadClass(name);
-                    } catch (ClassNotFoundException _) {
-                        // try next
-                    }
-            }
-
-            throw new ClassNotFoundException(name);
-        }
-
-        // TODO: delegate resources? watch out for diamond dependencies
-    }
 }

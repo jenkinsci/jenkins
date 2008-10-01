@@ -68,6 +68,11 @@ public final class PluginManager extends AbstractModelObject {
      * for new plugins to take effect.
      */
     public volatile boolean pluginUploaded =false;
+    
+    /**
+     * Strategy for creating and initializing plugins
+     */
+    private PluginStrategy strategy;
 
     public PluginManager(ServletContext context) {
         this.context = context;
@@ -89,9 +94,12 @@ public final class PluginManager extends AbstractModelObject {
             LOGGER.severe("Hudson is unable to create "+rootDir+"\nPerhaps its security privilege is insufficient");
             return;
         }
+        
+        strategy = createPluginStrategy();
+        
         for( File arc : archives ) {
             try {
-                PluginWrapper p = new PluginWrapper(this,arc);
+                PluginWrapper p = strategy.createPluginWrapper(arc);
                 plugins.add(p);
                 if(p.isActive())
                     activePlugins.add(p);
@@ -103,16 +111,55 @@ public final class PluginManager extends AbstractModelObject {
 
         for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[0]))
             try {
-                p.load(this);
+            	strategy.load(p);
             } catch (IOException e) {
                 failedPlugins.add(new FailedPlugin(p.getShortName(),e));
                 LOGGER.log(Level.SEVERE, "Failed to load a plug-in " + p.getShortName(), e);
                 activePlugins.remove(p);
                 plugins.remove(p);
             }
+
+		for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
+			strategy.initializeComponents(p);
+		}
     }
 
     /**
+     * Creates a hudson.PluginStrategy, looking at the corresponding system property. 
+     */
+	private PluginStrategy createPluginStrategy() {
+		String strategyName = System.getProperty(PluginStrategy.class.getName());
+		if (strategyName != null) {
+			try {
+				Class<?> klazz = getClass().getClassLoader().loadClass(strategyName);
+				Object strategy = klazz.getConstructor(PluginManager.class)
+						.newInstance(this);
+				if (strategy instanceof PluginStrategy) {
+					LOGGER.info("Plugin strategy: " + strategyName);
+					return (PluginStrategy) strategy;
+				} else {
+					LOGGER.warning("Plugin strategy (" + strategyName + 
+							") is not an instance of hudson.PluginStrategy");
+				}
+			} catch (ClassNotFoundException e) {
+				LOGGER.warning("Plugin strategy class not found: "
+						+ strategyName);
+			} catch (Exception e) {
+				LOGGER.log(Level.WARNING, "Could not instantiate plugin strategy: "
+						+ strategyName + ". Falling back to ClassicPluginStrategy", e);
+			}
+			LOGGER.info("Falling back to ClassicPluginStrategy");
+		}
+		
+		// default and fallback
+		return new ClassicPluginStrategy(this);
+	}
+	
+	public PluginStrategy getPluginStrategy() {
+		return strategy;
+	}
+
+	/**
      * Retrurns true if any new plugin was added, which means a restart is required for the change to take effect.
      */
     public boolean isPluginUploaded() {
