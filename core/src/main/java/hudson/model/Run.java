@@ -1156,7 +1156,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return env;
     }
 
-    private static final XStream XSTREAM = new XStream2();
+    public static final XStream XSTREAM = new XStream2();
     static {
         XSTREAM.alias("build",FreeStyleBuild.class);
         XSTREAM.alias("matrix-build",MatrixBuild.class);
