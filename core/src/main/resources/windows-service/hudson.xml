@@ -14,7 +14,7 @@
     The following value assumes that you have java in your PATH.
   -->
   <executable>java</executable>
-  <arguments>-Xmx256m -Dhudson.lifecycle=hudson.lifecycle.WindowsServiceLifecycle -jar "%BASE%\hudson.war" --httpPort=8080</arguments>
+  <arguments>-Xrs -Xmx256m -Dhudson.lifecycle=hudson.lifecycle.WindowsServiceLifecycle -jar "%BASE%\hudson.war" --httpPort=8080</arguments>
   <!--
     interactive flag causes the empty black Java window to be displayed.
     I'm still debugging this.

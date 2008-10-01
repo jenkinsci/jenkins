@@ -13,7 +13,7 @@
     The following value assumes that you have java in your PATH.
   -->
   <executable>@JAVA@</executable>
-  <arguments>-jar "%BASE%\slave.jar" -jnlpUrl @URL@</arguments>
+  <arguments>-Xrs  -jar "%BASE%\slave.jar" -jnlpUrl @URL@</arguments>
   <!--
     interactive flag causes the empty black Java window to be displayed.
     I'm still debugging this.
