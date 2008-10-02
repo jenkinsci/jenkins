@@ -8,10 +8,11 @@ import org.codehaus.classworlds.NoSuchRealmException;
 
 import java.io.File;
 import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.util.HashSet;
@@ -91,16 +92,16 @@ public class Main {
         remotingLauncher.getMethod("main",new Class[]{InputStream.class,OutputStream.class}).invoke(null,
                 new Object[]{
                         // do partial close, since socket.getInputStream and getOutputStream doesn't do it by
-                        new FilterInputStream(s.getInputStream()) {
+                        new BufferedInputStream(new FilterInputStream(s.getInputStream()) {
                             public void close() throws IOException {
                                 s.shutdownInput();
                             }
-                        },
-                        new RealFilterOutputStream(s.getOutputStream()) {
+                        }),
+                        new BufferedOutputStream(new RealFilterOutputStream(s.getOutputStream()) {
                             public void close() throws IOException {
                                 s.shutdownOutput();
                             }
-                        }
+                        })
                 });
         System.exit(0);
     }
