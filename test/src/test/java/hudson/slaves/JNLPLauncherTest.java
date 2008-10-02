@@ -43,7 +43,9 @@ public class JNLPLauncherTest extends HudsonTestCase {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add("java","-jar");
         args.add(Which.jarFile(netx.jnlp.runtime.JNLPRuntime.class).getAbsolutePath());
-        args.add("-headless","-nosecurity","-jnlp", getJnlpLink(c));
+        args.add("-headless","-basedir");
+        args.add(createTmpDir());
+        args.add("-nosecurity","-jnlp", getJnlpLink(c));
         return args;
     }
 

@@ -224,6 +224,13 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     /**
+     * Allocates a new temporary directory for the duration of this test.
+     */
+    protected File createTmpDir() throws IOException {
+        return TestEnvironment.get().temporaryDirectoryAllocator.allocate();
+    }
+
+    /**
      * Returns the last item in the list.
      */
     protected <T> T last(List<T> items) {
