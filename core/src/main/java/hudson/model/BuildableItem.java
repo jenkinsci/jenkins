@@ -13,4 +13,5 @@ import hudson.model.Queue.Task;
  */
 public interface BuildableItem extends Item, Task {
     boolean scheduleBuild();
+    boolean scheduleBuild(int quietPeriod);
 }
