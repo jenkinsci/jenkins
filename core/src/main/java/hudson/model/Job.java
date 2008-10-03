@@ -4,6 +4,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.PermalinkList;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.PermalinkProjectAction.Permalink;
@@ -557,7 +558,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             // is this a permalink?
             for (Permalink p : getPermalinks()) {
-                if(p.getUrl().equals(token))
+                if(p.getId().equals(token))
                     return p.resolve(this);
             }
 
@@ -678,10 +679,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Gets all the {@link Permalink}s defined for this job.
+     *
+     * @return never null
      */
-    public List<Permalink> getPermalinks() {
+    public PermalinkList getPermalinks() {
         // TODO: shall we cache this?
-        List<Permalink> permalinks = new ArrayList<Permalink>(Permalink.BUILTIN);
+        PermalinkList permalinks = new PermalinkList(Permalink.BUILTIN);
         for (Action a : getActions()) {
             if (a instanceof PermalinkProjectAction) {
                 PermalinkProjectAction ppa = (PermalinkProjectAction) a;

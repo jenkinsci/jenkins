@@ -7,7 +7,7 @@
   <j:set var="b" value="${it.resolve(job)}"/>
   <j:if test="${b!=null}">
     <li>
-      <a href="${it.url}/">${%format(it.displayName,b.number,b.timestampString)}</a>
+      <a href="${it.id}/">${%format(it.displayName,b.number,b.timestampString)}</a>
     </li>
   </j:if>
 </j:jelly>

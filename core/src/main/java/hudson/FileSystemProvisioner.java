@@ -9,6 +9,7 @@ import hudson.model.Job;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import hudson.util.DescriptorList;
+import hudson.scm.SCM;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -67,8 +68,22 @@ import java.io.OutputStream;
  * the workspace snapshot of the upstream? Yes, by using {@link RunListener}.
  * So this becomes like a special SCM type.
  *
- * To support promoted builds, we need an abstraction for permalinks.
- * This is also needed for other UI.
+ * <h2>Design take 2</h2>
+ * <p>
+ * The first piece of this is the custom {@link SCM}, which inherits the
+ * workspace of another job. When this executes, it picks up
+ * {@link WorkspaceSnapshot} from the other job and use it to obtain the workspace.
+ *
+ * <p>
+ * Then there's {@link RunListener}, which creates a snapshot if
+ * someone else is interested in using a snapshot later.
+ *
+ * <h3>TODOs</h3>
+ * <ul>
+ * <li>
+ * Garbage collection of workspace snapshots. 
+ *
+ * </ul>
  *
  * @author Kohsuke Kawaguchi
  * @since 1.235

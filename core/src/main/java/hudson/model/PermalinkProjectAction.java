@@ -34,10 +34,17 @@ public interface PermalinkProjectAction extends Action {
         public abstract String getDisplayName();
 
         /**
-         * The URL token to represent the permalink, such as "lastSuccessfulBuild".
+         * ID that uniquely identifies this permalink.
+         *
+         * <p>
+         * The is also used as an URL token to represent the permalink.
          * This becomes the part of the permanent URL.
+         *
+         * <p>
+         * The expected format is the camel case,
+         * such as "lastSuccessfulBuild".
          */
-        public abstract String getUrl();
+        public abstract String getId();
 
         /**
          * Resolves the permalink to a build.
@@ -58,7 +65,7 @@ public interface PermalinkProjectAction extends Action {
                     return Messages.Permalink_LastBuild();
                 }
 
-                public String getUrl() {
+                public String getId() {
                     return "lastBuild";
                 }
 
@@ -72,7 +79,7 @@ public interface PermalinkProjectAction extends Action {
                     return Messages.Permalink_LastStableBuild();
                 }
 
-                public String getUrl() {
+                public String getId() {
                     return "lastStableBuild";
                 }
 
@@ -86,7 +93,7 @@ public interface PermalinkProjectAction extends Action {
                     return Messages.Permalink_LastSuccessfulBuild();
                 }
 
-                public String getUrl() {
+                public String getId() {
                     return "lastSuccessfulBuild";
                 }
 
@@ -100,7 +107,7 @@ public interface PermalinkProjectAction extends Action {
                     return Messages.Permalink_LastFailedBuild();
                 }
 
-                public String getUrl() {
+                public String getId() {
                     return "lastFailedBuild";
                 }
 
