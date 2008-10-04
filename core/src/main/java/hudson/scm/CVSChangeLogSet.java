@@ -81,6 +81,10 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         for(int i=r.size()-1; i>=0; i--) {
             CVSChangeLog log = r.get(i);
             boolean merged = false;
+            if(!log.isComplete()) {
+                r.remove(log);
+                continue;
+            }
             for(int j=0;j<i;j++) {
                 CVSChangeLog c = r.get(j);
                 if(c.canBeMergedWith(log)) {
@@ -105,6 +109,14 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         private User author;
         private String msg;
         private final List<File> files = new ArrayList<File>();
+
+        /**
+         * Returns true if all the fields that are supposed to be non-null is present.
+         * This is used to make sure the XML file was correct.
+         */
+        public boolean isComplete() {
+            return date!=null && time!=null && msg!=null;
+        }
 
         /**
          * Checks if two {@link CVSChangeLog} entries can be merged.
