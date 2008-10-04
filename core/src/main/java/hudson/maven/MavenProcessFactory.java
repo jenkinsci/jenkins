@@ -39,6 +39,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -333,7 +334,10 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             URLConnection con = classFile.openConnection();
             if (con instanceof JarURLConnection) {
                 JarURLConnection connection = (JarURLConnection) con;
-                return connection.getJarFile().getName();
+                JarFile jarFile = connection.getJarFile();
+                if(jarFile==null)
+                    throw new IOException("Failing to detect jar file from "+classFile);
+                return jarFile.getName();
             }
 
             return Which.jarFile(hudson.remoting.Launcher.class).getPath();
