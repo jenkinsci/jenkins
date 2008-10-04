@@ -201,6 +201,11 @@
           <groupId>pull-parser</groupId>
           <artifactId>pull-parser</artifactId>
         </exclusion>
+        <!-- don't know where this is coming from -->
+        <exclusion>
+          <groupId>dom4j</groupId>
+          <artifactId>dom4j</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
