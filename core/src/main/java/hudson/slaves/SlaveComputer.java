@@ -190,20 +190,24 @@ public final class SlaveComputer extends Computer {
 
         PrintWriter log = new PrintWriter(launchLog,true);
 
+        boolean _isUnix = channel.call(new DetectOS());
+        log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
+
+        String remoteFs = getNode().getRemoteFS();
+        if(_isUnix && !remoteFs.contains("/") && remoteFs.contains("\\"))
+            log.println("WARNING: "+remoteFs+" looks suspiciously like Windows path. Maybe you meant "+remoteFs.replace('\\','/')+"?");
+
         {// send jars that we need for our operations
             // TODO: maybe I should generalize this kind of "post initialization" processing
-            FilePath dst = new FilePath(channel,getNode().getRemoteFS());
+            FilePath dst = new FilePath(channel, remoteFs);
             new FilePath(Which.jarFile(Main.class)).copyTo(dst.child("maven-agent.jar"));
             log.println("Copied maven-agent.jar");
             new FilePath(Which.jarFile(PluginManagerInterceptor.class)).copyTo(dst.child("maven-interceptor.jar"));
             log.println("Copied maven-interceptor.jar");
         }
 
-        Boolean _isUnix = channel.call(new DetectOS());
-        log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
-
         channel.call(new LogInstaller());
-        channel.call(new WindowsSlaveInstaller(getNode().getRemoteFS()));
+        channel.call(new WindowsSlaveInstaller(remoteFs));
 
         // update the data structure atomically to prevent others from seeing a channel that's not properly initialized yet
         synchronized(channelLock) {

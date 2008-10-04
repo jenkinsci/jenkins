@@ -723,14 +723,14 @@ public final class FilePath implements Serializable {
      */
     public OutputStream write() throws IOException, InterruptedException {
         if(channel==null) {
-            File f = new File(remote);
+            File f = new File(remote).getAbsoluteFile();
             f.getParentFile().mkdirs();
             return new FileOutputStream(f);
         }
 
         return channel.call(new Callable<OutputStream,IOException>() {
             public OutputStream call() throws IOException {
-                File f = new File(remote);
+                File f = new File(remote).getAbsoluteFile();
                 f.getParentFile().mkdirs();
                 FileOutputStream fos = new FileOutputStream(f);
                 return new RemoteOutputStream(fos);
