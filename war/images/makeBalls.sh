@@ -5,7 +5,7 @@ t=/tmp/makeBalls$$
 
 for sz in 16x16 24x24 32x32 48x48
 do
-  for color in grey blue yellow red
+  for color in grey blue yellow red green
   do
     cp $sz/$color.gif ../resources/images/$sz/$color.gif
     convert $sz/$color.gif -fill white -colorize 20% $t.80.gif
