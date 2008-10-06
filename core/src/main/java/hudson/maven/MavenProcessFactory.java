@@ -337,6 +337,8 @@ final class MavenProcessFactory implements ProcessCache.Factory {
                 JarFile jarFile = connection.getJarFile();
                 if(jarFile==null)
                     throw new IOException("Failing to detect jar file from "+classFile+" JarURLConnection="+connection);
+                if(jarFile.getName()==null)
+                    throw new IOException("jarFile.getName()==null for "+classFile+" JarURLConnection="+connection);
                 return jarFile.getName();
             }
 
