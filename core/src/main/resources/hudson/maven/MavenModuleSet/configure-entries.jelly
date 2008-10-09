@@ -4,7 +4,13 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <st:include page="configure-common.jelly" />
 
-  <p:config-trigger/>
+  <p:config-trigger>
+    <!-- setting to ignore upstream changes is done as a pseudo-trigger -->
+    <f:optionalBlock name="maven.triggerByDependency"
+        help="/help/maven/ignore-upstrem-changes.html"
+        title="${%Build whenever a SNAPSHOT dependency is built}"
+        checked="${h.defaultToTrue(!it.ignoreUpstremChanges())}" />
+  </p:config-trigger>
 
   <f:section title="${%Build}">
     <j:set var="mavens" value="${it.descriptor.mavenDescriptor.installations}" />
@@ -17,7 +23,7 @@
         </div>
       </f:entry>
     </j:if>
-    <j:if test="${mavens.size() &gt; 1}">
+    <j:if test="${mavens.size() gt 1}">
       <!-- choice not necessary if there's no choice -->
       <f:entry title="${%Maven Version}">
         <select class="setting-input" name="maven_version">

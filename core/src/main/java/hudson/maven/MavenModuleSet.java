@@ -94,6 +94,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private boolean usePrivateRepository = false;
 
     /**
+     * If true, do not automatically schedule a build when one of the project dependencies is built.
+     * <p>
+     * See HUDSON-1714.
+     */
+    private boolean ignoreUpstremChanges = false;
+
+    /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
@@ -225,6 +232,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
     public boolean usesPrivateRepository() {
         return usePrivateRepository;
+    }
+
+    public boolean ignoreUpstremChanges() {
+        return ignoreUpstremChanges;
     }
 
     /**
@@ -522,6 +533,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req,rsp);
+        JSONObject json = req.getSubmittedForm();
 
         rootPOM = Util.fixEmpty(req.getParameter("rootPOM").trim());
         if(rootPOM!=null && rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
@@ -531,8 +543,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         mavenName = req.getParameter("maven_version");
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
         usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
+        ignoreUpstremChanges = !json.has("triggerByDependency");
 
-        JSONObject json = req.getSubmittedForm();
         reporters.rebuild(req,json,MavenReporters.getConfigurableList(),"reporter");
         publishers.rebuild(req,json,BuildStepDescriptor.filter(BuildStep.PUBLISHERS,this.getClass()),"publisher");
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this),"wrapper");
