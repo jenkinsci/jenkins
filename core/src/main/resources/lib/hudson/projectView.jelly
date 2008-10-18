@@ -8,124 +8,134 @@
   @indenter:
      optional Indenter instance used to indent items.
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <t:setIconSize/>
-  <div class="dashboard">
-    <j:if test="${!empty(jobs)}">
-      <!-- the caller can inject a tab bar here -->
-      <d:invokeBody />
-      <!-- project list -->
-      <x:element name="table">
-        <x:attribute name="id">projectstatus</x:attribute>
-        <x:attribute name="class">sortable pane bigtable</x:attribute>
-        <j:if test="${showViewTabs}">
-          <x:attribute name="style">margin-top:0px; border-top: none;</x:attribute>
-        </j:if>
-        <tr style="border-top: 0px;">
-          <th>S</th>
-          <th>W</th>
-          <th initialSortDir="down">${%Job}</th>
-          <th>${%Last Success}</th>
-          <th>${%Last Failure}</th>
-          <th>${%Last Duration}</th>
-          <th><st:nbsp/></th>
-          <th width="1"><st:nbsp/></th>
-        </tr>
-
-        <j:forEach var="job" items="${jobs}">
-          <j:set var="lsBuild" value="${job.lastSuccessfulBuild}" />
-          <j:set var="lfBuild" value="${job.lastFailedBuild}" />
-          <j:set var="buildHealth" value="${job.buildHealth}" />
-          <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
-            <t:ballColorTd it="${job.iconColor}" />
-            <td data="${buildHealth.score}">
-              <x:element name="div">
-                <x:attribute name="class">healthReport</x:attribute>
-                <x:attribute name="onmouseover">this.className='healthReport hover';return true;</x:attribute>
-                <x:attribute name="onmouseout">this.className='healthReport';return true;</x:attribute>
-                <a class="healthReport" href="${jobBaseUrl}${job.shortUrl}lastBuild">
-                  <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}" alt="${buildHealth.score}%" />
-                </a>
-                <j:set var="healthReports" value="${job.buildHealthReports}" />
-                <j:if test="${!empty(healthReports)}">
-                  <div class="healthReportDetails">
-                    <table border="0">
-                      <thead>
-                        <tr>
-                          <th align="left">W</th>
-                          <th align="left">${%Description}</th>
-                          <th align="right">%</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <j:forEach var="rpt" items="${job.buildHealthReports}">
-                          <tr>
-                            <td align="left">
-                              <img src="${rootURL}${rpt.getIconUrl('16x16')}" alt="" title="" />
-                            </td>
-                            <td>${rpt.description}</td>
-                            <td align="right">${rpt.score}</td>
-                          </tr>
-                        </j:forEach>
-                      </tbody>
-                    </table>
-                  </div>
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <t:setIconSize/>
+    <div class="dashboard">
+        <j:if test="${!empty(jobs)}">
+            <!-- the caller can inject a tab bar here -->
+            <d:invokeBody/>
+            <!-- project list -->
+            <x:element name="table">
+                <x:attribute name="id">projectstatus</x:attribute>
+                <x:attribute name="class">sortable pane bigtable</x:attribute>
+                <j:if test="${showViewTabs}">
+                    <x:attribute name="style">margin-top:0px; border-top: none;</x:attribute>
                 </j:if>
-              </x:element>
-            </td>
-            <td style="${indenter.getCss(job)}">
-              <a href="${jobBaseUrl}${job.shortUrl}">
-                  ${job.displayName}
-              </a>
-            </td>
-            <td data="${h.ifThenElse(lsBuild==null,'-',lsBuild.timestampString2)}">
-              <j:choose>
-                <j:when test="${lsBuild!=null}">
-                  ${lsBuild.timestampString}
-                  (<a href="${jobBaseUrl}${job.shortUrl}lastSuccessfulBuild/">#${lsBuild.number}</a>)
-                </j:when>
-                <j:otherwise>
-                  ${%N/A}
-                </j:otherwise>
-              </j:choose>
-            </td>
-            <td data="${h.ifThenElse(lfBuild==null,'-',lfBuild.timestampString2)}">
-              <j:choose>
-                <j:when test="${lfBuild!=null}">
-                  ${lfBuild.timestampString}
-                  (<a href="${jobBaseUrl}${job.shortUrl}lastFailedBuild/">#${lfBuild.number}</a>)
-                </j:when>
-                <j:otherwise>
-                  ${%N/A}
-                </j:otherwise>
-              </j:choose>
-            </td>
-            <td data="${h.ifThenElse(lsBuild==null,h.ifThenElse(lfBuild==null,'0',lfBuild.duration),lsBuild.duration)}">
-              <j:choose>
-                <j:when test="${lsBuild!=null}">
-                  ${lsBuild.durationString}
-                </j:when>
-                <j:when test="${lfBuild!=null}">
-                  ${lfBuild.durationString}
-                </j:when>
-                <j:otherwise>
-                  ${%N/A}
-                </j:otherwise>
-              </j:choose>
-            </td>
-            <td>
-              <st:nbsp/>
-            </td>
-            <td>
-              <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
-                <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
-                  <img src="${imagesURL}/${subIconSize}/clock.gif" title="${%Schedule a build}" border="0" /></a>
-              </j:if>
-            </td>
-          </tr>
-        </j:forEach>
-      </x:element>
-      <t:rssBar-with-iconSize/>
-    </j:if>
-  </div>
+                <tr style="border-top: 0px;">
+                    <th>S</th>
+                    <th>W</th>
+                    <th initialSortDir="down">${%Job}</th>
+                    <th>${%Last Success}</th>
+                    <th>${%Last Failure}</th>
+                    <th>${%Last Duration}</th>
+                    <th>
+                        <st:nbsp/>
+                    </th>
+                    <th width="1">
+                        <st:nbsp/>
+                    </th>
+                </tr>
+
+                <j:forEach var="job" items="${jobs}">
+                    <j:set var="lsBuild" value="${job.lastSuccessfulBuild}"/>
+                    <j:set var="lfBuild" value="${job.lastFailedBuild}"/>
+                    <j:set var="buildHealth" value="${job.buildHealth}"/>
+                    <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
+                        <t:ballColorTd it="${job.iconColor}"/>
+                        <td data="${buildHealth.score}">
+                            <x:element name="div">
+                                <x:attribute name="class">healthReport</x:attribute>
+                                <x:attribute name="onmouseover">this.className='healthReport hover';return true;
+                                </x:attribute>
+                                <x:attribute name="onmouseout">this.className='healthReport';return true;</x:attribute>
+                                <a class="healthReport" href="${jobBaseUrl}${job.shortUrl}lastBuild">
+                                    <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
+                                         alt="${buildHealth.score}%"/>
+                                </a>
+                                <j:set var="healthReports" value="${job.buildHealthReports}"/>
+                                <j:if test="${!empty(healthReports)}">
+                                    <div class="healthReportDetails">
+                                        <table border="0">
+                                            <thead>
+                                                <tr>
+                                                    <th align="left">W</th>
+                                                    <th align="left">${%Description}</th>
+                                                    <th align="right">%</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <j:forEach var="rpt" items="${job.buildHealthReports}">
+                                                    <tr>
+                                                        <td align="left">
+                                                            <img src="${rootURL}${rpt.getIconUrl('16x16')}" alt=""
+                                                                 title=""/>
+                                                        </td>
+                                                        <td>${rpt.localizableDescription}</td>
+                                                        <td align="right">${rpt.score}</td>
+                                                    </tr>
+                                                </j:forEach>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </j:if>
+                            </x:element>
+                        </td>
+                        <td style="${indenter.getCss(job)}">
+                            <a href="${jobBaseUrl}${job.shortUrl}">
+                                ${job.displayName}
+                            </a>
+                        </td>
+                        <td data="${h.ifThenElse(lsBuild==null,'-',lsBuild.timestampString2)}">
+                            <j:choose>
+                                <j:when test="${lsBuild!=null}">
+                                    ${lsBuild.timestampString}
+                                    (<a href="${jobBaseUrl}${job.shortUrl}lastSuccessfulBuild/">#${lsBuild.number}</a>)
+                                </j:when>
+                                <j:otherwise>
+                                    ${%N/A}
+                                </j:otherwise>
+                            </j:choose>
+                        </td>
+                        <td data="${h.ifThenElse(lfBuild==null,'-',lfBuild.timestampString2)}">
+                            <j:choose>
+                                <j:when test="${lfBuild!=null}">
+                                    ${lfBuild.timestampString}
+                                    (<a href="${jobBaseUrl}${job.shortUrl}lastFailedBuild/">#${lfBuild.number}</a>)
+                                </j:when>
+                                <j:otherwise>
+                                    ${%N/A}
+                                </j:otherwise>
+                            </j:choose>
+                        </td>
+                        <td data="${h.ifThenElse(lsBuild==null,h.ifThenElse(lfBuild==null,'0',lfBuild.duration),lsBuild.duration)}">
+                            <j:choose>
+                                <j:when test="${lsBuild!=null}">
+                                    ${lsBuild.durationString}
+                                </j:when>
+                                <j:when test="${lfBuild!=null}">
+                                    ${lfBuild.durationString}
+                                </j:when>
+                                <j:otherwise>
+                                    ${%N/A}
+                                </j:otherwise>
+                            </j:choose>
+                        </td>
+                        <td>
+                            <st:nbsp/>
+                        </td>
+                        <td>
+                            <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
+                                <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
+                                    <img src="${imagesURL}/${subIconSize}/clock.gif" title="${%Schedule a build}"
+                                         border="0"/>
+                                </a>
+                            </j:if>
+                        </td>
+                    </tr>
+                </j:forEach>
+            </x:element>
+            <t:rssBar-with-iconSize/>
+        </j:if>
+    </div>
 </j:jelly>
