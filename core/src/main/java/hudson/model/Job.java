@@ -811,8 +811,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             } else {
                 description = Messages.Job_NOfMFailed(failCount, totalCount);
             }
-            return new HealthReport(score, Messages
-                    .Job_BuildStability(description));
+            return new HealthReport(score, Messages._Job_BuildStability(description));
         }
         return null;
     }

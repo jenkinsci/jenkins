@@ -24,6 +24,7 @@ import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.jvnet.localizer.Localizable;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -95,14 +96,13 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         final int totalCount = getTotalCount();
         final int failCount = getFailCount();
         int score = (totalCount == 0) ? 100 : (int) (100.0 * (1.0 - ((double)failCount) / totalCount));
-        StringBuilder description = new StringBuilder(getDisplayName());
-        description.append(": ");
+        Localizable description;
         if (totalCount == 0) {
-        	description.append(Messages.AbstractTestResultAction_zeroTestDescription());
+        	description = Messages._AbstractTestResultAction_zeroTestDescription(getDisplayName());
         } else {
-        	description.append(Messages.AbstractTestResultAction_TestsDescription(failCount, totalCount));
+        	description = Messages._AbstractTestResultAction_TestsDescription(getDisplayName(), failCount, totalCount);
         }
-        return new HealthReport(score, description.toString());
+        return new HealthReport(score, description);
     }
 
     /**
