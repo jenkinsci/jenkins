@@ -54,7 +54,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     /**
      * The health icon's tool-tip.
      */
-    private LocalizableProxy localizibleDescription;
+    private Localizable localizibleDescription;
 
     /**
      * Create a new HealthReport.
@@ -218,7 +218,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * @return Value for property 'localizibleDescription'.
      */
     public Localizable getLocalizableDescription() {
-        return localizibleDescription.getLocalizable();
+        return localizibleDescription;
     }
 
     /**
@@ -227,7 +227,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * @param localizibleDescription Value to set for property 'localizibleDescription'.
      */
     public void setLocalizibleDescription(Localizable localizibleDescription) {
-        this.localizibleDescription = new LocalizableProxy(localizibleDescription);
+        this.localizibleDescription = localizibleDescription;
     }
 
     /**
@@ -284,8 +284,8 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      */
     private Object readResolve() {
         // If we are being read back in from an older version
-        if (localizibleDescription == null && description != null) {
-            localizibleDescription = new LocalizableProxy(new NonLocalizable(description));
+        if (localizibleDescription == null) {
+            localizibleDescription = new NonLocalizable(description == null ? "" : description);
         }
         return this;
     }
@@ -293,7 +293,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     /**
      * In order to provide backwards compatibility, we use this crazy class to fake out localization.
      */
-    private static class NonLocalizable extends Localizable implements Serializable {
+    private static class NonLocalizable extends Localizable {
         /**
          * The string that we don't know how to localize
          */
@@ -326,109 +326,4 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
         }
     }
 
-    /**
-     * Ugh, {@link org.jvnet.localizer.Localizable} does not currently implement {@link java.io.Serializable}.
-     * We need some thing that is {@link java.io.Serializable} to proxy for it.
-     */
-    public static class LocalizableProxy implements Serializable, Externalizable {
-        private transient Localizable localizable;
-
-        private static Field fLRBH;
-        private static Field fLKey;
-        private static Field fLArgs;
-        private static Field fRBHClass;
-
-        static {
-            if (Serializable.class.isAssignableFrom(Localizable.class)) {
-                // we can remove all this malarkey if Localizable is Serializable
-                fLRBH = null;
-                fLArgs = null;
-                fLKey = null;
-                fRBHClass = null;
-            } else {
-                // oh dear, we'll have to tightly couple and use reflection
-                try {
-                    fRBHClass = ResourceBundleHolder.class.getDeclaredField("owner");
-                    fLRBH = Localizable.class.getDeclaredField("holder");
-                    fLKey = Localizable.class.getDeclaredField("key");
-                    fLArgs = Localizable.class.getDeclaredField("args");
-                    fLRBH.setAccessible(true);
-                    fLKey.setAccessible(true);
-                    fLArgs.setAccessible(true);
-                    fRBHClass.setAccessible(true);
-                } catch (NoSuchFieldException e) {
-                    fLRBH = null;
-                    fLArgs = null;
-                    fLKey = null;
-                    fRBHClass = null;
-                }
-            }
-        }
-
-        public LocalizableProxy(Localizable localizable) {
-            this.localizable = localizable;
-        }
-
-        public LocalizableProxy() {
-        }
-
-        public Localizable getLocalizable() {
-            return localizable;
-        }
-
-        public void writeExternal(ObjectOutput out) throws IOException {
-            if (localizable instanceof Serializable) {
-                out.writeObject(Boolean.TRUE);
-                out.writeObject(localizable);
-            } else {
-                out.writeObject(Boolean.FALSE);
-                boolean wroteToStream = false;
-                if (fLRBH != null) {
-                    try {
-                        ResourceBundleHolder rbh = (ResourceBundleHolder) fLRBH.get(localizable);
-                        Class rbhClass = (Class) fRBHClass.get(rbh);
-                        String key = (String) fLKey.get(localizable);
-                        Object[] args = (Object[]) fLArgs.get(localizable);
-                        Serializable[] sArgs = new Serializable[args.length];
-                        for (int i = 0; i < args.length; i++) {
-                            if (args[i] instanceof Serializable) {
-                                sArgs[i] = (Serializable) args[i];
-                            } else {
-                                // ok, this is the least worse option if we accept that things
-                                // must be serialized.
-                                sArgs[i] = args[i].toString();
-                            }
-                        }
-                        wroteToStream = true;
-                        out.writeObject(rbhClass.getName());
-                        out.writeObject(key);
-                        out.writeObject(sArgs);
-                    } catch (IllegalAccessException e) {
-                    }
-                }
-                if (!wroteToStream) {
-                    // there is a problem during serialization, so all we can give is thelocalized string :-(
-                    out.writeObject("");
-                    out.writeObject(localizable.toString());
-                }
-            }
-        }
-
-        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-            if (Boolean.TRUE.equals(in.readObject())) {
-                localizable = (Localizable) in.readObject();
-            } else {
-                String rbhClass = (String) in.readObject();
-                if ("".equals(rbhClass)) {
-                    // there was a problem during serialization, so all we have is a localized string :-(
-                    localizable = new NonLocalizable((String) in.readObject());
-                } else {
-                    ResourceBundleHolder rbh = new ResourceBundleHolder(Class.forName(rbhClass));
-                    String key = (String) in.readObject();
-                    Serializable[] args = (Serializable[]) in.readObject();
-                    localizable = new Localizable(rbh, key, args);
-                }
-            }
-        }
-    }
 }
