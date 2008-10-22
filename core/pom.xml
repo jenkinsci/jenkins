@@ -39,7 +39,7 @@
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
-        <version>1.4</version>
+        <version>1.7</version>
         <executions>
           <execution>
             <goals>
@@ -150,6 +150,18 @@
         </plugins>
       </reporting>
     </profile>
+    <profile>
+      <id>sorcerer</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.jvnet.sorcerer</groupId>
+	    <artifactId>maven-sorcerer-plugin</artifactId>
+            <version>0.7-SNAPSHOT</version>
+	  </plugin>
+	</plugins>
+      </reporting>
+    </profile>
   </profiles>
 
   <dependencies>
@@ -226,10 +238,9 @@
       <version>1.84</version>
     </dependency>
     <dependency>
-      <!-- until the next rev of stapler picks up localizer 1.5 -->
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.5</version>
+      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
