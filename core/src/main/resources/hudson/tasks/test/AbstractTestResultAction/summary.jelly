@@ -29,7 +29,7 @@
           <j:set var="elementStyle" value="display:none" />
 
           <!-- Show max 10 failures from this build -->
-          <j:if test="${((testObject.age == 1) &amp;&amp; (displayedCount &lt;= 10))}"> 
+          <j:if test="${((testObject.age == 1) &amp;&amp; (displayedCount &lt;= 10))}">
             <j:set var="displayedCount" value="${displayedCount + 1}" />
             <j:set var="elementClass" value="shown" />
             <j:set var="elementStyle" value="" />
@@ -38,7 +38,7 @@
           <li class="${elementClass}" style="${elementStyle}">
             <!-- child test results are referenced from their parent builds -->
             <j:set var="build" value="${testObject.owner}" />
-            <a href="${it.urlName}/${testObject.getRelativePathFrom(null)}">
+              <a href="${it.getTestResultPath(testObject)}">
               ${testObject.fullName}
             </a>
           </li>

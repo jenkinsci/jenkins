@@ -178,6 +178,13 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     }
 
     /**
+     * 
+     */
+    public String getTestResultPath(CaseResult it) {
+        return getUrlName() + "/" + it.getRelativePathFrom(null);
+    }
+
+    /**
      * Determines the default size of the trend graph.
      *
      * This is default because the query parameter can choose arbitrary size.
