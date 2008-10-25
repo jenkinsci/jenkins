@@ -8,16 +8,16 @@
     <j:set var="id" value="${h.generateId()}"/>
     <tr class="build-row transitive" id="${id}">
       <td nowrap="nowrap">
-        <img width="16" height="16" src="${imagesURL}/16x16/grey.gif" alt="pending" /><st:nbsp/>
+        <img width="16" height="16" src="${imagesURL}/16x16/grey.gif" alt="${%pending}" /><st:nbsp/>
         #${it.owner.nextBuildNumber}
       </td>
       <td nowrap="nowrap" tooltip="${pending.why}">
         <div style="float:right">
           <j:if test="${pending.hasCancelPermission()}">
-            <a href="${rootURL}/${pending.task.url}cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
+            <a href="${rootURL}/${pending.task.url}cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="${%cancel this build}" /></a>
           </j:if>
         </div>
-        (pending)
+        ${%(pending)}
       </td>
     </tr>
   </j:if>

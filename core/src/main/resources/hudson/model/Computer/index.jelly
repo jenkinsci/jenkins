@@ -6,10 +6,10 @@
       <div style="float:right">
         <form method="get" action="toggleOffline">
           <j:if test="${it.temporarilyOffline}">
-            <f:submit value="This node is back online"  />
+            <f:submit value="${%This node is back online}"  />
           </j:if>
           <j:if test="${!it.temporarilyOffline}">
-            <f:submit value="Mark this node temporarily offline"  />
+            <f:submit value="${%Mark this node temporarily offline}"  />
           </j:if>
         </form>
       </div>
@@ -39,7 +39,7 @@
       <j:choose>
         <j:when test="${empty(jobs)}">
           <p>
-            None
+            ${%None}
           </p>
         </j:when>
         <j:otherwise>

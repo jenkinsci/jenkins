@@ -16,7 +16,7 @@
     <table id="computers" class="sortable pane bigtable">
       <tr>
         <th width="32">S</th>
-        <th initialSortDir="down">Name</th>
+        <th initialSortDir="down">${%Name}</th>
         <j:forEach var="m" items="${monitors}">
           <j:if test="${m.columnCaption!=null}">
             <th>${m.columnCaption}</th>
@@ -41,7 +41,7 @@
     <j:if test="${app.hasPermission(app.ADMINISTER)}">
       <div align="right" style="margin-top:0.5em">
         <form method="get" action="updateNow">
-          <s:submit value="Refresh status"/>
+          <s:submit value="${%Refresh status}"/>
         </form>
       </div>
     </j:if>

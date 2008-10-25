@@ -56,7 +56,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
         }
 
         public String getDisplayName() {
-            return "Free Swap Space";
+            return Messages.SwapSpaceMonitor_displayName();
         }
 
         @Override
