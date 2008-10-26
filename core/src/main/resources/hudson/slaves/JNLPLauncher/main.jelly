@@ -3,16 +3,16 @@
     <j:when test="${app.slaveAgentPort==-1}">
       <img src="${imagesURL}/32x32/error.gif"/>
       <div class="error">
-        TCP port for JNLP slave agents is disabled.
-        <a href="${rootURL}/configure">Go to system config screen and change it</a>.
+        ${%slaveAgentPort.disabled}
+        <a href="${rootURL}/configure">${%configure.link.text}</a>.
       </div>
     </j:when>
     <j:when test="${it.offline and !it.temporarilyOffline}">
       <l:isAdmin><!-- TODO: we need a permission to launch a slave -->
         <p>
           <a href="slave-agent.jnlp" id="jnlp-link">
-            <img src="${imagesURL}/webstart.gif" alt="launch agent" />
-            Launch slave agent
+            <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
+            ${%Launch slave agent}
           </a>
 
           <!--a href="custom-jnlp" style="margin-left:3em">
@@ -20,14 +20,13 @@
           </a-->
         </p>
         <p>
-          (Click the above link from this slave computer to launch the slave agent via JNLP,
-          or from command-line run <nowrap><tt>javaws ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</tt></nowrap>)
+          ${%click.above_link(h.inferHudsonURL(request), it.url)}
         </p>
       </l:isAdmin>
     </j:when>
     <j:otherwise>
       <p>
-        Connected via JNLP agent.
+        ${%Connected via JNLP agent.}
       </p>
     </j:otherwise>
   </j:choose>

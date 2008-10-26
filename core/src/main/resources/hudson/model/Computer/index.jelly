@@ -6,10 +6,10 @@
       <div style="float:right">
         <form method="get" action="toggleOffline">
           <j:if test="${it.temporarilyOffline}">
-            <f:submit value="${%This node is back online}"  />
+            <f:submit value="${%submit.temporarilyOffline}"  />
           </j:if>
           <j:if test="${!it.temporarilyOffline}">
-            <f:submit value="${%Mark this node temporarily offline}"  />
+            <f:submit value="${%submit.not.temporarilyOffline}"  />
           </j:if>
         </form>
       </div>
@@ -23,7 +23,7 @@
 
       <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div>
-          Labels:
+          ${%Labels:}
           <j:forEach var="l" items="${it.node.assignedLabels}">
             <j:if test="${l!=it.node.selfLabel}">
               <a href="${rootURL}/label/${l.name}">${l.name}</a>
@@ -34,7 +34,7 @@
       </j:if>
 
 
-      <h2>Projects tied on ${it.displayName}</h2>
+      <h2>${%title.projects_tied_on(it.displayName)}</h2>
       <j:set var="jobs" value="${it.tiedJobs}" />
       <j:choose>
         <j:when test="${empty(jobs)}">
