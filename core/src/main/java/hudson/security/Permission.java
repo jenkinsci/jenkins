@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.jvnet.localizer.Localizable;
+
 /**
  * Permission, which represents activity that requires a security privilege.
  *
@@ -33,6 +35,16 @@ public final class Permission {
     public final String name;
 
     /**
+     * Human-readable description of this permission.
+     * Used as a tooltip to explain this permission, so this message
+     * should be a couple of sentences long.
+     *
+     * <p>
+     * If null, there will be no description text.
+     */
+    public final Localizable description;
+
+    /**
      * Bundled {@link Permission} that also implies this permission.
      *
      * <p>
@@ -47,16 +59,25 @@ public final class Permission {
      */
     public final Permission impliedBy;
 
-    public Permission(PermissionGroup group, String name, Permission impliedBy) {
+    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy) {
         if(!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name+" is not a Java identifier");
         this.owner = group.owner;
         this.group = group;
         this.name = name;
+        this.description = description;
         this.impliedBy = impliedBy;
 
         group.add(this);
         ALL.add(this);
+    }
+
+    /**
+     * @deprecated since 1.257.
+     *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission)} 
+     */
+    public Permission(PermissionGroup group, String name, Permission impliedBy) {
+        this(group,name,null,impliedBy);
     }
 
     private Permission(PermissionGroup group, String name) {

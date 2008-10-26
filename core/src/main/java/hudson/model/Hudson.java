@@ -2681,8 +2681,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Hudson.class,Messages._Hudson_Permissions_Title());
-    public static final Permission ADMINISTER = new Permission(PERMISSIONS,"Administer", Permission.FULL_CONTROL);
-    public static final Permission READ = new Permission(PERMISSIONS,"Read", Permission.READ);
+    public static final Permission ADMINISTER = new Permission(PERMISSIONS,"Administer",Messages._Hudson_AdministerPermission_Description(), Permission.FULL_CONTROL);
+    public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ);
 
     static {
         XSTREAM.alias("hudson",Hudson.class);
