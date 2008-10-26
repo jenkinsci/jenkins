@@ -9,7 +9,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
 import hudson.model.listeners.RunListener;
-import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -1139,8 +1138,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
 
-    public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Permission.UPDATE);
-    public static final Permission WORKSPACE = new Permission(PERMISSIONS, "Workspace", Permission.READ);
+    public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._AbstractProject_BuildPermission_Description(),  Permission.UPDATE);
+    public static final Permission WORKSPACE = new Permission(PERMISSIONS, "Workspace", Messages._AbstractProject_WorkspacePermission_Description(), Permission.READ);
     /**
      * Permission to abort a build. For now, let's make it the same as {@link #BUILD}
      */
