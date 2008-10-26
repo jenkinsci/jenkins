@@ -305,9 +305,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Permission to create new jobs.
      */
-    public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Permission.CREATE);
-    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Permission.DELETE);
-    public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Permission.CONFIGURE);
+    public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._View_CreatePermission_Description(), Permission.CREATE);
+    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._View_DeletePermission_Description(), Permission.DELETE);
+    public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._View_ConfigurePermission_Description(), Permission.CONFIGURE);
 
     // to simplify access from Jelly
     public static Permission getItemCreatePermission() {
