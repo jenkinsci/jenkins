@@ -325,5 +325,5 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Permission to create new tags.
      * @since 1.171
      */
-    public static final Permission TAG = new Permission(PERMISSIONS,"Tag", Permission.CREATE);
+    public static final Permission TAG = new Permission(PERMISSIONS,"Tag",Messages._SCM_TagPermission_Description(),Permission.CREATE);
 }

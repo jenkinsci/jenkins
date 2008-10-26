@@ -1209,8 +1209,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Run.class,Messages._Run_Permissions_Title());
-    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Permission.DELETE);
-    public static final Permission UPDATE = new Permission(PERMISSIONS,"Update", Permission.UPDATE);
+    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete",Messages._Run_DeletePermission_Description(),Permission.DELETE);
+    public static final Permission UPDATE = new Permission(PERMISSIONS,"Update",Messages._Run_UpdatePermission_Description(),Permission.UPDATE);
 
     private static class DefaultFeedAdapter implements FeedAdapter<Run> {
         public String getEntryTitle(Run entry) {
