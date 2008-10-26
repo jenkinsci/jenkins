@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
+import java.nio.charset.Charset;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -41,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 public final class SlaveComputer extends Computer {
     private volatile Channel channel;
     private volatile transient boolean acceptingTasks = true;
+    private Charset defaultCharset;
     private Boolean isUnix;
     private ComputerLauncher launcher;
 
@@ -193,6 +195,8 @@ public final class SlaveComputer extends Computer {
         boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
 
+        String defaultCharsetName = channel.call(new DetectDefaultCharset());
+
         String remoteFs = getNode().getRemoteFS();
         if(_isUnix && !remoteFs.contains("/") && remoteFs.contains("\\"))
             log.println("WARNING: "+remoteFs+" looks suspiciously like Windows path. Maybe you meant "+remoteFs.replace('\\','/')+"?");
@@ -224,6 +228,7 @@ public final class SlaveComputer extends Computer {
             isUnix = _isUnix;
             numRetryAttempt = 0;
             this.channel = channel;
+            defaultCharset = Charset.forName(defaultCharsetName);
         }
         for (ComputerListener cl : Hudson.getInstance().getComputerListeners())
             cl.onOnline(this);
@@ -233,6 +238,10 @@ public final class SlaveComputer extends Computer {
     @Override
     public VirtualChannel getChannel() {
         return channel;
+    }
+
+    public Charset getDefaultCharset() {
+        return defaultCharset;
     }
 
     public List<LogRecord> getLogRecords() throws IOException, InterruptedException {
@@ -342,6 +351,12 @@ public final class SlaveComputer extends Computer {
     private static final class DetectOS implements Callable<Boolean,IOException> {
         public Boolean call() throws IOException {
             return File.pathSeparatorChar==':';
+        }
+    }
+
+    private static final class DetectDefaultCharset implements Callable<String,IOException> {
+        public String call() throws IOException {
+            return Charset.defaultCharset().name();
         }
     }
 

@@ -140,6 +140,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.nio.charset.Charset;
 
 /**
  * Root object of the system.
@@ -2554,6 +2555,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         @Override
         public VirtualChannel getChannel() {
             return localChannel;
+        }
+
+        @Override
+        public Charset getDefaultCharset() {
+            return Charset.defaultCharset();
         }
 
         public List<LogRecord> getLogRecords() throws IOException, InterruptedException {

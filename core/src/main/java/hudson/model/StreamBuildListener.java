@@ -10,6 +10,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 
 /**
  * {@link BuildListener} that writes to an {@link OutputStream}.
@@ -28,10 +31,15 @@ public class StreamBuildListener implements BuildListener, Serializable {
     }
 
     public StreamBuildListener(PrintStream w) {
+        this(w,null);
+    }
+
+    public StreamBuildListener(PrintStream w, Charset charset) {
         this.ps = w;
         // unless we auto-flash, PrintStream will use BufferedOutputStream internally,
         // and break ordering
-        this.w = new PrintWriter(w,true);
+        this.w = new PrintWriter(new BufferedWriter(
+                charset==null ? new OutputStreamWriter(w) : new OutputStreamWriter(w,charset)), true);
     }
 
     public void started() {

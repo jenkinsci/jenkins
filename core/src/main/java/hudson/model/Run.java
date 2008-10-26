@@ -38,11 +38,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.io.InputStreamReader;
+import java.io.FileInputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -60,6 +61,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.nio.charset.Charset;
 
 /**
  * A particular execution of {@link Job}.
@@ -142,6 +144,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Number of milli-seconds it took to run this build.
      */
     protected long duration;
+
+    /**
+     * Charset in which the log file is written.
+     * For compatibility reason, this field may be null.
+     * For persistence, this field is string and not {@link Charset}.
+     *
+     * @see #getCharset()
+     * @since 1.257
+     */
+    private String charset;
 
     /**
      * Keeps this log entries.
@@ -294,6 +306,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
         }
         return null;
+    }
+
+    /**
+     * Gets the charset in which the log file is written.
+     * @return never null.
+     * @since 1.257
+     */
+    public final Charset getCharset() {
+        if(charset==null)   return Charset.defaultCharset();
+        return Charset.forName(charset);
     }
 
     /**
@@ -784,7 +806,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             try {
                 try {
                     log = new PrintStream(new FileOutputStream(getLogFile()));
-                    listener = new StreamBuildListener(new CloseProofOutputStream(log));
+                    Charset charset = Computer.currentComputer().getDefaultCharset();
+                    this.charset = charset.name();
+                    listener = new StreamBuildListener(new PrintStream(new CloseProofOutputStream(log)),charset);
 
                     listener.started();
 
@@ -918,7 +942,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Deprecated
     public String getLog() throws IOException {
-        return Util.loadFile(getLogFile());
+        return Util.loadFile(getLogFile(),getCharset());
     }
 
     /**
@@ -933,7 +957,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public List<String> getLog(int maxLines) throws IOException {
         int lineCount = 0;
         List<String> logLines = new LinkedList<String>();
-        BufferedReader reader = new BufferedReader(new FileReader(getLogFile()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getLogFile()),getCharset()));
         try {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 logLines.add(line);
