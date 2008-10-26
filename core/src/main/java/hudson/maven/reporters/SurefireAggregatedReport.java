@@ -62,9 +62,8 @@ public class SurefireAggregatedReport extends AggregatedTestResultAction impleme
     @Override
     public String getTestResultPath(CaseResult it) {
         StringBuilder path = new StringBuilder("../");
-        
         path.append(it.getOwner().getProject().getShortUrl());
-        path.append(it.getAge());
+        path.append(it.getOwner().getNumber());
         path.append("/");
         path.append(getUrlName());
         path.append("/");
