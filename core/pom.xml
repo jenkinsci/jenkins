@@ -235,7 +235,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <version>1.84</version>
+      <version>1.85</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
