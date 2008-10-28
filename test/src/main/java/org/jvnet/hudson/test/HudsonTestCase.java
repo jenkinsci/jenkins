@@ -247,7 +247,7 @@ public abstract class HudsonTestCase extends TestCase {
     protected void pause() throws IOException {
         new BufferedReader(new InputStreamReader(System.in)).readLine();
     }
-    
+
     public void assertBuildStatus(Result status, Run r) throws Exception {
         if(status==r.getResult())
             return;
