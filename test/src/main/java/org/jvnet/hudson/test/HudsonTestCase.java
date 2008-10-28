@@ -17,6 +17,7 @@ import hudson.model.Item;
 import hudson.model.UpdateCenter;
 import hudson.model.Saveable;
 import hudson.model.Run;
+import hudson.model.Result;
 import hudson.tasks.Mailer;
 import hudson.Launcher.LocalLauncher;
 import hudson.util.StreamTaskListener;
@@ -245,6 +246,15 @@ public abstract class HudsonTestCase extends TestCase {
      */
     protected void pause() throws IOException {
         new BufferedReader(new InputStreamReader(System.in)).readLine();
+    }
+    
+    public void assertBuildStatus(Result status, Run r) throws Exception {
+        if(status==r.getResult())
+            return;
+
+        // dump the build output
+        System.out.println(r.getLog());
+        assertEquals(status,r.getResult());
     }
 
 //

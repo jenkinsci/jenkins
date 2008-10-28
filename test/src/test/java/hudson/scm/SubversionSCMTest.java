@@ -35,7 +35,7 @@ public class SubversionSCMTest extends HudsonTestCase {
         ));
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         System.out.println(b.getLog());
-        assertEquals(Result.SUCCESS,b.getResult());
+        assertBuildStatus(Result.SUCCESS,b);
 
         SubversionTagAction action = b.getAction(SubversionTagAction.class);
         assertFalse(b.hasPermission(action.getPermission()));
