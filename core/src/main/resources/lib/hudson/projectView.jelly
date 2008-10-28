@@ -23,8 +23,8 @@
                     <x:attribute name="style">margin-top:0px; border-top: none;</x:attribute>
                 </j:if>
                 <tr style="border-top: 0px;">
-                    <th>S</th>
-                    <th>W</th>
+                    <th tooltip="${%Status of the last build}">S</th>
+                    <th tooltip="${%Weather report showing aggregated status of recent builds}">W</th>
                     <th initialSortDir="down">${%Job}</th>
                     <th>${%Last Success}</th>
                     <th>${%Last Failure}</th>
