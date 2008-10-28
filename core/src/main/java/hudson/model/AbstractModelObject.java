@@ -2,6 +2,7 @@ package hudson.model;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -27,6 +28,15 @@ public abstract class AbstractModelObject implements SearchableModelObject {
     protected final void sendError(String message, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
         req.setAttribute("message",message);
         rsp.forward(this,"error",req);
+    }
+
+    /**
+     * Convenience method to verify that the current request is a POST request.
+     */
+    protected final void requirePOST() throws ServletException {
+        String method = Stapler.getCurrentRequest().getMethod();
+        if(!method.equalsIgnoreCase("POST"))
+            throw new ServletException("Must be POST, Can't be "+method);
     }
 
     /**

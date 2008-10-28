@@ -33,6 +33,7 @@ import hudson.widgets.HistoryWidget;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
@@ -1043,8 +1044,21 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Wipes out the workspace.
      */
     public void doDoWipeOutWorkspace(StaplerResponse rsp) throws IOException, InterruptedException {
-        checkPermission(AbstractProject.BUILD);
+        checkPermission(BUILD);
         getWorkspace().deleteRecursive();
+        rsp.sendRedirect2(".");
+    }
+
+    public void doDisable(StaplerResponse rsp) throws IOException, ServletException {
+        requirePOST();
+        checkPermission(CONFIGURE);
+        makeDisabled(true);
+        rsp.sendRedirect2(".");
+    }
+
+    public void doEnable(StaplerResponse rsp) throws IOException, ServletException {
+        checkPermission(CONFIGURE);
+        makeDisabled(false);
         rsp.sendRedirect2(".");
     }
 

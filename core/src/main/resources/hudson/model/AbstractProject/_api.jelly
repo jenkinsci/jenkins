@@ -1,0 +1,9 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:include page="/hudson/model/Job/_api.jelly" />
+
+  <h2>Disable/enable a job</h2>
+  <p>
+    To programatically disable a job, post to <a href="../disable">this URL</a>.
+    Similarly post to <a href="../enable">this URL</a> for enabling this job.
+  </p>
+</j:jelly>
