@@ -21,6 +21,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
+import hudson.util.VariableResolver;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -416,7 +417,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public Map<String,String> getBuildVariables() {
         return Collections.emptyMap();
     }
-    
+
+    /**
+     * Creates {@link VariableResolver} backed by {@link #getBuildVariables()}.
+     */
+    public final VariableResolver<String> getBuildVariableResolver() {
+        return new VariableResolver.ByMap<String>(getBuildVariables());
+    }
+
     /**
      * Gets {@link AbstractTestResultAction} associated with this build if any.
      */

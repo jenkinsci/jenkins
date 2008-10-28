@@ -14,6 +14,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormFieldValidator;
+import hudson.util.VariableResolver;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -145,6 +146,11 @@ public class Ant extends Builder {
 
         args.addKeyValuePairs("-D",build.getBuildVariables());
 
+        VariableResolver<String> vr = build.getBuildVariableResolver();
+        ParametersAction parameters = build.getAction(ParametersAction.class);
+        if(parameters!=null)
+            vr = parameters.createVariableResolver(build);
+        
         if (properties != null) {
             Properties p = new Properties();
             try {
@@ -157,15 +163,11 @@ public class Ant extends Builder {
             }
 
             for (Entry<Object,Object> entry : p.entrySet()) {
-                args.add("-D" + entry.getKey() + "=" + entry.getValue());
+                args.add("-D" + entry.getKey() + "=" + vr.replaceAll(entry.getValue().toString()));
             }
         }
 
-        String targets = this.targets;
-        ParametersAction parameters = build.getAction(ParametersAction.class);
-        if (parameters != null)
-            targets = parameters.substitute(build,targets);
-        args.addTokenized(targets.replaceAll("[\t\r\n]+"," "));
+        args.addTokenized(vr.replaceAll(targets).replaceAll("[\t\r\n]+"," "));
 
         Map<String,String> env = build.getEnvVars();
         if(ai!=null)

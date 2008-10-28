@@ -1,5 +1,7 @@
 package hudson.util;
 
+import hudson.Util;
+
 import java.util.Map;
 import java.util.Collection;
 
@@ -9,7 +11,7 @@ import java.util.Collection;
  *
  * @author Kohsuke Kawaguchi
  */
-public interface VariableResolver<V> {
+public abstract class VariableResolver<V> {
     /**
      * Receives a variable name and obtains the value associated with the name.
      *
@@ -27,7 +29,14 @@ public interface VariableResolver<V> {
      *      Object referenced by the name.
      *      Null if not found.
      */
-    V resolve(String name);
+    public abstract V resolve(String name);
+
+    /**
+     * Short for {@code Util.replaceMacro(text,this)}
+     */
+    public final String replaceAll(String text) {
+        return Util.replaceMacro(text,(VariableResolver)this);
+    }
 
     /**
      * Empty resolver that always returns null.
@@ -41,7 +50,7 @@ public interface VariableResolver<V> {
     /**
      * {@link VariableResolver} backed by a {@link Map}.
      */
-    public static final class ByMap<V> implements VariableResolver<V> {
+    public static final class ByMap<V> extends VariableResolver<V> {
         private final Map<String,V> data;
 
         public ByMap(Map<String, V> data) {
@@ -56,7 +65,7 @@ public interface VariableResolver<V> {
     /**
      * Union of multiple {@link VariableResolver}.
      */
-    public static final class Union<V> implements VariableResolver<V> {
+    public static final class Union<V> extends VariableResolver<V> {
         private final VariableResolver<? extends V>[] resolvers;
 
         public Union(VariableResolver<? extends V>... resolvers) {

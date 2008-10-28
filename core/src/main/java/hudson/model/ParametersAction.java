@@ -49,10 +49,12 @@ public class ParametersAction implements Action, Iterable<ParameterValue> {
      * Creates an {@link VariableResolver} that aggregates all the parameters.
      */
     public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
-        VariableResolver[] resolvers = new VariableResolver[parameters.size()];
+        VariableResolver[] resolvers = new VariableResolver[parameters.size()+1];
         int i=0;
         for (ParameterValue p : parameters)
             resolvers[i++] = p.createVariableResolver(build);
+
+        resolvers[i] = build.getBuildVariableResolver();
 
         return new VariableResolver.Union<String>(resolvers);
     }
