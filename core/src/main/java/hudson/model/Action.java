@@ -71,7 +71,8 @@ public interface Action extends ModelObject {
      * which is useful for directly connecting to external systems.
      *
      * @return
-     *      null if this action object doesn't need to be bound to web.
+     *      null if this action object doesn't need to be bound to web
+     *      (when you do that, be sure to also return null from {@link #getIconFileName()}.
      */
     String getUrlName();
 }
