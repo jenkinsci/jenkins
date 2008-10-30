@@ -163,11 +163,11 @@ public class Ant extends Builder {
             }
 
             for (Entry<Object,Object> entry : p.entrySet()) {
-                args.add("-D" + entry.getKey() + "=" + vr.replaceAll(entry.getValue().toString()));
+                args.add("-D" + entry.getKey() + "=" + Util.replaceMacro(entry.getValue().toString(),vr));
             }
         }
 
-        args.addTokenized(vr.replaceAll(targets).replaceAll("[\t\r\n]+"," "));
+        args.addTokenized(Util.replaceMacro(targets,vr).replaceAll("[\t\r\n]+"," "));
 
         Map<String,String> env = build.getEnvVars();
         if(ai!=null)
