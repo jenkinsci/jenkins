@@ -225,10 +225,10 @@ public class AggregatedTestResultPublisher extends Publisher {
             return "/help/tasks/aggregate-test/help.html";
         }
 
-        public void doCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter("value") final String list) throws IOException, ServletException {
+        public void doCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
             new FormFieldValidator(req,rsp,false) {
                 protected void check() throws IOException, ServletException {
-                    for (String name : Util.tokenize(list, ",")) {
+                    for (String name : Util.tokenize(value, ",")) {
                         name = name.trim();
                         if(Hudson.getInstance().getItemByFullName(name)==null) {
                             error(hudson.tasks.Messages.BuildTrigger_NoSuchProject(name,AbstractProject.findNearest(name).getName()));

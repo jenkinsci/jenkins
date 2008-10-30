@@ -2135,7 +2135,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /**
      * Configure the logging level.
      */
-    public void doConfigLogger(StaplerResponse rsp, @QueryParameter("name")String name, @QueryParameter("level")String level) throws IOException {
+    public void doConfigLogger(StaplerResponse rsp, @QueryParameter String name, @QueryParameter String level) throws IOException {
         checkPermission(ADMINISTER);
         Level lv;
         if(level.equals("inherit"))
@@ -2364,7 +2364,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      *
      * TODO: find a better home for this method.
      */
-    public void doRemoteFSCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter("value") final String value) throws IOException, ServletException {
+    public void doRemoteFSCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
         new FormFieldValidator(req,rsp,false) {
             protected void check() throws IOException, ServletException {
                 if(Util.fixEmptyAndTrim(value)==null) {

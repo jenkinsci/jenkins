@@ -327,7 +327,7 @@ public class Mailer extends Publisher {
          * Checks the URL in <tt>global.jelly</tt>
          */
         public void doCheckUrl(StaplerRequest req, StaplerResponse rsp,
-                                   @QueryParameter("value") final String value) throws IOException, ServletException {
+                                   @QueryParameter final String value) throws IOException, ServletException {
             new FormFieldValidator(req,rsp,false) {
                 protected void check() throws IOException, ServletException {
                     if(value.startsWith("http://localhost"))
@@ -339,7 +339,7 @@ public class Mailer extends Publisher {
         }
 
         public void doAddressCheck(StaplerRequest req, StaplerResponse rsp,
-                                   @QueryParameter("value") final String value) throws IOException, ServletException {
+                                   @QueryParameter final String value) throws IOException, ServletException {
             new FormFieldValidator(req,rsp,false) {
                 protected void check() throws IOException, ServletException {
                     try {

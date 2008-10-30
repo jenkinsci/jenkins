@@ -1076,7 +1076,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns the build time stamp in the body.
      */
-    public void doBuildTimestamp( StaplerRequest req, StaplerResponse rsp, @QueryParameter("format") String format) throws IOException {
+    public void doBuildTimestamp( StaplerRequest req, StaplerResponse rsp, @QueryParameter String format) throws IOException {
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("US-ASCII");
         rsp.setStatus(HttpServletResponse.SC_OK);

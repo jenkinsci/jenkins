@@ -60,13 +60,13 @@ public class Search {
      *
      * See http://developer.mozilla.org/en/docs/Supporting_search_suggestions_in_search_plugins
      */
-    public void doSuggestOpenSearch(StaplerRequest req, StaplerResponse rsp, @QueryParameter("q")String query) throws IOException, ServletException {
+    public void doSuggestOpenSearch(StaplerRequest req, StaplerResponse rsp, @QueryParameter String q) throws IOException, ServletException {
         DataWriter w = Flavor.JSON.createDataWriter(null, rsp);
         w.startArray();
-        w.value(query);
+        w.value(q);
 
         w.startArray();
-        for (SuggestedItem item : getSuggestions(req, query))
+        for (SuggestedItem item : getSuggestions(req, q))
             w.value(item.getPath());
         w.endArray();
         w.endArray();
@@ -75,7 +75,7 @@ public class Search {
     /**
      * Used by search box auto-completion. Returns JSON array.
      */
-    public void doSuggest(StaplerRequest req, StaplerResponse rsp, @QueryParameter("query")String query) throws IOException, ServletException {
+    public void doSuggest(StaplerRequest req, StaplerResponse rsp, @QueryParameter String query) throws IOException, ServletException {
         Result r = new Result();
         for (SuggestedItem item : getSuggestions(req, query))
             r.suggestions.add(new Item(item.getPath()));

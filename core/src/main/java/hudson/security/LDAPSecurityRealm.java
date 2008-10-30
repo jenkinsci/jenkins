@@ -244,9 +244,9 @@ public class LDAPSecurityRealm extends SecurityRealm {
             return Messages.LDAPSecurityRealm_DisplayName();
         }
 
-        public void doServerCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter("server") final String server,
-        		@QueryParameter("managerDN") final String managerDN,
-        		@QueryParameter("managerPassword") final String managerPassword
+        public void doServerCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String server,
+        		@QueryParameter final String managerDN,
+        		@QueryParameter final String managerPassword
         		) throws IOException, ServletException {
             new FormFieldValidator(req,rsp,true) {
                 protected void check() throws IOException, ServletException {
