@@ -66,7 +66,7 @@ public class CommandLauncher extends ComputerLauncher {
         try {
             listener.getLogger().println(hudson.model.Messages.Slave_Launching(getTimestamp()));
             if(getCommand().trim().length()==0) {
-                listener.getLogger().println("No launch command specified");
+                listener.getLogger().println(Messages.CommandLauncher_NoLaunchCommand());
                 return;
             }
             listener.getLogger().println("$ " + getCommand());
