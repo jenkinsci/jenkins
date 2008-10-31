@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -420,15 +421,10 @@ public class UpdateCenter implements ModelObject {
         }
     }
 
-
     /**
-     * Represents the state of the installation activity of one plugin.
+     * Base class for a job that downloads a file from the Hudson project.
      */
-    public final class InstallationJob extends UpdateCenterJob {
-        /**
-         * What plugin are we trying to install?
-         */
-        public final Plugin plugin;
+    public abstract class DownloadJob extends UpdateCenterJob {
         /**
          * Unique ID that identifies this job.
          */
@@ -438,34 +434,48 @@ public class UpdateCenter implements ModelObject {
          */
         public volatile InstallationStatus status = new Pending();
 
-        public InstallationJob(Plugin plugin) {
-            this.plugin = plugin;
-        }
+        /**
+         * Where to download the file from.
+         */
+        protected abstract URL getURL() throws MalformedURLException;
+
+        /**
+         * Where to download the file to.
+         */
+        protected abstract File getDestination();
+
+        protected abstract String getName();
+
+        /**
+         * Called when the whole thing went successfully.
+         */
+        protected abstract void onSuccess();
 
         public void run() {
             try {
-                LOGGER.info("Starting the installation of "+plugin.name);
+                LOGGER.info("Starting the installation of "+getName());
+
+                URL src = getURL();
 
                 // for security reasons, only install from hudson.dev.java.net for now, which is also conveniently
                 // https to guarantee transport level security.
-                if(!plugin.url.startsWith("https://hudson.dev.java.net/")) {
-                    throw new IOException("Installation from non-official repository at "+plugin.url+" is not support yet");
+                if(!src.toExternalForm().startsWith("https://hudson.dev.java.net/")) {
+                    throw new IOException("Installation from non-official repository at "+src+" is not support yet");
                 }
 
                 // In the future if we are to open up update center to 3rd party, we need more elaborate scheme
                 // like signing to ensure the safety of the bits.
-                URLConnection con = ProxyConfiguration.open(new URL(plugin.url));
+                URLConnection con = ProxyConfiguration.open(src);
                 int total = con.getContentLength();
                 CountingInputStream in = new CountingInputStream(con.getInputStream());
                 byte[] buf = new byte[8192];
                 int len;
 
-                PluginManager pm = Hudson.getInstance().getPluginManager();
-                File baseDir = pm.rootDir;
-                File target = new File(baseDir, plugin.name + ".tmp");
-                OutputStream out = new FileOutputStream(target);
+                File dst = getDestination();
+                File tmp = new File(dst.getPath()+".tmp");
+                OutputStream out = new FileOutputStream(tmp);
 
-                LOGGER.info("Downloading "+plugin.name);
+                LOGGER.info("Downloading "+getName());
                 while((len=in.read(buf))>=0) {
                     out.write(buf,0,len);
                     status = new Installing(total==-1 ? -1 : in.getCount()*100/total);
@@ -474,17 +484,16 @@ public class UpdateCenter implements ModelObject {
                 in.close();
                 out.close();
 
-                File hpi = new File(baseDir, plugin.name + ".hpi");
-                hpi.delete();
-                if(!target.renameTo(hpi)) {
-                    throw new IOException("Failed to rename "+target+" to "+hpi);
+                dst.delete();
+                if(!tmp.renameTo(dst)) {
+                    throw new IOException("Failed to rename "+tmp+" to "+dst);
                 }
 
-                LOGGER.info("Installation successful: "+plugin.name);
-                pm.pluginUploaded = true;
+                LOGGER.info("Installation successful: "+getName());
                 status = new Success();
+                onSuccess();
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to install "+plugin.name,e);
+                LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
             }
         }
@@ -537,6 +546,40 @@ public class UpdateCenter implements ModelObject {
             public Installing(int percentage) {
                 this.percentage = percentage;
             }
+        }
+    }
+
+    /**
+     * Represents the state of the installation activity of one plugin.
+     */
+    public final class InstallationJob extends DownloadJob {
+        /**
+         * What plugin are we trying to install?
+         */
+        public final Plugin plugin;
+
+        private final PluginManager pm = Hudson.getInstance().getPluginManager();
+
+
+        public InstallationJob(Plugin plugin) {
+            this.plugin = plugin;
+        }
+
+        protected URL getURL() throws MalformedURLException {
+            return new URL(plugin.url);
+        }
+
+        protected File getDestination() {
+            File baseDir = pm.rootDir;
+            return new File(baseDir, plugin.name + ".hpi");
+        }
+
+        protected String getName() {
+            return plugin.name;
+        }
+
+        protected void onSuccess() {
+            pm.pluginUploaded = true;
         }
     }
 
