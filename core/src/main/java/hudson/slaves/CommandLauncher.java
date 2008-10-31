@@ -1,14 +1,19 @@
 package hudson.slaves;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
 import hudson.model.Descriptor;
 import hudson.util.StreamTaskListener;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
+import hudson.util.FormFieldValidator;
 import hudson.Util;
 import hudson.EnvVars;
 import hudson.remoting.Channel;
 
+import javax.servlet.ServletException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,6 +65,10 @@ public class CommandLauncher extends ComputerLauncher {
         Process _proc = null;
         try {
             listener.getLogger().println(hudson.model.Messages.Slave_Launching(getTimestamp()));
+            if(getCommand().trim().length()==0) {
+                listener.getLogger().println("No launch command specified");
+                return;
+            }
             listener.getLogger().println("$ " + getCommand());
 
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
