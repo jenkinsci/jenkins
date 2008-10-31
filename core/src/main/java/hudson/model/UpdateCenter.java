@@ -466,7 +466,7 @@ public class UpdateCenter extends AbstractModelObject {
          */
         protected abstract File getDestination();
 
-        protected abstract String getName();
+        public abstract String getName();
 
         /**
          * Called when the whole thing went successfully.
@@ -595,8 +595,8 @@ public class UpdateCenter extends AbstractModelObject {
             return new File(baseDir, plugin.name + ".hpi");
         }
 
-        protected String getName() {
-            return plugin.name;
+        public String getName() {
+            return plugin.getDisplayName();
         }
 
         protected void onSuccess() {
@@ -623,11 +623,18 @@ public class UpdateCenter extends AbstractModelObject {
             return Lifecycle.get().getHudsonWar();
         }
 
-        protected String getName() {
+        public String getName() {
             return "hudson.war";
         }
 
         protected void onSuccess() {
+            status = new RestartNeeded();
+        }
+
+        /**
+         * Indicates that the upgrade needs a restart.
+         */
+        public class RestartNeeded extends InstallationStatus {
         }
     }
 
