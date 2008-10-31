@@ -18,6 +18,7 @@ import static hudson.Util.fixEmpty;
 import hudson.WebAppMain;
 import hudson.XmlFile;
 import hudson.lifecycle.WindowsInstallerLink;
+import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -71,6 +72,8 @@ import hudson.util.MultipartFormDataParser;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.TextFile;
 import hudson.util.XStream2;
+import hudson.util.IncompatibleServletVersionDetected;
+import hudson.util.HudsonIsRestarting;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
@@ -92,6 +95,7 @@ import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -2098,6 +2102,20 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         rsp.getWriter().println("GCed");
+    }
+
+    /**
+     * Perform a restart of Hudson, if we can.
+     */
+    public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        checkPermission(ADMINISTER);
+        try {
+            Lifecycle.get().restart();
+            servletContext.setAttribute("app",new HudsonIsRestarting());
+            rsp.sendRedirect2(".");
+        } catch (UnsupportedOperationException e) {
+            sendError("Restart is not supported in this running mode.",req,rsp);
+        }
     }
 
     /**

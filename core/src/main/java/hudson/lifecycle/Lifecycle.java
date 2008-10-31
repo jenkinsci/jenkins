@@ -3,6 +3,8 @@ package hudson.lifecycle;
 import hudson.ExtensionPoint;
 import hudson.model.Hudson;
 
+import java.io.File;
+
 /**
  * Provides the capability for starting/stopping/restarting/uninstalling Hudson.
  *
@@ -50,5 +52,30 @@ public abstract class Lifecycle implements ExtensionPoint {
         }
 
         return INSTANCE;
+    }
+
+    /**
+     * If the location of <tt>hudson.war</tt> is known in this life cycle,
+     * and if this file is writable while Hudson is running, return it location.
+     * Otherwise return null to indicate that it is unknown.
+     *
+     * <p>
+     * When a non-null value is returned, Hudson will offer an upgrade UI
+     * to a newer version.
+     */
+    public File getHudsonWar() {
+        String war = System.getProperty("executable-war");
+        if(war!=null && new File(war).exists())
+            return new File(war);
+        return null;
+    }
+
+    /**
+     * If this life cycle supports a restart of Hudson, do so.
+     * Otherwise, throw {@link UnsupportedOperationException},
+     * which is what the default implementation does.
+     */
+    public void restart() {
+        throw new UnsupportedOperationException();
     }
 }

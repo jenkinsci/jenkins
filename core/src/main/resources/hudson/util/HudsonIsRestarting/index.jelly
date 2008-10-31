@@ -1,0 +1,19 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:statusCode value="503" /><!-- SERVICE NOT AVAILABLE -->
+  <l:layout>
+    <l:header title="Hudson">
+      <!--meta http-equiv="refresh" content="5" /-->
+    </l:header>
+    <l:side-panel />
+    <l:main-panel>
+      <h1 style="margin-top:4em">
+        ${%Please wait while Hudson is restarting}<span id="progress">...</span>
+      </h1>
+      <p style="color:grey">
+        ${%Your browser will reload automatically when Hudson is ready.}
+      </p>
+
+      <script>applySafeRedirector('.')</script>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
