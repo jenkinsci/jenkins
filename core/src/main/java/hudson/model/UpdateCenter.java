@@ -5,6 +5,7 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.ProxyConfiguration;
+import hudson.lifecycle.Lifecycle;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
@@ -16,6 +17,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -50,7 +52,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  * @since 1.220
  */
-public class UpdateCenter implements ModelObject {
+public class UpdateCenter extends AbstractModelObject {
     /**
      * What's the time stamp of data file?
      */
@@ -132,6 +134,29 @@ public class UpdateCenter implements ModelObject {
 
         LOGGER.info("Obtained the latest update center data file");
         getDataFile().write(p);
+    }
+
+    /**
+     * Schedules a Hudson upgrade.
+     */
+    public void doUpgrade(StaplerResponse rsp) throws IOException, ServletException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        HudsonUpgradeJob job = new HudsonUpgradeJob();
+        if(!job.isSupported()) {
+            sendError("Hudson upgrade not supported in this running mode");
+            return;
+        }
+
+        LOGGER.info("Scheduling the core upgrade");
+        addJob(job);
+        rsp.sendRedirect2(".");
+    }
+
+    private void addJob(UpdateCenterJob job) {
+        // the first job is always the connectivity check
+        if(jobs.size()==0)
+            new ConnectionCheckJob().schedule();
+        job.schedule();
     }
 
     /**
@@ -225,6 +250,10 @@ public class UpdateCenter implements ModelObject {
 
     public String getDisplayName() {
         return "Update center";
+    }
+
+    public String getSearchUrl() {
+        return "updateCenter";
     }
 
     /**
@@ -350,14 +379,7 @@ public class UpdateCenter implements ModelObject {
          */
         public void install() {
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-
-            // the first job is always the connectivity check
-            if(jobs.size()==0)
-                new ConnectionCheckJob().schedule();
-
-            LOGGER.info("Scheduling the installation of "+getDisplayName());
-            UpdateCenter.InstallationJob job = new InstallationJob(this);
-            job.schedule();
+            addJob(new InstallationJob(this));
         }
 
         /**
@@ -560,7 +582,6 @@ public class UpdateCenter implements ModelObject {
 
         private final PluginManager pm = Hudson.getInstance().getPluginManager();
 
-
         public InstallationJob(Plugin plugin) {
             this.plugin = plugin;
         }
@@ -580,6 +601,33 @@ public class UpdateCenter implements ModelObject {
 
         protected void onSuccess() {
             pm.pluginUploaded = true;
+        }
+    }
+
+    /**
+     * Represents the state of the upgrade activity of Hudson core.
+     */
+    public final class HudsonUpgradeJob extends DownloadJob {
+        public HudsonUpgradeJob() {
+        }
+
+        public boolean isSupported() {
+            return getDestination()!=null;
+        }
+
+        protected URL getURL() throws MalformedURLException {
+            return new URL(getData().core.url);
+        }
+
+        protected File getDestination() {
+            return Lifecycle.get().getHudsonWar();
+        }
+
+        protected String getName() {
+            return "hudson.war";
+        }
+
+        protected void onSuccess() {
         }
     }
 
