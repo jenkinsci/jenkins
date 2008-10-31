@@ -5,7 +5,7 @@
 <l:layout title="${%Update Center}" permission="${app.ADMINISTER}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
-    <h1>${%Installing Plugins}</h1>
+    <h1>${%Installing Plugins/Upgrades}</h1>
 
     <p class="warning">
       ${%warning}
