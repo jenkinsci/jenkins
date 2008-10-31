@@ -2108,6 +2108,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * Perform a restart of Hudson, if we can.
      */
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        requirePOST();
         checkPermission(ADMINISTER);
         try {
             Lifecycle.get().restart();
