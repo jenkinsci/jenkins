@@ -4,6 +4,7 @@ import hudson.ExtensionPoint;
 import hudson.model.Hudson;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Provides the capability for starting/stopping/restarting/uninstalling Hudson.
@@ -74,8 +75,16 @@ public abstract class Lifecycle implements ExtensionPoint {
      * If this life cycle supports a restart of Hudson, do so.
      * Otherwise, throw {@link UnsupportedOperationException},
      * which is what the default implementation does.
+     *
+     * <p>
+     * The restart operation may happen synchronously (in which case
+     * this method will never return), or asynchronously (in which
+     * case this method will successfully return.)
+     *
+     * <p>
+     * Throw an exception if the operation fails unexpectedly.
      */
-    public void restart() {
+    public void restart() throws IOException, InterruptedException {
         throw new UnsupportedOperationException();
     }
 }

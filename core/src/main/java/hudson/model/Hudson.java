@@ -2116,6 +2116,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             rsp.sendRedirect2(".");
         } catch (UnsupportedOperationException e) {
             sendError("Restart is not supported in this running mode.",req,rsp);
+        } catch (IOException e) {
+            sendError(e,req,rsp);
+        } catch (InterruptedException e) {
+            sendError(e,req,rsp);
         }
     }
 
