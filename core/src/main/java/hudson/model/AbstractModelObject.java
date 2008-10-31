@@ -25,9 +25,17 @@ public abstract class AbstractModelObject implements SearchableModelObject {
         sendError(e.getMessage(),req,rsp);
     }
 
+    protected final void sendError(Exception e) throws ServletException, IOException {
+        sendError(e,Stapler.getCurrentRequest(),Stapler.getCurrentResponse());
+    }
+
     protected final void sendError(String message, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
         req.setAttribute("message",message);
         rsp.forward(this,"error",req);
+    }
+
+    protected final void sendError(String message) throws ServletException, IOException {
+        sendError(message,Stapler.getCurrentRequest(),Stapler.getCurrentResponse());
     }
 
     /**
