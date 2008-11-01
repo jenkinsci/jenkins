@@ -1,7 +1,7 @@
 <!--
   Entrance to the configuration page
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout title="${%Manage Hudson}" xmlns:local="local">
   <d:taglib uri="local">
     <!-- table to show a map -->
@@ -34,7 +34,14 @@
     </j:if>
     <j:set var="ucData" value="${it.updateCenter.data}" />
     <j:if test="${ucData.hasCoreUpdates()}">
-      <div class="warning">${%NewVersionAvailable(ucData.core.version,ucData.core.url)}</div>
+      <div class="warning">
+        <form method="post" action="${rootURL}/updateCenter/upgrade">
+          ${%NewVersionAvailable(ucData.core.version,ucData.core.url)}
+          <j:if test="${ucData.canUpgrade()}">
+            <f:submit value="${%Or Upgrade Automatically}"/>
+          </j:if>
+        </form>
+      </div>
     </j:if>
     <table style="padding-left: 2em;">
       <local:feature icon="setting.gif"          href="configure"    title="${%Configure System}">

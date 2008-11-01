@@ -140,6 +140,7 @@ public class UpdateCenter extends AbstractModelObject {
      * Schedules a Hudson upgrade.
      */
     public void doUpgrade(StaplerResponse rsp) throws IOException, ServletException {
+        requirePOST();
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         HudsonUpgradeJob job = new HudsonUpgradeJob();
         if(!Lifecycle.get().canRewriteHudsonWar()) {
@@ -281,6 +282,13 @@ public class UpdateCenter extends AbstractModelObject {
          */
         public boolean hasCoreUpdates() {
             return core.isNewerThan(Hudson.VERSION);
+        }
+
+        /**
+         * Do we support upgrade?
+         */
+        public boolean canUpgrade() {
+            return Lifecycle.get().canRewriteHudsonWar();
         }
     }
 
