@@ -142,7 +142,7 @@ public class UpdateCenter extends AbstractModelObject {
     public void doUpgrade(StaplerResponse rsp) throws IOException, ServletException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         HudsonUpgradeJob job = new HudsonUpgradeJob();
-        if(!job.isSupported()) {
+        if(!Lifecycle.get().canRewriteHudsonWar()) {
             sendError("Hudson upgrade not supported in this running mode");
             return;
         }
@@ -506,10 +506,7 @@ public class UpdateCenter extends AbstractModelObject {
                 in.close();
                 out.close();
 
-                dst.delete();
-                if(!tmp.renameTo(dst)) {
-                    throw new IOException("Failed to rename "+tmp+" to "+dst);
-                }
+                replace(dst, tmp);
 
                 LOGGER.info("Installation successful: "+getName());
                 status = new Success();
@@ -517,6 +514,17 @@ public class UpdateCenter extends AbstractModelObject {
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
+            }
+        }
+
+        /**
+         * Called when the download is completed to overwrite
+         * the old file with the new file.
+         */
+        protected void replace(File dst, File src) throws IOException {
+            dst.delete();
+            if(!src.renameTo(dst)) {
+                throw new IOException("Failed to rename "+src+" to "+dst);
             }
         }
 
@@ -611,10 +619,6 @@ public class UpdateCenter extends AbstractModelObject {
         public HudsonUpgradeJob() {
         }
 
-        public boolean isSupported() {
-            return getDestination()!=null;
-        }
-
         protected URL getURL() throws MalformedURLException {
             return new URL(getData().core.url);
         }
@@ -629,6 +633,11 @@ public class UpdateCenter extends AbstractModelObject {
 
         protected void onSuccess() {
             status = new RestartNeeded();
+        }
+
+        @Override
+        protected void replace(File dst, File src) throws IOException {
+            Lifecycle.get().rewriteHudsonWar(src);
         }
 
         /**

@@ -57,8 +57,7 @@ public abstract class Lifecycle implements ExtensionPoint {
 
     /**
      * If the location of <tt>hudson.war</tt> is known in this life cycle,
-     * and if this file is writable while Hudson is running, return it location.
-     * Otherwise return null to indicate that it is unknown.
+     * return it location. Otherwise return null to indicate that it is unknown.
      *
      * <p>
      * When a non-null value is returned, Hudson will offer an upgrade UI
@@ -70,6 +69,31 @@ public abstract class Lifecycle implements ExtensionPoint {
             return new File(war);
         return null;
     }
+
+    /**
+     * Replaces hudson.war by the given file.
+     */
+    public void rewriteHudsonWar(File by) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Can {@link #rewriteHudsonWar(File)} work?
+     */
+    public boolean canRewriteHudsonWar() {
+        // if we don't know where hudson.war is, it's impossible to replace.
+        if(getHudsonWar()==null)    return false;
+
+        // the rewriteHudsonWar method isn't overridden.
+        try {
+            return !getClass().getMethod("rewriteHudsonWar",File.class).equals(
+                    Lifecycle.class.getMethod("rewriteHudsonWar",File.class));
+        } catch (NoSuchMethodException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    
 
     /**
      * If this life cycle supports a restart of Hudson, do so.

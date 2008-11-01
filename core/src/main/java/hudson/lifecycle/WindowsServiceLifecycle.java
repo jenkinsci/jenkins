@@ -56,6 +56,11 @@ public class WindowsServiceLifecycle extends Lifecycle {
         }
     }
 
+    public void rewriteHudsonWar(File by) throws IOException {
+        // TODO: implement this method later
+        throw new UnsupportedOperationException();
+    }
+
     public void restart() throws IOException, InterruptedException {
         File me = getHudsonWar();
         File home = me.getParentFile();
