@@ -29,7 +29,8 @@ public class WindowsServiceLifecycle extends Lifecycle {
 
     /**
      * If <tt>hudson.exe</tt> is old compared to our copy,
-     * schedule an override.
+     * schedule an overwrite (except that since it's currently running,
+     * we can only do it when Hudson restarts next time.)
      */
     private void updateHudsonExeIfNeeded() {
         try {
