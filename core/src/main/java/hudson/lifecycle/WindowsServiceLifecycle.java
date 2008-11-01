@@ -1,12 +1,21 @@
 package hudson.lifecycle;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import hudson.util.StreamTaskListener;
-import hudson.Launcher.LocalLauncher;
 import hudson.FilePath;
+import hudson.Launcher.LocalLauncher;
+import hudson.Util;
+import hudson.model.Hudson;
+import hudson.util.StreamTaskListener;
+import hudson.util.jna.Kernel32;
+import static hudson.util.jna.Kernel32.MOVEFILE_DELAY_UNTIL_REBOOT;
+import static hudson.util.jna.Kernel32.MOVEFILE_REPLACE_EXISTING;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link Lifecycle} for Hudson installed as Windows service.
@@ -14,6 +23,39 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class WindowsServiceLifecycle extends Lifecycle {
+    public WindowsServiceLifecycle() {
+        updateHudsonExeIfNeeded();
+    }
+
+    /**
+     * If <tt>hudson.exe</tt> is old compared to our copy,
+     * schedule an override.
+     */
+    private void updateHudsonExeIfNeeded() {
+        try {
+            File rootDir = Hudson.getInstance().getRootDir();
+
+            URL exe = getClass().getResource("/windows-service/hudson.exe");
+            String ourCopy = Util.getDigestOf(exe.openStream());
+            File currentCopy = new File(rootDir,"hudson.exe");
+            if(!currentCopy.exists())   return;
+            String curCopy = new FilePath(currentCopy).digest();
+
+            if(ourCopy.equals(curCopy))
+            return; // identical
+
+            File stage = new File(rootDir,"hudson.exe.new");
+            if(stage.exists())  return; // already staged for a push
+
+            FileUtils.copyURLToFile(exe,stage);
+            Kernel32.INSTANCE.MoveFileEx(stage.getAbsolutePath(),currentCopy.getAbsolutePath(),MOVEFILE_DELAY_UNTIL_REBOOT|MOVEFILE_REPLACE_EXISTING);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to replace hudson.exe",e);
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "Failed to replace hudson.exe",e);
+        }
+    }
+
     public void restart() throws IOException, InterruptedException {
         File me = getHudsonWar();
         File home = me.getParentFile();
@@ -25,4 +67,6 @@ public class WindowsServiceLifecycle extends Lifecycle {
         if(r!=0)
             throw new IOException(baos.toString());
     }
+
+    private static final Logger LOGGER = Logger.getLogger(WindowsServiceLifecycle.class.getName());
 }
