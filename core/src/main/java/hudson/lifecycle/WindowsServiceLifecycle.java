@@ -45,10 +45,9 @@ public class WindowsServiceLifecycle extends Lifecycle {
             return; // identical
 
             File stage = new File(rootDir,"hudson.exe.new");
-            if(stage.exists())  return; // already staged for a push
-
             FileUtils.copyURLToFile(exe,stage);
-            Kernel32.INSTANCE.MoveFileEx(stage.getAbsolutePath(),currentCopy.getAbsolutePath(),MOVEFILE_DELAY_UNTIL_REBOOT|MOVEFILE_REPLACE_EXISTING);
+            Kernel32.INSTANCE.MoveFileExA(stage.getAbsolutePath(),currentCopy.getAbsolutePath(),MOVEFILE_DELAY_UNTIL_REBOOT|MOVEFILE_REPLACE_EXISTING);
+            LOGGER.info("Scheduled a replacement of hudson.exe");
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to replace hudson.exe",e);
         } catch (InterruptedException e) {

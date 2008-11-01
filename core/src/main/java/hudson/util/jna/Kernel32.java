@@ -14,7 +14,7 @@ public interface Kernel32 extends StdCallLibrary {
     /**
      * See http://msdn.microsoft.com/en-us/library/aa365240(VS.85).aspx
      */
-    boolean MoveFileEx(String existingFileName, String newFileName, int flags );
+    boolean MoveFileExA(String existingFileName, String newFileName, int flags );
 
     static final int MOVEFILE_COPY_ALLOWED = 2;
     static final int MOVEFILE_CREATE_HARDLINK = 16;
