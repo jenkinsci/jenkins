@@ -13,6 +13,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.FileWriter;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,9 +57,14 @@ public class WindowsServiceLifecycle extends Lifecycle {
         }
     }
 
+    @Override
     public void rewriteHudsonWar(File by) throws IOException {
-        // TODO: implement this method later
-        throw new UnsupportedOperationException();
+        File rootDir = Hudson.getInstance().getRootDir();
+        File copyFiles = new File(rootDir,"hudson.copies");
+
+        FileWriter w = new FileWriter(copyFiles, true);
+        w.write(by.getAbsolutePath()+'>'+getHudsonWar().getAbsolutePath()+'\n');
+        w.close();
     }
 
     public void restart() throws IOException, InterruptedException {
