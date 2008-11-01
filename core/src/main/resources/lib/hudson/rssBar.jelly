@@ -8,7 +8,7 @@
       <a href="rssFailed"><img src="${imagesURL}/atom.gif" border="0"/> ${%for failures}</a>
     </span>
     <span style="padding-left:1em">
-      <a href="rssLatest"><img src="${imagesURL}/atom.gif" border="0"/> ${%for just last builds}</a>
+      <a href="rssLatest"><img src="${imagesURL}/atom.gif" border="0"/> ${%for just latest builds}</a>
     </span>
   </div>
 </j:jelly>
