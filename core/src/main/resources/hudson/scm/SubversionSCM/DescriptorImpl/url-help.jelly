@@ -1,16 +1,11 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:ajax>
     <div>
-    Specify the subversion repository URL to check out, such as "http://svn.apache.org/repos/asf/ant/".
+    ${%description.1}
     <br/>
-    When you enter URL, Hudson automatically checks if Hudson can connect to it. If access requires
-    authentication, it will ask you the necessary credential. If you already have a working
-    credential but would like to change it for other reasons,
-    click <a href="${rootURL}/scm/SubversionSCM/enterCredential">this link</a>
-    and specify different credential.
+    ${%description.2(rootURL)}
     <br />
-    During the build, revision number of the module that was checked out is available
-    through the environment variable <tt>SVN_REVISION</tt>
+    ${%description.3}
     </div>
   </l:ajax>
 </j:jelly>
