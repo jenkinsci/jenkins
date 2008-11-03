@@ -168,7 +168,7 @@ public final class TcpSlaveAgentListener extends Thread {
             }
 
             if(computer.getChannel()!=null) {
-                error(out, "Already connected");
+                error(out, nodeName+" is already connected to this master. Rejecting this connection.");
                 return;
             }
 
