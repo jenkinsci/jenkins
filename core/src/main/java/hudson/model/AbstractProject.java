@@ -267,6 +267,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void makeDisabled(boolean b) throws IOException {
         if(disabled==b)     return; // noop
         this.disabled = b;
+        Hudson.getInstance().getQueue().cancel(this);
         save();
     }
 
@@ -609,6 +610,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public R createExecutable() throws IOException {
+        if(isDisabled())    return null;
         return newBuild();
     }
 
@@ -977,7 +979,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req,rsp);
 
-        disabled = req.getParameter("disable")!=null;
+        makeDisabled(req.getParameter("disable")!=null);
 
         jdk = req.getParameter("jdk");
         if(req.getParameter("hasCustomQuietPeriod")!=null) {
