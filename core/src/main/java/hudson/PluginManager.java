@@ -23,10 +23,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.WebApp;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -77,11 +79,13 @@ public final class PluginManager extends AbstractModelObject {
     public PluginManager(ServletContext context) {
         this.context = context;
         // JSON binding needs to be able to see all the classes from all the plugins
-        Stapler.setClassLoader(context,uberClassLoader);
+        WebApp.get(context).setClassLoader(uberClassLoader);
 
         rootDir = new File(Hudson.getInstance().getRootDir(),"plugins");
         if(!rootDir.exists())
             rootDir.mkdirs();
+
+        loadBundledPlugins();
 
         File[] archives = rootDir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
@@ -109,7 +113,7 @@ public final class PluginManager extends AbstractModelObject {
             }
         }
 
-        for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[0]))
+        for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()]))
             try {
             	strategy.load(p);
             } catch (IOException e) {
@@ -119,9 +123,25 @@ public final class PluginManager extends AbstractModelObject {
                 plugins.remove(p);
             }
 
-		for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
+		for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
 			strategy.initializeComponents(p);
 		}
+    }
+
+    /**
+     * If the war file has any "/WEB-INF/plugins/*.hpi", extract them into the plugin directory.
+     */
+    private void loadBundledPlugins() {
+        Set paths = context.getResourcePaths("/WEB-INF/plugins");
+        if(paths==null) return; // crap
+        for( String path : (Set<String>) paths) {
+            String fileName = path.substring(path.lastIndexOf('/')+1);
+            try {
+                FileUtils.copyURLToFile(context.getResource(path),new File(rootDir,fileName));
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+fileName,e);
+            }
+        }
     }
 
     /**
