@@ -404,16 +404,6 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     }
 
     /**
-     * Marks this build as disabled.
-     */
-    public void disable() throws IOException {
-        if(!disabled) {
-            disabled = true;
-            save();
-        }
-    }
-
-    /**
      * Creates a list of {@link MavenReporter}s to be used for a build of this project.
      */
     protected final List<MavenReporter> createReporters() {

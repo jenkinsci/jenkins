@@ -6,7 +6,6 @@ import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.tasks.BuildWrapper;
-import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
@@ -431,7 +430,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 for (MavenModule om : old.values()) {
                     if(debug)
                         logger.println("Disabling "+om);
-                    om.disable();
+                    om.makeDisabled(true);
                 }
                 modules.putAll(old);
             }
