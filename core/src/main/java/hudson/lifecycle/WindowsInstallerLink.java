@@ -5,6 +5,7 @@ import hudson.model.Hudson;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.util.StreamTaskListener;
+import hudson.util.jna.DotNet;
 import hudson.Launcher.LocalLauncher;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -75,6 +76,10 @@ public class WindowsInstallerLink extends ManagementLink {
         if(installationDir!=null) {
             // installation already complete
             sendError("Installation is already complete",req,rsp);
+            return;
+        }
+        if(!DotNet.isInstalled(2,0)) {
+            sendError(".NET Framework 2.0 or later is required for this feature",req,rsp);
             return;
         }
         

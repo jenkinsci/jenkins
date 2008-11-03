@@ -7,6 +7,7 @@ import hudson.remoting.Engine;
 import hudson.remoting.jnlp.MainDialog;
 import hudson.remoting.jnlp.MainMenu;
 import hudson.util.StreamTaskListener;
+import hudson.util.jna.DotNet;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -74,6 +75,13 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
                 Messages.WindowsInstallerLink_DisplayName(),
                 JOptionPane.OK_CANCEL_OPTION);
         if(r!=JOptionPane.OK_OPTION)    return;
+
+        if(!DotNet.isInstalled(2,0)) {
+            JOptionPane.showMessageDialog(dialog,".NET Framework 2.0 or later is required for this feature",
+                    Messages.WindowsInstallerLink_DisplayName(),
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         final File dir = new File(rootDir);
 
