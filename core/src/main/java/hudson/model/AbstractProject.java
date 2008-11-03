@@ -267,7 +267,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void makeDisabled(boolean b) throws IOException {
         if(disabled==b)     return; // noop
         this.disabled = b;
-        Hudson.getInstance().getQueue().cancel(this);
+        if(b)
+            Hudson.getInstance().getQueue().cancel(this);
         save();
     }
 
