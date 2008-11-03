@@ -7,7 +7,6 @@ import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
-import hudson.maven.MavenBuild;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenReportInfo;
 import hudson.model.Action;
@@ -15,7 +14,6 @@ import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.JavadocArchiver.JavadocAction;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.reporting.MavenReport;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 
 import java.io.File;
@@ -28,13 +26,14 @@ import java.io.IOException;
  */
 public class MavenJavadocArchiver extends MavenReporter {
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        if(!mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","javadoc"))
+        if(!mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","javadoc")
+        && !mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","aggregate"))
             return true;
 
         File destDir;
         boolean aggregated;
         try {
-            aggregated = mojo.getConfigurationValue("aggregate",Boolean.class);
+            aggregated = mojo.getConfigurationValue("aggregate",Boolean.class) || mojo.getGoal().equals("aggregate");
             if(aggregated && !pom.isExecutionRoot())
                 return true;    // in the aggregated mode, the generation will only happen for the root module
 
@@ -50,16 +49,18 @@ public class MavenJavadocArchiver extends MavenReporter {
         if(destDir.exists()) {
             // javadoc:javadoc just skips itself when the current project is not a java project 
             FilePath target;
-            if(aggregated)
+            if(aggregated) {
                 // store at MavenModuleSet level. 
+                listener.getLogger().println("[HUDSON] Archiving aggregated javadoc");
                 target = build.getModuleSetRootDir();
-            else
+            } else {
+                listener.getLogger().println("[HUDSON] Archiving javadoc");
                 target = build.getProjectRootDir();
+            }
 
             target = target.child("javadoc");
 
             try {
-                listener.getLogger().println("[HUDSON] Archiving javadoc");
                 new FilePath(destDir).copyRecursiveTo("**/*",target);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
