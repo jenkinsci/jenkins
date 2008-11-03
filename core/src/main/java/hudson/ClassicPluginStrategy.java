@@ -136,7 +136,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
 		ClassLoader dependencyLoader = new DependencyClassLoader(getClass()
 				.getClassLoader(), dependencies);
-		ClassLoader classLoader = new URLClassLoader(paths.toArray(new URL[0]),
+		ClassLoader classLoader = new URLClassLoader(paths.toArray(new URL[paths.size()]),
 				dependencyLoader);
 
 		return new PluginWrapper(archive, manifest, baseResourceURL,
@@ -264,9 +264,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
 	/**
 	 * Loads the dependencies to other plugins.
 	 * 
-	 * @param owner
-	 *            plugin manager to determine if the dependency is installed or
-	 *            not.
 	 * @throws IOException
 	 *             thrown if one or several mandatory dependencies doesnt
 	 *             exists.
