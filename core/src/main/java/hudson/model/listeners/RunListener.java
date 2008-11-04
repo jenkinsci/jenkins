@@ -36,7 +36,16 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      the build is considered completed, so its status cannot be changed anymore.
      */
     public void onCompleted(R r, TaskListener listener) {}
-    
+
+    /**
+     * Called after a build is moved to the {@link Run.State#COMPLETED} state.
+     *
+     * <p>
+     * At this point, all the records related to a build is written down to the disk. As such,
+     * {@link TaskListener} is no longer available. This happens later than {@link #onCompleted(Run, TaskListener)}.
+     */
+    public void onFinalized(R r) {}
+
     /**
      * Called when a build is started (i.e. it was in the queue, and will now start running
      * on an executor)
@@ -87,6 +96,16 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
         for (RunListener l : LISTENERS) {
             if(l.targetType.isInstance(r))
                 l.onStarted(r,listener);
+        }
+    }
+
+    /**
+     * Fires the {@link #onFinalized(Run)} event.
+     */
+    public static void fireFinalized(Run r) {
+        for (RunListener l : LISTENERS) {
+            if(l.targetType.isInstance(r))
+                l.onFinalized(r);
         }
     }
 }

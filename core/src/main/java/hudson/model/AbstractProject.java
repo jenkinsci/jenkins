@@ -423,7 +423,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         Future<R> f = new AsyncFutureImpl<R>() {
             final RunListener r = new RunListener<AbstractBuild>(AbstractBuild.class) {
-                public void onCompleted(AbstractBuild r, TaskListener listener) {
+                public void onFinalized(AbstractBuild r) {
                     if(r.getProject()==AbstractProject.this && r.getNumber()>n) {
                         set((R)r);
                         unregister();

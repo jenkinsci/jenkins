@@ -920,6 +920,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             result = Result.FAILURE;
             LOGGER.warning(toString()+": No build result is set, so marking as failure. This shouldn't happen");
         }
+        RunListener.fireFinalized(this);
     }
 
     /**
