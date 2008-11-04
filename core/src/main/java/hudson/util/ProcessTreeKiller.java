@@ -592,8 +592,8 @@ public abstract class ProcessTreeKiller {
      * Flag to control this feature.
      *
      * <p>
-     * This feature is still experimental, so it is disabled by default.
-     * In distributed environment, this flag needs to be enabled per slave.
+     * This feature involves some native code, so we are allowing the user to disable this
+     * in case there's a fatal problem.
      */
-    public static boolean enabled = Boolean.getBoolean(ProcessTreeKiller.class.getName());
+    public static boolean enabled = !Boolean.getBoolean(ProcessTreeKiller.class.getName()+".disable");
 }
