@@ -14,6 +14,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
 import hudson.util.StreamResource;
+import hudson.util.HeadBufferingStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -990,10 +991,17 @@ public final class FilePath implements Serializable {
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
      */
-    private static void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+    private static void readFromTar(String name, File baseDir, InputStream _in) throws IOException {
         Untar untar = new Untar();
         untar.setProject(new Project());
-        untar.add(new StreamResource(name,new BufferedInputStream(new GZIPInputStream(in))));
+        HeadBufferingStream in = new HeadBufferingStream(_in,SIDE_BUFFER_SIZE);
+        try {
+            untar.add(new StreamResource(name,new BufferedInputStream(new GZIPInputStream(in))));
+        } catch (IOException e) {
+            // various people reported "java.io.IOException: Not in GZIP format" here, so diagnose this problem better
+            in.fillSide();
+            throw new IOException2(e.getMessage()+"\nstream="+Util.toHexString(in.getSideBuffer()),e);
+        }
         untar.setDest(baseDir);
         try {
             untar.execute();
@@ -1186,6 +1194,8 @@ public final class FilePath implements Serializable {
     }
 
     private static final long serialVersionUID = 1L;
+
+    public static int SIDE_BUFFER_SIZE = 1024;
 
     /**
      * Adapts {@link FileCallable} to {@link Callable}.
