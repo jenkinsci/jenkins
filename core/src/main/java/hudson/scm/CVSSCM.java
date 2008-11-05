@@ -991,8 +991,8 @@ public class CVSSCM extends SCM implements Serializable {
         }
 
         public String getCvsExeOrDefault() {
-            if(cvsExe==null)    return "cvs";
-            else                return cvsExe;
+            if(Util.fixEmpty(cvsExe)==null)     return "cvs";
+            else                                return cvsExe;
         }
 
         public void setCvspassFile(String value) {
