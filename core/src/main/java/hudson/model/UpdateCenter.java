@@ -420,7 +420,15 @@ public class UpdateCenter extends AbstractModelObject {
         public void run() {
             try {
                 statuses.add(Messages.UpdateCenter_Status_CheckingInternet());
-                testConnection(new URL("http://www.google.com/"));
+                try {
+                    testConnection(new URL("http://www.google.com/"));
+                } catch (IOException e) {
+                    if(e.getMessage().contains("Connection timed out")) {
+                        // Google can't be down, so this is probably a proxy issue
+                        statuses.add(Messages.UpdateCenter_Status_ConnectionFailed("www.google.com"));
+                        return;
+                    }
+                }
 
                 statuses.add(Messages.UpdateCenter_Status_CheckingJavaNet());
                 testConnection(new URL("https://hudson.dev.java.net/?uctest"));
