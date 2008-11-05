@@ -552,7 +552,7 @@ public final class FilePath implements Serializable {
             return new FilePath(channel,act(new FileCallable<String>() {
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
                     if(!inThisDirectory)
-                        dir = null;
+                        dir = new File(System.getProperty("java.io.tmpdir"));
                     else
                         dir.mkdirs();
 
