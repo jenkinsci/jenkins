@@ -1,5 +1,7 @@
 package hudson.util;
 
+import hudson.Util;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -55,9 +57,7 @@ public class ArgumentListBuilder implements Serializable {
      */
     public ArgumentListBuilder addTokenized(String s) {
         if(s==null) return this;
-        StringTokenizer tokens = new StringTokenizer(s);
-        while(tokens.hasMoreTokens())
-            add(tokens.nextToken());
+        add(Util.tokenize(s));
         return this;
     }
 
