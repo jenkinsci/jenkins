@@ -81,6 +81,10 @@ public class Label implements Comparable<Label>, ModelObject {
         StringBuilder buf = new StringBuilder("group of ");
         boolean first=true;
         for (Node n : nodes) {
+            if(buf.length()>80) {
+                buf.append(",...");
+                break;
+            }
             if(!first)  buf.append(',');
             else        first=false;
             buf.append(n.getNodeName());
