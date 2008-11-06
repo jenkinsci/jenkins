@@ -19,4 +19,8 @@ colors.keys.each do |name|
   end
 
   system "convert -delay 10 #{list.join(" ")} -loop 0 progress-unknown-#{name}.gif" or fail
+  
+  list.each do |file|
+    File.delete(file)
+  end
 end
