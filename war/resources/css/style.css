@@ -748,6 +748,10 @@ table.progress-bar {
   clear: none;
 }
 
+table.progress-bar tr.unknown {
+    background-image:url(../images/progress-unknown.gif);
+}
+
 td.progress-bar-done {
   background-color: #3465a4;
 }
@@ -760,6 +764,9 @@ table.progress-bar.red {
   border: 1px solid #cc0000;
 }
 
+table.progress-bar.red tr.unknown {
+    background-image:url(../images/progress-unknown-red.gif);
+}
 table.progress-bar.red td.progress-bar-done {
   background-color: #cc0000;
 }

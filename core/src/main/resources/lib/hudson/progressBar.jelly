@@ -10,7 +10,8 @@
   <table class="progress-bar ${h.ifThenElse(attrs.red!=null,'red',null)}" id="${attrs.id}" tooltip="${attrs.tooltip}" href="${attrs.href}" style="${h.ifThenElse(attrs.href!=null,'cursor:pointer',null)}">
     <j:choose>
       <j:when test="${pos lt 0}">
-        <tbody><tr style="background-image:url(${imagesURL}/progress-unknown.gif)"><td/></tr></tbody>
+        <!-- style sheet will fill in the progress bar image -->
+        <tbody><tr class="unknown"><td/></tr></tbody>
       </j:when>
       <j:otherwise>
           <tbody><tr>
