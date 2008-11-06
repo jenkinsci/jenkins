@@ -150,6 +150,13 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
+     * The opposite of {@link #isIdle()} &mdash; the executor is doing some work.
+     */
+    public boolean isBusy() {
+        return executable!=null;
+    }
+
+    /**
      * If this thread dies unexpectedly, obtain the cause of the failure.
      *
      * @return null if the death is expected death or the thread is {@link #isAlive() still alive}.
