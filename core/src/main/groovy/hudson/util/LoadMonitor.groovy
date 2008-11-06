@@ -31,6 +31,8 @@ public class LoadMonitorImpl extends SafeTimerTask {
         Trigger.timer.scheduleAtFixedRate(this,0,10*1000);
     }
 
+    private String quote(Object s) { "\"${s}\""; }
+
     protected void printHeaders() {
         def headers = ["# of executors","# of busy executors","BuildableItems in Q","BuildableItem avg wait time"];
         def data = ["timestamp"];
@@ -40,14 +42,14 @@ public class LoadMonitorImpl extends SafeTimerTask {
         for( String label : labels)
             data += headers.collect { "${it} (${label}}" }
 
-        dataFile.append(data.collect({ "\"${it}\"" }).join(",")+"\n");
+        dataFile.append(data.collect({ quote(it) }).join(",")+"\n");
     }
 
     @Override
     protected void doRun() {
         def now = new Date();
         def data = [];
-        data.add(FORMATTER.format(now));
+        data.add(quote(FORMATTER.format(now)));
 
         def h = Hudson.getInstance();
 
