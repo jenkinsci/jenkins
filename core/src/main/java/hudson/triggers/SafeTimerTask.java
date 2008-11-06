@@ -9,8 +9,13 @@ import java.util.logging.Level;
  * {@link Timer} wrapper so that a fatal error in {@link TimerTask}
  * won't terminate the timer.
  *
+ * <p>
+ * {@link Trigger#timer} is a shared timer instance that can be used inside Hudson to
+ * schedule a recurring work.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.124
+ * @see Trigger#timer
  */
 public abstract class SafeTimerTask extends TimerTask {
     public final void run() {
