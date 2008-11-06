@@ -1,11 +1,13 @@
 <!--
   Progress bar. @pos (0-100) specifies the current position
 
-	<%@attribute name="pos" required="true" %>
-	<%@attribute name="href" required="false" %>
+  Attributes:
+    pos  : 0-100 to indicates the current progress. -1 if the progress is unknown
+    href : if set, the progress bar becomes a hyperlink
+    red  : if set to non-null, the progress bar will be drawn in red, to indicate that the processing is likely stuck.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <table class="progress-bar" id="${attrs.id}" tooltip="${attrs.tooltip}" href="${attrs.href}" style="${h.ifThenElse(attrs.href!=null,'cursor:pointer',null)}">
+  <table class="progress-bar ${h.ifThenElse(attrs.red!=null,'red',null)}" id="${attrs.id}" tooltip="${attrs.tooltip}" href="${attrs.href}" style="${h.ifThenElse(attrs.href!=null,'cursor:pointer',null)}">
     <j:choose>
       <j:when test="${pos lt 0}">
         <tbody><tr style="background-image:url(${imagesURL}/progress-unknown.gif)"><td/></tr></tbody>
