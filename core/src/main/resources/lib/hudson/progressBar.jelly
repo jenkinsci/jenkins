@@ -5,29 +5,18 @@
 	<%@attribute name="href" required="false" %>
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<x:element name="table">
-		<x:attribute name="class">progress-bar</x:attribute>
-    <j:if test="${attrs.id!=null}">
-      <x:attribute name="id">${id}</x:attribute>
-    </j:if>
-    <j:if test="${attrs.tooltip!=null}">
-      <x:attribute name="tooltip">${tooltip}</x:attribute>
-    </j:if>
-    <j:if test="${href!=null}">
-	  	<x:attribute name="style">cursor:pointer</x:attribute>
-      <x:attribute name="href">${href}</x:attribute>
-	  </j:if>
-	  <j:choose>
-	    <j:when test="${pos lt 0}">
-	      <tbody><tr style="background-image:url(${imagesURL}/progress-unknown.gif)"><td/></tr></tbody>
-	    </j:when>
-	    <j:otherwise>
-	        <tbody><tr>
-	          <td class="progress-bar-done" style="width:${pos}%;"/>
-	          <td class="progress-bar-left" style="width:${100-pos}%"/>
-	        </tr>
-	      </tbody>
-	    </j:otherwise>
-	  </j:choose>
-	</x:element>
+  <table class="progress-bar" id="${attrs.id}" tooltip="${attrs.tooltip}" href="${attrs.href}" style="${h.ifThenElse(attrs.href!=null,'cursor:pointer',null)}">
+    <j:choose>
+      <j:when test="${pos lt 0}">
+        <tbody><tr style="background-image:url(${imagesURL}/progress-unknown.gif)"><td/></tr></tbody>
+      </j:when>
+      <j:otherwise>
+          <tbody><tr>
+            <td class="progress-bar-done" style="width:${pos}%;"/>
+            <td class="progress-bar-left" style="width:${100-pos}%"/>
+          </tr>
+        </tbody>
+      </j:otherwise>
+    </j:choose>
+  </table>
 </j:jelly>
