@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -182,6 +183,29 @@ public class Executor extends Thread implements ModelObject {
         int num = (int)((System.currentTimeMillis()-startTime)*100/d);
         if(num>=100)    num=99;
         return num;
+    }
+
+    /**
+     * Returns true if the current build is likely stuck.
+     *
+     * <p>
+     * This is a heuristics based approach, but if the build is suspiciously taking for a long time,
+     * this method returns true.
+     */
+    @Exported
+    public boolean isLikelyStuck() {
+        Queue.Executable e = executable;
+        if(e==null)     return false;
+
+        long elapsed = System.currentTimeMillis() - startTime;
+        long d = e.getParent().getEstimatedDuration();
+        if(d>=0) {
+            // if it's taking 10 times longer than ETA, consider it stuck
+            return d*10 < elapsed;
+        } else {
+            // if no ETA is available, a build taking longer than a day is considered stuck
+            return TimeUnit.MILLISECONDS.toHours(elapsed)>24;
+        }
     }
 
     /**
