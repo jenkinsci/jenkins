@@ -897,13 +897,16 @@ public class Queue extends ResourceController implements Saveable {
                 name = label.getName();
                 if (label.isOffline()) {
                     if (label.getNodes().size() > 1)
-                        return "All nodes of label '" + name + "' is offline";
+                        return Messages.Queue_AllNodesOffline(name);
                     else
-                        return name + " is offline";
+                        return Messages.Queue_NodeOffline(name);
                 }
             }
 
-            return "Waiting for next available executor" + (name == null ? "" : " on " + name);
+            if(name==null)
+                return Messages.Queue_WaitingForNextAvailableExecutor();
+            else
+                return Messages.Queue_WaitingForNextAvailableExecutorOn(name);
         }
 
         @Override
