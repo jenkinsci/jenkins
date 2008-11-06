@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -765,6 +766,12 @@ public class Queue extends ResourceController implements Saveable {
         @Exported
         public boolean isBuildable() { return this instanceof BuildableItem; }
 
+        /**
+         * True if the item is starving for an executor for too long.
+         */
+        @Exported
+        public boolean isStuck() { return false; }
+
         protected Item(Task project) {
             this.task = project;
         }
@@ -880,16 +887,16 @@ public class Queue extends ResourceController implements Saveable {
 
         @Override
         public String getWhy() {
-            Label node = task.getAssignedLabel();
+            Label label = task.getAssignedLabel();
             Hudson hudson = Hudson.getInstance();
             if (hudson.getSlaves().isEmpty())
-                node = null;    // no master/slave. pointless to talk about nodes
+                label = null;    // no master/slave. pointless to talk about nodes
 
             String name = null;
-            if (node != null) {
-                name = node.getName();
-                if (node.isOffline()) {
-                    if (node.getNodes().size() > 1)
+            if (label != null) {
+                name = label.getName();
+                if (label.isOffline()) {
+                    if (label.getNodes().size() > 1)
                         return "All nodes of label '" + name + "' is offline";
                     else
                         return name + " is offline";
@@ -897,6 +904,24 @@ public class Queue extends ResourceController implements Saveable {
             }
 
             return "Waiting for next available executor" + (name == null ? "" : " on " + name);
+        }
+
+        @Override
+        public boolean isStuck() {
+            Label label = task.getAssignedLabel();
+            if(label!=null && label.isOffline())
+                // no executor online to process this job. definitely stuck.
+                return true;
+
+            long d = task.getEstimatedDuration();
+            long elapsed = System.currentTimeMillis()-buildableStartMilliseconds;
+            if(d>=0) {
+                // if we were running elsewhere, we would have done this build twice.
+                return elapsed > d*2;
+            } else {
+                // more than a day in the queue
+                return TimeUnit.MILLISECONDS.toHours(elapsed)>24;
+            }
         }
     }
 

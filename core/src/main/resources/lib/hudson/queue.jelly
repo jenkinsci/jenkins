@@ -31,8 +31,10 @@
         <j:forEach var="item" items="${items}">
           <tr>
             <td class="pane" width="100%" tooltip="${item.why}">
-              <a href="${rootURL}/${item.task.url}">
+              <j:set var="stuck" value="${item.isStuck()}" />
+              <a href="${rootURL}/${item.task.url}" style="${h.ifThenElse(stuck,'color:#ef2929',null)}">
                 ${item.task.fullDisplayName}
+                <j:if test="${stuck}"> (${%appears to be stuck})</j:if>
               </a>
             </td>
             <td class="pane" width="16" align="center" valign="middle">
