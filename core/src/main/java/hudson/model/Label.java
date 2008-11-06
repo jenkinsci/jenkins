@@ -12,6 +12,8 @@ import java.util.ArrayList;
  * Group of {@link Node}s.
  * 
  * @author Kohsuke Kawaguchi
+ * @see Hudson#getLabels()
+ * @see Hudson#getLabel(String) 
  */
 public class Label implements Comparable<Label>, ModelObject {
     private final String name;
