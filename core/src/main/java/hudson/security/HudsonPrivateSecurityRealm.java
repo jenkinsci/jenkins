@@ -280,7 +280,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         }
 
         /*package*/ Authentication createAuthentication() {
-            return new UsernamePasswordAuthenticationToken(null, password);
+            return new UsernamePasswordAuthenticationToken(getUsername(), getPassword());
         }
     }
 
