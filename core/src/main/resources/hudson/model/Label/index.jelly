@@ -8,7 +8,7 @@
       </h1>
 
       <div>
-        Nodes:
+        ${%Nodes:}
         <j:forEach var="n" items="${it.nodes}">
           <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
           <a href="${rootURL}/computer/${n.nodeName}">
@@ -19,12 +19,12 @@
         </j:forEach>
       </div>
 
-      <h2>Projects</h2>
+      <h2>${%Projects}</h2>
       <j:set var="jobs" value="${it.tiedJobs}" />
       <j:choose>
         <j:when test="${empty(jobs)}">
           <p>
-            None
+            ${%None}
           </p>
         </j:when>
         <j:otherwise>
