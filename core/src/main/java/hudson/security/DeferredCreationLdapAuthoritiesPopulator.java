@@ -51,7 +51,7 @@ public class DeferredCreationLdapAuthoritiesPopulator implements LdapAuthorities
     /**
      * The pattern to be used for the user search. {0} is the user's DN
      */
-    private String groupSearchFilter = "(member={0})";
+    private String groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={0}))";
 
     private String rolePrefix = "ROLE_";
 
