@@ -49,15 +49,15 @@ public final class ClockDifference {
      */
     public String toString() {
         if(-1000<diff && diff <1000)
-            return "In sync";  // clock is in sync
+            return Messages.ClockDifference_InSync();  // clock is in sync
 
         long abs = Math.abs(diff);
 
         String s = Util.getTimeSpanString(abs);
         if(diff<0)
-            s += " ahead";
+            s += Messages.ClockDifference_Ahead();
         else
-            s += " behind";
+            s += Messages.ClockDifference_Behind();
 
         return s;
     }
@@ -91,5 +91,5 @@ public final class ClockDifference {
 
     public static final ClockDifference ZERO = new ClockDifference(0);
 
-    private static final String FAILED_HTML = "<span class='error'>Failed to check</span>";
+    private static final String FAILED_HTML = "<span class='error'>" + Messages.ClockDifference_Failed() + "</span>";
 }
