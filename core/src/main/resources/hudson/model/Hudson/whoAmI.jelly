@@ -1,0 +1,47 @@
+<!-- show debug information about the current user -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <l:layout>
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <j:set var="auth" value="${app.authentication}" />
+      <h1>Who Am I?</h1>
+      <table>
+        <tr>
+          <td>Name:</td>
+          <td>${auth.name}</td>
+        </tr>
+        <tr>
+          <td>IsAuthenticated?:</td>
+          <td>${auth.authenticated}</td>
+        </tr>
+        <tr>
+          <td>Authorities:</td>
+          <td>
+            <ul>
+              <j:forEach var="a" items="${auth.authorities}">
+                <li>
+                  <j:choose>
+                    <j:when test="${a==null}">
+                      null
+                    </j:when>
+                    <j:otherwise>
+                      "${a}"
+                    </j:otherwise>
+                  </j:choose>
+                </li>
+              </j:forEach>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td>Details:</td>
+          <td>${auth.details}</td>
+        </tr>
+        <tr>
+          <td>toString:</td>
+          <td>${auth}</td>
+        </tr>
+      </table>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
