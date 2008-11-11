@@ -13,6 +13,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Monitors the round-trip response time to this slave.
@@ -65,6 +67,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
     /**
      * Immutable representation of the monitoring data.
      */
+    @ExportedBean
     public static final class Data {
         /**
          * Record of the past 5 times. -1 if time out. Otherwise in milliseconds.
@@ -96,6 +99,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         /**
          * Computes the average response time, by taking the time out into account.
          */
+        @Exported
         public long average() {
             long total=0;
             for (long l : past5) {
