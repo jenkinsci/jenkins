@@ -46,11 +46,7 @@ public class CommandLauncher extends ComputerLauncher {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<ComputerLauncher> DESCRIPTOR = new Descriptor<ComputerLauncher>(CommandLauncher.class) {
-        public String getDisplayName() {
-            return Messages.CommandLauncher_displayName();
-        }
-    };
+    public static final Descriptor<ComputerLauncher> DESCRIPTOR = new DescriptorImpl();
 
     /**
      * Gets the formatted current time stamp.
@@ -120,5 +116,26 @@ public class CommandLauncher extends ComputerLauncher {
 
     static {
         LIST.add(DESCRIPTOR);
+    }
+
+    public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
+        public DescriptorImpl() {
+            super(CommandLauncher.class);
+        }
+
+        public String getDisplayName() {
+            return Messages.CommandLauncher_displayName();
+        }
+
+        public void doCheckCommand(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
+            new FormFieldValidator(req,rsp,false) {
+                protected void check() throws IOException, ServletException {
+                    if(Util.fixEmptyAndTrim(value)==null)
+                        error("Command is empty");
+                    else
+                        ok();
+                }
+            }.process();
+        }
     }
 }
