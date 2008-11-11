@@ -52,7 +52,7 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
         }
 
         protected GlobalMatrixAuthorizationStrategy create() {
-            return new GlobalMatrixAuthorizationStrategy();
+            return new ProjectMatrixAuthorizationStrategy();
         }
 
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
