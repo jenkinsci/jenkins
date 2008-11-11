@@ -100,7 +100,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
          * Computes the average response time, by taking the time out into account.
          */
         @Exported
-        public long average() {
+        public long getAverage() {
             long total=0;
             for (long l : past5) {
                 if(l<0)     total += TIMEOUT;
@@ -126,7 +126,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             int fc = failureCount();
             if(fc>0)
                 return Util.wrapToErrorSpan(Messages.ResponseTimeMonitor_TimeOut(fc));
-            return average()+"ms";
+            return getAverage()+"ms";
         }
     }
 
