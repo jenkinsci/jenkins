@@ -109,7 +109,8 @@ public class Items {
         XSTREAM.alias("project",FreeStyleProject.class);
         XSTREAM.alias("maven2", MavenModule.class);
         XSTREAM.alias("dependency", ModuleDependency.class);
-        XSTREAM.alias("maven2-module-set", MavenModule.class);
+        XSTREAM.alias("maven2-module-set", MavenModule.class);  // this was a bug, but now we need to keep it for compatibility
+        XSTREAM.alias("maven2-moduleset", MavenModuleSet.class);
         XSTREAM.alias("matrix-project",MatrixProject.class);
         XSTREAM.alias("axis", Axis.class);
         XSTREAM.alias("matrix-config",MatrixConfiguration.class);
