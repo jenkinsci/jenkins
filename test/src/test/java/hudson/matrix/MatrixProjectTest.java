@@ -49,7 +49,10 @@ public class MatrixProjectTest extends HudsonTestCase {
         for (MatrixRun run : runs) {
             assertBuildStatus(Result.SUCCESS, run);
             String expectedDb = run.getParent().getCombination().get("db");
+            System.out.println(run.getLog());
             assertLogContains("assertion "+expectedDb+"="+expectedDb, run);
+            // also make sure that the variables are expanded at the command line level.
+            assertFalse(run.getLog().contains("-Dprop=${db}"));
         }
     }
 

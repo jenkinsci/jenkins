@@ -21,6 +21,7 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.FormFieldValidator;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
+import hudson.util.VariableResolver;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -132,6 +133,7 @@ public class Maven extends Builder {
         ParametersAction parameters = build.getAction(ParametersAction.class);
         if (parameters != null)
             targets = parameters.substitute(build,targets);
+        targets = Util.replaceMacro(targets,build.getBuildVariableResolver());
 
         int startIndex = 0;
         int endIndex;
