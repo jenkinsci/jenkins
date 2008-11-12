@@ -67,11 +67,6 @@
           </execution>
         </executions>
       </plugin>
-      <!--
-        Generate retrotranslated 1.4 jar "on the side". I tried various approaches like
-        "profile" (like http://testng.googlecode.com/svn/trunk/pom.xml), but in the
-        end using Ant seems to be the easiest.
-      -->
       <plugin>
         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
         <artifactId>maven-antrun-extended-plugin</artifactId>
