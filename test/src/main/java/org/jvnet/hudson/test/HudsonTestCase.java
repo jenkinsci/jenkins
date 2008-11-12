@@ -23,6 +23,7 @@ import hudson.tasks.Mailer;
 import hudson.Launcher.LocalLauncher;
 import hudson.util.StreamTaskListener;
 import hudson.util.ProcessTreeKiller;
+import hudson.maven.MavenModuleSet;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -219,6 +220,10 @@ public abstract class HudsonTestCase extends TestCase {
 
     protected MatrixProject createMatrixProject(String name) throws IOException {
         return (MatrixProject)hudson.createProject(MatrixProject.DESCRIPTOR,name);
+    }
+
+    protected MavenModuleSet createMavenProject(String name) throws IOException {
+        return (MavenModuleSet)hudson.createProject(MavenModuleSet.DESCRIPTOR,name);
     }
 
     /**
