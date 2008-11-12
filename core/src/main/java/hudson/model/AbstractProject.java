@@ -1006,14 +1006,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         for (Trigger t : triggers)
             t.stop();
-        triggers = buildDescribable(req, Triggers.getApplicableTriggers(this), "trigger");
+        triggers = buildDescribable(req, Triggers.getApplicableTriggers(this));
         for (Trigger t : triggers)
             t.start(this,true);
 
         updateTransientActions();
     }
 
-    protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix)
+    /**
+     * @deprecated
+     *      As of 1.261. Use {@link #buildDescribable(StaplerRequest, List)} instead.
+     */
+    protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException, ServletException {
+        return buildDescribable(req,descriptors);
+    }
+
+    protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors)
         throws FormException, ServletException {
 
         JSONObject data = req.getSubmittedForm();
