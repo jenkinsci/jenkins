@@ -101,6 +101,15 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return axes;
     }
 
+    /**
+     * Reconfigures axes.
+     */
+    public void setAxes(AxisList axes) throws IOException {
+        this.axes = new AxisList(axes);
+        rebuildConfigurations();
+        save();
+    }
+
     protected void updateTransientActions() {
         synchronized(transientActions) {
             super.updateTransientActions();
@@ -366,6 +375,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     public List<Builder> getBuilders() {
         return builders.toList();
+    }
+
+    public DescribableList<Builder,Descriptor<Builder>> getBuildersList() {
+        return builders;
     }
 
     public Map<Descriptor<Publisher>,Publisher> getPublishers() {
