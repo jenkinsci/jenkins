@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
 
@@ -31,6 +32,14 @@ public class SingleFileSCM extends NullSCM {
     public SingleFileSCM(String path, String contents) {
         this.path = path;
         this.contents = contents.getBytes(Charset.forName("UTF-8"));
+    }
+
+    /**
+     * When a check out is requested, serve the contents of the URL and place it with the given path name. 
+     */
+    public SingleFileSCM(String path, URL resource) throws IOException {
+        this.path = path;
+        this.contents = IOUtils.toByteArray(resource.openStream());
     }
 
     @Override
