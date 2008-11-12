@@ -161,7 +161,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         super.submit(req,rsp);
 
         req.setCharacterEncoding("UTF-8");
-    JSONObject json = req.getSubmittedForm();
+        JSONObject json = req.getSubmittedForm();
 
         buildWrappers.rebuild(req,json, BuildWrappers.getFor(this), "wrapper");
         builders.rebuildHetero(req,json, BuildStep.BUILDERS, "builder");
