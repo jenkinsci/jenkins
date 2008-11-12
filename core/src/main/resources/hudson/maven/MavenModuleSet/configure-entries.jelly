@@ -10,6 +10,7 @@
         help="/help/maven/ignore-upstrem-changes.html"
         title="${%Build whenever a SNAPSHOT dependency is built}"
         checked="${h.defaultToTrue(!it.ignoreUpstremChanges())}" />
+    <p:config-upstream-pseudo-trigger />
   </p:config-trigger>
 
   <f:section title="${%Build}">
