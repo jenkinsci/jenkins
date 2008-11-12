@@ -151,21 +151,7 @@ public class Ant extends Builder {
         if(parameters!=null)
             vr = parameters.createVariableResolver(build);
         
-        if (properties != null) {
-            Properties p = new Properties();
-            try {
-                p.load(new StringReader(properties));
-            } catch (NoSuchMethodError e) {
-                // load(Reader) method is only available on JDK6.
-                // this fall back version doesn't work correctly with non-ASCII characters,
-                // but there's no other easy ways out it seems.
-                p.load(new ByteArrayInputStream(properties.getBytes()));
-            }
-
-            for (Entry<Object,Object> entry : p.entrySet()) {
-                args.add("-D" + entry.getKey() + "=" + Util.replaceMacro(entry.getValue().toString(),vr));
-            }
-        }
+        args.addKeyValuePairsFromPropertyString("-D",properties,vr);
 
         args.addTokenized(Util.replaceMacro(targets,vr).replaceAll("[\t\r\n]+"," "));
 
