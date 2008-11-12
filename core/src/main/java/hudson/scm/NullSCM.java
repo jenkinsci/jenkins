@@ -23,7 +23,7 @@ public class NullSCM extends SCM {
         return false;
     }
 
-    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException {
+    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
         return createEmptyChangeLog(changeLogFile, listener, "log");
     }
 
