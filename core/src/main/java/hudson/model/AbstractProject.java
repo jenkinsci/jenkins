@@ -33,7 +33,6 @@ import hudson.widgets.HistoryWidget;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
@@ -1019,10 +1018,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         JSONObject data = req.getSubmittedForm();
         List<T> r = new Vector<T>();
-        for( int i=0; i< descriptors.size(); i++ ) {
-            String name = prefix + i;
-            if(req.getParameter(name)!=null) {
-                T instance = descriptors.get(i).newInstance(req,data.getJSONObject(name));
+        for (Descriptor<T> d : descriptors) {
+            String name = d.getJsonSafeClassName();
+            if (req.getParameter(name) != null) {
+                T instance = d.newInstance(req, data.getJSONObject(name));
                 r.add(instance);
             }
         }

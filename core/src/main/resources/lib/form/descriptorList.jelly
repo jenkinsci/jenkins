@@ -14,7 +14,7 @@
   <f:section title="${attrs.title}">
     <d:invokeBody />
 	  <j:forEach var="d" items="${descriptors}" varStatus="loop">
-      <f:optionalBlock name="${varName}${loop.index}" help="${d.helpFile}"
+      <f:optionalBlock name="${d.jsonSafeClassName}" help="${d.helpFile}"
 	      title="${d.displayName}" checked="${instances.get(d)!=null}">
 
 	      <j:set var="descriptor" value="${d}" />

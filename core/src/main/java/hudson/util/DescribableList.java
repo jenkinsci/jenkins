@@ -7,12 +7,15 @@ import com.thoughtworks.xstream.converters.collections.AbstractCollectionConvert
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.DependecyDeclarer;
+import hudson.model.DependencyGraph;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.tasks.Builder;
+import hudson.model.Saveable;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
-import org.apache.maven.model.Dependency;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,8 +23,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
-import java.security.acl.Owner;
 
 /**
  * Persisted list of {@link Describable}s with some operations specific
@@ -134,10 +135,10 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException {
         List<T> newList = new ArrayList<T>();
 
-        for( int i=0; i< descriptors.size(); i++ ) {
-            String name = prefix + i;
-            if(json.has(name)) {
-                T instance = descriptors.get(i).newInstance(req,json.getJSONObject(name));
+        for (Descriptor<T> d : descriptors) {
+            String name = d.getJsonSafeClassName();
+            if (json.has(name)) {
+                T instance = d.newInstance(req, json.getJSONObject(name));
                 newList.add(instance);
             }
         }
