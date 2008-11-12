@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.Arrays;
 
 /**
@@ -39,6 +38,10 @@ public final class Axis implements Comparable<Axis>, Iterable<String> {
         this.values = new ArrayList<String>(values);
         if(values.isEmpty())
             throw new IllegalArgumentException(); // bug in the code
+    }
+
+    public Axis(String name, String... values) {
+        this(name,Arrays.asList(values));        
     }
 
     /**
