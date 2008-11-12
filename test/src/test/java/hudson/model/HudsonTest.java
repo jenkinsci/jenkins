@@ -38,7 +38,7 @@ public class HudsonTest extends HudsonTestCase {
         assertEquals(5,hudson.getQuietPeriod());
 
         List<JDK> jdks = hudson.getJDKs();
-        assertEquals(2,jdks.size());
+        assertEquals(3,jdks.size()); // Hudson adds one more
         assertJDK(jdks.get(0),"jdk1","/tmp");
         assertJDK(jdks.get(1),"jdk2","/tmp");
 
