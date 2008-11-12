@@ -18,6 +18,7 @@ import hudson.model.UpdateCenter;
 import hudson.model.Saveable;
 import hudson.model.Run;
 import hudson.model.Result;
+import hudson.model.JDK;
 import hudson.tasks.Mailer;
 import hudson.Launcher.LocalLauncher;
 import hudson.util.StreamTaskListener;
@@ -112,6 +113,9 @@ public abstract class HudsonTestCase extends TestCase {
         hudson = newHudson();
         hudson.servletContext.setAttribute("app",hudson);
         hudson.servletContext.setAttribute("version","?");
+
+        // set a default JDK to be the one that the harness is using.
+        hudson.getJDKs().add(new JDK("default",System.getProperty("java.home")));
 
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
