@@ -248,6 +248,9 @@ public abstract class HudsonTestCase extends TestCase {
         new BufferedReader(new InputStreamReader(System.in)).readLine();
     }
 
+    /**
+     * Asserts that the outcome of the build is a specific outcome.
+     */
     public void assertBuildStatus(Result status, Run r) throws Exception {
         if(status==r.getResult())
             return;
@@ -255,6 +258,18 @@ public abstract class HudsonTestCase extends TestCase {
         // dump the build output
         System.out.println(r.getLog());
         assertEquals(status,r.getResult());
+    }
+
+    /**
+     * Asserts that the console output of the build contains the given substring.
+     */
+    public void assertLogContains(String substring, Run run) throws Exception {
+        String log = run.getLog();
+        if(log.contains(substring))
+            return; // good!
+
+        System.out.println(log);
+        fail("Console output of "+run+" didn't contain "+substring);
     }
 
 //
