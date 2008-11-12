@@ -189,6 +189,8 @@ public class Maven extends Builder {
                 }
                 args.add(exec);
             }
+            if(pom!=null)
+                args.add("-f",pom);
             args.addKeyValuePairs("-D",build.getBuildVariables());
             args.addKeyValuePairsFromPropertyString("-D",properties,vr);
             args.addTokenized(normalizedTarget);
