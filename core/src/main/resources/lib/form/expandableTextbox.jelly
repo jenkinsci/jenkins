@@ -1,8 +1,12 @@
 <!--
   textbox that can be expanded into text area
 
-  <input class="setting-input ${h.ifThenElse(attrs.checkUrl!=null,'validated','')}" name="${attrs.name}"
-         type="text" value="${attrs.value}" checkUrl="${attrs.checkUrl}"/>
+	If @field is specified:
+	   no other mandatory fields.
+	   in this case, name and value are inferred from field,
+	   and checkUrl is auto-generated if the check method is present.
+	Otherwise
+	   @name and @value are mandatory.
 
   TODO: support @checkUrl
 -->
@@ -10,17 +14,20 @@
   <j:choose>
     <j:when test="${h.isMultiline(attrs.value)}">
       <!-- multiline text area to begin with -->
-      <f:textarea name='${attrs.name}' value="${attrs.value}"/>
+      <f:textarea name='${attrs.name}' value="${attrs.value}" field="${attrs.field}"/>
     </j:when>
     <j:otherwise>
       <!-- single line textbox with expand button -->
       <table border="0" style="width:100%" cellspacing="0" cellpadding="0">
         <tr>
           <td width="*">
-            <input class="setting-input" name="${attrs.name}" id="textarea.${attrs.name}"
-              type="text" value="${attrs.value}"/>
+            <j:set var="name" value="${h.defaulted(attrs.name,'_.'+attrs.field)}" />
+            <input class="setting-input" type="text"
+                   name ="${name}"
+                   value="${h.defaulted(attrs.value,instance[attrs.field])}"
+                   id="textarea.${name}" />
           </td><td width="1">
-            <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${attrs.name}')"
+            <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${name}')"
                 tooltip="Click to expand to multiple lines&lt;br&gt;where you can use new lines instead of space.&lt;br&gt;To revert back to single line, write everything in one line then submit."/>
           </td>
         </tr>

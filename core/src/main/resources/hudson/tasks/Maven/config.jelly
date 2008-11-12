@@ -10,6 +10,17 @@
     </f:entry>
   </j:if>
   <f:entry title="${%Goals}">
-    <f:expandableTextbox name="maven.targets" value="${instance.targets}" />
+    <f:expandableTextbox field="targets" />
   </f:entry>
+  <f:advanced>
+    <f:entry title="${%POM}" help="/help/maven/maven-pom.html">
+      <f:textbox field="pom"/>
+    </f:entry>
+    <f:entry title="${%Properties}" help="/help/maven/maven-properties.html">
+      <f:textarea field="properties"/>
+    </f:entry>
+    <f:entry title="${%JVM Options}" help="/help/maven/jvm-options.html">
+      <f:expandableTextbox field="jvmOptions"/>
+    </f:entry>
+  </f:advanced>
 </j:jelly>
