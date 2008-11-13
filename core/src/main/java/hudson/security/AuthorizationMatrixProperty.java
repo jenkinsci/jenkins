@@ -217,6 +217,10 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				MarshallingContext context) {
 			AuthorizationMatrixProperty amp = (AuthorizationMatrixProperty) source;
 
+			writer.startNode("useProjectSecurity");
+			context.convertAnother(Boolean.valueOf(amp.isUseProjectSecurity()));
+			writer.endNode();
+			
 			for (Entry<Permission, Set<String>> e : amp.grantedPermissions
 					.entrySet()) {
 				String p = e.getKey().getId();
@@ -233,6 +237,13 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				final UnmarshallingContext context) {
 			AuthorizationMatrixProperty as = new AuthorizationMatrixProperty();
 
+			String prop = reader.peekNextChild();
+			if (prop!=null && prop.equals("useProjectSecurity")) {
+				reader.moveDown();
+				Boolean useSecurity = (Boolean) context.convertAnother(as, Boolean.class);
+				as.setUseProjectSecurity(useSecurity.booleanValue());
+				reader.moveUp();
+			}
 			while (reader.hasMoreChildren()) {
 				reader.moveDown();
 				String id = (String) context.convertAnother(as, String.class);

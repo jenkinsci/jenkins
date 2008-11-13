@@ -57,7 +57,7 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
 
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             String name = reader.peekNextChild();
-            if(name!=null && name.equals("permission"))
+            if(name!=null && (name.equals("permission") || name.equals("useProjectSecurity")))
                 // the proper serialization form
                 return super.unmarshal(reader, context);
             else
