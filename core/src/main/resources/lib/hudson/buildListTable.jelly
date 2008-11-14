@@ -36,7 +36,7 @@
         </td>
         <td>
           <a href="${rootURL}/${b.url}console">
-            <img src="${imagesURL}/${subIconSize}/terminal.gif" title="Console output" border="0" />
+            <img src="${imagesURL}/${subIconSize}/terminal.gif" title="${%Console output}" border="0" />
           </a>
         </td>
       </tr>

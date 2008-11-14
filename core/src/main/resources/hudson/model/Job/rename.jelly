@@ -5,10 +5,10 @@
 		<l:main-panel>
       <j:set var="newName" value="${request.getParameter('newName')}" />
       <form method="get" action="doRename">
-		    Are you sure about renaming ${it.name} to ${newName}?
+		    ${%description(it.name, newName)}
         <input type="hidden" name="newName" value="${newName}" />
-        <f:submit value="Yes" />
-        <input type="button" value="No" onclick="javascript:history.back()" class="yui-button" />
+        <f:submit value="${%Yes}" />
+        <input type="button" value="${%No}" onclick="javascript:history.back()" class="yui-button" />
       </form>
     </l:main-panel>
   </l:layout>
