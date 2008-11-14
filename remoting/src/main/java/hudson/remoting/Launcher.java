@@ -71,25 +71,35 @@ public class Launcher {
     /**
      * Parses the connection arguments from JNLP file given in the URL.
      */
-    private static List<String> parseJnlpArguments(URL slaveJnlpURL) throws ParserConfigurationException, SAXException, IOException {
-        HttpURLConnection con = (HttpURLConnection) slaveJnlpURL.openConnection();
-        con.connect();
+    private static List<String> parseJnlpArguments(URL slaveJnlpURL) throws ParserConfigurationException, SAXException, IOException, InterruptedException {
+        while (true) {
+            try {
+                HttpURLConnection con = (HttpURLConnection) slaveJnlpURL.openConnection();
+                con.connect();
 
-        // check if this URL points to a .jnlp file
-        String contentType = con.getHeaderField("Content-Type");
-        if(contentType==null || !contentType.startsWith("application/x-java-jnlp-file"))
-            throw new IOException(slaveJnlpURL+" doesn't look like a JNLP file");
+                // check if this URL points to a .jnlp file
+                String contentType = con.getHeaderField("Content-Type");
+                if(contentType==null || !contentType.startsWith("application/x-java-jnlp-file"))
+                        throw new IOException(slaveJnlpURL+" doesn't look like a JNLP file");
 
-        // exec into the JNLP launcher, to fetch the connection parameter through JNLP.
-        DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document dom = db.parse(con.getInputStream(),slaveJnlpURL.toExternalForm());
-        NodeList argElements = dom.getElementsByTagName("argument");
-        List<String> jnlpArgs = new ArrayList<String>();
-        for( int i=0; i<argElements.getLength(); i++ )
-            jnlpArgs.add(argElements.item(i).getTextContent());
-        // force a headless mode
-        jnlpArgs.add("-headless");
-        return jnlpArgs;
+                // exec into the JNLP launcher, to fetch the connection parameter through JNLP.
+                DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                Document dom = db.parse(con.getInputStream(),slaveJnlpURL.toExternalForm());
+                NodeList argElements = dom.getElementsByTagName("argument");
+                List<String> jnlpArgs = new ArrayList<String>();
+                for( int i=0; i<argElements.getLength(); i++ )
+                        jnlpArgs.add(argElements.item(i).getTextContent());
+                // force a headless mode
+                jnlpArgs.add("-headless");
+                return jnlpArgs;
+            } catch (IOException e) {
+                System.err.println("Failing to obtain "+slaveJnlpURL);
+                e.printStackTrace(System.err);
+                System.err.println("Waiting 10 seconds before retry");
+                Thread.sleep(10*1000);
+                // retry
+            }
+        }
     }
 
     private static void runWithStdinStdout(Mode m, boolean ping) throws IOException, InterruptedException {
