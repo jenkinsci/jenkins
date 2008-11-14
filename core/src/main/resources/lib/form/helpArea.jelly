@@ -4,7 +4,7 @@
 <tr class="help-area">
   <td/>
   <td colspan="2">
-    <div class="help">Loading...</div>
+    <div class="help">${%Loading...}</div>
   </td>
   <td/>
 </tr>
