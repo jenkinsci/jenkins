@@ -636,7 +636,17 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * List up files in this directory.
+     * List up files and directories in this directory.
+     *
+     * <p>
+     * This method returns direct children of the directory denoted by the 'this' object.
+     */
+    public List<FilePath> list() throws IOException, InterruptedException {
+        return list((FileFilter)null);
+    }
+
+    /**
+     * List up files in this directory, just like {@link File#listFiles(FileFilter)}.
      *
      * @param filter
      *      The optional filter used to narrow down the result.
