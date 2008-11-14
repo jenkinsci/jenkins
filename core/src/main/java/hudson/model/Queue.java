@@ -8,6 +8,7 @@ import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.util.OneShotEvent;
 import hudson.util.XStream2;
+import hudson.util.TimeUnit2;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -923,7 +924,7 @@ public class Queue extends ResourceController implements Saveable {
                 return elapsed > d*2;
             } else {
                 // more than a day in the queue
-                return TimeUnit.MILLISECONDS.toHours(elapsed)>24;
+                return TimeUnit2.MILLISECONDS.toHours(elapsed)>24;
             }
         }
     }

@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.util.TimeUnit2;
 import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -204,7 +205,7 @@ public class Executor extends Thread implements ModelObject {
             return d*10 < elapsed;
         } else {
             // if no ETA is available, a build taking longer than a day is considered stuck
-            return TimeUnit.MILLISECONDS.toHours(elapsed)>24;
+            return TimeUnit2.MILLISECONDS.toHours(elapsed)>24;
         }
     }
 
