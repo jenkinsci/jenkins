@@ -14,6 +14,7 @@ import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.kohsuke.stapler.Stapler;
+import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -206,6 +207,7 @@ public class Util {
     /**
      * Makes the given file writable.
      */
+    @IgnoreJRERequirement
     private static void makeWritable(File f) {
         // try chmod. this becomes no-op if this is not Unix.
         try {

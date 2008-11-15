@@ -7,6 +7,7 @@ import hudson.model.Computer;
 import hudson.remoting.VirtualChannel;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,6 +72,7 @@ public class DiskSpaceMonitor extends NodeMonitor {
     };
 
     private static final class GetUsableSpace implements FileCallable<Long> {
+        @IgnoreJRERequirement
         public Long invoke(File f, VirtualChannel channel) throws IOException {
             try {
                 return f.getUsableSpace();

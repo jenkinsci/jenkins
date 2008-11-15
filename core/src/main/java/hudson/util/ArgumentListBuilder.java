@@ -14,6 +14,8 @@ import java.io.StringReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import org.jvnet.animal_sniffer.IgnoreJRERequirement;
+
 /**
  * Used to build up arguments for a process invocation.
  *
@@ -92,6 +94,14 @@ public class ArgumentListBuilder implements Serializable {
     public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver vr) throws IOException {
         if(properties==null)    return this;
 
+        for (Entry<Object,Object> entry : load(properties).entrySet()) {
+            args.add(prefix + entry.getKey() + "=" + Util.replaceMacro(entry.getValue().toString(),vr));
+        }
+        return this;
+    }
+
+    @IgnoreJRERequirement
+    private Properties load(String properties) throws IOException {
         Properties p = new Properties();
         try {
             p.load(new StringReader(properties));
@@ -101,11 +111,7 @@ public class ArgumentListBuilder implements Serializable {
             // but there's no other easy ways out it seems.
             p.load(new ByteArrayInputStream(properties.getBytes()));
         }
-
-        for (Entry<Object,Object> entry : p.entrySet()) {
-            args.add(prefix + entry.getKey() + "=" + Util.replaceMacro(entry.getValue().toString(),vr));
-        }
-        return this;
+        return p;
     }
 
     public String[] toCommandArray() {

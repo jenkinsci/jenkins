@@ -41,6 +41,7 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -631,6 +632,7 @@ public class Functions {
         return Thread.getAllStackTraces();
     }
 
+    @IgnoreJRERequirement
     public static ThreadInfo[] getThreadInfos() {
         ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
         return mbean.getThreadInfo(mbean.getAllThreadIds(),mbean.isObjectMonitorUsageSupported(),mbean.isSynchronizerUsageSupported());
@@ -639,6 +641,7 @@ public class Functions {
     /**
      * Are we running on JRE6 or above?
      */
+    @IgnoreJRERequirement
     public static boolean isMustangOrAbove() {
         try {
             System.console();
@@ -649,6 +652,7 @@ public class Functions {
     }
 
     // ThreadInfo.toString() truncates the stack trace by first 8, so needed my own version
+    @IgnoreJRERequirement
     public static String dumpThreadInfo(ThreadInfo ti) {
         StringBuilder sb = new StringBuilder("\"" + ti.getThreadName() + "\"" +
                                              " Id=" + ti.getThreadId() + " " +
