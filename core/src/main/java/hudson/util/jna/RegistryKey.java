@@ -18,7 +18,6 @@ package hudson.util.jna;
 import com.sun.jna.ptr.IntByReference;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -130,8 +129,11 @@ public class RegistryKey {
      */
     public void setValue(String name, String value) {
         try {
-            byte[] data = Arrays.copyOf(value.getBytes("UTF-16LE"), value.length() * 2 + 2);
-            check(Advapi32.INSTANCE.RegSetValueEx(handle, name, 0, WINNT.REG_SZ, data, data.length));
+            byte[] bytes = value.getBytes("UTF-16LE");
+            int newLength = bytes.length+2; // for 0 padding
+            byte[] with0 = new byte[newLength];
+            System.arraycopy(bytes, 0, with0, 0, newLength);
+            check(Advapi32.INSTANCE.RegSetValueEx(handle, name, 0, WINNT.REG_SZ, with0, with0.length));
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
