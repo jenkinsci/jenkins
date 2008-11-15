@@ -10,7 +10,7 @@ import hudson.FilePath;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
@@ -29,9 +29,9 @@ public class SingleFileSCM extends NullSCM {
         this.contents = contents;
     }
 
-    public SingleFileSCM(String path, String contents) {
+    public SingleFileSCM(String path, String contents) throws UnsupportedEncodingException {
         this.path = path;
-        this.contents = contents.getBytes(Charset.forName("UTF-8"));
+        this.contents = contents.getBytes("UTF-8");
     }
 
     /**
