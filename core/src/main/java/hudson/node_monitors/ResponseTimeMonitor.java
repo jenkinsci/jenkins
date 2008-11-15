@@ -5,6 +5,7 @@ import hudson.model.Computer;
 import hudson.remoting.Callable;
 import hudson.remoting.Future;
 import hudson.util.TimeUnit2;
+import hudson.util.IOException2;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -38,7 +39,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
                 long end = System.nanoTime();
                 d = new Data(old,TimeUnit2.NANOSECONDS.toMillis(end-start));
             } catch (ExecutionException e) {
-                throw new IOException(e.getCause());    // I don't think this is possible
+                throw new IOException2(e.getCause());    // I don't think this is possible
             } catch (TimeoutException e) {
                 // special constant to indicate that the processing timed out.
                 d = new Data(old,-1L);
