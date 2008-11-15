@@ -35,7 +35,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
-	<version>2.0-beta-8</version>
+        <version>2.0-beta-8</version>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
           <prepareVerifyArgs>-P release,ips,sign</prepareVerifyArgs>
@@ -70,6 +70,27 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
+        <groupId>org.jvnet</groupId>
+        <artifactId>animal-sniffer</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <signature>
+                <groupId>org.jvnet.animal-sniffer</groupId>
+                <artifactId>java1.5</artifactId>
+                <version>1.0</version>
+              </signature>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
       <!--<plugin>
         <groupId>org.jvnet.fix1600</groupId>
         <artifactId>fix1600</artifactId>
@@ -83,7 +104,18 @@
       </plugin>-->
     </plugins>
   </build>
-  
+
+  <dependencies>
+    <dependency>
+      <!-- for JRE requirement check annotation -->
+      <groupId>org.jvnet</groupId>
+      <artifactId>animal-sniffer</artifactId>
+      <version>1.1</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+
   <properties>
     <maven.version>2.0.4</maven.version>
   </properties>
