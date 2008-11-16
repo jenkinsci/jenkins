@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * TODO:
+ * Monitors the memory usage of the system in OS specific way.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class MemoryUsageMonitor extends SafeTimerTask {
