@@ -68,7 +68,7 @@ public class RunList extends ArrayList<Run> {
         for (Iterator<Run> itr = iterator(); itr.hasNext();) {
             Run r = itr.next();
             if (r instanceof AbstractBuild) {
-            	if (!((AbstractBuild) r).getBuiltOn().equals(node)) {
+            	if (((AbstractBuild)r).getBuiltOn()!=node) {
                     itr.remove();
             	}
             }
