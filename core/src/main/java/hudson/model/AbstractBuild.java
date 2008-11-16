@@ -114,6 +114,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * Returns a {@link Slave} on which this build was done.
+     *
+     * @return
+     *      null, for example if the slave that this build run no logner exists.
      */
     public Node getBuiltOn() {
         if(builtOn==null || builtOn.equals(""))
