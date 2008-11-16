@@ -29,8 +29,8 @@
     </plugins>
   </build>
 
-  <repositories>
-    <repository>
+  <pluginRepositories>
+    <pluingRepository>
       <id>m.g.o-public</id>
       <url>http://maven.glassfish.org/content/groups/public/</url>
       <releases>
@@ -39,7 +39,7 @@
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
-    </repository>
-  </repositories>
+    </pluginRepository>
+  </pluginRepositories>
 
 </project>
