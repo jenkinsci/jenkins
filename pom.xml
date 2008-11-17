@@ -43,7 +43,7 @@
             also run assembly during the release.
             http://www.nabble.com/Release-Plugin%3A-Include-assemblies-for-deploying-tf2642295s177.html#a7377938
            -->
-          <goals>install javadoc:javadoc assembly:attached deploy</goals>
+          <goals>install javadoc:javadoc animal-sniffer:check assembly:attached deploy</goals>
         </configuration>
       </plugin>
       <plugin>
@@ -74,23 +74,16 @@
         <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
         <groupId>org.jvnet</groupId>
         <artifactId>animal-sniffer</artifactId>
-        <version>1.1</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <signature>
-                <groupId>org.jvnet.animal-sniffer</groupId>
-                <artifactId>java1.5</artifactId>
-                <version>1.0</version>
-              </signature>
-            </configuration>
-          </execution>
-        </executions>
+        <version>1.2</version>
+        <configuration>
+          <signature>
+            <groupId>org.jvnet.animal-sniffer</groupId>
+            <artifactId>java1.5</artifactId>
+            <version>1.0</version>
+          </signature>
+        </configuration>
       </plugin>
-      
+
       <!--<plugin>
         <groupId>org.jvnet.fix1600</groupId>
         <artifactId>fix1600</artifactId>
