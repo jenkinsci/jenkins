@@ -76,6 +76,10 @@ public abstract class Launcher {
      *
      * @return
      *      null if this launcher is not created from a {@link Computer} object.
+     * @deprecated
+     *      See the javadoc for why this is inherently unreliable. If you are trying to
+     *      figure out the current {@link Computer} from within a build, use
+     *      {@link Computer#currentComputer()}  
      */
     public Computer getComputer() {
         for( Computer c : Hudson.getInstance().getComputers() )
