@@ -36,6 +36,7 @@ public class Label implements Comparable<Label>, ModelObject {
      * which means the label is the name of a {@link Node}.
      */
     public boolean isSelfLabel() {
+        Set<Node> nodes = getNodes();
         return nodes.size() == 1 && nodes.iterator().next().getSelfLabel() == this;
 
     }
