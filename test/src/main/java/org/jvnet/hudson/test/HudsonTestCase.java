@@ -207,7 +207,7 @@ public abstract class HudsonTestCase extends TestCase {
 //
 
     protected FreeStyleProject createFreeStyleProject() throws IOException {
-        return createFreeStyleProject("test");
+        return createFreeStyleProject(createUniqueProjectName());
     }
 
     protected FreeStyleProject createFreeStyleProject(String name) throws IOException {
@@ -215,15 +215,23 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     protected MatrixProject createMatrixProject() throws IOException {
-        return createMatrixProject("test");
+        return createMatrixProject(createUniqueProjectName());
     }
 
     protected MatrixProject createMatrixProject(String name) throws IOException {
         return (MatrixProject)hudson.createProject(MatrixProject.DESCRIPTOR,name);
     }
 
+    protected MavenModuleSet createMavenProject() throws IOException {
+        return createMavenProject(createUniqueProjectName());
+    }
+
     protected MavenModuleSet createMavenProject(String name) throws IOException {
         return (MavenModuleSet)hudson.createProject(MavenModuleSet.DESCRIPTOR,name);
+    }
+
+    private String createUniqueProjectName() {
+        return "test"+hudson.getItems().size();
     }
 
     /**
