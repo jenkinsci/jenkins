@@ -28,6 +28,9 @@ import java.io.IOException;
  * @since 1.191
  */
 public class RedeployPublisher extends Publisher {
+    /**
+     * Repository ID. This is matched up with <tt>~/.m2/settings.xml</tt> for authentication related information.
+     */
     public final String id;
     /**
      * Repository URL to deploy artifacts to.
