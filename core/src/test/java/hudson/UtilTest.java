@@ -14,6 +14,8 @@ public class UtilTest extends TestCase {
         m.put("A","a");
         m.put("AA","aa");
         m.put("B","B");
+        m.put("DOLLAR", "$");
+        m.put("ENCLOSED", "a${A}");
 
         // longest match
         assertEquals("aa",Util.replaceMacro("$AA",m));
@@ -24,10 +26,14 @@ public class UtilTest extends TestCase {
         assertEquals("aaB",Util.replaceMacro("${AA}B",m));
         assertEquals("${AAB}",Util.replaceMacro("${AAB}",m));
 
+        // $ escaping
+        assertEquals("asd$${AA}dd", Util.replaceMacro("asd$$$${AA}dd",m));
+
     	// test that more complex scenarios work
-	    assertEquals("/a/B/aa", Util.replaceMacro("/$A/$B/$AA",m));
+        assertEquals("/a/B/aa", Util.replaceMacro("/$A/$B/$AA",m));
         assertEquals("a-aa", Util.replaceMacro("$A-$AA",m));
         assertEquals("/a/foo/can/B/you-believe_aa~it?", Util.replaceMacro("/$A/foo/can/$B/you-believe_$AA~it?",m));
+        assertEquals("$$aa$Ba${A}$it", Util.replaceMacro("$$$DOLLAR${AA}$$B${ENCLOSED}$it",m));
     }
 
 
