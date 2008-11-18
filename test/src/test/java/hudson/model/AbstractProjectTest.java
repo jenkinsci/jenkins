@@ -73,7 +73,7 @@ public class AbstractProjectTest extends HudsonTestCase {
 
         // there shouldn't be any "wipe out workspace" link for anonymous user
         WebClient webClient = new WebClient();
-        HtmlPage page = webClient.getPage(hudson.getItem("test"));
+        HtmlPage page = webClient.getPage(hudson.getItem("test0"));
 
         page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
         try {
