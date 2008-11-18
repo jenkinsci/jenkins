@@ -17,7 +17,7 @@
             <a href="${rootURL}/${pending.task.url}cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="${%cancel this build}" /></a>
           </j:if>
         </div>
-        ${%(pending)}
+        (${%pending})
       </td>
     </tr>
   </j:if>
