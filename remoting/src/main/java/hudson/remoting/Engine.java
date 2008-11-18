@@ -34,6 +34,9 @@ public class Engine extends Thread {
 
     public final EngineListener listener;
     public final String host;
+    /**
+     * URL that points to Hudson's tcp slage agent listener, like <tt>http://myhost/hudson/tcpSlaveAgentListener/</tt>
+     */
     public final String hudsonUrl;
     private final String secretKey;
     public final String slaveName;
