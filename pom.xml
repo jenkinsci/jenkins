@@ -102,10 +102,9 @@
     <dependency>
       <!-- for JRE requirement check annotation -->
       <groupId>org.jvnet</groupId>
-      <artifactId>animal-sniffer</artifactId>
-      <version>1.1</version>
-      <scope>compile</scope>
-      <optional>true</optional>
+      <artifactId>animal-sniffer-annotation</artifactId>
+      <version>1.0</version>
+      <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
   </dependencies>
 
