@@ -261,6 +261,10 @@ public class Maven extends Builder {
             return installations;
         }
 
+        public void setInstallations(MavenInstallation... installations) {
+            this.installations = installations;
+        }
+
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             this.installations = req.bindJSONToList(MavenInstallation.class, json.get("maven")).toArray(new MavenInstallation[0]);
