@@ -104,7 +104,7 @@ public class SubversionTagAction extends AbstractScmTagAction {
 
     @Override
     public String getTooltip() {
-        if(isTagged())  return "Tagged";
+        if(isTagged())  return Messages.SubversionTagAction_Tooltip();
         else            return null;
     }
 

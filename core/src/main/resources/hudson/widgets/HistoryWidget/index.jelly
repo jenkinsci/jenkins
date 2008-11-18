@@ -39,7 +39,7 @@
           </script>
           <div id="loadAllBuildHistory">
             <!-- once clicked, this div will be replaced by the load icon -->
-            <a href="javascript:loadAllBuildHistory()">More ...</a>
+            <a href="javascript:loadAllBuildHistory()">${%More ...}</a>
           </div>
         </td>
       </tr>
