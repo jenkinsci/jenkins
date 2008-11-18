@@ -72,7 +72,6 @@ import hudson.util.MultipartFormDataParser;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.TextFile;
 import hudson.util.XStream2;
-import hudson.util.IncompatibleServletVersionDetected;
 import hudson.util.HudsonIsRestarting;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
@@ -95,7 +94,6 @@ import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -1058,7 +1056,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      *      The returned URL will always have the trailing '/'.
      * @since 1.66
      * @see Descriptor#getCheckUrl(String)
-     * @see #getRequestRootUrl()
+     * @see #getRootUrlFromRequest()
      */
     public String getRootUrl() {
         // for compatibility. the actual data is stored in Mailer
@@ -1067,7 +1065,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         StaplerRequest req = Stapler.getCurrentRequest();
         if(req!=null)
-            return getRequestRootUrl();
+            return getRootUrlFromRequest();
         return null;
     }
 
@@ -1083,7 +1081,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      *
      * @since 1.263
      */
-    public String getRequestRootUrl() {
+    public String getRootUrlFromRequest() {
         StaplerRequest req = Stapler.getCurrentRequest();
         StringBuilder buf = new StringBuilder();
         buf.append("http://");
