@@ -1057,7 +1057,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      *      The caller must gracefully deal with this situation.
      *      The returned URL will always have the trailing '/'.
      * @since 1.66
-     * @see Descriptor#getCheckUrl(String) 
+     * @see Descriptor#getCheckUrl(String)
+     * @see #getRequestRootUrl()
      */
     public String getRootUrl() {
         // for compatibility. the actual data is stored in Mailer
@@ -1065,16 +1066,32 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         if(url!=null)   return url;
 
         StaplerRequest req = Stapler.getCurrentRequest();
-        if(req!=null) {
-            StringBuilder buf = new StringBuilder();
-            buf.append("http://");
-            buf.append(req.getServerName());
-            if(req.getServerPort()!=80)
-                buf.append(':').append(req.getServerPort());
-            buf.append(req.getContextPath()).append('/');
-            return buf.toString();
-        }
+        if(req!=null)
+            return getRequestRootUrl();
         return null;
+    }
+
+    /**
+     * Gets the absolute URL of Hudson top page, such as "http://localhost/hudson/".
+     *
+     * <p>
+     * Unlike {@link #getRootUrl()}, which uses the manually configured value,
+     * this one uses the current request to reconstruct the URL. The benefit is
+     * that this is immune to the configuration mistake (users often fail to set the root URL
+     * correctly, especially when a migration is involved), but the downside
+     * is that unless you are processing a request, this method doesn't work.
+     *
+     * @since 1.263
+     */
+    public String getRequestRootUrl() {
+        StaplerRequest req = Stapler.getCurrentRequest();
+        StringBuilder buf = new StringBuilder();
+        buf.append("http://");
+        buf.append(req.getServerName());
+        if(req.getServerPort()!=80)
+            buf.append(':').append(req.getServerPort());
+        buf.append(req.getContextPath()).append('/');
+        return buf.toString();
     }
 
     public File getRootDir() {
