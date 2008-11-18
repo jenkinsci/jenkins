@@ -20,10 +20,13 @@ import hudson.model.Run;
 import hudson.model.Result;
 import hudson.model.JDK;
 import hudson.tasks.Mailer;
+import hudson.tasks.Maven;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.Launcher.LocalLauncher;
 import hudson.util.StreamTaskListener;
 import hudson.util.ProcessTreeKiller;
 import hudson.maven.MavenModuleSet;
+import hudson.FilePath;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -42,12 +45,14 @@ import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.apache.commons.io.IOUtils;
 
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
@@ -200,6 +205,35 @@ public abstract class HudsonTestCase extends TestCase {
         realm.addUserToRole("charlie","male");
 
         return realm;
+    }
+
+    /**
+     * Locates Maven2 and configure that as the only Maven in the system.
+     */
+    protected void configureDefaultMaven() throws Exception {
+        // first if we are running inside Maven, pick that Maven.
+        String home = System.getProperty("maven.home");
+        if(home!=null) {
+            Maven.DESCRIPTOR.setInstallations(new MavenInstallation("default",home));
+            return;
+        }
+
+        // otherwise extract the copy we have.
+        // this happens when a test is invoked from an IDE, for example.
+        LOGGER.warning("Extracting a copy of Maven bundled in the test harness. " +
+                "To avoid a performance hit, set the system property 'maven.home' to point to a Maven2 installation.");
+        FilePath mvn = hudson.getRootPath().createTempFile("maven", "zip");
+        OutputStream os = mvn.write();
+        try {
+            IOUtils.copy(HudsonTestCase.class.getClassLoader().getResourceAsStream("maven-2.0.7-bin.zip"), os);
+        } finally {
+            os.close();
+        }
+        File mvnHome = createTmpDir();
+        mvn.unzip(new FilePath(mvnHome));
+
+        Maven.DESCRIPTOR.setInstallations(new MavenInstallation("default",
+                new File(mvnHome,"maven-2.0.7").getAbsolutePath()));
     }
 
 //
