@@ -554,7 +554,7 @@ public abstract class ProcessTreeKiller {
                             as.seek(to64(p));
                             ByteArrayOutputStream buf = new ByteArrayOutputStream();
                             int ch,i=0;
-                            while((ch=as.read())!=0) {
+                            while((ch=as.read())>0) {
                                 if((++i)%100==0 && LOGGER.isLoggable(FINEST))
                                     LOGGER.finest("env["+n+"] is so far "+buf.toString());
 
