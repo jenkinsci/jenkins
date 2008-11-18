@@ -44,4 +44,10 @@ public class QuotedStringTokenizerTest extends TestCase {
         check("foo\\\\ bar",
               "foo\\","bar");
     }
+
+    // see http://www.nabble.com/Error-parsing-%22-in-msbuild-task-to20535754.html
+    public void test7() {
+        check("foo=\"bar\\zot\"",
+              "foo=bar\\zot");
+    }
 }

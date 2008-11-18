@@ -187,6 +187,8 @@ public class QuotedStringTokenizer
                   if (escape)
                   {
                       escape=false;
+                      if(ESCAPABLE_CHARS.indexOf(c)<0)
+                          _token.append('\\');
                       _token.append(c);
                   }
                   else if(_delim.indexOf(c)>=0)
@@ -221,6 +223,8 @@ public class QuotedStringTokenizer
                   if (escape)
                   {
                       escape=false;
+                      if(ESCAPABLE_CHARS.indexOf(c)<0)
+                          _token.append('\\');
                       _token.append(c);
                   }
                   else if (c=='\'')
@@ -245,6 +249,8 @@ public class QuotedStringTokenizer
                   if (escape)
                   {
                       escape=false;
+                      if(ESCAPABLE_CHARS.indexOf(c)<0)
+                          _token.append('\\');
                       _token.append(c);
                   }
                   else if (c=='\"')
@@ -530,6 +536,15 @@ public class QuotedStringTokenizer
         if ((b >= 'A') && (b <= 'F')) return (byte)(b - 'A' + 10);
         return 0;
     }
+
+    /**
+     * Characters that can be escaped with \.
+     *
+     * Others, like, say, \W will be left alone instead of becoming just W.
+     * This is important to keep Hudson behave on Windows, which uses '\' as
+     * the directory separator. 
+     */
+    private static final String ESCAPABLE_CHARS = "\\\"' ";
 }
 
 
