@@ -26,6 +26,8 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Starts a JNLP slave agent and makes sure it successfully connects to Hudson. 
      */
     public void testLaunch() throws Exception {
+        if(Boolean.getBoolean("java.awt.headless"))
+            return;     // skip this test in the headless mode because we don't have GUI
         Computer c = addTestSlave();
         launchJnlpAndVerify(c, buildJnlpArgs(c));
     }
