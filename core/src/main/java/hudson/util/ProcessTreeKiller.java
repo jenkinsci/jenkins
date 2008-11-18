@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static java.util.logging.Level.FINEST;
+import static java.util.logging.Level.FINER;
 
 /**
  * Kills a process tree to clean up the mess left by a build.
@@ -535,6 +537,8 @@ public abstract class ProcessTreeKiller {
 
                 try {
                     RandomAccessFile as = new RandomAccessFile(getFile("as"),"r");
+                    if(LOGGER.isLoggable(FINER))
+                        LOGGER.finer("Reading "+getFile("as"));
                     try {
                         for( int n=0; ; n++ ) {
                             // read a pointer to one entry
@@ -542,13 +546,24 @@ public abstract class ProcessTreeKiller {
                             int p = as.readInt();
                             if(p==0)
                                 break;  // completed the walk
+
+                            if(LOGGER.isLoggable(FINEST))
+                                LOGGER.finest("Reading env["+n+"] at "+p);
+
                             // now read the null-terminated string
                             as.seek(to64(p));
                             ByteArrayOutputStream buf = new ByteArrayOutputStream();
-                            int ch;
-                            while((ch=as.read())!=0)
+                            int ch,i=0;
+                            while((ch=as.read())!=0) {
+                                if((++i)%100==0 && LOGGER.isLoggable(FINEST))
+                                    LOGGER.finest("env["+n+"] is so far "+buf.toString());
+
                                 buf.write(ch);
-                            envVars.addLine(buf.toString());
+                            }
+                            String line = buf.toString();
+                            if(LOGGER.isLoggable(FINEST))
+                                LOGGER.finest("env["+n+"] was "+line);
+                            envVars.addLine(line);
                         }
                     } finally {
                         // failed to read. this can happen under normal circumstances,
