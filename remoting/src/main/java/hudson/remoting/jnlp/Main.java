@@ -15,7 +15,10 @@ import hudson.remoting.EngineListener;
 
 /**
  * Entry point to JNLP slave agent.
- * 
+ *
+ * <p>
+ * See also <tt>slave-agent.jnlp.jelly</tt> in the core.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Main {
