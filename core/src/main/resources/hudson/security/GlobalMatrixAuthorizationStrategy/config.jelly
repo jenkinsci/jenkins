@@ -24,7 +24,8 @@
       </d:tag>
     </d:taglib>
     <link rel="stylesheet" href="${rootURL}${app.VIEW_RESOURCE_PATH}/hudson/security/table.css" type="text/css" />
-    <table id="global-matrix-authorization-strategy-table" class="center-align" name="data" width="100%">
+    <j:set var="strategyid" value="${descriptor.jsonSafeClassName}" />
+    <table id="${strategyid}" class="center-align global-matrix-authorization-strategy-table" name="data" width="100%">
 
       <!-- The first row will show grouping -->
       <tr class="group-row">
@@ -112,7 +113,7 @@
       })();
 
       Behaviour.register({
-        "#global-matrix-authorization-strategy-table TD.stop A" : function(e) {
+        "#${strategyid} TD.stop A" : function(e) {
           e.onclick = function() {
             var tr = findAncestor(this,"TR");
             tr.parentNode.removeChild(tr);
