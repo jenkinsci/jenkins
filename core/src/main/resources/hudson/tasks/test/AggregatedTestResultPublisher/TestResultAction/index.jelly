@@ -6,12 +6,12 @@
       <test:bar/>
 
 
-      <h2>Drill Down</h2>
+      <h2>${%Drill Down}</h2>
       <table class="pane sortable">
         <tr>
-          <td class="pane-header">Test</td>
-          <td class="pane-header" style="text-align:right">Fail</td>
-          <td class="pane-header" style="text-align:right">Total</td>
+          <td class="pane-header">${%Test}</td>
+          <td class="pane-header" style="text-align:right">${%Fail}</td>
+          <td class="pane-header" style="text-align:right">${%Total}</td>
         </tr>
         <j:forEach var="i" items="${it.individuals}">
           <j:set var="prev" value="${i.previousResult}" />
@@ -34,13 +34,13 @@
           <tr>
             <td class="pane">
               <a href="${rootURL}${i.url}">${i.fullDisplayName}</a>
-              (hasn't run yet)
+              (${%hasn't run yet})
             </td>
             <td class="pane">
-              N/A
+              ${%N/A}
             </td>
             <td class="pane">
-              N/A
+              ${%N/A}
             </td>
           </tr>
         </j:forEach>
