@@ -6,61 +6,56 @@
       <table cellpadding="5">
         <tr><td>
           <img src="images/48x48/grey.gif" />
-          The project has never been built before, or the project is disabled.
+          ${%grey}
         </td></tr>
         <tr><td>
           <img src="images/48x48/grey_anime.gif"/>
-          The first build of the project is in progress.
+          ${%grey_anime}
         </td></tr>
         <tr><td>
           <img src="images/48x48/blue.gif"/>
-          The last build was successful.
+          ${%blue}
         </td></tr>
         <tr><td>
           <img src="images/48x48/blue_anime.gif"/>
-          The last build was successful. A new build is in progress.
+          ${%blue_anime}
         </td></tr>
         <tr><td>
           <img src="images/48x48/yellow.gif"/>
-          The last build was successful but unstable.
-          This is primarily used to represent test failures.
+          ${%yellow}
         </td></tr>
         <tr><td>
           <img src="images/48x48/yellow_anime.gif"/>
-          The last build was successful but unstable. A new build is in progress.
+          ${%yellow_anime}
         </td></tr>
         <tr><td>
           <img src="images/48x48/red.gif"/>
-          The last build fatally failed.
+          ${%red}
         </td></tr>
         <tr><td>
           <img src="images/48x48/red_anime.gif"/>
-          The last build fatally failed. A new build is in progress.
+          ${%red_anime}
         </td></tr>
         <tr><td>
           <img src="images/48x48/health-80plus.gif" />
-          Project health is at least 80%. You can hover the mouse over the project's icon for a more detailed
-          explanation.
+          ${%health-80plus}
         </td></tr>
         <tr><td>
           <img src="images/48x48/health-60to79.gif" />
-          Project health at least 60% but less than 80%. You can hover the mouse over the project's icon for a more
-          detailed explanation.
+          ${%health-60to79}
         </td></tr>
         <tr><td>
           <img src="images/48x48/health-40to59.gif" />
-          Project health at least 40% but less than 60%. You can hover the mouse over the project's icon for a
-          more detailed explanation.
+          ${%health-40to59}
         </td></tr>
         <tr><td>
           <img src="images/48x48/health-20to39.gif" />
-          Project health at least 20% but less than 40%. You can hover the mouse over the project's icon for a
-          more detailed explanation.
+          ${%health-20to39}
+          
         </td></tr>
         <tr><td>
           <img src="images/48x48/health-00to19.gif" />
-          Project health is less than 20%. You can hover the mouse over the project's icon for a more detailed
-          explanation.
+          ${%health-00to19}
         </td></tr>
       </table>
     </l:main-panel>
