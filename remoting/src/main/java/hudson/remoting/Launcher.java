@@ -13,8 +13,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -74,7 +74,7 @@ public class Launcher {
     private static List<String> parseJnlpArguments(URL slaveJnlpURL) throws ParserConfigurationException, SAXException, IOException, InterruptedException {
         while (true) {
             try {
-                HttpURLConnection con = (HttpURLConnection) slaveJnlpURL.openConnection();
+                URLConnection con = slaveJnlpURL.openConnection();
                 con.connect();
 
                 // check if this URL points to a .jnlp file
