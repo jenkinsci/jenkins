@@ -8,14 +8,14 @@
     <table style="width:100%; height:100%;">
       <tr>
         <td style="vertical-align: middle; text-align:center">
-          <h3>Checking Updates... <span id="completionMarker" /></h3>
-          <a href=".">Go back to update center</a>
+          <h3>${%Checking Updates...} <span id="completionMarker" /></h3>
+          <a href=".">${%Go back to update center}</a>
         </td>
       </tr>
     </table>
     <script>
       updateCenter.completionHandler = function() {
-          $('completionMarker').innerHTML = "Done";
+          $$('completionMarker').innerHTML = "${%Done}";
       }
     </script>
   </l:main-panel>

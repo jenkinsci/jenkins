@@ -87,7 +87,7 @@ public class MavenSiteArchiver extends MavenReporter {
         }
 
         public String getDisplayName() {
-            return "Maven-generated site";
+            return Messages.MavenSiteArchiver_DisplayName();
         }
 
         public String getIconFileName() {
