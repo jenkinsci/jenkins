@@ -1,0 +1,5 @@
+<!--
+  Called from doScriptText() to display the execution result.
+-->
+<st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+<st:contentType value="text/plain;charset=UTF-8" />${output}</st:compress>

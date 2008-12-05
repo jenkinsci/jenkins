@@ -143,6 +143,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
+import javax.servlet.RequestDispatcher;
 
 /**
  * Root object of the system.
@@ -2188,21 +2189,32 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * For system diagnostics.
      * Run arbitrary Groovy script.
      */
-    public void doScript( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doScript(req, rsp, req.getView(this, "_script.jelly"));
+    }
+    
+    /**
+     * Run arbitrary Groovy script and return result as plain text.
+     */
+    public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doScript(req, rsp, req.getView(this, "_scriptText.jelly"));
+    }
+
+    private void doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous
         checkPermission(ADMINISTER);
 
         String text = req.getParameter("script");
-        if(text!=null) {
+        if (text != null) {
             try {
                 req.setAttribute("output",
-                RemotingDiagnostics.executeGroovy(text, MasterComputer.localChannel));
+                        RemotingDiagnostics.executeGroovy(text, MasterComputer.localChannel));
             } catch (InterruptedException e) {
                 throw new ServletException(e);
             }
         }
 
-        req.getView(this,"_script.jelly").forward(req,rsp);
+        view.forward(req, rsp);
     }
 
     /**
