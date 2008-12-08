@@ -120,6 +120,7 @@ public class Executor extends Thread implements ModelObject {
      * @return
      *      null if the executor is idle.
      */
+    @Exported
     public Queue.Executable getCurrentExecutable() {
         return executable;
     }
