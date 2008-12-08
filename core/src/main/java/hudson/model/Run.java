@@ -450,6 +450,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return getFullDisplayName();
     }
 
+    @Exported
     public String getFullDisplayName() {
         return project.getFullDisplayName()+" #"+number;
     }
