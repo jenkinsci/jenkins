@@ -70,7 +70,9 @@ public class EnvVars extends TreeMap<String,String> {
      */
     public void addLine(String line) {
         int sep = line.indexOf('=');
-        put(line.substring(0,sep),line.substring(sep+1));
+        if(sep > 0) {
+            put(line.substring(0,sep),line.substring(sep+1));
+        }
     }
 
     /**
