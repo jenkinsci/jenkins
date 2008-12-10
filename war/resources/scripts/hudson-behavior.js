@@ -1320,12 +1320,12 @@ var DragDrop = function(id, sGroup, config) {
 
 var updateCenter = {
     postBackURL : null,
-    version: "?",
+    usageStats: {},
     completionHandler: null,
 
     checkUpdates : function() {
         var s = document.createElement("script");
-        s.setAttribute("src","https://hudson.dev.java.net/update-center.json?version="+updateCenter.version);
+        s.setAttribute("src","https://hudson.dev.java.net/update-center.json?"+Hash.toQueryString(updateCenter.usageStats));
         document.getElementsByTagName("HEAD")[0].appendChild(s);
     },
 
