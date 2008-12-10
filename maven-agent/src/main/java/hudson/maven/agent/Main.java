@@ -115,6 +115,7 @@ public class Main {
             try {
                 if(Float.parseFloat(v)<49.0) {
                     System.err.println("Native maven support requires Java 1.5 or later, but this Maven is using "+System.getProperty("java.home"));
+                    System.err.println("Please use the freestyle project.");
                     System.exit(1);
                 }
             } catch (NumberFormatException e) {
