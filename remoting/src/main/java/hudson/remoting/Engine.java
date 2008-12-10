@@ -33,6 +33,9 @@ public class Engine extends Thread {
     });
 
     public final EngineListener listener;
+    /**
+     * Host name of Hudson master to connect to, when opening a TCP connection.
+     */
     public final String host;
     /**
      * URL that points to Hudson's tcp slage agent listener, like <tt>http://myhost/hudson/tcpSlaveAgentListener/</tt>
