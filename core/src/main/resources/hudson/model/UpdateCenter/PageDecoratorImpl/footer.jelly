@@ -9,7 +9,7 @@
   <j:if test="${app.updateCenter.due or forcedUpdateCheck}">
     <script>
       updateCenter.postBackURL = "${rootURL}/updateCenter/postBack";
-      updateCenter.usageStats = { version:"${h.version}" }; 
+      updateCenter.info = { version:"${h.version}" }; 
       Behaviour.addLoadEvent(updateCenter.checkUpdates);
     </script>
   </j:if>
