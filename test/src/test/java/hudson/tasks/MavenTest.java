@@ -26,7 +26,7 @@ public class MavenTest extends HudsonTestCase {
         Maven m = (Maven)p.getBuildersList().get(Maven.DESCRIPTOR);
         assertNotNull(m);
         assertEquals("a",m.targets);
-        assertNull(m.mavenName);
+        assertNull("found "+m.mavenName,m.mavenName);
         assertEquals("b.pom",m.pom);
         assertEquals("c=d",m.properties);
         assertEquals("-e",m.jvmOptions);
