@@ -107,7 +107,7 @@ public class Api extends AbstractModelObject {
             return;
         }
 
-        if(result instanceof String) {
+        if(result instanceof String || result instanceof Number || result instanceof Boolean) {
             rsp.setContentType("text/plain");
             rsp.getWriter().print(result.toString());
             return;
