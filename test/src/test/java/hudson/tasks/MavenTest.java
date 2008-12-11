@@ -4,7 +4,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
+import hudson.tasks.Maven.MavenInstallation;
 import org.jvnet.hudson.test.HudsonTestCase;
+
+import java.io.File;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -14,6 +17,8 @@ public class MavenTest extends HudsonTestCase {
      * Tests the round-tripping of the configuration.
      */
     public void testConfigRoundtrip() throws Exception {
+        Maven.DESCRIPTOR.setInstallations(); // reset
+
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(new Maven("a",null,"b.pom","c=d","-e"));
 
