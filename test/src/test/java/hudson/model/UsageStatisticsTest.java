@@ -1,24 +1,19 @@
 package hudson.model;
 
-import junit.framework.TestCase;
-
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.io.InputStreamReader;
-import java.io.ByteArrayInputStream;
-import java.util.zip.GZIPInputStream;
-
+import com.trilead.ssh2.crypto.Base64;
 import hudson.Util;
 import hudson.model.UsageStatistics.CombinedCipherInputStream;
-
-import javax.crypto.Cipher;
-
-import com.trilead.ssh2.crypto.Base64;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.jvnet.hudson.test.HudsonTestCase;
-import sun.net.www.content.text.plain;
+
+import javax.crypto.Cipher;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.zip.GZIPInputStream;
 
 /**
  * @author Kohsuke Kawaguchi
