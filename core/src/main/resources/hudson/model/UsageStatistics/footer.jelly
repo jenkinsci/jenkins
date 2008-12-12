@@ -8,7 +8,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${it.due}">
     <script>
-      loadScript("https://hudson.dev.java.net/test/usage-stats/${it.statData}");
+      loadScript("https://hudson.dev.java.net/usage-stats.js?${it.statData}");
     </script>
   </j:if>
 </j:jelly>
