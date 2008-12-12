@@ -1318,15 +1318,19 @@ var DragDrop = function(id, sGroup, config) {
     });
 })();
 
+function loadScript(href) {
+    var s = document.createElement("script");
+    s.setAttribute("src",href);
+    document.getElementsByTagName("HEAD")[0].appendChild(s);
+}
+
 var updateCenter = {
     postBackURL : null,
     info: {},
     completionHandler: null,
 
     checkUpdates : function() {
-        var s = document.createElement("script");
-        s.setAttribute("src","https://hudson.dev.java.net/update-center.json?"+Hash.toQueryString(updateCenter.info));
-        document.getElementsByTagName("HEAD")[0].appendChild(s);
+        loadScript("https://hudson.dev.java.net/update-center.json?"+Hash.toQueryString(updateCenter.info));
     },
 
     post : function(data) {
