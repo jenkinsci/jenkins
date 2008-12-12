@@ -1,8 +1,8 @@
 package hudson.model;
 
 import com.trilead.ssh2.crypto.Base64;
-import hudson.Util;
 import hudson.PluginWrapper;
+import hudson.Util;
 import hudson.node_monitors.ArchitectureMonitor;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
@@ -10,15 +10,24 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.CipherInputStream;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.FilterOutputStream;
+import java.io.OutputStream;
+import java.io.FilterInputStream;
+import java.io.InputStream;
+import java.io.DataInputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.zip.GZIPOutputStream;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -136,13 +145,65 @@ public class UsageStatistics extends PageDecorator {
         }
         o.put("jobs",jobs);
 
-        // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CipherOutputStream(baos,getCipher())), "UTF-8");
-        o.write(w);
-        w.close();
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        return new String(Base64.encode(baos.toByteArray()));
+            // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
+            OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CombinedCipherOutputStream(baos,getCipher(),"AES")), "UTF-8");
+            o.write(w);
+            w.close();
+
+            return new String(Base64.encode(baos.toByteArray()));
+        } catch (GeneralSecurityException e) {
+            throw new Error(e); // impossible
+        }
+    }
+
+    /**
+     * Assymetric cipher is slow and in case of Sun RSA implementation it can only encyrypt the first block.
+     *
+     * So first create a symmetric key, then place this key in the beginning of the stream by encrypting it
+     * with the assymetric cipher. The rest of the stream will be encrypted by a symmetric cipher.
+     */
+    public static final class CombinedCipherOutputStream extends FilterOutputStream {
+        public CombinedCipherOutputStream(OutputStream out, Cipher asym, String algorithm) throws IOException, GeneralSecurityException {
+            super(out);
+
+            // create a new symmetric cipher key used for this stream
+            SecretKey symKey = KeyGenerator.getInstance(algorithm).generateKey();
+
+            // place the symmetric key by encrypting it with assymetric cipher
+            out.write(asym.doFinal(symKey.getEncoded()));
+
+            // the rest of the data will be encrypted by this symmetric cipher
+            Cipher sym = Cipher.getInstance(algorithm);
+            sym.init(Cipher.ENCRYPT_MODE,symKey);
+            super.out = new CipherOutputStream(out,sym);
+        }
+    }
+
+    /**
+     * The opposite of the {@link CombinedCipherOutputStream}.
+     */
+    public static final class CombinedCipherInputStream extends FilterInputStream {
+        /**
+         * @param keyLength
+         *      Block size of the assymetric cipher, in bits. I thought I can get it from {@code asym.getBlockSize()}
+         *      but that doesn't work with Sun's implementation.
+         */
+        public CombinedCipherInputStream(InputStream in, Cipher asym, String algorithm, int keyLength) throws IOException, GeneralSecurityException {
+            super(in);
+
+            // first read the symmetric key cipher
+            byte[] symKeyBytes = new byte[keyLength/8];
+            new DataInputStream(in).readFully(symKeyBytes);
+            SecretKey symKey = new SecretKeySpec(asym.doFinal(symKeyBytes),algorithm);
+
+            // the rest of the data will be decrypted by this symmetric cipher
+            Cipher sym = Cipher.getInstance(algorithm);
+            sym.init(Cipher.DECRYPT_MODE,symKey);
+            super.in = new CipherInputStream(in,sym);
+        }
     }
 
     /**

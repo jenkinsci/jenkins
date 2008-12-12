@@ -10,17 +10,20 @@ import java.io.ByteArrayInputStream;
 import java.util.zip.GZIPInputStream;
 
 import hudson.Util;
+import hudson.model.UsageStatistics.CombinedCipherInputStream;
 
 import javax.crypto.Cipher;
 
 import com.trilead.ssh2.crypto.Base64;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
+import org.jvnet.hudson.test.HudsonTestCase;
+import sun.net.www.content.text.plain;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class UsageStatisticsTest extends TestCase {
+public class UsageStatisticsTest extends HudsonTestCase {
     /**
      * Makes sure that the stat data can be decrypted safely.
      */
@@ -38,11 +41,12 @@ public class UsageStatisticsTest extends TestCase {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, priv);
 
-        byte[] plain = cipher.doFinal(Base64.decode(data.toCharArray()));
-        InputStreamReader r = new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(plain)), "UTF-8");
+        byte[] cipherText = Base64.decode(data.toCharArray());
+        InputStreamReader r = new InputStreamReader(new GZIPInputStream(
+                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),cipher,"AES",1024)), "UTF-8");
         JSONObject o = JSONObject.fromObject(IOUtils.toString(r));
         System.out.println(o);
-        assertEquals(1,o.getInt("version"));
+        assertEquals(1,o.getInt("stat"));
     }
 
 
