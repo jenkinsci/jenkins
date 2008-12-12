@@ -64,7 +64,10 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     protected abstract T monitor(Computer c) throws IOException,InterruptedException;
 
     /**
-     * Obtains the monitoring result.
+     * Obtains the monitoring result currently available, or null if no data is available.
+     *
+     * <p>
+     * If no data is available, a background task to collect data will be started.
      */
     public T get(Computer c) {
         if(record==null) {
