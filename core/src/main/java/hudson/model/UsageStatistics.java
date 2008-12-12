@@ -2,6 +2,8 @@ package hudson.model;
 
 import com.trilead.ssh2.crypto.Base64;
 import hudson.Util;
+import hudson.PluginWrapper;
+import hudson.node_monitors.ArchitectureMonitor;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -15,6 +17,8 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.zip.GZIPOutputStream;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -89,8 +93,48 @@ public class UsageStatistics extends PageDecorator {
      * Gets the encrypted usage stat data to be sent to the Hudson server.
      */
     public String getStatData() throws IOException {
+        Hudson h = Hudson.getInstance();
+
         JSONObject o = new JSONObject();
-        o.put("version",1);
+        o.put("stat",1);
+        o.put("install", Util.getDigestOf(h.getSecretKey()));
+        o.put("version",Hudson.VERSION);
+
+        List<JSONObject> nodes = new ArrayList<JSONObject>();
+        for( Computer c : h.getComputers() ) {
+            JSONObject  n = new JSONObject();
+            if(c.getNode()==h) {
+                n.put("master",true);
+                n.put("jvm-vendor", System.getProperty("java.vm.vendor"));
+                n.put("jvm-version", System.getProperty("java.vm.version"));
+            }
+            n.put("executors",c.getNumExecutors());
+            n.put("os", ArchitectureMonitor.DESCRIPTOR.get(c));
+            nodes.add(n);
+        }
+        o.put("nodes",nodes);
+
+        List<JSONObject> plugins = new ArrayList<JSONObject>();
+        for( PluginWrapper pw : h.getPluginManager().getPlugins() ) {
+            if(!pw.isActive())  continue;   // treat disabled plugins as if they are uninstalled
+            JSONObject p = new JSONObject();
+            p.put("name",pw.getShortName());
+            p.put("version",pw.getVersion());
+            plugins.add(p);
+        }
+        o.put("plugins",plugins);
+
+        JSONObject jobs = new JSONObject();
+        List<TopLevelItem> items = h.getItems();
+        for (TopLevelItemDescriptor d : Items.LIST) {
+            int cnt=0;
+            for (TopLevelItem item : items) {
+                if(item.getDescriptor()==d)
+                    cnt++;
+            }
+            jobs.put(d.getJsonSafeClassName(),cnt);
+        }
+        o.put("jobs",jobs);
 
         // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
