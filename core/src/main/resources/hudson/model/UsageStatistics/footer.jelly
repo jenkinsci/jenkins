@@ -1,0 +1,14 @@
+<!--
+  Periodically ask the client to deliver the usage statistics to the server for us.
+  This allows us to avoid proxy related configuration on the server,
+  and instead piggy-back on user connection.
+
+  This file is pulled into the layout.jelly
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:if test="${it.due}">
+    <script>
+      loadScript("https://hudson.dev.java.net/test/usage-stats/${it.statData}");
+    </script>
+  </j:if>
+</j:jelly>

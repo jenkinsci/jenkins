@@ -320,6 +320,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     private transient final UpdateCenter updateCenter = new UpdateCenter();
 
     /**
+     * True if the user opted out from the statistics tracking. We'll never send anything if this is true.
+     */
+    private Boolean noUsageStatistics;
+
+    /**
      * HTTP proxy configuration.
      */
     public transient volatile ProxyConfiguration proxy;
@@ -409,6 +414,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         HudsonFilter.REMEMBER_ME_SERVICES_PROXY.setDelegate(rms);
 
         WindowsInstallerLink.registerIfApplicable();
+        UsageStatistics.register();
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
@@ -444,6 +450,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     public UpdateCenter getUpdateCenter() {
         return updateCenter;
+    }
+
+    public boolean isUsageStatisticsCollected() {
+        return noUsageStatistics==null || !noUsageStatistics;
     }
 
     /**
@@ -1594,6 +1604,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
                 authorizationStrategy = AuthorizationStrategy.UNSECURED;
             }
+
+            noUsageStatistics = json.has("usageStatisticsCollected") ? null : true;
 
             {
                 String v = req.getParameter("slaveAgentPortType");
