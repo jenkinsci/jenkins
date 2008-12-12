@@ -23,11 +23,6 @@ public class HexBinaryConverter implements Converter {
 
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
         String data = reader.getValue(); // needs to be called before hasMoreChildren.
-
-        byte[] r = new byte[data.length()/2];
-         for( int i=0; i<data.length(); i+=2 )
-             r[i/2] = (byte)Integer.parseInt(data.substring(i,i+2),16);
-
-        return r;
+        return Util.fromHexString(data);
     }
 }

@@ -446,6 +446,13 @@ public class Util {
         return toHexString(bytes,0,bytes.length);
     }
 
+    public static byte[] fromHexString(String data) {
+        byte[] r = new byte[data.length() / 2];
+        for (int i = 0; i < data.length(); i += 2)
+            r[i / 2] = (byte) Integer.parseInt(data.substring(i, i + 2), 16);
+        return r;
+    }
+
     /**
      * Returns a human readable text of the time duration.
      * This version should be used for representing a duration of some activity (like build)
