@@ -18,3 +18,11 @@ mv debian/changelog.tmp debian/changelog
 debuild -us -uc -B
 scp ../hudson_${ver}_all.deb hudson.gotdns.com:~/public_html_hudson/debian/binary
 
+# build package index
+pushd ..
+mkdir binary || true
+mv hudson_${ver}_all.deb binary
+dpkg-scanpackages binary /dev/null | gzip -9c > binary/Packages.gz
+scp binary/Packages.gz hudson.gotdns.com:~/public_html_hudson/debian/binary
+popd
+
