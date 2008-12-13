@@ -14,15 +14,6 @@ function object(o) {
 // id generator
 var iota = 0;
 
-// are we run as unit tests?
-var isRunAsTest = (function() {
-    try {
-        return Packages.java.lang.System.getProperty("hudson.unitTest")!=null;
-    } catch(e) {
-        return false;
-    }
-})();
-
 // Form check code
 //========================================================
 var FormChecker = {

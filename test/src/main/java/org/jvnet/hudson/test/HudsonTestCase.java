@@ -27,6 +27,7 @@ import hudson.util.StreamTaskListener;
 import hudson.util.ProcessTreeKiller;
 import hudson.maven.MavenModuleSet;
 import hudson.FilePath;
+import hudson.Functions;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -529,7 +530,7 @@ public abstract class HudsonTestCase extends TestCase {
         Logger.getLogger("org.springframework").setLevel(Level.WARNING);
 
         // hudson-behavior.js relies on this to decide whether it's running unit tests.
-        System.setProperty("hudson.unitTest","true");
+        Functions.isUnitTest = true;
     }
 
     private static final Logger LOGGER = Logger.getLogger(HudsonTestCase.class.getName());
