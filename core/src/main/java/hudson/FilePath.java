@@ -1047,6 +1047,9 @@ public final class FilePath implements Serializable {
     public String validateAntFileMask(final String fileMasks) throws IOException, InterruptedException {
         return act(new FileCallable<String>() {
             public String invoke(File dir, VirtualChannel channel) throws IOException {
+                if(fileMasks.startsWith("~"))
+                    return Messages.FilePath_TildaDoesntWork();
+
                 StringTokenizer tokens = new StringTokenizer(fileMasks,",");
 
                 while(tokens.hasMoreTokens()) {
