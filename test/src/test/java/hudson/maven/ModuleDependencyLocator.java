@@ -47,7 +47,7 @@ public abstract class ModuleDependencyLocator implements ExtensionPoint {
         public Collection<ModuleDependency> find(MavenProject project, PomInfo pomInfo) {
             Set<ModuleDependency> r = new HashSet<ModuleDependency>();
             for (ModuleDependencyLocator m : members)
-                r.addAll(m.find(project,pomInfo);
+                r.addAll(m.find(project,pomInfo));
             return r;
         }
     }
