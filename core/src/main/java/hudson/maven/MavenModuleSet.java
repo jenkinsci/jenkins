@@ -417,7 +417,6 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return modules.get(rootModule);
     }
 
-    @Override
     public MavenInstallation inferMavenInstallation() {
         return getMaven();
     }

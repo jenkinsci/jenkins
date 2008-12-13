@@ -375,7 +375,6 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         }
     }
 
-    @Override
     public MavenInstallation inferMavenInstallation() {
         return getParent().inferMavenInstallation();
     }
