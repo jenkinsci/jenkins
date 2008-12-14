@@ -544,6 +544,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Gets the first {@value #CUTOFF} artifacts (relative to {@link #getArtifactsDir()}.
      */
+    @Exported
     public List<Artifact> getArtifacts() {
         ArtifactList r = new ArtifactList();
         addArtifacts(getArtifactsDir(),"",r);
@@ -652,10 +653,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * A build artifact.
      */
+    @ExportedBean
     public class Artifact {
         /**
          * Relative path name from {@link Run#getArtifactsDir()}
          */
+    	@Exported(visibility=3)
         public final String relativePath;
 
         /**
@@ -678,10 +681,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         /**
          * Returns just the file name portion, without the path.
          */
+    	@Exported(visibility=3)
         public String getFileName() {
             return getFile().getName();
         }
 
+    	@Exported(visibility=3)
         public String getDisplayPath() {
             return displayPath;
         }
