@@ -381,7 +381,7 @@
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy</artifactId>
-      <version>1.1-rc-2</version>
+      <version>1.5.7</version>
     </dependency>
     <dependency>
       <!--
