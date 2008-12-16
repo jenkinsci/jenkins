@@ -13,7 +13,7 @@ Attributes:
   	permission object. If specified, the link will be displayed only if you have a permission
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:if test="${h.hasPermission(attrs.permission)}">
+  <j:if test="${h.hasPermission(it,attrs.permission)}">
     <j:if test="${attrs.icon!=null}">
       <tr>
         <td>

@@ -5,9 +5,9 @@ import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.Hudson;
+import hudson.model.Run;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -136,7 +136,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		}
 
 		public List<PermissionGroup> getAllGroups() {
-			return Collections.singletonList(PermissionGroup.get(Item.class));
+			return Arrays.asList(PermissionGroup.get(Item.class),PermissionGroup.get(Run.class));
 		}
 
         public boolean showPermission(Permission p) {

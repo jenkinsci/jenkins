@@ -489,8 +489,25 @@ public class Functions {
         return hasPermission(Hudson.getInstance(),permission);
     }
 
-    public static boolean hasPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
-        return permission==null || object.hasPermission(permission);
+    /**
+     * This version is so that the 'hasPermission' can degrade gracefully
+     * if "it" is not an {@link AccessControlled} object.
+     */
+    public static boolean hasPermission(Object object, Permission permission) throws IOException, ServletException {
+        if (permission == null)
+            return true;
+        if (object instanceof AccessControlled)
+            return ((AccessControlled)object).hasPermission(permission);
+        else {
+            List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
+            for(Ancestor anc : Iterators.reverse(ancs)) {
+                Object o = anc.getObject();
+                if (o instanceof AccessControlled) {
+                    return ((AccessControlled)o).hasPermission(permission);
+                }
+            }
+            return Hudson.getInstance().hasPermission(permission);
+        }
     }
 
     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, ServletException {
