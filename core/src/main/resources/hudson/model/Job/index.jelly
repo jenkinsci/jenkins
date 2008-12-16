@@ -3,7 +3,7 @@
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>${it.pronoun} ${it.displayName}</h1>
-      <t:editableDescription permission="${app.ADMINISTER}"/>
+      <t:editableDescription permission="${it.CONFIGURE}"/>
 
       <j:if test="${it.disabled}">
         <div class="warning">

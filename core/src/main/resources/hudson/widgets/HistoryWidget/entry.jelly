@@ -28,9 +28,10 @@
         <tr><td>
           <t:buildProgressBar build="${build}"/>
         </td><td style="padding:0">
-          <l:isAdmin>
+          <!-- Check ABORT permission for Project, Admin permission otherwise -->
+          <j:if test="${h.ifThenElse(empty(it.owner.ABORT),h.hasPermission(app.ADMINISTER),it.owner.hasPermission(it.owner.ABORT))}">
             <a href="${link}stop"><img src="${imagesURL}/16x16/stop.gif" alt="[cancel]"/></a>
-          </l:isAdmin>
+          </j:if>
         </td></tr>
       </table>
     </td></tr>

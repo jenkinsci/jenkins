@@ -11,7 +11,7 @@
 	        </td><td>
 	          <t:buildProgressBar build="${it}"/>
 	        </td><td>
-            <j:if test="${parent.hasAbortPermission()}">
+            <j:if test="${it.parent.hasAbortPermission()}">
               <a href="stop"><img src="${imagesURL}/16x16/stop.gif" alt="[${%cancel}]" /></a>
             </j:if>
 	        </td>
