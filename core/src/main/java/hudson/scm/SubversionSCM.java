@@ -1128,7 +1128,7 @@ public class SubversionSCM extends SCM implements Serializable {
             // SVNKit wants a key in a file
             final File keyFile;
             FileItem item=null;
-            if(kind.equals("password")) {
+            if(idx <= 1) {
                 keyFile = null;
             } else {
                 item = parser.getFileItem(kind.equals("publickey")?"privateKey":"certificate");
