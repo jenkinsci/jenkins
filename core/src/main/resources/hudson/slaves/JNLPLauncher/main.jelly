@@ -1,10 +1,9 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:choose>
     <j:when test="${app.slaveAgentPort==-1}">
-      <img src="${imagesURL}/32x32/error.gif"/>
       <div class="error">
         ${%slaveAgentPort.disabled}
-        <a href="${rootURL}/configure">${%configure.link.text}</a>.
+        <l:isAdmin><a href="${rootURL}/configure">${%configure.link.text}</a>.</l:isAdmin>
       </div>
     </j:when>
     <j:when test="${it.offline and !it.temporarilyOffline}">

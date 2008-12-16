@@ -3,6 +3,7 @@
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <!-- temporarily offline switch -->
+      <l:isAdmin>
       <div style="float:right">
         <form method="get" action="toggleOffline">
           <j:if test="${it.temporarilyOffline}">
@@ -13,6 +14,7 @@
           </j:if>
         </form>
       </div>
+      </l:isAdmin>
 
       <h1>
         <img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" />

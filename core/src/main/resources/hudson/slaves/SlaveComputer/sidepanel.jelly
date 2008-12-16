@@ -7,7 +7,7 @@
     <l:tasks>
       <l:task icon="images/24x24/up.gif" href=".." title="${%Back to List}" />
       <l:task icon="images/24x24/search.gif" href="${rootURL}/computer/${it.displayName}/" title="${%Status}" />
-      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/builds" title="${%Build History}" />
+      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}builds" title="${%Build History}" />
       <l:isAdmin>
         <l:task icon="images/24x24/clipboard.gif" href="log" title="${%Log}" />
         <l:task icon="images/24x24/computer.gif" href="systemInfo" title="${%System Information}" />
