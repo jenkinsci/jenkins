@@ -195,10 +195,6 @@
           <artifactId>junit</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>stax</groupId>
-          <artifactId>stax-api</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>pull-parser</groupId>
           <artifactId>pull-parser</artifactId>
         </exclusion>
