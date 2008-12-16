@@ -29,7 +29,7 @@ import java.util.Set;
  */
 // TODO: think about the concurrency commitment of this class
 public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
-    private transient ACL acl = new AclImpl();
+    private transient SidACL acl = new AclImpl();
 
     /**
      * List up all permissions that are granted.
@@ -64,7 +64,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     @Override
-    public ACL getRootACL() {
+    public SidACL getRootACL() {
         return acl;
     }
 

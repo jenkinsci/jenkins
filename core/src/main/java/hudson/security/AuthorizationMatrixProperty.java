@@ -36,7 +36,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 
 	public static final JobPropertyDescriptor DESCRIPTOR = new DescriptorImpl();
 
-	private transient ACL acl = new AclImpl();
+	private transient SidACL acl = new AclImpl();
 
 	private boolean useProjectSecurity;
 
@@ -178,7 +178,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		return this;
 	}
 
-	public ACL getACL() {
+	public SidACL getACL() {
 		return acl;
 	}
 

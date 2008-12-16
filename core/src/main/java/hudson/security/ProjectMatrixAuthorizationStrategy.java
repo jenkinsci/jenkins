@@ -22,7 +22,7 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
     public ACL getACL(AbstractProject<?,?> project) {
         AuthorizationMatrixProperty amp = project.getProperty(AuthorizationMatrixProperty.class);
         if (amp != null && amp.isUseProjectSecurity()) {
-            return amp.getACL();
+            return amp.getACL().newInheritingACL(getRootACL());
         } else {
             return getRootACL();
         }

@@ -68,4 +68,20 @@ public abstract class SidACL extends ACL {
      *      or denying the access (if the model is no-access-by-default.)  
      */
     protected abstract Boolean hasPermission(Sid p, Permission permission);
+
+    /**
+     * Creates a new {@link SidACL} that first consults 'this' {@link SidACL} and then delegate to
+     * the given parent {@link SidACL}. By doing this at the {@link SidACL} level and not at the
+     * {@link ACL} level, this allows the child ACLs to have an explicit deny entry.
+     */
+    public final SidACL newInheritingACL(final SidACL parent) {
+        final SidACL child = this;
+        return new SidACL() {
+            protected Boolean hasPermission(Sid p, Permission permission) {
+                Boolean b = child.hasPermission(p, permission);
+                if(b!=null) return b;
+                return parent.hasPermission(p,permission);
+            }
+        };
+    }
 }
