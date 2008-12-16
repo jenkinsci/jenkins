@@ -5,8 +5,8 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
-import org.acegisecurity.context.SecurityContextHolder;
 import hudson.model.Hudson;
+import hudson.model.Executor;
 
 /**
  * Gate-keeper that controls access to Hudson's model objects.
@@ -78,10 +78,9 @@ public abstract class ACL {
      * of acting on behalf of an user, such as doing builds.
      *
      * <p>
-     * Technically speaking, this is probably a broken concept, because Hudson never
-     * does anything on its own; for example, it builds a project because someone
-     * configures it or someone triggers it, so ideally Hudson should be impersonating
-     * that user when executing things.
+     * (Note that one of the features being considered is to keep track of who triggered
+     * a build &mdash; so in a future, perhaps {@link Executor} will run on behalf of
+     * the user who triggered a build.)
      */
     public static final Authentication SYSTEM = new UsernamePasswordAuthenticationToken("SYSTEM","SYSTEM");
 }
