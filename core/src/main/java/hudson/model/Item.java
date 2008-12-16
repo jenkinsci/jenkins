@@ -8,6 +8,7 @@ import java.util.Collection;
 import hudson.search.SearchableModelObject;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
+import hudson.security.AccessControlled;
 
 /**
  * Basic configuration unit in Hudson.
@@ -37,7 +38,7 @@ import hudson.security.PermissionGroup;
  * @author Kohsuke Kawaguchi
  * @see Items
  */
-public interface Item extends PersistenceRoot, SearchableModelObject {
+public interface Item extends PersistenceRoot, SearchableModelObject, AccessControlled {
     /**
      * Gets the parent that contains this item.
      */
