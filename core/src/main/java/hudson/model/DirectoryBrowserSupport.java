@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,6 +92,7 @@ public final class DirectoryBrowserSupport {
         StringBuilder _rest = new StringBuilder();
         int restSize=-1; // number of ".." needed to go back to the 'base' level.
         boolean zip=false;  // if we are asked to serve a zip file bundle
+        boolean plain = false; // if asked to serve a plain text directory listing
         {
             boolean inBase = true;
             StringTokenizer pathTokens = new StringTokenizer(path,"/");
@@ -103,6 +105,10 @@ public final class DirectoryBrowserSupport {
                     // the last 'bar.zip' portion is to causes browses to set a good default file name.
                     // so the 'rest' portion ends here.
                     zip=true;
+                    break;
+                }
+                if(pathElement.equals("*plain*")) {
+                    plain = true;
                     break;
                 }
 
@@ -124,6 +130,20 @@ public final class DirectoryBrowserSupport {
             if(zip) {
                 rsp.setContentType("application/zip");
                 baseFile.createZipArchive(rsp.getOutputStream(),rest);
+                return;
+            }
+            if (plain) {
+                rsp.setContentType("text/plain;charset=UTF-8");
+                OutputStream os = rsp.getOutputStream();
+                try {
+                    for (String kid : baseFile.act(new SimpleChildList())) {
+                        os.write(kid.getBytes("UTF-8"));
+                        os.write('\n');
+                    }
+                    os.flush();
+                } finally {
+                    os.close();
+                }
                 return;
             }
 
@@ -320,6 +340,26 @@ public final class DirectoryBrowserSupport {
         private int dirRank(File f) {
             if(f.isDirectory())     return 0;
             else                    return 1;
+        }
+    }
+
+    /**
+     * Simple list of names of children of a folder.
+     * Subfolders will have a trailing slash appended.
+     */
+    private static final class SimpleChildList implements FileCallable<List<String>> {
+        private static final long serialVersionUID = 1L;
+        public List<String> invoke(File f, VirtualChannel channel) throws IOException {
+            List<String> r = new ArrayList<String>();
+            String[] kids = f.list(); // no need to sort
+            for (String kid : kids) {
+                if (new File(f, kid).isDirectory()) {
+                    r.add(kid + "/");
+                } else {
+                    r.add(kid);
+                }
+            }
+            return r;
         }
     }
 

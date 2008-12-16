@@ -1044,6 +1044,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         FilePath ws = getWorkspace();
         if ((ws == null) || (!ws.exists())) {
             // if there's no workspace, report a nice error message
+            // Would be good if when asked for *plain*, do something else!
+            // (E.g. return 404, or send empty doc.)
+            // Not critical; client can just check if content type is not text/plain,
+            // which also serves to detect old versions of Hudson.
             req.getView(this,"noWorkspace.jelly").forward(req,rsp);
         } else {
             new DirectoryBrowserSupport(this,getDisplayName()+" workspace").serveFile(req, rsp, ws, "folder.gif", true);
