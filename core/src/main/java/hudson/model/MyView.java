@@ -42,6 +42,15 @@ public class MyView extends View {
         return description;
     }
 
+     /**
+      * Returns the transient {@link Action}s associated with the top page.
+      *
+      * @see Hudson#getActions()
+      */
+     public List<Action> getActions() {
+         return Hudson.getInstance().getActions();
+     }
+    
     @Override
     public TopLevelItem getItem(String name) {
         return owner.getItem(name);
