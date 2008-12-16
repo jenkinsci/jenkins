@@ -210,7 +210,7 @@ public final class PluginWrapper {
      * Returns a one-line descriptive name of this plugin.
      */
     public String getLongName() {
-        String name = manifest.getMainAttributes().getValue("Long-PluginName");
+        String name = manifest.getMainAttributes().getValue("Long-Name");
         if(name!=null)      return name;
         return shortName;
     }
