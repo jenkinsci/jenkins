@@ -48,6 +48,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <inherited>false</inherited>
         <configuration>
           <finalName>hudson-${version}</finalName>
           <descriptors>
