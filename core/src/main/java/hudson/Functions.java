@@ -956,6 +956,13 @@ public class Functions {
     }
 
     /**
+     * Gets the URL for the update center server
+     */
+    public String getUpdateCenterUrl() {
+        return Hudson.getInstance().getUpdateCenter().getUrl();
+    }
+
+    /**
      * Gets all the {@link PageDecorator}s.
      */
     public static List<PageDecorator> getPageDecorators() {

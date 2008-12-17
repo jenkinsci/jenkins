@@ -1319,9 +1319,10 @@ var updateCenter = {
     postBackURL : null,
     info: {},
     completionHandler: null,
+    url: "https://hudson.dev.java.net/",
 
     checkUpdates : function() {
-        loadScript("https://hudson.dev.java.net/update-center.json?"+Hash.toQueryString(updateCenter.info));
+        loadScript(updateCenter.url+"update-center.json?"+Hash.toQueryString(updateCenter.info));
     },
 
     post : function(data) {

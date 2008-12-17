@@ -10,6 +10,7 @@
     <script>
       updateCenter.postBackURL = "${rootURL}/updateCenter/postBack";
       updateCenter.info = { version:"${h.version}" }; 
+      updateCenter.url = "${h.updateCenterUrl}";
       Behaviour.addLoadEvent(updateCenter.checkUpdates);
     </script>
   </j:if>
