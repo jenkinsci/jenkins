@@ -587,6 +587,22 @@ public abstract class ProcessTreeKiller {
         }
     }
 
+//    public static void main(String[] args) {
+//        // dump everything
+//        LOGGER.setLevel(Level.ALL);
+//        ConsoleHandler h = new ConsoleHandler();
+//        h.setLevel(Level.ALL);
+//        LOGGER.addHandler(h);
+//
+//        Solaris killer = (Solaris)get();
+//        Solaris.SolarisSystem s = killer.createSystem();
+//        Solaris.SolarisProcess p = s.get(Integer.parseInt(args[0]));
+//        System.out.println(p.getEnvVars());
+//
+//        if(args.length==2)
+//            p.kill();
+//    }
+
     /*
         On MacOS X, there's no procfs <http://www.osxbook.com/book/bonus/chapter11/procfs/>
         instead you'd do it with the sysctl <http://search.cpan.org/src/DURIST/Proc-ProcessTable-0.42/os/darwin.c>
