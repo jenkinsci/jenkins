@@ -196,6 +196,12 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
         }
     }
 
+    /**
+     * Just a tuple so that we can create various inter-related security related objects and
+     * return them all at once.
+     *
+     * @see SecurityRealm#createSecurityComponents() 
+     */
     public static final class SecurityComponents {
         public AuthenticationManager manager;
         public UserDetailsService userDetails;
