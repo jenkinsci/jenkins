@@ -17,4 +17,13 @@
   <p>
     Build queue has <a href="../queue/api/">its own separate API</a>.
   </p>
+  
+  <h2>Restarting Hudson</h2>
+  <p>
+    Hudson will enter into the "quiet down" mode by sending a request to <a href="../quietDown">this URL</a>.
+    You can cancel this mode by sending a request to <a href="../cancelQuietDown">this URL</a>. On environments
+    where Hudson can restart itself (such as when Hudson is installed as a Windows service), POSTing to
+    <a href="../restart">this URL</a> will start the restart sequence. All these URLs need the admin privilege
+    to the system.
+  </p>
 </j:jelly>
