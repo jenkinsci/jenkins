@@ -36,7 +36,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-import sun.misc.resources.Messages;
 
 /**
  * Represents the running state of a remote computer that holds {@link Executor}s.
