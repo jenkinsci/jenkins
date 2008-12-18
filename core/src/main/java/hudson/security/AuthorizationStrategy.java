@@ -111,6 +111,10 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      * <p>
      * This method is used by {@link ContainerAuthentication} to work around the servlet API issue
      * that prevents us from enumerating roles that the user has.
+     * <p>
+     * If such enumeration is impossible, do the best to list as many as possible, then
+     * return it. In the worst case, just return an empty list. Doing so would prevent
+     * users from using role names as group names (see HUDSON-2716 for such one such report.)
      *
      * @return
      *      never null.
