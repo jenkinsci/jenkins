@@ -5,7 +5,7 @@
       <l:isAdmin>
         <pre id="out"></pre>
         <div id="spinner">
-          <img src="${imagesURL}/spinner.gif" />
+          <img src="${imagesURL}/spinner.gif" alt=""/>
         </div>
         <t:progressiveText href="progressiveLog" idref="out" spinner="spinner" />
       </l:isAdmin>

@@ -26,7 +26,7 @@
       <j:forEach var="c" items="${it._all}">
         <tr>
           <td width="32" data="${c.icon}">
-            <img src="${imagesURL}/32x32/${c.icon}" width="32" height="32" />
+            <img src="${imagesURL}/32x32/${c.icon}" width="32" height="32" alt="${c.iconAltText}"/>
           </td>
           <td><a href="${rootURL}/${c.url}">${c.displayName}</a></td>
           <j:forEach var="m" items="${monitors}">

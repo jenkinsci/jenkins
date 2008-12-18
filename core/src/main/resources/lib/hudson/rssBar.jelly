@@ -2,13 +2,13 @@
   <div align="right" style="margin:1em">
     <a href="${rootURL}/legend">${%Legend}</a>
     <span style="padding-left:1em">
-      <a href="rssAll"><img src="${imagesURL}/atom.gif" border="0"/> ${%for all}</a>
+      <a href="rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed"/> ${%for all}</a>
     </span>
     <span style="padding-left:1em">
-      <a href="rssFailed"><img src="${imagesURL}/atom.gif" border="0"/> ${%for failures}</a>
+      <a href="rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed"/> ${%for failures}</a>
     </span>
     <span style="padding-left:1em">
-      <a href="rssLatest"><img src="${imagesURL}/atom.gif" border="0"/> ${%for just latest builds}</a>
+      <a href="rssLatest"><img src="${imagesURL}/atom.gif" border="0" alt="Feed"/> ${%for just latest builds}</a>
     </span>
   </div>
 </j:jelly>

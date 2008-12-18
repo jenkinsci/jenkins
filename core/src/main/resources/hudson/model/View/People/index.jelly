@@ -11,7 +11,7 @@
         </tr>
         <j:forEach var="p" items="${it.users}">
           <tr>
-            <td><a href="${rootURL}/${p.user.url}"><img src="${imagesURL}/32x32/user.gif"/></a></td>
+            <td><a href="${rootURL}/${p.user.url}"><img src="${imagesURL}/32x32/user.gif" alt=""/></a></td>
             <td><a href="${rootURL}/${p.user.url}">${p.user}</a></td>
             <td data="${p.timeSortKey}">${p.lastChangeTimeString}</td>
             <td><a href="${rootURL}/${p.project.url}">${p.project.name}</a></td>

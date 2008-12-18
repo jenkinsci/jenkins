@@ -5,56 +5,56 @@
     <l:main-panel>
       <table cellpadding="5">
         <tr><td>
-          <img src="images/48x48/grey.gif" />
+          <img src="images/48x48/grey.gif" alt=""/>
           ${%grey}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/grey_anime.gif"/>
+          <img src="images/48x48/grey_anime.gif" alt=""/>
           ${%grey_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/blue.gif"/>
+          <img src="images/48x48/blue.gif" alt=""/>
           ${%blue}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/blue_anime.gif"/>
+          <img src="images/48x48/blue_anime.gif" alt=""/>
           ${%blue_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/yellow.gif"/>
+          <img src="images/48x48/yellow.gif" alt=""/>
           ${%yellow}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/yellow_anime.gif"/>
+          <img src="images/48x48/yellow_anime.gif" alt=""/>
           ${%yellow_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/red.gif"/>
+          <img src="images/48x48/red.gif" alt=""/>
           ${%red}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/red_anime.gif"/>
+          <img src="images/48x48/red_anime.gif" alt=""/>
           ${%red_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-80plus.gif" />
+          <img src="images/48x48/health-80plus.gif" alt=""/>
           ${%health-80plus}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-60to79.gif" />
+          <img src="images/48x48/health-60to79.gif" alt=""/>
           ${%health-60to79}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-40to59.gif" />
+          <img src="images/48x48/health-40to59.gif" alt=""/>
           ${%health-40to59}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-20to39.gif" />
+          <img src="images/48x48/health-20to39.gif" alt=""/>
           ${%health-20to39}
           
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-00to19.gif" />
+          <img src="images/48x48/health-00to19.gif" alt=""/>
           ${%health-00to19}
         </td></tr>
       </table>

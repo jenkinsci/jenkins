@@ -2,6 +2,7 @@
   <a href="${rootURL}/${it.build.url}tagBuild/">
     <img width="16" height="16"
       tooltip="${it.tooltip}"
+      alt="[tagged]"
       src="${imagesURL}/16x16/save.gif"/>
   </a>
 </j:if>

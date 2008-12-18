@@ -12,7 +12,7 @@
         ${%Test Result Trend}
       </div>
       <div>
-        <img src="test/trend${trendQueryString1}" lazymap="test/trendMap${trendQueryString1}"/>
+        <img src="test/trend${trendQueryString1}" lazymap="test/trendMap${trendQueryString1}" alt="[Test result trend chart]"/>
       </div>
       <div style="text-align:right">
         <a href="test/flipTrend">

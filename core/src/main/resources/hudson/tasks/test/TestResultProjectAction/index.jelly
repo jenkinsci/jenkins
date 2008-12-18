@@ -3,7 +3,7 @@
     <st:include page="sidepanel.jelly" it="${it.project}" />
     <l:main-panel>
       <div>
-        <img src="trend?${request.queryString}" lazymap="trendMap?rel=../&amp;${request.queryString}"/>
+        <img src="trend?${request.queryString}" lazymap="trendMap?rel=../&amp;${request.queryString}" alt="[Test result trend chart]"/>
       </div>
     </l:main-panel>
   </l:layout>

@@ -5,7 +5,7 @@
       <j:choose>
         <j:when test="${!it.installed}">
           <h1>
-            <img src="${imagesURL}/48x48/installer.gif" />
+            <img src="${imagesURL}/48x48/installer.gif" alt=""/>
             ${%Install as Windows Service}
           </h1>
 
@@ -26,7 +26,7 @@
         <!-- already installed -->
         <j:otherwise>
           <h1>
-            <img src="${imagesURL}/48x48/blue.gif" />
+            <img src="${imagesURL}/48x48/blue.gif" alt=""/>
             ${%Installation Complete}
           </h1>
 

@@ -5,7 +5,7 @@
   <l:layout norefresh="true">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1><img src="${imagesURL}/48x48/search.gif" />${%Project Relationship}</h1>
+      <h1><img src="${imagesURL}/48x48/search.gif" alt=""/>${%Project Relationship}</h1>
       <form action="projectRelationship" method="get">
         <table width="100%">
           <tr>
@@ -23,7 +23,7 @@
           <tr>
             <td colspan="3" style="text-align:right">
               <f:submit value="${%Compare}" />
-              <a href="projectRelationship-help"><img src="${imagesURL}/16x16/help.gif" /></a>
+              <a href="projectRelationship-help"><img src="${imagesURL}/16x16/help.gif" alt="[help]"/></a>
             </td>
           </tr>
 

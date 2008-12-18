@@ -7,13 +7,13 @@
       <!-- parent path -->
         <div class="parentPath">
           <form action="${backPath}" method="get">
-            <a href="${topPath}"><img src="${imagesURL}/48x48/${icon}" class="rootIcon" /></a>
+            <a href="${topPath}"><img src="${imagesURL}/48x48/${icon}" class="rootIcon" alt=""/></a>
             <j:forEach var="p" items="${parentPath}">
               <a href="${p.href}">${p.title}</a>
               /
             </j:forEach>
             <input type="text" name="pattern" value="${pattern}" />
-            <img src="${imagesURL}/16x16/go-next.gif" style="vertical-align:middle; cursor:pointer"
+            <img src="${imagesURL}/16x16/go-next.gif" style="vertical-align:middle; cursor:pointer" alt="[submit]"
                 onclick="this.parentNode.submit()"/>
           </form>
         </div>
@@ -27,7 +27,7 @@
                 <j:set var="x" value="${f.get(f.size()-1)}"/>
                 <tr>
                   <td>
-                    <img src="${imagesURL}/16x16/${x.iconName}"/>
+                    <img src="${imagesURL}/16x16/${x.iconName}" alt=""/>
                   </td>
                   <td>
                     <j:forEach var="t" items="${f}" varStatus="st">

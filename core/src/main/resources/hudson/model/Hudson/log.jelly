@@ -5,7 +5,7 @@
 <l:layout title="Log" permission="${app.ADMINISTER}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
-    <h1><img src="images/48x48/clipboard.gif" />${%Hudson Log}</h1>
+    <h1><img src="images/48x48/clipboard.gif" alt=""/>${%Hudson Log}</h1>
     <j:forEach var="log" items="${h.logRecords}">
       <pre>${h.printLogRecord(log)}</pre>
     </j:forEach>
@@ -13,7 +13,7 @@
     <h2>
       ${%Logger Configuration}
       <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Logger+Configuration">
-        <img src="${imagesURL}/16x16/help.gif" />
+        <img src="${imagesURL}/16x16/help.gif" alt="[help]"/>
       </a>
     </h2>
     <form action="configLogger" method="post">
@@ -37,7 +37,7 @@
 
     <!-- TODO: put this in the <head> tag. -->
     <div align="right" style="margin:1em">
-      <img src="${imagesURL}/atom.gif" border="0"/>
+      <img src="${imagesURL}/atom.gif" border="0" alt="Feed"/>
       <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
       <a href="logRss">${%All}</a>
       <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>

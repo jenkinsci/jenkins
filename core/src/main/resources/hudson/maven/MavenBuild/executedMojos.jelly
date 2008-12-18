@@ -32,7 +32,7 @@
               <tr>
                 <td>
                   <a href="${m.getPluginLink(cache)}">
-                    <img src="${imagesURL}/24x24/gear.gif"/>
+                    <img src="${imagesURL}/24x24/gear.gif" alt=""/>
                     ${m.groupId}:${m.artifactId}
                   </a>
                 </td>

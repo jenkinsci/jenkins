@@ -18,7 +18,7 @@
               </a>
             </j:when>
             <j:otherwise><!-- module build non-existent, so no link -->
-              <img src="${imagesURL}/16x16/grey.gif" />
+              <img src="${imagesURL}/16x16/grey.gif" alt=""/>
               <st:nbsp/>
               ${m.displayName} (didn't run)
             </j:otherwise>

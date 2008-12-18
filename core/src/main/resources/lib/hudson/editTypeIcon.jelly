@@ -4,4 +4,4 @@
 -->
 <img width="16" height="16"
   src="${imagesURL}/16x16/document_${type.name}.gif"
-  title="${type.description}" />
+  title="${type.description}" alt="${type.description}" />

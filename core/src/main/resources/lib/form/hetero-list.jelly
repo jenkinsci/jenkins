@@ -30,7 +30,7 @@
             </td>
             <j:if test="${help!=null}">
               <td>
-                <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.gif" /></a>
+                <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.gif" alt="[help]"/></a>
               </td>
             </j:if>
           </tr>

@@ -14,7 +14,7 @@
           <!-- Show raw link directly so user need not click through live console page. -->
           <div class="task">
             <a href="${buildUrl.baseUrl}/console">
-              <img width="24" height="24" style="margin: 2px;" src="${imagesURL}/24x24/terminal.gif"/>
+              <img width="24" height="24" style="margin: 2px;" src="${imagesURL}/24x24/terminal.gif" alt=""/>
             </a>
             <st:nbsp />
             <a href="${buildUrl.baseUrl}/console">${%Console Output}</a>

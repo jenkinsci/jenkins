@@ -45,7 +45,7 @@
                 <td>${%Enter text as shown}:</td>
                 <td>
                   <input type="text" name="captcha" autocomplete="off" /><br />
-                  <img src="${rootURL}/securityRealm/captcha"/>
+                  <img src="${rootURL}/securityRealm/captcha" alt="[captcha]"/>
                 </td>
               </tr>
             </j:if>

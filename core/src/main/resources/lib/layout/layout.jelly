@@ -101,7 +101,7 @@
                 <div id="searchform">
                   <input name="q" value="search" id="search-box" class="has-default-text defaulted" />
                   <st:nbsp />
-                  <a href="${%searchBox.url}"><img src="${imagesURL}/16x16/help.png" /></a>
+                  <a href="${%searchBox.url}"><img src="${imagesURL}/16x16/help.png" alt="help for search" /></a>
                   <div id="search-box-completion" />
                   <script>createSearchBox("${searchURL}");</script>
                 </div>

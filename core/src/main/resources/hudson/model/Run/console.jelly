@@ -18,7 +18,7 @@
         <j:when test="${it.isLogUpdated()}">
           <pre id="out"></pre>
           <div id="spinner">
-            <img src="${imagesURL}/spinner.gif" /> 
+            <img src="${imagesURL}/spinner.gif" alt="" /> 
           </div>
          <t:progressiveText href="progressiveLog" idref="out" spinner="spinner" />
         </j:when>

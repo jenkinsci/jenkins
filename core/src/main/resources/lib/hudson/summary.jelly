@@ -19,7 +19,7 @@ Attributes:
         <td>
           <a href="${attrs.href}">
             <img src="${h.ifThenElse(icon.startsWith('/'), rootURL+icon, imagesURL+'/48x48/'+icon)}"
-                 width="48" height="48" style="margin-right:1em" />
+                 alt="" width="48" height="48" style="margin-right:1em" />
           </a>
         </td>
         <td style="vertical-align:middle">

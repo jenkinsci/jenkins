@@ -7,7 +7,7 @@
       <j:set var="b" value="${p.run}" />
       <a href="${p.combination}" tooltip="${p.tooltip}">
         <img src="${imagesURL}/24x24/${h.ifThenElse(b!=null,b.buildStatusUrl,'grey.gif')}"
-             title="${b.iconColor.description}"/>
+             title="${b.iconColor.description}" alt="${b.iconColor.description}"/>
         <j:if test="${empty(o.x) and empty(o.y)}">
           ${p.combination.toString(o.z)}
         </j:if>

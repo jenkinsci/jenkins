@@ -6,7 +6,7 @@
       <j:choose>
         <j:when test="${it.builds.size()&gt;1}">
           <div align="center">
-            <img src="buildTimeGraph" width="500" height="400" lazymap="buildTimeGraphMap"/>
+            <img src="buildTimeGraph" width="500" height="400" lazymap="buildTimeGraphMap" alt="[Build time graph]"/>
           </div>
 
           <j:set var="isMasterSlaveEnabled" value="${!empty(app.slaves)}"/>
