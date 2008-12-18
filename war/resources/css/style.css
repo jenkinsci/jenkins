@@ -81,6 +81,11 @@ table.center-align td {
   padding: 4px;
 }
 
+.skiplink {
+    position: absolute;
+    left: -20000px;
+}
+
 a:link {
   text-decoration: underline;
   color: #204A87;
