@@ -838,18 +838,12 @@ public class UpdateCenter extends AbstractModelObject {
         }
 
         protected void onSuccess() {
-            status = new RestartNeeded();
+            status = new Success();
         }
 
         @Override
         protected void replace(File dst, File src) throws IOException {
             Lifecycle.get().rewriteHudsonWar(src);
-        }
-
-        /**
-         * Indicates that the upgrade needs a restart.
-         */
-        public class RestartNeeded extends InstallationStatus {
         }
     }
 

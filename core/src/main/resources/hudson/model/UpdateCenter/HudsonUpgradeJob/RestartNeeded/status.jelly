@@ -1,7 +1,0 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <img src="${imagesURL}/24x24/blue.gif" />
-  ${%blurb}
-  <form method="post" action="${rootURL}/restart">
-    <f:submit value="${%Restart Now}" />
-  </form>
-</j:jelly>

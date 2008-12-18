@@ -83,17 +83,18 @@ public abstract class Lifecycle implements ExtensionPoint {
     public boolean canRewriteHudsonWar() {
         // if we don't know where hudson.war is, it's impossible to replace.
         if(getHudsonWar()==null)    return false;
+        return isOverridden("rewriteHudsonWar",File.class);
+    }
 
+    private boolean isOverridden(String methodName, Class... types) {
         // the rewriteHudsonWar method isn't overridden.
         try {
-            return !getClass().getMethod("rewriteHudsonWar",File.class).equals(
-                    Lifecycle.class.getMethod("rewriteHudsonWar",File.class));
+            return !getClass().getMethod(methodName, types).equals(
+                    Lifecycle.class.getMethod(methodName,types));
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e);
         }
     }
-
-    
 
     /**
      * If this life cycle supports a restart of Hudson, do so.
@@ -110,5 +111,12 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public void restart() throws IOException, InterruptedException {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Can the {@link #restart()} method restart Hudson?
+     */
+    public boolean canRestart() {
+        return isOverridden("restart");
     }
 }

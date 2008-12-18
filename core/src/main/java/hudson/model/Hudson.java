@@ -1162,6 +1162,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         HudsonFilter.AUTHENTICATION_MANAGER.setDelegate(sc.manager);
         HudsonFilter.USER_DETAILS_SERVICE_PROXY.setDelegate(sc.userDetails);
     }
+    
+    public Lifecycle getLifecycle() {
+        return Lifecycle.get();
+    }
 
     /**
      * Returns the root {@link ACL}.

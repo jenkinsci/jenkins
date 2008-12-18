@@ -7,9 +7,14 @@
   <l:main-panel>
     <h1>${%Installing Plugins/Upgrades}</h1>
 
-    <p class="warning">
-      ${%warning}
-    </p>
+    <form method="post" action="${rootURL}/restart">
+      <p class="warning">
+        ${%warning}
+        <j:if test="${app.lifecycle.canRestart()}">
+          <f:submit value="${%Restart Now}" />
+        </j:if>
+      </p>
+    </form>
 
     <st:include page="body.jelly" />
 
