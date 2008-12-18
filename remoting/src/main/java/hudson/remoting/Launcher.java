@@ -8,6 +8,13 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.security.cert.X509Certificate;
+import java.security.cert.CertificateException;
 
 /**
  * Entry point for running a {@link Channel}.
@@ -52,6 +61,20 @@ public class Launcher {
                     System.exit(1);
                 }
                 slaveJnlpURL = new URL(args[++i]);
+                continue;
+            }
+            if(arg.equals("-noCertificateCheck")) {
+                // bypass HTTPS security check by using free-for-all trust manager
+                System.out.println("Skipping HTTPS certificate checks altoghether. Note that this is not secure at all.");
+                SSLContext context = SSLContext.getInstance("TLS");
+                context.init(null, new TrustManager[]{new NoCheckTrustManager()}, new java.security.SecureRandom());
+                HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+                // bypass host name check, too.
+                HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                    public boolean verify(String s, SSLSession sslSession) {
+                        return true;
+                    }
+                });
                 continue;
             }
             System.err.println("Invalid option: "+arg);
@@ -92,6 +115,14 @@ public class Launcher {
                 // force a headless mode
                 jnlpArgs.add("-headless");
                 return jnlpArgs;
+            } catch (SSLHandshakeException e) {
+                if(e.getMessage().contains("PKIX path building failed")) {
+                    // invalid SSL certificate. One reason this happens is when the certificate is self-signed
+                    IOException x = new IOException("Failed to validate a server certificate. If you are using a self-signed certificate, you can use the -noCertificateCheck option to bypass this check.");
+                    x.initCause(e);
+                    throw x;
+                } else
+                    throw e;
             } catch (IOException e) {
                 System.err.println("Failing to obtain "+slaveJnlpURL);
                 e.printStackTrace(System.err);
@@ -163,5 +194,20 @@ public class Launcher {
         }
         channel.join();
         System.err.println("channel stopped");
+    }
+
+    /**
+     * {@link X509TrustManager} that performs no check at all.
+     */
+    private static class NoCheckTrustManager implements X509TrustManager {
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+        }
+
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+        }
+
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
     }
 }
