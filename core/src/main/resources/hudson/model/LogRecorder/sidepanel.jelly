@@ -1,0 +1,13 @@
+<!--
+  Side panel for the log recorder
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:header />
+  <l:side-panel>
+    <l:tasks>
+      <l:task icon="images/24x24/up.gif" href=".." title="${%Back to Dashboard}" />
+      <l:task icon="images/24x24/notepad.gif" href="." title="${%Log records}" />
+      <l:task icon="images/24x24/setting.gif" href="configure" title="${%Configure}" />
+    </l:tasks>
+  </l:side-panel>
+</j:jelly>

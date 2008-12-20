@@ -329,6 +329,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     public transient volatile ProxyConfiguration proxy;
 
+    /**
+     * {@link LogRecorder}s.
+     */
+    public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Hash<String,LogRecorder>();
 
     public Hudson(File root, ServletContext context) throws IOException {
         this.root = root;
@@ -1236,6 +1240,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     @Override
     public TopLevelItem getItem(String name) {
         return items.get(name);
+    }
+
+    /**
+     * Exposes {@link LogRecorder}s to URL. 
+     */
+    public LogRecorder getLog(String name) {
+        checkPermission(ADMINISTER);
+        return logRecorders.get(name);
     }
 
     public File getRootDirFor(TopLevelItem child) {

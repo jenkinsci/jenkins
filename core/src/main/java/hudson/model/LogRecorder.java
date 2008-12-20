@@ -13,14 +13,23 @@ import java.util.logging.ErrorManager;
 import java.util.logging.Logger;
 import java.lang.ref.WeakReference;
 import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.ServletException;
 
 /**
  * Records a selected set of logs so that the system administrator
  * can diagnose a specific aspect of the system.
  *
  * TODO: still a work in progress.
+ *
+ * <h3>Access Control</h3>
+ * {@link LogRecorder} is only visible for administrators, and this access control happens at
+ * {@link Hudson#getLog(String)}, the sole entry point for binding {@link LogRecorder} to URL. 
  *
  * @author Kohsuke Kawaguchi
  */
@@ -88,10 +97,18 @@ public class LogRecorder extends AbstractModelObject {
         return name;
     }
 
-    public void doConfigure() {
-        // TODO
+    /**
+     * Accepts submission from the configuration page.
+     */
+    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        
+    }
 
-
+    /**
+     * Gets a view of the log records.
+     */
+    public List<LogRecord> getLogRecords() {
+        return handler.getView();
     }
 
     /**
