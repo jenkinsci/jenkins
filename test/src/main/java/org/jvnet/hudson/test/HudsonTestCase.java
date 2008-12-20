@@ -365,7 +365,7 @@ public abstract class HudsonTestCase extends TestCase {
         return with(HudsonHomeLoader.NEW);
     }
 
-    public HudsonTestCase withExistingHome(File source) {
+    public HudsonTestCase withExistingHome(File source) throws Exception {
         return with(new CopyExisting(source));
     }
 

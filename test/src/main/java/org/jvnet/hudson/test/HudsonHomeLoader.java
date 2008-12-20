@@ -1,11 +1,13 @@
 package org.jvnet.hudson.test;
 
 import hudson.FilePath;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Controls how a {@link HudsonTestCase} initializes <tt>HUDSON_HOME</tt>.
@@ -13,7 +15,7 @@ import java.lang.reflect.Method;
  * @author Kohsuke Kawaguchi
  */
 public interface HudsonHomeLoader {
-    /**
+    /** 
      * Returns a directory to be used as <tt>HUDSON_HOME</tt>
      *
      * @throws Exception
@@ -34,14 +36,13 @@ public interface HudsonHomeLoader {
      * Allocates a new directory by copying from an existing directory, or unzipping from a zip file.
      */
     public static final class CopyExisting implements HudsonHomeLoader {
-        private final File source;
+        private final URL source;
 
         /**
          * Either a zip file or a directory that contains the home image.
          */
-        public CopyExisting(File source) {
-            if(source==null)    throw new IllegalArgumentException();
-            this.source = source;
+        public CopyExisting(File source) throws MalformedURLException {
+            this(source.toURL());
         }
 
         /**
@@ -52,18 +53,27 @@ public interface HudsonHomeLoader {
          * Only file URL is supported. 
          */
         public CopyExisting(URL source) {
-            if(!source.getProtocol().equals("file"))
-                throw new UnsupportedOperationException("Unsupported protocol: "+source);
-            this.source = new File(source.getPath());
+            this.source = source;
         }
 
         public File allocate() throws Exception {
             File target = NEW.allocate();
-            if(source.isDirectory())
-                new FilePath(source).copyRecursiveTo("**/*",new FilePath(target));
-            else
-            if(source.getName().endsWith(".zip"))
-                new FilePath(source).unzip(new FilePath(target));
+            if(source.getProtocol().equals("file")) {
+                File src = new File(source.getPath());
+                if(src.isDirectory())
+                    new FilePath(src).copyRecursiveTo("**/*",new FilePath(target));
+                else
+                if(src.getName().endsWith(".zip"))
+                    new FilePath(src).unzip(new FilePath(target));
+            } else {
+                File tmp = File.createTempFile("hudson","zip");
+                try {
+                    FileUtils.copyURLToFile(source,tmp);
+                    new FilePath(tmp).unzip(new FilePath(target));
+                } finally {
+                    tmp.delete();
+                }
+            }
             return target;
         }
     }
