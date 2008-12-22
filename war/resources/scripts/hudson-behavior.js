@@ -338,7 +338,7 @@ var hudsonRules = {
             e.getAttribute("lazymap"),
             {
                 method : 'get',
-                onComplete : function(x) {
+                onSuccess : function(x) {
                     var div = document.createElement("div");
                     document.body.appendChild(div);
                     div.innerHTML = x.responseText;
