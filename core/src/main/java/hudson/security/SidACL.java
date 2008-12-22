@@ -45,6 +45,9 @@ public abstract class SidACL extends ACL {
         // finally everyone
         b = hasPermission(EVERYONE,permission);
         if(b!=null) return b;
+        // permissions granted to anonymous users are granted to everyone
+        b=hasPermission(ANONYMOUS,permission);
+        if(b!=null) return b;
 
         return null;
     }
@@ -69,10 +72,24 @@ public abstract class SidACL extends ACL {
      */
     protected abstract Boolean hasPermission(Sid p, Permission permission);
 
+    protected String toString(Sid p) {
+        if (p instanceof GrantedAuthoritySid)
+            return ((GrantedAuthoritySid) p).getGrantedAuthority();
+        if (p instanceof PrincipalSid)
+            return ((PrincipalSid) p).getPrincipal();
+        if (p == EVERYONE)
+            return "role_everyone";
+        // hmm...
+        return p.toString();
+    }
+
     /**
      * Creates a new {@link SidACL} that first consults 'this' {@link SidACL} and then delegate to
      * the given parent {@link SidACL}. By doing this at the {@link SidACL} level and not at the
      * {@link ACL} level, this allows the child ACLs to have an explicit deny entry.
+     * Note that the combined ACL calls hasPermission(Sid,Permission) in the child and parent
+     * SidACLs directly, so if these override _hasPermission then this custom behavior will
+     * not be applied.
      */
     public final SidACL newInheritingACL(final SidACL parent) {
         final SidACL child = this;

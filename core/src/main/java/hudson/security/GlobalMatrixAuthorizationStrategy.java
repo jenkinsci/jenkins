@@ -112,22 +112,6 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 return true;
             return null;
         }
-
-        protected Boolean _hasPermission(Authentication a, Permission permission) {
-            Boolean b = super._hasPermission(a,permission);
-            // permissions granted to anonymous users are granted to everyone
-            if(b==null) b=hasPermission(ANONYMOUS,permission);
-            return b;
-        }
-
-        private String toString(Sid p) {
-            if (p instanceof GrantedAuthoritySid)
-                return ((GrantedAuthoritySid) p).getGrantedAuthority();
-            if (p instanceof PrincipalSid)
-                return ((PrincipalSid) p).getPrincipal();
-            // hmm...
-            return p.toString();
-        }
     }
 
     public Descriptor<AuthorizationStrategy> getDescriptor() {

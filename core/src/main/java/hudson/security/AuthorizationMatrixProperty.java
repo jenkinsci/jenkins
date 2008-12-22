@@ -146,30 +146,9 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 
 	private final class AclImpl extends SidACL {
 		protected Boolean hasPermission(Sid sid, Permission p) {
-			String s = toString(sid);
-			for (; p != null; p = p.impliedBy) {
-				Set<String> set = grantedPermissions.get(p);
-				if (set != null && set.contains(s))
-					return true;
-			}
+			if (AuthorizationMatrixProperty.this.hasPermission(toString(sid),p))
+				return true;
 			return null;
-		}
-
-		protected Boolean _hasPermission(Authentication a, Permission permission) {
-			Boolean b = super._hasPermission(a, permission);
-			// permissions granted to anonymous users are granted to everyone
-			if (b == null)
-				b = hasPermission(ANONYMOUS, permission);
-			return b;
-		}
-
-		private String toString(Sid p) {
-			if (p instanceof GrantedAuthoritySid)
-				return ((GrantedAuthoritySid) p).getGrantedAuthority();
-			if (p instanceof PrincipalSid)
-				return ((PrincipalSid) p).getPrincipal();
-			// hmm...
-			return p.toString();
 		}
 	}
 
