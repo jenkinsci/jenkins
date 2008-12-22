@@ -1,8 +1,8 @@
 <!--
-  Log view
+  Show all hudson.* logs
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Log" permission="${app.ADMINISTER}">
+<l:layout title="Log">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1><img src="images/48x48/clipboard.gif" alt=""/>${%Hudson Log}</h1>
@@ -12,9 +12,7 @@
 
     <h2>
       ${%Logger Configuration}
-      <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Logger+Configuration">
-        <img src="${imagesURL}/16x16/help.gif" alt="[help]"/>
-      </a>
+      <t:help href="http://hudson.gotdns.com/wiki/display/HUDSON/Logger+Configuration" />
     </h2>
     <form action="configLogger" method="post">
       ${%Name}: <input type="text" name="name" width="40" />
@@ -35,16 +33,7 @@
       <f:submit value="${%Submit}"/>
     </form>
 
-    <!-- TODO: put this in the <head> tag. -->
-    <div align="right" style="margin:1em">
-      <img src="${imagesURL}/atom.gif" border="0" alt="Feed"/>
-      <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
-      <a href="logRss">${%All}</a>
-      <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
-      <a href="logRss?level=SEVERE">${%&gt; SEVERE}</a>
-      <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
-      <a href="logRss?level=WARNING">${%&gt; WARNING}</a>
-    </div>
+    <st:include page="feeds.jelly" />
   </l:main-panel>
 </l:layout>
 </j:jelly>

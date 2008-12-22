@@ -17,7 +17,7 @@
     <j:arg value="${request.requestURL.toString()}"/>
     <j:arg value="UTF-8"/>
   </j:invokeStatic>
-  <j:set var="match" value="${size(href) gt 1 and requestURL.endsWith(href)}" />
+  <j:set var="match" value="${(size(href) gt 1 and requestURL.endsWith(href)) or (href=='.' and requestURL.endsWith('/'))}" />
   <j:scope>
     <j:set var="taskMatching" value="${context.parent}"/>
     <d:invokeBody />

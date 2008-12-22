@@ -15,7 +15,7 @@ import java.util.Collection;
  *
  * @author Kohsuke Kawaguchi
  */
-final class RSS {
+public final class RSS {
 
     /**
      * Parses trackback ping.

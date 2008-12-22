@@ -1,0 +1,6 @@
+<!--
+  (?) icon linked to the specified @href
+-->
+<a href="${href}">
+  <img src="${imagesURL}/16x16/help.gif" alt="[help]"/>
+</a>

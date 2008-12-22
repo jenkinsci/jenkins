@@ -1,0 +1,23 @@
+<!--
+  Create a new LogRecorder
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout norefresh="true">
+    <st:include page="sidepanel.jelly" />
+
+    <l:main-panel>
+      <f:form method="post" action="newLogRecorder">
+        <f:entry title="${%Name}">
+          <input type="text" name="name" class="setting-input" id="box" />
+          <script>
+            document.getElementById('box').focus();
+          </script>
+        </f:entry>
+
+        <f:block>
+          <f:submit value="OK" />
+        </f:block>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

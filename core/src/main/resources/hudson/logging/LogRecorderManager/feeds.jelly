@@ -1,0 +1,12 @@
+<!-- list of feed links -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div align="right" style="margin:1em">
+    <img src="${imagesURL}/atom.gif" border="0" alt="Feed"/>
+    <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
+    <a href="rss">${%All}</a>
+    <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
+    <a href="rss?level=SEVERE">${%&gt; SEVERE}</a>
+    <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
+    <a href="rss?level=WARNING">${%&gt; WARNING}</a>
+  </div>
+</j:jelly>

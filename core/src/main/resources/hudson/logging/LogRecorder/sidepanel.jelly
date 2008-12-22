@@ -5,9 +5,10 @@
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task icon="images/24x24/up.gif" href=".." title="${%Back to Dashboard}" />
+      <l:task icon="images/24x24/up.gif" href=".." title="${%Back to Loggers}" />
       <l:task icon="images/24x24/notepad.gif" href="." title="${%Log records}" />
       <l:task icon="images/24x24/setting.gif" href="configure" title="${%Configure}" />
+      <l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete}" />
     </l:tasks>
   </l:side-panel>
 </j:jelly>

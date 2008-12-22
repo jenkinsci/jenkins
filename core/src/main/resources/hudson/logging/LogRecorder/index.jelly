@@ -9,6 +9,8 @@
     <j:forEach var="log" items="${it.logRecords}">
       <pre>${h.printLogRecord(log)}</pre>
     </j:forEach>
+
+    <st:include it="${it.parent}" page="feeds.jelly" />    
   </l:main-panel>
 </l:layout>
 </j:jelly>

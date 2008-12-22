@@ -1,0 +1,51 @@
+<!--
+  Config page
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout norefresh="true">
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel xmlns:local="local">
+    <f:form method="post" name="config" action="configSubmit">
+      <j:set var="instance" value="${it}" />
+      <f:entry title="${%Name}" help="/help/LogRecorder/name.html">
+        <f:textbox field="name"/>
+      </f:entry>
+
+      <f:entry title="${%Loggers}"
+               description="${%List of loggers and the log levels to record}"
+               help="/help/LogRecorder/logger.html">
+        <j:set var="instance" value="${null}" />
+        <f:repeatable var="instance" items="${it.targets}" name="targets">
+          <table width="100%">
+            <tr>
+              <td>
+                ${%Logger}
+              </td>
+              <td width="100%">
+                <f:textbox field="name"/>
+              </td>
+              <td style="white-space:nowrap;">
+                ${%Log level}
+              </td>
+              <td>
+                <select name="level">
+                  <j:forEach var="lv" items="${it.LEVELS}">
+                    <f:option selected="${instance.level==lv}">${lv.toString().toLowerCase()}</f:option>
+                  </j:forEach>
+                </select>
+              </td>
+              <td>
+                <f:repeatableDeleteButton/>
+              </td>
+            </tr>
+          </table>
+        </f:repeatable>
+      </f:entry>
+
+      <f:block>
+        <f:submit value="${%Save}" />
+      </f:block>
+    </f:form>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

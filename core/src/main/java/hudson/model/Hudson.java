@@ -2,7 +2,6 @@ package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
-import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -17,6 +16,7 @@ import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.WebAppMain;
 import hudson.XmlFile;
+import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.WindowsInstallerLink;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -112,11 +112,9 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -330,9 +328,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     public transient volatile ProxyConfiguration proxy;
 
     /**
-     * {@link LogRecorder}s.
+     * Bound to "/log".
      */
-    public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Hash<String,LogRecorder>();
+    private transient final LogRecorderManager log = new LogRecorderManager();
 
     public Hudson(File root, ServletContext context) throws IOException {
         this.root = root;
@@ -340,6 +338,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         if(theInstance!=null)
             throw new IllegalStateException("second instance");
         theInstance = this;
+
+        log.load();
+        
         Trigger.timer = new Timer("Hudson cron thread");
         queue = new Queue();
 
@@ -1128,6 +1129,15 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     /**
+     * For binding {@link LogRecorderManager} to "/log".
+     * Everything below here is admin-only, so do the check here.
+     */
+    public LogRecorderManager getLog() {
+        checkPermission(ADMINISTER);
+        return log;
+    }
+
+    /**
      * A convenience method to check if there's some security
      * restrictions in place.
      */
@@ -1240,14 +1250,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     @Override
     public TopLevelItem getItem(String name) {
         return items.get(name);
-    }
-
-    /**
-     * Exposes {@link LogRecorder}s to URL. 
-     */
-    public LogRecorder getLog(String name) {
-        checkPermission(ADMINISTER);
-        return logRecorders.get(name);
     }
 
     public File getRootDirFor(TopLevelItem child) {
@@ -2012,51 +2014,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     /**
      * RSS feed for log entries.
+     *
+     * @deprecated
+     *   As on 1.267, moved to "/log/rss..."
      */
     public void doLogRss( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(ADMINISTER);
-
-        List<LogRecord> logs = logRecords;
-
-        // filter log records based on the log level
-        String level = req.getParameter("level");
-        if(level!=null) {
-            Level threshold = Level.parse(level);
-            List<LogRecord> filtered = new ArrayList<LogRecord>();
-            for (LogRecord r : logs) {
-                if(r.getLevel().intValue() >= threshold.intValue())
-                    filtered.add(r);
-            }
-            logs = filtered;
-        }
-
-        RSS.forwardToRss("Hudson log","", logs, new FeedAdapter<LogRecord>() {
-            public String getEntryTitle(LogRecord entry) {
-                return entry.getMessage();
-            }
-
-            public String getEntryUrl(LogRecord entry) {
-                return "log";   // TODO: one URL for one log entry?
-            }
-
-            public String getEntryID(LogRecord entry) {
-                return String.valueOf(entry.getSequenceNumber());
-            }
-
-            public String getEntryDescription(LogRecord entry) {
-                return Functions.printLogRecord(entry);
-            }
-
-            public Calendar getEntryTimestamp(LogRecord entry) {
-                GregorianCalendar cal = new GregorianCalendar();
-                cal.setTimeInMillis(entry.getMillis());
-                return cal;
-            }
-
-            public String getEntryAuthor(LogRecord entry) {
-                return Mailer.DESCRIPTOR.getAdminAddress();
-            }
-        },req,rsp);
+        String qs = req.getQueryString();
+        rsp.sendRedirect2("./log/rss"+(qs==null?"":'?'+qs));
     }
 
     /**
