@@ -40,47 +40,9 @@
                 <j:forEach var="job" items="${jobs}">
                     <j:set var="lsBuild" value="${job.lastSuccessfulBuild}"/>
                     <j:set var="lfBuild" value="${job.lastFailedBuild}"/>
-                    <j:set var="buildHealth" value="${job.buildHealth}"/>
                     <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
                         <t:ballColorTd it="${job.iconColor}"/>
-                        <td data="${buildHealth.score}">
-                            <x:element name="div">
-                                <x:attribute name="class">healthReport</x:attribute>
-                                <x:attribute name="onmouseover">this.className='healthReport hover';return true;
-                                </x:attribute>
-                                <x:attribute name="onmouseout">this.className='healthReport';return true;</x:attribute>
-                                <a class="healthReport" href="${jobBaseUrl}${job.shortUrl}lastBuild">
-                                    <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
-                                         alt="${buildHealth.score}%"/>
-                                </a>
-                                <j:set var="healthReports" value="${job.buildHealthReports}"/>
-                                <j:if test="${!empty(healthReports)}">
-                                    <div class="healthReportDetails">
-                                        <table border="0">
-                                            <thead>
-                                                <tr>
-                                                    <th align="left">W</th>
-                                                    <th align="left">${%Description}</th>
-                                                    <th align="right">%</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <j:forEach var="rpt" items="${job.buildHealthReports}">
-                                                    <tr>
-                                                        <td align="left">
-                                                            <img src="${rootURL}${rpt.getIconUrl('16x16')}" alt=""
-                                                                 title=""/>
-                                                        </td>
-                                                        <td>${rpt.localizableDescription}</td>
-                                                        <td align="right">${rpt.score}</td>
-                                                    </tr>
-                                                </j:forEach>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </j:if>
-                            </x:element>
-                        </td>
+                        <t:buildHealth td="true" link="${jobBaseUrl}${job.shortUrl}lastBuild"/>
                         <td style="${indenter.getCss(job)}">
                             <a href="${jobBaseUrl}${job.shortUrl}">
                                 ${job.displayName}

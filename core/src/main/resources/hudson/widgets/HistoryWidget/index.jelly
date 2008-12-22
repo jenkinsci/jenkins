@@ -1,7 +1,10 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:set target="${it}" property="trimmed" value="${all==null}"/>
-  <l:pane width="2" title="
-    &lt;div style='float:right'>(&lt;a href='${it.baseUrl}/buildTimeTrend'>${%trend}&lt;/a>)&lt;/div>${it.displayName}" id="buildHistory">
+  <j:parse var="paneTitle">
+    <div style="float:right">(<a href="${it.baseUrl}/buildTimeTrend">${%trend}</a>)</div>
+    <t:buildHealth job="${it.owner}" iconSize="16x16" link="${it.baseUrl}/lastBuild"/>
+  </j:parse>
+  <l:pane width="2" title="${h.runScript(paneTitle)}${it.displayName}" id="buildHistory">
 
     <!-- build history -->
     <st:include page="entries.jelly" />

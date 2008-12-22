@@ -459,29 +459,36 @@ th.pane {
 
 /* ============================ health report hover ========================== */
 
-a.healthReport {
+.healthReport a {
     text-decoration: none;
 }
 
-div.healthReport div.healthReportDetails {
+.healthReport div.healthReportDetails {
     display: none;
 }
 
-div.healthReport:hover, div.healthReport.hover { /* fix IE6 bug with :hover */
+.healthReport:hover, .healthReport.hover { /* fix IE6 bug with :hover */
     background: transparent;
 }
 
-div.healthReport:hover div.healthReportDetails, div.healthReport.hover div.healthReportDetails {
+.healthReport:hover div.healthReportDetails, .healthReport.hover div.healthReportDetails {
     display: block;
     position: absolute;
     background-color: #ffe;
     border: 1px solid #bbb;
     margin-left: 32px; /* move it across a bit */
+    z-index: 26;
 }
 
-div.healthReport div.healthReportDetails table {
+.healthReport div.healthReportDetails table {
     border-collapse: collapse;
     width: 450px; /* fix IE bug with width */
+}
+
+/* ========================= build history ========================= */
+#buildHistory .healthReport {
+    display: inline;
+    margin-right: 1em;
 }
 
 /* ========================= editable combobox style ========================= */

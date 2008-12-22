@@ -35,6 +35,9 @@ import hudson.util.Area;
 import hudson.util.Iterators;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.jelly.JellyTagException;
+import org.apache.commons.jelly.Script;
+import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.kohsuke.stapler.Ancestor;
@@ -869,6 +872,17 @@ public class Functions {
         JellyContext context = ExpressionFactory2.CURRENT_CONTEXT.get();
         assert context!=null;
         return context;
+    }
+
+    /**
+     * Evaluate a Jelly script and return output as a String.
+     *
+     * @since 1.267
+     */
+    public static String runScript(Script script) throws JellyTagException {
+        StringWriter out = new StringWriter();
+        script.run(getCurrentJellyContext(), XMLOutput.createXMLOutput(out));
+        return out.toString();
     }
 
     /**
