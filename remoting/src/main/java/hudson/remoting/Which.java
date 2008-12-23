@@ -19,13 +19,28 @@ public class Which {
      * @throws IllegalArgumentException
      *      if failed to determine.
      */
-    public static File jarFile(Class clazz) throws IOException {
+    public static URL jarURL(Class clazz) throws IOException {
         ClassLoader cl = clazz.getClassLoader();
         if(cl==null)
             cl = ClassLoader.getSystemClassLoader();
         URL res = cl.getResource(clazz.getName().replace('.', '/') + ".class");
         if(res==null)
             throw new IllegalArgumentException("Unable to locate class file for "+clazz);
+        return res;
+    }
+
+    /**
+     * Locates the jar file that contains the given class.
+     *
+     * <p>
+     * Note that jar files are not always loaded from {@link File},
+     * so for diagnostics purposes {@link #jarURL(Class)} is preferrable.
+     *
+     * @throws IllegalArgumentException
+     *      if failed to determine.
+     */
+    public static File jarFile(Class clazz) throws IOException {
+        URL res = jarURL(clazz);
         String resURL = res.toExternalForm();
         String originalURL = resURL;
         if(resURL.startsWith("jar:"))

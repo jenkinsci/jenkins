@@ -24,6 +24,7 @@ import java.io.PrintStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.net.URL;
 
 import hudson.remoting.Which;
 
@@ -118,9 +119,9 @@ final class SubversionUpdateEventHandler implements ISVNEventHandler {
             SVNExternal ext = event.getExternalInfo();
             if(ext==null) {
                 // prepare for the situation where the user created their own svnkit
-                File jarFile = null;
+                URL jarFile = null;
                 try {
-                    jarFile = Which.jarFile(SVNEvent.class);
+                    jarFile = Which.jarURL(SVNEvent.class);
                 } catch (IOException e) {
                     // ignore this failure
                 }
