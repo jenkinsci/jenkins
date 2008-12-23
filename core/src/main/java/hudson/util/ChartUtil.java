@@ -57,7 +57,7 @@ public class ChartUtil {
     /**
      * See issue 93. Detect an error in X11 and handle it gracefully.
      */
-    public static boolean awtProblem = false;
+    public static Throwable awtProblem = null;
 
     /**
      * Generates the graph in PNG format and sends that to the response.
@@ -201,7 +201,7 @@ public class ChartUtil {
         try {
             new Font("SansSerif",Font.BOLD,18).toString();
         } catch (Throwable t) {
-            awtProblem = true;
+            awtProblem = t;
         }
     }
 }

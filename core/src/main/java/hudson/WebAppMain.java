@@ -15,6 +15,8 @@ import hudson.util.RingBufferLogHandler;
 import hudson.util.NoTempDir;
 import hudson.util.IncompatibleAntVersionDetected;
 import hudson.util.HudsonFailedToLoad;
+import hudson.util.ChartUtil;
+import hudson.util.AWTProblem;
 import org.jvnet.localizer.LocaleProvider;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -110,6 +112,12 @@ public final class WebAppMain implements ServletContextListener {
                 FileSet.class.getMethod("getDirectoryScanner");
             } catch (NoSuchMethodException e) {
                 context.setAttribute(APP,new IncompatibleAntVersionDetected(FileSet.class));
+                return;
+            }
+
+            // make sure AWT is functioning, or else JFreeChart won't even load.
+            if(ChartUtil.awtProblem!=null) {
+                context.setAttribute(APP,new AWTProblem(ChartUtil.awtProblem));
                 return;
             }
 
