@@ -54,6 +54,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
@@ -63,6 +64,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URLDecoder;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -974,6 +976,20 @@ public class Functions {
      */
     public String getUpdateCenterUrl() {
         return Hudson.getInstance().getUpdateCenter().getUrl();
+    }
+
+    /**
+     * If the given href link is matching the current page, return true.
+     *
+     * Used in <tt>task.jelly</tt> to decide if the page should be highlighted.
+     */
+    public boolean hyperlinkMatchesCurrentPage(String href) throws UnsupportedEncodingException {
+        String url = Stapler.getCurrentRequest().getRequestURL().toString();
+        url = URLDecoder.decode(url,"UTF-8");
+        href = URLDecoder.decode(href,"UTF-8");
+
+        return (href.length()>1 && url.endsWith(href))
+            || (href.equals(".") && url.endsWith("."));
     }
 
     /**

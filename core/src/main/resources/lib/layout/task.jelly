@@ -13,11 +13,7 @@
     The semantics is that when one of the nested <task> matches, the parent is also considered as a match
     and thus gets a highlight.
   -->
-  <j:invokeStatic var="requestURL" className="java.net.URLDecoder" method="decode">
-    <j:arg value="${request.requestURL.toString()}"/>
-    <j:arg value="UTF-8"/>
-  </j:invokeStatic>
-  <j:set var="match" value="${(size(href) gt 1 and requestURL.endsWith(href)) or (href=='.' and requestURL.endsWith('/'))}" />
+  <j:set var="match" value="${h.hyperlinkMatchesCurrentPage(href)}" />
   <j:scope>
     <j:set var="taskMatching" value="${context.parent}"/>
     <d:invokeBody />
