@@ -78,7 +78,7 @@
       <!-- for testing JNLP launch. -->
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>netx</artifactId>
-      <version>0.5-hudson-1</version>
+      <version>0.5-hudson-2</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
