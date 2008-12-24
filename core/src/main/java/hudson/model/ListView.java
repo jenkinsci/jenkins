@@ -63,7 +63,7 @@ public class ListView extends View {
      * Returns the transient {@link Action}s associated with the top page.
      *
      * @see Hudson#getActions()
-     /
+     */
     public List<Action> getActions() {
         return Hudson.getInstance().getActions();
     }
