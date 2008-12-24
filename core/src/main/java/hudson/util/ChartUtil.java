@@ -55,9 +55,15 @@ public class ChartUtil {
     }
 
     /**
+     * @deprecated
+     *      Use {@code awtProblemCause!=null} instead. As of 1.267.
+     */
+    public static boolean awtProblem = false;
+
+    /**
      * See issue 93. Detect an error in X11 and handle it gracefully.
      */
-    public static Throwable awtProblem = null;
+    public static Throwable awtProblemCause = null;
 
     /**
      * Generates the graph in PNG format and sends that to the response.
@@ -201,7 +207,8 @@ public class ChartUtil {
         try {
             new Font("SansSerif",Font.BOLD,18).toString();
         } catch (Throwable t) {
-            awtProblem = t;
+            awtProblemCause = t;
+            awtProblem = true;
         }
     }
 }

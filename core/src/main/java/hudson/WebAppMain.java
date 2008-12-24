@@ -116,8 +116,8 @@ public final class WebAppMain implements ServletContextListener {
             }
 
             // make sure AWT is functioning, or else JFreeChart won't even load.
-            if(ChartUtil.awtProblem!=null) {
-                context.setAttribute(APP,new AWTProblem(ChartUtil.awtProblem));
+            if(ChartUtil.awtProblemCause!=null) {
+                context.setAttribute(APP,new AWTProblem(ChartUtil.awtProblemCause));
                 return;
             }
 
@@ -151,7 +151,7 @@ public final class WebAppMain implements ServletContextListener {
                 }
             }
 
-            Stapler.setExpressionFactory(event, new ExpressionFactory2());
+            installExpressionFactory(event);
 
             context.setAttribute(APP,new HudsonIsLoading());
 
@@ -194,6 +194,10 @@ public final class WebAppMain implements ServletContextListener {
             LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
             throw e;
         }
+    }
+
+    public static void installExpressionFactory(ServletContextEvent event) {
+        Stapler.setExpressionFactory(event, new ExpressionFactory2());
     }
 
     protected void computeVersion(ServletContext context) {

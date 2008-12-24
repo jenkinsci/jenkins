@@ -28,6 +28,7 @@ import hudson.util.ProcessTreeKiller;
 import hudson.maven.MavenModuleSet;
 import hudson.FilePath;
 import hudson.Functions;
+import hudson.WebAppMain;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -49,6 +50,7 @@ import org.xml.sax.SAXException;
 import org.apache.commons.io.IOUtils;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -120,6 +122,7 @@ public abstract class HudsonTestCase extends TestCase {
         hudson = newHudson();
         hudson.servletContext.setAttribute("app",hudson);
         hudson.servletContext.setAttribute("version","?");
+        WebAppMain.installExpressionFactory(new ServletContextEvent(hudson.servletContext));
 
         // set a default JDK to be the one that the harness is using.
         hudson.getJDKs().add(new JDK("default",System.getProperty("java.home")));
@@ -499,7 +502,7 @@ public abstract class HudsonTestCase extends TestCase {
         Locale.setDefault(Locale.ENGLISH);
         // don't waste bandwidth talking to the update center
         UpdateCenter.neverUpdate = true;
-        
+
         // we don't care CSS errors in YUI
         final ErrorHandler defaultHandler = Stylesheet.CSS_ERROR_HANDLER;
         Stylesheet.CSS_ERROR_HANDLER = new ErrorHandler() {

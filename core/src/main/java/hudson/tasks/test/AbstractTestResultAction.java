@@ -156,7 +156,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
      * Generates a PNG image for the test result trend.
      */
     public void doGraph( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if(ChartUtil.awtProblem!=null) {
+        if(ChartUtil.awtProblemCause!=null) {
             // not available. send out error message
             rsp.sendRedirect2(req.getContextPath()+"/images/headless.png");
             return;
