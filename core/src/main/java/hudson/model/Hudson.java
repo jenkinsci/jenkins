@@ -2306,7 +2306,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     public void doItemExistsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         // this method can be used to check if a file exists anywhere in the file system,
         // so it should be protected.
-        new FormFieldValidator(req,rsp,true) {
+        new FormFieldValidator(req,rsp,Item.CREATE) {
             protected void check() throws IOException, ServletException {
                 String job = fixEmpty(request.getParameter("value"));
                 if(job==null) {

@@ -13,7 +13,7 @@
     <f:entry title="${%Projects names}"
              description="${%Multiple projects can be specified like 'abc, def'}">
       <input class="setting-input validated" name="upstreamProjects"
-        checkUrl="'${rootURL}/publisher/BuildTrigger/check?value='+escape(this.value)"
+        checkUrl="'descriptorByName/BuildTrigger/check?value='+escape(this.value)"
         type="text" value="${h.getProjectListString(up)}"/>
     </f:entry>
   </f:optionalBlock>

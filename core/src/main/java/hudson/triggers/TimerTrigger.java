@@ -59,7 +59,9 @@ public class TimerTrigger extends Trigger<BuildableItem> {
          * Performs syntax check.
          */
         public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new FormFieldValidator(req,rsp,true) {
+            // false==No permission needed for this syntax check
+            new FormFieldValidator(req,rsp,false) {
+                @Override
                 protected void check() throws IOException, ServletException {
                     try {
                         String msg = CronTabList.create(fixNull(request.getParameter("value"))).checkSanity();

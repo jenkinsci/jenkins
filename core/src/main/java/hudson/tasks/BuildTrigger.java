@@ -1,6 +1,7 @@
 package hudson.tasks;
 
 import hudson.Launcher;
+import hudson.security.AccessControlled;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
@@ -272,7 +273,9 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
          * Form validation method.
          */
         public void doCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-            new FormFieldValidator(req,rsp,true) {
+            // Require CONFIGURE permission on this project
+            AccessControlled anc = (AccessControlled) req.findAncestor(AccessControlled.class).getObject();
+            new FormFieldValidator(req,rsp,anc,Item.CONFIGURE) {
                 protected void check() throws IOException, ServletException {
                     String list = request.getParameter("value");
 

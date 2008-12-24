@@ -197,6 +197,27 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
+     * Exposes {@link Descriptor} by its name to URL.
+     *
+     * This allows descriptor to perform a job-specific check easily. 
+     *
+     * @since 1.270.
+     *
+     * @param className
+     *      Either fully qualified class name (recommended) or the short name.
+     */
+    public Descriptor getDescriptorByName(String className) {
+        for( Descriptor d : Descriptor.ALL ) {
+            String name = d.clazz.getName();
+            if(name.equals(className))
+                return d;
+            if(name.substring(name.lastIndexOf('.')+1).equals(className))
+                return d;
+        }
+        return null;
+    }
+
+    /**
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {

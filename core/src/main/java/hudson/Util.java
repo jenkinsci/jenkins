@@ -148,7 +148,7 @@ public class Util {
         if(!logfile.exists())
             return "";
 
-        StringBuffer str = new StringBuffer((int)logfile.length());
+        StringBuilder str = new StringBuilder((int)logfile.length());
 
         BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(logfile),charset));
         char[] buf = new char[1024];
@@ -433,7 +433,7 @@ public class Util {
     }
 
     public static String toHexString(byte[] data, int start, int len) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for( int i=0; i<len; i++ ) {
             int b = data[start+i]&0xFF;
             if(b<16)    buf.append('0');
@@ -548,7 +548,7 @@ public class Util {
         try {
             boolean escaped = false;
 
-            StringBuffer out = new StringBuffer(s.length());
+            StringBuilder out = new StringBuilder(s.length());
 
             ByteArrayOutputStream buf = new ByteArrayOutputStream();
             OutputStreamWriter w = new OutputStreamWriter(buf,"UTF-8");
@@ -581,7 +581,7 @@ public class Util {
      * Escapes HTML unsafe characters like &lt;, &amp;to the respective character entities.
      */
     public static String escape(String text) {
-        StringBuffer buf = new StringBuffer(text.length()+64);
+        StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
             char ch = text.charAt(i);
             if(ch=='\n')
@@ -607,7 +607,7 @@ public class Util {
     }
 
     public static String xmlEscape(String text) {
-        StringBuffer buf = new StringBuffer(text.length()+64);
+        StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
             char ch = text.charAt(i);
             if(ch=='<')

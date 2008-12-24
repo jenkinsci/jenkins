@@ -118,6 +118,7 @@ public class Sventon extends SubversionRepositoryBrowser {
          * Performs on-the-fly validation of the URL.
          */
         public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            // URLCheck requires Admin permission
             new FormFieldValidator.URLCheck(req,rsp) {
                 protected void check() throws IOException, ServletException {
                     String value = fixEmpty(request.getParameter("value"));

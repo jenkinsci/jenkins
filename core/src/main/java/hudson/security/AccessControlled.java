@@ -1,5 +1,7 @@
 package hudson.security;
 
+import org.acegisecurity.AccessDeniedException;
+
 /**
  * Object that has an {@link ACL}
  *
@@ -17,7 +19,7 @@ public interface AccessControlled {
     /**
      * Convenient short-cut for {@code getACL().checkPermission(permission)}
      */
-    void checkPermission(Permission permission);
+    void checkPermission(Permission permission) throws AccessDeniedException;
 
     /**
      * Convenient short-cut for {@code getACL().hasPermission(permission)}

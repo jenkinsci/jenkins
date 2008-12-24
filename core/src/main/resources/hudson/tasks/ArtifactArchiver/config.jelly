@@ -1,7 +1,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<f:entry title="${%Files to archive}" help="/help/tasks/artifactArchiver/includes.html">
 	  <f:textbox name="artifacts.artifacts" value="${instance.artifacts}"
-               checkUrl="'${rootURL}/publisher/ArtifactArchiver/check?job=${it.fullName}&amp;value='+escape(this.value)" />
+               checkUrl="'descriptorByName/ArtifactArchiver/check?value='+escape(this.value)" />
 	</f:entry>
   <f:advanced>
     <f:entry title="${%Excludes}" help="/help/tasks/artifactArchiver/excludes.html">

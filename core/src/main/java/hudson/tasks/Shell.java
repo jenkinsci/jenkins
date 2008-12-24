@@ -127,6 +127,7 @@ public class Shell extends CommandInterpreter {
          * Check the existence of sh in the given location.
          */
         public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            // Executable requires admin permission
             new FormFieldValidator.Executable(req,rsp).process();
         }
     }

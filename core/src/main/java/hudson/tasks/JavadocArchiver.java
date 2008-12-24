@@ -187,6 +187,7 @@ public class JavadocArchiver extends Publisher {
          * Performs on-the-fly validation on the file mask wildcard.
          */
         public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            // WorkspaceDirectory requires CONFIGURE permission on this project
             new FormFieldValidator.WorkspaceDirectory(req,rsp).process();
         }
 

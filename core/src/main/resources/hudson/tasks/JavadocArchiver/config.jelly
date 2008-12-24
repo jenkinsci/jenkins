@@ -2,7 +2,7 @@
   <f:entry title="${%Javadoc directory}"
     description="${%description}">
     <f:textbox name="javadoc_dir" value="${instance.javadocDir}"
-        checkUrl="'${rootURL}/publisher/JavadocArchiver/check?job=${it.fullName}&amp;value='+escape(this.value)"/>
+        checkUrl="'descriptorByName/JavadocArchiver/check?value='+escape(this.value)"/>
   </f:entry>
   <f:entry help="/help/project-config/javadoc-keep-all.html">
     <f:checkbox name="keep_all" checked="${instance.keepAll}" />

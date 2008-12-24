@@ -2,6 +2,7 @@ package hudson.scm.browsers;
 
 import hudson.Util;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.scm.CVSChangeLogSet;
 import hudson.scm.CVSChangeLogSet.File;
 import hudson.scm.CVSChangeLogSet.Revision;
@@ -70,7 +71,8 @@ public final class FishEyeCVS extends CVSRepositoryBrowser {
         }
 
         public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new FormFieldValidator.URLCheck(req,rsp) {
+            // false==No permission needed for basic check
+            new FormFieldValidator(req,rsp,false) {
                 @Override
                 protected void check() throws IOException, ServletException {
                     String value = Util.fixEmpty(request.getParameter("value"));
@@ -85,14 +87,25 @@ public final class FishEyeCVS extends CVSRepositoryBrowser {
                         errorWithMarkup("The URL should end like <tt>.../browse/foobar/</tt>");
                         return;
                     }
-                    try {
-                        if (findText(open(new URL(value)), "FishEye")) {
-                            ok();
-                        } else {
-                            error("This is a valid URL but it doesn't look like FishEye");
-                        }
-                    } catch (IOException e) {
-                        handleIOException(value, e);
+                    // Connect to URL and check content only if we have admin permission
+                    if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) {
+                        final String finalValue = value;
+                        new FormFieldValidator.URLCheck(request,response) {
+                            @Override
+                            protected void check() throws IOException, ServletException {
+                                try {
+                                    if (findText(open(new URL(finalValue)), "FishEye")) {
+                                        ok();
+                                    } else {
+                                        error("This is a valid URL but it doesn't look like FishEye");
+                                    }
+                                } catch (IOException e) {
+                                    handleIOException(finalValue, e);
+                                }
+                            }
+                        }.process();
+                    } else {
+                        ok();
                     }
                 }
             }.process();

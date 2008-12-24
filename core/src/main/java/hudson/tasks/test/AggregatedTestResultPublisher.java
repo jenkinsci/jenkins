@@ -7,6 +7,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Hudson;
+import hudson.model.Item;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -226,7 +227,10 @@ public class AggregatedTestResultPublisher extends Publisher {
         }
 
         public void doCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
-            new FormFieldValidator(req,rsp,false) {
+            // Require CONFIGURE permission on this project
+            AbstractProject project = (AbstractProject) req.findAncestor(AbstractProject.class).getObject();
+
+            new FormFieldValidator(req,rsp,project,Item.CONFIGURE) {
                 protected void check() throws IOException, ServletException {
                     for (String name : Util.tokenize(value, ",")) {
                         name = name.trim();

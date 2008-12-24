@@ -1258,8 +1258,8 @@ public class SubversionSCM extends SCM implements Serializable {
          * validate the value for a remote (repository) location.
          */
         public void doSvnRemoteLocationCheck(final StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // this can be used to hit any accessible URL, so limit that to admins
-            new FormFieldValidator(req, rsp, true) {
+            // false==No permisison needed for basic check
+            new FormFieldValidator(req, rsp, false) {
                 protected void check() throws IOException, ServletException {
                     // syntax check first
                     String url = Util.nullify(request.getParameter("value"));
@@ -1277,8 +1277,10 @@ public class SubversionSCM extends SCM implements Serializable {
                         return;
                     }
 
-                    // test the connection
-                    try {
+                    // Test the connection only if we have admin permission
+                    if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) {
+                        ok();
+                    } else try {
                         SVNURL repoURL = SVNURL.parseURIDecoded(url);
                         if (checkRepositoryPath(repoURL)==SVNNodeKind.NONE) {
                             SVNRepository repository = null;
@@ -1370,6 +1372,7 @@ public class SubversionSCM extends SCM implements Serializable {
          * validate the value for a local location (local checkout directory).
          */
         public void doSvnLocalLocationCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            // false==No permission needed for this syntax check
             new FormFieldValidator(req, rsp, false) {
                 protected void check() throws IOException, ServletException {
                     String v = Util.nullify(request.getParameter("value"));
