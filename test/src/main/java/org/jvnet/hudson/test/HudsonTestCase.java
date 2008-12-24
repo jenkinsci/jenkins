@@ -325,6 +325,10 @@ public abstract class HudsonTestCase extends TestCase {
         assertEquals(status,r.getResult());
     }
 
+    public void assertBuildStatusSuccess(Run r) throws Exception {
+        assertBuildStatus(Result.SUCCESS,r);
+    }
+
     /**
      * Asserts that the console output of the build contains the given substring.
      */
