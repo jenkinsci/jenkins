@@ -13,6 +13,7 @@ import org.dom4j.io.DOMReader;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.recipes.PresetData;
 import static org.jvnet.hudson.test.recipes.PresetData.DataSet.ANONYMOUS_READONLY;
 
@@ -66,5 +67,35 @@ public class SubversionSCMTest extends HudsonTestCase {
         html = wc.getPage(b,"tagBuild/");
         form = html.getFormByName("tag");
         form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+    }
+
+    @Email("http://www.nabble.com/Hudson-1.266-and-1.267%3A-Subversion-authentication-broken--td21156950.html")
+    public void testHttpsCheckOut() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.setScm(new SubversionSCM(
+                new String[]{"https://svn.dev.java.net/svn/hudson/trunk/hudson/test-projects/trivial-ant"},
+                new String[]{null},
+                true, null
+        ));
+
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        System.out.println(b.getLog());
+        assertBuildStatus(Result.SUCCESS,b);
+        assertTrue(p.getWorkspace().child("trivial-ant/build.xml").exists());
+    }
+
+    @Email("http://www.nabble.com/Hudson-1.266-and-1.267%3A-Subversion-authentication-broken--td21156950.html")
+    public void testHttpCheckOut() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.setScm(new SubversionSCM(
+                new String[]{"http://svn.codehaus.org/plexus/tags/JASF_INIT/plexus-avalon-components/jasf/"},
+                new String[]{null},
+                true, null
+        ));
+
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        System.out.println(b.getLog());
+        assertBuildStatus(Result.SUCCESS,b);
+        assertTrue(p.getWorkspace().child("jasf/maven.xml").exists());
     }
 }
