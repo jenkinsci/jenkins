@@ -999,7 +999,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
 
             public boolean equals(Object o) {
-                if(!(o instanceof ChartLabel))  return false;
+                // HUDSON-2682 workaround for Eclipse compilation bug 
+            	// on (c instanceof ChartLabel)
+                if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  {
+                	return false;
+                }
                 ChartLabel that = (ChartLabel) o;
                 return run == that.run;
             }
