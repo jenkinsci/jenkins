@@ -7,7 +7,6 @@ import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
-import hudson.model.Job;
 import hudson.security.Permission;
 import hudson.security.AccessControlled;
 
@@ -77,6 +76,8 @@ public abstract class FormFieldValidator {
     public final void process() throws IOException, ServletException {
         if(permission!=null)
             try {
+                if(subject==null)
+                    throw new AccessDeniedException("No subject");
                 subject.checkPermission(permission);
             } catch (AccessDeniedException e) {
                 // if the user has hudson-wisde admin permission, all checks are allowed
@@ -283,7 +284,7 @@ public abstract class FormFieldValidator {
 
         public WorkspaceFileMask(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist) {
             // Require CONFIGURE permission on the job
-            super(request, response, (AbstractProject) request.findAncestor(AbstractProject.class).getObject(), Item.CONFIGURE);
+            super(request, response, request.findAncestorObject(AbstractProject.class), Item.CONFIGURE);
             this.errorIfNotExist = errorIfNotExist;
         }
 
@@ -346,7 +347,7 @@ public abstract class FormFieldValidator {
 
         public WorkspaceFilePath(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist, boolean expectingFile) {
             // Require CONFIGURE permission on this job
-            super(request, response, (AbstractProject) request.findAncestor(AbstractProject.class).getObject(), Item.CONFIGURE);
+            super(request, response, request.findAncestorObject(AbstractProject.class), Item.CONFIGURE);
             this.errorIfNotExist = errorIfNotExist;
             this.expectingFile = expectingFile;
         }

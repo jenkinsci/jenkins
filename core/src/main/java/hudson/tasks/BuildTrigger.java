@@ -274,7 +274,7 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
          */
         public void doCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
             // Require CONFIGURE permission on this project
-            AccessControlled anc = (AccessControlled) req.findAncestor(AccessControlled.class).getObject();
+            AccessControlled anc = req.findAncestorObject(AccessControlled.class);
             new FormFieldValidator(req,rsp,anc,Item.CONFIGURE) {
                 protected void check() throws IOException, ServletException {
                     String list = request.getParameter("value");

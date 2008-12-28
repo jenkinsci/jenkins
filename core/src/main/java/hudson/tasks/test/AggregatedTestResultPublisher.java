@@ -228,7 +228,7 @@ public class AggregatedTestResultPublisher extends Publisher {
 
         public void doCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
             // Require CONFIGURE permission on this project
-            AbstractProject project = (AbstractProject) req.findAncestor(AbstractProject.class).getObject();
+            AbstractProject project = req.findAncestorObject(AbstractProject.class);
 
             new FormFieldValidator(req,rsp,project,Item.CONFIGURE) {
                 protected void check() throws IOException, ServletException {
