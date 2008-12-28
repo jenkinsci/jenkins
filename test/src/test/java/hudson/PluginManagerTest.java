@@ -28,6 +28,9 @@ public class PluginManagerTest extends HudsonTestCase {
         assertTrue( new File(hudson.getRootDir(),"plugins/tasks.hpi").exists() );
     }
 
+    /**
+     * Tests the effect of {@link WithPlugin}.
+     */
     @WithPlugin("tasks.hpi")
     public void testWithRecipe() throws Exception {
         assertNotNull(hudson.getPlugin("tasks"));
