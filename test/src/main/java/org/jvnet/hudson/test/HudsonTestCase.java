@@ -93,6 +93,8 @@ public abstract class HudsonTestCase extends TestCase {
      */
     protected List<LenientRunnable> tearDowns = new ArrayList<LenientRunnable>();
 
+    protected List<Runner> recipes = new ArrayList<Runner>();
+
     /**
      * Remember {@link WebClient}s that are created, to release them properly.
      */
@@ -169,7 +171,10 @@ public abstract class HudsonTestCase extends TestCase {
      * you can override it.
      */
     protected Hudson newHudson() throws Exception {
-        return new Hudson(homeLoader.allocate(), createWebServer());
+        File home = homeLoader.allocate();
+        for (Runner r : recipes)
+            r.decorateHome(this,home);
+        return new Hudson(home, createWebServer());
     }
 
     /**
@@ -359,6 +364,7 @@ public abstract class HudsonTestCase extends TestCase {
             Recipe r = a.annotationType().getAnnotation(Recipe.class);
             if(r==null)     continue;
             final Runner runner = r.value().newInstance();
+            recipes.add(runner);
             tearDowns.add(new LenientRunnable() {
                 public void run() throws Exception {
                     runner.tearDown(HudsonTestCase.this,a);

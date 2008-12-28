@@ -8,8 +8,12 @@ import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 import java.lang.annotation.Annotation;
+import java.io.File;
 
 import junit.framework.TestCase;
+import hudson.model.Hudson;
+
+import javax.servlet.ServletContext;
 
 /**
  * Meta-annotation for recipe annotations, which controls
@@ -40,6 +44,13 @@ public @interface Recipe {
          * Called during {@link TestCase#setUp()} to prepare the test environment.
          */
         public void setup(HudsonTestCase testCase, T recipe) throws Exception {}
+
+        /**
+         * Called right before {@link Hudson#Hudson(File, ServletContext)} is invoked
+         * to decorate the hudson home directory.
+         */
+        public void decorateHome(HudsonTestCase testCase, File home) throws Exception {}
+
         /**
          * Called during {@link TestCase#tearDown()} to shut down the test environment.
          */
