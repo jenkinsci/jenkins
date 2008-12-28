@@ -1,6 +1,7 @@
 package hudson;
 
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.apache.commons.io.FileUtils;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -25,5 +26,10 @@ public class PluginManagerTest extends HudsonTestCase {
         f.submit((HtmlButton)last(f.getHtmlElementsByTagName("button")));
 
         assertTrue( new File(hudson.getRootDir(),"plugins/tasks.hpi").exists() );
+    }
+
+    @WithPlugin("tasks.hpi")
+    public void testWithRecipe() throws Exception {
+        assertNotNull(hudson.getPlugin("tasks"));
     }
 }
