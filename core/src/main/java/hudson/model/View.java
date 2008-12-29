@@ -102,7 +102,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return Stapler.getCurrentRequest().getRootPath()+'/'+getUrl();
     }
 
-    public Api getApi(final StaplerRequest req) {
+    public Api getApi() {
         return new Api(this);
     }
 
