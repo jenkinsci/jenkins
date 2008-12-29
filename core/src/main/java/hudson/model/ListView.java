@@ -6,6 +6,7 @@ import hudson.util.FormFieldValidator;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -51,9 +52,10 @@ public class ListView extends View {
      */
     private transient Pattern includePattern;
 
-    public ListView(Hudson owner, String name) {
+    @DataBoundConstructor
+    public ListView(String name) {
         this.name = name;
-        this.owner = owner;
+        this.owner = Hudson.getInstance();
     }
 
     /**
@@ -120,10 +122,6 @@ public class ListView extends View {
         return description;
     }
 
-    public String getDisplayName() {
-        return name;
-    }
-    
     public String getIncludeRegex() {
         return includeRegex;
     }
@@ -203,7 +201,7 @@ public class ListView extends View {
     /**
      * Checks if the include regular expression is valid.
      */
-    public synchronized void doIncludeRegexCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException  {
+    public void doIncludeRegexCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException  {
         new FormFieldValidator(req, rsp, false) {
             @Override
             protected void check() throws IOException, ServletException {
@@ -218,5 +216,25 @@ public class ListView extends View {
                 ok();
             }
         }.process();
+    }
+
+    public ViewDescriptor getDescriptor() {
+        return DESCRIPTOR;
+    }
+
+    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+
+    static {
+        LIST.add(DESCRIPTOR);
+    }
+
+    public static final class DescriptorImpl extends ViewDescriptor {
+        private DescriptorImpl() {
+            super(ListView.class);
+        }
+
+        public String getDisplayName() {
+            return "List View";
+        }
     }
 }

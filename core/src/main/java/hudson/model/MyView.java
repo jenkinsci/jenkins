@@ -10,6 +10,7 @@ import javax.servlet.ServletException;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * {@link View} that only contains projects for which the current user has access to.
@@ -18,17 +19,19 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Tom Huybrechts
  */
 public class MyView extends View {
-
+    private String name;
     private final Hudson owner;
     private String description;
 
-    public MyView(Hudson owner) {
-        this.owner = owner;
+    @DataBoundConstructor
+    public MyView(String name) {
+        this.name = name;
+        this.owner = Hudson.getInstance();
     }
 
     @Override
     public boolean contains(TopLevelItem item) {
-        return (item instanceof Job) && ((Job) item).hasPermission(Hudson.ADMINISTER);
+        return item.hasPermission(Hudson.ADMINISTER);
     }
 
     @Override
@@ -60,7 +63,7 @@ public class MyView extends View {
     public Collection<TopLevelItem> getItems() {
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
         for (TopLevelItem item : owner.getItems()) {
-            if ((item instanceof Job) && ((Job) item).hasPermission(Job.CONFIGURE)) {
+            if (item.hasPermission(Job.CONFIGURE)) {
                 items.add(item);
             }
         }
@@ -74,11 +77,7 @@ public class MyView extends View {
 
     @Override
     public String getViewName() {
-        return getDisplayName();
-    }
-
-    public String getDisplayName() {
-        return "My Projects";
+        return name;
     }
 
     public TopLevelItem getJob(String name) {
@@ -95,5 +94,25 @@ public class MyView extends View {
         description = req.getParameter("description");
         owner.save();
         rsp.sendRedirect(".");  // go to the top page
+    }
+
+    public ViewDescriptor getDescriptor() {
+        return DESCRIPTOR;
+    }
+
+    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+
+    static {
+        LIST.add(DESCRIPTOR);
+    }
+    
+    public static final class DescriptorImpl extends ViewDescriptor {
+        private DescriptorImpl() {
+            super(MyView.class);
+        }
+
+        public String getDisplayName() {
+            return "My View";
+        }
     }
 }

@@ -1,6 +1,8 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.FileSystemProvisioner;
+import hudson.ExtensionPoint;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
@@ -9,6 +11,7 @@ import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.util.RunList;
+import hudson.util.DescriptorList;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -31,10 +34,20 @@ import java.util.Map;
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
  * that {@link Hudson} owns.
  *
+ * <p>
+ * This is an extension point in Hudson, allowing different kind of
+ * rendering to be added as plugins.
+ *
+ * <h2>Note for implementors</h2>
+ * <ul>
+ * <li>
+ * {@link View} subtypes need 
+ * </ul>
+ *
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint {
 
     /**
      * Gets all the items in this collection in a read-only view.
@@ -63,6 +76,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported
     public abstract String getDescription();
+
+    public abstract ViewDescriptor getDescriptor();
+
+    public String getDisplayName() {
+        return getViewName();
+    }
 
     /**
      * Returns the path relative to the context root.
@@ -260,6 +279,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Creates a new {@link Item} in this collection.
      *
+     * <p>
+     * This method should call {@link Hudson#doCreateItem(StaplerRequest, StaplerResponse)}
+     * and then add the newly created item to this view.
+     * 
      * @return
      *      null if fails.
      */
@@ -293,6 +316,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
         RSS.forwardToRss(getDisplayName()+" last builds only", getUrl(),
             lastBuilds, Run.FEED_ADAPTER_LATEST, req, rsp );
+    }
+
+    /**
+     * A list of available view types.
+     */
+    public static final DescriptorList<View> LIST = new DescriptorList<View>();
+
+    static {
+        LIST.load(ListView.class);
+        LIST.load(MyView.class);
     }
 
     public static final Comparator<View> SORTER = new Comparator<View>() {

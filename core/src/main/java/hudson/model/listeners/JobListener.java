@@ -67,7 +67,6 @@ public abstract class JobListener implements ExtensionPoint {
             JobListenerAdapter that = (JobListenerAdapter) o;
 
             return this.listener.equals(that.listener);
-
         }
 
         public int hashCode() {

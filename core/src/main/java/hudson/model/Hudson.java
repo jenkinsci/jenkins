@@ -253,11 +253,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /*package*/ Integer quietPeriod;
 
     /**
-     * {@link ListView}s.
+     * {@link View}s.
      */
-    private List<ListView> views;   // can't initialize it eagerly for backward compatibility
-
-    private transient MyView myView = new MyView(this);
+    private List<View> views;   // can't initialize it eagerly for backward compatibility
 
     private transient final FingerprintMap fingerprintMap = new FingerprintMap();
 
@@ -519,6 +517,17 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         // combining these two lines triggers javac bug. See issue #610.
         Descriptor d = findDescriptor(shortClassName, Jobs.PROPERTIES);
         return (JobPropertyDescriptor) d;
+    }
+
+    /**
+     * @deprecated
+     *      This method is really just implementing {@link View#getDescriptor()}.
+     *      It's unlikely that your program wants to invoke this method explicitly.
+     *      Perhaps you meant {@link #getDescriptor(String)} ?
+     */
+    public ViewDescriptor getDescriptor() {
+        // TODO
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -824,17 +833,14 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
     public synchronized View getView(String name) {
         if(views!=null) {
-            for (ListView v : views) {
+            for (View v : views) {
                 if(v.getViewName().equals(name))
                     return v;
             }
         }
-        if (this.getViewName().equals(name)) {
+        if (this.getViewName().equals(name))
             return this;
-        } else if (myView.getViewName().equals(name)) {
-            return myView;
-        } else
-            return null;
+        return null;
     }
 
     /**
@@ -843,27 +849,15 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     @Exported
     public synchronized View[] getViews() {
         if(views==null)
-            views = new ArrayList<ListView>();
+            views = new ArrayList<View>();
 
-        if(Functions.isAnonymous()) {
-            View[] r = new View[views.size()+1];
-            views.toArray(r);
-            // sort Views and put "all" at the very beginning
-            r[r.length-1] = r[0];
-            Arrays.sort(r,1,r.length, View.SORTER);
-            r[0] = this;
-            return r;
-        } else {
-            // this is an authenticated user, so let's have the "my projects" view
-            View[] r = new View[views.size()+2];
-            views.toArray(r);
-            r[r.length-2] = r[0];
-            r[r.length-1] = r[1];
-            Arrays.sort(r,2,r.length, View.SORTER);
-            r[0] = myView;
-            r[1] = this;
-            return r;
-        }
+        View[] r = new View[views.size()+1];
+        views.toArray(r);
+        // sort Views and put "all" at the very beginning
+        r[r.length-1] = r[0];
+        Arrays.sort(r,1,r.length, View.SORTER);
+        r[0] = this;
+        return r;
     }
 
     public synchronized void deleteView(ListView view) throws IOException {
@@ -1044,7 +1038,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             })
             .add(new CollectionSearchIndex() {// for views
                 protected View get(String key) { return getView(key); }
-                protected Collection<ListView> all() { return views; }
+                protected Collection<View> all() { return views; }
             });
     }
 
@@ -1334,11 +1328,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         items.remove(item.getName());
         if(views!=null) {
-            for (ListView v : views) {
-                synchronized(v) {
-                    v.jobNames.remove(item.getName());
-                }
-            }
+            // TODO: resurrect
+//            for (View v : views) {
+//                synchronized(v) {
+//                    v.jobNames.remove(item.getName());
+//                }
+//            }
             save();
         }
     }
@@ -1352,12 +1347,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         items.put(newName,job);
 
         if(views!=null) {
-            for (ListView v : views) {
-                synchronized(v) {
-                    if(v.jobNames.remove(oldName))
-                        v.jobNames.add(newName);
-                }
-            }
+            // TODO: resurrect
+//            for (View v : views) {
+//                synchronized(v) {
+//                    if(v.jobNames.remove(oldName))
+//                        v.jobNames.add(newName);
+//                }
+//            }
             save();
         }
     }
@@ -1885,27 +1881,33 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(View.CREATE);
-
-        req.setCharacterEncoding("UTF-8");
-
-        String name = req.getParameter("name");
-
         try {
-            checkGoodName(name);
-        } catch (ParseException e) {
-            sendError(e, req, rsp);
-            return;
+            checkPermission(View.CREATE);
+
+            req.setCharacterEncoding("UTF-8");
+
+            String name = req.getParameter("name");
+            String mode = req.getParameter("mode");
+
+            try {
+                checkGoodName(name);
+            } catch (ParseException e) {
+                sendError(e, req, rsp);
+                return;
+            }
+
+            // create a view
+            View v = View.LIST.findByName(mode).newInstance(req,req.getSubmittedForm());
+            if(views==null)
+                views = new Vector<View>();
+            views.add(v);
+            save();
+
+            // redirect to the config screen
+            rsp.sendRedirect2("./"+v.getUrl()+"configure");
+        } catch (FormException e) {
+            sendError(e,req,rsp);
         }
-
-        ListView v = new ListView(this, name);
-        if(views==null)
-            views = new Vector<ListView>();
-        views.add(v);
-        save();
-
-        // redirect to the config screen
-        rsp.sendRedirect2("./"+v.getUrl()+"configure");
     }
 
     /**
@@ -2321,6 +2323,28 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             }
         }.process();
     }
+
+    /**
+     * Checks if a top-level view with the given name exists.
+     */
+    public void doViewExistsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        new FormFieldValidator(req,rsp,View.CREATE) {
+            protected void check() throws IOException, ServletException {
+                String view = fixEmpty(request.getParameter("value"));
+                if(view==null) {
+                    ok(); // nothing is entered yet
+                    return;
+                }
+
+                if(getView(view)==null)
+                    ok();
+                else
+                    error(Messages.Hudson_ViewAlreadyExists(view));
+            }
+        }.process();
+    }
+
+
     /**
      * Checks if the value for a field is set; if not an error or warning text is displayed.
      * If the parameter "value" is not set then the parameter "errorText" is displayed
