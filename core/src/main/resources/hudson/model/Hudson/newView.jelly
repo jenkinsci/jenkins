@@ -6,18 +6,51 @@
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <f:form method="post" action="createView">
+      <f:form method="post" action="createView" name="createView">
         <f:entry title="${%View name}">
-          <input type="text" name="name" class="setting-input" id="box" />
+          <f:textbox id="name" name="name" checkUrl="'${rootURL}/viewExistsCheck?value='+escape(this.value)"
+                     onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
           <script>
-            document.getElementById('box').focus();
+            $('name').focus();
           </script>
         </f:entry>
 
+        <j:getStatic var="views" className="hudson.model.View" field="LIST" />
+        <j:forEach var="d" items="${views}">
+          <j:if test="${d.isInstantiable()}">
+            <f:block>
+              <j:set var="id" value="${h.generateId()}"/>
+              <input type="radio" name="mode" value="${d.clazz.name}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" id="${id}" />
+              <st:nbsp/>
+              <label for="${id}"><b>${d.displayName}</b></label>
+            </f:block>
+            <f:entry>
+              <st:include page="${d.newViewDetailPage}" from="${d}" optional="true"/>
+            </f:entry>
+          </j:if>
+        </j:forEach>
+
         <f:block>
-          <f:submit value="OK" />
+          <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
         </f:block>
       </f:form>
+      <script><![CDATA[
+        var okButton = makeButton($('ok'),null);
+
+        function updateOk(form) {
+          function state() {
+            if($('name').value.length==0)   return true;
+            var radio = form.elements['mode'];
+            for(i=0;i<radio.length;i++)
+              if(radio[i].checked)
+                return false;
+            return true;
+          }
+
+          okButton.set('disabled',state(),false);
+        }
+        updateOk(okButton.getForm());
+      ]]></script>
     </l:main-panel>
   </l:layout>
 </j:jelly>
