@@ -1900,7 +1900,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             save();
 
             // redirect to the config screen
-            rsp.sendRedirect2("./"+v.getUrl()+"configure");
+            rsp.sendRedirect2("./"+v.getUrl()+v.getPostConstructLandingPage());
         } catch (FormException e) {
             sendError(e,req,rsp);
         }

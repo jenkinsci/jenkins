@@ -76,6 +76,11 @@ public class MyView extends View {
     }
 
     @Override
+    public String getPostConstructLandingPage() {
+        return ""; // there's no configuration page
+    }
+
+    @Override
     public void onJobChange(Item item, String oldName, String newName) {
         // noop
     }

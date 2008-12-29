@@ -107,6 +107,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * Returns the page to redirect the user to, after the view is created.
+     *
+     * The returned string is appended to "/view/foobar/", so for example
+     * to direct the user to the top page of the view, return "", etc.
+     */
+    public String getPostConstructLandingPage() {
+        return "configure";
+    }
+
+    /**
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
