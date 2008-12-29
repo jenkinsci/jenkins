@@ -76,6 +76,11 @@ public class MyView extends View {
     }
 
     @Override
+    public void onJobChange(Item item, String oldName, String newName) {
+        // noop
+    }
+
+    @Override
     public String getViewName() {
         return name;
     }

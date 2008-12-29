@@ -1184,6 +1184,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return authorizationStrategy.getRootACL();
     }
 
+    @Override
+    public void onJobChange(Item item, String oldName, String newName) {
+        // noop
+    }
+
     /**
      * @return
      *      never null.
@@ -1328,12 +1333,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         items.remove(item.getName());
         if(views!=null) {
-            // TODO: resurrect
-//            for (View v : views) {
-//                synchronized(v) {
-//                    v.jobNames.remove(item.getName());
-//                }
-//            }
+            for (View v : views)
+                v.onJobChange(item, item.getName(), null);
             save();
         }
     }
@@ -1347,13 +1348,8 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         items.put(newName,job);
 
         if(views!=null) {
-            // TODO: resurrect
-//            for (View v : views) {
-//                synchronized(v) {
-//                    if(v.jobNames.remove(oldName))
-//                        v.jobNames.add(newName);
-//                }
-//            }
+            for (View v : views)
+                v.onJobChange(job, oldName, newName);
             save();
         }
     }

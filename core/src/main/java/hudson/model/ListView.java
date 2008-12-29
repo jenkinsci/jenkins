@@ -139,6 +139,13 @@ public class ListView extends View {
         return "view/"+name+'/';
     }
 
+    @Override
+    public synchronized void onJobChange(Item item, String oldName, String newName) {
+        jobNames.remove(oldName);
+        if(newName!=null)
+            jobNames.add(newName);
+    }
+
     /**
      * Accepts submission from the configuration page.
      */

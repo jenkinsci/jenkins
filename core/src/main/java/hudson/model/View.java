@@ -1,17 +1,16 @@
 package hudson.model;
 
-import hudson.Util;
-import hudson.FileSystemProvisioner;
 import hudson.ExtensionPoint;
-import hudson.security.AccessControlled;
-import hudson.security.Permission;
-import hudson.security.ACL;
-import hudson.security.PermissionGroup;
+import hudson.Util;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
-import hudson.util.RunList;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
 import hudson.util.DescriptorList;
+import hudson.util.RunList;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -121,6 +120,22 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean hasPermission(Permission p) {
         return getACL().hasPermission(p);
     }
+
+    /**
+     * Called when a job name is changed or deleted.
+     *
+     * <p>
+     * If this view contains this job, it should update the view membership so that
+     * the renamed job will remain in the view, and the deleted job is removed.
+     *
+     * @param item
+     *      The item whose name is being changed.
+     * @param oldName
+     *      Old name of the item. Always non-null.
+     * @param newName
+     *      New name of the item, if the item is renamed. Or null, if the item is removed.
+     */
+    public abstract void onJobChange(Item item, String oldName, String newName);
 
     @ExportedBean(defaultVisibility=2)
     public static final class UserInfo implements Comparable<UserInfo> {
