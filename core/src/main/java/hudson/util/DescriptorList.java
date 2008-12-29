@@ -41,6 +41,18 @@ public final class DescriptorList<T extends Describable<T>> extends CopyOnWriteA
     }
 
     /**
+     * Finds a descriptor by their {@link Descriptor#clazz}.
+     *
+     * If none is found, null is returned.
+     */
+    public Descriptor<T> findByName(String fullyQualifiedClassName) {
+        for (Descriptor<T> d : this)
+            if(d.clazz.getName().equals(fullyQualifiedClassName))
+                return d;
+        return null;
+    }
+
+    /**
      * No-op method used to force the class initialization of the given class.
      * The class initialization in turn is expected to put the descriptor
      * into the {@link DescriptorList}.
