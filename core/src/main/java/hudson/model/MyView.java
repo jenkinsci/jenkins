@@ -19,12 +19,11 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Tom Huybrechts
  */
 public class MyView extends View {
-    private String name;
     private final Hudson owner;
 
     @DataBoundConstructor
     public MyView(String name) {
-        this.name = name;
+        super(name);
         this.owner = Hudson.getInstance();
     }
 
@@ -63,11 +62,6 @@ public class MyView extends View {
     @Override
     public void onJobChange(Item item, String oldName, String newName) {
         // noop
-    }
-
-    @Override
-    public String getViewName() {
-        return name;
     }
 
     public TopLevelItem getJob(String name) {

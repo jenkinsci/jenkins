@@ -54,9 +54,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
     protected /*final*/ ViewGroup owner;
 
     /**
+     * Name of this view.
+     */
+    protected String name;
+
+    /**
      * Message displayed in the view page.
      */
     protected String description;
+
+    protected View(String name) {
+        this.name = name;
+    }
 
     /**
      * Gets all the items in this collection in a read-only view.
@@ -78,7 +87,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Gets the name of all this collection.
      */
     @Exported(visibility=2,name="name")
-    public abstract String getViewName();
+    public String getViewName() {
+        return name;
+    }
 
     /**
      * Message displayed in the top page. Can be null. Includes HTML.

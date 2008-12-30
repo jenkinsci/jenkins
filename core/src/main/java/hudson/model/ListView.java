@@ -33,11 +33,6 @@ public class ListView extends View {
     /*package*/ final Set<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
 
     /**
-     * Name of this view.
-     */
-    private String name;
-
-    /**
      * Include regex string.
      */
     private String includeRegex;
@@ -49,7 +44,7 @@ public class ListView extends View {
 
     @DataBoundConstructor
     public ListView(String name) {
-        this.name = name;
+        super(name);
         this.owner = Hudson.getInstance();
     }
 
@@ -99,10 +94,6 @@ public class ListView extends View {
 
     public boolean contains(TopLevelItem item) {
         return jobNames.contains(item.getName());
-    }
-
-    public String getViewName() {
-        return name;
     }
 
     public String getIncludeRegex() {
