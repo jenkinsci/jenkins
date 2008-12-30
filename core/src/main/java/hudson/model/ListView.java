@@ -38,11 +38,6 @@ public class ListView extends View {
     private String name;
 
     /**
-     * Message displayed in the view page.
-     */
-    private String description;
-
-    /**
      * Include regex string.
      */
     private String includeRegex;
@@ -58,14 +53,6 @@ public class ListView extends View {
         this.owner = Hudson.getInstance();
     }
 
-    /**
-     * Returns the transient {@link Action}s associated with the top page.
-     *
-     * @see Hudson#getActions()
-     */
-    public List<Action> getActions() {
-        return Hudson.getInstance().getActions();
-    }
 
     /**
      * Returns a read-only view of all {@link Job}s in this view.
@@ -116,10 +103,6 @@ public class ListView extends View {
 
     public String getViewName() {
         return name;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public String getIncludeRegex() {
@@ -181,28 +164,6 @@ public class ListView extends View {
         owner.save();
 
         rsp.sendRedirect2("../"+name);
-    }
-
-    /**
-     * Accepts the new description.
-     */
-    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(CONFIGURE);
-
-        req.setCharacterEncoding("UTF-8");
-        description = req.getParameter("description");
-        owner.save();
-        rsp.sendRedirect(".");  // go to the top page
-    }
-
-    /**
-     * Deletes this view.
-     */
-    public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        checkPermission(DELETE);
-
-        owner.deleteView(this);
-        rsp.sendRedirect2(req.getContextPath()+"/");
     }
 
     /**

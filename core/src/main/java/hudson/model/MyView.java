@@ -21,7 +21,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class MyView extends View {
     private String name;
     private final Hudson owner;
-    private String description;
 
     @DataBoundConstructor
     public MyView(String name) {
@@ -40,20 +39,6 @@ public class MyView extends View {
         return owner.doCreateItem(req, rsp);
     }
 
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-     /**
-      * Returns the transient {@link Action}s associated with the top page.
-      *
-      * @see Hudson#getActions()
-      */
-     public List<Action> getActions() {
-         return Hudson.getInstance().getActions();
-     }
-    
     @Override
     public TopLevelItem getItem(String name) {
         return owner.getItem(name);
@@ -92,18 +77,6 @@ public class MyView extends View {
 
     public TopLevelItem getJob(String name) {
         return getItem(name);
-    }
-
-    /**
-     * Accepts the new description.
-     */
-    public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(CONFIGURE);
-
-        req.setCharacterEncoding("UTF-8");
-        description = req.getParameter("description");
-        owner.save();
-        rsp.sendRedirect(".");  // go to the top page
     }
 
     public ViewDescriptor getDescriptor() {

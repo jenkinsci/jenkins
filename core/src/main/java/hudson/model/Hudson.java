@@ -148,7 +148,7 @@ import javax.servlet.RequestDispatcher;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node, StaplerProxy {
+public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node, StaplerProxy, ViewGroup {
     private transient final Queue queue;
 
     /**
@@ -847,20 +847,18 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      * Gets the read-only list of all {@link View}s.
      */
     @Exported
-    public synchronized View[] getViews() {
+    public synchronized Collection<View> getViews() {
         if(views==null)
-            views = new ArrayList<View>();
+            return Collections.<View>singletonList(this);
 
-        View[] r = new View[views.size()+1];
-        views.toArray(r);
-        // sort Views and put "all" at the very beginning
-        r[r.length-1] = r[0];
-        Arrays.sort(r,1,r.length, View.SORTER);
-        r[0] = this;
-        return r;
+        List<View> copy = new ArrayList<View>(views.size()+1);
+        copy.add(this);
+        copy.addAll(views);
+        Collections.sort(copy, View.SORTER);
+        return copy;
     }
 
-    public synchronized void deleteView(ListView view) throws IOException {
+    public synchronized void deleteView(View view) throws IOException {
         if(views!=null) {
             views.remove(view);
             save();
@@ -1894,6 +1892,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
             // create a view
             View v = View.LIST.findByName(mode).newInstance(req,req.getSubmittedForm());
+            v.owner = this;
             if(views==null)
                 views = new Vector<View>();
             views.add(v);

@@ -47,6 +47,16 @@ import java.util.Map;
  */
 @ExportedBean
 public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint {
+    /**
+     * Container of this view. Set right after the construction
+     * and never change thereafter.
+     */
+    protected /*final*/ ViewGroup owner;
+
+    /**
+     * Message displayed in the view page.
+     */
+    protected String description;
 
     /**
      * Gets all the items in this collection in a read-only view.
@@ -74,7 +84,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Message displayed in the top page. Can be null. Includes HTML.
      */
     @Exported
-    public abstract String getDescription();
+    public String getDescription() {
+        return description;
+    }
 
     public abstract ViewDescriptor getDescriptor();
 
@@ -92,6 +104,19 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     public String getSearchUrl() {
         return getUrl();
+    }
+
+    /**
+     * Returns the transient {@link Action}s associated with the top page.
+     *
+     * <p>
+     * If views don't want to show top-level actions, this method
+     * can be overridden to return different objects.
+     *
+     * @see Hudson#getActions()
+     */
+    public List<Action> getActions() {
+        return Hudson.getInstance().getActions();
     }
 
     /**
@@ -300,6 +325,29 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 protected Collection<TopLevelItem> all() { return getItems(); }
             });
     }
+
+    /**
+     * Accepts the new description.
+     */
+    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        checkPermission(CONFIGURE);
+
+        req.setCharacterEncoding("UTF-8");
+        description = req.getParameter("description");
+        owner.save();
+        rsp.sendRedirect(".");  // go to the top page
+    }
+
+    /**
+     * Deletes this view.
+     */
+    public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        checkPermission(DELETE);
+
+        owner.deleteView(this);
+        rsp.sendRedirect2(req.getContextPath()+"/");
+    }
+
 
     /**
      * Creates a new {@link Item} in this collection.
