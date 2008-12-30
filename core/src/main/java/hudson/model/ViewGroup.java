@@ -37,4 +37,15 @@ public interface ViewGroup extends Saveable, ModelObject {
      * like "foo/bar/zot/". Note no leading slash but trailing slash.
      */
     String getUrl();
+
+    /**
+     * {@link View} calls this method when it's renamed.
+     * This method is intended to work as a notification to the {@link ViewGroup}
+     * (so that it can adjust its internal data structure, for example.)
+     *
+     * <p>
+     * It is the caller's responsibility to ensure that the new name is a
+     * {@linkplain Hudson#checkGoodName(String) legal view name}.
+     */
+    void onViewRenamed(View view, String oldName, String newName);
 }

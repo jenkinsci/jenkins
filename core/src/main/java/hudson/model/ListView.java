@@ -110,7 +110,7 @@ public class ListView extends View {
     }
 
     @Override
-    public synchronized void onJobChange(Item item, String oldName, String newName) {
+    public synchronized void onJobRenamed(Item item, String oldName, String newName) {
         jobNames.remove(oldName);
         if(newName!=null)
             jobNames.add(newName);
@@ -140,9 +140,7 @@ public class ListView extends View {
         includePattern = null;
 
         try {
-            String n = req.getParameter("name");
-            Hudson.checkGoodName(n);
-            name = n;
+            rename(req.getParameter("name"));
         } catch (ParseException e) {
             sendError(e, req, rsp);
             return;

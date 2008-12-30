@@ -28,6 +28,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.text.ParseException;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
@@ -89,10 +90,22 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Gets the name of all this collection.
+     *
+     * @see #rename(String)
      */
     @Exported(visibility=2,name="name")
     public String getViewName() {
         return name;
+    }
+
+    /**
+     * Renames this view.
+     */
+    public void rename(String newName) throws ParseException {
+        Hudson.checkGoodName(newName);
+        String oldName = name;
+        name = newName;
+        owner.onViewRenamed(this,oldName,newName);
     }
 
     /**
@@ -187,7 +200,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @param newName
      *      New name of the item, if the item is renamed. Or null, if the item is removed.
      */
-    public abstract void onJobChange(Item item, String oldName, String newName);
+    public abstract void onJobRenamed(Item item, String oldName, String newName);
 
     @ExportedBean(defaultVisibility=2)
     public static final class UserInfo implements Comparable<UserInfo> {

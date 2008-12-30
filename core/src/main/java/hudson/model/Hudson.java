@@ -470,6 +470,16 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     /**
+     * @deprecated
+     *      {@link Hudson} can't be renamed unlike a regular view.
+     */
+    @Override
+    public void rename(String newName) throws ParseException {
+        throw new UnsupportedOperationException();
+    }
+
+
+    /**
      * Gets the SCM descriptor by name. Primarily used for making them web-visible.
      */
     public Descriptor<SCM> getScm(String shortClassName) {
@@ -1017,6 +1027,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return "";
     }
 
+    public void onViewRenamed(View view, String oldName, String newName) {
+        // implementation of Hudson is immune to view name change.
+    }
+
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex()
@@ -1180,7 +1194,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     }
 
     @Override
-    public void onJobChange(Item item, String oldName, String newName) {
+    public void onJobRenamed(Item item, String oldName, String newName) {
         // noop
     }
 
@@ -1329,7 +1343,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         items.remove(item.getName());
         if(views!=null) {
             for (View v : views)
-                v.onJobChange(item, item.getName(), null);
+                v.onJobRenamed(item, item.getName(), null);
             save();
         }
     }
@@ -1344,7 +1358,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
 
         if(views!=null) {
             for (View v : views)
-                v.onJobChange(job, oldName, newName);
+                v.onJobRenamed(job, oldName, newName);
             save();
         }
     }
