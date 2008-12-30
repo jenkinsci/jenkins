@@ -1,6 +1,0 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<j:if test="${app.fingerprintMap.ready}">
-	  <l:task icon="images/24x24/search.gif" href="${rootURL}/projectRelationship" title="${%Project Relationship}" />
-	  <l:task icon="images/24x24/fingerprint.gif" href="${rootURL}/fingerprintCheck" title="${%Check File Fingerprint}" />
-	</j:if>
-</j:jelly>

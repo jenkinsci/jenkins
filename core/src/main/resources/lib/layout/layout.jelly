@@ -135,12 +135,14 @@
         <td id="left-top-nav">
           <j:forEach var="anc" items="${request.ancestors}">
             <j:if test="${h.isModel(anc.object)}">
-              <j:if test="${anc.prev!=null}">
-                <j:whitespace> &#187; </j:whitespace>
+              <j:if test="${anc.prev.url!=anc.url}">
+                <j:if test="${anc.prev!=null}">
+                  <j:whitespace> &#187; </j:whitespace>
+                </j:if>
+                <a href="${anc.url}/">
+                  ${anc.object.displayName}
+                </a>
               </j:if>
-              <a href="${anc.url}/">
-                ${anc.object.displayName}
-              </a>
             </j:if>
           </j:forEach>
         </td>

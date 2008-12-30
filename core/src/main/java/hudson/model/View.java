@@ -81,7 +81,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Gets the {@link TopLevelItem} of the given name.
      */
-    public abstract TopLevelItem getItem(String name);
+    public TopLevelItem getItem(String name) {
+        return Hudson.getInstance().getItem(name);
+    }
+
+    /**
+     * Alias for {@link #getItem(String)}. This is the one used in the URL binding.
+     */
+    public final TopLevelItem getJob(String name) {
+        return getItem(name);
+    }
 
     /**
      * Checks if the job is in this collection.
@@ -130,12 +139,20 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * If true, this is a view that renders the top page of Hudson.
+     */
+    public boolean isDefault() {
+        return Hudson.getInstance().getPrimaryView()==this;
+    }
+
+    /**
      * Returns the path relative to the context root.
      *
      * Doesn't start with '/' but ends with '/'. (except when this is
      * Hudson, 
      */
     public String getUrl() {
+        if(isDefault())   return "";
         return owner.getUrl()+"view/"+getViewName()+'/';
     }
 
@@ -274,38 +291,42 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Does this {@link View} has any associated user information recorded?
      */
     public final boolean hasPeople() {
-        for (Item item : getItems()) {
-            for (Job job : item.getAllJobs()) {
-                if (job instanceof AbstractProject) {
-                    AbstractProject<?,?> p = (AbstractProject) job;
-                    for (AbstractBuild<?,?> build : p.getBuilds()) {
-                        for (Entry entry : build.getChangeSet()) {
-                            User user = entry.getAuthor();
-                            if(user!=null)
-                                return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+        return People.isApplicable(getItems());
     }
 
     /**
      * Gets the users that show up in the changelog of this job collection.
      */
     public final People getPeople() {
-        return new People();
+        return new People(this);
     }
 
     @ExportedBean
-    public final class People  {
+    public static final class People  {
         @Exported
         public final List<UserInfo> users;
 
-        public People() {
+        public final Object parent;
+
+        public People(Hudson parent) {
+            this.parent = parent;
+            // for Hudson, really load all users
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
-            for (Item item : getItems()) {
+            User unknown = User.getUnknown();
+            for(User u : User.getAll()) {
+                if(u==unknown)  continue;   // skip the special 'unknown' user
+                UserInfo info = users.get(u);
+                if(info==null)
+                    users.put(u,new UserInfo(u,null,null));
+            }
+
+            this.users = toList(users);
+        }
+
+        public People(View parent) {
+            this.parent = parent;
+            Map<User,UserInfo> users = new HashMap<User,UserInfo>();
+            for (Item item : parent.getItems()) {
                 for (Job job : item.getAllJobs()) {
                     if (job instanceof AbstractProject) {
                         AbstractProject<?,?> p = (AbstractProject) job;
@@ -327,29 +348,36 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 }
             }
 
-            if(View.this==Hudson.getInstance()) {
-                // for Hudson, really load all users
-                User unknown = User.getUnknown();
-                for(User u : User.getAll()) {
-                    if(u==unknown)  continue;   // skip the special 'unknown' user
-                    UserInfo info = users.get(u);
-                    if(info==null)
-                        users.put(u,new UserInfo(u,null,null));
-                }
-            }
+            this.users = toList(users);
+        }
 
+        private List<UserInfo> toList(Map<User,UserInfo> users) {
             ArrayList<UserInfo> list = new ArrayList<UserInfo>();
             list.addAll(users.values());
             Collections.sort(list);
-            this.users = Collections.unmodifiableList(list);
-        }
-
-        public View getParent() {
-            return View.this;
+            return Collections.unmodifiableList(list);
         }
 
         public Api getApi() {
             return new Api(this);
+        }
+
+        public static boolean isApplicable(Collection<? extends Item> items) {
+            for (Item item : items) {
+                for (Job job : item.getAllJobs()) {
+                    if (job instanceof AbstractProject) {
+                        AbstractProject<?,?> p = (AbstractProject) job;
+                        for (AbstractBuild<?,?> build : p.getBuilds()) {
+                            for (Entry entry : build.getChangeSet()) {
+                                User user = entry.getAuthor();
+                                if(user!=null)
+                                    return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
     }
 
@@ -435,6 +463,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     static {
         LIST.load(ListView.class);
+        LIST.load(AllView.class);
         LIST.load(MyView.class);
     }
 

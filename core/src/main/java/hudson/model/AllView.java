@@ -1,32 +1,28 @@
 package hudson.model;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import javax.servlet.ServletException;
-
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.DataBoundConstructor;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
+import java.util.Collection;
 
 /**
- * {@link View} that only contains projects for which the current user has access to.
+ * {@link View} that contains everything.
  *
- * @since 1.220
- * @author Tom Huybrechts
+ * @author Kohsuke Kawaguchi
+ * @since 1.269
  */
-public class MyView extends View {
+public class AllView extends View {
     @DataBoundConstructor
-    public MyView(String name) {
+    public AllView(String name) {
         super(name);
     }
 
     @Override
     public boolean contains(TopLevelItem item) {
-        return item.hasPermission(Job.CONFIGURE);
+        return true;
     }
 
     @Override
@@ -37,13 +33,7 @@ public class MyView extends View {
 
     @Override
     public Collection<TopLevelItem> getItems() {
-        List<TopLevelItem> items = new ArrayList<TopLevelItem>();
-        for (TopLevelItem item : Hudson.getInstance().getItems()) {
-            if (item.hasPermission(Job.CONFIGURE)) {
-                items.add(item);
-            }
-        }
-        return Collections.unmodifiableList(items);
+        return Hudson.getInstance().getItems();
     }
 
     @Override
@@ -65,14 +55,19 @@ public class MyView extends View {
     static {
         LIST.add(DESCRIPTOR);
     }
-    
+
     public static final class DescriptorImpl extends ViewDescriptor {
         private DescriptorImpl() {
-            super(MyView.class);
+            super(AllView.class);
+        }
+
+        @Override
+        public boolean isInstantiable() {
+            return false;
         }
 
         public String getDisplayName() {
-            return Messages.MyView_DisplayName();
+            return Messages.Hudson_ViewName();
         }
     }
 }

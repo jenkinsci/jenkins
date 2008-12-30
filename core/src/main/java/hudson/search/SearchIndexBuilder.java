@@ -64,6 +64,10 @@ public final class SearchIndexBuilder {
         return this;
     }
 
+    public SearchIndexBuilder add(SearchIndexBuilder index) {
+        return add(index.make());
+    }
+
     public SearchIndex make() {
         SearchIndex r = new FixedSet(items);
         for (SearchIndex index : indices)

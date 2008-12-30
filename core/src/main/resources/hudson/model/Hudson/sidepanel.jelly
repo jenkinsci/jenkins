@@ -1,0 +1,1 @@
+<st:include it="${it.primaryView}" page="sidepanel.jelly" xmlns:st="jelly:stapler" />

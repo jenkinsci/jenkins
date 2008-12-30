@@ -8,25 +8,7 @@
         <t:editableDescription permission="${app.ADMINISTER}"/>
 		  </div>
       <j:set var="items" value="${it.items}"/>
-      <j:choose>
-        <j:when test="${empty(items)}">
-          <st:include page="noJob.jelly" />
-        </j:when>
-        <j:otherwise>
-          <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
-          <t:projectView jobs="${items}" jobBaseUrl="" showViewTabs="true">
-            <!-- view tab bar -->
-            <l:tabBar>
-              <j:forEach var="v" items="${app.views}">
-                <l:tab name="${v.viewName}" active="${v==it}" href="${rootURL}/${v.url}" />
-              </j:forEach>
-              <j:if test="${it.hasPermission(it.CREATE)}">
-                <l:tab name="+" href="${rootURL}/newView" active="false" />
-              </j:if>
-            </l:tabBar>
-          </t:projectView>
-        </j:otherwise>
-      </j:choose>
+      <st:include page="main.jelly" />
 		</l:main-panel>
     <l:header>
       <!-- for screen resolution detection -->

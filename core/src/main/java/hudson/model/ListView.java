@@ -79,14 +79,6 @@ public class ListView extends View {
         return items;
     }
 
-    public TopLevelItem getItem(String name) {
-        return Hudson.getInstance().getItem(name);
-    }
-
-    public TopLevelItem getJob(String name) {
-        return getItem(name);
-    }
-
     public boolean contains(TopLevelItem item) {
         return jobNames.contains(item.getName());
     }

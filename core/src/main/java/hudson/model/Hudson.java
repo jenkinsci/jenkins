@@ -90,6 +90,7 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletContext;
@@ -126,7 +127,6 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TreeSet;
-import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -148,7 +148,7 @@ import javax.servlet.RequestDispatcher;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node, StaplerProxy, ViewGroup {
+public final class Hudson extends AbstractModelObject implements ItemGroup<TopLevelItem>, Node, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled {
     private transient final Queue queue;
 
     /**
@@ -255,7 +255,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     /**
      * {@link View}s.
      */
-    private List<View> views;   // can't initialize it eagerly for backward compatibility
+    private final CopyOnWriteArrayList<View> views = new CopyOnWriteArrayList<View>();
+
+    /**
+     * Name of the primary view.
+     */
+    private volatile String primaryView;
 
     private transient final FingerprintMap fingerprintMap = new FingerprintMap();
 
@@ -331,7 +336,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     private transient final LogRecorderManager log = new LogRecorderManager();
 
     public Hudson(File root, ServletContext context) throws IOException {
-        super(null);
         this.root = root;
         this.servletContext = context;
         if(theInstance!=null)
@@ -460,6 +464,21 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return noUsageStatistics==null || !noUsageStatistics;
     }
 
+    public View.People getPeople() {
+        return new View.People(this);
+    }
+
+    /**
+     * Does this {@link View} has any associated user information recorded?
+     */
+    public final boolean hasPeople() {
+        return View.People.isApplicable(items.values());
+    }
+
+    public Api getApi() {
+        return new Api(this); 
+    }
+
     /**
      * Returns a secret key that survives across container start/stop.
      * <p>
@@ -467,20 +486,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     public String getSecretKey() {
         return  secretKey;
-    }
-
-    /**
-     * @deprecated
-     *      {@link Hudson} can't be renamed unlike a regular view.
-     */
-    @Override
-    public void rename(String newName) throws ParseException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getViewName() {
-        return Messages.Hudson_ViewName();
     }
 
     /**
@@ -532,17 +537,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         // combining these two lines triggers javac bug. See issue #610.
         Descriptor d = findDescriptor(shortClassName, Jobs.PROPERTIES);
         return (JobPropertyDescriptor) d;
-    }
-
-    /**
-     * @deprecated
-     *      This method is really just implementing {@link View#getDescriptor()}.
-     *      It's unlikely that your program wants to invoke this method explicitly.
-     *      Perhaps you meant {@link #getDescriptor(String)} ?
-     */
-    public ViewDescriptor getDescriptor() {
-        // TODO
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -835,26 +829,11 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return names;
     }
 
-    /**
-     * Every job belongs to us.
-     *
-     * @deprecated
-     *      why are you calling a method that always return true?
-     */
-    @Deprecated
-    public boolean contains(TopLevelItem view) {
-        return true;
-    }
-
     public synchronized View getView(String name) {
-        if(views!=null) {
-            for (View v : views) {
-                if(v.getViewName().equals(name))
-                    return v;
-            }
+        for (View v : views) {
+            if(v.getViewName().equals(name))
+                return v;
         }
-        if (this.getViewName().equals(name))
-            return this;
         return null;
     }
 
@@ -863,21 +842,16 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      */
     @Exported
     public synchronized Collection<View> getViews() {
-        if(views==null)
-            return Collections.<View>singletonList(this);
-
-        List<View> copy = new ArrayList<View>(views.size()+1);
-        copy.add(this);
-        copy.addAll(views);
+        List<View> copy = new ArrayList<View>(views);
         Collections.sort(copy, View.SORTER);
         return copy;
     }
 
     public synchronized void deleteView(View view) throws IOException {
-        if(views!=null) {
-            views.remove(view);
-            save();
-        }
+        if(views.size()<=1)
+            throw new IllegalStateException();
+        views.remove(view);
+        save();
     }
 
     /**
@@ -1031,6 +1005,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return "";
     }
 
+    public String getSearchUrl() {
+        return "";
+    }
+
     public void onViewRenamed(View view, String oldName, String newName) {
         // implementation of Hudson is immune to view name change.
     }
@@ -1041,6 +1019,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             .add("configure", "config","configure")
             .add("manage")
             .add("log")
+            .add(getPrimaryView().makeSearchIndex())
             .add(new CollectionSearchIndex() {// for computers
                 protected Computer get(String key) { return getComputer(key); }
                 protected Collection<Computer> all() { return computers.values(); }
@@ -1053,6 +1032,16 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                 protected View get(String key) { return getView(key); }
                 protected Collection<View> all() { return views; }
             });
+    }
+
+    /**
+     * Returns the primary {@link View} that renders the top-page of Hudson.
+     */
+    public View getPrimaryView() {
+        View v = getView(primaryView);
+        if(v==null) // fallback
+            v = views.get(0);
+        return v;
     }
 
     public String getUrlChildPrefix() {
@@ -1197,9 +1186,12 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         return authorizationStrategy.getRootACL();
     }
 
-    @Override
-    public void onJobRenamed(Item item, String oldName, String newName) {
-        // noop
+    public void checkPermission(Permission p) {
+        getACL().checkPermission(p);
+    }
+
+    public boolean hasPermission(Permission p) {
+        return getACL().hasPermission(p);
     }
 
     /**
@@ -1259,7 +1251,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
      *
      * Note that the look up is case-insensitive.
      */
-    @Override
     public TopLevelItem getItem(String name) {
         return items.get(name);
     }
@@ -1345,11 +1336,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             l.onDeleted(item);
 
         items.remove(item.getName());
-        if(views!=null) {
-            for (View v : views)
-                v.onJobRenamed(item, item.getName(), null);
-            save();
-        }
+        for (View v : views)
+            v.onJobRenamed(item, item.getName(), null);
+        save();
     }
 
     /**
@@ -1360,11 +1349,9 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         items.remove(oldName);
         items.put(newName,job);
 
-        if(views!=null) {
-            for (View v : views)
-                v.onJobRenamed(job, oldName, newName);
-            save();
-        }
+        for (View v : views)
+            v.onJobRenamed(job, oldName, newName);
+        save();
     }
 
     public FingerprintMap getFingerprintMap() {
@@ -1513,6 +1500,15 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         if (null != slaves) { // only if we have slaves
             for (Slave slave : slaves)
                 slave.getAssignedLabels();
+        }
+
+        // initialize views by inserting the default view if necessary
+        // this is both for clean Hudson and for backward compatibility.
+        if(views.size()==0 || primaryView==null) {
+            View v = new AllView(Messages.Hudson_ViewName());
+            v.owner = this;
+            views.add(0,v);
+            primaryView = v.getViewName();
         }
 
         // read in old data that doesn't have the security field set
@@ -1908,8 +1904,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             // create a view
             View v = View.LIST.findByName(mode).newInstance(req,req.getSubmittedForm());
             v.owner = this;
-            if(views==null)
-                views = new Vector<View>();
             views.add(v);
             save();
 
@@ -2386,7 +2380,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
                     return;
                 }
                 error("No error or warning text was set for fieldCheck().");
-                return;
             }
 
             /**
@@ -2596,6 +2589,13 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             throw e;
         }
         return this;
+    }
+
+    /**
+     * Fallback to the primary view.
+     */
+    public View getStaplerFallback() {
+        return getPrimaryView();
     }
 
     public static final class MasterComputer extends Computer {

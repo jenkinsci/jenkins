@@ -2,6 +2,7 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Node.Mode;
@@ -74,5 +75,14 @@ public class HudsonTest extends HudsonTestCase {
         URL url = jobPage.getWebResponse().getUrl();
         System.out.println(url);
         assertTrue(url.getPath().endsWith("/job/"+p.getName()+"/"));
+    }
+
+    /**
+     * Top page should only have one item in the breadcrumb.
+     */
+    public void testBreadcrumb() throws Exception {
+        HtmlPage root = new WebClient().goTo("");
+        HtmlElement navbar = root.getElementById("left-top-nav");
+        assertEquals(1,navbar.selectNodes("a").size());
     }
 }
