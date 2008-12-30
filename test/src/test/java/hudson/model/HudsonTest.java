@@ -1,17 +1,20 @@
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Node.Mode;
+import hudson.search.SearchTest;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -56,5 +59,20 @@ public class HudsonTest extends HudsonTestCase {
     private void assertJDK(JDK jdk, String name, String home) {
         assertEquals(jdk.getName(),name);
         assertEquals(jdk.getJavaHome(),home);
+    }
+
+    /**
+     * Makes sure that the search index includes job names.
+     *
+     * @see SearchTest#testFailure
+     *      This test makes sure that a failure will result in an exception
+     */
+    public void testSearchIndex() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        Page jobPage = search(p.getName());
+
+        URL url = jobPage.getWebResponse().getUrl();
+        System.out.println(url);
+        assertTrue(url.getPath().endsWith("/job/"+p.getName()+"/"));
     }
 }
