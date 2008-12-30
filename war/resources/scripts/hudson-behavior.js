@@ -414,6 +414,8 @@ var hudsonRules = {
 
     // structured form submission
     "FORM" : function(form) {
+        if(Element.hasClassName("no-json"))
+            return;
         // add the hidden 'json' input field, which receives the form structure in JSON
         var div = document.createElement("div");
         div.innerHTML = "<input type=hidden name=json value=init>";
