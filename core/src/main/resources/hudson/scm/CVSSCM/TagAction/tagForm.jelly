@@ -51,14 +51,16 @@
             </j:forEach>
           </p>
 
-          <p id="tagButton">
-            <input type="button" value="${%Create another tag}"
-                   onclick="Element.show('tagForm');Element.hide('tagButton')"/>
-          </p>
+          <j:if test="${h.hasPermission(it.build,it.permission)}">
+            <p id="tagButton">
+              <input type="button" value="${%Create another tag}"
+                     onclick="Element.show('tagForm');Element.hide('tagButton')"/>
+            </p>
 
-          <div id="tagForm" style="display:none;">
-            <local:tagForm />
-          </div>
+            <div id="tagForm" style="display:none;">
+              <local:tagForm />
+            </div>
+          </j:if>
 
           <j:set var="upstream" value="${it.build.upstreamBuilds}" />
           <j:if test="${!empty(upstream)}">
@@ -83,9 +85,9 @@
             </table>
           </j:if>
         </j:when>
-        <j:otherwise>
+        <j:when test="${h.hasPermission(it.build,it.permission)}">
           <local:tagForm />
-        </j:otherwise>
+        </j:when>
       </j:choose>
     </l:main-panel>
   </l:layout>

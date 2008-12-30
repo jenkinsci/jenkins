@@ -39,7 +39,9 @@
             </ul>
           </j:otherwise>
         </j:choose>
-
+      </j:if>
+      <j:if test="${h.hasPermission(it.build,it.permission)}">
+      <j:if test="${it.isTagged()}">
         <h2>${%Create more tags}</h2>
       </j:if>
       <form action="submit" method="get" name="tag">
@@ -75,6 +77,7 @@
           }
         </script>
       </form>
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

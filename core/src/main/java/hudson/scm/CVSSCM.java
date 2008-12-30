@@ -1254,7 +1254,7 @@ public class CVSSCM extends SCM implements Serializable {
         }
 
         @Override
-        protected Permission getPermission() {
+        public Permission getPermission() {
             return TAG;
         }
 

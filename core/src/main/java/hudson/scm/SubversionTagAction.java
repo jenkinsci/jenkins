@@ -146,7 +146,8 @@ public class SubversionTagAction extends AbstractScmTagAction {
         rsp.sendRedirect(".");
     }
 
-    protected Permission getPermission() {
+    @Override
+    public Permission getPermission() {
         return SubversionSCM.TAG;
     }
 
