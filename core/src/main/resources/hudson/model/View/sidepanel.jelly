@@ -16,8 +16,10 @@
         <l:task icon="images/24x24/user.gif" href="${rootURL}/people/" title="${%People}" />
       </j:if>
       <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}builds" title="${%Build History}"/>
-      <l:task icon="images/24x24/gear.gif" href="configure" title="${%Edit View}"  permission="${it.CONFIGURE}" />
-      <l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete View}"  permission="${it.CONFIGURE}" />
+      <j:if test="${it!=app}">
+        <l:task icon="images/24x24/gear.gif" href="configure" title="${%Edit View}"  permission="${it.CONFIGURE}" />
+        <l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete View}"  permission="${it.CONFIGURE}" />
+      </j:if>
 
       <!-- subtypes can put more stuff here -->
       <st:include page="sidepanel2.jelly" optional="true"/>
