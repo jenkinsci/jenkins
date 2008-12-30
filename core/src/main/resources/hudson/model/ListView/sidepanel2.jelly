@@ -1,4 +1,3 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 	<l:task icon="images/24x24/gear.gif" href="configure" title="${%Edit View}"  permission="${it.CONFIGURE}" />
-	<l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete View}"  permission="${it.CONFIGURE}" />
 </j:jelly>

@@ -17,6 +17,8 @@
       </j:if>
       <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}builds" title="${%Build History}"/>
       <st:include page="sidepanel2.jelly" />
+      <l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete View}"  permission="${it.CONFIGURE}" />
+
       <t:actions />
     </l:tasks>
     <t:queue items="${app.queue.items}" />
