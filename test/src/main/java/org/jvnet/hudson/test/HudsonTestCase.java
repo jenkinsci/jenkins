@@ -319,6 +319,16 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     /**
+     * Performs a search from the search box.
+     */
+    protected Page search(String q) throws Exception {
+        HtmlPage top = new WebClient().goTo("");
+        HtmlForm search = top.getFormByName("search");
+        search.getInputByName("q").setValueAttribute(q);
+        return search.submit(null);
+    }
+
+    /**
      * Asserts that the outcome of the build is a specific outcome.
      */
     public void assertBuildStatus(Result status, Run r) throws Exception {
