@@ -28,7 +28,7 @@ public interface ViewGroup extends Saveable, ModelObject {
     /**
      * Gets a view of the given name.
      *
-     * This also creates the URL binding for views (in the form of ".../view/FOOBAR/..."
+     * This also creates the URL binding for views (in the form of ".../view/FOOBAR/...")
      */
     View getView(String name);
 

@@ -118,10 +118,6 @@ public class ListView extends View {
         return item;
     }
 
-    public String getUrl() {
-        return "view/"+name+'/';
-    }
-
     @Override
     public synchronized void onJobChange(Item item, String oldName, String newName) {
         jobNames.remove(oldName);

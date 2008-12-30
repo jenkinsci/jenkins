@@ -56,11 +56,6 @@ public class MyView extends View {
     }
 
     @Override
-    public String getUrl() {
-        return "view/" + getViewName() + "/";
-    }
-
-    @Override
     public String getPostConstructLandingPage() {
         return ""; // there's no configuration page
     }

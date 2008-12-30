@@ -100,7 +100,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Doesn't start with '/' but ends with '/'. (except when this is
      * Hudson, 
      */
-    public abstract String getUrl();
+    public String getUrl() {
+        return owner.getUrl()+"view/"+getViewName()+'/';
+    }
 
     public String getSearchUrl() {
         return getUrl();
