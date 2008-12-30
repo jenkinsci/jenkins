@@ -19,12 +19,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Tom Huybrechts
  */
 public class MyView extends View {
-    private final Hudson owner;
-
     @DataBoundConstructor
     public MyView(String name) {
         super(name);
-        this.owner = Hudson.getInstance();
     }
 
     @Override
@@ -35,18 +32,18 @@ public class MyView extends View {
     @Override
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        return owner.doCreateItem(req, rsp);
+        return Hudson.getInstance().doCreateItem(req, rsp);
     }
 
     @Override
     public TopLevelItem getItem(String name) {
-        return owner.getItem(name);
+        return Hudson.getInstance().getItem(name);
     }
 
     @Override
     public Collection<TopLevelItem> getItems() {
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
-        for (TopLevelItem item : owner.getItems()) {
+        for (TopLevelItem item : Hudson.getInstance().getItems()) {
             if (item.hasPermission(Job.CONFIGURE)) {
                 items.add(item);
             }

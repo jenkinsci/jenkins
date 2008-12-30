@@ -24,9 +24,6 @@ import java.text.ParseException;
  * @author Kohsuke Kawaguchi
  */
 public class ListView extends View {
-
-    private final Hudson owner;
-
     /**
      * List of job names. This is what gets serialized.
      */
@@ -45,9 +42,7 @@ public class ListView extends View {
     @DataBoundConstructor
     public ListView(String name) {
         super(name);
-        this.owner = Hudson.getInstance();
     }
-
 
     /**
      * Returns a read-only view of all {@link Job}s in this view.
@@ -65,7 +60,7 @@ public class ListView extends View {
                     includePattern = Pattern.compile(includeRegex);
                 }
 
-                for (TopLevelItem item : owner.getItems()) {
+                for (TopLevelItem item : Hudson.getInstance().getItems()) {
                     String itemName = item.getName();
                     if (includePattern.matcher(itemName).matches()) {
                         names.add(itemName);
@@ -77,7 +72,7 @@ public class ListView extends View {
 
         List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
         for (String name : names) {
-            TopLevelItem item = owner.getItem(name);
+            TopLevelItem item = Hudson.getInstance().getItem(name);
             if(item!=null)
                 items.add(item);
         }
@@ -85,7 +80,7 @@ public class ListView extends View {
     }
 
     public TopLevelItem getItem(String name) {
-        return owner.getItem(name);
+        return Hudson.getInstance().getItem(name);
     }
 
     public TopLevelItem getJob(String name) {
@@ -101,7 +96,7 @@ public class ListView extends View {
     }
 
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Item item = owner.doCreateItem(req, rsp);
+        Item item = Hudson.getInstance().doCreateItem(req, rsp);
         if(item!=null) {
             jobNames.add(item.getName());
             owner.save();
@@ -125,7 +120,7 @@ public class ListView extends View {
         req.setCharacterEncoding("UTF-8");
         
         jobNames.clear();
-        for (TopLevelItem item : owner.getItems()) {
+        for (TopLevelItem item : Hudson.getInstance().getItems()) {
             if(req.getParameter(item.getName())!=null)
                 jobNames.add(item.getName());
         }

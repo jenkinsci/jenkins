@@ -109,6 +109,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * Gets the {@link ViewGroup} that this view belongs to.
+     */
+    public ViewGroup getOwner() {
+        return owner;
+    }
+
+    /**
      * Message displayed in the top page. Can be null. Includes HTML.
      */
     @Exported
