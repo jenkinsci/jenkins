@@ -1,8 +1,8 @@
 <j:jelly xmlns:j="jelly:core">
 <div>
-  This view has no jobs associated with it. 
+  ${%description_1}
   <j:if test="${h.hasPermission(it.CONFIGURE)}">
-      Please <a href="configure">add some</a>
+      ${description_2}
   </j:if>
 </div>
 </j:jelly>

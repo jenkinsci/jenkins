@@ -81,7 +81,7 @@ public class MyView extends View {
         }
 
         public String getDisplayName() {
-            return "My View";
+            return Messages.MyView_DisplayName();
         }
     }
 }

@@ -182,7 +182,7 @@ public class ListView extends View {
         }
 
         public String getDisplayName() {
-            return "List View";
+            return Messages.ListView_DisplayName();
         }
     }
 }
