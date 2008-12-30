@@ -331,7 +331,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     private transient final LogRecorderManager log = new LogRecorderManager();
 
     public Hudson(File root, ServletContext context) throws IOException {
-        super(Messages.Hudson_ViewName());
+        super(null);
         this.root = root;
         this.servletContext = context;
         if(theInstance!=null)
@@ -478,6 +478,10 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public String getViewName() {
+        return Messages.Hudson_ViewName();
+    }
 
     /**
      * Gets the SCM descriptor by name. Primarily used for making them web-visible.
