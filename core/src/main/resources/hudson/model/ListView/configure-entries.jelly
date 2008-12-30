@@ -1,0 +1,18 @@
+<!--
+  Edit View Page
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <f:entry title="${%Jobs}">
+    <j:forEach var="job" items="${app.items}">
+      <f:checkbox name="${job.name}" checked="${it.contains(job)}" />
+      ${job.name}
+      <br/>
+    </j:forEach>
+  </f:entry>
+
+  <f:optionalBlock name="useincluderegex" title="${%Use a regular expression to include jobs into the view}" checked="${it.includeRegex != null}" help="/help/view-config/includeregex.html">
+    <f:entry title="${%Regular expression}">
+      <f:textbox name="includeregex" value="${it.includeRegex}" checkUrl="'${rootURL}/${it.url}/includeRegexCheck?value='+escape(this.value)" />
+    </f:entry>
+  </f:optionalBlock>
+</j:jelly>
