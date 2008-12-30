@@ -40,10 +40,14 @@ import java.util.Map;
  * <h2>Note for implementors</h2>
  * <ul>
  * <li>
- * {@link View} subtypes need 
+ * {@link View} subtypes need the <tt>newViewDetail.jelly</tt> page,
+ * which is included in the "new view" page. This page should have some
+ * description of what the view is about. 
  * </ul>
  *
  * @author Kohsuke Kawaguchi
+ * @see ViewDescriptor
+ * @see ViewGroup
  */
 @ExportedBean
 public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint {

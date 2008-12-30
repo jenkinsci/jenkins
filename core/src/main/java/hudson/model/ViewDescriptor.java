@@ -4,6 +4,7 @@ package hudson.model;
  * {@link Descriptor} for {@link View}.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.269
  * @see View#LIST
  */
 public abstract class ViewDescriptor extends Descriptor<View> {
