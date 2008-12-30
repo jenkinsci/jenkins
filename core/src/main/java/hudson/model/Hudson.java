@@ -331,6 +331,7 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
     private transient final LogRecorderManager log = new LogRecorderManager();
 
     public Hudson(File root, ServletContext context) throws IOException {
+        super(Messages.Hudson_ViewName());
         this.root = root;
         this.servletContext = context;
         if(theInstance!=null)
@@ -863,10 +864,6 @@ public final class Hudson extends View implements ItemGroup<TopLevelItem>, Node,
             views.remove(view);
             save();
         }
-    }
-
-    public String getViewName() {
-        return Messages.Hudson_ViewName();
     }
 
     /**
