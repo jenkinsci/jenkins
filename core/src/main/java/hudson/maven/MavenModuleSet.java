@@ -161,6 +161,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
                 if(a!=null)
                     transientActions.add(a);
             }
+
+        if (buildWrappers!=null)
+	        for (BuildWrapper step : buildWrappers) {
+	            Action a = step.getProjectAction(this);
+	            if(a!=null)
+	                transientActions.add(a);
+	        }
     }
 
     protected void addTransientActionsFromBuild(MavenModuleSetBuild build, Set<Class> added) {
