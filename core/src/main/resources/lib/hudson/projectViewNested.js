@@ -22,7 +22,7 @@ hudsonRules["IMG.treeview-fold-control"] = function(e) {
                     YAHOO.util.Dom.setStyle(r, 'opacity', 0); // hide
                     YAHOO.util.Dom.insertAfter(r, tr);
                     Behaviour.applySubtree(r);
-                    new YAHOO.util.Anim(r, anim, 0.5).animate();
+                    new YAHOO.util.Anim(r, anim, 0.3).animate();
                 });
             }
         });

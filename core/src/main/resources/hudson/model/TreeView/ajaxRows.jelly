@@ -5,12 +5,13 @@
   <l:ajax>
     <t:setIconSize/>
     <table><!-- throw away table tag to group rows together -->
-      <j:set var="indenter" value="${it.createFixedIndenter(request.getParameter('depth'))}" />
+      <j:set var="depth" value="${request.getParameter('depth')}" />
+      <j:set var="indenter" value="${it.createFixedIndenter(depth)}" />
       <j:forEach var="v" items="${it.views}">
         <t:projectViewNested />
       </j:forEach>
       <j:forEach var="job" items="${it.items}">
-        <t:projectViewRow />
+        <t:projectViewRow jobBaseUrl="${rootURL}/${it.url}" />
       </j:forEach>
     </table>
   </l:ajax>

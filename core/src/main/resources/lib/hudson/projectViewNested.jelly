@@ -6,7 +6,8 @@
   <tr>
     <td colspan="2" style="text-align: center">
       <a href="#">
-        <img src="${imagesURL}/tree/plus.png" state="plus" width="14" height="14" alt="" class="fold-control treeview-fold-control" url="./ajaxRows?depth=1"/>
+        <img src="${imagesURL}/tree/plus.png" state="plus" width="14" height="14" alt="" class="fold-control treeview-fold-control"
+             url="${rootURL}/${v.url}/ajaxRows?depth=${h.ifThenElse(depth!=null,depth+1,1)}"/>
         <st:adjunct includes="lib.hudson.projectViewNested" />
       </a>
       <img src="${imagesURL}/${iconSize}/folder.gif" style="margin-left:4px" alt="" />
