@@ -111,6 +111,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Renames this view.
      */
     public void rename(String newName) throws ParseException {
+        if(name.equals(newName))    return; // noop
         Hudson.checkGoodName(newName);
         String oldName = name;
         name = newName;
