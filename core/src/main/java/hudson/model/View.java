@@ -531,7 +531,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner) throws ParseException, FormException, IOException, ServletException {
         req.setCharacterEncoding("UTF-8");
 
-        checkGoodName(req.getParameter("name"));
+        String name = req.getParameter("name");
+        checkGoodName(name);
+        if(owner.getView(name)!=null)
+            throw new FormException(Messages.Hudson_ViewAlreadyExists(name),"name");
 
         // create a view
         View v = LIST.findByName(req.getParameter("mode")).newInstance(req,req.getSubmittedForm());
