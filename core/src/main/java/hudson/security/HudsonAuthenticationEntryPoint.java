@@ -54,7 +54,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
                 "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
                 "<script>window.location.replace('%1$s');</script>" +
                 "</head>" +
-                "<body style='backgournd-color:white; color:white;'>" +
+                "<body style='background-color:white; color:white;'>" +
                 "Authentication required</body></html>", loginForm
             );
         }
