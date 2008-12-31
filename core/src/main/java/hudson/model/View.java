@@ -408,7 +408,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Accepts submission from the configuration page.
      *
-     * Subtypes should override the {@link #submit()} method.
+     * Subtypes should override the {@link #submit(StaplerRequest)} method.
      */
     public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         try {
@@ -504,6 +504,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         LIST.load(ListView.class);
         LIST.load(AllView.class);
         LIST.load(MyView.class);
+        if(Boolean.getBoolean("hudson.TreeView"))
+            LIST.load(TreeView.class);
     }
 
     public static final Comparator<View> SORTER = new Comparator<View>() {
