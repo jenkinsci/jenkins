@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.text.ParseException;
 
 /**
  *
@@ -110,6 +111,18 @@ public class TreeView extends View implements ViewGroup {
 
     public void save() throws IOException {
         owner.save();
+    }
+
+    public void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        try {
+            checkPermission(View.CREATE);
+            views.add(View.create(req,rsp, this));
+            save();
+        } catch (ParseException e) {
+            sendError(e,req,rsp);
+        } catch (FormException e) {
+            sendError(e,req,rsp);
+        }
     }
 
     public ViewDescriptor getDescriptor() {

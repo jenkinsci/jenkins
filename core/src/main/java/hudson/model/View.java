@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
+import static hudson.model.Hudson.checkGoodName;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -113,7 +114,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public void rename(String newName) throws ParseException {
         if(name.equals(newName))    return; // noop
-        Hudson.checkGoodName(newName);
+        checkGoodName(newName);
         String oldName = name;
         name = newName;
         owner.onViewRenamed(this,oldName,newName);
@@ -525,5 +526,20 @@ public abstract class View extends AbstractModelObject implements AccessControll
     // to simplify access from Jelly
     public static Permission getItemCreatePermission() {
         return Item.CREATE;
+    }
+    
+    public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner) throws ParseException, FormException, IOException, ServletException {
+        req.setCharacterEncoding("UTF-8");
+
+        checkGoodName(req.getParameter("name"));
+
+        // create a view
+        View v = LIST.findByName(req.getParameter("mode")).newInstance(req,req.getSubmittedForm());
+        v.owner = owner;
+
+        // redirect to the config screen
+        rsp.sendRedirect2("./"+v.getUrl()+v.getPostConstructLandingPage());
+
+        return v;
     }
 }

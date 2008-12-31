@@ -1888,27 +1888,10 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         try {
             checkPermission(View.CREATE);
-
-            req.setCharacterEncoding("UTF-8");
-
-            String name = req.getParameter("name");
-            String mode = req.getParameter("mode");
-
-            try {
-                checkGoodName(name);
-            } catch (ParseException e) {
-                sendError(e, req, rsp);
-                return;
-            }
-
-            // create a view
-            View v = View.LIST.findByName(mode).newInstance(req,req.getSubmittedForm());
-            v.owner = this;
-            views.add(v);
+            views.add(View.create(req,rsp, this));
             save();
-
-            // redirect to the config screen
-            rsp.sendRedirect2("./"+v.getUrl()+v.getPostConstructLandingPage());
+        } catch (ParseException e) {
+            sendError(e,req,rsp);
         } catch (FormException e) {
             sendError(e,req,rsp);
         }
