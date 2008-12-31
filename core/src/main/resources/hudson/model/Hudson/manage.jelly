@@ -2,7 +2,7 @@
   Entrance to the configuration page
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Manage Hudson}" xmlns:local="local">
+<l:layout title="${%Manage Hudson}" xmlns:local="local" permission="${app.ADMINISTER}">
   <d:taglib uri="local">
     <!-- table to show a map -->
     <d:tag name="feature">
