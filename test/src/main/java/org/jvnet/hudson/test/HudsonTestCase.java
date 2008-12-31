@@ -7,6 +7,7 @@ import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import hudson.matrix.MatrixProject;
@@ -355,6 +356,14 @@ public abstract class HudsonTestCase extends TestCase {
         System.out.println(log);
         fail("Console output of "+run+" didn't contain "+substring);
     }
+
+    /**
+     * Submits the form.
+     */
+    public HtmlPage submit(HtmlForm form) throws Exception {
+        return (HtmlPage)form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+    }
+
 
 //
 // recipe methods. Control the test environments.
