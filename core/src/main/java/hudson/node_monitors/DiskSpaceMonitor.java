@@ -4,6 +4,7 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Util;
 import hudson.model.Computer;
+import hudson.model.Hudson;
 import hudson.remoting.VirtualChannel;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -42,6 +43,12 @@ public class DiskSpaceMonitor extends NodeMonitor {
         }
 
         return space/1024+"GB";
+    }
+
+    @Override
+    public String getColumnCaption() {
+        // Hide this column from non-admins
+        return Hudson.getInstance().hasPermission(Hudson.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
     public static final AbstractNodeMonitorDescriptor<Long> DESCRIPTOR = new AbstractNodeMonitorDescriptor<Long>(DiskSpaceMonitor.class) {

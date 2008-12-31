@@ -2,11 +2,11 @@
   Entrance to the configuration page
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-<l:layout title="Nodes" permission="${app.ADMINISTER}">
+<l:layout title="Nodes">
   <st:include page="sidepanel.jelly" />
   <l:header>
     <style><!-- create some spaces between cells -->
-      #computers TD {
+      #computers td {
         padding-right: 1em;
       }
     </style>

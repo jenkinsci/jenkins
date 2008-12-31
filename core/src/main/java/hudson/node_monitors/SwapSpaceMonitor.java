@@ -2,6 +2,7 @@ package hudson.node_monitors;
 
 import hudson.Util;
 import hudson.model.Computer;
+import hudson.model.Hudson;
 import hudson.remoting.Callable;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.MemoryMonitor;
@@ -48,6 +49,12 @@ public class SwapSpaceMonitor extends NodeMonitor {
         free/=1024L;   // convert to KB
         free/=1024L;   // convert to MB
         return free;
+    }
+
+    @Override
+    public String getColumnCaption() {
+        // Hide this column from non-admins
+        return Hudson.getInstance().hasPermission(Hudson.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
     public static final AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR = new AbstractNodeMonitorDescriptor<MemoryUsage>(DiskSpaceMonitor.class) {
