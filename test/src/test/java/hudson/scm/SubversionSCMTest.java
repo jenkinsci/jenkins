@@ -1,5 +1,6 @@
 package hudson.scm;
 
+import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
@@ -50,11 +51,17 @@ public class SubversionSCMTest extends HudsonTestCase {
         for( HtmlAnchor a : html.getAnchors() )
             assertFalse(a.getHrefAttribute().contains("/tagBuild/"));
 
-        // and that tagging would fail
+        // and no tag form on tagBuild page
         html = wc.getPage(b,"tagBuild/");
-        HtmlForm form = html.getFormByName("tag");
         try {
-            form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+            html.getFormByName("tag");
+            fail("should not have been found");
+        } catch (ElementNotFoundException e) {
+        }
+
+        // and that tagging would fail
+        try {
+            wc.getPage(b,"tagBuild/submit?name0=test&Submit=Tag");
             fail("should have been denied");
         } catch (FailingHttpStatusCodeException e) {
             // make sure the request is denied
@@ -65,7 +72,7 @@ public class SubversionSCMTest extends HudsonTestCase {
         wc = new WebClient();
         wc.login("alice","alice");
         html = wc.getPage(b,"tagBuild/");
-        form = html.getFormByName("tag");
+        HtmlForm form = html.getFormByName("tag");
         form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
     }
 
