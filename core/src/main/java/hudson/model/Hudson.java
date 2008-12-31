@@ -91,6 +91,7 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerFallback;
+import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletContext;
@@ -107,6 +108,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.text.NumberFormat;
@@ -127,6 +129,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TreeSet;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -308,6 +311,11 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      */
     private transient final List<Action> actions = new CopyOnWriteArrayList<Action>();
 
+    /**
+     * {@link AdjunctManager}
+     */
+    private transient final AdjunctManager adjuncts;
+
     public static Hudson getInstance() {
         return theInstance;
     }
@@ -338,6 +346,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     public Hudson(File root, ServletContext context) throws IOException {
         this.root = root;
         this.servletContext = context;
+        computeVersion(context);
         if(theInstance!=null)
             throw new IllegalStateException("second instance");
         theInstance = this;
@@ -387,6 +396,8 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         // or make it a part of the core.
         Items.LIST.hashCode();
 
+        adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
+        
         load();
 
 //        try {
@@ -427,6 +438,15 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
         return tcpSlaveAgentListener;
+    }
+
+    /**
+     * Makes {@link AdjunctManager} URL-bound.
+     * The dummy parameter allows us to use different URLs for the same adjunct,
+     * for proper cache handling.
+     */
+    public AdjunctManager getAdjuncts(String dummy) {
+        return adjuncts;
     }
 
     @Exported
@@ -1534,7 +1554,6 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             authorizationStrategy = AuthorizationStrategy.UNSECURED;
             setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
         }
-
 
         LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
         if(KILL_AFTER_LOAD)
@@ -2713,11 +2732,39 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
 
 
+    private static void computeVersion(ServletContext context) {
+        // set the version
+        Properties props = new Properties();
+        try {
+            InputStream is = Hudson.class.getResourceAsStream("hudson-version.properties");
+            if(is!=null)
+                props.load(is);
+        } catch (IOException e) {
+            e.printStackTrace(); // if the version properties is missing, that's OK.
+        }
+        String ver = props.getProperty("version");
+        if(ver==null)   ver="?";
+        VERSION = ver;
+        context.setAttribute("version",ver);
+        VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
+
+        if(ver.equals("?"))
+            RESOURCE_PATH = "";
+        else
+            RESOURCE_PATH = "/static/"+VERSION_HASH;
+
+        VIEW_RESOURCE_PATH = "/resources/"+ VERSION_HASH;
+    }
 
     /**
      * Version number of this Hudson.
      */
     public static String VERSION="?";
+
+    /**
+     * Hash of {@link #VERSION}.
+     */
+    public static String VERSION_HASH;
 
     /**
      * Prefix to static resources like images and javascripts in the war file.

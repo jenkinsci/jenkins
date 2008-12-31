@@ -33,11 +33,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -158,8 +156,6 @@ public final class WebAppMain implements ServletContextListener {
             new Thread("hudson initialization thread") {
                 public void run() {
                     try {
-                        computeVersion(context);
-
                         try {
                             context.setAttribute(APP,new Hudson(home,context));
                         } catch( IOException e ) {
@@ -198,30 +194,6 @@ public final class WebAppMain implements ServletContextListener {
 
     public static void installExpressionFactory(ServletContextEvent event) {
         Stapler.setExpressionFactory(event, new ExpressionFactory2());
-    }
-
-    protected void computeVersion(ServletContext context) {
-        // set the version
-        Properties props = new Properties();
-        try {
-            InputStream is = getClass().getResourceAsStream("hudson-version.properties");
-            if(is!=null)
-                props.load(is);
-        } catch (IOException e) {
-            e.printStackTrace(); // if the version properties is missing, that's OK.
-        }
-        String ver = props.getProperty("version");
-        if(ver==null)   ver="?";
-        Hudson.VERSION = ver;
-        context.setAttribute("version",ver);
-        String verHash = Util.getDigestOf(ver).substring(0, 8);
-
-        if(ver.equals("?"))
-            Hudson.RESOURCE_PATH = "";
-        else
-            Hudson.RESOURCE_PATH = "/static/"+verHash;
-
-        Hudson.VIEW_RESOURCE_PATH = "/resources/"+ verHash;
     }
 
 	/**
