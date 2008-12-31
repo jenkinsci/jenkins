@@ -1,0 +1,17 @@
+<!--
+  Used to render the folder content through an AJAX call.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:ajax>
+    <t:setIconSize/>
+    <table><!-- throw away table tag to group rows together -->
+      <j:set var="indenter" value="${it.createFixedIndenter(request.getParameter('depth'))}" />
+      <j:forEach var="v" items="${it.views}">
+        <t:projectViewNested />
+      </j:forEach>
+      <j:forEach var="job" items="${it.items}">
+        <t:projectViewRow />
+      </j:forEach>
+    </table>
+  </l:ajax>
+</j:jelly>

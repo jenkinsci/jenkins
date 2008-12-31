@@ -437,6 +437,36 @@ var hudsonRules = {
 
     "INPUT.yui-button" : function(e) {
         makeButton(e);
+    },
+
+    // image that shows [+] or [-], with hover effect.
+    // oncollapsed and onexpanded will be called when the button is triggered.
+    "IMG.fold-control" : function(e) {
+        function changeTo(e,img) {
+            var src = e.src;
+            e.src = src.substring(0,src.lastIndexOf('/'))+"/"+e.getAttribute("state")+img;
+        }
+        e.onmouseover = function() {
+            changeTo(this,"-hover.png");
+        };
+        e.onmouseout = function() {
+            changeTo(this,".png");
+        };
+        e.parentNode.onclick = function(event) {
+            var e = this.firstChild;
+            var s = e.getAttribute("state");
+            if(s=="plus") {
+                e.setAttribute("state","minus");
+                if(e.onexpanded)    e.onexpanded();
+            } else {
+                e.setAttribute("state","plus");
+                if(e.oncollapsed)    e.oncollapsed();
+            }
+            changeTo(e,"-hover.png");
+            YAHOO.util.Event.stopEvent(event);
+            return false;
+        };
+        e = null; // memory leak prevention
     }
 };
 

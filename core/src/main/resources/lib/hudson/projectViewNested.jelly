@@ -1,0 +1,20 @@
+<!--
+  Renders the nest view in <projectView />
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <tr>
+    <td colspan="2" style="text-align: center">
+      <a href="#">
+        <img src="${imagesURL}/tree/plus.png" state="plus" width="14" height="14" alt="" class="fold-control treeview-fold-control" url="./ajaxRows?depth=1"/>
+        <st:adjunct includes="lib.hudson.projectViewNested" />
+      </a>
+      <img src="${imagesURL}/${iconSize}/folder.gif" style="margin-left:4px" alt="" />
+    </td>
+    <td colspan="5" style="${indenter.getCss(job)}">
+      <a href="${rootURL}/${v.url}">
+        ${v.viewName}
+      </a>
+    </td>
+  </tr>
+</j:jelly>

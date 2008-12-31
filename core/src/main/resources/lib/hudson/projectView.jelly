@@ -37,16 +37,7 @@
         </tr>
 
         <j:forEach var="v" items="${attrs.views}">
-          <tr>
-            <td colspan="2" style="text-align: center">
-              <img src="${imagesURL}/${iconSize}/folder.gif" alt="" />
-            </td>
-            <td colspan="5">
-              <a href="${rootURL}/${v.url}">
-                ${v.viewName}
-              </a>
-            </td>
-          </tr>
+          <t:projectViewNested />
         </j:forEach>
 
         <j:forEach var="job" items="${jobs}">

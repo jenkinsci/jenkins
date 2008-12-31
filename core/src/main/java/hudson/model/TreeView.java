@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
+import hudson.Indenter;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -43,6 +44,17 @@ public class TreeView extends View implements ViewGroup {
     @DataBoundConstructor
     public TreeView(String name) {
         super(name);
+    }
+
+    /**
+     * Returns {@link Indenter} that has the fixed indentation width.
+     * Used for assisting view rendering.
+     */
+    public Indenter createFixedIndenter(String d) {
+        final int depth = Integer.parseInt(d);
+        return new Indenter() {
+            protected int getNestLevel(Job job) { return depth; }
+        };
     }
 
     /**
