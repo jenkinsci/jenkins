@@ -5,6 +5,7 @@
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <td data="${it.ordinal()}">
-    <img src="${imagesURL}/${iconSize}/${it.image}" alt="${it.description}" tooltip="${it.description}" />
+    <img src="${imagesURL}/${iconSize}/${it.image}" alt="${it.description}"
+         tooltip="${it.description}" style="${attrs.style}"/>
   </td>
 </j:jelly>

@@ -4,13 +4,15 @@
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <tr>
-    <td colspan="2" style="text-align: center">
-      <a href="#">
-        <img src="${imagesURL}/tree/plus.png" state="plus" width="14" height="14" alt="" class="fold-control treeview-fold-control"
-             url="${rootURL}/${v.url}/ajaxRows?depth=${h.ifThenElse(depth!=null,depth+1,1)}"/>
-        <st:adjunct includes="lib.hudson.projectViewNested" />
-      </a>
-      <img src="${imagesURL}/${iconSize}/folder.gif" style="margin-left:4px" alt="" />
+    <td colspan="2">
+      <div style="${indenter.getRelativeShift(job)}">
+        <a href="#">
+          <img src="${imagesURL}/tree/plus.png" state="plus" width="14" height="14" alt="" class="fold-control treeview-fold-control"
+               url="${rootURL}/${v.url}/ajaxRows?depth=${h.ifThenElse(depth!=null,depth+1,1)}"/>
+          <st:adjunct includes="lib.hudson.projectViewNested" />
+        </a>
+        <img src="${imagesURL}/${iconSize}/folder.gif" style="margin-left:4px" alt="" />
+      </div>
     </td>
     <td colspan="5" style="${indenter.getCss(job)}">
       <a href="${rootURL}/${v.url}">

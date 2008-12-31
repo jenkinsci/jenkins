@@ -9,8 +9,9 @@
   <j:set var="lsBuild" value="${job.lastSuccessfulBuild}"/>
   <j:set var="lfBuild" value="${job.lastFailedBuild}"/>
   <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
-      <t:ballColorTd it="${job.iconColor}"/>
-      <t:buildHealth td="true" link="${jobBaseUrl}${job.shortUrl}lastBuild"/>
+      <t:ballColorTd it="${job.iconColor}" style="${indenter.getRelativeShift(job)}"/>
+      <t:buildHealth td="true" style="${indenter.getRelativeShift(job)}"
+                     link="${jobBaseUrl}${job.shortUrl}lastBuild"/>
       <td style="${indenter.getCss(job)}">
           <a href="${jobBaseUrl}${job.shortUrl}">
               ${job.displayName}

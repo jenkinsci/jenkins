@@ -13,7 +13,7 @@
         <x:attribute name="onmouseover">this.className='healthReport hover';return true;
         </x:attribute>
         <x:attribute name="onmouseout">this.className='healthReport';return true;</x:attribute>
-        <a href="${h.ifThenElse(empty(link),'#',link)}">
+        <a href="${h.ifThenElse(empty(link),'#',link)}" style="${attrs.style}">
             <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
                  alt="${buildHealth.score}%"/>
         </a>
