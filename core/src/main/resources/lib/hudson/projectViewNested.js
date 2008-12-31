@@ -1,7 +1,7 @@
 hudsonRules["IMG.treeview-fold-control"] = function(e) {
     e.onexpanded = function() {
         var img = this;
-        var tr = findAncestor(this, "TR");
+        var tr = findAncestor(img, "TR");
         var tail = tr.nextSibling;
 
         img.oncollapsed = function() {
@@ -9,9 +9,8 @@ hudsonRules["IMG.treeview-fold-control"] = function(e) {
                 tr.nextSibling.remove();
         };
 
-        new Ajax.Request(
-                this.getAttribute("url"),
-        {
+        // fetch the nested view and load it when it's ready
+        new Ajax.Request(img.getAttribute("url"), {
             method : 'post',
             onComplete : function(x) {
                 var cont = document.createElement("div");
