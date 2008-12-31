@@ -7,6 +7,8 @@
 
   @indenter:
      optional Indenter instance used to indent items.
+  @views:
+     if non-null, render nested views
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
@@ -34,8 +36,21 @@
           </th>
         </tr>
 
+        <j:forEach var="v" items="${attrs.views}">
+          <tr>
+            <td colspan="2" style="text-align: center">
+              <img src="${imagesURL}/${iconSize}/folder.gif" alt="" />
+            </td>
+            <td colspan="5">
+              <a href="${rootURL}/${v.url}">
+                ${v.viewName}
+              </a>
+            </td>
+          </tr>
+        </j:forEach>
+
         <j:forEach var="job" items="${jobs}">
-          <t:projectViewRow job="${job}" indenter="${indenter}"/>
+          <t:projectViewRow />
         </j:forEach>
       </table>
       <t:rssBar-with-iconSize/>

@@ -1,0 +1,11 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:choose>
+    <j:when test="${empty(items)}">
+      <st:include page="noJob.jelly" />
+    </j:when>
+    <j:otherwise>
+      <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
+      <t:projectView jobs="${items}" jobBaseUrl="" views="${it.views}" />
+    </j:otherwise>
+  </j:choose>
+</j:jelly>
