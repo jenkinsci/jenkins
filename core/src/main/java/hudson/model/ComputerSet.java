@@ -42,10 +42,11 @@ public final class ComputerSet implements ModelObject {
     }
 
     public void do_launchAll(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+
         for(Computer c : get_all()) {
             if(c.isLaunchSupported())
-                continue;
-            c.launch();
+                c.launch();
         }
         rsp.sendRedirect(".");
     }
