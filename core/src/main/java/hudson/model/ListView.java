@@ -44,6 +44,12 @@ public class ListView extends View {
         super(name);
     }
 
+    private Object readResolve() {
+        if(includeRegex!=null)
+            includePattern = Pattern.compile(includeRegex);
+        return this;
+    }
+
     /**
      * Returns a read-only view of all {@link Job}s in this view.
      *
@@ -54,19 +60,12 @@ public class ListView extends View {
     public synchronized List<TopLevelItem> getItems() {
         Set<String> names = (Set<String>) ((TreeSet<String>) jobNames).clone();
 
-        if (includeRegex != null) {
-            try {
-                if (includePattern == null) {
-                    includePattern = Pattern.compile(includeRegex);
+        if (includePattern != null) {
+            for (TopLevelItem item : Hudson.getInstance().getItems()) {
+                String itemName = item.getName();
+                if (includePattern.matcher(itemName).matches()) {
+                    names.add(itemName);
                 }
-
-                for (TopLevelItem item : Hudson.getInstance().getItems()) {
-                    String itemName = item.getName();
-                    if (includePattern.matcher(itemName).matches()) {
-                        names.add(itemName);
-                    }
-                }
-            } catch (PatternSyntaxException pse) {
             }
         }
 
@@ -120,11 +119,12 @@ public class ListView extends View {
         description = Util.nullify(req.getParameter("description"));
         
         if (req.getParameter("useincluderegex") != null) {
-            includeRegex = Util.nullify(req.getParameter("includeregex"));
+            includeRegex = Util.nullify(req.getParameter("includeRegex"));
+            includePattern = Pattern.compile(includeRegex);
         } else {
             includeRegex = null;
+            includePattern = null;
         }
-        includePattern = null;
 
         try {
             rename(req.getParameter("name"));
@@ -136,26 +136,6 @@ public class ListView extends View {
         owner.save();
 
         rsp.sendRedirect2("../"+name);
-    }
-
-    /**
-     * Checks if the include regular expression is valid.
-     */
-    public void doIncludeRegexCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException  {
-        new FormFieldValidator(req, rsp, false) {
-            @Override
-            protected void check() throws IOException, ServletException {
-                String v = Util.fixEmpty(request.getParameter("value"));
-                if (v != null) {
-                    try {
-                        Pattern.compile(v);
-                    } catch (PatternSyntaxException pse) {
-                        error(pse.getMessage());
-                    }
-                }
-                ok();
-            }
-        }.process();
     }
 
     public ViewDescriptor getDescriptor() {
@@ -175,6 +155,26 @@ public class ListView extends View {
 
         public String getDisplayName() {
             return Messages.ListView_DisplayName();
+        }
+
+        /**
+         * Checks if the include regular expression is valid.
+         */
+        public void doCheckIncludeRegex( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException  {
+            new FormFieldValidator(req, rsp, false) {
+                @Override
+                protected void check() throws IOException, ServletException {
+                    String v = Util.fixEmpty(request.getParameter("value"));
+                    if (v != null) {
+                        try {
+                            Pattern.compile(v);
+                        } catch (PatternSyntaxException pse) {
+                            error(pse.getMessage());
+                        }
+                    }
+                    ok();
+                }
+            }.process();
         }
     }
 }

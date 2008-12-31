@@ -10,9 +10,10 @@
     </j:forEach>
   </f:entry>
 
-  <f:optionalBlock name="useincluderegex" title="${%Use a regular expression to include jobs into the view}" checked="${it.includeRegex != null}" help="/help/view-config/includeregex.html">
+  <f:optionalBlock name="useincluderegex" title="${%Use a regular expression to include jobs into the view}"
+                   checked="${it.includeRegex != null}" help="/help/view-config/includeregex.html">
     <f:entry title="${%Regular expression}">
-      <f:textbox name="includeregex" value="${it.includeRegex}" checkUrl="'${rootURL}/${it.url}/includeRegexCheck?value='+escape(this.value)" />
+      <f:textbox name="includeRegex" field="includeRegex" />
     </f:entry>
   </f:optionalBlock>
 </j:jelly>

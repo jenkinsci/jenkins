@@ -5,12 +5,16 @@
   <l:layout norefresh="true">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
+      <!-- to make the form field binding work -->
+      <j:set var="instance" value="${it}" />
+      <j:set var="descriptor" value="${it.descriptor}" />
+
       <f:form method="post" action="configSubmit">
         <f:entry title="${%Name}">
           <f:textbox name="name" value="${it.viewName}" />
         </f:entry>
         <f:entry title="${%Description}" help="/help/view-config/description.html">
-          <f:textarea name="description" value="${it.description}"/>
+          <f:textarea name="description" field="description" />
         </f:entry>
 
         <!-- subtypes can put entries here. -->
