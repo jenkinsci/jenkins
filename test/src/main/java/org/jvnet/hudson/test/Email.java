@@ -6,6 +6,7 @@ import java.lang.annotation.Documented;
  * Marks a test case to a bug reported in the mailing list.
  *
  * @author Kohsuke Kawaguchi
+ * @see Url
  */
 @Documented
 public @interface Email {
