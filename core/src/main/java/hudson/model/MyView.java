@@ -11,6 +11,7 @@ import javax.servlet.ServletException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import hudson.model.Descriptor.FormException;
 
 /**
  * {@link View} that only contains projects for which the current user has access to.
@@ -53,6 +54,11 @@ public class MyView extends View {
 
     @Override
     public void onJobRenamed(Item item, String oldName, String newName) {
+        // noop
+    }
+
+    @Override
+    protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
         // noop
     }
 

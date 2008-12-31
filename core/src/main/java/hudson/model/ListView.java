@@ -97,27 +97,23 @@ public class ListView extends View {
 
     @Override
     public synchronized void onJobRenamed(Item item, String oldName, String newName) {
-        jobNames.remove(oldName);
-        if(newName!=null)
+        if(jobNames.remove(oldName) && newName!=null)
             jobNames.add(newName);
     }
 
     /**
-     * Accepts submission from the configuration page.
+     * Handles the configuration submission.
+     *
+     * Load view-specific properties here.
      */
-    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(CONFIGURE);
-
-        req.setCharacterEncoding("UTF-8");
-        
+    @Override
+    protected void submit(StaplerRequest req) {
         jobNames.clear();
         for (TopLevelItem item : Hudson.getInstance().getItems()) {
             if(req.getParameter(item.getName())!=null)
                 jobNames.add(item.getName());
         }
 
-        description = Util.nullify(req.getParameter("description"));
-        
         if (req.getParameter("useincluderegex") != null) {
             includeRegex = Util.nullify(req.getParameter("includeRegex"));
             includePattern = Pattern.compile(includeRegex);
@@ -125,17 +121,6 @@ public class ListView extends View {
             includeRegex = null;
             includePattern = null;
         }
-
-        try {
-            rename(req.getParameter("name"));
-        } catch (ParseException e) {
-            sendError(e, req, rsp);
-            return;
-        }
-
-        owner.save();
-
-        rsp.sendRedirect2("../"+name);
     }
 
     public ViewDescriptor getDescriptor() {

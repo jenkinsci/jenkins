@@ -8,6 +8,8 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Collection;
 
+import hudson.model.Descriptor.FormException;
+
 /**
  * {@link View} that contains everything.
  *
@@ -43,6 +45,11 @@ public class AllView extends View {
 
     @Override
     public void onJobRenamed(Item item, String oldName, String newName) {
+        // noop
+    }
+
+    @Override
+    protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
         // noop
     }
 

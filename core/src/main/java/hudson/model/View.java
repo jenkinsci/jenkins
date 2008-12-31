@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.model.Descriptor.FormException;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -403,6 +404,43 @@ public abstract class View extends AbstractModelObject implements AccessControll
         owner.save();
         rsp.sendRedirect(".");  // go to the top page
     }
+
+    /**
+     * Accepts submission from the configuration page.
+     *
+     * Subtypes should override the {@link #submit()} method.
+     */
+    public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        try {
+            checkPermission(CONFIGURE);
+
+            req.setCharacterEncoding("UTF-8");
+
+            submit(req);
+
+            description = Util.nullify(req.getParameter("description"));
+
+            try {
+                rename(req.getParameter("name"));
+            } catch (ParseException e) {
+                sendError(e, req, rsp);
+                return;
+            }
+
+            owner.save();
+
+            rsp.sendRedirect2("../"+name);
+        } catch (FormException e) {
+            sendError(e,req,rsp);
+        }
+    }
+
+    /**
+     * Handles the configuration submission.
+     *
+     * Load view-specific properties here.
+     */
+    protected abstract void submit(StaplerRequest req) throws IOException, ServletException, FormException;
 
     /**
      * Deletes this view.
