@@ -8,7 +8,6 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -116,7 +115,7 @@ public class TreeView extends View implements ViewGroup {
     public void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         try {
             checkPermission(View.CREATE);
-            views.add(View.create(req,rsp, this));
+            views.add(View.create(req,rsp,this));
             save();
         } catch (ParseException e) {
             sendError(e,req,rsp);

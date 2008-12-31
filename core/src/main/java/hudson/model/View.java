@@ -538,7 +538,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         v.owner = owner;
 
         // redirect to the config screen
-        rsp.sendRedirect2("./"+v.getUrl()+v.getPostConstructLandingPage());
+        rsp.sendRedirect2(req.getContextPath()+'/'+v.getUrl()+v.getPostConstructLandingPage());
 
         return v;
     }
