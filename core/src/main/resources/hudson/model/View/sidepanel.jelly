@@ -20,10 +20,10 @@
         <!-- this is ugly, but Hudson delegates the rendering of its pages to its primary view -->
         <l:task icon="images/24x24/gear.gif" href="configure" title="${%Edit View}"  permission="${it.CONFIGURE}" />
         <l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete View}"  permission="${it.CONFIGURE}" />
-        <j:if test="${app.fingerprintMap.ready}">
-          <l:task icon="images/24x24/search.gif" href="${rootURL}/projectRelationship" title="${%Project Relationship}" />
-          <l:task icon="images/24x24/fingerprint.gif" href="${rootURL}/fingerprintCheck" title="${%Check File Fingerprint}" />
-        </j:if>
+      </j:if>
+      <j:if test="${app.fingerprintMap.ready}">
+        <l:task icon="images/24x24/search.gif" href="${rootURL}/projectRelationship" title="${%Project Relationship}" />
+        <l:task icon="images/24x24/fingerprint.gif" href="${rootURL}/fingerprintCheck" title="${%Check File Fingerprint}" />
       </j:if>
 
       <!-- subtypes can put more stuff here -->
