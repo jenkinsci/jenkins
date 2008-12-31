@@ -4,12 +4,15 @@ import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 
@@ -49,7 +52,14 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
 
             rsp.setStatus(SC_FORBIDDEN);
             rsp.setContentType("text/html;charset=UTF-8");
-            rsp.getWriter().printf(
+            PrintWriter out;
+            try {
+                ServletOutputStream sout = rsp.getOutputStream();
+                out = new PrintWriter(new OutputStreamWriter(sout));
+            } catch (IllegalStateException e) {
+                out = rsp.getWriter();
+            }
+            out.printf(
                 "<html><head>" +
                 "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
                 "<script>window.location.replace('%1$s');</script>" +
@@ -57,6 +67,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
                 "<body style='background-color:white; color:white;'>" +
                 "Authentication required</body></html>", loginForm
             );
+            out.flush();
         }
     }
 }
