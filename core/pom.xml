@@ -97,8 +97,7 @@
           </execution>
         </executions>
       </plugin>
-      <!-- set main class -->
-      <plugin>
+      <plugin><!-- set main class -->
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
@@ -109,6 +108,39 @@
             </manifest>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <!--
+          Configuration for generating Wiki page.
+          This kicks in with the release profile, or by manually running "mvn apt:process"
+        -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>apt-maven-plugin</artifactId>
+        <version>1.0-alpha-2</version>
+        <configuration>
+          <force>true</force><!-- disable staleness check -->
+          <factory>org.jvnet.hudson.tools.ExtensionPointListerFactory</factory>
+          <options>
+            <option>page=Extension points</option>
+          </options>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.jvnet.hudson.tools</groupId>
+            <artifactId>extension-point-lister</artifactId>
+            <version>1.0</version>
+            <exclusions>
+               <exclusion>
+                 <groupId>com.sun</groupId>
+                 <artifactId>tools</artifactId>
+               </exclusion>
+              <exclusion>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+              </exclusion>
+             </exclusions>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
@@ -126,6 +158,22 @@
         <!-- for releases, just use the POM version. See above ant-run plugin for how this gets used. -->
         <build.version>${version}</build.version>
       </properties>
+      <build>
+        <plugins>
+          <plugin><!-- execute apt:process for Wiki page generation -->
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>apt-maven-plugin</artifactId>
+            <version>1.0-alpha-2</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>process</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <!-- run findbugs for better error detection -->
