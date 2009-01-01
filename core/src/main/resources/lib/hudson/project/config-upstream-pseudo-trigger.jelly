@@ -8,7 +8,7 @@
   <j:set var="up" value="${it.buildTriggerUpstreamProjects}" />
   <f:optionalBlock name="pseudoUpstreamTrigger"
                    help="/help/project-config/upstream.html"
-                   title="${%Build after other projects are built}"
+                   title="${%Build after other projects are built} ${it.buildTriggerUpstreamProjects}"
                    checked="${!empty(up)}">
     <f:entry title="${%Projects names}"
              description="${%Multiple projects can be specified like 'abc, def'}">

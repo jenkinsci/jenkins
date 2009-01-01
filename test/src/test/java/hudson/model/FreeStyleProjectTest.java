@@ -4,6 +4,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.util.List;
@@ -34,5 +35,39 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         assertEquals(Shell.class,builders.get(0).getClass());
         assertEquals("echo hello",((Shell)builders.get(0)).getCommand());
         assertTrue(builders.get(0)!=shell);
+    }
+
+    /**
+     * Make sure that the pseudo trigger configuration works.
+     */
+    @Bug(2778)
+    public void testUpstreamPseudoTrigger() throws Exception {
+        pseudoTriggerTest(createMavenProject(), createFreeStyleProject());
+    }
+
+    @Bug(2778)
+    public void testUpstreamPseudoTrigger2() throws Exception {
+        pseudoTriggerTest(createFreeStyleProject(), createFreeStyleProject());
+    }
+
+    @Bug(2778)
+    public void testUpstreamPseudoTrigger3() throws Exception {
+        pseudoTriggerTest(createMatrixProject(), createFreeStyleProject());
+    }
+
+    private void pseudoTriggerTest(AbstractProject up, AbstractProject down) throws Exception {
+        HtmlForm form = new WebClient().getPage(down, "configure").getFormByName("config");
+        form.getInputByName("pseudoUpstreamTrigger").setChecked(true);
+        form.getInputByName("upstreamProjects").setValueAttribute(up.getName());
+        submit(form);
+
+        // make sure this took effect
+        assertTrue(up.getDownstreamProjects().contains(down));
+        assertTrue(down.getUpstreamProjects().contains(up));
+
+        // round trip again and verify that the configuration is still intact.
+        submit(new WebClient().getPage(down, "configure").getFormByName("config"));
+        assertTrue(up.getDownstreamProjects().contains(down));
+        assertTrue(down.getUpstreamProjects().contains(up));
     }
 }

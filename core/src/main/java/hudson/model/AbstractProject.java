@@ -829,15 +829,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public final List<AbstractProject> getBuildTriggerUpstreamProjects() {
         ArrayList<AbstractProject> result = new ArrayList<AbstractProject>();
         for (AbstractProject ap : getUpstreamProjects()) {
-            if (ap instanceof Project) {
-                Project p = (Project) ap;
-                BuildTrigger buildTrigger = (BuildTrigger)p.getPublisher(BuildTrigger.DESCRIPTOR);
-                if (buildTrigger != null) {
-                    if (buildTrigger.getChildProjects().contains(this)) {
-                        result.add(p);
-                    }
-                }                
-            }
+            BuildTrigger buildTrigger = (BuildTrigger)ap.getPublishersList().get(BuildTrigger.DESCRIPTOR);
+            if (buildTrigger != null)
+                if (buildTrigger.getChildProjects().contains(this))
+                    result.add(ap);
         }        
         return result;
     }    
