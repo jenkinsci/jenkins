@@ -8,7 +8,7 @@
     <d:tag name="feature">
       <t:summary icon="${icon}"
                  href="${href}" iconOnly="true">
-        <div><a href="${href}">${title}</a></div>
+        <div class="link"><a href="${href}">${title}</a></div>
         <div style="color:gray; text-decoration:none;">
           <d:invokeBody />
         </div>
