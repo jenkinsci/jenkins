@@ -121,6 +121,10 @@ public class SubversionSCMTest extends HudsonTestCase {
         System.out.println(b.getLog());
         assertTrue(b.getLog().contains("At revision 13000"));
         assertBuildStatus(Result.SUCCESS,b);
-        assertTrue(p.getWorkspace().child("trivial-ant/build.xml").exists());
+
+        b = p.scheduleBuild2(0).get();
+        System.out.println(b.getLog());
+        assertTrue(b.getLog().contains("At revision 13000"));
+        assertBuildStatus(Result.SUCCESS,b);
     }
 }
