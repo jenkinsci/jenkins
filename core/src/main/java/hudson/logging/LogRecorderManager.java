@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * Owner of {@link LogRecorder}s, bound to "/log".
@@ -84,6 +85,20 @@ public class LogRecorderManager extends AbstractModelObject {
 
         // redirect to the config screen
         rsp.sendRedirect2(name+"/configure");
+    }
+
+    /**
+     * Configure the logging level.
+     */
+    public void doConfigLogger(StaplerResponse rsp, @QueryParameter String name, @QueryParameter String level) throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Level lv;
+        if(level.equals("inherit"))
+            lv = null;
+        else
+            lv = Level.parse(level.toUpperCase());
+        Logger.getLogger(name).setLevel(lv);
+        rsp.sendRedirect2("all");
     }
 
     /**

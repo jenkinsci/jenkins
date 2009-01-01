@@ -2172,20 +2172,6 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     }
 
     /**
-     * Configure the logging level.
-     */
-    public void doConfigLogger(StaplerResponse rsp, @QueryParameter String name, @QueryParameter String level) throws IOException {
-        checkPermission(ADMINISTER);
-        Level lv;
-        if(level.equals("inherit"))
-            lv = null;
-        else
-            lv = Level.parse(level.toUpperCase());
-        Logger.getLogger(name).setLevel(lv);
-        rsp.sendRedirect2("log");
-    }
-
-    /**
      * For system diagnostics.
      * Run arbitrary Groovy script.
      */
