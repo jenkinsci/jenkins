@@ -87,7 +87,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -429,7 +428,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
                             File local = new File(ws, l.local);
                             svnuc.setEventHandler(new SubversionUpdateEventHandler(listener.getLogger(), externals,local,l.local));
-                            svnuc.doUpdate(local.getCanonicalFile(), revision, true);
+                            svnuc.doUpdate(local.getCanonicalFile(), l.getRevision(revision), true);
 
                         } catch (final SVNException e) {
                             if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_LOCKED) {
@@ -465,12 +464,11 @@ public class SubversionSCM extends SCM implements Serializable {
 
                     for (final ModuleLocation l : locations) {
                         try {
-                            final SVNURL url = SVNURL.parseURIEncoded(l.remote);
-                            listener.getLogger().println("Checking out "+url);
+                            listener.getLogger().println("Checking out "+l.remote);
 
                             File local = new File(ws, l.local);
                             svnuc.setEventHandler(new SubversionUpdateEventHandler(new PrintStream(pos), externals, local, l.local));
-                            svnuc.doCheckout(url, local.getCanonicalFile(), SVNRevision.HEAD, revision, true);
+                            svnuc.doCheckout(l.getSVNURL(), local.getCanonicalFile(), SVNRevision.HEAD, l.getRevision(revision), true);
                         } catch (SVNException e) {
                             e.printStackTrace(listener.error("Failed to check out "+l.remote));
                             return null;
@@ -487,8 +485,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
                 try {
                     for (final ModuleLocation l : locations) {
-                        final SVNURL url = SVNURL.parseURIEncoded(l.remote);
-                        SVNDirEntry dir = manager.createRepository(url,true).info("/",-1);
+                        SVNDirEntry dir = manager.createRepository(l.getSVNURL(),true).info("/",-1);
                         if(dir!=null) {// I don't think this can ever be null, but be defensive
                             if(dir.getDate().after(new Date()))
                                 listener.getLogger().println(Messages.SubversionSCM_ClockOutOfSync());
@@ -740,7 +737,6 @@ public class SubversionSCM extends SCM implements Serializable {
 
         public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
             for (ModuleLocation l : locations) {
-                String url = l.remote;
                 String moduleName = l.local;
                 File module = new File(ws,moduleName).getCanonicalFile(); // canonicalize to remove ".." and ".". See #474
 
@@ -753,6 +749,7 @@ public class SubversionSCM extends SCM implements Serializable {
                     SVNInfo svnkitInfo = parseSvnInfo(module, authProvider);
                     SvnInfo svnInfo = new SvnInfo(svnkitInfo);
 
+                    String url = l.getURL();
                     if(!svnInfo.url.equals(url)) {
                         listener.getLogger().println("Checking out a fresh workspace because the workspace is not "+url);
                         return false;
@@ -1407,8 +1404,7 @@ public class SubversionSCM extends SCM implements Serializable {
         PrintStream out = listener.getLogger();
 
         for (ModuleLocation l : getLocations(build))
-            if (getDescriptor().checkRepositoryPath(
-                    SVNURL.parseURIDecoded(l.remote)) == SVNNodeKind.NONE) {
+            if (getDescriptor().checkRepositoryPath(l.getSVNURL()) == SVNNodeKind.NONE) {
                 out.println("Location '" + l.remote + "' does not exist");
 
                 ParametersAction params = build
@@ -1465,7 +1461,16 @@ public class SubversionSCM extends SCM implements Serializable {
      * to make failure messages when doing a checkout possible
      */
     public static final class ModuleLocation implements Serializable {
+        /**
+         * Subversion URL to check out.
+         *
+         * This may include "@NNN" at the end to indicate a fixed revision.
+         */
         public final String remote;
+        /**
+         * Local directory to place the file to.
+         * Relative to the workspace root.
+         */
         public final String local;
 
         public ModuleLocation(String remote, String local) {
@@ -1476,18 +1481,58 @@ public class SubversionSCM extends SCM implements Serializable {
             this.local = local.trim();
         }
 
-        public String toString() {
+        /**
+         * Returns the pure URL portion of {@link #remote} by removing
+         * possible "@NNN" suffix.
+         */
+        public String getURL() {
+            int idx = remote.lastIndexOf('@');
+            if(idx>0) {
+                try {
+                    String n = remote.substring(idx+1);
+                    Long.parseLong(n);
+                    return remote.substring(0,idx);
+                } catch (NumberFormatException e) {
+                    // not a revision number
+                }
+            }
             return remote;
         }
 
-        private static final long serialVersionUID = 1L;
+        /**
+         * Gets {@link #remote} as {@link SVNURL}.
+         */
+        public SVNURL getSVNURL() throws SVNException {
+            return SVNURL.parseURIEncoded(getURL());
+        }
 
+        /**
+         * Figures out which revision to check out.
+         *
+         * If {@link #remote} is {@code url@rev}, then this method
+         * returns that specific revision.
+         *
+         * @param defaultValue
+         *      If "@NNN" portion is not in the URL, this value will be returned.
+         *      Normally, this is the SVN revision timestamped at the build date.
+         */
+        public SVNRevision getRevision(SVNRevision defaultValue) {
+            int idx = remote.lastIndexOf('@');
+            if(idx>0) {
+                try {
+                    String n = remote.substring(idx+1);
+                    return SVNRevision.create(Long.parseLong(n));
+                } catch (NumberFormatException e) {
+                    // not a revision number
+                }
+            }
+            return defaultValue;
+        }
 
-		private String getExpandedRemote(AbstractBuild<?, ?> build) {
+        private String getExpandedRemote(AbstractBuild<?,?> build) {
             String outRemote = remote;
 
-            ParametersAction parameters = build
-                    .getAction(ParametersAction.class);
+            ParametersAction parameters = build.getAction(ParametersAction.class);
             if (parameters != null)
                 outRemote = parameters.substitute(build, remote);
 
@@ -1496,16 +1541,22 @@ public class SubversionSCM extends SCM implements Serializable {
 
         /**
          * Expand location value based on Build parametric execution.
-         * 
+         *
          * @param build
          *            Build instance for expanding parameters into their values
-         * 
+         *
          * @return Output ModuleLocation expanded according to Build parameters
          *         values.
          */
         public ModuleLocation getExpandedLocation(AbstractBuild<?, ?> build) {
             return new ModuleLocation(getExpandedRemote(build), local);
         }
+        
+        public String toString() {
+            return remote;
+        }
+
+        private static final long serialVersionUID = 1L;
     }
 
     private static final Logger LOGGER = Logger.getLogger(SubversionSCM.class.getName());

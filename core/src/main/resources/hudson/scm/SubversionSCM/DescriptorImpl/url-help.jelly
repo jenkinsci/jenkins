@@ -2,6 +2,7 @@
   <l:ajax>
     <div>
     ${%description.1}
+    ${%description.explicitRevision}
     <br/>
     ${%description.2(rootURL)}
     <br />

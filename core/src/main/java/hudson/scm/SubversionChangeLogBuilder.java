@@ -71,7 +71,7 @@ public final class SubversionChangeLogBuilder {
             logHandler.startDocument();
 
             for (ModuleLocation l : scm.getLocations(build)) {
-                changelogFileCreated |= buildModule(l.remote, svnlc, logHandler);
+                changelogFileCreated |= buildModule(l.getURL(), svnlc, logHandler);
             }
             for(SubversionSCM.External ext : externals) {
                 changelogFileCreated |= buildModule(

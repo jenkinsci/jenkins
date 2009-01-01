@@ -104,4 +104,23 @@ public class SubversionSCMTest extends HudsonTestCase {
         assertBuildStatus(Result.SUCCESS,b);
         assertTrue(p.getWorkspace().child("jasf/maven.xml").exists());
     }
+
+    /**
+     * Tests the "URL@REV" format in SVN URL.
+     */
+    @Bug(262)
+    public void testRevisionedCheckout() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.setScm(new SubversionSCM(
+                new String[]{"https://svn.dev.java.net/svn/hudson/trunk/hudson/test-projects/trivial-ant@13000"},
+                new String[]{null},
+                true, null
+        ));
+
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        System.out.println(b.getLog());
+        assertTrue(b.getLog().contains("At revision 13000"));
+        assertBuildStatus(Result.SUCCESS,b);
+        assertTrue(p.getWorkspace().child("trivial-ant/build.xml").exists());
+    }
 }
