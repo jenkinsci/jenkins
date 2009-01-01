@@ -43,7 +43,7 @@
         </form>
       </div>
     </j:if>
-    <table style="padding-left: 2em;">
+    <table style="padding-left: 2em;" id="management-links">
       <local:feature icon="setting.gif"          href="configure"    title="${%Configure System}">
         ${%Configure global settings and paths.}  
       </local:feature>
