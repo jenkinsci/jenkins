@@ -6,6 +6,8 @@ import hudson.model.Item;
 import hudson.model.Job;
 
 /**
+ * Receives notifications about CRUD operations of {@link Item}.
+ *
  * @since 1.74
  * @author Kohsuke Kawaguchi
  */
