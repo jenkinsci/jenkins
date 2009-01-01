@@ -14,7 +14,7 @@
       ${%Logger Configuration}
       <t:help href="http://hudson.gotdns.com/wiki/display/HUDSON/Logger+Configuration" />
     </h2>
-    <form action="configLogger" method="post">
+    <form action="configLogger" method="post" name="configLogger">
       ${%Name}: <input type="text" name="name" width="40" />
       ${%Level}:
       <select name="level">
