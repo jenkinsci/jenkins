@@ -10,6 +10,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
+import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
 import hudson.matrix.MatrixProject;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
@@ -66,6 +67,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.Filter;
+import java.util.logging.LogRecord;
 
 /**
  * Base class for all Hudson test cases.
@@ -526,6 +529,9 @@ public abstract class HudsonTestCase extends TestCase {
         }
     }
 
+    // needs to keep reference, or it gets GC-ed.
+    private static final Logger XML_HTTP_REQUEST_LOGGER = Logger.getLogger(XMLHttpRequest.class.getName());
+    
     static {
         // screen scraping relies on locale being fixed.
         Locale.setDefault(Locale.ENGLISH);
@@ -563,6 +569,13 @@ public abstract class HudsonTestCase extends TestCase {
 
         // hudson-behavior.js relies on this to decide whether it's running unit tests.
         Functions.isUnitTest = true;
+
+        // prototype.js calls this method all the time, so ignore this warning.
+        XML_HTTP_REQUEST_LOGGER.setFilter(new Filter() {
+            public boolean isLoggable(LogRecord record) {
+                return !record.getMessage().contains("XMLHttpRequest.getResponseHeader() was called before the response was available.");
+            }
+        });
     }
 
     private static final Logger LOGGER = Logger.getLogger(HudsonTestCase.class.getName());
