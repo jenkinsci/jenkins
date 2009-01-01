@@ -128,7 +128,7 @@
           <dependency>
             <groupId>org.jvnet.hudson.tools</groupId>
             <artifactId>extension-point-lister</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
             <exclusions>
                <exclusion>
                  <groupId>com.sun</groupId>
