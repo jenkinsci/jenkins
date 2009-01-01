@@ -1,8 +1,8 @@
 package hudson.bugs;
 
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
-import com.gargoylesoftware.htmlunit.Page;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.slaves.JNLPLauncher;
@@ -10,8 +10,8 @@ import hudson.slaves.RetentionStrategy;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.DOMReader;
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 

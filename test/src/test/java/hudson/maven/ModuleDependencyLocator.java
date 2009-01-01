@@ -4,9 +4,9 @@ import hudson.ExtensionPoint;
 import org.apache.maven.project.MavenProject;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**

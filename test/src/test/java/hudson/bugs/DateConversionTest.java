@@ -1,16 +1,15 @@
 package hudson.bugs;
 
-import junit.framework.TestCase;
 import com.thoughtworks.xstream.converters.basic.DateConverter;
+import junit.framework.TestCase;
+import org.jvnet.hudson.test.Email;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.List;
-import java.util.ArrayList;
-
-import org.jvnet.hudson.test.Email;
 
 /**
  * Testing date conversion.

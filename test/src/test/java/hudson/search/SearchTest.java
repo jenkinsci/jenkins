@@ -1,7 +1,7 @@
 package hudson.search;
 
-import org.jvnet.hudson.test.HudsonTestCase;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
  * @author Kohsuke Kawaguchi

@@ -1,7 +1,6 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -32,7 +31,7 @@ public class HudsonTest extends HudsonTestCase {
         // just load the page and resubmit
         HtmlPage configPage = new WebClient().goTo("configure");
         HtmlForm form = configPage.getFormByName("config");
-        form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+        submit(form);
 
         // make sure all the pieces are intact
         assertEquals(2,hudson.getNumExecutors());

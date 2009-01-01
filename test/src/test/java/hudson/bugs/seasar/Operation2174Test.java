@@ -1,6 +1,5 @@
 package hudson.bugs.seasar;
 
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.maven.MavenModuleSet;
@@ -32,8 +31,7 @@ public class Operation2174Test extends HudsonTestCase {
         // configure downstream build
         form.getInputByName(BuildTrigger.DESCRIPTOR.getJsonSafeClassName()).click();
         form.getInputByName("buildTrigger.childProjects").setValueAttribute("dp");
-
-        form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+        submit(form);
 
         // verify that the relationship is set up
         BuildTrigger trigger = (BuildTrigger) up.getPublishersList().get(BuildTrigger.DESCRIPTOR);
@@ -42,7 +40,7 @@ public class Operation2174Test extends HudsonTestCase {
         // now go ahead and edit the downstream
         page = webClient.getPage(dp,"configure");
         form = page.getFormByName("config");
-        form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+        submit(form);
 
         // verify that the relationship is set up
         trigger = (BuildTrigger) up.getPublishersList().get(BuildTrigger.DESCRIPTOR);

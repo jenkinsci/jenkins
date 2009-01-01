@@ -1,9 +1,9 @@
 package hudson.util;
 
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.recipes.WithPlugin;
 import hudson.model.FreeStyleProject;
+import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 
 /**
  * @author Kohsuke Kawaguchi

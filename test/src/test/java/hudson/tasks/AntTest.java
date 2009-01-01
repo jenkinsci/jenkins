@@ -1,10 +1,9 @@
 package hudson.tasks;
 
-import org.jvnet.hudson.test.HudsonTestCase;
-import hudson.model.FreeStyleProject;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.FreeStyleProject;
+import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -21,7 +20,7 @@ public class AntTest extends HudsonTestCase {
         HtmlPage page = webClient.getPage(p,"configure");
 
         HtmlForm form = page.getFormByName("config");
-        form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+        submit(form);
 
         Ant a = (Ant)p.getBuildersList().get(Ant.DESCRIPTOR);
         assertNotNull(a);

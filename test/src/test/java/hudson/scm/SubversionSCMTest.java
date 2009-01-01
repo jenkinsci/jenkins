@@ -3,7 +3,6 @@ package hudson.scm;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleBuild;
@@ -12,9 +11,9 @@ import hudson.model.Result;
 import org.dom4j.Document;
 import org.dom4j.io.DOMReader;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.recipes.PresetData;
 import static org.jvnet.hudson.test.recipes.PresetData.DataSet.ANONYMOUS_READONLY;
 
@@ -73,7 +72,7 @@ public class SubversionSCMTest extends HudsonTestCase {
         wc.login("alice","alice");
         html = wc.getPage(b,"tagBuild/");
         HtmlForm form = html.getFormByName("tag");
-        form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+        submit(form);
     }
 
     @Email("http://www.nabble.com/Hudson-1.266-and-1.267%3A-Subversion-authentication-broken--td21156950.html")

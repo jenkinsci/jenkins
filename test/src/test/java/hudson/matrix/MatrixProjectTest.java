@@ -6,8 +6,8 @@ import hudson.tasks.Maven;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
 
-import java.util.List;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi

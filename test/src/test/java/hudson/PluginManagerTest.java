@@ -1,11 +1,10 @@
 package hudson;
 
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.WithPlugin;
-import org.apache.commons.io.FileUtils;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
 
 import java.io.File;
 
@@ -23,7 +22,7 @@ public class PluginManagerTest extends HudsonTestCase {
         File plugin = new File(dir, "tasks.hpi");
         FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/tasks.hpi"),plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
-        f.submit((HtmlButton)last(f.getHtmlElementsByTagName("button")));
+        submit(f);
 
         assertTrue( new File(hudson.getRootDir(),"plugins/tasks.hpi").exists() );
     }

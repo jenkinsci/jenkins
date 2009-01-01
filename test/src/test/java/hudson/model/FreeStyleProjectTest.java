@@ -1,11 +1,10 @@
 package hudson.model;
 
-import org.jvnet.hudson.test.HudsonTestCase;
-import hudson.tasks.Shell;
-import hudson.tasks.Builder;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.tasks.Builder;
+import hudson.tasks.Shell;
+import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         HtmlPage page = webClient.getPage(project,"configure");
 
         HtmlForm form = page.getFormByName("config");
-        form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+        submit(form);
 
         List<Builder> builders = project.getBuilders();
         assertEquals(1,builders.size());

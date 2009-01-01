@@ -1,16 +1,12 @@
 package hudson.pages;
 
-import static com.gargoylesoftware.htmlunit.WebAssert.*;
-import hudson.model.PageDecorator;
-
-import net.sf.json.JSONObject;
-
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.kohsuke.stapler.StaplerRequest;
-
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import static com.gargoylesoftware.htmlunit.WebAssert.assertElementPresent;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.PageDecorator;
+import net.sf.json.JSONObject;
+import org.jvnet.hudson.test.HudsonTestCase;
+import org.kohsuke.stapler.StaplerRequest;
 
 public class SystemConfigurationTestCase extends HudsonTestCase {
 
@@ -35,7 +31,7 @@ public class SystemConfigurationTestCase extends HudsonTestCase {
         
         HtmlForm form = page.getFormByName("config");
         form.getInputByName("_.decoratorId").setValueAttribute("this_is_a_profile");
-        form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+        submit(form);
         assertEquals("The decorator field was incorrect", "this_is_a_profile", pageDecoratorImpl.getDecoratorId());
     }
 

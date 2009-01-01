@@ -1,13 +1,9 @@
 package hudson.tasks;
 
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
-import hudson.tasks.Maven.MavenInstallation;
 import org.jvnet.hudson.test.HudsonTestCase;
-
-import java.io.File;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -26,7 +22,7 @@ public class MavenTest extends HudsonTestCase {
         HtmlPage page = webClient.getPage(p,"configure");
 
         HtmlForm form = page.getFormByName("config");
-        form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+        submit(form);
 
         Maven m = (Maven)p.getBuildersList().get(Maven.DESCRIPTOR);
         assertNotNull(m);

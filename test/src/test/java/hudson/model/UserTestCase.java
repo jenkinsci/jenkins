@@ -1,9 +1,8 @@
 package hudson.model;
 
-import org.jvnet.hudson.test.HudsonTestCase;
-
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.jvnet.hudson.test.HudsonTestCase;
 
 public class UserTestCase extends HudsonTestCase {
 

@@ -1,12 +1,10 @@
 package hudson.model;
 
-import hudson.matrix.MatrixProject;
-import hudson.maven.MavenModuleSet;
-
-import org.jvnet.hudson.test.HudsonTestCase;
-
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.matrix.MatrixProject;
+import hudson.maven.MavenModuleSet;
+import org.jvnet.hudson.test.HudsonTestCase;
 
 public class JobPropertyTest extends HudsonTestCase {
 
