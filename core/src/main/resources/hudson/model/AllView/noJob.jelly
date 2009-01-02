@@ -5,17 +5,18 @@
   ${%Welcome to Hudson!}
   <j:choose xmlns:j="jelly:core">
     <!-- Only show the create new jobs link to those users that have permission to use it. -->
-    <j:when test="${h.hasPermission(it.CREATE)}">
+    <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
+    <j:when test="${h.hasPermission(permission)}">
       ${%newJob}
     </j:when>
     <j:otherwise>
       <!-- Offer anonymous users the chance to login, then they can create jobs. -->
       <j:if test="${h.isAnonymous()}">
         ${%login(rootURL, app.securityRealm.loginUrl, request.requestURI)}
-      </j:if>
-      <!-- Also offer them the opportunity to sign-up for an account, if this facility is available. -->
-      <j:if test="${it.securityRealm.allowsSignup()}">
-        ${%signup}
+        <!-- Also offer them the opportunity to sign-up for an account, if this facility is available. -->
+        <j:if test="${app.securityRealm.allowsSignup()}">
+          ${%signup}
+        </j:if>
       </j:if>
     </j:otherwise>
   </j:choose>
