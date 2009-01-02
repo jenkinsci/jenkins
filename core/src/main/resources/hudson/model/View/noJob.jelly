@@ -2,7 +2,7 @@
 <div>
   ${%description_1}
   <j:if test="${h.hasPermission(it.CONFIGURE)}">
-      ${description_2}
+      ${%description_2}
   </j:if>
 </div>
 </j:jelly>
