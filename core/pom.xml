@@ -279,7 +279,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <version>1.92</version>
+      <version>1.93</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
