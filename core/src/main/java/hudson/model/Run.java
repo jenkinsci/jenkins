@@ -1271,4 +1271,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return Mailer.DESCRIPTOR.getAdminAddress();
         }
     }
+
+    @Override
+    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        Object result = super.getDynamic(token, req, rsp);
+        if (result == null)
+            // Next/Previous Build links on an action page (like /job/Abc/123/testReport)
+            // will also point to same action (/job/Abc/124/testReport), but other builds
+            // may not have the action.. rather than 404, redirect up to the build page.
+            result = new RedirectUp();
+        return result;
+    }
+
+    public static class RedirectUp {
+        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException {
+            rsp.sendRedirect("..");
+        }
+    }
 }
