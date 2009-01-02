@@ -2,7 +2,8 @@
   "New Project" page.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-	<l:layout norefresh="true">
+	<j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
+	<l:layout norefresh="true" permission="${permission}">
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
 		  <s:form method="post" action="createItem">
