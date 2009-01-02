@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -98,7 +99,9 @@ public final class DirectoryBrowserSupport {
             StringTokenizer pathTokens = new StringTokenizer(path,"/");
             while(pathTokens.hasMoreTokens()) {
                 String pathElement = pathTokens.nextToken();
-                if(pathElement.contains("?") || pathElement.contains("*"))
+                // Treat * and ? as wildcard unless they match a literal filename
+                if((pathElement.contains("?") || pathElement.contains("*"))
+                        && inBase && !(new FilePath(root, (_base.length() > 0 ? _base + "/" : "") + pathElement).exists()))
                     inBase = false;
                 if(pathElement.equals("*zip*")) {
                     // the expected syntax is foo/bar/*zip*/bar.zip
@@ -257,7 +260,7 @@ public final class DirectoryBrowserSupport {
 
     private static String createBackRef(int times) {
         if(times==0)    return "./";
-        StringBuffer buf = new StringBuffer(3*times);
+        StringBuilder buf = new StringBuilder(3*times);
         for(int i=0; i<times; i++ )
             buf.append("../");
         return buf.toString();
@@ -377,14 +380,14 @@ public final class DirectoryBrowserSupport {
                 Arrays.sort(files,new FileComparator());
     
                 for( File f : files ) {
-                    Path p = new Path(f.getName(),f.getName(),f.isDirectory(),f.length(), f.canRead());
+                    Path p = new Path(URLEncoder.encode(f.getName(),"UTF-8"),f.getName(),f.isDirectory(),f.length(), f.canRead());
                     if(!f.isDirectory()) {
                         r.add(Collections.singletonList(p));
                     } else {
                         // find all empty intermediate directory
                         List<Path> l = new ArrayList<Path>();
                         l.add(p);
-                        String relPath = f.getName();
+                        String relPath = URLEncoder.encode(f.getName(),"UTF-8");
                         while(true) {
                             // files that don't start with '.' qualify for 'meaningful files', nor SCM related files
                             File[] sub = f.listFiles(new FilenameFilter() {
@@ -395,7 +398,7 @@ public final class DirectoryBrowserSupport {
                             if(sub==null || sub.length!=1 || !sub[0].isDirectory())
                                 break;
                             f = sub[0];
-                            relPath += '/'+f.getName();
+                            relPath += '/'+URLEncoder.encode(f.getName(),"UTF-8");
                             l.add(new Path(relPath,f.getName(),true,0, f.canRead()));
                         }
                         r.add(l);
@@ -416,7 +419,7 @@ public final class DirectoryBrowserSupport {
     private static class PatternScanner implements FileCallable<List<List<Path>>> {
         private final String pattern;
         /**
-         * Strling like "../../../" that cancels the 'rest' portion. Can be "./"
+         * String like "../../../" that cancels the 'rest' portion. Can be "./"
          */
         private final String baseRef;
 
@@ -462,7 +465,7 @@ public final class DirectoryBrowserSupport {
                 buildPathList(baseDir, parent, pathList, href);
             }
 
-            href.append(filePath.getName());
+            href.append(URLEncoder.encode(filePath.getName(),"UTF-8"));
             if (filePath.isDirectory()) {
                 href.append("/");
             }

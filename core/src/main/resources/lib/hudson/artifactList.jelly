@@ -14,9 +14,9 @@
 	        <ul>
 	          <j:forEach var="f" items="${artifacts}">
 	            <li>
-	              <a href="${baseURL}artifact/${f}">${f.displayPath}</a>
+	              <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
                 <st:nbsp/>
-                <a href="${baseURL}artifact/${f}/*fingerprint*/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="[fingerprint]" /></a>
+                <a href="${baseURL}artifact/${f.href}/*fingerprint*/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="[fingerprint]" /></a>
 	            </li>
 	          </j:forEach>
 	        </ul>
