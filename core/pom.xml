@@ -34,7 +34,7 @@
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.7</version>
+        <version>1.8</version>
         <extensions>true</extensions>
       </plugin>
       <plugin>
@@ -153,14 +153,14 @@
       </activation>
     </profile>
     <profile>
-	    <id>release</id>
+      <id>release</id>
       <properties>
         <!-- for releases, just use the POM version. See above ant-run plugin for how this gets used. -->
         <build.version>${version}</build.version>
       </properties>
       <build>
         <plugins>
-          <plugin><!-- execute apt:process for Wiki page generation -->
+          <plugin><!-- execute apt:process for "Extension points" Wiki page generation -->
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>apt-maven-plugin</artifactId>
             <version>1.0-alpha-2</version>
@@ -169,6 +169,27 @@
                 <goals>
                   <goal>process</goal>
                 </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <!--
+              generate jelly taglib docs from src/main/resoruces.
+              this is necessary in addition to the <reporting> configuration
+              to get the results deployed.
+            -->
+            <groupId>org.kohsuke.stapler</groupId>
+            <artifactId>maven-stapler-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>jelly-taglibdoc</goal>
+                </goals>
+                <configuration>
+                  <patterns>
+                    <pattern>/lib/.*</pattern>
+                  </patterns>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -551,4 +572,23 @@
     </dependency-->
   </dependencies>
 
+  <reporting>
+    <plugins>
+      <plugin><!-- generate Jelly tag lib documentation -->
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>maven-stapler-plugin</artifactId>
+        <configuration>
+          <patterns>
+            <pattern>/lib/.*</pattern>
+          </patterns>
+        </configuration>
+      </plugin>
+      <plugin><!-- skip slow dependency analysis -->
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <configuration>
+          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+        </configuration>
+      </plugin> 
+    </plugins>
+  </reporting>
 </project>
