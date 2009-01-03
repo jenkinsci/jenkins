@@ -16,6 +16,9 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <forkMode>never</forkMode>
+          <!--<forkMode>once</forkMode>--><!-- fork is necessary for redirectTestOutputToFile -->
+          <!--<reportFormat>plain</reportFormat>-->
+          <!--<redirectTestOutputToFile>true</redirectTestOutputToFile>-->
         </configuration>
       </plugin>
       <plugin>
