@@ -77,6 +77,15 @@ public class MyView extends View {
             super(MyView.class);
         }
 
+        /**
+         * If the security is not enabled, there's no point in having
+         * this type of views.
+         */
+        @Override
+        public boolean isInstantiable() {
+            return Hudson.getInstance().isUseSecurity();
+        }
+
         public String getDisplayName() {
             return Messages.MyView_DisplayName();
         }
