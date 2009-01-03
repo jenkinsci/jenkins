@@ -1,4 +1,8 @@
-<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+  <st:documentation>
+    Generates the body as the main content part of a Hudson page.
+  </st:documentation>
+
   <j:if test="${mode=='main-panel'}">
     <a name="skip2content" />
     <d:invokeBody />

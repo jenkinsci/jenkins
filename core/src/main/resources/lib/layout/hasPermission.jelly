@@ -1,9 +1,12 @@
-<!--
-  Attributes:
-   permission: the body is only rendered if permission is null, or the user has the permission
--->
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:s="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+  <st:documentation>
+    Renders the body only if the current user has the specified permission
+    <st:attribute name="permission" use="required" type="Permission">
+      permission object to check. If this is null, the body will be also rendered.
+    </st:attribute>
+  </st:documentation>
+
   <j:if test="${h.hasPermission(it, permission)}">
-    <d:invokeBody />
+    <d:invokeBody/>
   </j:if>
 </j:jelly>
