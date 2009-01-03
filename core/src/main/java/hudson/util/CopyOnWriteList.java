@@ -64,22 +64,21 @@ public class CopyOnWriteList<E> implements Iterable<E> {
 
     /**
      * Returns an iterator.
-     *
-     * The returned iterator doesn't support the <tt>remove</tt> operation.
      */
     public Iterator<E> iterator() {
         final Iterator<? extends E> itr = core.iterator();
         return new Iterator<E>() {
+            private E last;
             public boolean hasNext() {
                 return itr.hasNext();
             }
 
             public E next() {
-                return itr.next();
+                return last=itr.next();
             }
 
             public void remove() {
-                throw new UnsupportedOperationException();
+                CopyOnWriteList.this.remove(last);
             }
         };
     }
