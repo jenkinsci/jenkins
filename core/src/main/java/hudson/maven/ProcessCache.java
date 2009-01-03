@@ -12,7 +12,6 @@ import hudson.util.NullStream;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -183,7 +182,7 @@ public final class ProcessCache {
     /**
      * Noop callable used for checking the sanity of the maven process in the cache.
      */
-    private static class SetSystemProperties implements Callable<Object,RuntimeException>, Serializable {
+    private static class SetSystemProperties implements Callable<Object,RuntimeException> {
         private final Properties properties;
 
         public SetSystemProperties(Properties properties) {
@@ -197,7 +196,7 @@ public final class ProcessCache {
         private static final long serialVersionUID = 1L;
     }
 
-    private static class GetSystemProperties implements Callable<Properties,RuntimeException>, Serializable {
+    private static class GetSystemProperties implements Callable<Properties,RuntimeException> {
         public Properties call() {
             return System.getProperties();
         }
