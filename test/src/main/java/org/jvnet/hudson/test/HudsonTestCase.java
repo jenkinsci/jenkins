@@ -23,11 +23,13 @@ import hudson.model.Result;
 import hudson.model.JDK;
 import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
+import hudson.tasks.BuildStep;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.Launcher.LocalLauncher;
 import hudson.util.StreamTaskListener;
 import hudson.util.ProcessTreeKiller;
 import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenReporters;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.WebAppMain;
@@ -65,6 +67,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.Filter;
@@ -153,8 +156,33 @@ public abstract class HudsonTestCase extends TestCase {
         server.stop();
         for (LenientRunnable r : tearDowns)
             r.run();
+
+        // TODO: avoid relying on singletons and switch to some DI container.
+        // In the mean time, discard descriptors created during this exercise.
+        // without this, plugins loaded in the tests will be left and interferes with the later tests.
+        cleanUpDescriptors(Descriptor.ALL);
+        cleanUpDescriptors(BuildStep.PUBLISHERS);
+        cleanUpDescriptors(MavenReporters.LIST);
+
         hudson.cleanUp();
         env.dispose();
+    }
+
+    private void cleanUpDescriptors(Iterable<? extends Descriptor> cont) {
+        ClassLoader base = getClass().getClassLoader();
+        for (Iterator<? extends Descriptor> itr = cont.iterator(); itr.hasNext();) {
+            Descriptor d =  itr.next();
+            ClassLoader cl = d.getClass().getClassLoader();
+            if(cl==base)    continue;
+
+            while(cl!=null) {
+                cl = cl.getParent();
+                if(cl==base) {
+                    itr.remove();
+                    break;
+                }
+            }
+        }
     }
 
     protected void runTest() throws Throwable {
