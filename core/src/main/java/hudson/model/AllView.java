@@ -23,6 +23,11 @@ public class AllView extends View {
     }
 
     @Override
+    public String getDescription() {
+        return Hudson.getInstance().getDescription();
+    }
+
+    @Override
     public boolean contains(TopLevelItem item) {
         return true;
     }
