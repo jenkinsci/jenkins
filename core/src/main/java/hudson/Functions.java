@@ -178,20 +178,18 @@ public class Functions {
         String base = l.getUrl();
 
         String reqUri = req.getOriginalRequestURI();
-        // despite the spec saying this string is not decoded,
-        // Tomcat apparently decodes this string. You see ' ' instead of '%20', which is what
-        // the browser has sent. So do some quick scan to see if it's ASCII safe, and if not
-        // re-encode it. Otherwise it won't match with ancUrl.
-        if(reqUri.indexOf(' ')>=0) {
-            try {
-                // 3 arg version accepts illegal character. 1-arg version doesn't
-                reqUri = new URI(null,reqUri,null).toASCIIString();
-            } catch (URISyntaxException e) {
-                // try to use reqUri as is.
-            }
-        }
-
-        String rest = reqUri.substring(f.getUrl().length());
+        // Find "rest" or URI by removing N path components.
+        // Not using reqUri.substring(f.getUrl().length()) to avoid mismatches due to
+        // url-encoding or extra slashes.  Former may occur in Tomcat (despite the spec saying
+        // this string is not decoded, Tomcat apparently decodes this string. You see ' '
+        // instead of '%20', which is what the browser has sent), latter may occur in some
+        // proxy or URL-rewriting setups where extra slashes are inadvertently added.
+        String furl = f.getUrl();
+        int slashCount = 0;
+        // Count components in ancestor URL
+        for (int i = furl.indexOf('/'); i >= 0; i = furl.indexOf('/', i + 1)) slashCount++;
+        // Remove that many from request URL, ignoring extra slashes
+        String rest = reqUri.replaceFirst("(?:/+[^/]*){" + slashCount + "}", "");
 
         return new RunUrl( (Run) f.getObject(), head, base, rest);
     }
