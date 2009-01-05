@@ -20,7 +20,7 @@ scp ../hudson_${ver}_all.deb hudson.gotdns.com:~/public_html_hudson/debian/binar
 
 # build package index
 pushd ..
-mkdir binary || true
+mkdir binary > /dev/null 2>&1 || true
 mv hudson_${ver}_all.deb binary
 dpkg-scanpackages binary /dev/null | gzip -9c > binary/Packages.gz
 scp binary/Packages.gz hudson.gotdns.com:~/public_html_hudson/debian/binary
