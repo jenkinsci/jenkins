@@ -82,7 +82,7 @@
                 <!-- default to release version -->
                 <!-- put the version file -->
                 <echo message="The build id is: ${build.version}" />
-                <mkdir dir="target/classes/model/hudson" />
+                <mkdir dir="target/classes/hudson/model" />
                 <echo file="target/classes/hudson/model/hudson-version.properties">version=${build.version}
                 </echo>
 
