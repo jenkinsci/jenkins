@@ -93,6 +93,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -151,6 +152,7 @@ import javax.servlet.RequestDispatcher;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public final class Hudson extends AbstractModelObject implements ItemGroup<TopLevelItem>, Node, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled {
     private transient final Queue queue;
 
@@ -1057,6 +1059,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     /**
      * Returns the primary {@link View} that renders the top-page of Hudson.
      */
+    @Exported(inline=true)
     public View getPrimaryView() {
         View v = getView(primaryView);
         if(v==null) // fallback
