@@ -71,17 +71,14 @@ public class ParametersAction implements Action, Iterable<ParameterValue> {
         return parameters;
     }
 
-    @Override
     public String getDisplayName() {
         return Messages.ParameterAction_DisplayName();
     }
 
-    @Override
     public String getIconFileName() {
         return "document-properties.gif";
     }
 
-    @Override
     public String getUrlName() {
         return "parameters";
     }

@@ -40,7 +40,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
 		this.pluginManager = pluginManager;
 	}
 
-	@Override
 	public PluginWrapper createPluginWrapper(File archive) throws IOException {
 		LOGGER.info("Loading plugin: " + archive);
 
@@ -143,11 +142,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
 				classLoader, disableFile, dependencies, optionalDependencies);
 	}
 
-	@Override
 	public void initializeComponents(PluginWrapper plugin) {
 	}
 
-	@Override
 	public void load(PluginWrapper wrapper) throws IOException {
         String className = wrapper.getPluginClass();
         if(className ==null) {

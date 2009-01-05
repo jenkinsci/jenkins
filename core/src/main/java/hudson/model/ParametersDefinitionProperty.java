@@ -130,17 +130,14 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
 
     }
 
-    @Override
     public String getDisplayName() {
         return null;
     }
 
-    @Override
     public String getIconFileName() {
         return null;
     }
 
-    @Override
     public String getUrlName() {
         return "parameters";
     }
