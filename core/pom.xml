@@ -122,13 +122,14 @@
           <factory>org.jvnet.hudson.tools.ExtensionPointListerFactory</factory>
           <options>
             <option>page=Extension points</option>
+	    <option>target=${project.basedir}/target/extension-points.wiki</option>
           </options>
         </configuration>
         <dependencies>
           <dependency>
             <groupId>org.jvnet.hudson.tools</groupId>
             <artifactId>extension-point-lister</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
             <exclusions>
                <exclusion>
                  <groupId>com.sun</groupId>
