@@ -22,17 +22,16 @@
   シンプルなケースでは、このコマンドは"ssh <i>hostname</i> java -jar ~/bin/slave.jar"のようなものになります。
 
   しかし、PATHのようなこのスレーブノード独自の環境変数を設定するのと同時に、javaやslave.jarの場所を制御できるように、
-　スレーブに以下のような小さいシェルスクリプトを書くのはいい考えです。
+  スレーブに以下のような小さいシェルスクリプトを書くのはいい考えです。
 
 <pre>
 #!/bin/sh
 exec java -jar ~/bin/slave.jar
 </pre>
 
-  <p><!-- TODO:誰か訳して -->
-  You can use any command to run a process on the slave machine, such as RSH,
-  as long as stdin/stdout of this process will be connected to
-  "java -jar ~/bin/slave.jar" eventually.
+  <p>
+  RSHのようなスレーブマシンでプロセスを起動できるようなコマンドを使用することができます。
+  ただし、プロセスの標準入出力が"java -jar ~/bin/slave.jar"を接続している必要があります。
 
   <p>
   スレーブがたくさん配置されている場合、NFSでマウントされた共通の場所から、
@@ -41,5 +40,4 @@ exec java -jar ~/bin/slave.jar
 
   <p>
   "ssh -v <i>ホスト名</i>"とすると、接続確認するのに便利です。
-  issue.
 </div>
