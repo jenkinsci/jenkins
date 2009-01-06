@@ -69,8 +69,8 @@ final class WarExploder {
             System.out.println("Exploding hudson.war at "+war);
             new FilePath(explodeDir).deleteRecursive();
             new FilePath(war).unzip(new FilePath(explodeDir));
-            if(!explodeDir.exists())    // this is supposed to be impossible, but I'm investigating HUDSON-2605
-                throw new IOException("Failed to explode "+war);
+            // Recreating the File Object seems to be necessary to fix HUDSON-2605
+            timestamp = timestamp.getCanonicalFile();
             new FileOutputStream(timestamp).close();
             timestamp.setLastModified(war.lastModified());
         } else {
