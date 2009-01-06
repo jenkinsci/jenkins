@@ -1,11 +1,32 @@
-<!--
-  One entry
-
-  <%@attribute name="title" required="true" %>
-  <%@attribute name="description" required="false" %>
-  <%@attribute name="help"  %> - if present, URL to the help screen
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    An entry of the &lt;f:form>, which is one logical row (that consists of
+    several &lt;TR> tags.
+
+    One entry normally host one control.
+
+    <st:attribute name="title" use="required">
+      Name of the entry. Think of this like a label for the control.
+    </st:attribute>
+    <st:attribute name="description">
+      If it's not obvious to the user as to what the control expects,
+      specify some description text (which currently gets rendered as
+      small text under the control, but that may change.)
+
+      This text shouldn't get too long, and in recent Hudson, this feature
+      is somewhat de-emphasized, in favor of the inline foldable help page
+      specified via @help.
+    </st:attribute>
+    <st:attribute name="help">
+      URL to the HTML page. When this attribute is specified, the entry gets
+      a (?) icon on the right, and if the user clicks it, the contents of the
+      given URL is rendered as a box below the entry.
+
+      The URL should return an HTML document wrapped in a &lt;div> tag.
+      The URL is interpreted to be rooted at the context path of Hudson,
+      so it's normally something like "/plugin/foobar/help/abc.html".
+    </st:attribute>
+  </st:documentation>
   <tr>
     <td class="setting-leftspace"><st:nbsp/></td>
     <td class="setting-name">

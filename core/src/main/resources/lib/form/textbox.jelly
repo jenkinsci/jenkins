@@ -1,21 +1,27 @@
-<!--
-	<input type="textbox">
-
-	Attributes:
-
-	If @field is specified:
-	   no other mandatory fields.
-	   in this case, name and value   are inferred from field,
-	   and checkUrl is auto-generated if the check method is present.
-	Otherwise
-	   @name and @value are mandatory.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
-    Generates an input field <tt>&lt;input type="text" ... /></tt>.
+    Generates an input field <tt>&lt;input type="text" ... /></tt> to be
+    used inside &lt;f:entry/>
 
     <st:attribute name="field">
       Used for databinding. TBD.
+    </st:attribute>
+    <st:attribute name="name">
+      This becomes @name of the &lt;input> tag.
+      If @field is specified, this value is inferred from it.
+    </st:attribute>
+    <st:attribute name="value">
+      The initial value of the field. This becomes the @value of the &lt;input> tag.
+      If @field is specified, the current property from the "instance" object
+      will be set as the initial value automatically,
+      which is the recommended approach.
+    </st:attribute>
+    <st:attribute name="checkUrl">
+      If specified, the value entered in this input field will be checked (via AJAX)
+      against this URL, and errors will be rendered under the text field.
+
+      If @field is specified, this will be inferred automatically,
+      which is the recommended approach.
     </st:attribute>
   </st:documentation>
   <j:set var="checkUrl" value="${h.getCheckUrl(attrs.checkUrl,descriptor,attrs.field)}" />

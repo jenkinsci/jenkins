@@ -1,14 +1,27 @@
-<!--
-  Outer-most tag that forms a form tag.
-
-	<%@attribute name="action" required="true" %>
-	<%@attribute name="method" required="true" %>
-	<%@attribute name="enctype" required="false" %>
-	<%@attribute name="name" required="false" %>
-	<%@attribute name="target" required="false" %>
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<form action="${action}" method="${method}" enctype="${enctype}" name="${name}" target="${target}">
+  <st:documentation>
+    Outer-most tag of the entire form taglib, that generates &lt;form> element.
+
+    <st:attribute name="action" use="required">
+      @action of the form field. The URL where the submission is sent.
+    </st:attribute>
+    <st:attribute name="method" use="required">
+      Submission method. Either post or get.
+    </st:attribute>
+    <st:attribute name="name" use="required">
+      @name of the form. In HTML this is not a mandatory attribute,
+      but in Hudson you should have it for testing and page scraping,
+      so this attribute is marked required.
+    </st:attribute>
+    <st:attribute name="enctype">
+      @enctype of the &lt;form> HTML element.
+    </st:attribute>
+    <st:attribute name="target">
+      @target of the &lt;form> HTML element. Works like &lt;a target="...">
+      and controls which window the result of the submission goes to.
+    </st:attribute>
+  </st:documentation>
+	<form action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}">
 	  <table width="100%">
 	    <d:invokeBody/>
 	  </table>
