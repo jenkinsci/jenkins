@@ -1,7 +1,8 @@
 package hudson.security;
 
+import com.octo.captcha.service.CaptchaServiceException;
+import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
 import groovy.lang.Binding;
-
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -11,27 +12,22 @@ import hudson.util.PluginServletFilter;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
 import org.acegisecurity.userdetails.UserDetailsService;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.WebApplicationContext;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import java.util.Map;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.io.IOException;
-
-import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
-import com.octo.captcha.service.CaptchaServiceException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.imageio.ImageIO;
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
+import java.io.IOException;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Pluggable security realm that connects external user database to Hudson.
@@ -108,8 +104,8 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * captured as instance variables inside the {@link SecurityRealm} implementation.
      *
      * <p>
-     * Your {@link SecurityRealm} may also wants to install a servlet {@link Filter}
-     * through {@link PluginServletFilter} to do a part of the authentication.
+     * Your {@link SecurityRealm} may also wants to alter {@link Filter} set up by
+     * overriding {@link #createFilter(FilterConfig)}.
      */
     public abstract SecurityComponents createSecurityComponents();
 
@@ -228,12 +224,19 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     }
 
     /**
-     * Filter to run for this SecurityRealm.  The default is the 
-     * ChainServletFilter "filter" from 
-     * /WEB-INF/security/SecurityFilters.groovy.
-     * Subclasses can override this to completely change the filter sequence.
-     * For merely adding filters, it may be easier to use 
+     * Creates {@link Filter} that all the incoming HTTP requests will go through
+     * for authentication.
+     *
+     * <p>
+     * The default implementation uses {@link #getSecurityComponents()} and builds
+     * a standard filter chain from /WEB-INF/security/SecurityFilters.groovy.
+     * But subclasses can override this to completely change the filter sequence.
+     *
+     * <p>
+     * For other plugins that want to contribute {@link Filter}, see
      * {@link PluginServletFilter}.
+     *
+     * @since 1.271
      */
     public Filter createFilter(FilterConfig filterConfig) {
         Binding binding = new Binding();

@@ -1,6 +1,7 @@
 package hudson.util;
 
 import hudson.ExtensionPoint;
+import hudson.security.SecurityRealm;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -21,6 +22,12 @@ import java.util.Vector;
  * <p>
  * While this class by itself is not an extension point, I'm marking this class
  * as an extension point so that this class will be more discoverable.
+ *
+ * <p>
+ * {@link SecurityRealm} that wants to contribute {@link Filter}s should first
+ * check if {@link SecurityRealm#createFilter(FilterConfig)} is more appropriate.
+ *
+ * @see SecurityRealm
  */
 public class PluginServletFilter implements Filter, ExtensionPoint {
 
