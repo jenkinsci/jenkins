@@ -212,7 +212,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
             if(!(hudson.getSecurityRealm() instanceof LDAPSecurityRealm))
                 return null;
             try {
-                LdapUserDetails details = (LdapUserDetails) HudsonFilter.USER_DETAILS_SERVICE_PROXY.loadUserByUsername(u.getId());
+                LdapUserDetails details = (LdapUserDetails) hudson.getSecurityRealm().getSecurityComponents().userDetails.loadUserByUsername(u.getId());
                 Attribute mail = details.getAttributes().get("mail");
                 if(mail==null)  return null;    // not found
                 return (String)mail.get();

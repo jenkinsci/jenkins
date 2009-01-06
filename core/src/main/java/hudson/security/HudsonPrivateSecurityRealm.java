@@ -87,7 +87,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         if(u!=null) {
             // ... and let him login
             Authentication a = u.getProperty(Details.class).createAuthentication();
-            a = HudsonFilter.AUTHENTICATION_MANAGER.authenticate(a);
+            a = this.getSecurityComponents().manager.authenticate(a);
             SecurityContextHolder.getContext().setAuthentication(a);
 
             // then back to top

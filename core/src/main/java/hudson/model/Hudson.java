@@ -46,8 +46,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
-import hudson.security.SecurityRealm.SecurityComponents;
-import hudson.security.TokenBasedRememberMeServices2;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildStep;
@@ -75,10 +73,7 @@ import hudson.util.XStream2;
 import hudson.util.HudsonIsRestarting;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.GrantedAuthorityImpl;
+import org.acegisecurity.*;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
@@ -426,13 +421,6 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
         for (ItemListener l : itemListeners)
             l.onLoaded();
-
-        // create TokenBasedRememberMeServices, which depends on the availability of the secret key
-        TokenBasedRememberMeServices2 rms = new TokenBasedRememberMeServices2();
-        rms.setUserDetailsService(HudsonFilter.USER_DETAILS_SERVICE_PROXY);
-        rms.setKey(getSecretKey());
-        rms.setParameter("remember_me"); // this is the form field name in login.jelly
-        HudsonFilter.REMEMBER_ME_SERVICES_PROXY.setDelegate(rms);
 
         WindowsInstallerLink.registerIfApplicable();
         UsageStatistics.register();
@@ -1191,9 +1179,13 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         if(securityRealm==null)
             securityRealm= SecurityRealm.NO_AUTHENTICATION;
         this.securityRealm = securityRealm;
-        SecurityComponents sc = securityRealm.createSecurityComponents();
-        HudsonFilter.AUTHENTICATION_MANAGER.setDelegate(sc.manager);
-        HudsonFilter.USER_DETAILS_SERVICE_PROXY.setDelegate(sc.userDetails);
+        // reset the filters and proxies for the new SecurityRealm
+        try {
+            HudsonFilter.get(servletContext).reset(securityRealm);
+        } catch (ServletException e) {
+            // for binary compatibility, this method cannot throw a checked exception
+            throw new AcegiSecurityException("Failed to configure filter",e) {};
+        }
     }
     
     public Lifecycle getLifecycle() {

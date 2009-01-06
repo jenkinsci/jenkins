@@ -3,9 +3,15 @@ package hudson.security;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
+import org.springframework.web.context.WebApplicationContext;
 import org.kohsuke.stapler.StaplerRequest;
+import groovy.lang.Binding;
 import hudson.model.Descriptor;
+import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterConfig;
 
 /**
  * {@link SecurityRealm} that accepts {@link ContainerAuthentication} object
@@ -38,6 +44,25 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
     @Override
     public String getLoginUrl() {
         return "loginEntry";
+    }
+
+    /**
+     * Filter to run for the LegacySecurityRealm is the
+     * ChainServletFilter legacy from /WEB-INF/security/SecurityFilters.groovy.
+     */
+    @Override
+    public Filter createFilter(FilterConfig filterConfig) {
+        Binding binding = new Binding();
+        SecurityComponents sc = this.createSecurityComponents();
+        binding.setVariable("authenticationManagerProxy", sc.manager);
+        binding.setVariable("userDetailsServiceProxy", sc.userDetails);
+        binding.setVariable("rememberMeServicesProxy", sc.rememberMe);
+        BeanBuilder builder = new BeanBuilder();
+        builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
+        
+        WebApplicationContext context = builder.createApplicationContext();
+        
+        return (Filter) context.getBean("legacy");
     }
 
     public Descriptor<SecurityRealm> getDescriptor() {
