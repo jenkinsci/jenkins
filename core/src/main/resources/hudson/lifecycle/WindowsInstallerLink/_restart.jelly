@@ -6,7 +6,7 @@
       <h1 style="margin-top:4em">
         ${%Please wait while Hudson is restarting}<span id="progress">...</span>
       </h1>
-      <p style="color:grey">
+      <p style="color:gray;">
         ${%blurb}
       </p>
       

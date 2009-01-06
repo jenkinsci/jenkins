@@ -1,10 +1,12 @@
-<!--
-  Load Yahoo UI module.
-
-  Attributes:
-    @module   module name to be loaded
-    @suffix   if loading beta module, use suffix='-beta'
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:documentation>
+    Load Yahoo UI module.
+    <st:attribute name="module" use="required">
+      YUI module name to load.
+    </st:attribute>
+    <st:attribute name="suffix">
+      if loading beta module, use suffix='-beta'
+    </st:attribute>
+  </st:documentation>
   <script src="${resURL}/scripts/yui/${module}/${module}${attrs.suffix}-${yuiSuffix}.js" />
 </j:jelly>

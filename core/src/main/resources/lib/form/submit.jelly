@@ -1,6 +1,11 @@
-<!--
-  Submit button
--->
 <j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define">
+  <s:documentation>
+    Submit button themed by YUI. This should be always
+    used instead of the plain &lt;input tag.
+
+    <s:attribute name="value" use="required">
+      The text of the submit button. Something like "submit", "OK", etc.
+    </s:attribute>
+  </s:documentation>
   <input type="submit" name="Submit" value="${attrs.value}" class="submit-button" />
 </j:jelly>
