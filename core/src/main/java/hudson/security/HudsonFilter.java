@@ -88,7 +88,8 @@ public class HudsonFilter implements Filter {
             Filter newf = securityRealm.createFilter(this.filterConfig);
             newf.init(this.filterConfig);
             this.filter = newf;
-            oldf.destroy();
+            if(oldf!=null)
+                oldf.destroy();
         } else {
             // no security related filter needed.
             AUTHENTICATION_MANAGER.setDelegate(null);
