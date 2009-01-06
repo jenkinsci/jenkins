@@ -288,10 +288,11 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Returns the executor of the current thread.
+     * Returns the executor of the current thread or null if current thread is not an executor.
      */
     public static Executor currentExecutor() {
-        return (Executor)Thread.currentThread();
+        Thread t = Thread.currentThread();
+        return t instanceof Executor ? (Executor)t : null;
     }
 
     private static final Logger LOGGER = Logger.getLogger(Executor.class.getName());

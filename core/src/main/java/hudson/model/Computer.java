@@ -521,7 +521,9 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
      * {@link Publisher}, {@link BuildWrapper}, etc.
      */
     public static Computer currentComputer() {
-        return Executor.currentExecutor().getOwner();
+        Executor e = Executor.currentExecutor();
+        // If no executor then must be on master node
+        return e != null ? e.getOwner() : Hudson.getInstance().toComputer();
     }
 
     /**
