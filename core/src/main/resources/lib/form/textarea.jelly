@@ -1,16 +1,30 @@
-<!--
-	<textarea> tag on steroid.
-
-	The textarea will be rendered to fit the content. It also gets the resize handle.
-
-	If @field is specified:
-	   no other mandatory fields.
-	   in this case, name and value are inferred from field,
-	   and checkUrl is auto-generated if the check method is present.
-	Otherwise
-	   @name and @value are mandatory.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:documentation>
+    &lt;textarea> tag on steroid.
+    The textarea will be rendered to fit the content. It also gets the resize handle.
+
+    <st:attribute name="field">
+      Used for databinding. TBD.
+    </st:attribute>
+    <st:attribute name="name">
+      This becomes @name of the &lt;textarea> tag.
+      If @field is specified, this value is inferred from it.
+    </st:attribute>
+    <st:attribute name="value">
+      The initial value of the field. This becomes the value of the &lt;textarea> tag.
+      If @field is specified, the current property from the "instance" object
+      will be set as the initial value automatically,
+      which is the recommended approach.
+    </st:attribute>
+    <st:attribute name="checkUrl">
+      If specified, the value entered in this input field will be checked (via AJAX)
+      against this URL, and errors will be rendered under the text field.
+
+      If @field is specified, this will be inferred automatically,
+      which is the recommended approach.
+    </st:attribute>
+  </st:documentation>
+
   <j:set var="checkUrl" value="${h.getCheckUrl(attrs.checkUrl,descriptor,attrs.field)}" />
   <textarea id="${attrs.id}" style="${attrs.style}"
             name ="${h.defaulted(attrs.name,'_.'+attrs.field)}"

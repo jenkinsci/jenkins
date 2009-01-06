@@ -1,18 +1,29 @@
-<!--
-  Foldable block expanded when the menu item is checked.
-
-  @name (mandatory)
-    name of the checkbox.
-  @title (mandatory)
-    human readable text that follows the checkbox
-  @checked (mandatory)
-    initial checkbox status. true/false.
-  @help (optional)
-    if present, URL of the help HTML page.
-  @negative (optional)
-    if present, the check box expands when the item is unchecked.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Foldable block that can be expanded to show more controls by checking the checkbox.
+
+    <st:attribute name="name" use="required">
+      Name of the checkbox. Can be used by the server to determine
+      if the block is collapsed or expanded at the time of submission.
+
+      Note that when the block is collapsed, none of its child controls will send
+      the values to the server (unlike &lt;f:advanced>)
+    </st:attribute>
+    <st:attribute name="title" use="required">
+      Human readable text that follows the checkbox.
+    </st:attribute>
+    <st:attribute name="checked" use="required">
+      initial checkbox status. true/false.
+    </st:attribute>
+    <st:attribute name="help">
+      If present, the (?) icon will be rendered on the right to show inline help.
+      See @help for &lt;f:entry>.
+    </st:attribute>
+    <st:attribute name="negative">
+      if present, the foldable section expands when the checkbox is unchecked.
+    </st:attribute>
+  </st:documentation>
+
   <j:set var="id" value="${h.generateId()}" />
   <tr id="oe_s${id}" class="optional-block-start" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
     <td colspan="3">

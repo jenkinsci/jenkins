@@ -1,9 +1,12 @@
-<!--
-  Section header
-
-	@title becomes the section header. If that is not specified section header becomes no-op.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Section header in the form table.
+
+    <st:attribute name="title" use="required">
+      The section header text.
+      If null is given, the entire &lt;f:section> tag becomes no-op.
+    </st:attribute>
+  </st:documentation>
   <j:if test="${attrs.title!=null}">
     <f:block>
       <div style="font-weight:bold; border-bottom: 1px solid black; margin-bottom:0.2em; margin-top:0.4em">

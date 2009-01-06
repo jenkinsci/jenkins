@@ -5,7 +5,7 @@
 
     One entry normally host one control.
 
-    <st:attribute name="title" use="required">
+    <st:attribute name="title">
       Name of the entry. Think of this like a label for the control.
     </st:attribute>
     <st:attribute name="description">

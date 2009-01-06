@@ -1,13 +1,32 @@
-<!--
-  see tasks.tag
-
-  Attributes:
-    href:       Link target (required)
-    icon:       URL to icon. (required)
-    title:      human readable caption text. (required)
-    permission: permission object. If specified, the link will be displayed only if you have a permission (optional)
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+  <st:documentation>
+    This tag inside &lt;l:tasks> tag renders the left navigation bar of Hudson.
+    Each &lt;task> tag gets an icon and link.
+
+    <st:attribute name="href" use="required">
+      Link target. Relative to the current page.
+    </st:attribute>
+    <st:attribute name="icon" use="required">
+      URL to the icon, which should be 24x24 in size.
+      It's relative to the context path of Hudson.
+
+      The common values include:
+
+      # "images/24x24/..." then points to the stock icon resources
+      # "plugin/foobar/abc/def.png" that points to "src/main/webapp/abc/def.png" in your plugin resources
+    </st:attribute>
+    <st:attribute name="title" use="required">
+      Human readable text that follows the icon.
+    </st:attribute>
+    <st:attribute name="permission">
+      If specified, the link will be only displayed when the current user
+      has the specified permission against the "it" object.
+
+      This is useful for showing links to restricted pages, as showing
+      them to unprivileged users don't make sense.
+    </st:attribute>
+  </st:documentation>
+
   <!--
     Much of the following horrible code is to implement hierarchy support in <task> tag.
     The semantics is that when one of the nested <task> matches, the parent is also considered as a match

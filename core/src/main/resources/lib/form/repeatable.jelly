@@ -1,58 +1,69 @@
-<!--
-  Repeatable blocks used to present UI where the user can configure multiple entries
-  of the same kind (see the Java installations configuration in the system config.)
-
-  This tag works like <j:forEach> and repeatedly evaluate the body so that
-  initially all the items get their own copy. This tag also evaluate the body
-  once more with var=null to create a 'master copy', which is the template entry
-  used when a new copy is inserted.
-
-  Attributes:
-    @var
-      variable that receives the item of the current iteration.
-    @varStatus
-      status variable that indicates the loop status.
-    @name
-      name used in the structured form submission. Defaults to @var.
-    @items
-      The item collection to loop over.
-    @noAddButton
-      true if the default 'add' button shouldn't be displayed.
-    @minimum
-      at least provide this number of copies initially.
-      minimum="1" is useful to make sure there's always at least one entry.
-
-  HTML structure:
-    this tag mainly produces the nested DIVs with CSS classes as follows:
-
-    <div class="repeated-container">   // container for the whole thing
-      <div class="repeated-chunk">
-        ... copy 1 ...
-      <div class="repeated-chunk">
-        ... copy 2 ...
-      ...
-
-    The 'repeated-chunk' DIVs will also have additional CSS classes that represent
-    their positions among siblings:
-
-      first : first chunk among the siblings
-      last  : last chunk among the siblings
-      middle: neither first nor last
-      only  : it is the only chunk (automatically get first and last at the same time)
-
-  Usage Note:
-    The caller of this tag should define a button to add a new copy and delete
-    the current copy. Such buttons should have 'repeatable-add' CSS class and
-    'repeatable-delete' CSS class respectively (it can have other CSS classes),
-    so that their event handlers get properly wired up.
-
-    The positional CSS classes on 'repeated-chunk' DIVs (as explained above)
-    can be used to control the visibility of such buttons. For example, this allows
-    you to hide 'delete' button if there's only one item, or only show 'add' button
-    on the last row. There are a few CSS classes already defined in style.css
-    for this purpose.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[]
+    Repeatable blocks used to present UI where the user can configure multiple entries
+    of the same kind (see the Java installations configuration in the system config.)
+
+    This tag works like <j:forEach> and repeatedly evaluate the body so that
+    initially all the items get their own copy. This tag also evaluate the body
+    once more with var=null to create a 'master copy', which is the template entry
+    used when a new copy is inserted.
+
+    h1. HTML structure
+      this tag mainly produces the nested DIVs with CSS classes as follows:
+
+      {noformat}
+      <div class="repeated-container">   // container for the whole thing
+        <div class="repeated-chunk">
+          ... copy 1 ...
+        <div class="repeated-chunk">
+          ... copy 2 ...
+        ...
+      {noformat}
+
+      The 'repeated-chunk' DIVs will also have additional CSS classes that represent
+      their positions among siblings:
+
+        first : first chunk among the siblings
+        last  : last chunk among the siblings
+        middle: neither first nor last
+        only  : it is the only chunk (automatically get first and last at the same time)
+
+    h1. Usage Note
+      The caller of this tag should define a button to add a new copy and delete
+      the current copy. Such buttons should have 'repeatable-add' CSS class and
+      'repeatable-delete' CSS class respectively (it can have other CSS classes),
+      so that their event handlers get properly wired up.
+
+      The positional CSS classes on 'repeated-chunk' DIVs (as explained above)
+      can be used to control the visibility of such buttons. For example, this allows
+      you to hide 'delete' button if there's only one item, or only show 'add' button
+      on the last row. There are a few CSS classes already defined in style.css
+      for this purpose.
+  ]]>
+    <st:attribute name="var" use="required">
+      variable that receives the item of the current iteration.
+      Accessible from the body.
+    </st:attribute>
+    <st:attribute name="varStatus">
+      Status variable that indicates the loop status.
+    </st:attribute>
+    <st:attribute name="name">
+      name used in the structured form submission. Defaults to the same name as @var.
+    </st:attribute>
+    <st:attribute name="items" use="required">
+      The item collection to loop over.
+    </st:attribute>
+    <st:attribute name="noAddButton">
+      true if the default 'add' button (that adds a new copy) shouldn't be displayed.
+      When you use this attribute,
+    </st:attribute>
+    <st:attribute name="minimum">
+      At least provide this number of copies initially.
+      minimum="1" is useful to make sure there's always at least one entry for the user to fill in.
+    </st:attribute>
+  </st:documentation>
+
+
   <j:set var="name" value="${h.ifThenElse(attrs.name!=null,attrs.name,attrs.var)}"/>
   <div class="repeated-container">
     <!-- The first DIV is the master copy. -->

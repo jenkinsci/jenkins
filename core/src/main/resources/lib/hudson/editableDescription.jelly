@@ -1,9 +1,14 @@
-<!--
-  Renders ${it.description} and then allow it to be editable.
-
-  adminOnly="true" can be specified to limit the edit feature just to admins
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Renders ${it.description} and then allow it to be editable in place,
+    if the current user has the specified permission.
+
+    <st:attribute name="permission" use="required">
+      If the current user doesn't have this permission, the description
+      is not editable.
+    </st:attribute>
+  </st:documentation>
+
   <div id="description">
     <div>
       ${it.description}

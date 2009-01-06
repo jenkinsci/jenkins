@@ -1,6 +1,15 @@
-<!--
-	<input type="checkbox"> tag that takes true/false for @checked
--->
-<input type="checkbox" name="${attrs.name}" value="${attrs.value}"
-       onclick="${attrs.onclick}" id="${attrs.id}" class="${h.ifThenElse(attrs.negative!=null,'negative',null)}"
-       checked="${h.ifThenElse(attrs.checked,'true',null)}"/>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    &lt;input type="checkbox"> tag that takes true/false for @checked, which is more Jelly friendly.
+
+    <st:attribute name="name" use="required" />
+    <st:attribute name="checked" use="required" />
+    <st:attribute name="value" />
+    <st:attribute name="id" />
+    <st:attribute name="onclick" />
+    <st:attribute name="class" />
+  </st:documentation>
+  <input type="checkbox" name="${attrs.name}" value="${attrs.value}"
+         onclick="${attrs.onclick}" id="${attrs.id}" class="${h.ifThenElse(attrs.negative!=null,'negative',null)}"
+         checked="${h.ifThenElse(attrs.checked,'true',null)}"/>
+</j:jelly>

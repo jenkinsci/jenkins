@@ -1,16 +1,35 @@
 <!--
-  textbox that can be expanded into text area
-
-	If @field is specified:
-	   no other mandatory fields.
-	   in this case, name and value are inferred from field,
-	   and checkUrl is auto-generated if the check method is present.
-	Otherwise
-	   @name and @value are mandatory.
-
   TODO: support @checkUrl
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+  <st:documentation>
+    single-line textbox that can be expanded into a multi-line textarea.
+
+    This control is useful for a field that expects multiple whitespaec-separated tokens
+    (such as URLs, glob patterns, etc.) When the user only enters a few tokens,
+    they can keep it as a single line to save space, but to enter a large number of values,
+    this can be turned into textarea for better visibility.
+
+    If the initial value is already multi-line text, the control starts with
+    textarea.
+
+    On the server side, your program is responsible for treating ' ', \t, \r, and \n for
+    separators. (StringTokenizer would do this.)
+
+    <st:attribute name="field">
+      Used for databinding. TBD.
+    </st:attribute>
+    <st:attribute name="name">
+      This becomes @name of the &lt;input> tag.
+      If @field is specified, this value is inferred from it.
+    </st:attribute>
+    <st:attribute name="value">
+      The initial value of the field. This becomes the @value of the &lt;input> tag.
+      If @field is specified, the current property from the "instance" object
+      will be set as the initial value automatically,
+      which is the recommended approach.
+    </st:attribute>
+  </st:documentation>
   <j:choose>
     <j:when test="${h.isMultiline(attrs.value)}">
       <!-- multiline text area to begin with -->
