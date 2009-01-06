@@ -1287,14 +1287,25 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (result == null)
             // Next/Previous Build links on an action page (like /job/Abc/123/testReport)
             // will also point to same action (/job/Abc/124/testReport), but other builds
-            // may not have the action.. rather than 404, redirect up to the build page.
+            // may not have the action.. tell browsers to redirect up to the build page.
             result = new RedirectUp();
         return result;
     }
 
     public static class RedirectUp {
         public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException {
-            rsp.sendRedirect("..");
+            // Compromise to handle both browsers (auto-redirect) and programmatic access
+            // (want accurate 404 response).. send 404 with javscript to redirect browsers.
+            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            rsp.setContentType("text/html;charset=UTF-8");
+            PrintWriter out = rsp.getWriter();
+            out.println("<html><head>" +
+                "<meta http-equiv='refresh' content='1;url=..'/>" +
+                "<script>window.location.replace('..');</script>" +
+                "</head>" +
+                "<body style='background-color:white; color:white;'>" +
+                "Not found</body></html>");
+            out.flush();
         }
     }
 }
