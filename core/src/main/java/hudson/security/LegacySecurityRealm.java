@@ -54,9 +54,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
     public Filter createFilter(FilterConfig filterConfig) {
         Binding binding = new Binding();
         SecurityComponents sc = this.createSecurityComponents();
-        binding.setVariable("authenticationManagerProxy", sc.manager);
-        binding.setVariable("userDetailsServiceProxy", sc.userDetails);
-        binding.setVariable("rememberMeServicesProxy", sc.rememberMe);
+        binding.setVariable("securityComponents", sc);
         BeanBuilder builder = new BeanBuilder();
         builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
         

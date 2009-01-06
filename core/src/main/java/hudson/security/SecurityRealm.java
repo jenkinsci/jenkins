@@ -240,10 +240,8 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      */
     public Filter createFilter(FilterConfig filterConfig) {
         Binding binding = new Binding();
-        SecurityComponents sc = this.getSecurityComponents();
-        binding.setVariable("authenticationManagerProxy", sc.manager);
-        binding.setVariable("userDetailsServiceProxy", sc.userDetails);
-        binding.setVariable("rememberMeServicesProxy", sc.rememberMe);
+        SecurityComponents sc = this.createSecurityComponents();
+        binding.setVariable("securityComponents", sc);
         BeanBuilder builder = new BeanBuilder();
         builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
         WebApplicationContext context = builder.createApplicationContext();

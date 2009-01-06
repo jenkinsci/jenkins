@@ -40,7 +40,7 @@ filter(ChainedServletFilter) {
         },
         // allow clients to submit basic authentication credential
         bean(BasicProcessingFilter) {
-            authenticationManager = authenticationManagerProxy
+            authenticationManager = securityComponents.manager
             // if basic authentication fails (which only happens incorrect basic auth credential is sent),
             // respond with 401 with basic auth request, instead of redirecting the user to the login page,
             // since users of basic auth tends to be a program and won't see the redirection to the form
@@ -50,15 +50,15 @@ filter(ChainedServletFilter) {
             }
         },
         bean(AuthenticationProcessingFilter2) {
-            authenticationManager = authenticationManagerProxy
-            rememberMeServices = rememberMeServicesProxy;
+            authenticationManager = securityComponents.manager
+            rememberMeServices = securityComponents.rememberMe
             authenticationFailureUrl = "/loginError"
             defaultTargetUrl = "/"
             filterProcessesUrl = "/j_acegi_security_check"
         },
         bean(RememberMeProcessingFilter) {
-            rememberMeServices = rememberMeServicesProxy;
-            authenticationManager = authenticationManagerProxy;
+            rememberMeServices = securityComponents.rememberMe
+            authenticationManager = securityComponents.manager
         },
     ] + commonProviders("/login?from={0}")
 }
