@@ -5,9 +5,9 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Result;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.*;
 import org.dom4j.Document;
 import org.dom4j.io.DOMReader;
 import org.jvnet.hudson.test.Bug;
@@ -17,8 +17,6 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.PresetData;
 import static org.jvnet.hudson.test.recipes.PresetData.DataSet.ANONYMOUS_READONLY;
 
-import java.io.File;
-
 /**
  * @author Kohsuke Kawaguchi
  */
@@ -27,13 +25,8 @@ public class SubversionSCMTest extends HudsonTestCase {
     @Bug(2380)
     public void testTaggingPermission() throws Exception {
         // create a build
-        File svnRepo = new CopyExisting(getClass().getResource("/svn-repo.zip")).allocate();
         FreeStyleProject p = createFreeStyleProject();
-        p.setScm(new SubversionSCM(
-                new String[]{"file://"+svnRepo+"/trunk/a"},
-                new String[]{null},
-                true, null
-        ));
+        p.setScm(loadSvnRepo());
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         System.out.println(b.getLog());
         assertBuildStatus(Result.SUCCESS,b);
@@ -73,6 +66,17 @@ public class SubversionSCMTest extends HudsonTestCase {
         html = wc.getPage(b,"tagBuild/");
         HtmlForm form = html.getFormByName("tag");
         submit(form);
+    }
+
+    /**
+     * Loads a test Subversion repository into a temporary directory, and creates {@link SubversionSCM} for it.
+     */
+    private SubversionSCM loadSvnRepo() throws Exception {
+        return new SubversionSCM(
+                new String[]{"file://" + new CopyExisting(getClass().getResource("/svn-repo.zip")).allocate() + "/trunk/a"},
+                new String[]{null},
+                true, null
+        );
     }
 
     @Email("http://www.nabble.com/Hudson-1.266-and-1.267%3A-Subversion-authentication-broken--td21156950.html")
@@ -126,5 +130,32 @@ public class SubversionSCMTest extends HudsonTestCase {
         System.out.println(b.getLog());
         assertTrue(b.getLog().contains("At revision 13000"));
         assertBuildStatus(Result.SUCCESS,b);
+    }
+
+    /**
+     * {@link SubversionSCM#pollChanges(AbstractProject, Launcher, FilePath, TaskListener)} should notice
+     * if the workspace and the current configuration is inconsistent and schedule a new build.
+     */
+    @Email("http://www.nabble.com/Proper-way-to-switch---relocate-SVN-tree---tt21173306.html")
+    public void testPollingAfterRelocation() throws Exception {
+        // fetch the current workspace
+        FreeStyleProject p = createFreeStyleProject();
+        p.setScm(loadSvnRepo());
+        p.scheduleBuild2(0).get();
+
+        // as a baseline, this shouldn't detect any change
+        TaskListener listener = createTaskListener();
+        assertFalse(p.pollSCMChanges(listener));
+
+        // now switch the repository to a new one.
+        // this time the polling should indicate that we need a new build
+        p.setScm(loadSvnRepo());
+        assertTrue(p.pollSCMChanges(listener));
+
+        // build it once again to switch
+        p.scheduleBuild2(0).get();
+
+        // then no more change should be detected
+        assertFalse(p.pollSCMChanges(listener));
     }
 }

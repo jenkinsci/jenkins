@@ -12,15 +12,7 @@ import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
 import hudson.matrix.MatrixProject;
-import hudson.model.Descriptor;
-import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
-import hudson.model.Item;
-import hudson.model.UpdateCenter;
-import hudson.model.Saveable;
-import hudson.model.Run;
-import hudson.model.Result;
-import hudson.model.JDK;
+import hudson.model.*;
 import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
 import hudson.tasks.BuildStep;
@@ -33,6 +25,7 @@ import hudson.maven.MavenReporters;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.WebAppMain;
+import hudson.CloseProofOutputStream;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -393,6 +386,13 @@ public abstract class HudsonTestCase extends TestCase {
      */
     public HtmlPage submit(HtmlForm form) throws Exception {
         return (HtmlPage)form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+    }
+
+    /**
+     * Creates a {@link TaskListener} connected to stdout.
+     */
+    public TaskListener createTaskListener() {
+        return new StreamTaskListener(new CloseProofOutputStream(System.out));
     }
 
 

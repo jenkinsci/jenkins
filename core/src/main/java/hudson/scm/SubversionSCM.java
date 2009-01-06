@@ -180,9 +180,12 @@ public class SubversionSCM extends SCM implements Serializable {
      * list of all configured svn locations, expanded according to 
      * build parameters values;
      *
+     * @param build
+     *      If non-null, variable expansions are performed against the build parameters.
+     *
      * @since 1.252
      */
-    public ModuleLocation[] getLocations(AbstractBuild<?, ?> build) {
+    public ModuleLocation[] getLocations(AbstractBuild<?,?> build) {
         // check if we've got a old location
         if (modules != null) {
             // import the old configuration
@@ -794,6 +797,14 @@ public class SubversionSCM extends SCM implements Serializable {
         // current workspace revision
         Map<String,Long> wsRev = parseRevisionFile(lastBuild);
         List<External> externals = parseExternalsFile(project);
+
+        // are the locations checked out in the workspace consistent with the current configuration?
+        for( ModuleLocation loc : getLocations() ) {
+            if(!wsRev.containsKey(loc.getURL())) {
+                listener.getLogger().println("Workspace doesn't contain "+loc.getURL()+". Need a new build");
+                return true;
+            }
+        }
 
         ISVNAuthenticationProvider authProvider = getDescriptor().createAuthenticationProvider();
 
