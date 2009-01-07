@@ -1,6 +1,7 @@
 package hudson.security;
 
 import hudson.ExtensionPoint;
+import hudson.slaves.Cloud;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
@@ -9,6 +10,7 @@ import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.User;
 import hudson.model.View;
+import hudson.model.Node;
 import hudson.util.DescriptorList;
 
 import java.io.Serializable;
@@ -97,11 +99,28 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      * This can be used as a basis for more fine-grained access control.
      *
      * <p>
-     * The default implementation returns {@link #getRootACL()}.
+     * The default implementation delegates to {@link #getACL(Node)}
      *
      * @since 1.220
      */
     public ACL getACL(Computer computer) {
+        return getACL(computer.getNode());
+    }
+
+    /**
+     * Implementation can choose to provide different ACL for different {@link Cloud}s.
+     * This can be used as a basis for more fine-grained access control.
+     *
+     * <p>
+     * The default implementation returns {@link #getRootACL()}.
+     *
+     * @since 1.252
+     */
+    public ACL getACL(Cloud cloud) {
+        return getRootACL();
+    }
+
+    public ACL getACL(Node node) {
         return getRootACL();
     }
 

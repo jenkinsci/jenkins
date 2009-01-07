@@ -26,7 +26,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      */
     public abstract String getDisplayName();
 
-    public final String getNewJobDetailPage() {
+    public final String newInstanceDetailPage() {
         return '/'+clazz.getName().replace('.','/').replace('$','/')+"/newJobDetail.jelly";
     }
 

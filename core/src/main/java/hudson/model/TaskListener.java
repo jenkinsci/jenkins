@@ -8,13 +8,20 @@ import java.io.PrintWriter;
 import java.util.Formatter;
 
 /**
- * Receives events that happen during some task execution,
- * such as a build or SCM change polling.
+ * Receives events that happen during some lengthy operation
+ * that has some chance of failures, such as a build, SCM change polling,
+ * slave launch, and so on.
  *
  * <p>
  * This interface is implemented by Hudson core and passed to extension points so that
- * they can record the progress of the build without really knowing how those information
+ * they can record the progress of the operation without really knowing how those information
  * and handled/stored by Hudson.
+ *
+ * <p>
+ * The information is one way or the other made available to users, and
+ * so the expectation is that when something goes wrong, enough information
+ * shall be written to a {@link TaskListener} so that the user can diagnose
+ * what's going wrong.
  *
  * @author Kohsuke Kawaguchi
  */

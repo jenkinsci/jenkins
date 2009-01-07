@@ -4,11 +4,14 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
+import hudson.security.ACL;
+import hudson.security.Permission;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
+import hudson.slaves.DumbSlave;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
@@ -18,6 +21,7 @@ import hudson.util.ClockDifference;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.apache.commons.io.IOUtils;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -26,6 +30,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.MalformedURLException;
 import java.util.*;
 
 /**
@@ -35,13 +40,16 @@ import java.util.*;
  * Ideally this would have been in the <tt>hudson.slaves</tt> package,
  * but for compatibility reasons, it can't.
  *
+ * <p>
+ * TODO: move out more stuff to {@link DumbSlave}.
+ *
  * @author Kohsuke Kawaguchi
  */
-public final class Slave implements Node, Serializable {
+public abstract class Slave implements Node, Serializable {
     /**
      * Name of this slave node.
      */
-    protected final String name;
+    protected String name;
 
     /**
      * Description of this node.
@@ -90,9 +98,14 @@ public final class Slave implements Node, Serializable {
     @DataBoundConstructor
     public Slave(String name, String description, String remoteFS, String numExecutors,
                  Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException {
+        this(name,description,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,label,launcher,retentionStrategy);
+    }
+
+    public Slave(String name, String description, String remoteFS, int numExecutors,
+                 Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException {
         this.name = name;
         this.description = description;
-        this.numExecutors = Util.tryParseNumber(numExecutors, 1).intValue();
+        this.numExecutors = numExecutors;
         this.mode = mode;
         this.remoteFS = remoteFS;
         this.label = Util.fixNull(label).trim();
@@ -108,8 +121,9 @@ public final class Slave implements Node, Serializable {
         // so this check is harmful.
         //if (!localFS.exists())
         //    throw new FormException("Invalid slave configuration for " + name + ". No such directory exists: " + localFS, null);
-        if (remoteFS.equals(""))
-            throw new FormException(Messages.Slave_InvalidConfig_NoRemoteDir(name), null);
+
+//        if (remoteFS.equals(""))
+//            throw new FormException(Messages.Slave_InvalidConfig_NoRemoteDir(name), null);
 
         if (this.numExecutors<=0)
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
@@ -129,6 +143,10 @@ public final class Slave implements Node, Serializable {
 
     public String getNodeName() {
         return name;
+    }
+
+    public void setNodeName(String name) {
+        this.name = name; 
     }
 
     public String getNodeDescription() {
@@ -243,6 +261,18 @@ public final class Slave implements Node, Serializable {
         return new ClockDifference((startTime+endTime)/2 - slaveTime);
     }
 
+    public ACL getACL() {
+        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+    }
+
+    public final void checkPermission(Permission permission) {
+        getACL().checkPermission(permission);
+    }
+
+    public final boolean hasPermission(Permission permission) {
+        return getACL().hasPermission(permission);
+    }
+
     public Computer createComputer() {
         return new SlaveComputer(this);
     }
@@ -285,16 +315,33 @@ public final class Slave implements Node, Serializable {
         }
 
         public void doIndex( StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            URL res = req.getServletContext().getResource("/WEB-INF/" + fileName);
+            URLConnection con = connect();
+            InputStream in = con.getInputStream();
+            rsp.serveFile(req, in, con.getLastModified(), con.getContentLength(), "*.jar" );
+            in.close();
+        }
+
+        private URLConnection connect() throws IOException {
+            URL res = getURL();
+            return res.openConnection();
+        }
+
+        public URL getURL() throws MalformedURLException {
+            URL res = Hudson.getInstance().servletContext.getResource("/WEB-INF/" + fileName);
             if(res==null) {
                 // during the development this path doesn't have the files.
                 res = new URL(new File(".").getAbsoluteFile().toURL(),"target/generated-resources/WEB-INF/"+fileName);
             }
+            return res;
+        }
 
-            URLConnection con = res.openConnection();
-            InputStream in = con.getInputStream();
-            rsp.serveFile(req, in, con.getLastModified(), con.getContentLength(), "*.jar" );
-            in.close();
+        public byte[] readFully() throws IOException {
+            InputStream in = connect().getInputStream();
+            try {
+                return IOUtils.toByteArray(in);
+            } finally {
+                in.close();
+            }
         }
 
     }

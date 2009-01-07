@@ -2,6 +2,9 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.ExtensionPoint;
+import hudson.security.AccessControlled;
+import hudson.slaves.NodeDescriptor;
 import hudson.node_monitors.NodeMonitor;
 import hudson.util.ClockDifference;
 import hudson.util.EnumConverter;
@@ -11,12 +14,16 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
- * Commonality between {@link Slave} and master {@link Hudson}.
+ * Base type of Hudson slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
+ *
+ * <p>
+ * As a special case, {@link Hudson} extends from here.
  *
  * @author Kohsuke Kawaguchi
  * @see NodeMonitor
+ * @see NodeDescriptor
  */
-public interface Node {
+public interface Node extends Describable<Node>, ExtensionPoint, AccessControlled {
     /**
      * Name of this node.
      *
@@ -24,6 +31,18 @@ public interface Node {
      *      "" if this is master
      */
     String getNodeName();
+
+    /**
+     * When the user clones a {@link Node}, Hudson uses this method to change the node name right after
+     * the cloned {@link Node} object is instantiated.
+     *
+     * <p>
+     * This method is never used for any other purpose, and as such for all practical intents and purposes,
+     * the node name should be treated like immutable.
+     *
+     * @deprecated to indicate that this method isn't really meant to be called by random code.
+     */
+    void setNodeName(String name);
 
     /**
      * Human-readable description of this node.
@@ -54,10 +73,15 @@ public interface Node {
      * Gets the corresponding {@link Computer} object.
      *
      * @return
-     *      never null.
+     *      this method can return null if there's no {@link Computer} object for this node,
+     *      such as when this node has no executors at all.
      */
     Computer toComputer();
 
+    /**
+     * Creates a new {@link Computer} object that acts as the UI peer of this {@link Node}.
+     * Nobody but {@link Hudson#updateComputerList()} should call this method.
+     */
     Computer createComputer();
 
     /**
@@ -106,6 +130,8 @@ public interface Node {
      * Gets the {@link FilePath} on this node.
      */
     FilePath createPath(String absolutePath);
+
+    NodeDescriptor getDescriptor();
 
     /**
      * Estimates the clock difference with this slave.

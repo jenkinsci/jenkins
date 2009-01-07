@@ -345,6 +345,9 @@ public class Queue extends ResourceController implements Saveable {
         return r;
     }
 
+    /**
+     * Gets all the {@link BuildableItem}s that are waiting for an executor in the given {@link Computer}.
+     */
     public synchronized List<BuildableItem> getBuildableItems(Computer c) {
         List<BuildableItem> result = new ArrayList<BuildableItem>();
         for (BuildableItem p : buildables.values()) {
@@ -357,6 +360,24 @@ public class Queue extends ResourceController implements Saveable {
             result.add(p);
         }
         return result;
+    }
+
+    /**
+     * Gets the snapshot of {@link #buildables}.
+     */
+    public synchronized List<BuildableItem> getBuildableItems() {
+        return new ArrayList<BuildableItem>(buildables.values());
+    }
+
+    /**
+     * How many {@link BuildableItem}s are assigned for the given label?
+     */
+    public synchronized int countBuildableItemsFor(Label l) {
+        int r = 0;
+        for (BuildableItem bi : buildables.values())
+            if(bi.task.getAssignedLabel()==l)
+                r++;
+        return r;
     }
 
     /**

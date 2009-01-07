@@ -64,7 +64,23 @@
   </st:documentation>
 
 
-  <j:set var="name" value="${h.ifThenElse(attrs.name!=null,attrs.name,attrs.var)}"/>
+  <!--
+    If bi-directional binding, fill in the rest of attributes automatically
+  -->
+  <j:choose>
+    <j:when test="${attrs.field!=null}">
+      <j:set var="name" value="${field}"/>
+      <j:set var="var" value="instance"/>
+      <j:set var="items" value="${instance[name]}"/>
+
+      <!-- and expose update descriptor to the body of this tag -->
+      <j:set var="descriptor" value="${descriptor.getPropertyType(field).itemTypeDescriptor}" />
+    </j:when>
+    <j:otherwise>
+      <j:set var="name" value="${h.ifThenElse(attrs.name!=null,attrs.name,attrs.var)}"/>
+    </j:otherwise>
+  </j:choose>
+
   <div class="repeated-container">
     <!-- The first DIV is the master copy. -->
     <div class="repeated-chunk" style="display:none" name="${name}">

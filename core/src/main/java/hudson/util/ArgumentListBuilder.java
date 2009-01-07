@@ -8,8 +8,14 @@ import java.util.StringTokenizer;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
+import java.util.BitSet;
+import java.util.Properties;
 import java.util.Map.Entry;
 import java.io.Serializable;
+import java.io.StringReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.File;
 import java.io.StringReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -23,9 +29,14 @@ import org.jvnet.animal_sniffer.IgnoreJRERequirement;
  */
 public class ArgumentListBuilder implements Serializable {
     private final List<String> args = new ArrayList<String>();
+    private BitSet mask = new BitSet();
 
     public ArgumentListBuilder add(Object a) {
         return add(a.toString());
+    }
+
+    public ArgumentListBuilder add(File f) {
+        return add(f.getAbsolutePath());
     }
 
     public ArgumentListBuilder add(String a) {
@@ -35,6 +46,12 @@ public class ArgumentListBuilder implements Serializable {
     }
 
     public ArgumentListBuilder prepend(String... args) {
+        // left-shift the mask
+        BitSet nm = new BitSet(this.args.size()+args.length);
+        for(int i=0; i<this.args.size(); i++)
+            nm.set(i+args.length, mask.get(i));
+        mask = nm;
+
         this.args.addAll(0, Arrays.asList(args));
         return this;
     }
@@ -124,6 +141,13 @@ public class ArgumentListBuilder implements Serializable {
         return r;
     }
 
+    /**
+     * Re-initializes the arguments list.
+     */
+    public void clear() {
+        args.clear();
+    }
+
     public List<String> toList() {
         return args;
     }
@@ -139,6 +163,34 @@ public class ArgumentListBuilder implements Serializable {
                 buf.append(arg);
         }
         return buf.toString();
+    }
+
+    /**
+     * Returns true if there are any masked arguments.
+     * @return true if there are any masked arguments; false otherwise
+     */
+    public boolean hasMaskedArguments() {
+        return mask.length()>0;
+    }
+
+    /**
+     * Returns an array of booleans where the masked arguments are marked as true
+     * @return an array of booleans.
+     */
+    public boolean[] toMaskArray() {
+        boolean[] mask = new boolean[args.size()];
+        for( int i=0; i<mask.length; i++)
+            mask[i] = this.mask.get(i);
+        return mask;
+    }
+
+    /**
+     * Add a masked argument
+     * @param string the argument
+     */
+    public void addMasked(String string) {
+        mask.set(args.size());
+        add(string);
     }
 
     private static final long serialVersionUID = 1L;

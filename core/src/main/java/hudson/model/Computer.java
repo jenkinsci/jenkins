@@ -2,24 +2,31 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Util;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.RetentionStrategy;
+import hudson.model.Descriptor.FormException;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
+import hudson.slaves.ComputerLauncher;
+import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
+import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RunList;
-import hudson.util.ExceptionCatchingThreadFactory;
+import hudson.util.Futures;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
+import javax.servlet.ServletException;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,15 +34,9 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.LogRecord;
 import java.nio.charset.Charset;
-
-import javax.servlet.ServletException;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Represents the running state of a remote computer that holds {@link Executor}s.
@@ -52,7 +53,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * Also, even if you remove a {@link Node}, it takes time for the corresponding
  * {@link Computer} to be removed, if some builds are already in progress on that
- * node.
+ * node. Or when the node configuration is changed, unaffected {@link Computer} object
+ * remains intact, while all the {@link Node} objects will go away.
  *
  * <p>
  * This object also serves UI (since {@link Node} is an interface and can't have
@@ -136,19 +138,43 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     public abstract void doLaunchSlaveAgent( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
     /**
+     * @deprecated  Use {@link #connect(boolean)}
+     */
+    public final void launch() {
+        connect(true);
+    }
+
+    /**
      * Do the same as {@link #doLaunchSlaveAgent(StaplerRequest, StaplerResponse)}
      * but outside the context of serving a request.
      *
-     * If already connected, no-op.
+     * <p>
+     * If already connected or if this computer doesn't support proactive launching, no-op.
+     * This method may return immediately
+     * while the launch operation happens asynchronously.
+     *
+     * @see #disconnect()
+     *
+     * @param forceReconnect
+     *      If true and a connect activity is already in progress, it will be cancelled and
+     *      the new one will be started. If false, and a connect activity is already in progress, this method
+     *      will do nothing and just return the pending connection operation.
+     * @return
+     *      A {@link Future} representing pending completion of the task.
      */
-    public abstract void launch();
+    public abstract Future<?> connect(boolean forceReconnect);
 
     /**
      * Disconnect this computer.
      *
-     * If this is the master, no-op
+     * If this is the master, no-op. This method may return immediately
+     * while the launch operation happens asynchronously.
+     *
+     * @return
+     *      {@link Future} to track the asynchronous disconnect operation.
+     * @see #connect(boolean)
      */
-    public void disconnect() { }
+    public Future<?> disconnect() { return Futures.precomputed(null); }
 
     /**
      * Number of {@link Executor}s that are configured for this computer.
@@ -176,7 +202,11 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     public Node getNode() {
         if(nodeName==null)
             return Hudson.getInstance();
-        return Hudson.getInstance().getSlave(nodeName);
+        return Hudson.getInstance().getNode(nodeName);
+    }
+
+    public LoadStatistics getLoadStatistics() {
+        return getNode().getSelfLabel().loadStatistics;
     }
 
     /**
@@ -204,6 +234,15 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     public boolean isOffline() {
         return temporarilyOffline || getChannel()==null;
     }
+
+    public final boolean isOnline() {
+        return !isOffline();
+    }
+
+    /**
+     * Is a {@link #connect(boolean)} operation in progress?
+     */
+    public abstract boolean isConnecting();
 
     /**
      * Returns true if this computer is supposed to be launched via JNLP.
@@ -300,23 +339,28 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     }
 
     /**
-     * Called to notify {@link Computer} that it will be discarded.
+     * Called by {@link Hudson#updateComputerList()} to notify {@link Computer} that it will be discarded.
      */
     protected void kill() {
         setNumExecutors(0);
     }
 
     private synchronized void setNumExecutors(int n) {
+        if(numExecutors==n) return; // no-op
+
+        int diff = n-numExecutors;
         this.numExecutors = n;
 
-        // send signal to all idle executors to potentially kill them off
-        for( Executor e : executors )
-            if(e.isIdle())
-                e.interrupt();
-
-        // if the number is increased, add new ones
-        while(executors.size()<numExecutors)
-            executors.add(new Executor(this));
+        if(diff<0) {
+            // send signal to all idle executors to potentially kill them off
+            for( Executor e : executors )
+                if(e.isIdle())
+                    e.interrupt();
+        } else {
+            // if the number is increased, add new ones
+            while(executors.size()<numExecutors)
+                executors.add(new Executor(this));
+        }
     }
 
     /**
@@ -329,6 +373,17 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
                 n++;
         }
         return n;
+    }
+
+    /**
+     * Returns the number of {@link Executor}s that are doing some work right now.
+     */
+    public final int countBusy() {
+        return countExecutors()-countIdle();
+    }
+
+    public final int countExecutors() {
+        return executors.size();
     }
 
     /**
@@ -351,7 +406,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     }
 
     /**
-     * Returns the time when this computer first became idle.
+     * Returns the time when this computer last became idle.
      *
      * <p>
      * If this computer is already idle, the return value will point to the
@@ -509,6 +564,46 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     }
 
     /**
+     * Accepts the update to the node configuration.
+     */
+    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        try {
+            checkPermission(Hudson.CONFIGURE);  // TODO: new permission?
+
+            final Hudson app = Hudson.getInstance();
+
+            Node result = getNode().getDescriptor().newInstance(req, req.getSubmittedForm());
+
+            // replace the old Node object by the new one
+            synchronized (app) {
+                List<Node> nodes = new ArrayList<Node>(app.getNodes());
+                int i = nodes.indexOf(getNode());
+                if(i<0) {
+                    sendError("This slave appears to be removed while you were editing the configuration",req,rsp);
+                    return;
+                }
+
+                nodes.set(i,result);
+                app.setNodes(nodes);
+            }
+
+            // take the user back to the slave top page.
+            rsp.sendRedirect2("../"+result.getNodeName()+'/');
+        } catch (FormException e) {
+            sendError(e,req,rsp);
+        }
+    }
+
+    /**
+     * Really deletes the slave.
+     */
+    public void doDoDelete(StaplerResponse rsp) throws IOException {
+        checkPermission(DELETE);
+        Hudson.getInstance().removeNode(getNode());
+        rsp.sendRedirect("..");
+    }
+
+    /**
      * Handles incremental log.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
@@ -535,4 +630,10 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     public boolean isAcceptingTasks() {
         return true;
     }
+
+    // TODO: define this as a separate permission?
+    public static final Permission CONFIGURE = Hudson.CONFIGURE;
+    public static final Permission DELETE = Hudson.DELETE;
+
+
 }

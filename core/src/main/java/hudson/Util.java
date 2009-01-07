@@ -578,6 +578,13 @@ public class Util {
     }
 
     /**
+     * Surrounds by a single-quote.
+     */
+    public static String singleQuote(String s) {
+        return '\''+s+'\'';
+    }
+
+    /**
      * Escapes HTML unsafe characters like &lt;, &amp;to the respective character entities.
      */
     public static String escape(String text) {

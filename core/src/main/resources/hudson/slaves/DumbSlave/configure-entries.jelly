@@ -1,0 +1,65 @@
+<!--
+  Config page
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
+    <f:textbox name="description" value="${it.nodeDescription}"/>
+  </f:entry>
+
+  <f:entry title="${%# of executors}"
+           help="/help/system-config/master-slave/numExecutors.html">
+    <f:textbox name="numExecutors" value="${it.numExecutors}"
+               checkUrl="'/fieldCheck?errorText='+escape('${%Number of executors is mandatory.}')+'&amp;type=number-positive&amp;value='+escape(this.value)"/>
+  </f:entry>
+
+  <f:entry title="${%Remote FS root}" help="/help/system-config/master-slave/remoteFS.html">
+    <f:textbox name="remoteFS" value="${it.remoteFS}"
+               checkUrl="'/remoteFSCheck?value='+escape(this.value)"/>
+  </f:entry>
+
+  <f:entry title="${%Labels}" help="/help/system-config/master-slave/label.html">
+    <f:textbox name="label" value="${it.labelString}"/>
+  </f:entry>
+
+  <f:slave-mode name="mode" node="${s}" />
+
+  <f:dropdownList name="slave.launcher" title="${%Launch method}"
+                  help="/help/system-config/master-slave/launcher.html">
+    <j:forEach var="d" items="${h.getComputerLauncherDescriptors()}" varStatus="loop">
+      <f:dropdownListBlock value="${d.clazz.name}" name="${d.displayName}"
+                           selected="${it.launcher.descriptor==d}"
+                           title="${d.displayName}">
+        <j:set var="descriptor" value="${d}"/>
+        <j:set var="instance"
+               value="${h.ifThenElse(it.launcher.descriptor==d,it.launcher,null)}"/>
+        <tr><td>
+          <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
+        </td></tr>
+        <st:include from="${d}" page="${d.configPage}" optional="true"/>
+      </f:dropdownListBlock>
+    </j:forEach>
+  </f:dropdownList>
+
+  <!-- pointless to show this if there's only one option, which is the default -->
+  <j:if test="${h.getRetentionStrategyDescriptors().size() gt 1}">
+    <f:dropdownList name="slave.retentionStrategy" title="${%Availability}"
+                    help="/help/system-config/master-slave/availability.html">
+      <j:forEach var="d" items="${h.getRetentionStrategyDescriptors()}">
+        <j:if test="${d != null}">
+          <f:dropdownListBlock value="${d.clazz.name}" name="${d.displayName}"
+                               selected="${it.retentionStrategy.descriptor==d}"
+                               title="${d.displayName}">
+            <j:set var="descriptor" value="${d}"/>
+            <j:set var="instance"
+                   value="${h.ifThenElse(it.retentionStrategy.descriptor==d,it.retentionStrategy,null)}"/>
+            <tr><td>
+              <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
+            </td></tr>
+            <st:include from="${d}" page="${d.configPage}" optional="true"/>
+          </f:dropdownListBlock>
+        </j:if>
+      </j:forEach>
+    </f:dropdownList>
+  </j:if>
+</j:jelly>

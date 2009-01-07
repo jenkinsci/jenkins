@@ -43,8 +43,7 @@ final class WarExploder {
         File d = new File(".").getAbsoluteFile();
         for( ; d!=null; d=d.getParentFile()) {
             if(!d.getName().equals("main")) continue;
-            File p = d.getParentFile();
-            if(p!=null && p.getName().equals("hudson"))
+            if(new File(d,".hudson").exists())
                 break;
         }
         if(d!=null) {
@@ -62,15 +61,15 @@ final class WarExploder {
             throw new AssertionError("hudson.war is not in the classpath.");
         File war = Which.jarFile(Class.forName("executable.Executable"));
 
-        File explodeDir = new File("./target/hudson-for-test");
+        File explodeDir = new File("./target/hudson-for-test").getAbsoluteFile();
         File timestamp = new File(explodeDir,".timestamp");
 
         if(!timestamp.exists() || (timestamp.lastModified()!=war.lastModified())) {
             System.out.println("Exploding hudson.war at "+war);
             new FilePath(explodeDir).deleteRecursive();
             new FilePath(war).unzip(new FilePath(explodeDir));
-            // Recreating the File Object seems to be necessary to fix HUDSON-2605
-            timestamp = timestamp.getCanonicalFile();
+            if(!explodeDir.exists())    // this is supposed to be impossible, but I'm investigating HUDSON-2605
+                throw new IOException("Failed to explode "+war);
             new FileOutputStream(timestamp).close();
             timestamp.setLastModified(war.lastModified());
         } else {

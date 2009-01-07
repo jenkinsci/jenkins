@@ -8,8 +8,10 @@ import hudson.remoting.Callable;
 import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
+import hudson.util.Futures;
 import hudson.FilePath;
 import hudson.lifecycle.WindowsSlaveInstaller;
+import hudson.Util;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerInterceptor;
 
@@ -27,6 +29,8 @@ import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Future;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -39,11 +43,19 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class SlaveComputer extends Computer {
+public class SlaveComputer extends Computer {
     private volatile Channel channel;
     private volatile transient boolean acceptingTasks = true;
     private Charset defaultCharset;
     private Boolean isUnix;
+    /**
+     * Effective {@link ComputerLauncher} that hides the details of
+     * how we launch a slave agent on this computer.
+     *
+     * <p>
+     * This is normally the same as {@link Slave#getLauncher()} but
+     * can be different. See {@link #grabLauncher(Node)}. 
+     */
     private ComputerLauncher launcher;
 
     /**
@@ -53,6 +65,17 @@ public final class SlaveComputer extends Computer {
      */
     private transient int numRetryAttempt;
 
+    /**
+     * Tracks the status of the last launch operation, which is always asynchronous.
+     * This can be used to wait for the completion, or cancel the launch activity.
+     */
+    private volatile Future<?> lastConnectActivity = null;
+
+    private Object constructed = new Object();
+
+    public SlaveComputer(Slave slave) {
+        super(slave);
+    }
 
     /**
      * {@inheritDoc}
@@ -72,10 +95,6 @@ public final class SlaveComputer extends Computer {
         this.acceptingTasks = acceptingTasks;
     }
 
-    public SlaveComputer(Slave slave) {
-        super(slave);
-    }
-
     /**
      * True if this computer is a Unix machine (as opposed to Windows machine).
      *
@@ -88,6 +107,14 @@ public final class SlaveComputer extends Computer {
 
     public Slave getNode() {
         return (Slave)super.getNode();
+    }
+
+    @Override
+    public String getIcon() {
+        Future<?> l = lastConnectActivity;
+        if(l!=null && !l.isDone())
+            return "computer-flash.gif";
+        return super.getIcon();
     }
 
     @Override
@@ -105,15 +132,30 @@ public final class SlaveComputer extends Computer {
         return launcher;
     }
 
-    public void launch() {
-        if(channel!=null)   return;
+    public Future<?> connect(boolean forceReconnect) {
+        if(channel!=null)   return Futures.precomputed(null);
+        if(!forceReconnect && lastConnectActivity!=null)
+            return lastConnectActivity;
+        if(forceReconnect && lastConnectActivity!=null)
+            logger.fine("Forcing a reconnect");
 
         closeChannel();
-        Computer.threadPoolForRemoting.execute(new Runnable() {
-            public void run() {
+        return lastConnectActivity = Computer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<Object>() {
+            public Object call() throws Exception {
                 // do this on another thread so that the lengthy launch operation
                 // (which is typical) won't block UI thread.
-                launcher.launch(SlaveComputer.this, new StreamTaskListener(openLogFile()));
+                StreamTaskListener listener = new StreamTaskListener(openLogFile());
+                try {
+                    launcher.launch(SlaveComputer.this, listener);
+                    return null;
+                } catch (IOException e) {
+                    Util.displayIOException(e,listener);
+                    e.printStackTrace(listener.error(Messages.ComputerLauncher_unexpectedError()));
+                    throw e;
+                } catch (InterruptedException e) {
+                    e.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
+                    throw e;
+                }
             }
         });
     }
@@ -161,6 +203,12 @@ public final class SlaveComputer extends Computer {
         }
     }
 
+    @Override
+    public boolean isConnecting() {
+        Future<?> l = lastConnectActivity;
+        return isOffline() && l!=null && !l.isDone();
+    }
+
     public OutputStream openLogFile() {
         OutputStream os;
         try {
@@ -174,8 +222,26 @@ public final class SlaveComputer extends Computer {
 
     private final Object channelLock = new Object();
 
+    public void setChannel(InputStream in, OutputStream out, TaskListener taskListener, Channel.Listener listener) throws IOException, InterruptedException {
+        setChannel(in,out,taskListener.getLogger(),listener);
+    }
+
     /**
      * Creates a {@link Channel} from the given stream and sets that to this slave.
+     *
+     * @param in
+     *      Stream connected to the remote "slave.jar". It's the caller's responsibility to do
+     *      buffering on this stream, if that's necessary.
+     * @param out
+     *      Stream connected to the remote peer. It's the caller's responsibility to do
+     *      buffering on this stream, if that's necessary.
+     * @param launchLog
+     *      If non-null, receive the portion of data in <tt>is</tt> before
+     *      the data goes into the "binary mode". This is useful
+     *      when the established communication channel might include some data that might
+     *      be useful for debugging/trouble-shooting.
+     * @param listener
+     *      Gets a notification when the channel closes, to perform clean up.
      */
     public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
         if(this.channel!=null)
@@ -204,10 +270,8 @@ public final class SlaveComputer extends Computer {
         {// send jars that we need for our operations
             // TODO: maybe I should generalize this kind of "post initialization" processing
             FilePath dst = new FilePath(channel, remoteFs);
-            new FilePath(Which.jarFile(Main.class)).copyTo(dst.child("maven-agent.jar"));
-            log.println("Copied maven-agent.jar");
-            new FilePath(Which.jarFile(PluginManagerInterceptor.class)).copyTo(dst.child("maven-interceptor.jar"));
-            log.println("Copied maven-interceptor.jar");
+            copyJar(log, dst, Main.class, "maven-agent");
+            copyJar(log, dst, PluginManagerInterceptor.class, "maven-interceptor");
         }
 
         channel.call(new LogInstaller());
@@ -233,6 +297,26 @@ public final class SlaveComputer extends Computer {
         for (ComputerListener cl : Hudson.getInstance().getComputerListeners())
             cl.onOnline(this);
         Hudson.getInstance().getQueue().scheduleMaintenance();
+    }
+
+    /**
+     * Copies a jar file from the master to slave.
+     */
+    private void copyJar(PrintWriter log, FilePath dst, Class<?> representative, String seedName) throws IOException, InterruptedException {
+        // in normal execution environment, the master should be loading 'representative' from this jar, so
+        // in that way we can find it.
+        File jar = Which.jarFile(representative);
+
+        if(jar.isDirectory()) {
+            // but during the development and unit test environment, we may be picking the class up from the classes dir,
+            // in which case we need to find this in a tricker way.
+            String dir = Hudson.getInstance().servletContext.getRealPath("/WEB-INF/lib");
+            FilePath[] paths = new FilePath(new File(dir)).list(seedName + "-*.jar");
+            jar = new File(paths[0].getRemote());
+        }
+
+        new FilePath(jar).copyTo(dst.child(seedName +".jar"));
+        log.println("Copied "+seedName+".jar");
     }
 
     @Override
@@ -262,8 +346,8 @@ public final class SlaveComputer extends Computer {
     }
 
     @Override
-    public void disconnect() {
-        Computer.threadPoolForRemoting.execute(new Runnable() {
+    public Future<?> disconnect() {
+        return Computer.threadPoolForRemoting.submit(new Runnable() {
             public void run() {
                 // do this on another thread so that any lengthy disconnect operation
                 // (which could be typical) won't block UI thread.
@@ -281,7 +365,7 @@ public final class SlaveComputer extends Computer {
             return;
         }
 
-        launch();
+        connect(true);
 
         // TODO: would be nice to redirect the user to "launching..." wait page,
         // then spend a few seconds there and poll for the completion periodically.
@@ -293,7 +377,7 @@ public final class SlaveComputer extends Computer {
         if(numRetryAttempt<6 || (numRetryAttempt%12)==0) {
             // initially retry several times quickly, and after that, do it infrequently.
             logger.info("Attempting to reconnect "+nodeName);
-            launch();
+            connect(true);
         }
     }
 
@@ -340,10 +424,29 @@ public final class SlaveComputer extends Computer {
     @Override
     protected void setNode(Node node) {
         super.setNode(node);
-        launcher = ((Slave)node).getLauncher();
+        launcher = grabLauncher(node);
 
         // maybe the configuration was changed to relaunch the slave, so try to re-launch now.
-        launch();
+        // "constructed==null" test is an ugly hack to avoid launching before the object is fully
+        // constructed.
+        if(constructed!=null)
+            connect(false);
+    }
+
+    /**
+     * Grabs a {@link ComputerLauncher} out of {@link Node} to keep it in this {@link Computer}.
+     * The returned launcher will be set to {@link #launcher} and used to carry out the actual launch operation.
+     *
+     * <p>
+     * Subtypes that needs to decorate {@link ComputerLauncher} can do so by overriding this method.
+     * This is useful for {@link SlaveComputer}s for clouds for example, where one normally needs
+     * additional pre-launch step (such as waiting for the provisioned node to become available)
+     * before the user specified launch step (like SSH connection) kicks in.
+     *
+     * @see ComputerLauncherFilter
+     */
+    protected ComputerLauncher grabLauncher(Node node) {
+        return ((Slave)node).getLauncher();
     }
 
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());

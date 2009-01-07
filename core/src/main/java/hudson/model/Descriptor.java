@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.XmlFile;
 import hudson.BulkChange;
+import static hudson.Util.singleQuote;
 import hudson.util.CopyOnWriteList;
 import hudson.scm.CVSSCM;
 import net.sf.json.JSONArray;
@@ -9,6 +10,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.Stapler;
 import org.springframework.util.StringUtils;
+import org.jvnet.tiger_types.Types;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -18,11 +20,16 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.beans.Introspector;
 
 /**
  * Metadata about a configurable instance.
@@ -63,6 +70,12 @@ import java.lang.reflect.Modifier;
  * However, it is the responsibility of the derived type to properly
  * invoke {@link #save()} and {@link #load()}.
  *
+ * <h2>Reflection Enhancement</h2>
+ * {@link Descriptor} defines addition to the standard Java reflection
+ * and provides reflective information about its corresponding {@link Describable}.
+ * These are primarily used by tag libraries to
+ * keep the Jelly scripts concise. 
+ *
  * @author Kohsuke Kawaguchi
  * @see Describable
  */
@@ -83,6 +96,73 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     public transient final Class<? extends T> clazz;
 
     private transient final Map<String,Method> checkMethods = new ConcurrentHashMap<String,Method>();
+
+    /**
+     * Lazily computed list of properties on {@link #clazz}.
+     */
+    private transient volatile Map<String, PropertyType> propertyTypes;
+
+    /**
+     * Represents a readable property on {@link Describable}.
+     */
+    public static final class PropertyType {
+        public final Class clazz;
+        public final Type type;
+        private volatile Class itemType;
+
+        PropertyType(Class clazz, Type type) {
+            this.clazz = clazz;
+            this.type = type;
+        }
+
+        PropertyType(Field f) {
+            this(f.getType(),f.getGenericType());
+        }
+
+        PropertyType(Method getter) {
+            this(getter.getReturnType(),getter.getGenericReturnType());
+        }
+
+        public Enum[] getEnumConstants() {
+            return (Enum[])clazz.getEnumConstants();
+        }
+
+        /**
+         * If the property is a collection/array type, what is an item type?
+         */
+        public Class getItemType() {
+            if(itemType==null)
+                itemType = computeItemType();
+            return itemType;
+        }
+
+        private Class computeItemType() {
+            if(clazz.isArray()) {
+                return clazz.getComponentType();
+            }
+            if(Collection.class.isAssignableFrom(clazz)) {
+                Type col = Types.getBaseClass(type, Collection.class);
+
+                if (col instanceof ParameterizedType)
+                    return Types.erasure(Types.getTypeArgument(col,0));
+                else
+                    return Object.class;
+            }
+            return null;
+        }
+
+        /**
+         * Returns {@link Descriptor} whose 'clazz' is the same as {@link #getItemType() the item type}.
+         */
+        public Descriptor getItemTypeDescriptor() {
+            Class itemType = getItemType();
+            for( Descriptor d : Descriptor.ALL )
+                if(d.clazz==itemType)
+                    return d;
+            return null;
+
+        }
+    }
 
     protected Descriptor(Class<? extends T> clazz) {
         this.clazz = clazz;
@@ -122,13 +202,31 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if(method==NONE)
             return null;
 
-        return '\''+Stapler.getCurrentRequest().getContextPath()+"/descriptor/"+clazz.getName()+"/check"+capitalizedFieldName+"?value='+encode(this.value)";
+        return singleQuote(Stapler.getCurrentRequest().getContextPath()+"/descriptor/"+clazz.getName()+"/check"+capitalizedFieldName+"?value=")+"+encode(this.value)";
+    }
+
+    /**
+     * Obtains the property type of the given field of {@link #clazz}
+     */
+    public PropertyType getPropertyType(String field) {
+        if(propertyTypes ==null) {
+            Map<String, PropertyType> r = new HashMap<String, PropertyType>();
+            for (Field f : clazz.getFields())
+                r.put(f.getName(),new PropertyType(f));
+
+            for (Method m : clazz.getMethods())
+                if(m.getName().startsWith("get"))
+                    r.put(Introspector.decapitalize(m.getName().substring(3)),new PropertyType(m));
+
+            propertyTypes = r;
+        }
+        return propertyTypes.get(field);
     }
 
     /**
      * Gets the class name nicely escaped to be usable as a key in the structured form submission.
      */
-    public String getJsonSafeClassName() {
+    public final String getJsonSafeClassName() {
         return clazz.getName().replace('.','-');
     }
 
@@ -372,6 +470,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 return d;
         }
         return null;
+    }
+
+    public static Descriptor find(String className) {
+        return find(ALL.getView(),className);
     }
 
     public static final class FormException extends Exception {

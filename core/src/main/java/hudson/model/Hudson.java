@@ -1,7 +1,11 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter;
 import hudson.BulkChange;
+import com.trilead.ssh2.crypto.digest.SHA1;
+import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -48,6 +52,11 @@ import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.RetentionStrategy;
+import hudson.slaves.NodeList;
+import hudson.slaves.Cloud;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.NodeDescriptor;
+import hudson.slaves.NodeProvisioner;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -70,7 +79,19 @@ import hudson.util.MultipartFormDataParser;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.TextFile;
 import hudson.util.XStream2;
+<<<<<<< .working
 import hudson.util.HudsonIsRestarting;
+=======
+import hudson.util.DescribableList;
+<<<<<<< .working
+>>>>>>> .merge-right.r12882
+=======
+import hudson.util.Futures;
+<<<<<<< .working
+>>>>>>> .merge-right.r13488
+=======
+import hudson.util.HudsonIsRestarting;
+>>>>>>> .merge-right.r13919
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -135,6 +156,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -236,14 +258,33 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     private transient volatile DependencyGraph dependencyGraph;
 
     /**
+     * Active {@link Cloud}s.
+     */
+    public final CloudList clouds = new CloudList(this);
+
+    public static class CloudList extends DescribableList<Cloud,Descriptor<Cloud>> {
+        public CloudList(Hudson h) {
+            super(h);
+        }
+
+        protected void onModified() throws IOException {
+            super.onModified();
+            Hudson.getInstance().trimLabels();
+        }
+    }
+
+    /**
      * Set of installed cluster nodes.
-     *
+     * <p>
      * We use this field with copy-on-write semantics.
      * This field has mutable list (to keep the serialization look clean),
      * but it shall never be modified. Only new completely populated slave
      * list can be set here.
+     * <p>
+     * The field name should be really {@code nodes}, but again the backward compatibility
+     * prevents us from renaming.
      */
-    private volatile List<Slave> slaves;
+    private volatile NodeList slaves;
 
     /**
      * Quiet period.
@@ -300,6 +341,16 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     private transient Set<Label> labelSet;
     private transient volatile Set<Label> dynamicLabels = null;
 
+    /**
+     * Load statistics of the entire system.
+     */
+    public transient final OverallLoadStatistics overallLoad = new OverallLoadStatistics();
+
+    /**
+     * {@link NodeProvisioner} that reacts to {@link OverallLoadStatistics}.
+     */
+    public transient final NodeProvisioner overallNodeProvisioner = new NodeProvisioner(null,overallLoad);
+
     public transient final ServletContext servletContext;
 
     /**
@@ -319,9 +370,10 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
     /**
      * Secrete key generated once and used for a long time, beyond
-     * container start/stop.
+     * container start/stop. Persisted outside <tt>config.xml</tt> to avoid
+     * accidental exposure.
      */
-    private final String secretKey;
+    private transient final String secretKey;
 
     private transient final UpdateCenter updateCenter = new UpdateCenter();
 
@@ -387,7 +439,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         pluginManager = new PluginManager(context);
 
         // if we are loading old data that doesn't have this field
-        if(slaves==null)    slaves = new ArrayList<Slave>();
+        if(slaves==null)    slaves = new NodeList();
 
         // work around to have MavenModule register itself until we either move it to a plugin
         // or make it a part of the core.
@@ -423,7 +475,16 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             l.onLoaded();
 
         WindowsInstallerLink.registerIfApplicable();
+<<<<<<< .working
         UsageStatistics.register();
+=======
+        LoadStatistics.register();
+        NodeProvisioner.launch();
+<<<<<<< .working
+>>>>>>> .merge-right.r13488
+=======
+        UsageStatistics.register();
+>>>>>>> .merge-right.r13919
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
@@ -454,6 +515,10 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         return "";
     }
 
+    public void setNodeName(String name) {
+        throw new UnsupportedOperationException(); // not allowed
+    }
+
     public String getNodeDescription() {
         return "the master Hudson node";
     }
@@ -470,6 +535,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         return updateCenter;
     }
 
+<<<<<<< .working
     public boolean isUsageStatisticsCollected() {
         return noUsageStatistics==null || !noUsageStatistics;
     }
@@ -478,6 +544,12 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         return new View.People(this);
     }
 
+=======
+    public boolean isUsageStatisticsCollected() {
+        return noUsageStatistics==null || !noUsageStatistics;
+    }
+
+>>>>>>> .merge-right.r13919
     /**
      * Does this {@link View} has any associated user information recorded?
      */
@@ -495,7 +567,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      * This value is useful for implementing some of the security features.
      */
     public String getSecretKey() {
-        return  secretKey;
+        return secretKey;
     }
 
     /**
@@ -681,6 +753,8 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         return new LocalLauncher(listener);
     }
 
+    private final transient Object updateComputerLock = new Object();
+
     /**
      * Updates {@link #computers} by using {@link #getSlaves()}.
      *
@@ -689,7 +763,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      * so that we won't upset {@link Executor}s running in it.
      */
     private void updateComputerList() throws IOException {
-        synchronized(computers) {// this synchronization is still necessary so that no two update happens concurrently
+        synchronized(updateComputerLock) {// just so that we don't have two code updating computer list at the same time
             Map<String,Computer> byName = new HashMap<String,Computer>();
             for (Computer c : computers.values()) {
                 if(c.getNode()==null)
@@ -701,7 +775,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             Set<Computer> used = new HashSet<Computer>();
 
             updateComputer(this, byName, used);
-            for (Slave s : getSlaves())
+            for (Node s : getNodes())
                 updateComputer(s, byName, used);
 
             // find out what computers are removed, and kill off all executors.
@@ -721,8 +795,10 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         if (c!=null) {
             c.setNode(n); // reuse
         } else {
-            if(n.getNumExecutors()>0)
+            if(n.getNumExecutors()>0) {
                 computers.put(n,c=n.createComputer());
+                c.connect(true);
+            }
         }
         used.add(c);
     }
@@ -929,7 +1005,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     public Set<Label> getLabels() {
         Set<Label> r = new TreeSet<Label>();
         for (Label l : labels.values()) {
-            if(!l.getNodes().isEmpty())
+            if(!l.isEmpty())
                 r.add(l);
         }
         return r;
@@ -968,35 +1044,126 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
     /**
      * Gets the slave node of the give name, hooked under this Hudson.
+     *
+     * @deprecated
+     *      Use {@link #getNode(String)}. Since 1.252.
      */
     public Slave getSlave(String name) {
-        for (Slave s : getSlaves()) {
+        Node n = getNode(name);
+        if (n instanceof Slave)
+            return (Slave)n;
+        return null;
+    }
+
+    /**
+     * Gets the slave node of the give name, hooked under this Hudson.
+     */
+    public Node getNode(String name) {
+        for (Node s : getSlaves()) {
             if(s.getNodeName().equals(name))
                 return s;
         }
         return null;
     }
 
+    /**
+     * Gets a {@link Cloud} by {@link Cloud#name its name}, or null.
+     */
+    public Cloud getCloud(String name) {
+        for (Cloud nf : clouds)
+            if(nf.name.equals(name))
+                return nf;
+        return null;
+    }
+
+    /**
+     * @deprecated
+     *      Use {@link #getNodes()}. Since 1.252.
+     */
     public List<Slave> getSlaves() {
+        return (List)Collections.unmodifiableList(slaves);
+    }
+
+    /**
+     * Returns all {@link Node}s in the system, excluding {@link Hudson} instance itself which
+     * represents the master.
+     */
+    public List<Node> getNodes() {
         return Collections.unmodifiableList(slaves);
     }
 
     /**
      * Updates the slave list.
+     *
+     * @deprecated
+     *      Use {@link #setNodes(List)}. Since 1.252.
      */
     public void setSlaves(List<Slave> slaves) throws IOException {
-        this.slaves = new ArrayList<Slave>(slaves);
-        updateComputerList();
+        setNodes(slaves);
+    }
 
-        // label trim off
+    /**
+     * Adds one more {@link Node} to Hudson.
+     */
+    public synchronized void addNode(Node n) throws IOException {
+        ArrayList<Node> nl = new ArrayList<Node>(this.slaves);
+        nl.add(n);
+        setNodes(nl);
+    }
+
+    /**
+     * Removes a {@link Node} from Hudson.
+     */
+    public synchronized void removeNode(Node n) throws IOException {
+        n.toComputer().disconnect();
+
+        ArrayList<Node> nl = new ArrayList<Node>(this.slaves);
+        nl.remove(n);
+        setNodes(nl);
+    }
+
+    public void setNodes(List<? extends Node> nodes) throws IOException {
+        // make sure that all names are unique
+        Set<String> names = new HashSet<String>();
+        for (Node n : nodes)
+            if(!names.add(n.getNodeName()))
+                throw new IllegalArgumentException(n.getNodeName()+" is defined more than once");
+        this.slaves = new NodeList(nodes);
+        updateComputerList();
+        trimLabels();
+        save();
+    }
+
+    /**
+     * Resets all labels and remove invalid ones.
+     */
+    private void trimLabels() {
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
             l.reset();
-            if(l.getNodes().isEmpty())
+            if(l.isEmpty())
                 itr.remove();
         }
+    }
 
-        save();
+    public NodeDescriptor getDescriptor() {
+        return DescriptorImpl.INSTANCE;
+    }
+
+    public static final class DescriptorImpl extends NodeDescriptor {
+        public static final DescriptorImpl INSTANCE = new DescriptorImpl();
+        private DescriptorImpl() {
+            super(Hudson.class);
+        }
+
+        public String getDisplayName() {
+            throw new UnsupportedOperationException();
+        }
+
+        // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
+        public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+            return Hudson.getInstance().getDescriptor(token);
+        }
     }
 
     /**
@@ -1513,7 +1680,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
         // recompute label objects
         if (null != slaves) { // only if we have slaves
-            for (Slave slave : slaves)
+            for (Node slave : slaves)
                 slave.getAssignedLabels();
         }
 
@@ -1568,14 +1735,16 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      * Called to shut down the system.
      */
     public void cleanUp() {
+        Set<Future<?>> pending = new HashSet<Future<?>>();
         terminating = true;
         for( Computer c : computers.values() ) {
             c.interrupt();
             c.kill();
-            c.disconnect();
+            pending.add(c.disconnect());
         }
         ExternalJob.reloadThread.interrupt();
         Trigger.timer.cancel();
+        // TODO: how to wait for the completion of the last job?
         Trigger.timer = null;
         if(tcpSlaveAgentListener!=null)
             tcpSlaveAgentListener.shutdown();
@@ -1589,7 +1758,18 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             getQueue().save();
 
         threadPoolForLoad.shutdown();
-        
+        for (Future<?> f : pending)
+            try {
+                f.get(10, TimeUnit.SECONDS);    // if clean up operation didn't complete in time, we fail the test
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;  // someone wants us to die now. quick!
+            } catch (ExecutionException e) {
+                LOGGER.log(Level.WARNING, "Failed to shut down properly",e);
+            } catch (TimeoutException e) {
+                LOGGER.log(Level.WARNING, "Failed to shut down properly",e);
+            }
+
         LogFactory.releaseAll();
 
         theInstance = null;
@@ -1615,6 +1795,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      * Accepts submission from the configuration page.
      */
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        BulkChange bc = new BulkChange(this);
         try {
             checkPermission(ADMINISTER);
 
@@ -1669,6 +1850,12 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
                 }
             }
 
+            numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
+            if(req.hasParameter("master.mode"))
+                mode = Mode.valueOf(req.getParameter("master.mode"));
+            else
+                mode = Mode.NORMAL;
+
             quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
@@ -1711,6 +1898,8 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             for( JSONObject o : StructuredForm.toList(json,"plugin"))
                 pluginManager.getPlugin(o.getString("name")).getPlugin().configure(o);
 
+            clouds.rebuildHetero(req,json, Cloud.ALL, "cloud");
+
             save();
             if(result)
                 rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
@@ -1718,6 +1907,8 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
                 rsp.sendRedirect("configure"); // back to config
         } catch (FormException e) {
             sendError(e,req,rsp);
+        } finally {
+            bc.commit();
         }
     }
 
@@ -1735,6 +1926,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     }
 
     /**
+<<<<<<< .working
      * Accepts submission from the configuration page.
      */
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -1759,6 +1951,8 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     }
 
     /**
+=======
+>>>>>>> .merge-right.r12882
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -1831,7 +2025,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             return null;
         }
 
-        if(mode!=null && mode.equals("copyJob")) {
+        if(mode!=null && mode.equals("copy")) {
             String from = req.getParameter("from");
             TopLevelItem src = getItem(from);
             if(src==null) {
@@ -2177,11 +2371,26 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     /**
      * Run arbitrary Groovy script and return result as plain text.
      */
+<<<<<<< .working
     public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doScript(req, rsp, req.getView(this, "_scriptText.jelly"));
     }
 
     private void doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view) throws IOException, ServletException {
+=======
+    public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doScript(req, rsp, req.getView(this, "_script.jelly"));
+    }
+    
+    /**
+     * Run arbitrary Groovy script and return result as plain text.
+     */
+    public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doScript(req, rsp, req.getView(this, "_scriptText.jelly"));
+    }
+
+    private void doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view) throws IOException, ServletException {
+>>>>>>> .merge-right.r13919
         // ability to run arbitrary script is dangerous
         checkPermission(ADMINISTER);
 
@@ -2594,6 +2803,11 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         }
 
         @Override
+        public boolean isConnecting() {
+            return false;
+        }
+
+        @Override
         public String getDisplayName() {
             return Messages.Hudson_Computer_DisplayName();
         }
@@ -2609,6 +2823,11 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
         public RetentionStrategy getRetentionStrategy() {
             return RetentionStrategy.NOOP;
+        }
+
+        public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            // the master node isn't in the Hudson.getNodes(), so this method makes no sense.
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -2631,8 +2850,8 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             rsp.sendError(SC_NOT_FOUND);
         }
 
-        public void launch() {
-            // noop
+        public Future<?> connect(boolean forceReconnect) {
+            return Futures.precomputed(null);
         }
 
         /**
@@ -2779,7 +2998,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
     static {
         XSTREAM.alias("hudson",Hudson.class);
-        XSTREAM.alias("slave",Slave.class);
+        XSTREAM.alias("slave", DumbSlave.class);
         XSTREAM.alias("jdk",JDK.class);
         // for backward compatibility with <1.75, recognize the tag name "view" as well.
         XSTREAM.alias("view", ListView.class);

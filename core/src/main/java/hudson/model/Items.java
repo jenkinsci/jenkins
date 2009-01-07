@@ -33,12 +33,8 @@ public class Items {
         ExternalJob.DESCRIPTOR
     );
 
-    public static TopLevelItemDescriptor getDescriptor(String displayName) {
-        for (TopLevelItemDescriptor job : LIST) {
-            if(job.getDisplayName().equals(displayName))
-                return job;
-        }
-        return null;
+    public static TopLevelItemDescriptor getDescriptor(String fqcn) {
+        return Descriptor.find(LIST,fqcn);
     }
 
     /**

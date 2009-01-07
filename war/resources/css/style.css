@@ -18,6 +18,10 @@ td {
   vertical-align: top;
 }
 
+dt {
+  font-weight: bold;
+}
+
 .center {
   text-align: center;
 }

@@ -37,6 +37,11 @@
           </j:forEach>
         </tr>
       </j:forEach>
+
+      <!-- let clouds contribute fragments here -->
+      <j:forEach var="cloud" items="${app.clouds}">
+        <st:include it="${cloud}" page="computerSet.jelly" optional="true" />
+      </j:forEach>
     </table>
     <j:if test="${app.hasPermission(app.ADMINISTER)}">
       <div align="right" style="margin-top:0.5em">

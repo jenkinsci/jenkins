@@ -65,18 +65,12 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         public Always() {
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public long check(SlaveComputer c) {
             if (c.isOffline() && c.isLaunchSupported())
                 c.tryReconnect();
             return 1;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public DescriptorImpl getDescriptor() {
             return DESCRIPTOR;
         }
@@ -91,9 +85,6 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
                 super(Always.class);
             }
 
-            /**
-             * {@inheritDoc}
-             */
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Always_displayName();
             }
@@ -147,34 +138,28 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
 
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-        /**
-         * {@inheritDoc}
-         */
         public synchronized long check(SlaveComputer c) {
             if (c.isOffline()) {
                 final long demandMilliseconds = System.currentTimeMillis() - c.getDemandStartMilliseconds();
                 if (demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/) {
                     // we've been in demand for long enough
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
-                            new Object[]{c.getNode().getNodeName(), Util.getTimeSpanString(demandMilliseconds)});
+                            new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
                     if (c.isLaunchSupported())
-                        c.launch();
+                        c.connect(true);
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
                 if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
                     // we've been idle for long enough
                     logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
-                            new Object[]{c.getNode().getNodeName(), Util.getTimeSpanString(idleMilliseconds)});
+                            new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
                     c.disconnect();
                 }
             }
             return 1;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public Descriptor<RetentionStrategy<?>> getDescriptor() {
             return DESCRIPTOR;
         }
@@ -187,9 +172,6 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
                 super(Demand.class);
             }
 
-            /**
-             * {@inheritDoc}
-             */
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Demand_displayName();
             }

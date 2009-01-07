@@ -1,0 +1,17 @@
+<!--
+  Binds an enum field to a <select> element.
+
+  Attributes:
+    field: specifies the field of the bean to be bound
+  Body:
+    body should render the text of the enum item (which is passed as 'it')
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <select class="setting-input" name="${field}">
+    <j:forEach var="it" items="${descriptor.getPropertyType(field).enumConstants}">
+      <f:option value="${it.name()}" selected="${it==instance[field]}">
+        <d:invokeBody />
+      </f:option>
+    </j:forEach>
+  </select>
+</j:jelly>

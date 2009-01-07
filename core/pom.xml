@@ -430,7 +430,7 @@
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jexl</artifactId>
-      <version>1.1-hudson-20080725</version>
+      <version>1.1-hudson-20081031</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
@@ -475,7 +475,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8</version>
+      <version>4.3.1</version>
     </dependency>
     <dependency><!-- needed by Jelly -->
       <groupId>javax.servlet</groupId>

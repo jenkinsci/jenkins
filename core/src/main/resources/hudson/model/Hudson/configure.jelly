@@ -12,6 +12,13 @@
       <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
         <f:textarea name="system_message" value="${it.systemMessage}" />
       </f:entry>
+      <f:entry title="${%# of executors}" help="/help/system-config/numExecutors.html">
+        <input type="text" name="numExecutors" class="setting-input number"
+               value="${it.numExecutors}"/>
+      </f:entry>
+      <j:if test="${!empty(it.slaves)}">
+        <f:slave-mode name="master.mode" node="${it}" />
+      </j:if>
       <f:entry title="${%Quiet period}" help="/help/project-config/quietPeriod.html">
         <input class="setting-input number" name="quiet_period"
           type="text" value="${it.quietPeriod}"/>
@@ -118,6 +125,17 @@
       <local:globalConfig className="hudson.tasks.BuildStep" field="PUBLISHERS" />
       <local:globalConfig className="hudson.model.Jobs" field="PROPERTIES" />
       <local:globalConfig className="hudson.model.PageDecorator" field="ALL" />
+
+      <j:if test="${!empty(h.getCloudDescriptors())}">
+        <f:section title="${%Cloud}">
+          <f:block>
+            <f:hetero-list name="cloud" hasHeader="true"
+                           descriptors="${h.getCloudDescriptors()}"
+                           items="${it.clouds}"
+                           addCaption="${%Add a new cloud}"/>
+          </f:block>
+        </f:section>
+      </j:if>
 
       <f:block>
         <f:submit value="${%Save}" />

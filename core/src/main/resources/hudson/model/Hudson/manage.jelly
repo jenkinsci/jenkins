@@ -47,9 +47,6 @@
       <local:feature icon="setting.gif"          href="configure"    title="${%Configure System}">
         ${%Configure global settings and paths.}  
       </local:feature>
-      <local:feature icon="setting.gif"          href="configureExecutors"    title="${%Configure Executors}">
-        ${%Configure resources available for executing jobs.}
-      </local:feature>
       <local:feature icon="refresh.gif"          href="reload"       title="${%Reload Configuration from Disk}">
         ${%Discard all the loaded data in memory and reload everything from file system.}
         ${%Useful when you modified config files directly on disk.} 
@@ -66,10 +63,13 @@
       <local:feature icon="clipboard.gif"    href="log"         title="${%System Log}">
         ${%SystemLogText}
       </local:feature>
+      <local:feature icon="monitor.gif"    href="load-statistics"         title="${%Load Statistics}">
+        ${%LoadStatisticsText}
+      </local:feature>
       <local:feature icon="notepad.gif"      href="script"      title="${%Script Console}">
         ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}
       </local:feature>
-      <j:if test="${!empty(it.slaves)}">
+      <j:if test="${!empty(it.nodes) or !empty(h.getNodeFactoryDescriptors())}">
         <local:feature icon="network.gif"      href="computer/"   title="${%Manage Slaves}">
           ${%Check the health of slaves and controls them.}
         </local:feature>

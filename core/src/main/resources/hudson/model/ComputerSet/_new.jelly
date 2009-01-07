@@ -1,0 +1,27 @@
+<!--
+  2nd page in the "new slave" page for displaying the entire configuration entries for the selected job type.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout norefresh="true" permission="${app.ADMINISTER}">
+    <st:include page="sidepanel.jelly"/>
+    <l:main-panel>
+      <f:form method="post" action="doCreateItem">
+        <f:entry title="${%Name}" help="/help/system-config/master-slave/name.html">
+          <f:textbox name="name" value="${request.getParameter('name')}"
+                     checkUrl="'../fieldCheck?errorText='+escape('${%Name is mandatory}')+'&amp;value='+escape(this.value)"/>
+        </f:entry>
+
+        <!-- main body of the configuration -->
+        <j:set var="it" value="${null}" />
+        <st:include class="${requestScope.descriptor.clazz}" page="configure-entries.jelly" />
+        
+        <f:block>
+          <input type="hidden" name="type" value="${request.getParameter('mode')}"/>
+
+          <f:submit value="${%Save}"/>
+        </f:block>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

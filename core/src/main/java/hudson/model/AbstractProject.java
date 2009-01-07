@@ -144,7 +144,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
 
-        if(!Hudson.getInstance().getSlaves().isEmpty()) {
+        if(!Hudson.getInstance().getNodes().isEmpty()) {
             // if a new job is configured with Hudson that already has slave nodes
             // make it roamable by default
             canRoam = true;
@@ -193,6 +193,21 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(assignedNode==null)
             return Hudson.getInstance().getSelfLabel();
         return Hudson.getInstance().getLabel(assignedNode);
+    }
+
+    /**
+     * Sets the assigned label.
+     */
+    public void setAssignedLabel(Label l) throws IOException {
+        if(l==null) {
+            canRoam = true;
+            assignedNode = null;
+        } else {
+            canRoam = false;
+            if(l==Hudson.getInstance().getSelfLabel())  assignedNode = null;
+            else                                        assignedNode = l.getName();
+        }
+        save();
     }
 
     /**

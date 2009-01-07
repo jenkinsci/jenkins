@@ -13,9 +13,14 @@ import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
 import hudson.matrix.MatrixProject;
 import hudson.model.*;
+import hudson.model.Node.Mode;
+import hudson.model.JDK;
+import hudson.model.Label;
 import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
 import hudson.tasks.BuildStep;
+import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.Launcher.LocalLauncher;
 import hudson.util.StreamTaskListener;
@@ -26,6 +31,13 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.WebAppMain;
 import hudson.CloseProofOutputStream;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.CommandLauncher;
+import hudson.slaves.RetentionStrategy;
+import hudson.maven.MavenModuleSet;
+import hudson.FilePath;
+import hudson.Functions;
+import hudson.WebAppMain;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -73,7 +85,7 @@ import java.util.logging.LogRecord;
  * @author Kohsuke Kawaguchi
  */
 public abstract class HudsonTestCase extends TestCase {
-    protected Hudson hudson;
+    public Hudson hudson;
 
     protected final TestEnvironment env = new TestEnvironment();
     protected HudsonHomeLoader homeLoader = HudsonHomeLoader.NEW;
@@ -179,6 +191,7 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     protected void runTest() throws Throwable {
+        System.out.println("=== Starting "+getName());
         new JavaScriptEngine(null);   // ensure that ContextFactory is initialized
         Context cx= ContextFactory.getGlobal().enterContext();
         try {
@@ -322,8 +335,28 @@ public abstract class HudsonTestCase extends TestCase {
     /**
      * Allocates a new temporary directory for the duration of this test.
      */
-    protected File createTmpDir() throws IOException {
-        return TestEnvironment.get().temporaryDirectoryAllocator.allocate();
+    public File createTmpDir() throws IOException {
+        return env.temporaryDirectoryAllocator.allocate();
+    }
+
+    public DumbSlave createSlave() throws Exception {
+        return createSlave(null);
+    }
+
+    /**
+     * Creates and launches a new slave on the local host.
+     */
+    public DumbSlave createSlave(Label l) throws Exception {
+        CommandLauncher launcher = new CommandLauncher(
+                System.getProperty("java.home") + "/bin/java -jar " + hudson.getJnlpJars("slave.jar").getURL().getPath());
+
+        // this synchronization block is so that we don't end up adding the same slave name more than once.
+        synchronized (hudson) {
+            DumbSlave slave = new DumbSlave("slave" + hudson.getNodes().size(), "dummy",
+                    createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), launcher, RetentionStrategy.NOOP);
+            hudson.addNode(slave);
+            return slave;
+        }
     }
 
     /**

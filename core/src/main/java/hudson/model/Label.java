@@ -1,12 +1,22 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.slaves.NodeProvisioner;
+import hudson.slaves.Cloud;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Collections;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 
 /**
  * Group of {@link Node}s.
@@ -15,14 +25,38 @@ import java.util.ArrayList;
  * @see Hudson#getLabels()
  * @see Hudson#getLabel(String) 
  */
+@ExportedBean
 public class Label implements Comparable<Label>, ModelObject {
     private final String name;
     private volatile Set<Node> nodes;
+    private volatile Set<Cloud> clouds;
+
+    public final LoadStatistics loadStatistics;
+    public final NodeProvisioner nodeProvisioner;
 
     public Label(String name) {
         this.name = name;
+         // passing these causes an infinite loop - getTotalExecutors(),getBusyExecutors());
+        this.loadStatistics = new LoadStatistics(0,0) {
+            @Override
+            public int computeIdleExecutors() {
+                return Label.this.getIdleExecutors();
+            }
+
+            @Override
+            public int computeTotalExecutors() {
+                return Label.this.getTotalExecutors();
+            }
+
+            @Override
+            public int computeQueueLength() {
+                return Hudson.getInstance().getQueue().countBuildableItemsFor(Label.this);
+            }
+        };
+        this.nodeProvisioner = new NodeProvisioner(this, loadStatistics);
     }
 
+    @Exported
     public String getName() {
         return name;
     }
@@ -38,21 +72,21 @@ public class Label implements Comparable<Label>, ModelObject {
     public boolean isSelfLabel() {
         Set<Node> nodes = getNodes();
         return nodes.size() == 1 && nodes.iterator().next().getSelfLabel() == this;
-
     }
 
     /**
      * Gets all {@link Node}s that belong to this label.
      */
+    @Exported
     public Set<Node> getNodes() {
         if(nodes==null) {
             Set<Node> r = new HashSet<Node>();
             Hudson h = Hudson.getInstance();
             if(h.getAssignedLabels().contains(this))
                 r.add(h);
-            for (Slave s : h.getSlaves()) {
-                if(s.getAssignedLabels().contains(this))
-                    r.add(s);
+            for (Node n : h.getNodes()) {
+                if(n.getAssignedLabels().contains(this))
+                    r.add(n);
             }
             nodes = Collections.unmodifiableSet(r);
         }
@@ -60,8 +94,70 @@ public class Label implements Comparable<Label>, ModelObject {
     }
 
     /**
+     * Gets all {@link Cloud}s that can launch for this label.
+     */
+    @Exported
+    public Set<Cloud> getClouds() {
+        if(clouds==null) {
+            Set<Cloud> r = new HashSet<Cloud>();
+            Hudson h = Hudson.getInstance();
+            for (Cloud c : h.clouds) {
+                if(c.canProvision(this))
+                    r.add(c);
+            }
+            clouds = Collections.unmodifiableSet(r);
+        }
+        return clouds;
+    }
+
+    /**
+     * Number of total {@link Executor}s that belong to this label that are functioning.
+     * <p>
+     * This excludes executors that belong to offline nodes.
+     */
+    @Exported
+    public int getTotalExecutors() {
+        int r=0;
+        for (Node n : getNodes()) {
+            Computer c = n.toComputer();
+            if(c!=null && c.isOnline())
+                r += c.countExecutors();
+        }
+        return r;
+    }
+
+    /**
+     * Number of busy {@link Executor}s that are carrying out some work right now.
+     */
+    @Exported
+    public int getBusyExecutors() {
+        int r=0;
+        for (Node n : getNodes()) {
+            Computer c = n.toComputer();
+            if(c!=null && c.isOnline())
+                r += c.countBusy();
+        }
+        return r;
+    }
+
+    /**
+     * Number of idle {@link Executor}s that can start working immediately.
+     */
+    @Exported
+    public int getIdleExecutors() {
+        int r=0;
+        for (Node n : getNodes()) {
+            Computer c = n.toComputer();
+            if(c!=null && (c.isOnline() || c.isConnecting()))
+                r += c.countIdle();
+        }
+        return r;
+    }
+
+    /**
      * Returns true if all the nodes of this label is offline.
      */
+    @Exported
     public boolean isOffline() {
         for (Node n : getNodes()) {
             if(n.toComputer() != null && !n.toComputer().isOffline())
@@ -73,6 +169,7 @@ public class Label implements Comparable<Label>, ModelObject {
     /**
      * Returns a human readable text that explains this label.
      */
+    @Exported
     public String getDescription() {
         Set<Node> nodes = getNodes();
         if(nodes.isEmpty())
@@ -98,6 +195,7 @@ public class Label implements Comparable<Label>, ModelObject {
     /**
      * Returns projects that are tied on this node.
      */
+    @Exported
     public List<AbstractProject> getTiedJobs() {
         List<AbstractProject> r = new ArrayList<AbstractProject>();
         for( AbstractProject p : Util.filter(Hudson.getInstance().getItems(),AbstractProject.class) ) {
@@ -111,14 +209,25 @@ public class Label implements Comparable<Label>, ModelObject {
         return getNodes().contains(node);
     }
 
+    /**
+     * If there's no such label defined in {@link Node} or {@link Cloud}.
+     * This is usually used as a signal that this label is invalid.
+     */
     public boolean isEmpty() {
-        return getNodes().isEmpty();
+        return getNodes().isEmpty() && getClouds().isEmpty();
     }
     
     /*package*/ void reset() {
         nodes = null;
+        clouds = null;
     }
 
+    /**
+     * Expose this object to the remote API.
+     */
+    public Api getApi() {
+        return new Api(this);
+    }
 
     public boolean equals(Object that) {
         if (this == that) return true;
@@ -132,8 +241,30 @@ public class Label implements Comparable<Label>, ModelObject {
         return name.hashCode();
     }
 
-
     public int compareTo(Label that) {
         return this.name.compareTo(that.name);
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    public static final class ConverterImpl implements Converter {
+        public ConverterImpl() {
+        }
+
+        public boolean canConvert(Class type) {
+            return type==Label.class;
+        }
+
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            Label src = (Label) source;
+            writer.setValue(src.getName());
+        }
+
+        public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
+            return Hudson.getInstance().getLabel(reader.getValue());
+        }
     }
 }

@@ -99,7 +99,7 @@ public class JNLPLauncherTest extends HudsonTestCase {
     private Computer addTestSlave() throws Exception {
         List<Slave> slaves = new ArrayList<Slave>(hudson.getSlaves());
         File dir = Util.createTempDir();
-        slaves.add(new Slave("test","dummy",dir.getAbsolutePath(),"1", Mode.NORMAL, "",
+        slaves.add(new DumbSlave("test","dummy",dir.getAbsolutePath(),"1", Mode.NORMAL, "",
                 new JNLPLauncher(), RetentionStrategy.INSTANCE));
         hudson.setSlaves(slaves);
         Computer c = hudson.getComputer("test");

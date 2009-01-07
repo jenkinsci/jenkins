@@ -71,7 +71,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
 
     public void add(T item) throws IOException {
         data.add(item);
-        owner.save();
+        onModified();
     }
 
     public T get(D descriptor) {
@@ -89,7 +89,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         for (T t : data) {
             if(t.getDescriptor()==descriptor) {
                 data.remove(t);
-                owner.save();
+                onModified();
                 return;
             }
         }
@@ -97,6 +97,13 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
 
     public Iterator<T> iterator() {
         return data.iterator();
+    }
+
+    /**
+     * Called when a list is mutated.
+     */
+    protected void onModified() throws IOException {
+        owner.save();
     }
 
     @SuppressWarnings("unchecked")
@@ -182,7 +189,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      *
      * Serializaion form is compatible with plain {@link List}.
      */
-    public static final class ConverterImpl extends AbstractCollectionConverter {
+    public static class ConverterImpl extends AbstractCollectionConverter {
         CopyOnWriteList.ConverterImpl copyOnWriteListConverter;
 
         public ConverterImpl(Mapper mapper) {
@@ -191,7 +198,8 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
 
         public boolean canConvert(Class type) {
-            return type==DescribableList.class;
+            // handle subtypes in case the onModified method is overridden.
+            return DescribableList.class.isAssignableFrom(type);
         }
 
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {

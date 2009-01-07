@@ -50,6 +50,7 @@ public class XStream2 extends XStream {
     private void init() {
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
+        registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes 
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.

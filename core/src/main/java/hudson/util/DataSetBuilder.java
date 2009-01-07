@@ -12,7 +12,12 @@ import java.util.TreeSet;
  *
  * <p>
  * This code works around an issue in {@link DefaultCategoryDataset} where
- * order of addition changes the way they are drawn. 
+ * order of addition changes the way they are drawn.
+ *
+ * @param <Row>
+ *      Names that identify different graphs drawn in the same chart.
+ * @param <Column>
+ *      X-axis.
  */
 public final class DataSetBuilder<Row extends Comparable,Column extends Comparable> {
 

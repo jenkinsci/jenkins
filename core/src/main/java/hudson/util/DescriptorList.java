@@ -72,4 +72,11 @@ public final class DescriptorList<T extends Describable<T>> extends CopyOnWriteA
             throw new AssertionError(e);  // Can't happen
         }
     }
+
+    /**
+     * Finds the descriptor that has the matching fully-qualified class name.
+     */
+    public Descriptor<T> find(String fqcn) {
+        return Descriptor.find(this,fqcn);
+    }
 }

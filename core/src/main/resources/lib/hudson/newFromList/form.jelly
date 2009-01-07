@@ -1,0 +1,67 @@
+<!--
+  Overall form that should be placed inside <l:main-panel>
+
+  Attributes:
+    @descriptors : collection of Descriptors
+    @nameTitle   : title of the name text field
+    @copyTitle   : title of the copy option
+    @copyNames   : options of names to choose from as the copy source. null to hide "copy" option
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <s:form method="post" action="createItem">
+    <s:entry title="${nameTitle}">
+      <s:textbox id="name" name="name" checkUrl="'${rootURL}/itemExistsCheck?value='+escape(this.value)"
+                 onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
+      <script>$('name').focus();</script>
+    </s:entry>
+
+    <j:forEach var="d" items="${descriptors}">
+      <s:block>
+        <input type="radio" name="mode" value="${d.class.name}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+        <st:nbsp/>
+        <label class="attach-previous"><b>${d.displayName}</b></label>
+      </s:block>
+      <s:entry>
+        <st:include page="${d.newInstanceDetailPage()}" from="${d}" optional="true"/>
+      </s:entry>
+    </j:forEach>
+    <j:if test="${!empty(copyNames)}">
+      <s:block>
+        <input type="radio" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+        <st:nbsp/>
+        <label class="attach-previous"><b>${copyTitle}</b></label>
+      </s:block>
+      <s:entry>
+        ${%Copy from}
+        <s:editableComboBox id="from" name="from" items="${copyNames}" />
+      </s:entry>
+    </j:if>
+
+    <s:block>
+      <!--
+        when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
+        So always force non-empty array
+       -->
+      <input type="radio" name="mode" value="dummy1" style="display:none" />
+      <input type="radio" name="mode" value="dummy2" style="display:none" />
+      <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
+    </s:block>
+  </s:form>
+  <script><![CDATA[
+    var okButton = makeButton($('ok'),null);
+
+    function updateOk(form) {
+      function state() {
+        if($('name').value.length==0)   return true;
+        var radio = form.elements['mode'];
+        for(i=0;i<radio.length;i++)
+          if(radio[i].checked)
+            return false;
+        return true;
+      }
+
+      okButton.set('disabled',state(),false);
+    }
+    updateOk(okButton.getForm());
+  ]]></script>
+</j:jelly>

@@ -1,0 +1,14 @@
+<!--
+  See http://hudson.gotdns.com/wiki/display/HUDSON/Jelly+form+controls for the reference.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:nested>
+    <div style="float:right">
+      <input type="button" value="${title}" class="yui-button" onclick="validateButton('${rootURL}/descriptor/${descriptor.clazz.name}/${method}','${with}',this)" />
+    </div>
+    <div style="display:none;">
+      <img src="${imagesURL}/spinner.gif" /> ${progress}
+    </div>
+    <div><!-- this is where the error message goes --></div>
+  </f:nested>
+</j:jelly>

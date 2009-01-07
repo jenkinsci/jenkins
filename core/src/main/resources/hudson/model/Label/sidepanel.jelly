@@ -6,6 +6,8 @@
   <l:side-panel>
     <l:tasks>
       <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
+      <l:task icon="images/24x24/computer.gif" href="." title="${%Overview}" />
+      <l:task icon="images/24x24/monitor.gif" href="load-statistics" title="${%Load Statistics}" />
     </l:tasks>
   </l:side-panel>
 </j:jelly>

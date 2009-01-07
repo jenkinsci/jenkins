@@ -7,6 +7,7 @@ import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
+import hudson.slaves.DumbSlave;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.DOMReader;
@@ -30,7 +31,7 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
      * Creates a new slave that needs to be launched via JNLP.
      */
     protected Slave createNewJnlpSlave(String name) throws Exception {
-        return new Slave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.INSTANCE);
+        return new DumbSlave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.INSTANCE);
     }
 
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)

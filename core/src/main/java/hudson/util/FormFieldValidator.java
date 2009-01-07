@@ -7,6 +7,8 @@ import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
+import hudson.model.Item;
+import hudson.model.Job;
 import hudson.security.Permission;
 import hudson.security.AccessControlled;
 
@@ -22,6 +24,8 @@ import javax.servlet.ServletException;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.stapler.Stapler;
 import org.acegisecurity.AccessDeniedException;
 
 /**
@@ -59,15 +63,37 @@ public abstract class FormFieldValidator {
         this(request, response, adminOnly?Hudson.getInstance():null, adminOnly?CHECK:null);
     }
 
+    /**
+     * @deprecated
+     *      Use {@link #FormFieldValidator(Permission)} and remove {@link StaplerRequest} and {@link StaplerResponse}
+     *      from your "doCheck..." method parameter
+     */
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, Permission permission) {
         this(request,response,Hudson.getInstance(),permission);
     }
 
+    /**
+     * @param permission
+     *      Permission needed to perform this validation, or null if no permission is necessary.
+     */
+    protected FormFieldValidator(Permission permission) {
+        this(Stapler.getCurrentRequest(),Stapler.getCurrentResponse(),permission);
+    }
+
+    /**
+     * @deprecated
+     *      Use {@link #FormFieldValidator(AccessControlled,Permission)} and remove {@link StaplerRequest} and {@link StaplerResponse}
+     *      from your "doCheck..." method parameter
+     */
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, AccessControlled subject, Permission permission) {
         this.request = request;
         this.response = response;
         this.subject = subject;
         this.permission = permission;
+    }
+
+    protected FormFieldValidator(AccessControlled subject, Permission permission) {
+        this(Stapler.getCurrentRequest(),Stapler.getCurrentResponse(),subject,permission);
     }
 
     /**
@@ -120,7 +146,11 @@ public abstract class FormFieldValidator {
     public void warning(String message) throws IOException, ServletException {
         warningWithMarkup(message==null?null:Util.escape(message));
     }
-    
+
+    public void ok(String message) throws IOException, ServletException {
+        okWithMarkup(message==null?null:Util.escape(message));
+    }
+
     /**
      * Sends out a string error message that indicates an error,
      * by formatting it with {@link String#format(String, Object[])}
@@ -131,6 +161,10 @@ public abstract class FormFieldValidator {
 
     public void warning(String format, Object... args) throws IOException, ServletException {
         warning(String.format(format,args));
+    }
+
+    public void ok(String format, Object... args) throws IOException, ServletException {
+        ok(String.format(format,args));
     }
 
     /**
@@ -150,6 +184,10 @@ public abstract class FormFieldValidator {
 
     public void warningWithMarkup(String message) throws IOException, ServletException {
         _errorWithMarkup(message,"warning");
+    }
+
+    public void okWithMarkup(String message) throws IOException, ServletException {
+        _errorWithMarkup(message,"ok");
     }
 
     private void _errorWithMarkup(String message, String cssClass) throws IOException, ServletException {
@@ -499,6 +537,50 @@ public abstract class FormFieldValidator {
          */
         protected void checkExecutable(File exe) throws IOException, ServletException {
             ok();
+        }
+    }
+
+    /**
+     * Verifies that the 'value' parameter is correct base64 encoded text.
+     *
+     * @since 1.257
+     */
+    public static class Base64 extends FormFieldValidator {
+        private final boolean allowWhitespace;
+        private final boolean allowEmpty;
+        private final String errorMessage;
+
+        public Base64(StaplerRequest request, StaplerResponse response, boolean allowWhitespace, boolean allowEmpty, String errorMessage) {
+            super(request, response, false);
+            this.allowWhitespace = allowWhitespace;
+            this.allowEmpty = allowEmpty;
+            this.errorMessage = errorMessage;
+        }
+
+        protected void check() throws IOException, ServletException {
+            try {
+                String v = request.getParameter("value");
+                if(!allowWhitespace) {
+                    if(v.indexOf(' ')>=0 || v.indexOf('\n')>=0) {
+                        fail();
+                        return;
+                    }
+                }
+                v=v.trim();
+                if(!allowEmpty && v.length()==0) {
+                    fail();
+                    return;
+                }
+                
+                com.trilead.ssh2.crypto.Base64.decode(v.toCharArray());
+                ok();
+            } catch (IOException e) {
+                fail();
+            }
+        }
+
+        protected void fail() throws IOException, ServletException {
+            error(errorMessage);
         }
     }
 }

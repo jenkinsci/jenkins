@@ -2,7 +2,7 @@
     displays the status of executors.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<l:pane title="${%Build Executor Status}" width="3" id="executors">
+	<l:pane title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>" width="3" id="executors">
 	  <j:forEach var="c" items="${app.computers}" varStatus="cloop">
 	    <j:choose>
 	      <j:when test="${c.node==app}">
