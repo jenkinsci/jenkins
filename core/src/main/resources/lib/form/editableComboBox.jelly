@@ -25,9 +25,11 @@
          name ="${h.defaulted(attrs.name,'_.'+attrs.field)}"
          value="${h.defaulted(attrs.value,instance[attrs.field])}"
          checkUrl="${checkUrl}" />
-	<j:set target="${requestScope}" property="editableComboBox" value="${attrs.id}" />
+    <j:set target="${requestScope}" property="editableComboBoxCount" value="${editableComboBoxCount + 1}" defaultValue="1" />
+    <j:set var="uniqid" value="${id + editableComboBoxCount}" />
+	<j:set target="${requestScope}" property="editableComboBox" value="${uniqid}" />
 	<script type="text/javascript">
-	  var ${id}_values = new Array();
+	  var ${uniqid}_values = new Array();
 
 	  <!-- fill in values -->
 	  <j:if test="${items!=null}">
@@ -38,9 +40,9 @@
 	  <d:invokeBody />
 
 		<![CDATA[
-	  function ${id}_Callback(value /*, comboBox*/) {
+	  function ${uniqid}_Callback(value /*, comboBox*/) {
 	    var items = new Array();
-	    var candidates = ${id}_values;
+	    var candidates = ${uniqid}_values;
 	    if (value.length > 0) { // if no value, we'll not provide anything
 	      value = value.toLowerCase();
 	      for (var i = 0; i < candidates.length; i++) {
@@ -56,9 +58,9 @@
 	  ]]>
 
 	  <!-- IE doesn't like a combobox to be created before the page is fully loaded. -->
-	  var oldOnLoadFor${id} = window.onload;
-	  window.onload = function() { if(oldOnLoadFor${id}) oldOnLoadFor${id}();
-	    new ComboBox("${id}", ${id}_Callback);
+	  var oldOnLoadFor${uniqid} = window.onload;
+	  window.onload = function() { if(oldOnLoadFor${uniqid}) oldOnLoadFor${uniqid}();
+	    new ComboBox("${id}", ${uniqid}_Callback);
 	  }
 	</script>
 </j:jelly>
