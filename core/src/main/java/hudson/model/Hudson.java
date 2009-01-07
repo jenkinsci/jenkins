@@ -79,19 +79,10 @@ import hudson.util.MultipartFormDataParser;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.TextFile;
 import hudson.util.XStream2;
-<<<<<<< .working
 import hudson.util.HudsonIsRestarting;
-=======
 import hudson.util.DescribableList;
-<<<<<<< .working
->>>>>>> .merge-right.r12882
-=======
 import hudson.util.Futures;
-<<<<<<< .working
->>>>>>> .merge-right.r13488
-=======
 import hudson.util.HudsonIsRestarting;
->>>>>>> .merge-right.r13919
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -475,16 +466,9 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             l.onLoaded();
 
         WindowsInstallerLink.registerIfApplicable();
-<<<<<<< .working
         UsageStatistics.register();
-=======
         LoadStatistics.register();
         NodeProvisioner.launch();
-<<<<<<< .working
->>>>>>> .merge-right.r13488
-=======
-        UsageStatistics.register();
->>>>>>> .merge-right.r13919
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
@@ -535,7 +519,6 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         return updateCenter;
     }
 
-<<<<<<< .working
     public boolean isUsageStatisticsCollected() {
         return noUsageStatistics==null || !noUsageStatistics;
     }
@@ -544,12 +527,6 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         return new View.People(this);
     }
 
-=======
-    public boolean isUsageStatisticsCollected() {
-        return noUsageStatistics==null || !noUsageStatistics;
-    }
-
->>>>>>> .merge-right.r13919
     /**
      * Does this {@link View} has any associated user information recorded?
      */
@@ -1926,7 +1903,6 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     }
 
     /**
-<<<<<<< .working
      * Accepts submission from the configuration page.
      */
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -1951,8 +1927,6 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     }
 
     /**
-=======
->>>>>>> .merge-right.r12882
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -2371,26 +2345,11 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     /**
      * Run arbitrary Groovy script and return result as plain text.
      */
-<<<<<<< .working
     public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doScript(req, rsp, req.getView(this, "_scriptText.jelly"));
     }
 
     private void doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view) throws IOException, ServletException {
-=======
-    public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doScript(req, rsp, req.getView(this, "_script.jelly"));
-    }
-    
-    /**
-     * Run arbitrary Groovy script and return result as plain text.
-     */
-    public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doScript(req, rsp, req.getView(this, "_scriptText.jelly"));
-    }
-
-    private void doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view) throws IOException, ServletException {
->>>>>>> .merge-right.r13919
         // ability to run arbitrary script is dangerous
         checkPermission(ADMINISTER);
 
