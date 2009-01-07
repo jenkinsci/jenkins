@@ -9,6 +9,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
+import hudson.security.PermissionGroup;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildWrapper;
@@ -568,7 +569,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         try {
-            checkPermission(Hudson.CONFIGURE);  // TODO: new permission?
+            checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
 
             final Hudson app = Hudson.getInstance();
 
@@ -631,9 +632,12 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
         return true;
     }
 
-    // TODO: define this as a separate permission?
-    public static final Permission CONFIGURE = Hudson.CONFIGURE;
-    public static final Permission DELETE = Hudson.DELETE;
+    public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class,Messages._Computer_Permissions_Title());
+    /**
+     * Permission to create new jobs.
+     */
+    public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._Computer_ConfigurePermission_Description(), Permission.CONFIGURE);
+    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._Computer_DeletePermission_Description(), Permission.DELETE);
 
 
 }

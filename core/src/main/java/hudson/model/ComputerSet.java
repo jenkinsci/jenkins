@@ -140,7 +140,7 @@ public final class ComputerSet extends AbstractModelObject {
                                            @QueryParameter("name") String name, @QueryParameter("mode") String mode,
                                            @QueryParameter("from") String from ) throws IOException, ServletException {
         final Hudson app = Hudson.getInstance();
-        app.checkPermission(Hudson.CONFIGURE);  // TODO: new permission?
+        app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
 
         if (checkName(req, rsp, name)) return;
 
@@ -184,7 +184,7 @@ public final class ComputerSet extends AbstractModelObject {
                                            @QueryParameter("type") String type ) throws IOException, ServletException {
         try {
             final Hudson app = Hudson.getInstance();
-            app.checkPermission(Hudson.CONFIGURE);  // TODO: new permission?
+            app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
 
             if (checkName(req, rsp, name)) return;
 
