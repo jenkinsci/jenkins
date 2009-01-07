@@ -73,7 +73,7 @@ public class SubversionSCMTest extends HudsonTestCase {
      */
     private SubversionSCM loadSvnRepo() throws Exception {
         return new SubversionSCM(
-                new String[]{"file://" + new CopyExisting(getClass().getResource("/svn-repo.zip")).allocate() + "/trunk/a"},
+                new String[] { "file://" + new CopyExisting(getClass().getResource("/svn-repo.zip")).allocate().toURI().toURL().getPath() + "/trunk/a" },
                 new String[]{null},
                 true, null
         );
