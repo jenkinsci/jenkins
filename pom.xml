@@ -160,4 +160,11 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
+
+  <distributionManagement>
+    <site>
+      <id>jellydoc-www</id>
+      <url>java-net:/hudson/trunk/www/maven-site/</url>
+    </site>
+  </distributionManagement>
 </project>
