@@ -163,7 +163,7 @@
 
   <distributionManagement>
     <site>
-      <id>jellydoc-www</id>
+      <id>hudson-www</id>
       <url>java-net:/hudson/trunk/www/maven-site/</url>
     </site>
   </distributionManagement>
