@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * @author Jesse Glick
  * @author Kohsuke Kawaguchi
  */
-public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild<P, B>> {
+public class MailSender {
     /**
      * Whitespace-separated list of e-mail addresses that represent recipients.
      */
@@ -54,13 +54,13 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         this.sendToIndividuals = sendToIndividuals;
     }
 
-    public boolean execute(B build, BuildListener listener) throws InterruptedException {
+    public boolean execute(AbstractBuild<?, ?> build, BuildListener listener) throws InterruptedException {
         try {
             MimeMessage mail = getMail(build, listener);
             if (mail != null) {
                 // if the previous e-mail was sent for a success, this new e-mail
                 // is not a follow up
-                B pb = build.getPreviousBuild();
+                AbstractBuild<?, ?> pb = build.getPreviousBuild();
                 if(pb!=null && pb.getResult()==Result.SUCCESS) {
                     mail.removeHeader("In-Reply-To");
                     mail.removeHeader("References");
@@ -86,13 +86,13 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         return true;
     }
 
-    protected MimeMessage getMail(B build, BuildListener listener) throws MessagingException, InterruptedException {
+    protected MimeMessage getMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, InterruptedException {
         if (build.getResult() == Result.FAILURE) {
             return createFailureMail(build, listener);
         }
 
         if (build.getResult() == Result.UNSTABLE) {
-            B prev = build.getPreviousBuild();
+            AbstractBuild<?, ?> prev = build.getPreviousBuild();
             if (!dontNotifyEveryUnstableBuild)
                 return createUnstableMail(build, listener);
             if (prev != null) {
@@ -102,7 +102,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         }
 
         if (build.getResult() == Result.SUCCESS) {
-            B prev = build.getPreviousBuild();
+            AbstractBuild<?, ?> prev = build.getPreviousBuild();
             if (prev != null) {
                 if (prev.getResult() == Result.FAILURE)
                     return createBackToNormalMail(build, "normal", listener);
@@ -114,7 +114,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         return null;
     }
 
-    private MimeMessage createBackToNormalMail(B build, String subject, BuildListener listener) throws MessagingException {
+    private MimeMessage createBackToNormalMail(AbstractBuild<?, ?> build, String subject, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
         msg.setSubject(getSubject(build, "Hudson build is back to " + subject + ": "),"UTF-8");
@@ -125,12 +125,12 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         return msg;
     }
 
-    private MimeMessage createUnstableMail(B build, BuildListener listener) throws MessagingException {
+    private MimeMessage createUnstableMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
         String subject = "Hudson build is unstable: ";
 
-        B prev = build.getPreviousBuild();
+        AbstractBuild<?, ?> prev = build.getPreviousBuild();
         if(prev!=null) {
             if(prev.getResult()==Result.SUCCESS)
                 subject = "Hudson build became unstable: ";
@@ -146,14 +146,14 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         return msg;
     }
 
-    private void appendBuildUrl(B build, StringBuffer buf) {
+    private void appendBuildUrl(AbstractBuild<?, ?> build, StringBuffer buf) {
         String baseUrl = Mailer.DESCRIPTOR.getUrl();
         if (baseUrl != null) {
             buf.append("See ").append(baseUrl).append(Util.encode(build.getUrl())).append("changes\n\n");
         }
     }
 
-    private MimeMessage createFailureMail(B build, BuildListener listener) throws MessagingException, InterruptedException {
+    private MimeMessage createFailureMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, InterruptedException {
         MimeMessage msg = createEmptyMail(build, listener);
 
         msg.setSubject(getSubject(build, "Build failed in Hudson: "),"UTF-8");
@@ -236,7 +236,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         return msg;
     }
 
-    private MimeMessage createEmptyMail(B build, BuildListener listener) throws MessagingException {
+    private MimeMessage createEmptyMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException {
         MimeMessage msg = new MimeMessage(Mailer.DESCRIPTOR.createSession());
         // TODO: I'd like to put the URL to the page in here,
         // but how do I obtain that?
@@ -267,7 +267,7 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         }
         msg.setRecipients(Message.RecipientType.TO, rcp.toArray(new InternetAddress[rcp.size()]));
 
-        B pb = build.getPreviousBuild();
+        AbstractBuild<?, ?> pb = build.getPreviousBuild();
         if(pb!=null) {
             MailMessageIdAction b = pb.getAction(MailMessageIdAction.class);
             if(b!=null) {
@@ -279,14 +279,14 @@ public class MailSender<P extends AbstractProject<P, B>, B extends AbstractBuild
         return msg;
     }
 
-    private String getSubject(B build, String caption) {
+    private String getSubject(AbstractBuild<?, ?> build, String caption) {
         return caption + build.getProject().getFullDisplayName() + " #" + build.getNumber();
     }
 
     /**
      * Check whether a path (/-separated) will be archived.
      */
-    protected boolean artifactMatches(String path, B build) {
+    protected boolean artifactMatches(String path, AbstractBuild<?, ?> build) {
         return false;
     }
 

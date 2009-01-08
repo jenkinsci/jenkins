@@ -3,11 +3,11 @@ package hudson.tasks;
 import hudson.Launcher;
 import hudson.Functions;
 import hudson.maven.AbstractMavenProject;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
-import hudson.model.Project;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
 import hudson.util.FormFieldValidator;
@@ -67,18 +67,14 @@ public class Mailer extends Publisher {
     private transient String subject;
     private transient boolean failureOnly;
 
-    public boolean perform(Build build, Launcher launcher, BuildListener listener) throws InterruptedException {
-        return _perform(build,launcher,listener);
-    }
-
-    public <P extends Project<P,B>,B extends Build<P,B>> boolean _perform(B build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         if(debug)
             listener.getLogger().println("Running mailer");
-        return new MailSender<P,B>(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals) {
+        return new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals) {
             /** Check whether a path (/-separated) will be archived. */
             @Override
-            public boolean artifactMatches(String path, B build) {
-                ArtifactArchiver aa = (ArtifactArchiver) build.getProject().getPublishers().get(ArtifactArchiver.DESCRIPTOR);
+            public boolean artifactMatches(String path, AbstractBuild<?,?> build) {
+                ArtifactArchiver aa = (ArtifactArchiver) build.getProject().getPublishersList().toMap().get(ArtifactArchiver.DESCRIPTOR);
                 if (aa == null) {
                     LOGGER.finer("No ArtifactArchiver found");
                     return false;

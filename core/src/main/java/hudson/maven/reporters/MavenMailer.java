@@ -27,7 +27,7 @@ public class MavenMailer extends MavenReporter {
     public boolean sendToIndividuals;
 
     public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        new MailSender<MavenModule,MavenBuild>(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals).execute(build,listener);
+        new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals).execute(build,listener);
         return true;
     }
 
