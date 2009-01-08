@@ -3,6 +3,7 @@ package org.jvnet.hudson.main;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Shell;
+import hudson.tasks.BatchFile;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -24,12 +25,16 @@ public class AppTest extends HudsonTestCase
 
     private void meat() throws IOException, InterruptedException, ExecutionException {
         FreeStyleProject project = createFreeStyleProject();
-        project.getBuildersList().add(new Shell("echo hello"));
+        if(System.getProperty("os.name").contains("Windows")) {
+            project.getBuildersList().add(new BatchFile("echo hello"));
+        } else {
+            project.getBuildersList().add(new Shell("echo hello"));
+        }
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName()+" completed");
 
         String s = FileUtils.readFileToString(build.getLogFile());
-        assertTrue(s.contains("+ echo hello"));
+        assertTrue(s,s.contains("echo hello"));
     }
 }
