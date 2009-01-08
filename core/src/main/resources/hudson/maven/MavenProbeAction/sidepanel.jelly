@@ -1,5 +1,4 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:header title="Maven Process for ${it.owner}" />
   <l:side-panel>
     <l:tasks>
       <l:task icon="images/24x24/document.gif" href="systemProperties" title="${%System Properties}" />
