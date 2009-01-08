@@ -6,7 +6,6 @@
   <j:if test="${!empty(wrappers)}">
     <f:descriptorList title="${%Build Environment}"
                       descriptors="${wrappers}"
-                      instances="${it.buildWrappers}"
-                      varName="wrapper" />
+                      instances="${it.buildWrappers}" />
   </j:if>
 </j:jelly>

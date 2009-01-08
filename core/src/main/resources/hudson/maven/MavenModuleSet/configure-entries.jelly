@@ -56,8 +56,7 @@
   <j:if test="${!empty(reporters)}">
     <f:descriptorList title="${%Build Settings}"
                       descriptors="${reporters}"
-                      instances="${it.reporters.toMap()}"
-                      varName="reporter" />
+                      instances="${it.reporters.toMap()}" />
   </j:if>
 
   <p:config-buildWrappers />

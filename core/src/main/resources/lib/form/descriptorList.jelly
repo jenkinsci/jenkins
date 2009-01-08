@@ -1,19 +1,28 @@
-<!--
-  Generate config pages from a list of Descriptors into a section.
-
-  Attributes:
-    title         caption for the section (required)
-    descriptors   hudson.model.Descriptor collection to display  (required)
-    instances     Map<Descriptor,Describable>, or a class that defines Describable get(Descriptor). Instances to display as current settings (required)
-    varName       Used as a variable name as well as block name (required)
-    targetType    the type for which descriptors will be configured.
-                  default to ${it.class} (optional)
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Generate config pages from a list of Descriptors into a section.
+
+    <st:attribute name="title" use="required">
+      Human readable title of the section to be rendered in HTML.
+    </st:attribute>
+    <st:attribute name="descriptors" use="required">
+      hudson.model.Descriptor collection whose configuration page is rendered.
+    </st:attribute>
+    <st:attribute name="instances" use="required">
+      Map&lt;Descriptor,Describable> that defines current instances of those descriptors.
+      These are used to fill initial values. Other classes that define the get(Descriptor)
+      method works fine, too.
+    </st:attribute>
+    <st:attribute name="targetType">
+      the type for which descriptors will be configured.
+      default to ${it.class}
+    </st:attribute>
+  </st:documentation>
+
   <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
   <f:section title="${attrs.title}">
     <d:invokeBody />
-	  <j:forEach var="d" items="${descriptors}" varStatus="loop">
+	  <j:forEach var="d" items="${descriptors}">
       <f:optionalBlock name="${d.jsonSafeClassName}" help="${d.helpFile}"
 	      title="${d.displayName}" checked="${instances.get(d)!=null}">
 
