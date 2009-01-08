@@ -1,14 +1,28 @@
-<!--
-  Radiobox with foldable details
-
-	<%@attribute name="name" required="true" %>
-	<%@attribute name="value" required="true" %>
-	<%@attribute name="title" required="true" %>
-	<%@attribute name="checked" required="true" %>
-  @help (optional)
-    if present, URL of the help HTML page.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Radio button with a label that hides additional controls.
+    When checked, those additional controls are displayed. This is useful
+    for presenting mutually exclusive options, where each option comes
+    with a subform that provides additional configuration.
+
+    <st:attribute name="name" use="required">
+      Name of the radio button group.
+    </st:attribute>
+    <st:attribute name="value" use="required">
+      @value of the &lt;input> element.
+    </st:attribute>
+    <st:attribute name="title" use="required">
+      Human readable label text to be rendered next to the radio button.
+    </st:attribute>
+    <st:attribute name="checked" use="required" type="boolean">
+      Should this control be initially checked or not?
+    </st:attribute>
+    <st:attribute name="help">
+      If specified, the (?) help icon will be rendered on the right,
+      for in place help text. See &lt;f:entry> for the details.
+    </st:attribute>
+  </st:documentation>
+
 	<j:set target="${requestScope}" property="rb_id" value="${rb_id+1}" />
 
 	<tr id="rb_s${rb_id}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
