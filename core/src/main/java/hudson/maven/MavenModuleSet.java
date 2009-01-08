@@ -551,9 +551,9 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
         ignoreUpstremChanges = !json.has("triggerByDependency");
 
-        reporters.rebuild(req,json,MavenReporters.getConfigurableList(),"reporter");
-        publishers.rebuild(req,json,BuildStepDescriptor.filter(BuildStep.PUBLISHERS,this.getClass()),"publisher");
-        buildWrappers.rebuild(req,json,BuildWrappers.getFor(this),"wrapper");
+        reporters.rebuild(req,json,MavenReporters.getConfigurableList());
+        publishers.rebuild(req,json,BuildStepDescriptor.filter(BuildStep.PUBLISHERS,this.getClass()));
+        buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
 
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }

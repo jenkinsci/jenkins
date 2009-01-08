@@ -390,7 +390,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
 
-        reporters.rebuild(req, req.getSubmittedForm(),MavenReporters.getConfigurableList(),"reporter");
+        reporters.rebuild(req, req.getSubmittedForm(),MavenReporters.getConfigurableList());
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
 
