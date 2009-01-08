@@ -1,10 +1,22 @@
-<!--
-  region of HTML with a title
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+  <st:documentation>
+    Used in the &lt;l:side-panel> to draw a box with a title.
 
-  <%@attribute name="title" required="true" %>
-  <%@attribute name="width" required="true" %>
--->
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
+    The box is drawn as a table, and the body of this tag
+    is expected to draw a series of &lt;TR>s to fill in the contents
+    of the box.
+    
+    <st:attribute name="title" use="required">
+      Title of the box. Can include HTML.
+    </st:attribute>
+    <st:attribute name="width" use="required">
+      Specify the number of columns in the table
+      (so that the title can stretch to the entire table width.
+    </st:attribute>
+    <st:attribute name="id">
+      @id of the table, if specified.
+    </st:attribute>
+  </st:documentation>
   <table class="pane" id="${attrs.id}">
     <tr><td class="pane-header" colspan="${width}">
       ${title}
