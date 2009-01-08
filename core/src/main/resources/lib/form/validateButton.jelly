@@ -1,7 +1,12 @@
 <!--
-  See http://hudson.gotdns.com/wiki/display/HUDSON/Jelly+form+controls for the reference.
+
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    See
+    http://hudson.gotdns.com/wiki/display/HUDSON/Jelly+form+controls
+    for the reference.
+  </st:documentation>
   <f:nested>
     <div style="float:right">
       <input type="button" value="${title}" class="yui-button" onclick="validateButton('${rootURL}/descriptor/${descriptor.clazz.name}/${method}','${with}',this)" />

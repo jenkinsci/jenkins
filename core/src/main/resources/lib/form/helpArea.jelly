@@ -1,10 +1,12 @@
-<!--
-  Place holder to lazy-load help text via AJAX.
--->
-<tr class="help-area">
-  <td/>
-  <td colspan="2">
-    <div class="help">${%Loading...}</div>
-  </td>
-  <td/>
-</tr>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Place holder to lazy-load help text via AJAX.
+  </st:documentation>
+  <tr class="help-area">
+    <td/>
+    <td colspan="2">
+      <div class="help">${%Loading...}</div>
+    </td>
+    <td/>
+  </tr>
+</j:jelly>

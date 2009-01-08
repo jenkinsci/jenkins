@@ -1,8 +1,13 @@
-<!--
-	Rich HTML editor (http://developer.yahoo.com/yui/editor/)
-
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation>
+    Rich HTML editor from http://developer.yahoo.com/yui/editor/
+    All the attributes are those of the &lt;textarea> tag.
+
+    <st:attribute name="name" use="required"/>
+    <st:attribute name="value" use="required"/>
+    <st:attribute name="id"/>
+    <st:attribute name="style"/>
+  </st:documentation>
   <textarea name="${attrs.name}" id="${attrs.id}" style="${attrs.style}"
             class="setting-input rich-editor"
             rows="${h.determineRows(attrs.value)}">
