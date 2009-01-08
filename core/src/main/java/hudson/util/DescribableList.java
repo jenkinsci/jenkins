@@ -139,7 +139,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * @param json
      *      Structured form data that includes the data for nested descriptor list.
      */
-    public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException {
+    public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors) throws FormException {
         List<T> newList = new ArrayList<T>();
 
         for (Descriptor<T> d : descriptors) {
@@ -151,6 +151,14 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
 
         data.replaceBy(newList);
+    }
+
+    /**
+     * @deprecated as of 1.271
+     *      Use {@link #rebuild(StaplerRequest, JSONObject, List)} instead.
+     */
+    public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException {
+        rebuild(req,json,descriptors);
     }
 
     /**
