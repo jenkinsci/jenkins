@@ -1,6 +1,10 @@
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -14,6 +18,7 @@ import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import java.net.URL;
 import java.util.List;
 
@@ -92,5 +97,28 @@ public class HudsonTest extends HudsonTestCase {
     public void testComputerConfigureLink() throws Exception {
         HtmlPage page = new WebClient().goTo("computer/(master)/configure");
         submit(page.getFormByName("config"));
+    }
+
+    /**
+     * Configure link from "/computer/(master)/" should work.
+     */
+    @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
+    public void testDeleteHudsonComputer() throws Exception {
+        HudsonTestCase.WebClient wc = new WebClient();
+        HtmlPage page = wc.goTo("computer/(master)/");
+        for (HtmlAnchor a : page.getAnchors())
+            assertFalse(a.getHrefAttribute(),a.getHrefAttribute().endsWith("delete"));
+
+        // try to delete it by hitting the final URL directly
+        WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath()+"computer/(master)/doDelete"), HttpMethod.POST);
+        try {
+            wc.getPage(req);
+            fail("Error code expected");
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(SC_BAD_REQUEST,e.getStatusCode());
+        }
+
+        // the master computer object should be still here
+        wc.goTo("computer/(master)/");
     }
 }

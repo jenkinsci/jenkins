@@ -2784,9 +2784,26 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             return RetentionStrategy.NOOP;
         }
 
+        /**
+         * Report an error.
+         */
+        @Override
+        public void doDoDelete(StaplerResponse rsp) throws IOException {
+            rsp.sendError(SC_BAD_REQUEST);
+        }
+
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             // the master node isn't in the Hudson.getNodes(), so this method makes no sense.
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean hasPermission(Permission permission) {
+            // no one should be allowed to delete the master.
+            // this hides the "delete" link from the /computer/(master) page.
+            if(permission==Computer.DELETE)
+                return false;
+            return super.hasPermission(permission);
         }
 
         @Override

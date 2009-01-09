@@ -586,7 +586,14 @@ public abstract class HudsonTestCase extends TestCase {
         }
 
         public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
-            return super.getPage("http://localhost:"+localPort+contextPath+relative);
+            return super.getPage(getContextPath() +relative);
+        }
+
+        /**
+         * Returns the URL of the webapp top page.
+         */
+        public String getContextPath() {
+            return "http://localhost:"+localPort+contextPath;
         }
     }
 
