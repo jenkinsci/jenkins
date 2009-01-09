@@ -84,4 +84,13 @@ public class HudsonTest extends HudsonTestCase {
         HtmlElement navbar = root.getElementById("left-top-nav");
         assertEquals(1,navbar.selectNodes("a").size());
     }
+
+    /**
+     * Configure link from "/computer/(master)/" should work.
+     */
+    @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
+    public void testComputerConfigureLink() throws Exception {
+        HtmlPage page = new WebClient().goTo("computer/(master)/configure");
+        submit(page.getFormByName("config"));
+    }
 }

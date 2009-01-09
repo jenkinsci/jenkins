@@ -2809,6 +2809,13 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             rsp.sendError(SC_NOT_FOUND);
         }
 
+        /**
+         * Redirect the master configuration to /configure.
+         */
+        public void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            rsp.sendRedirect2(req.getContextPath()+"/configure");
+        }
+
         public Future<?> connect(boolean forceReconnect) {
             return Futures.precomputed(null);
         }
