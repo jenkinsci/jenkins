@@ -258,16 +258,16 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
             return ".";
 
         // package, then class
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(getSafeName());
         if(it!=classResult) {
             buf.insert(0,'/');
-            buf.insert(0,classResult.getName());
+            buf.insert(0,classResult.getSafeName());
 
             PackageResult pkg = classResult.getParent();
             if(it!=pkg) {
                 buf.insert(0,'/');
-                buf.insert(0,pkg.getName());
+                buf.insert(0,pkg.getSafeName());
             }
         }
 

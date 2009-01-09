@@ -208,6 +208,11 @@ public final class TestResult extends MetaTabulatedResult {
         return byPackages.values();
     }
 
+    @Override
+    public String getName() {
+        return "";
+    }
+
     public PackageResult getDynamic(String packageName, StaplerRequest req, StaplerResponse rsp) {
         return byPackage(packageName);
     }
@@ -251,10 +256,10 @@ public final class TestResult extends MetaTabulatedResult {
                 else if(!cr.isPassed())
                     failedTests.add(cr);
 
-                String pkg = cr.getPackageName();
-                PackageResult pr = byPackage(pkg);
+                String pkg = cr.getPackageName(), spkg = safe(pkg);
+                PackageResult pr = byPackage(spkg);
                 if(pr==null)
-                    byPackages.put(pkg,pr=new PackageResult(this,pkg));
+                    byPackages.put(spkg,pr=new PackageResult(this,pkg));
                 pr.add(cr);
             }
         }

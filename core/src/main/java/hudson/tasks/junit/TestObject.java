@@ -47,10 +47,11 @@ public abstract class TestObject implements ModelObject, Serializable {
     }
 
     /**
-     * Replaces URL-unasfe characters.
+     * Replaces URL-unsafe characters.
      */
     protected static String safe(String s) {
-        return s.replace('/','_').replace(':','_');
+        // 3 replace calls is still 2-3x faster than a regex replaceAll
+        return s.replace('/','_').replace('\\', '_').replace(':','_');
     }
 
     private static final long serialVersionUID = 1L;

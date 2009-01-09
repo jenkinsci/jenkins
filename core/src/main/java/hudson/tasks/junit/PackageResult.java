@@ -100,10 +100,10 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
     }
 
     void add(CaseResult r) {
-        String n = r.getSimpleName();
-        ClassResult c = classes.get(n);
+        String n = r.getSimpleName(), sn = safe(n);
+        ClassResult c = classes.get(sn);
         if(c==null)
-            classes.put(n,c=new ClassResult(this,n));
+            classes.put(sn,c=new ClassResult(this,n));
         c.add(r);
         duration += r.getDuration(); 
     }

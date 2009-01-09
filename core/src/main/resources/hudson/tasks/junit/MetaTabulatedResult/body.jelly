@@ -38,7 +38,7 @@
         <j:forEach var="p" items="${it.children}">
           <j:set var="prev" value="${p.previousResult}" />
           <tr>
-            <td class="pane"><a href="${p.name}/">${p.name}</a></td>
+            <td class="pane"><a href="${p.safeName}/">${p.name}</a></td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
             <td class="pane" style="text-align:right">

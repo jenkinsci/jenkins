@@ -41,4 +41,15 @@ public abstract class TabulatedResult extends TestObject {
      */
     public abstract Collection<?> getChildren();
 
+    /**
+     * Gets the name of this object.
+     */
+    public abstract String getName();
+
+    /**
+     * Gets the version of {@link #getName()} that's URL-safe.
+     */
+    public String getSafeName() {
+        return safe(getName());
+    }
 }
