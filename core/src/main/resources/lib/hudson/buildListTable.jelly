@@ -24,7 +24,7 @@
           </a>
         </td>
         <td>
-          <a href="${rootURL}/${b.project.url}">${b.project.name}</a>
+          <a href="${rootURL}/${b.parent.url}">${b.parent.displayName}</a>
           <st:nbsp/>
           <a href="${rootURL}/${b.url}">#${b.number}</a>
         </td>
