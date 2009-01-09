@@ -75,7 +75,10 @@ public class AllView extends View {
 
         @Override
         public boolean isInstantiable() {
-            return false;
+            for (View v : Hudson.getInstance().getViews())
+                if(v instanceof AllView)
+                    return false;
+            return true;
         }
 
         public String getDisplayName() {
