@@ -325,11 +325,16 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     private int slaveAgentPort =0;
 
     /**
+     * Whitespace-separated labels assigned to the master as a {@link Node}.
+     */
+    private String label="";
+
+    /**
      * All labels known to Hudson. This allows us to reuse the same label instances
      * as much as possible, even though that's not a strict requirement.
      */
     private transient final ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<String,Label>();
-    private transient Set<Label> labelSet;
+    private transient volatile Set<Label> labelSet;
     private transient volatile Set<Label> dynamicLabels = null;
 
     /**
@@ -1547,14 +1552,23 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         return mode;
     }
 
+    public String getLabelString() {
+        return Util.fixNull(label).trim();
+    }
+
     public Set<Label> getAssignedLabels() {
-        if (labelSet == null) {
+        Set<Label> lset = labelSet; // labelSet may be set by another thread while we are in this method, so capture it.
+        if (lset == null) {
             Set<Label> r = new HashSet<Label>();
+            String ls = getLabelString();
+            if(ls.length()>0)
+                for( String l : ls.split(" +"))
+                    r.add(Hudson.getInstance().getLabel(l));
             r.addAll(getDynamicLabels());
             r.add(getSelfLabel());
-            this.labelSet = Collections.unmodifiableSet(r);
+            this.labelSet = lset = Collections.unmodifiableSet(r);
         }
-        return labelSet;
+        return lset;
     }
 
     /**
@@ -1832,6 +1846,9 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
                 mode = Mode.valueOf(req.getParameter("master.mode"));
             else
                 mode = Mode.NORMAL;
+
+            label = Util.fixNull(req.getParameter("label"));
+            labelSet=null;
 
             quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
 

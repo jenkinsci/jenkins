@@ -17,6 +17,9 @@
                value="${it.numExecutors}"/>
       </f:entry>
       <j:if test="${!empty(it.slaves)}">
+        <f:entry title="${%Labels}" help="/help/system-config/master-slave/label.html">
+          <f:textbox name="label" value="${it.labelString}"/>
+        </f:entry>
         <f:slave-mode name="master.mode" node="${it}" />
       </j:if>
       <f:entry title="${%Quiet period}" help="/help/project-config/quietPeriod.html">
