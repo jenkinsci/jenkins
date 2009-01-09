@@ -1,5 +1,7 @@
 package hudson.util.jna;
 
+import hudson.Util;
+
 /**
  * Exception in the registry code.
  *
@@ -7,6 +9,6 @@ package hudson.util.jna;
  */
 public class JnaException extends RuntimeException {
     public JnaException(int errorCode) {
-        super("Win32 error: "+errorCode);
+        super("Win32 error: "+errorCode+" - "+Util.getWin32ErrorMessage(errorCode));
     }
 }

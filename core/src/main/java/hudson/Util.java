@@ -324,6 +324,17 @@ public class Util {
     }
 
     /**
+     * Gets a human readable mesasge for the given Win32 error code.
+     *
+     * @return
+     *      null if no such message is available.
+     */
+    public static String getWin32ErrorMessage(int n) {
+        ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
+        return rb.getString("error"+n);
+    }
+
+    /**
      * Guesses the current host name.
      */
     public static String getHostName() {
