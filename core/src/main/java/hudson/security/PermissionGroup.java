@@ -1,6 +1,7 @@
 package hudson.security;
 
 import hudson.CopyOnWrite;
+import hudson.model.Hudson;
 
 import java.util.List;
 import java.util.Collections;
@@ -69,7 +70,19 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
     }
 
     public int compareTo(PermissionGroup that) {
+        // first, sort by the 'compare order' number. This is so that
+        // we can put Hudson.PERMISSIONS first.
+        int r= this.compareOrder()-that.compareOrder();
+        if(r!=0)    return r;
+
+        // among the permissions of the same group, just sort by their names
+        // so that the sort order is consistent regardless of classloading order.
         return this.owner.getName().compareTo(that.owner.getName());
+    }
+
+    private int compareOrder() {
+        if(owner== Hudson.class)    return 0;
+        return 1;
     }
 
     public int size() {
