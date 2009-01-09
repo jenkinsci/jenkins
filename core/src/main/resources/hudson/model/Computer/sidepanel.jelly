@@ -2,7 +2,7 @@
   Side panel for a slave.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:header title="${it.displayName}" />
+  <l:header />
   <l:side-panel>
     <l:tasks>
       <l:task icon="images/24x24/up.gif" href=".." title="${%Back to List}" />
