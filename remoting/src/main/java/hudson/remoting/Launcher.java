@@ -30,11 +30,11 @@ import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
 
 /**
- * Entry point for running a {@link Channel}.
+ * Entry point for running a {@link Channel}. This is the main method of the slave JVM.
  *
  * <p>
- * This can be used as the main class for launching a channel on
- * a separate JVM.
+ * This class also defines several methods for
+ * starting a channel on a fresh JVM.
  *
  * @author Kohsuke Kawaguchi
  */
