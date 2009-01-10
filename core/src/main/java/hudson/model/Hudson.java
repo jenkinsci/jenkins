@@ -291,6 +291,9 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
     /**
      * Name of the primary view.
+     * <p>
+     * Start with null, so that we can upgrade pre-1.269 data well.
+     * @since 1.269
      */
     private volatile String primaryView;
 
@@ -1609,8 +1612,12 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     private synchronized void load() throws IOException {
         long startTime = System.currentTimeMillis();
         XmlFile cfg = getConfigFile();
-        if(cfg.exists())
+        if(cfg.exists()) {
+            // reset some data that may not exit in the disk file
+            // so that we can take a proper compensation action later.
+            primaryView = null;
             cfg.unmarshal(this);
+        }
 
         File projectsDir = new File(root,"jobs");
         if(!projectsDir.isDirectory() && !projectsDir.mkdirs()) {
