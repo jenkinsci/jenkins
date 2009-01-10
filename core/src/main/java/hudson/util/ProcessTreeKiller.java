@@ -203,6 +203,11 @@ public abstract class ProcessTreeKiller {
                         lp.kill();
                 }
             }
+
+            // in case the child enumeration fails for some reasons
+            // (like the child process changing environment variables by itself),
+            // let's make sure that at least 'proc' is destroyed.
+            proc.destroy();
         }
 
         /**
