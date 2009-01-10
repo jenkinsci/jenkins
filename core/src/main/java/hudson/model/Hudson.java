@@ -91,6 +91,8 @@ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
 import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.jelly.Script;
+import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
@@ -98,9 +100,15 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerFallback;
+import org.kohsuke.stapler.TearOffSupport;
+import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.jelly.JellyClassTearOff;
+import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
+import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.xml.sax.InputSource;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -732,6 +740,14 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      */
     public String getSystemMessage() {
         return systemMessage;
+    }
+
+    /**
+     * Sets the system message.
+     */
+    public void setSystemMessage(String message) throws IOException {
+        this.systemMessage = message;
+        save();
     }
 
     public Launcher createLauncher(TaskListener listener) {
@@ -2388,6 +2404,24 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         }
 
         view.forward(req, rsp);
+    }
+
+    /**
+     * Evaluates the Jelly script submitted by the client.
+     *
+     * This is useful for system administration as well as unit testing.
+     */
+    public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        checkPermission(ADMINISTER);
+        requirePOST();
+
+        try {
+            MetaClass mc = WebApp.getCurrent().getMetaClass(getClass());
+            Script script = mc.classLoader.loadTearOff(JellyClassLoaderTearOff.class).createContext().compileScript(new InputSource(req.getReader()));
+            new JellyRequestDispatcher(this,script).forward(req,rsp);
+        } catch (JellyException e) {
+            throw new ServletException(e);
+        }
     }
 
     /**
