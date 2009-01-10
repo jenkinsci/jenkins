@@ -12,20 +12,20 @@ import hudson.model.Job;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
+import hudson.model.PageDecorator;
 import hudson.model.ParameterDefinition;
 import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
-import hudson.model.PageDecorator;
 import hudson.search.SearchableModelObject;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
+import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
-import hudson.slaves.Cloud;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
@@ -33,8 +33,8 @@ import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.util.Area;
-import hudson.util.Iterators;
 import hudson.util.DescriptorList;
+import hudson.util.Iterators;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -42,11 +42,11 @@ import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
+import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -62,10 +62,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Calendar;
 import java.util.Collection;
@@ -790,10 +788,9 @@ public class Functions {
         return buf.toString();
     }
 
-    public static boolean hasView(Object it, String path) {
+    public static boolean hasView(Object it, String path) throws IOException {
         if(it==null)    return false;
-        return it.getClass().getClassLoader().getResource(
-            it.getClass().getName().replace('.','/').replace('$','/')+'/'+path)!=null;
+        return Stapler.getCurrentRequest().getView(it,path)!=null;
     }
 
     /**
