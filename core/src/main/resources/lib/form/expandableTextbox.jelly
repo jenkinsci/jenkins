@@ -30,10 +30,11 @@
       which is the recommended approach.
     </st:attribute>
   </st:documentation>
+  <j:set var="value" value="${h.defaulted(attrs.value,instance[attrs.field])}" />
   <j:choose>
-    <j:when test="${h.isMultiline(attrs.value)}">
+    <j:when test="${h.isMultiline(value)}">
       <!-- multiline text area to begin with -->
-      <f:textarea name='${attrs.name}' value="${attrs.value}" field="${attrs.field}"/>
+      <f:textarea name='${attrs.name}' value="${value}" field="${attrs.field}"/>
     </j:when>
     <j:otherwise>
       <!-- single line textbox with expand button -->
@@ -42,8 +43,7 @@
           <td width="*">
             <j:set var="name" value="${h.defaulted(attrs.name,'_.'+attrs.field)}" />
             <input class="setting-input" type="text"
-                   name ="${name}"
-                   value="${h.defaulted(attrs.value,instance[attrs.field])}"
+                   name ="${name}" value="${value}"
                    id="textarea.${name}" />
           </td><td width="1">
             <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${name}')"
