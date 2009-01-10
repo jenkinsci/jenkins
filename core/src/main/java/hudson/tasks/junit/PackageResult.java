@@ -35,7 +35,7 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
         this.parent = parent;
     }
 
-    @Exported
+    @Exported(visibility=999)
     public String getName() {
         return packageName;
     }
@@ -82,7 +82,7 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
         return classes.get(name);
     }
 
-    @Exported(name="child",inline=true)
+    @Exported(name="child")
     public Collection<ClassResult> getChildren() {
         return classes.values();
     }

@@ -48,7 +48,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         return Messages.ClassResult_getTitle(getName());
     }
 
-    @Exported
+    @Exported(visibility=999)
     public String getName() {
         int idx = className.lastIndexOf('.');
         if(idx<0)       return className;
@@ -64,7 +64,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     }
 
 
-    @Exported(name="child",inline=true)
+    @Exported(name="child")
     public List<CaseResult> getChildren() {
         return cases;
     }

@@ -127,7 +127,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      * <p>
      * Note that this may contain any URL-unfriendly character.
      */
-    @Exported
+    @Exported(visibility=999)
     public String getName() {
         return testName;
     }
@@ -223,6 +223,30 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     @Exported
     public String getErrorDetails() {
         return errorDetails;
+    }
+
+    /**
+     * The stdout of this test. Note that due to the design of the format,
+     * stdout for the entire {@link SuiteResult} is reported,
+     * and Hudson cannot tell what portion of the output corresponds to this test.
+     *
+     * @since 1.272
+     */
+    @Exported
+    public String getStdout() {
+        return parent.getStdout();
+    }
+
+    /**
+     * The stderr of this test. Note that due to the design of the format,
+     * stdout for the entire {@link SuiteResult} is reported,
+     * and Hudson cannot tell what portion of the output corresponds to this test.
+     *
+     * @since 1.272
+     */
+    @Exported
+    public String getStderr() {
+        return parent.getStderr();
     }
 
     /**
