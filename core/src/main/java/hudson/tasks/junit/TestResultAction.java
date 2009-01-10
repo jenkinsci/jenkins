@@ -88,7 +88,6 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     }
 
     @Override
-    @Exported
     public int getFailCount() {
         if(totalCount==null)
             getResult();    // this will compute the result
@@ -96,7 +95,6 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     }
 
     @Override
-    @Exported
     public int getSkipCount() {
         if(totalCount==null)
             getResult();    // this will compute the result
@@ -104,7 +102,6 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     }
 
     @Override
-    @Exported
     public int getTotalCount() {
         if(totalCount==null)
             getResult();    // this will compute the result

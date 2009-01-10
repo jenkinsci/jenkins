@@ -63,18 +63,15 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
         this.children.add(new Child(getChildName(child),child.owner.number));
     }
 
-    @Exported
     public int getFailCount() {
         return failCount;
     }
 
     @Override
-    @Exported
     public int getSkipCount() {
         return skipCount;
     }
 
-    @Exported
     public int getTotalCount() {
         return totalCount;
     }

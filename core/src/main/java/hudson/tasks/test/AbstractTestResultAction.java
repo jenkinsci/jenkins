@@ -24,6 +24,7 @@ import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 import org.jvnet.localizer.Localizable;
 
 import java.awt.Color;
@@ -51,11 +52,13 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     /**
      * Gets the number of failed tests.
      */
+    @Exported(visibility=2)
     public abstract int getFailCount();
 
     /**
      * Gets the number of skipped tests.
      */
+    @Exported(visibility=2)
     public int getSkipCount() {
         // Not all sub-classes will understand the concept of skipped tests.
         // This default implementation is for them, so that they don't have
@@ -68,6 +71,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     /**
      * Gets the total number of tests.
      */
+    @Exported(visibility=2)
     public abstract int getTotalCount();
 
     /**
@@ -84,6 +88,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         return Messages.AbstractTestResultAction_getDisplayName();
     }
 
+    @Exported(visibility=2)
     public String getUrlName() {
         return "testReport";
     }
