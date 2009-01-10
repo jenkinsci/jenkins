@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
+import java.net.URL;
+import java.io.IOException;
 
 import hudson.remoting.Engine;
 import hudson.remoting.EngineListener;
@@ -34,6 +36,10 @@ public class Main {
     public boolean headlessMode = Boolean.getBoolean("hudson.agent.headless")
                     || Boolean.getBoolean("hudson.webstart.headless");
 
+    @Option(name="-url",
+            usage="Specify the Hudson root URLs to connect to.")
+    public final List<URL> urls = new ArrayList<URL>();
+
     /**
      * 4 mandatory parameters.
      * Host name (deprecated), Hudson URL, secret key, and slave name.
@@ -41,7 +47,7 @@ public class Main {
     @Argument
     public final List<String> args = new ArrayList<String>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // see http://forum.java.sun.com/thread.jspa?threadID=706976&tstart=0
         // not sure if this is the cause, but attempting to fix
         // https://hudson.dev.java.net/issues/show_bug.cgi?id=310
@@ -57,11 +63,13 @@ public class Main {
         CmdLineParser p = new CmdLineParser(m);
         try {
             p.parseArgument(args);
-            if(m.args.size()!=4)
-                throw new CmdLineException("four arguments required");
+            if(m.args.size()!=2)
+                throw new CmdLineException("two arguments required");
+            if(m.urls.isEmpty())
+                throw new CmdLineException("At least one -url option is required.");
         } catch (CmdLineException e) {
             System.err.println(e.getMessage());
-            System.err.println("java -jar jnlp-agent.jar [options...] <host> <hudson URL> <secret key> <slave name>");
+            System.err.println("java -jar slave.jar [options...] <secret key> <slave name>");
             p.printUsage(System.err);
             return;
         }
@@ -69,10 +77,10 @@ public class Main {
         m.main();
     }
 
-    public void main() {
+    public void main() throws IOException {
         Engine engine = new Engine(
                 headlessMode ? new CuiListener() : new GuiListener(),
-                args.get(0), args.get(1), args.get(2), args.get(3));
+                urls, args.get(0), args.get(1));
         if(tunnel!=null)
             engine.setTunnel(tunnel);
         engine.start();

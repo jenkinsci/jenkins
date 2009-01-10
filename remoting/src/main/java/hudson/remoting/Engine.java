@@ -10,6 +10,8 @@ import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.List;
+import java.util.Collections;
 
 /**
  * Slave agent engine that proactively connects to Hudson master.
@@ -33,14 +35,24 @@ public class Engine extends Thread {
     });
 
     public final EngineListener listener;
+
     /**
-     * Host name of Hudson master to connect to, when opening a TCP connection.
+     * To make Hudson more graceful against user error,
+     * JNLP agent can try to connect to multiple possible Hudson URLs.
+     * This field specifies those candidate URLs, such as
+     * "http://foo.bar/hudson/".
      */
-    public final String host;
+    private List<URL> candidateUrls;
+
     /**
      * URL that points to Hudson's tcp slage agent listener, like <tt>http://myhost/hudson/tcpSlaveAgentListener/</tt>
+     *
+     * <p>
+     * This value is determined from {@link #candidateUrls} after a successful connection.
+     * Note that this URL also has "tcpSlaveAgentListener" in it.
      */
-    public final String hudsonUrl;
+    private URL hudsonUrl;
+
     private final String secretKey;
     public final String slaveName;
 
@@ -49,12 +61,17 @@ public class Engine extends Thread {
      */
     private String tunnel;
 
-    public Engine(EngineListener listener, String host, String hudsonUrl, String secretKey, String slaveName) {
+    public Engine(EngineListener listener, List<URL> hudsonUrls, String secretKey, String slaveName) {
         this.listener = listener;
-        this.host = host;
-        this.hudsonUrl = hudsonUrl;
+        this.candidateUrls = hudsonUrls;
         this.secretKey = secretKey;
         this.slaveName = slaveName;
+        if(candidateUrls.isEmpty())
+            throw new IllegalArgumentException("No URLs given");
+    }
+
+    public URL getHudsonUrl() {
+        return hudsonUrl;
     }
 
     public void setTunnel(String tunnel) {
@@ -65,16 +82,37 @@ public class Engine extends Thread {
         try {
             while(true) {
                 listener.status("Locating Server");
-                // find out the TCP port
-                HttpURLConnection con = (HttpURLConnection)new URL(hudsonUrl).openConnection();
-                con.connect();
-                String port = con.getHeaderField("X-Hudson-JNLP-Port");
-                if(con.getResponseCode()!=200) {
-                    listener.error(new Exception(hudsonUrl+" is invalid: "+con.getResponseCode()+" "+con.getResponseMessage()));
-                    return;
+                Exception firstError=null;
+                String port=null;
+
+                for (URL url : candidateUrls) {
+                    String s = url.toExternalForm();
+                    if(!s.endsWith("/"))    s+='/';
+                    URL salURL = new URL(s+"tcpSlaveAgentListener/");
+
+                    // find out the TCP port
+                    HttpURLConnection con = (HttpURLConnection)salURL.openConnection();
+                    con.connect();
+                    port = con.getHeaderField("X-Hudson-JNLP-Port");
+                    if(con.getResponseCode()!=200) {
+                        if(firstError==null)
+                            firstError = new Exception(salURL+" is invalid: "+con.getResponseCode()+" "+con.getResponseMessage());
+                        continue;
+                    }
+                    if(port ==null) {
+                        if(firstError==null)
+                            firstError = new Exception(url+" is not Hudson");
+                        continue;
+                    }
+
+                    // this URL works. From now on, only try this URL
+                    hudsonUrl = url;
+                    candidateUrls = Collections.singletonList(hudsonUrl);
+                    break;
                 }
-                if(port ==null) {
-                    listener.error(new Exception(hudsonUrl+" is not Hudson: "));
+
+                if(firstError!=null) {
+                    listener.error(firstError);
                     return;
                 }
 
@@ -106,7 +144,7 @@ public class Engine extends Thread {
      * Connects to TCP slave port, with a few retries.
      */
     private Socket connect(String port) throws IOException, InterruptedException {
-        String host = this.host;
+        String host = this.hudsonUrl.getHost();
 
         if(tunnel!=null) {
             String[] tokens = tunnel.split(":");
@@ -138,7 +176,7 @@ public class Engine extends Thread {
         while(true) {
             Thread.sleep(1000*10);
             try {
-                HttpURLConnection con = (HttpURLConnection)new URL(hudsonUrl).openConnection();
+                HttpURLConnection con = (HttpURLConnection)hudsonUrl.openConnection();
                 con.connect();
                 if(con.getResponseCode()==200)
                     return;

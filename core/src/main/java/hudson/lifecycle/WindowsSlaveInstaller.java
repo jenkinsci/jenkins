@@ -93,12 +93,12 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
             // write out the descriptor
             String xml = IOUtils.toString(getClass().getResourceAsStream("/windows-service/hudson-slave.xml"), "UTF-8");
             xml = xml.replace("@JAVA@",System.getProperty("java.home")+"\\bin\\java.exe");
-            URL jnlp = new URL(new URL(engine.hudsonUrl),"../computer/"+engine.slaveName+"/slave-agent.jnlp");
+            URL jnlp = new URL(engine.getHudsonUrl(),"../computer/"+engine.slaveName+"/slave-agent.jnlp");
             xml = xml.replace("@URL@",jnlp.toExternalForm());
             FileUtils.writeStringToFile(new File(dir, "hudson-slave.xml"),xml,"UTF-8");
 
             // copy slave.jar
-            URL slaveJar = new URL(new URL(engine.hudsonUrl),"../jnlpJars/remoting.jar");
+            URL slaveJar = new URL(engine.getHudsonUrl(),"../jnlpJars/remoting.jar");
             File dstSlaveJar = new File(dir,"slave.jar").getCanonicalFile();
             if(!dstSlaveJar.exists()) // perhaps slave.jar is already there?
                 FileUtils.copyURLToFile(slaveJar,dstSlaveJar);
