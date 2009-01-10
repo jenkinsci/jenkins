@@ -539,6 +539,11 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         return noUsageStatistics==null || !noUsageStatistics;
     }
 
+    public void setNoUsageStatistics(Boolean noUsageStatistics) throws IOException {
+        this.noUsageStatistics = noUsageStatistics;
+        save();
+    }
+
     public View.People getPeople() {
         return new View.People(this);
     }

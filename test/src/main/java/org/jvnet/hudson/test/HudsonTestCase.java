@@ -134,6 +134,7 @@ public abstract class HudsonTestCase extends TestCase {
         env.pin();
         recipe();
         hudson = newHudson();
+        hudson.setNoUsageStatistics(true); // collecting usage stats from tests are pointless.
         hudson.servletContext.setAttribute("app",hudson);
         hudson.servletContext.setAttribute("version","?");
         WebAppMain.installExpressionFactory(new ServletContextEvent(hudson.servletContext));
@@ -591,6 +592,7 @@ public abstract class HudsonTestCase extends TestCase {
 
         /**
          * Returns the URL of the webapp top page.
+         * URL ends with '/'.
          */
         public String getContextPath() {
             return "http://localhost:"+localPort+contextPath;
