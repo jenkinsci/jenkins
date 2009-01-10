@@ -28,7 +28,7 @@ public final class DumbSlave extends Slave {
         }
 
         public String getDisplayName() {
-            return "Dumb Slave";
+            return Messages.DumbSlave_displayName();
         }
     }
 

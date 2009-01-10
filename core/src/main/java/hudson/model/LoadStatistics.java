@@ -141,7 +141,11 @@ public abstract class LoadStatistics {
                     totalExecutors.pick(timeScale).getHistory(),
                     queueLength.pick(timeScale).getHistory()
                 },
-                new String[]{"Total executors","Busy executors","Queue length"});
+                new String[]{
+                    Messages.LoadStatistics_Legends_TotalExecutors(),
+                    Messages.LoadStatistics_Legends_BusyExecutors(),
+                    Messages.LoadStatistics_Legends_QueueLength()
+                });
     }
 
     protected final DefaultCategoryDataset createDataset(TimeScale timeScale, float[][] dataPoints, String[] legends) {

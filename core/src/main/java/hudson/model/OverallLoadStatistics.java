@@ -50,6 +50,10 @@ public class OverallLoadStatistics extends LoadStatistics {
                     totalExecutors.pick(timeScale).getHistory(),
                     totalQueueLength.pick(timeScale).getHistory()
                 },
-                new String[]{"Total executors","Busy executors","Queue length"});
+                new String[]{
+                    Messages.LoadStatistics_Legends_TotalExecutors(),
+                    Messages.LoadStatistics_Legends_BusyExecutors(),
+                    Messages.LoadStatistics_Legends_QueueLength()
+                });
     }
 }
