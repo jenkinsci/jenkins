@@ -477,7 +477,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * @return never null. The first entry is the latest build.
      */
-    @Exported(visibility=-1)
+    @Exported
     public List<RunT> getBuilds() {
         return new ArrayList<RunT>(_getRuns().values());
     }
