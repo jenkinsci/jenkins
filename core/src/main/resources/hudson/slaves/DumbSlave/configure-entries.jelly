@@ -10,12 +10,12 @@
   <f:entry title="${%# of executors}"
            help="/help/system-config/master-slave/numExecutors.html">
     <f:textbox name="numExecutors" value="${it.numExecutors}"
-               checkUrl="'/fieldCheck?errorText='+escape('${%Number of executors is mandatory.}')+'&amp;type=number-positive&amp;value='+escape(this.value)"/>
+               checkUrl="'${rootURL}/fieldCheck?errorText='+escape('${%Number of executors is mandatory.}')+'&amp;type=number-positive&amp;value='+escape(this.value)"/>
   </f:entry>
 
   <f:entry title="${%Remote FS root}" help="/help/system-config/master-slave/remoteFS.html">
     <f:textbox name="remoteFS" value="${it.remoteFS}"
-               checkUrl="'/remoteFSCheck?value='+escape(this.value)"/>
+               checkUrl="'${rootURL}/remoteFSCheck?value='+escape(this.value)"/>
   </f:entry>
 
   <f:entry title="${%Labels}" help="/help/system-config/master-slave/label.html">
