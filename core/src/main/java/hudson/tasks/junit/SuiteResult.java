@@ -4,6 +4,8 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.Serializable;
@@ -23,6 +25,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public final class SuiteResult implements Serializable {
     private final String name;
     private final String stdout;
@@ -126,18 +129,22 @@ public final class SuiteResult implements Serializable {
         duration += cr.getDuration(); 
     }
 
+    @Exported
     public String getName() {
         return name;
     }
 
+    @Exported
     public float getDuration() {
         return duration; 
     }
-    
+
+    @Exported
     public String getStdout() {
         return stdout;
     }
 
+    @Exported
     public String getStderr() {
         return stderr;
     }
@@ -146,10 +153,12 @@ public final class SuiteResult implements Serializable {
         return parent;
     }
 
+    @Exported
     public String getTimestamp() {
         return timestamp;
     }
 
+    @Exported
     public List<CaseResult> getCases() {
         return cases;
     }
