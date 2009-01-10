@@ -523,6 +523,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         return "the master Hudson node";
     }
 
+    @Exported
     public String getDescription() {
         return systemMessage;
     }
@@ -852,6 +853,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      *
      * @see #getAllItems(Class)
      */
+    @Exported(name="jobs")
     public List<TopLevelItem> getItems() {
         return new ArrayList<TopLevelItem>(items.values());
     }
@@ -1220,7 +1222,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     /**
      * Returns the primary {@link View} that renders the top-page of Hudson.
      */
-    @Exported(inline=true)
+    @Exported
     public View getPrimaryView() {
         View v = getView(primaryView);
         if(v==null) // fallback
