@@ -56,7 +56,9 @@ public class Api extends AbstractModelObject {
                       @QueryParameter String xpath,
                       @QueryParameter String wrapper,
                       @QueryParameter int depth) throws IOException, ServletException {
-        if(xpath==null) {
+        String[] excludes = req.getParameterValues("exclude");
+
+        if(xpath==null && excludes==null) {
             // serve the whole thing
             rsp.serveExposedBean(req,bean,Flavor.XML);
             return;
@@ -72,6 +74,17 @@ public class Api extends AbstractModelObject {
         Object result;
         try {
             Document dom = new SAXReader().read(new StringReader(sw.toString()));
+
+            // apply exclusions
+            for (String exclude : excludes) {
+                List<org.dom4j.Node> list = (List<org.dom4j.Node>)dom.selectNodes(exclude);
+                for (org.dom4j.Node n : list) {
+                    Element parent = n.getParent();
+                    if(parent!=null)
+                        parent.remove(n);
+                }
+            }
+
             List list = dom.selectNodes(xpath);
             if(list.isEmpty()) {
                 // XPath didn't match

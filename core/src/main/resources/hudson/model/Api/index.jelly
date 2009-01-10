@@ -14,13 +14,22 @@
         <dd>
           Access data exposed in <a href="..">HTML</a> as XML for machine consumption.
           <a href="schema">Schema</a> is also available.
-          You can also specify optional XPath to control the fragment you'd like to obtain.
-          For example, <tt>../api/xml?xpath=/*/*[0]</tt>. If the XPath only matches a text node,
-          the result will be sent with <tt>text/plain</tt> MIME type to simplify
-          further processing.
 
-          For XPath that matches multiple nodes, you need to also specify the "wrapper" query parameter
-          to specify the name of the root XML element to be create so that the resulting XML becomes well-formed.
+          <p>
+            You can also specify optional XPath to control the fragment you'd like to obtain.
+            For example, <tt>../api/xml?xpath=/*/*[0]</tt>. If the XPath only matches a text node,
+            the result will be sent with <tt>text/plain</tt> MIME type to simplify
+            further processing.
+            
+            For XPath that matches multiple nodes, you need to also specify the "wrapper" query parameter
+            to specify the name of the root XML element to be create so that the resulting XML becomes well-formed.
+         </p>
+          <p>
+            Similarly <tt>exclude</tt> query parameter can be used to exclude nodes
+            that match the given XPath from the result. This is useful for
+            trimming down the amount of data fetch. This query parameter can be specified
+            multiple times.
+          </p>
         </dd>
 
         <dt><a href="json">JSON API</a></dt>
