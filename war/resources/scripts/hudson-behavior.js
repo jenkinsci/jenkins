@@ -698,8 +698,7 @@ function expandTextArea(button,id) {
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
 function refreshPart(id,url) {
-    if(isRunAsTest) return;
-    window.setTimeout(function() {
+    var f = function() {
         new Ajax.Request(url, {
             method: "post",
             onSuccess: function(rsp) {
@@ -716,10 +715,15 @@ function refreshPart(id,url) {
 
                 Behaviour.applySubtree(node);
 
+                if(isRunAsTest) return;
                 refreshPart(id,url);
             }
         });
-    }, 5000);
+    };
+    // if run as test, just do it once and do it now to make sure it's working,
+    // but don't repeat.
+    if(isRunAsTest) f();
+    else    window.setTimeout(f, 5000);
 }
 
 

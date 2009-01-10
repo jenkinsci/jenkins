@@ -51,7 +51,7 @@
     <!-- schedule updates only for the full page reload -->
     <j:if test="${ajax==null and !h.isAutoRefresh(request)}">
       <script defer="defer">
-        refreshPart('buildQueue',"./ajaxBuildQueue");
+        refreshPart('buildQueue',"${h.ifThenElse(h.hasView(it,'ajaxBuildQueue'),'.',rootURL)}/ajaxBuildQueue");
       </script>
     </j:if>
   </l:pane>

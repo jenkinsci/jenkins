@@ -72,7 +72,7 @@
     <!-- schedule updates only for the full page reload -->
     <j:if test="${ajax==null and !h.isAutoRefresh(request)}">
       <script defer="defer">
-        refreshPart('executors',"./ajaxExecutors");
+        refreshPart('executors',"${h.ifThenElse(h.hasView(it,'ajaxExecutors'),'.',rootURL)}/ajaxExecutors");
       </script>
     </j:if>
 	</l:pane>
