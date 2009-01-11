@@ -70,7 +70,7 @@
 	    </j:forEach>
 	  </j:forEach>
     <!-- schedule updates only for the full page reload -->
-    <j:if test="${ajax==null and !h.isAutoRefresh(request)}">
+    <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
       <script defer="defer">
         refreshPart('executors',"${h.ifThenElse(h.hasView(it,'ajaxExecutors'),'.',rootURL)}/ajaxExecutors");
       </script>
