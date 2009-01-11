@@ -34,8 +34,15 @@
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.9</version>
+        <version>1.10</version>
         <extensions>true</extensions>
+        <dependencies>
+          <dependency>
+            <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
+            <artifactId>maven-jellydoc-plugin</artifactId>
+            <version>1.4</version>
+          </dependency>
+        </dependencies>
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
