@@ -137,8 +137,8 @@ public abstract class LoadStatistics {
     public CategoryDataset createDataset(TimeScale timeScale) {
         return createDataset(timeScale,
                 new float[][]{
-                    busyExecutors.pick(timeScale).getHistory(),
                     totalExecutors.pick(timeScale).getHistory(),
+                    busyExecutors.pick(timeScale).getHistory(),
                     queueLength.pick(timeScale).getHistory()
                 },
                 new String[]{
