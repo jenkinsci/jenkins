@@ -23,7 +23,6 @@ import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.security.Permission;
 import hudson.util.ArgumentListBuilder;
-import hudson.util.ByteBuffer;
 import hudson.util.ForkOutputStream;
 import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
@@ -36,6 +35,7 @@ import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
