@@ -9,7 +9,7 @@
           <form action="${backPath}" method="get">
             <a href="${topPath}"><img src="${imagesURL}/48x48/${icon}" class="rootIcon" alt=""/></a>
             <j:forEach var="p" items="${parentPath}">
-              <a href="${p.href}">${p.title}</a>
+              <a href="${p.href}">${h.xmlEscape(p.title)}</a>
               /
             </j:forEach>
             <input type="text" name="pattern" value="${pattern}" />
@@ -34,10 +34,10 @@
                     
                       <j:choose>
                         <j:when test="${x.readable}">
-                          <a href="${t.href}">${t.title}</a>
+                          <a href="${t.href}">${h.xmlEscape(t.title)}</a>
                         </j:when>
                         <j:otherwise>
-                          ${t.title}
+                          ${h.xmlEscape(t.title)}
                         </j:otherwise>
                       </j:choose>
                       
@@ -54,7 +54,7 @@
                           <img src="${imagesURL}/16x16/fingerprint.gif" alt="fingerprint" />
                         </a>
                         <st:nbsp/>
-                        <a href="${x.href}/*view*/">view</a>
+                        <a href="${x.href}/*view*/">${%view}</a>
                       </j:if>                      
                     </td>
                   </j:if>

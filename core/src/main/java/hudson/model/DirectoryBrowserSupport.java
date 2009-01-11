@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -380,14 +379,14 @@ public final class DirectoryBrowserSupport {
                 Arrays.sort(files,new FileComparator());
     
                 for( File f : files ) {
-                    Path p = new Path(URLEncoder.encode(f.getName(),"UTF-8"),f.getName(),f.isDirectory(),f.length(), f.canRead());
+                    Path p = new Path(Util.rawEncode(f.getName()),f.getName(),f.isDirectory(),f.length(), f.canRead());
                     if(!f.isDirectory()) {
                         r.add(Collections.singletonList(p));
                     } else {
                         // find all empty intermediate directory
                         List<Path> l = new ArrayList<Path>();
                         l.add(p);
-                        String relPath = URLEncoder.encode(f.getName(),"UTF-8");
+                        String relPath = Util.rawEncode(f.getName());
                         while(true) {
                             // files that don't start with '.' qualify for 'meaningful files', nor SCM related files
                             File[] sub = f.listFiles(new FilenameFilter() {
@@ -398,7 +397,7 @@ public final class DirectoryBrowserSupport {
                             if(sub==null || sub.length!=1 || !sub[0].isDirectory())
                                 break;
                             f = sub[0];
-                            relPath += '/'+URLEncoder.encode(f.getName(),"UTF-8");
+                            relPath += '/'+Util.rawEncode(f.getName());
                             l.add(new Path(relPath,f.getName(),true,0, f.canRead()));
                         }
                         r.add(l);
@@ -465,7 +464,7 @@ public final class DirectoryBrowserSupport {
                 buildPathList(baseDir, parent, pathList, href);
             }
 
-            href.append(URLEncoder.encode(filePath.getName(),"UTF-8"));
+            href.append(Util.rawEncode(filePath.getName()));
             if (filePath.isDirectory()) {
                 href.append("/");
             }

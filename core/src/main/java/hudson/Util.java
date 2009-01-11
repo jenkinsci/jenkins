@@ -34,6 +34,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetEncoder;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -554,7 +557,11 @@ public class Util {
 
     /**
      * Escapes non-ASCII characters in URL.
+     * @deprecated Only escapes non-ASCII but leaves other URL-unsafe characters.
+     * Util.rawEncode should generally be used instead, though be careful to pass only
+     * a single path component to that method (it will encode /, but this method does not).
      */
+    @Deprecated
     public static String encode(String s) {
         try {
             boolean escaped = false;
@@ -589,6 +596,53 @@ public class Util {
     }
 
     /**
+     * Encode a single path component for use in an HTTP URL.
+     * Escapes all non-ASCII, general unsafe (space and "#%<>[\]^`{|}~)
+     * and HTTP special characters (/;:?) as specified in RFC1738,
+     * plus backslash (Windows path separator).
+     * Note that slash(/) is encoded, so the given string should be a
+     * single path component used in constructing a URL.
+     * Method name inspired by PHP's rawencode.
+     */
+    public static String rawEncode(String s) {
+        boolean escaped = false;
+        StringBuilder out = null;
+        CharsetEncoder enc = null;
+        CharBuffer buf = null;
+        char c;
+        for (int i = 0, m = s.length(); i < m; i++) {
+            c = s.charAt(i);
+            if ((c<64 || c>90) && (c<97 || c>122) && (c<38 || c>57 || c==47)
+                    && c!=61 && c!=36 && c!=33 && c!=95) {
+                if (!escaped) {
+                    out = new StringBuilder(i + (m - i) * 3);
+                    out.append(s.substring(0, i));
+                    enc = Charset.forName("UTF-8").newEncoder();
+                    buf = CharBuffer.allocate(1);
+                    escaped = true;
+                }
+                // 1 char -> UTF8
+                buf.put(0,c);
+                buf.rewind();
+                try {
+                    for (byte b : enc.encode(buf).array()) {
+                        out.append('%');
+                        out.append(toDigit((b >> 4) & 0xF));
+                        out.append(toDigit(b & 0xF));
+                    }
+                } catch (CharacterCodingException ex) { }
+            } else if (escaped) {
+                out.append(c);
+            }
+        }
+        return escaped ? out.toString() : s;
+    }
+
+    private static char toDigit(int n) {
+        return (char)(n < 10 ? '0' + n : 'A' + n - 10);
+    }
+
+    /**
      * Surrounds by a single-quote.
      */
     public static String singleQuote(String s) {
@@ -596,7 +650,7 @@ public class Util {
     }
 
     /**
-     * Escapes HTML unsafe characters like &lt;, &amp;to the respective character entities.
+     * Escapes HTML unsafe characters like &lt;, &amp; to the respective character entities.
      */
     public static String escape(String text) {
         StringBuilder buf = new StringBuilder(text.length()+64);
@@ -637,12 +691,6 @@ public class Util {
                 buf.append(ch);
         }
         return buf.toString();
-    }
-
-    private static char toDigit(int n) {
-        char ch = Character.forDigit(n,16);
-        if(ch>='a')     ch = (char)(ch-'a'+'A');
-        return ch;
     }
 
     /**

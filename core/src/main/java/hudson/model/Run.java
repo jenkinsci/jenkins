@@ -45,7 +45,6 @@ import java.io.Writer;
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -567,16 +566,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     private void addArtifacts( File dir, String path, String pathHref, List<Artifact> r ) {
         String[] children = dir.list();
         if(children==null)  return;
-        for (String child : children) try {
+        for (String child : children) {
             if(r.size()>CUTOFF)
                 return;
             File sub = new File(dir, child);
             if (sub.isDirectory()) {
-                addArtifacts(sub, path + child + '/', pathHref + URLEncoder.encode(child,"UTF-8") + '/', r);
+                addArtifacts(sub, path + child + '/', pathHref + Util.rawEncode(child) + '/', r);
             } else {
-                r.add(new Artifact(path + child, pathHref + URLEncoder.encode(child,"UTF-8")));
+                r.add(new Artifact(path + child, pathHref + Util.rawEncode(child)));
             }
-        } catch (UnsupportedEncodingException e) { /* Won't happen as UTF-8 is hardcoded */ }
+        }
     }
 
     private static final int CUTOFF = 17;   // 0, 1,... 16, and then "too many"

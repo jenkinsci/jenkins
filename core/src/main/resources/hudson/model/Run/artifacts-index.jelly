@@ -3,11 +3,11 @@
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
 		<t:buildCaption>
-		  Build Artifacts
+		  ${%Build Artifacts}
 		</t:buildCaption>
 		<ul>
 		  <j:forEach var="f" items="${it.artifacts}">
-		    <li><a href="artifact/${f}">${f}</a></li>
+		    <li><a href="artifact/${f.href}">${h.xmlEscape(f.displayPath)}</a></li>
 		  </j:forEach>
 		</ul>
 		</l:main-panel>
