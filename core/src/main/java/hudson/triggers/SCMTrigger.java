@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
@@ -117,7 +118,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         /**
          * Jobs that are being polled. The value is useful for trouble-shooting.
          */
-        final transient Set<SCMedItem> items = Collections.synchronizedSet(new HashSet<SCMedItem>());
+        final transient Set<Runner> items = Collections.synchronizedSet(new HashSet<Runner>());
 
         /**
          * Max number of threads for SCM polling.
@@ -144,11 +145,24 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         /**
+         * Gets the snapshot of {@link Runner}s that are performing polling.
+         */
+        public List<Runner> getRunners() {
+            synchronized (items) {
+                return Arrays.asList(items.toArray(new Runner[items.size()]));
+            }
+        }
+
+        /**
          * Gets the snapshot of {@link SCMedItem}s that are being polled at this very moment.
-         * Designed for trouble-shooting probe.
          */
         public List<SCMedItem> getItemsBeingPolled() {
-            return Arrays.asList(items.toArray(new SCMedItem[0]));
+            synchronized (items) {
+                List<SCMedItem> r = new ArrayList<SCMedItem>();
+                for (Runner i : items)
+                    r.add(i.getTarget());
+                return r;
+            }
         }
 
         public String getDisplayName() {
@@ -239,7 +253,41 @@ public class SCMTrigger extends Trigger<SCMedItem> {
     /**
      * {@link Runnable} that actually performs polling.
      */
-    private class Runner implements Runnable {
+    public class Runner implements Runnable {
+
+        /**
+         * When did the polling start?
+         */
+        private volatile long startTime;
+
+        /**
+         * Where the log file is written.
+         */
+        public File getLogFile() {
+            return SCMTrigger.this.getLogFile();
+        }
+
+        /**
+         * For which {@link Item} are we polling?
+         */
+        public SCMedItem getTarget() {
+            return job;
+        }
+
+        /**
+         * When was this polling started?
+         */
+        public long getStartTime() {
+            return startTime;
+        }
+
+        /**
+         * Human readable string of when this polling is started.
+         */
+        public String getDuration() {
+            return Util.getTimeSpanString(System.currentTimeMillis()-startTime);
+        }
+
         private boolean runPolling() {
             try {
                 // to make sure that the log file contains up-to-date text,
@@ -280,11 +328,12 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                     try {
                         if(pollingScheduled) {
                             pollingScheduled = false;
-                            getDescriptor().items.add(job);
+                            startTime = System.currentTimeMillis();
+                            getDescriptor().items.add(this);
                             try {
                                 foundChanges = runPolling();
                             } finally {
-                                getDescriptor().items.remove(job);
+                                getDescriptor().items.remove(this);
                             }
                         }
                     } finally {
