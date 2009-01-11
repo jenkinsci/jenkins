@@ -1,8 +1,14 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%SCM Polling}">
+  <l:layout title="${%Current SCM Polling Activities}">
     <st:include it="${app}" page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>${%SCM Polling}</h1>
+      <h1>${%Current SCM Polling Activities}</h1>
+
+      <j:if test="${it.isClogged()}">
+        <div class="warning" style="margin:1em;">
+          ${%clogged}
+        </div>
+      </j:if>
 
       <j:set var="runners" value="${it.runners}"/>
       <j:choose>
@@ -12,6 +18,9 @@
           </p>
         </j:when>
         <j:otherwise>
+          <p>
+            ${%The following polling activities are currently in progress:}
+          </p>
           <table id="threads" class="sortable pane bigtable">
             <tr>
               <th initialSortDir="down">${%Project}</th>

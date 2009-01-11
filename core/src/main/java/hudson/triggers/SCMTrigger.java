@@ -9,6 +9,7 @@ import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
 import hudson.util.StreamTaskListener;
+import hudson.util.TimeUnit2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -25,6 +26,7 @@ import java.util.Set;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -107,7 +109,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         /**
          * Used to control the execution of the polling tasks.
          */
-        transient volatile ExecutorService executor;
+        transient volatile ThreadPoolExecutor executor;
 
         /**
          * Whether the projects should be polled all in one go in the order of dependencies. The default behavior is
@@ -142,6 +144,21 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         public ExecutorService getExecutor() {
             return executor;
+        }
+
+        /**
+         * Returns true if the SCM polling thread queue has too many jobs
+         * than it can handle.
+         */
+        public boolean isClogged() {
+            for( Runnable r : executor.getQueue() ) {
+                if (r instanceof Runner) {// this should be always true, but let's be defensive.
+                    Runner rr = (Runner) r;
+                    if(rr.isStarving())
+                        return true;
+                }
+            }
+            return false;
         }
 
         /**
@@ -202,7 +219,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          */
         /*package*/ synchronized void resizeThreadPool() {
             // swap to a new one, and shut down the old one gradually
-            ExecutorService newExec = maximumThreads==0 ? Executors.newCachedThreadPool() : Executors.newFixedThreadPool(maximumThreads);
+            ThreadPoolExecutor newExec = (ThreadPoolExecutor)
+                    (maximumThreads==0 ? Executors.newCachedThreadPool() : Executors.newFixedThreadPool(maximumThreads));
             ExecutorService old = executor;
             executor = newExec;
             if(old!=null)
@@ -261,6 +279,14 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         private volatile long startTime;
 
         /**
+         * When was this object submitted to {@link DescriptorImpl#getExecutor()}?
+         *
+         * <p>
+         * This field is used to check if the queue is clogged.
+         */
+        public final long submissionTime = System.currentTimeMillis();
+
+        /**
          * Where the log file is written.
          */
         public File getLogFile() {
@@ -286,6 +312,17 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          */
         public String getDuration() {
             return Util.getTimeSpanString(System.currentTimeMillis()-startTime);
+        }
+
+        /**
+         * Returns true if too much time is spent since this item is put into the queue.
+         *
+         * <p>
+         * This property makes sense only when called before the task actually starts,
+         * as the {@link #run()} method may take a long time to execute.
+         */
+        public boolean isStarving() {
+            return System.currentTimeMillis()-submissionTime > STARVATION_THRESHOLD;
         }
 
         private boolean runPolling() {
@@ -354,4 +391,9 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             }
         }
     }
+
+    /**
+     * How long is too long for a polling activity to be in the queue?
+     */
+    public static long STARVATION_THRESHOLD =Long.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit2.HOURS.toMillis(1));
 }
