@@ -1465,3 +1465,31 @@ function validateButton(checkUrl,paramList,button) {
       }
   });
 }
+
+// create a combobox.
+// @param id
+//      ID of the <input type=text> element that becomes a combobox.
+// @param valueFunction
+//      Function that returns all the candidates as an array
+function createComboBox(id,valueFunction) {
+    var candidates = valueFunction();
+
+    Behaviour.addLoadEvent(function() {
+        var callback = function(value /*, comboBox*/) {
+          var items = new Array();
+          if (value.length > 0) { // if no value, we'll not provide anything
+            value = value.toLowerCase();
+            for (var i = 0; i<candidates.length; i++) {
+              if (candidates[i].toLowerCase().indexOf(value) >= 0) {
+                items.push(candidates[i]);
+                if(items.length>20)
+                  break; // 20 items in the list should be enough
+              }
+            }
+          }
+          return items; // equiv to: comboBox.setItems(items);
+        };
+
+        new ComboBox(id,callback);
+    });
+}
