@@ -32,6 +32,8 @@
       </script>
       <span id="message"></span>
     </j:if>
+
+    <!-- TODO: reimplement this as AdministrativeMonitor -->
     <j:set var="ucData" value="${it.updateCenter.data}" />
     <j:if test="${ucData.hasCoreUpdates()}">
       <div class="warning">
@@ -43,6 +45,13 @@
         </form>
       </div>
     </j:if>
+
+    <j:forEach var="am" items="${app.administrativeMonitors}">
+      <j:if test="${am.isActivated()}">
+        <st:include page="message.jelly" it="${am}" />
+      </j:if>
+    </j:forEach>
+
     <table style="padding-left: 2em;" id="management-links">
       <local:feature icon="setting.gif"          href="configure"    title="${%Configure System}">
         ${%Configure global settings and paths.}  

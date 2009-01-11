@@ -8,6 +8,7 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
+import hudson.model.AdministrativeMonitor;
 import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
 import org.kohsuke.stapler.StaplerRequest;
@@ -85,6 +86,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             // the real exclusion control happens inside Runner.
         	LOGGER.fine("scheduling the trigger to (asynchronously) run");
             DESCRIPTOR.getExecutor().submit(new Runner());
+            DESCRIPTOR.clogCheck();
         }
     }
 
@@ -128,6 +130,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          */
         private int maximumThreads;
 
+        /*package*/ final AdministrativeMonitorImpl monitor = new AdministrativeMonitorImpl();
+
         DescriptorImpl() {
             super(SCMTrigger.class);
             load();
@@ -136,6 +140,16 @@ public class SCMTrigger extends Trigger<SCMedItem> {
              * setPollingThreadCount() is not called in this case
              */
             resizeThreadPool();
+        }
+
+        @Override
+        public void load() {
+            super.load();
+
+            // install the monitor
+            List<AdministrativeMonitor> monitorList = Hudson.getInstance().administrativeMonitors;
+            if(!monitorList.contains(monitor))
+                monitorList.add(monitor);
         }
 
         public boolean isApplicable(Item item) {
@@ -159,6 +173,14 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                 }
             }
             return false;
+        }
+
+        /**
+         * Checks if the queue is clogged, and if so,
+         * activate {@link #monitor}.
+         */
+        public void clogCheck() {
+            monitor.on = isClogged();
         }
 
         /**
@@ -238,6 +260,18 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             save();
 
             return super.configure(req);
+        }
+    }
+
+    public static final class AdministrativeMonitorImpl extends AdministrativeMonitor {
+        private boolean on;
+
+        AdministrativeMonitorImpl() {
+            super(SCMTrigger.class.getName());
+        }
+
+        public boolean isActivated() {
+            return on;
         }
     }
 
