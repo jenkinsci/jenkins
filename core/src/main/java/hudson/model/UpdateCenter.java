@@ -100,8 +100,10 @@ public class UpdateCenter extends AbstractModelObject {
     /**
      * Create update center to get plugins/updates from hudson.dev.java.net
      */
-    public UpdateCenter() {
+    public UpdateCenter(Hudson parent) {
         configure(new UpdateCenterConfiguration());
+        if(parent!=null)    // parent==null just for test
+            parent.administrativeMonitors.add(new CoreUpdateMonitor());
     }
     
     /**
@@ -297,7 +299,25 @@ public class UpdateCenter extends AbstractModelObject {
     public String getUrl() {
         return config.getUpdateCenterUrl();
     }
-    
+
+    /**
+     * {@link AdministrativeMonitor} that checks if there's Hudson update.
+     */
+    public final class CoreUpdateMonitor extends AdministrativeMonitor {
+        public CoreUpdateMonitor() {
+            super(CoreUpdateMonitor.class.getName());
+        }
+
+        public boolean isActivated() {
+            Data data = getData();
+            return data!=null && data.hasCoreUpdates();
+        }
+
+        public Data getData() {
+            return UpdateCenter.this.getData();
+        }
+    }
+
     /**
      * In-memory representation of the update center data.
      */

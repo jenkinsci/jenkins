@@ -1,0 +1,11 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div class="warning">
+    <j:set var="ucData" value="${it.data}" />
+    <form method="post" action="${rootURL}/updateCenter/upgrade">
+      ${%NewVersionAvailable(ucData.core.version,ucData.core.url)}
+      <j:if test="${ucData.canUpgrade()}">
+        <f:submit value="${%Or Upgrade Automatically}"/>
+      </j:if>
+    </form>
+  </div>
+</j:jelly>

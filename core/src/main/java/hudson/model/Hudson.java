@@ -389,7 +389,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      */
     private transient final String secretKey;
 
-    private transient final UpdateCenter updateCenter = new UpdateCenter();
+    private transient final UpdateCenter updateCenter = new UpdateCenter(this);
 
     /**
      * True if the user opted out from the statistics tracking. We'll never send anything if this is true.

@@ -33,19 +33,6 @@
       <span id="message"></span>
     </j:if>
 
-    <!-- TODO: reimplement this as AdministrativeMonitor -->
-    <j:set var="ucData" value="${it.updateCenter.data}" />
-    <j:if test="${ucData.hasCoreUpdates()}">
-      <div class="warning">
-        <form method="post" action="${rootURL}/updateCenter/upgrade">
-          ${%NewVersionAvailable(ucData.core.version,ucData.core.url)}
-          <j:if test="${ucData.canUpgrade()}">
-            <f:submit value="${%Or Upgrade Automatically}"/>
-          </j:if>
-        </form>
-      </div>
-    </j:if>
-
     <j:forEach var="am" items="${app.administrativeMonitors}">
       <j:if test="${am.isActivated()}">
         <st:include page="message.jelly" it="${am}" />
