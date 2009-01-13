@@ -1,3 +1,9 @@
+hudson (1.274) unstable; urgency=low
+
+  * See http://hudson.dev.java.net/changelog.html for more details.
+
+ -- Kohsuke Kawaguchi <kk@kohsuke.org>  Mon, 12 Jan 2009 18:51:02 -0800
+
 hudson (1.273) unstable; urgency=low
 
   * See http://hudson.dev.java.net/changelog.html for more details.
