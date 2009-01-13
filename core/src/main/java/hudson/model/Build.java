@@ -114,9 +114,15 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                     return Result.FAILURE;
             } finally {
                 // tear down in reverse order
-                for( int i=buildEnvironments.size()-1; i>=0; i-- )
-                    buildEnvironments.get(i).tearDown((AbstractBuild)Build.this,listener);
+                boolean failed=false;
+                for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
+                    if (!buildEnvironments.get(i).tearDown((AbstractBuild)Build.this,listener)) {
+                        failed=true;
+                    }                    
+                }
                 buildEnvironments = null;
+                // WARNING The return in the finally clause will trump any return before
+                if (failed) return Result.FAILURE;
             }
 
             return null;
