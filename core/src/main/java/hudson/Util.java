@@ -487,6 +487,8 @@ public class Util {
         long minutes = duration / ONE_MINUTE_MS;
         duration %= ONE_MINUTE_MS;
         long seconds = duration / ONE_SECOND_MS;
+        duration %= ONE_SECOND_MS;
+        long millisecs = duration;
 
         if (years > 0)
             return makeTimeSpanString(years, Messages.Util_year(years), months, Messages.Util_month(months));
@@ -498,9 +500,14 @@ public class Util {
             return makeTimeSpanString(hours, Messages.Util_hour(hours), minutes, Messages.Util_minute(minutes));
         else if (minutes > 0)
             return makeTimeSpanString(minutes, Messages.Util_minute(minutes), seconds, Messages.Util_second(seconds));
-        else
-            // Durations less than a minute are only expressed in seconds (no ms).
+        else if (seconds >= 10)
             return Messages.Util_second(seconds);
+        else if (seconds >= 1)
+            return Messages.Util_second(seconds+"."+millisecs/100); // render "1.2 sec"
+        else if(millisecs>=100)
+            return Messages.Util_second(String.format("0.%02d",millisecs/10)); // render "0.12 sec".
+        else
+            return Messages.Util_millisecond(millisecs);
     }
 
 

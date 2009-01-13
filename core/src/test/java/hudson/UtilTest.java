@@ -55,6 +55,16 @@ public class UtilTest extends TestCase {
         assertEquals(Messages.Util_minute(1) + " " + Messages.Util_second(7), Util.getTimeSpanString(67000L));
         // 17 seconds - Check that times less than a minute only use seconds.
         assertEquals(Messages.Util_second(17), Util.getTimeSpanString(17000L));
+        // 1712ms -> 1.7sec
+        assertEquals(Messages.Util_second(1.7), Util.getTimeSpanString(1712L));
+        // 171ms -> 0.17sec
+        assertEquals(Messages.Util_second(0.17), Util.getTimeSpanString(171L));
+        // 101ms -> 0.10sec
+        assertEquals(Messages.Util_second("0.10"), Util.getTimeSpanString(101L));
+        // 17ms
+        assertEquals(Messages.Util_millisecond(17), Util.getTimeSpanString(17L));
+        // 1ms
+        assertEquals(Messages.Util_millisecond(1), Util.getTimeSpanString(1L));
     }
 
 
