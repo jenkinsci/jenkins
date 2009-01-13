@@ -79,7 +79,7 @@ public final class DirectoryBrowserSupport {
             return;
         }
 
-        String path = getPath(req).replace('\\','/');
+        String path = getPath(req);
         if(path.indexOf("/../")!=-1) {
             // don't serve anything other than files in the artifacts dir
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
