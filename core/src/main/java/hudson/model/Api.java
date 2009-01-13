@@ -76,12 +76,14 @@ public class Api extends AbstractModelObject {
             Document dom = new SAXReader().read(new StringReader(sw.toString()));
 
             // apply exclusions
-            for (String exclude : excludes) {
-                List<org.dom4j.Node> list = (List<org.dom4j.Node>)dom.selectNodes(exclude);
-                for (org.dom4j.Node n : list) {
-                    Element parent = n.getParent();
-                    if(parent!=null)
-                        parent.remove(n);
+            if (excludes!=null) {
+                for (String exclude : excludes) {
+                    List<org.dom4j.Node> list = (List<org.dom4j.Node>)dom.selectNodes(exclude);
+                    for (org.dom4j.Node n : list) {
+                        Element parent = n.getParent();
+                        if(parent!=null)
+                            parent.remove(n);
+                    }
                 }
             }
 
