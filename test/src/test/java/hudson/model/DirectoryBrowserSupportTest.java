@@ -8,6 +8,9 @@ import org.jvnet.hudson.test.HudsonTestCase;
  * @author Kohsuke Kawaguchi
  */
 public class DirectoryBrowserSupportTest extends HudsonTestCase {
+    /**
+     * Double dots that appear in file name is OK.
+     */
     @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
     public void testDoubleDots() throws Exception {
         // create a problematic file name in the workspace
@@ -26,5 +29,21 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
 //        } catch (FailingHttpStatusCodeException e) {
 //            assertEquals(400,e.getStatusCode());
 //        }
+    }
+
+    /**
+     * Also makes sure '\\' in the file name for Unix is handled correctly.
+     */
+    @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
+    public void testDoubleDots2() throws Exception {
+        if(Hudson.isWindows())  return; // can't test this on Windows
+
+        // create a problematic file name in the workspace
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new Shell("touch abc\\\\def"));
+        p.scheduleBuild2(0).get();
+
+        // can we see it?
+        new WebClient().goTo("job/"+p.getName()+"/ws/abc%5Cdef","application/octet-stream");
     }
 }
