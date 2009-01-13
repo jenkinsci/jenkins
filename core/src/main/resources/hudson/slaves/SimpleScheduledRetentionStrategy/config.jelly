@@ -1,0 +1,10 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:entry title="${%Startup Schedule}" help="/help/project-config/timer-format.html">
+        <f:textarea name="slave.startTimeSpec" checkUrl="'${rootURL}/slaves/SimpleScheduledRetentionStrategy/check?value='+escape(this.value)"
+                    value="${s.startTimeSpec}"/>
+    </f:entry>
+    <f:entry title="${%Scheduled Uptime (mins)}">
+        <f:textarea name="slave.upTimeMins" value="${s.upTimeMins}"/>
+    </f:entry>
+</j:jelly>

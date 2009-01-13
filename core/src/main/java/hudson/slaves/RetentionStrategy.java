@@ -184,5 +184,6 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
 
     static {
         LIST.load(Demand.class);
+        LIST.load(SimpleScheduledRetentionStrategy.class);
     }
 }
