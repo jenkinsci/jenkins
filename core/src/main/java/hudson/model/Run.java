@@ -746,6 +746,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *      if we fail to delete.
      */
     public synchronized void delete() throws IOException {
+        // if we have a symlink, delete it, too
+        File link = new File(project.getBuildDir(), String.valueOf(getNumber()));
+        link.delete();
+
         File rootDir = getRootDir();
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
