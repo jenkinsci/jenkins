@@ -1646,6 +1646,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             // reset some data that may not exit in the disk file
             // so that we can take a proper compensation action later.
             primaryView = null;
+            views.clear();
             cfg.unmarshal(this);
         }
 
