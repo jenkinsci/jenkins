@@ -24,8 +24,8 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
     /**
      * This method will be called periodically to allow this strategy to decide what to do with it's owning slave.
      *
-     * @param c {@link Computer} for which this strategy is assigned. This object also exposes a bunch of properties
-     *          that the callee can use to decide what action to take.
+     * @param c {@link Computer} for which this strategy is assigned. This computer may be online or offline.
+     *          This object also exposes a bunch of properties that the callee can use to decide what action to take.
      * @return The number of minutes after which the strategy would like to be checked again. The strategy may be
      *         rechecked earlier or later that this!
      */
