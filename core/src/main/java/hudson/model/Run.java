@@ -751,6 +751,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         
         boolean renamingSucceeded = rootDir.renameTo(tmp);
         Util.deleteRecursive(tmp);
+        // some user reported that they see some left-over .xyz files in the workspace,
+        // so just to make sure we've really deleted it, schedule the deletion on VM exit, too.
+        if(tmp.exists())
+            tmp.deleteOnExit();
 
         if(!renamingSucceeded)
             throw new IOException(rootDir+" is in use");
@@ -827,6 +831,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     listener.started();
 
                     RunListener.fireStarted(this,listener);
+
+                    // create a symlink from build number to ID.
+                    Util.createSymlink(getParent().getBuildDir(),getId(),String.valueOf(getNumber()),listener);
 
                     setResult(job.run(listener));
 
