@@ -583,7 +583,12 @@ public abstract class HudsonTestCase extends TestCase {
          *      For example, "job/test/" to go to a job top page.
          */
         public HtmlPage goTo(String relative) throws IOException, SAXException {
-            return (HtmlPage)goTo(relative, "text/html");
+            Page p = goTo(relative, "text/html");
+            if (p instanceof HtmlPage) {
+                return (HtmlPage) p;
+            } else {
+                throw new AssertionError("Expected text/html but instead the content type was "+p.getWebResponse().getContentType());
+            }
         }
 
         public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
