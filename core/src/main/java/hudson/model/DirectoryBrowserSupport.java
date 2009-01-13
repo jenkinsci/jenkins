@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -80,7 +81,7 @@ public final class DirectoryBrowserSupport {
         }
 
         String path = getPath(req);
-        if(path.indexOf("/../")!=-1) {
+        if(path.replace('\\','/').indexOf("/../")!=-1) {
             // don't serve anything other than files in the artifacts dir
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
