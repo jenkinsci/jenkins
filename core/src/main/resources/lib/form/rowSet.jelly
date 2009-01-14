@@ -10,7 +10,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
   <j:set var="id" value="${h.generateId()}" />
-  <j:set var="head" value="${h.ifThenElse(attrs.name!=null, attrs.name, 'rowGroupStart'+id)}"/>
+  <j:set var="head" value="rowGroupStart${id}"/>
   <j:set var="ref" value="${h.ifThenElse(attrs.ref!=null, attrs.ref, head)}"/>
 
   <tr id="${head}" style="display:none" name="${attrs.name}" />
