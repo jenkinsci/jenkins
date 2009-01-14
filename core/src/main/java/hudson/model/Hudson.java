@@ -415,7 +415,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         theInstance = this;
 
         log.load();
-        
+
         Trigger.timer = new Timer("Hudson cron thread");
         queue = new Queue();
 
@@ -460,7 +460,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         Items.LIST.hashCode();
 
         adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
-        
+
         load();
 
 //        try {
@@ -564,7 +564,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     }
 
     public Api getApi() {
-        return new Api(this); 
+        return new Api(this);
     }
 
     /**
@@ -615,7 +615,14 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      * Gets the trigger descriptor by name. Primarily used for making them web-visible.
      */
     public TriggerDescriptor getTrigger(String shortClassName) {
-        return (TriggerDescriptor)findDescriptor(shortClassName, Triggers.TRIGGERS);
+        return (TriggerDescriptor) findDescriptor(shortClassName, Triggers.TRIGGERS);
+    }
+
+    /**
+     * Gets the retention strategy descriptor by name. Primarily used for making them web-visible.
+     */
+    public Descriptor<RetentionStrategy<?>> getRetentionStrategy(String shortClassName) {
+        return findDescriptor(shortClassName, RetentionStrategy.LIST);
     }
 
     /**
@@ -1369,7 +1376,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             throw new AcegiSecurityException("Failed to configure filter",e) {};
         }
     }
-    
+
     public Lifecycle getLifecycle() {
         return Lifecycle.get();
     }
@@ -2396,7 +2403,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doScript(req, rsp, req.getView(this, "_script.jelly"));
     }
-    
+
     /**
      * Run arbitrary Groovy script and return result as plain text.
      */
@@ -2951,7 +2958,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      *      <p>
      *      But ideally, your plugin should first identify a suitable {@link Permission} (or create one,
      *      if appropriate), then identify a suitable {@link AccessControlled} object to check its permission
-     *      against. 
+     *      against.
      */
     public static boolean isAdmin() {
         return Hudson.getInstance().getACL().hasPermission(ADMINISTER);
