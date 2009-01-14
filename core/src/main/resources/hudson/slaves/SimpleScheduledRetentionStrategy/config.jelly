@@ -4,7 +4,8 @@
         <f:textarea name="retentionStrategy.startTimeSpec" checkUrl="'${rootURL}/retentionStrategy/SimpleScheduledRetentionStrategy/check?value='+escape(this.value)"
                     value="${instance.startTimeSpec}"/>
     </f:entry>
-    <f:entry title="${%Scheduled Uptime (mins)}">
+    <f:entry title="${%Scheduled Uptime}"
+             description="The number of minutes to keep the node up for. If this is longer than the startup schedule, then the node will remain constantly on-line.">
         <input class="setting-input number validated" name="retentionStrategy.upTimeMins"
                type="text" value="${instance.upTimeMins}"
                checkUrl="'${rootURL}/fieldCheck?errorText='+escape('${%Scheduled Uptime is mandatory.}')+'&amp;value='+escape(this.value)"/>
