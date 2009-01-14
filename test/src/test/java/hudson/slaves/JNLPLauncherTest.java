@@ -47,7 +47,7 @@ public class JNLPLauncherTest extends HudsonTestCase {
 
     private ArgumentListBuilder buildJnlpArgs(Computer c) throws Exception {
         ArgumentListBuilder args = new ArgumentListBuilder();
-        args.add("java","-jar");
+        args.add(new File(new File(System.getProperty("java.home")),"bin/java").getPath(),"-jar");
         args.add(Which.jarFile(netx.jnlp.runtime.JNLPRuntime.class).getAbsolutePath());
         args.add("-headless","-basedir");
         args.add(createTmpDir());
