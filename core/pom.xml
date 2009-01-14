@@ -454,6 +454,10 @@
           <groupId>org.springframework</groupId>
           <artifactId>spring-remoting</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-support</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
