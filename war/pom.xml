@@ -260,6 +260,7 @@
           <plugin>
             <groupId>org.jvnet.updatecenter2</groupId>
             <artifactId>maven-makepkgs-plugin</artifactId>
+            <version>0.3</version>
             <executions>
               <execution>
                 <goals>
