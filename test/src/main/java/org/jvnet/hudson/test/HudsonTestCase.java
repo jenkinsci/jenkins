@@ -416,6 +416,14 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     /**
+     * Asserts that the XPath matches.
+     */
+    public void assertXPath(HtmlPage page, String xpath) {
+        assertNotNull("There should be an object that matches XPath:"+xpath,
+                page.getDocumentElement().selectSingleNode(xpath));
+    }
+
+    /**
      * Submits the form.
      */
     public HtmlPage submit(HtmlForm form) throws Exception {
