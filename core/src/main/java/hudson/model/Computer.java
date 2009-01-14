@@ -246,7 +246,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
      */
     @Exported
     public boolean isManualLaunchAllowed() {
-        return getRetentionStrategy().isManualLaunchAllowed(this) && isLaunchSupported();
+        return getRetentionStrategy().isManualLaunchAllowed(this);
     }
 
 
@@ -266,7 +266,11 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     }
 
     /**
-     * Returns true if this computer can be launched by Hudson.
+     * Returns true if this computer can be launched by Hudson proactively and automatically.
+     *
+     * <p>
+     * For example, JNLP slaves return {@code false} from this, because the launch process
+     * needs to be initiated from the slave side.
      */
     @Exported
     public boolean isLaunchSupported() {
