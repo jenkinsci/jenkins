@@ -18,8 +18,8 @@ pkg.update({
 
 
 # restart_fmri instructs IPS to reload the manifest
-pkg.addfile("/usr/local/bin/hudson.war",{"file":"./target/hudson.war","restart_fmri":"svc:/system/manifest-import:default"})
-pkg.addfile("/var/svc/manifest/application/hudson.xml",{"file":"../ips/hudson.xml"})
+pkg.addfile("/usr/local/bin/hudson.war",{"file":"./target/hudson.war"})
+pkg.addfile("/var/svc/manifest/application/hudson.xml",{"file":"../ips/hudson.xml","restart_fmri":"svc:/system/manifest-import:default"})
 # this is the Hudson home directory
 pkg.mkdirs("/var/lib/hudson")
 
