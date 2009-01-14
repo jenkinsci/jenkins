@@ -28,7 +28,7 @@
         <st:include from="${it.launcher}" page="main.jelly" optional="true"/>
       </j:if>
 
-      <j:if test="${it.offline &amp;&amp; !it.manualLaunchAllowed &amp;&amp; it.launchSupported}">
+      <j:if test="${it.offline and !it.manualLaunchAllowed and it.launchSupported}">
         <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
       </j:if>
 
