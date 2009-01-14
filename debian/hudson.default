@@ -20,6 +20,11 @@ HUDSON_WAR=/usr/share/hudson/hudson.war
 # hudson home location
 HUDSON_HOME=/var/lib/hudson
 
+# set this to false if you don't want Hudson to run by itself
+# in this set up, you are expected to provide a servlet containr
+# to host hudson.
+RUN_STANDALONE=true
+
 # log location.  this may be a syslog facility.priority
 HUDSON_LOG=/var/log/hudson/$NAME.log
 #HUDSON_LOG=daemon.info

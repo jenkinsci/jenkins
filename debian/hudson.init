@@ -18,6 +18,9 @@ DAEMON_ARGS="--name=$NAME --inherit --env=HUDSON_HOME=$HUDSON_HOME --output=$HUD
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
 
+# Exit if not supposed to run standalone
+[ "$RUN_STANDALONE" = "false" ] && exit 0
+
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
 
