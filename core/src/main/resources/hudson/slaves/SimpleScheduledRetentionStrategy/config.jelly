@@ -1,10 +1,15 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <f:entry title="${%Startup Schedule}" help="/help/project-config/timer-format.html">
-        <f:textarea name="slave.startTimeSpec" checkUrl="'${rootURL}/slaves/SimpleScheduledRetentionStrategy/check?value='+escape(this.value)"
-                    value="${s.startTimeSpec}"/>
+        <f:textarea name="retentionStrategy.startTimeSpec" checkUrl="'${rootURL}/retentionStrategy/SimpleScheduledRetentionStrategy/check?value='+escape(this.value)"
+                    value="${instance.startTimeSpec}"/>
     </f:entry>
     <f:entry title="${%Scheduled Uptime (mins)}">
-        <f:textarea name="slave.upTimeMins" value="${s.upTimeMins}"/>
+        <input class="setting-input number validated" name="retentionStrategy.upTimeMins"
+               type="text" value="${instance.upTimeMins}"
+               checkUrl="'${rootURL}/fieldCheck?errorText='+escape('${%Scheduled Uptime is mandatory.}')+'&amp;value='+escape(this.value)"/>
+    </f:entry>
+    <f:entry title="${%Keep on-line while jobs are running}">
+    <f:checkbox name="retentionStrategy.keepUpWhenActive" checked="${h.defaultToTrue(instance.keepUpWhenActive)}"/>
     </f:entry>
 </j:jelly>
