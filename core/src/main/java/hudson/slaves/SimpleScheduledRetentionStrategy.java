@@ -34,7 +34,6 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
     private final String startTimeSpec;
     private transient CronTabList tabs;
     private transient Calendar lastChecked;
-    private transient Calendar lastStarted = null;
     private transient long nextStop = Long.MIN_VALUE;
     private transient long nextStart = Long.MIN_VALUE;
     private transient long lastStop = Long.MAX_VALUE;
@@ -137,15 +136,13 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return this;
     }
 
+    @Override
+    public boolean isManualLaunchAllowed(final SlaveComputer c) {
+        return isOnlineScheduled(c);
+    }
+
     public synchronized long check(final SlaveComputer c) {
-        if (lastStarted == null && c.isOnline()) {
-            lastStarted = new GregorianCalendar();
-        } else if (lastStarted != null && c.isOffline()) {
-            lastStarted = null;
-        }
-        updateStartStopWindow();
-        long now = System.currentTimeMillis();
-        boolean shouldBeOnline = (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
+        boolean shouldBeOnline = isOnlineScheduled(c);
         LOGGER.log(Level.FINE, "Checking computer {0} against schedule. online = {1}, shouldBeOnline = {2}",
                 new Object[]{c.getName(), c.isOnline(), shouldBeOnline});
         if (shouldBeOnline && c.isOffline()) {
@@ -195,6 +192,12 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
             }
         }
         return 1;
+    }
+
+    private boolean isOnlineScheduled(SlaveComputer c) {
+        updateStartStopWindow();
+        long now = System.currentTimeMillis();
+        return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
     }
 
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();

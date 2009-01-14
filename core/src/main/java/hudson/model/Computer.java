@@ -241,6 +241,16 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     }
 
     /**
+     * This method is called to determine whether manual launching of the slave is allowed at this point in time.
+     * @return {@code true} if manual launching of the slave is allowed at this point in time.
+     */
+    @Exported
+    public boolean isManualLaunchAllowed() {
+        return getRetentionStrategy().isManualLaunchAllowed(this) && isLaunchSupported();
+    }
+
+
+    /**
      * Is a {@link #connect(boolean)} operation in progress?
      */
     public abstract boolean isConnecting();
@@ -610,7 +620,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
         new org.kohsuke.stapler.framework.io.LargeText(getLogFile(),false).doProgressText(req,rsp);
     }
-    
+
     /**
      * Gets the current {@link Computer} that the build is running.
      * This method only works when called during a build, such as by

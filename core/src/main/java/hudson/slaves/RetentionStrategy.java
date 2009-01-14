@@ -32,6 +32,17 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
     public abstract long check(T c);
 
     /**
+     * This method is called to determine whether manual launching of the slave is allowed at this point in time.
+     * @param c {@link Computer} for which this strategy is assigned. This computer may be online or offline.
+     *          This object also exposes a bunch of properties that the callee can use to decide if manual launching is
+     * allowed at this time.
+     * @return {@code true} if manual launching of the slave is allowed at this point in time.
+     */
+    public boolean isManualLaunchAllowed(T c) {
+        return true;
+    }
+
+    /**
      * All registered {@link RetentionStrategy} implementations.
      */
     public static final DescriptorList<RetentionStrategy<?>> LIST = new DescriptorList<RetentionStrategy<?>>();

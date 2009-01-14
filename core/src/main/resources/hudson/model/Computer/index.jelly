@@ -24,9 +24,16 @@
         </j:if>
       </h1>
 
-      <st:include from="${it.launcher}" page="main.jelly" optional="true"/>
+      <j:if test="${it.manualLaunchAllowed}">
+        <st:include from="${it.launcher}" page="main.jelly" optional="true"/>
+      </j:if>
 
-      <j:if test="${it.node.assignedLabels.size() gt 1}">
+      <j:if test="${!it.manualLaunchAllowed &amp;&amp; it.launchSupported}">
+        <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
+      </j:if>
+
+
+        <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div>
           ${%Labels:}
           <j:forEach var="l" items="${it.node.assignedLabels}">
