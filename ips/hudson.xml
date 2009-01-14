@@ -45,7 +45,7 @@ THE SOFTWARE.
 		</method_context>
 
 		<!-- Set the HUDSON_HOME env variable, and run the war file in /apps/hudson/hudson.war -->
-		<exec_method type="method" name="start"	exec="java -Xmx512m -jar /usr/local/bin/hudson.war" timeout_seconds="0"/>
+		<exec_method type="method" name="start"	exec="java -Xmx512m -Dhudson.lifecycle=hudson.lifecycle.SolarisSMFLifecycle -jar /usr/local/bin/hudson.war" timeout_seconds="0"/>
 		<exec_method type="method" name="stop" exec=":kill -TERM" timeout_seconds="30"/>
 
 		<!-- We are going to be kicking off a single child process so we want Wait mode-->
