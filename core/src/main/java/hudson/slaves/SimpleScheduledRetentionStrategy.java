@@ -146,7 +146,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         updateStartStopWindow();
         long now = System.currentTimeMillis();
         boolean shouldBeOnline = (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
-        LOGGER.log(Level.INFO, "Checking computer {0} against schedule. online = {1}, shouldBeOnline = {2}",
+        LOGGER.log(Level.FINE, "Checking computer {0} against schedule. online = {1}, shouldBeOnline = {2}",
                 new Object[]{c.getName(), c.isOnline(), shouldBeOnline});
         if (shouldBeOnline && c.isOffline()) {
             LOGGER.log(Level.INFO, "Trying to launch computer {0} as schedule says it should be on-line at "
