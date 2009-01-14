@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -60,11 +61,20 @@ public class UtilTest extends TestCase {
         // 171ms -> 0.17sec
         assertEquals(Messages.Util_second(0.17), Util.getTimeSpanString(171L));
         // 101ms -> 0.10sec
-        assertEquals(Messages.Util_second("0.10"), Util.getTimeSpanString(101L));
+        assertEquals(Messages.Util_second(0.1), Util.getTimeSpanString(101L));
         // 17ms
         assertEquals(Messages.Util_millisecond(17), Util.getTimeSpanString(17L));
         // 1ms
         assertEquals(Messages.Util_millisecond(1), Util.getTimeSpanString(1L));
+        // Test HUDSON-2843 (locale with comma as fraction separator got exception for <10 sec)
+        Locale saveLocale = Locale.getDefault();
+        Locale.setDefault(Locale.GERMANY);
+        try {
+            // Just verifying no exception is thrown:
+            assertNotNull("German locale", Util.getTimeSpanString(1234));
+            assertNotNull("German locale <1 sec", Util.getTimeSpanString(123));
+        }
+        finally { Locale.setDefault(saveLocale); }
     }
 
 

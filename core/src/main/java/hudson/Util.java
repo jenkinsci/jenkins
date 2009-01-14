@@ -503,9 +503,9 @@ public class Util {
         else if (seconds >= 10)
             return Messages.Util_second(seconds);
         else if (seconds >= 1)
-            return Messages.Util_second(seconds+"."+millisecs/100); // render "1.2 sec"
+            return Messages.Util_second(seconds+(float)(millisecs/100)/10); // render "1.2 sec"
         else if(millisecs>=100)
-            return Messages.Util_second(String.format("0.%02d",millisecs/10)); // render "0.12 sec".
+            return Messages.Util_second((float)(millisecs/10)/100); // render "0.12 sec".
         else
             return Messages.Util_millisecond(millisecs);
     }
