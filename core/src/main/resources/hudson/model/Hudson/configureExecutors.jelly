@@ -1,0 +1,23 @@
+<!--
+  This used to be where people configure executors before 1.271, so just in case people have bookmarked this page,
+  explain what happened.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="This page has moved">
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel>
+    <h1>
+      <img src="${imagesURL}/48x48/error.gif" alt=""/>
+      This page has moved
+    </h1>
+    <p>
+      Starting 1.271, slave configuration is split into individual configuration page per slave,
+      accessible from <a href="computer/">here</a>.
+    </p>
+    <ul>
+      <li>To configure existing slaves, click the above link, click their name, and then click the config link from the left</li>
+      <li>To add a new slave, click the above link, and click "add new slave"</li>
+    </ul>
+  </l:main-panel>
+</l:layout>
+</j:jelly>
