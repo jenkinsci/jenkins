@@ -818,7 +818,14 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         } else {
             if(n.getNumExecutors()>0) {
                 computers.put(n,c=n.createComputer());
-                c.connect(true);
+                RetentionStrategy retentionStrategy = c.getRetentionStrategy();
+                if (retentionStrategy != null) {
+                    // if there is a retention strategy, it is responsible for deciding to start the computer
+                    retentionStrategy.check(c);
+                } else {
+                    // we should never get here, but just in case, we'll fall back to the legacy behaviour
+                    c.connect(true);
+                }
             }
         }
         used.add(c);
