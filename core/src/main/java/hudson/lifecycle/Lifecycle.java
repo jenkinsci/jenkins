@@ -6,6 +6,9 @@ import hudson.model.Hudson;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
+
 /**
  * Provides the capability for starting/stopping/restarting/uninstalling Hudson.
  *
@@ -72,9 +75,19 @@ public abstract class Lifecycle implements ExtensionPoint {
 
     /**
      * Replaces hudson.war by the given file.
+     *
+     * <p>
+     * On some system, most notably Windows, a file being in use cannot be changed,
+     * so rewriting <tt>hudson.war</tt> requires some special trick. Override this method
+     * to do so.
      */
     public void rewriteHudsonWar(File by) throws IOException {
-        throw new UnsupportedOperationException();
+        File dest = getHudsonWar();
+        // this should be impossible given the canRewriteHudsonWar method,
+        // but let's be defensive
+        if(dest==null)  throw new IOException("hudson.war location is not known.");
+
+        FileUtils.copyFile(by, dest);
     }
 
     /**
@@ -82,8 +95,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public boolean canRewriteHudsonWar() {
         // if we don't know where hudson.war is, it's impossible to replace.
-        if(getHudsonWar()==null)    return false;
-        return isOverridden("rewriteHudsonWar",File.class);
+        return getHudsonWar()!=null;
     }
 
     private boolean isOverridden(String methodName, Class... types) {

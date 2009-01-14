@@ -57,6 +57,10 @@ public class WindowsServiceLifecycle extends Lifecycle {
         }
     }
 
+    /**
+     * On Windows, hudson.war is locked, so we place a new version under a special name,
+     * which is picked up by the service wrapper upon restart.
+     */
     @Override
     public void rewriteHudsonWar(File by) throws IOException {
         File rootDir = Hudson.getInstance().getRootDir();
@@ -67,6 +71,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
         w.close();
     }
 
+    @Override
     public void restart() throws IOException, InterruptedException {
         File me = getHudsonWar();
         File home = me.getParentFile();
