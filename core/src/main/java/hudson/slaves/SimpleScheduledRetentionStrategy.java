@@ -22,10 +22,10 @@ import org.kohsuke.stapler.StaplerResponse;
 import antlr.ANTLRException;
 
 /**
- * Created by IntelliJ IDEA.
+ * {@link RetentionStrategy} that controls the slave based on a schedule. 
  *
- * @author connollys
- * @since Jan 13, 2009 1:17:34 PM
+ * @author Stephen Connolly
+ * @since 1.275
  */
 public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveComputer> {
 
