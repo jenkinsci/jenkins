@@ -51,6 +51,8 @@ import org.apache.maven.project.DuplicateProjectException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.InvalidProjectModelException;
+import org.apache.maven.project.validation.ModelValidationResult;
 import org.apache.maven.settings.MavenSettingsBuilder;
 import org.apache.maven.settings.RuntimeInfo;
 import org.apache.maven.settings.Settings;
@@ -301,7 +303,20 @@ public class MavenEmbedder
 
     public MavenProject readProject( File mavenProject )
         throws ProjectBuildingException {
-        return mavenProjectBuilder.build( mavenProject, localRepository, profileManager );
+        try {
+            return mavenProjectBuilder.build( mavenProject, localRepository, profileManager );
+        } catch (final InvalidProjectModelException e) {
+            throw new ProjectBuildingException(e.getProjectId(),e.getMessage(),e) {
+                @Override
+                public String getMessage() {
+                    String msg = e.getMessage();
+                    ModelValidationResult vr = e.getValidationResult();
+                    if(vr!=null)
+                        msg+="\n"+vr.render("- ");
+                    return msg;
+                }
+            };
+        }
     }
 
     public MavenProject readProjectWithDependencies( File mavenProject, TransferListener transferListener )
