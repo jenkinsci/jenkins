@@ -41,11 +41,11 @@
 
     <table style="padding-left: 2em;" id="management-links">
       <local:feature icon="setting.gif"          href="configure"    title="${%Configure System}">
-        ${%Configure global settings and paths.}  
+        ${%Configure global settings and paths.}
       </local:feature>
       <local:feature icon="refresh.gif"          href="reload"       title="${%Reload Configuration from Disk}">
         ${%Discard all the loaded data in memory and reload everything from file system.}
-        ${%Useful when you modified config files directly on disk.} 
+        ${%Useful when you modified config files directly on disk.}
       </local:feature>
       <local:feature icon="gear2.gif"        href="pluginManager/" title="${%Manage Plugins}">
         ${%Add, remove, disable or enable plugins that can extend the functionality of Hudson.}
@@ -65,11 +65,9 @@
       <local:feature icon="notepad.gif"      href="script"      title="${%Script Console}">
         ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}
       </local:feature>
-      <j:if test="${!empty(it.nodes) or !empty(h.getNodeFactoryDescriptors())}">
-        <local:feature icon="network.gif"      href="computer/"   title="${%Manage Slaves}">
-          ${%Check the health of slaves and controls them.}
-        </local:feature>
-      </j:if>
+      <local:feature icon="network.gif"      href="computer/"   title="${%Manage Nodes}">
+        ${%Add, remove, control and monitor the various nodes that Hudson runs jobs on.}
+      </local:feature>
       <!-- TODO: replace all the hard-coded ones with the standard extension point -->
       <j:forEach var="m" items="${it.managementLinks}">
         <j:if test="${m.iconFileName!=null}">
