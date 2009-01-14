@@ -103,7 +103,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
          * Constructs a new DescriptorImpl.
          */
         public DescriptorImpl() {
-            super(Demand.class);
+            super(SimpleScheduledRetentionStrategy.class);
         }
 
         public String getDisplayName() {
