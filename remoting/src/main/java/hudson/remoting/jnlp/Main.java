@@ -64,7 +64,7 @@ public class Main {
         try {
             p.parseArgument(args);
             if(m.args.size()!=2)
-                throw new CmdLineException("two arguments required");
+                throw new CmdLineException("two arguments required, but got "+m.args);
             if(m.urls.isEmpty())
                 throw new CmdLineException("At least one -url option is required.");
         } catch (CmdLineException e) {
