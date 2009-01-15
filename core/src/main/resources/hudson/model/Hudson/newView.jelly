@@ -41,6 +41,7 @@
           function state() {
             if($('name').value.length==0)   return true;
             var radio = form.elements['mode'];
+            if(radio.checked) return false;  // if there's only one radiobutton
             for(i=0;i<radio.length;i++)
               if(radio[i].checked)
                 return false;
