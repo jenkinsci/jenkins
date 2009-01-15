@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Level.FINEST;
@@ -359,6 +360,15 @@ public abstract class ProcessTreeKiller {
              *      or the permission was denied.)
              */
             public abstract EnvVars getEnvVars();
+
+            /**
+             * Obtains the argument list of this process.
+             *
+             * @return
+             *      empty list if failed (for example because the process is already dead,
+             *      or the permission was denied.)
+             */
+            public abstract List<String> getArguments();
         }
     }
 
@@ -382,6 +392,7 @@ public abstract class ProcessTreeKiller {
             private final int pid;
             private int ppid = -1;
             private EnvVars envVars;
+            private List<String> arguments;
 
             LinuxProcess(LinuxSystem system, int pid) throws IOException {
                 super(system);
@@ -410,6 +421,28 @@ public abstract class ProcessTreeKiller {
 
             public LinuxProcess getParent() {
                 return system.get(ppid);
+            }
+
+            public synchronized List<String> getArguments() {
+                if(arguments!=null)
+                    return arguments;
+                arguments = new ArrayList<String>();
+                try {
+                    byte[] cmdline = FileUtils.readFileToByteArray(getFile("cmdline"));
+                    int pos=0;
+                    for (int i = 0; i < cmdline.length; i++) {
+                        byte b = cmdline[i];
+                        if(b==0) {
+                            arguments.add(new String(cmdline,pos,i-pos));
+                            pos=i+1;
+                        }
+                    }
+                } catch (IOException e) {
+                    // failed to read. this can happen under normal circumstances (most notably permission denied)
+                    // so don't report this as an error.
+                }
+                arguments = Collections.unmodifiableList(arguments);
+                return arguments;                
             }
 
             public synchronized EnvVars getEnvVars() {
@@ -461,7 +494,13 @@ public abstract class ProcessTreeKiller {
              * Address of the environment vector. Even on 64bit Solaris this is still 32bit pointer.
              */
             private final int envp;
+            /**
+             * Similarly, address of the arguments vector.
+             */
+            private final int argp;
+            private final int argc;
             private EnvVars envVars;
+            private List<String> arguments;
 
             SolarisProcess(SolarisSystem system, int pid) throws IOException {
                 super(system);
@@ -507,7 +546,9 @@ public abstract class ProcessTreeKiller {
                         throw new IOException("psinfo PID mismatch");   // sanity check
                     ppid = adjust(psinfo.readInt());
 
-                    psinfo.seek(196);  // now jump to pr_envp
+                    psinfo.seek(188);  // now jump to pr_argc
+                    argc = adjust(psinfo.readInt());
+                    argp = adjust(psinfo.readInt());
                     envp = adjust(psinfo.readInt());
                 } finally {
                     psinfo.close();
@@ -535,6 +576,36 @@ public abstract class ProcessTreeKiller {
                 return system.get(ppid);
             }
 
+            public synchronized List<String> getArguments() {
+                if(arguments!=null)
+                    return arguments;
+
+                arguments = new ArrayList<String>(argc);
+
+                try {
+                    RandomAccessFile as = new RandomAccessFile(getFile("as"),"r");
+                    if(LOGGER.isLoggable(FINER))
+                        LOGGER.finer("Reading "+getFile("as"));
+                    try {
+                        for( int n=0; n<argc; n++ ) {
+                            // read a pointer to one entry
+                            as.seek(to64(argp+n*4));
+                            int p = as.readInt();
+
+                            arguments.add(readLine(as, p, "argv["+ n +"]"));
+                        }
+                    } finally {
+                        as.close();
+                    }
+                } catch (IOException e) {
+                    // failed to read. this can happen under normal circumstances (most notably permission denied)
+                    // so don't report this as an error.
+                }
+
+                arguments = Collections.unmodifiableList(arguments);
+                return arguments;
+            }
+
             public synchronized EnvVars getEnvVars() {
                 if(envVars !=null)
                     return envVars;
@@ -552,27 +623,10 @@ public abstract class ProcessTreeKiller {
                             if(p==0)
                                 break;  // completed the walk
 
-                            if(LOGGER.isLoggable(FINEST))
-                                LOGGER.finest("Reading env["+n+"] at "+p);
-
                             // now read the null-terminated string
-                            as.seek(to64(p));
-                            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-                            int ch,i=0;
-                            while((ch=as.read())>0) {
-                                if((++i)%100==0 && LOGGER.isLoggable(FINEST))
-                                    LOGGER.finest("env["+n+"] is so far "+buf.toString());
-
-                                buf.write(ch);
-                            }
-                            String line = buf.toString();
-                            if(LOGGER.isLoggable(FINEST))
-                                LOGGER.finest("env["+n+"] was "+line);
-                            envVars.addLine(line);
+                            envVars.addLine(readLine(as, p, "env["+ n +"]"));
                         }
                     } finally {
-                        // failed to read. this can happen under normal circumstances,
-                        // so don't report this as an error.
                         as.close();
                     }
                 } catch (IOException e) {
@@ -581,6 +635,25 @@ public abstract class ProcessTreeKiller {
                 }
                 
                 return envVars;
+            }
+
+            private String readLine(RandomAccessFile as, int p, String prefix) throws IOException {
+                if(LOGGER.isLoggable(FINEST))
+                    LOGGER.finest("Reading "+prefix+" at "+p);
+
+                as.seek(to64(p));
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                int ch,i=0;
+                while((ch=as.read())>0) {
+                    if((++i)%100==0 && LOGGER.isLoggable(FINEST))
+                        LOGGER.finest(prefix +" is so far "+buf.toString());
+
+                    buf.write(ch);
+                }
+                String line = buf.toString();
+                if(LOGGER.isLoggable(FINEST))
+                    LOGGER.finest(prefix+" was "+line);
+                return line;
             }
 
             /**
