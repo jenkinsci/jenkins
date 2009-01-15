@@ -161,7 +161,9 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
      *      the new one will be started. If false, and a connect activity is already in progress, this method
      *      will do nothing and just return the pending connection operation.
      * @return
-     *      A {@link Future} representing pending completion of the task.
+     *      A {@link Future} representing pending completion of the task. The 'completion' includes
+     *      both a successful completion and a non-successful completion (such distinction typically doesn't
+     *      make much sense because as soon as {@link Computer} is connected it can be disconnected by some other threads.)
      */
     public abstract Future<?> connect(boolean forceReconnect);
 

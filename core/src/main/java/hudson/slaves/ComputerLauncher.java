@@ -47,6 +47,10 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
      * The operation could also fail, in which case there's no need to make any callback notification,
      * (except to notify the user of the failure through {@link StreamTaskListener}.)
      *
+     * <p>
+     * This method must operate synchronously. Asynchrony is provided by {@link Computer#connect(boolean)} and
+     * its correct operation depends on this. 
+     *
      * @param listener
      *      The progress of the launch, as well as any error, should be sent to this listener.
      *

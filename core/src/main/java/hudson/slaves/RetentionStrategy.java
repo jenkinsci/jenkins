@@ -43,6 +43,21 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
     }
 
     /**
+     * Called when a new {@link Computer} object is introduced (such as when Hudson started, or when
+     * a new slave is added.)
+     *
+     * <p>
+     * The default implementation of this method delegates to {@link #check(Computer)},
+     * but this allows {@link RetentionStrategy} to distinguish the first time invocation from the rest.
+     *
+     * @since 1.275
+     */
+    public void start(T c) {
+        check(c);
+    }
+
+
+    /**
      * All registered {@link RetentionStrategy} implementations.
      */
     public static final DescriptorList<RetentionStrategy<?>> LIST = new DescriptorList<RetentionStrategy<?>>();
@@ -53,6 +68,11 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
     public static final RetentionStrategy<Computer> NOOP = new RetentionStrategy<Computer>() {
         public long check(Computer c) {
             return 1;
+        }
+
+        @Override
+        public void start(Computer c) {
+            c.connect(false);
         }
 
         public Descriptor<RetentionStrategy<?>> getDescriptor() {

@@ -171,11 +171,11 @@ public class NodeProvisionerTest extends HudsonTestCase {
         return builds;
     }
 
-    private void verifySuccessfulCompletion(List<Future<FreeStyleBuild>> builds) throws InterruptedException, ExecutionException {
+    private void verifySuccessfulCompletion(List<Future<FreeStyleBuild>> builds) throws Exception {
         System.out.println("Waiting for a completion");
         for (Future<FreeStyleBuild> f : builds) {
             FreeStyleBuild b = f.get();// if it's taking too long, abort.
-            assertEquals(Result.SUCCESS,b.getResult());
+            assertBuildStatus(Result.SUCCESS,b);
         }
     }
 }
