@@ -195,6 +195,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
 
     static {
         LIST.load(Demand.class);
-        LIST.load(SimpleScheduledRetentionStrategy.class);
+        if (Boolean.getBoolean("hudson.scheduledRetention"))
+            LIST.load(SimpleScheduledRetentionStrategy.class);
     }
 }
