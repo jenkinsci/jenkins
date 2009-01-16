@@ -28,6 +28,10 @@ import java.io.IOException;
  * The primary intention of this mechanism is so that {@link JobProperty}s
  * can add actions to the new build.
  *
+ * @param <J>
+ *      When you restrict your job property to be only applicable to a certain
+ *      subtype of {@link Job}, you can use this type parameter to improve
+ *      the type signature of this class. See {@link JobPropertyDescriptor#isApplicable(Class)}. 
  *
  * @author Kohsuke Kawaguchi
  * @see JobPropertyDescriptor
