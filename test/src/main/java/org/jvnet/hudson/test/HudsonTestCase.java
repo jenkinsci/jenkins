@@ -1,44 +1,48 @@
 package org.jvnet.hudson.test;
 
 import com.gargoylesoftware.htmlunit.AjaxController;
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
-import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
-import hudson.matrix.MatrixProject;
-import hudson.model.*;
-import hudson.model.Node.Mode;
-import hudson.model.JDK;
-import hudson.model.Label;
-import hudson.tasks.Mailer;
-import hudson.tasks.Maven;
-import hudson.tasks.BuildStep;
-import hudson.tasks.Maven.MavenInstallation;
-import hudson.tasks.Maven;
-import hudson.tasks.Maven.MavenInstallation;
+import hudson.CloseProofOutputStream;
+import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
-import hudson.util.StreamTaskListener;
-import hudson.util.ProcessTreeKiller;
+import hudson.WebAppMain;
+import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenReporters;
-import hudson.FilePath;
-import hudson.Functions;
-import hudson.WebAppMain;
-import hudson.CloseProofOutputStream;
-import hudson.slaves.DumbSlave;
+import hudson.model.Descriptor;
+import hudson.model.FreeStyleProject;
+import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.JDK;
+import hudson.model.Label;
+import hudson.model.Node.Mode;
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.Saveable;
+import hudson.model.TaskListener;
+import hudson.model.UpdateCenter;
 import hudson.slaves.CommandLauncher;
+import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
-import hudson.maven.MavenModuleSet;
-import hudson.FilePath;
-import hudson.Functions;
-import hudson.WebAppMain;
+import hudson.tasks.BuildStep;
+import hudson.tasks.Mailer;
+import hudson.tasks.Maven;
+import hudson.tasks.Maven.MavenInstallation;
+import hudson.util.ProcessTreeKiller;
+import hudson.util.StreamTaskListener;
 import junit.framework.TestCase;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.recipes.Recipe.Runner;
@@ -56,13 +60,12 @@ import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
 import org.xml.sax.SAXException;
-import org.apache.commons.io.IOUtils;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
@@ -70,13 +73,16 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.logging.Filter;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * Base class for all Hudson test cases.
@@ -447,9 +453,11 @@ public abstract class HudsonTestCase extends TestCase {
      * control the test environment in which Hudson is run.
      *
      * <p>
-     * From here, call a series of {@code withXXX} methods.
+     * One could override this method and call a series of {@code withXXX} methods,
+     * or you can use the annotations with {@link Recipe} meta-annotation.
      */
     protected void recipe() throws Exception {
+        recipeLoadCurrentPlugin();
         // look for recipe meta-annotation
         Method runMethod= getClass().getMethod(getName());
         for( final Annotation a : runMethod.getAnnotations() ) {
@@ -464,6 +472,39 @@ public abstract class HudsonTestCase extends TestCase {
             });
             runner.setup(this,a);
         }
+    }
+
+    /**
+     * If this test harness is launched for a Hudson plugin, locate the <tt>target/test-classes/the.hpl</tt>
+     * and add a recipe to install that to the new Hudson.
+     *
+     * <p>
+     * This file is created by <tt>maven-hpi-plugin</tt> at the testCompile phase when the current
+     * packaging is <tt>hpi</tt>.
+     */
+    protected void recipeLoadCurrentPlugin() throws Exception {
+        Enumeration<URL> e = getClass().getClassLoader().getResources("the.hpl");
+        if(!e.hasMoreElements())    return; // nope
+
+        final URL hpl = e.nextElement();
+
+        if(e.hasMoreElements()) {
+            // this happens if one plugin produces a test jar and another plugin depends on it.
+            // I can't think of a good way to make this work, so for now, just detect that and report an error.
+            URL hpl2 = e.nextElement();
+            throw new Error("We have both "+hpl+" and "+hpl2);
+        }
+
+        recipes.add(new Runner() {
+            @Override
+            public void decorateHome(HudsonTestCase testCase, File home) throws Exception {
+                Manifest m = new Manifest(hpl.openStream());
+                String shortName = m.getMainAttributes().getValue("Short-Name");
+                if(shortName==null)
+                    throw new Error(hpl+" doesn't have the Short-Name attribute");
+                FileUtils.copyURLToFile(hpl,new File(home,"plugins/"+shortName+".hpl"));
+            }
+        });
     }
 
     public HudsonTestCase withNewHome() {
