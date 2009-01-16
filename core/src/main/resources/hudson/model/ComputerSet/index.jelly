@@ -22,6 +22,7 @@
             <th>${m.columnCaption}</th>
           </j:if>
         </j:forEach>
+        <th />
       </tr>
       <j:forEach var="c" items="${it._all}">
         <tr>
@@ -35,6 +36,16 @@
               <st:include page="column.jelly" from="${m}" />
             </j:if>
           </j:forEach>
+
+          <td><!-- config link -->
+            <j:if test="${c.hasPermission(c.CONFIGURE)}">
+              <a href="${rootURL}/${c.url}configure">
+                <img src="${imagesURL}/32x32/setting.gif"
+                     title="${%Configure}" alt="${%Configure}"
+                     border="0"/>
+              </a>
+            </j:if>
+          </td>
         </tr>
       </j:forEach>
 
