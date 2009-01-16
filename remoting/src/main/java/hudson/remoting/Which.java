@@ -4,8 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URLConnection;
+import java.net.JarURLConnection;
 
 /**
  * Locates where a given class is loaded from.
@@ -69,6 +72,15 @@ public class Which {
             // return new File(new URL(res).toURI());
 
             return new File(decode(new URL(resURL).getPath()));
+        }
+
+        URLConnection con = res.openConnection();
+        if (con instanceof JarURLConnection) {
+            JarURLConnection jcon = (JarURLConnection) con;
+            String n = jcon.getJarFile().getName();
+            if(n.length()>0) {// JDK6u10 needs this
+                return new File(n);
+            }
         }
 
         throw new IllegalArgumentException(originalURL + " - " + resURL);
