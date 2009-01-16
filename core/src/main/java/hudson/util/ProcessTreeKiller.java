@@ -508,6 +508,7 @@ public abstract class ProcessTreeKiller {
 
                 RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"),"r");
                 try {
+                    // see http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/sys/procfs.h
                     //typedef struct psinfo {
                     //	int	pr_flag;	/* process flags */
                     //	int	pr_nlwp;	/* number of lwps in the process */
