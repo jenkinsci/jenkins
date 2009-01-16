@@ -1,9 +1,12 @@
 package hudson.model;
 
 import org.kohsuke.stapler.StaplerRequest;
+import org.jvnet.tiger_types.Types;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.lang.reflect.Type;
+import java.lang.reflect.ParameterizedType;
 
 import net.sf.json.JSONObject;
 
@@ -32,17 +35,25 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     /**
      * Returns true if this {@link JobProperty} type is applicable to the
      * given job type.
-     *
+     * 
      * <p>
-     * Normally, this method is implemented like
-     * {@code return AbstractProject.class.isAssignableFrom(jobType)}
-     * where "<tt>AbstractProject</tt>" is the J of {@link JobProperty}<tt>&lt;J></tt>.
+     * The default implementation of this method checks if the given job type is assignable to 'J' of
+     * {@link JobProperty}<tt>&lt;J></tt>, but subtypes can extend this to change this behavior.
      *
      * @return
      *      true to indicate applicable, in which case the property will be
      *      displayed in the configuration screen of this job.
      */
-    public abstract boolean isApplicable(Class<? extends Job> jobType);
+    public boolean isApplicable(Class<? extends Job> jobType) {
+        Type parameterization = Types.getBaseClass(clazz, JobProperty.class);
+        if (parameterization instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) parameterization;
+            Class applicable = Types.erasure(Types.getTypeArgument(pt, 0));
+            return applicable.isAssignableFrom(jobType);
+        } else {
+            throw new AssertionError(clazz+" doesn't properly parameterize JobProperty. The isApplicable() method must be overriden.");
+        }
+    }
 
     /**
      * Gets the {@link JobPropertyDescriptor}s applicable for a given job type.
