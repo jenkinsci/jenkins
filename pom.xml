@@ -9,7 +9,7 @@
   
   <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.276-SNAPSHOT</version>
+  <version>1.276</version>
   <packaging>pom</packaging>
   
   <name>Hudson main module</name>
@@ -25,9 +25,9 @@
   </modules>
   
   <scm>
-    <connection>scm:svn:https://svn.dev.java.net/svn/hudson/trunk/hudson/main/</connection>
-    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/trunk/hudson/main/</developerConnection>
-    <url>https://hudson.dev.java.net/source/browse/hudson/trunk/hudson/main</url>
+    <connection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/hudson-1_276</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/hudson-1_276</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/tags/hudson-1_276</url>
   </scm>
   
   <build>
