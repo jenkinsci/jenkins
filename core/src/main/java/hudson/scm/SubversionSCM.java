@@ -524,6 +524,17 @@ public class SubversionSCM extends SCM implements Serializable {
         return SVNClientManager.newInstance(SVNWCUtil.createDefaultOptions(true),sam);
     }
 
+    /**
+     * Creates {@link SVNClientManager} for code running on the master.
+     * <p>
+     * CAUTION: this code only works when invoked on master. On slaves, use
+     * {@link #createSvnClientManager(ISVNAuthenticationProvider)} and get {@link ISVNAuthenticationProvider}
+     * from the master via remoting. 
+     */
+    public static SVNClientManager createSvnClientManager() {
+        return createSvnClientManager(DescriptorImpl.DESCRIPTOR.createAuthenticationProvider());
+    }
+
     public static final class SvnInfo implements Serializable, Comparable<SvnInfo> {
         /**
          * Decoded repository URL.

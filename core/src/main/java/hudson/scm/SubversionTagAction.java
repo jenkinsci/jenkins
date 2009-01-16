@@ -165,7 +165,7 @@ public class SubversionTagAction extends AbstractScmTagAction {
         @Override
         protected void perform(TaskListener listener) {
             try {
-                final SVNClientManager cm = SubversionSCM.createSvnClientManager(SubversionSCM.DescriptorImpl.DESCRIPTOR.createAuthenticationProvider());
+                final SVNClientManager cm = SubversionSCM.createSvnClientManager();
                 try {
                     for (Entry<SvnInfo, String> e : tagSet.entrySet()) {
                         PrintStream logger = listener.getLogger();
