@@ -14,8 +14,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -149,7 +147,10 @@ public class MailSender {
     private void appendBuildUrl(AbstractBuild<?, ?> build, StringBuffer buf) {
         String baseUrl = Mailer.DESCRIPTOR.getUrl();
         if (baseUrl != null) {
-            buf.append("See ").append(baseUrl).append(Util.encode(build.getUrl())).append("changes\n\n");
+            buf.append("See ").append(baseUrl).append(Util.encode(build.getUrl()));
+            if(!build.getChangeSet().isEmptySet())
+                buf.append("changes");
+            buf.append("\n\n");
         }
     }
 
