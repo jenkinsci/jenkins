@@ -12,6 +12,7 @@ import javax.mail.MessagingException;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.AddressException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -19,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.HashSet;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -247,24 +249,42 @@ public class MailSender {
 
         Set<InternetAddress> rcp = new LinkedHashSet<InternetAddress>();
         StringTokenizer tokens = new StringTokenizer(recipients);
-        while (tokens.hasMoreTokens())
-            rcp.add(new InternetAddress(tokens.nextToken()));
+        while (tokens.hasMoreTokens()) {
+            String address = tokens.nextToken();
+            if(address.startsWith("upstream-individuals:")) {
+                // people who made a change in the upstream
+                String projectName = address.substring("upstream-individuals:".length());
+                AbstractProject up = Hudson.getInstance().getItemByFullName(projectName,AbstractProject.class);
+                if(up==null) {
+                    listener.getLogger().println("No such project exist: "+projectName);
+                    continue;
+                }
+                AbstractBuild<?,?> pb = build.getPreviousBuild();
+                AbstractBuild<?,?> ub = build.getUpstreamRelationshipBuild(up);
+                AbstractBuild<?,?> upb = pb!=null ? pb.getUpstreamRelationshipBuild(up) : null;
+                if(pb==null && ub==null && upb==null) {
+                    listener.getLogger().println("Unable to compute the changesets in "+up+". Is the fingerprint configured?");
+                    continue;
+                }
+                if(pb==null || ub==null || upb==null) {
+                    listener.getLogger().println("Unable to compute the changesets in "+up);
+                    continue;
+                }
+                for( AbstractBuild<?,?> b=upb; b!=ub && b!=null; b=b.getNextBuild())
+                    rcp.addAll(buildCulpritList(listener,b.getCulprits()));
+            } else {
+                // ordinary address
+                rcp.add(new InternetAddress(address));
+            }
+        }
+
         if (sendToIndividuals) {
             Set<User> culprits = build.getCulprits();
 
             if(debug)
                 listener.getLogger().println("Trying to send e-mails to individuals who broke the build. sizeof(culprits)=="+culprits.size());
 
-            for (User a : culprits) {
-                String adrs = Util.fixEmpty(a.getProperty(Mailer.UserProperty.class).getAddress());
-                if(debug)
-                    listener.getLogger().println("  User "+a.getId()+" -> "+adrs);
-                if (adrs != null)
-                    rcp.add(new InternetAddress(adrs));
-                else {
-                    listener.getLogger().println(Messages.MailSender_NoAddress(a.getFullName()));
-                }
-            }
+            rcp.addAll(buildCulpritList(listener,culprits));
         }
         msg.setRecipients(Message.RecipientType.TO, rcp.toArray(new InternetAddress[rcp.size()]));
 
@@ -278,6 +298,21 @@ public class MailSender {
         }
 
         return msg;
+    }
+
+    private Set<InternetAddress> buildCulpritList(BuildListener listener, Set<User> culprits) throws AddressException {
+        Set<InternetAddress> r = new HashSet<InternetAddress>();
+        for (User a : culprits) {
+            String adrs = Util.fixEmpty(a.getProperty(Mailer.UserProperty.class).getAddress());
+            if(debug)
+                listener.getLogger().println("  User "+a.getId()+" -> "+adrs);
+            if (adrs != null)
+                r.add(new InternetAddress(adrs));
+            else {
+                listener.getLogger().println(Messages.MailSender_NoAddress(a.getFullName()));
+            }
+        }
+        return r;
     }
 
     private String getSubject(AbstractBuild<?, ?> build, String caption) {
