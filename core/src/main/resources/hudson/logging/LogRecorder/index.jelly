@@ -5,7 +5,7 @@
 <l:layout title="Log" permission="${app.ADMINISTER}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
-    <h1><img src="images/48x48/clipboard.gif" alt=""/>${it.displayName}</h1>
+    <h1><img src="${rootURL}/images/48x48/clipboard.gif" alt=""/>${it.displayName}</h1>
     <j:forEach var="log" items="${it.logRecords}">
       <pre>${h.printLogRecord(log)}</pre>
     </j:forEach>

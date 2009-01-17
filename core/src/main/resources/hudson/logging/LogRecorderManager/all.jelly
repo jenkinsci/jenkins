@@ -5,7 +5,7 @@
 <l:layout title="Log">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
-    <h1><img src="images/48x48/clipboard.gif" alt=""/>${%Hudson Log}</h1>
+    <h1><img src="${rootURL}/images/48x48/clipboard.gif" alt=""/>${%Hudson Log}</h1>
     <j:forEach var="log" items="${h.logRecords}">
       <pre>${h.printLogRecord(log)}</pre>
     </j:forEach>
