@@ -39,7 +39,8 @@ public class SubversionTagAction extends AbstractScmTagAction {
 
     /**
      * Map is from the repository URL to the URLs of tags.
-     * If a module is not tagged, the value will be empty set.
+     * If a module is not tagged, the value will be empty list.
+     * Never an empty map.
      */
     private final Map<SvnInfo,List<String>> tags = new CopyOnWriteMap.Tree<SvnInfo, List<String>>();
 
