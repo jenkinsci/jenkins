@@ -2,7 +2,6 @@ package hudson.scm;
 
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
-import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.model.TaskThread;
 import hudson.scm.SubversionSCM.SvnInfo;
