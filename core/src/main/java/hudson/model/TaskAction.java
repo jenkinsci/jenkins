@@ -45,8 +45,21 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
      */
     protected abstract ACL getACL();
 
-    public WeakReference<LargeText> getLog() {
-        return log;
+    /**
+     * Obtains the log file.
+     *
+     * <p>
+     * The default implementation get this from {@link #workerThread},
+     * so when it's complete, the log could be gone any time.
+     *
+     * <p>
+     * Derived classes that persist the text should override this
+     * method so that it fetches the file from disk.
+     */
+    public LargeText getLog() {
+        WeakReference<LargeText> l = log;
+        if(l==null) return null;
+        return l.get();
     }
 
     public String getSearchUrl() {
@@ -61,12 +74,10 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
      * Handles incremental log output.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if (log != null) {
-            LargeText text = log.get();
-            if(text!=null) {
-                text.doProgressText(req,rsp);
-                return;
-            }
+        LargeText text = getLog();
+        if(text!=null) {
+            text.doProgressText(req,rsp);
+            return;
         }
         rsp.setStatus(HttpServletResponse.SC_OK);
     }
