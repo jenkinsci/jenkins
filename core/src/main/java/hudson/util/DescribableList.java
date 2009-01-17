@@ -95,6 +95,10 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
     }
 
+    public void clear() {
+        data.clear();
+    }
+
     public Iterator<T> iterator() {
         return data.iterator();
     }
