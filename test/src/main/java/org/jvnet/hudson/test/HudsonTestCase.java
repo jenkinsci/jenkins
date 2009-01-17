@@ -77,7 +77,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -396,17 +395,19 @@ public abstract class HudsonTestCase extends TestCase {
     /**
      * Asserts that the outcome of the build is a specific outcome.
      */
-    public void assertBuildStatus(Result status, Run r) throws Exception {
+    public <R extends Run> R assertBuildStatus(Result status, R r) throws Exception {
         if(status==r.getResult())
-            return;
+            return r;
 
         // dump the build output
         System.out.println(r.getLog());
         assertEquals(status,r.getResult());
+        return r;
     }
 
-    public void assertBuildStatusSuccess(Run r) throws Exception {
+    public <R extends Run> R assertBuildStatusSuccess(R r) throws Exception {
         assertBuildStatus(Result.SUCCESS,r);
+        return r;
     }
 
     /**
