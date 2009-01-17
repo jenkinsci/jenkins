@@ -72,11 +72,7 @@ public class SubversionSCMTest extends HudsonTestCase {
      * Loads a test Subversion repository into a temporary directory, and creates {@link SubversionSCM} for it.
      */
     private SubversionSCM loadSvnRepo() throws Exception {
-        return new SubversionSCM(
-                new String[] { "file://" + new CopyExisting(getClass().getResource("/svn-repo.zip")).allocate().toURI().toURL().getPath() + "trunk/a" },
-                new String[]{null},
-                true, null
-        );
+        return new SubversionSCM("file://" + new CopyExisting(getClass().getResource("/svn-repo.zip")).allocate().toURI().toURL().getPath() + "trunk/a");
     }
 
     @Email("http://www.nabble.com/Hudson-1.266-and-1.267%3A-Subversion-authentication-broken--td21156950.html")

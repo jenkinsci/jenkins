@@ -160,6 +160,13 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     /**
+     * Convenience constructor, especially during testing.
+     */
+    public SubversionSCM(String svnUrl) {
+        this(new String[]{svnUrl},new String[]{null},true,null);
+    }
+
+    /**
      * @deprecated
      *      as of 1.91. Use {@link #getLocations()} instead.
      */
