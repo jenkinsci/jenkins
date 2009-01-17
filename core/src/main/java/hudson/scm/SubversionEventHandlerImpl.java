@@ -73,9 +73,14 @@ public class SubversionEventHandlerImpl extends SVNEventAdapter {
         String pathChangeType = " ";
         if (action == SVNEventAction.UPDATE_ADD) {
             pathChangeType = "A";
-            if(event.getContentsStatus()== SVNStatusType.UNCHANGED) {
+            SVNStatusType contentsStatus = event.getContentsStatus();
+            if(contentsStatus== SVNStatusType.UNCHANGED) {
                 // happens a lot with merges
                 pathChangeType = " ";
+            }else if (contentsStatus == SVNStatusType.CONFLICTED) {
+                pathChangeType = "C";
+            } else if (contentsStatus == SVNStatusType.MERGED) {
+                pathChangeType = "G";
             }
         } else if (action == SVNEventAction.UPDATE_DELETE) {
             pathChangeType = "D";
