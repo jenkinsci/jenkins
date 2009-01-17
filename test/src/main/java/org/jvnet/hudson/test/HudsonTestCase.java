@@ -663,6 +663,9 @@ public abstract class HudsonTestCase extends TestCase {
         // don't waste bandwidth talking to the update center
         UpdateCenter.neverUpdate = true;
 
+        // enable debug assistance
+        System.setProperty("stapler.trace","true");
+
         // we don't care CSS errors in YUI
         final ErrorHandler defaultHandler = Stylesheet.CSS_ERROR_HANDLER;
         Stylesheet.CSS_ERROR_HANDLER = new ErrorHandler() {
