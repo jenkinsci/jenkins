@@ -26,7 +26,9 @@ import java.io.IOException;
  * Starting 1.150, {@link JobProperty} implements {@link BuildStep},
  * meaning it gets the same hook as {@link Publisher} and {@link Builder}.
  * The primary intention of this mechanism is so that {@link JobProperty}s
- * can add actions to the new build.
+ * can add actions to the new build. The {@link #perform(AbstractBuild, Launcher, BuildListener)}
+ * and {@link #prebuild(AbstractBuild, BuildListener)} are invoked after those
+ * of {@link Publisher}s.
  *
  * @param <J>
  *      When you restrict your job property to be only applicable to a certain
