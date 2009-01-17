@@ -21,11 +21,19 @@ public interface PermalinkProjectAction extends Action {
     /**
      * Gets the permalinks defined for this project.
      *
+     * <p>
+     * Because {@link Permalink} is a strategy-pattern object,
+     * this method should normally return a pre-initialzied
+     * read-only static list object.  
+     *
      * @return
      *      can be empty, but never null.
      */
     List<Permalink> getPermalinks();
 
+    /**
+     * Permalink as a strategy pattern.
+     */
     public static abstract class Permalink {
         /**
          * String to be displayed in the UI, such as "Last successful build".
