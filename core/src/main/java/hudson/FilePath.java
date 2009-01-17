@@ -757,9 +757,8 @@ public final class FilePath implements Serializable {
      * @since 1.105
      */
     public void write(final String content, final String encoding) throws IOException, InterruptedException {
-        act(new Callable<Void,IOException>() {
-            public Void call() throws IOException {
-                File f = new File(remote);
+        act(new FileCallable<Void>() {
+            public Void invoke(File f, VirtualChannel channel) throws IOException {
                 f.getParentFile().mkdirs();
                 FileOutputStream fos = new FileOutputStream(f);
                 Writer w = encoding != null ? new OutputStreamWriter(fos, encoding) : new OutputStreamWriter(fos);
