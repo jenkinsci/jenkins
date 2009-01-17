@@ -14,7 +14,6 @@
     <!-- output is completed now. -->
     <j:otherwise>
       <pre><st:copyStream reader="${it.workerThread.readAll()}" /></pre>
-      <pre><st:out value="${it.workerThread.log}"/></pre>
       <form method="get" action="clearError">
         <f:submit value="${%Clear error to retry}" />
       </form>
