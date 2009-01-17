@@ -4,7 +4,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:choose>
     <!-- Do progressive console output -->
-    <j:when test="${it.workerThread.alive}">
+    <j:when test="${it.workerThread.running}">
       <pre id="out"></pre>
       <div id="spinner">
         <img src="${imagesURL}/spinner.gif" alt=""/>

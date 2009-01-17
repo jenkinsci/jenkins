@@ -12,8 +12,14 @@ import org.kohsuke.stapler.framework.io.ByteBuffer;
 /**
  * {@link Thread} for performing one-off task.
  *
+ * <p>
+ * Designed to be used inside {@link TaskAction}.
+ *
+ * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.191
+ * @see TaskAction
  */
 public abstract class TaskThread extends Thread {
     /**
@@ -27,6 +33,8 @@ public abstract class TaskThread extends Thread {
     private TaskListener listener;
 
     private final TaskAction owner;
+
+    private volatile boolean isRunning;
 
     /**
      *
@@ -58,9 +66,16 @@ public abstract class TaskThread extends Thread {
         action.log = new WeakReference<LargeText>(text);
     }
 
-    public synchronized void start() {
+    /**
+     * Starts the task execution asynchronously.
+     */
+    public void start() {
         associateWith(owner);
         super.start();
+    }
+
+    public boolean isRunning() {
+        return isRunning;
     }
 
     /**
@@ -73,6 +88,7 @@ public abstract class TaskThread extends Thread {
     }
 
     public final void run() {
+        isRunning = true;
         try {
             perform(listener);
             listener.getLogger().println("Completed");
@@ -83,6 +99,7 @@ public abstract class TaskThread extends Thread {
             e.printStackTrace(listener.getLogger());
         } finally {
             listener = null;
+            isRunning =false;
         }
         text.markAsComplete();
     }
