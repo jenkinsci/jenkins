@@ -299,6 +299,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public void addProperty(JobProperty<? super JobT> jobProp)
             throws IOException {
+        ((JobProperty)jobProp).owner = this;
         properties.add(jobProp);
         save();
     }
