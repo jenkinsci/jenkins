@@ -757,7 +757,7 @@ public final class FilePath implements Serializable {
      * @since 1.105
      */
     public void write(final String content, final String encoding) throws IOException, InterruptedException {
-        channel.call(new Callable<Void,IOException>() {
+        act(new Callable<Void,IOException>() {
             public Void call() throws IOException {
                 File f = new File(remote);
                 f.getParentFile().mkdirs();
