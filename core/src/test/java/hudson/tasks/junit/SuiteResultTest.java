@@ -76,6 +76,16 @@ public class SuiteResultTest extends TestCase {
         assertTrue(!sr0.getStdout().equals(sr1.getStdout()));
     }
 
+    /**
+     * Verifying fix for issue #2874.
+     * https://hudson.dev.java.net/issues/show_bug.cgi?id=2874
+     */
+    public void testIssue2874() throws Exception {
+        SuiteResult result = parseOne(getDataFile("junit-report-2874.xml"));
+
+        assertEquals("test suite name", "DummyTest", result.getName());
+    }
+
     public void testErrorDetails() throws Exception {
         SuiteResult result = parseOne(getDataFile("junit-report-errror-details.xml"));
 
