@@ -158,5 +158,15 @@ public interface BuildStep {
             int idx = super.indexOf(Mailer.DESCRIPTOR);
             add(idx,d);
         }
+
+        @Override
+        public boolean add(Descriptor<Publisher> d) {
+            return !contains(d) && super.add(d);
+        }
+
+        @Override
+        public void add(int index, Descriptor<Publisher> d) {
+            if(!contains(d)) super.add(index, d);
+        }
     }
 }
