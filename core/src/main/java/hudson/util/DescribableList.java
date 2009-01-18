@@ -81,6 +81,13 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         return null;
     }
 
+    public <U extends T> U get(Class<U> type) {
+        for (T t : data)
+            if(type.isInstance(t))
+                return type.cast(t);
+        return null;
+    }
+
     public boolean contains(D d) {
         return get(d)!=null;
     }
