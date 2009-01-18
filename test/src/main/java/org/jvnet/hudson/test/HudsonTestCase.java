@@ -60,6 +60,9 @@ import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.Dispatcher;
+import org.kohsuke.stapler.MetaClassLoader;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -72,6 +75,8 @@ import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -663,8 +668,19 @@ public abstract class HudsonTestCase extends TestCase {
         // don't waste bandwidth talking to the update center
         UpdateCenter.neverUpdate = true;
 
-        // enable debug assistance
-        System.setProperty("stapler.trace","true");
+        {// enable debug assistance, since tests are often run from IDE
+            Dispatcher.TRACE = true;
+            MetaClass.NO_CACHE=true;
+            // load resources from the source dir.
+            File dir = new File("src/main/resources");
+            if(dir.exists() && MetaClassLoader.debugLoader==null)
+                try {
+                    MetaClassLoader.debugLoader = new MetaClassLoader(
+                        new URLClassLoader(new URL[]{dir.toURL()}));
+                } catch (MalformedURLException e) {
+                    throw new AssertionError(e);
+                }
+        }
 
         // we don't care CSS errors in YUI
         final ErrorHandler defaultHandler = Stylesheet.CSS_ERROR_HANDLER;
