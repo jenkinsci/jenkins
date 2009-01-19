@@ -22,7 +22,7 @@
     <f:textbox name="label" value="${it.labelString}"/>
   </f:entry>
 
-  <f:slave-mode name="mode" node="${s}" />
+  <f:slave-mode name="mode" node="${it}" />
 
   <f:dropdownList name="slave.launcher" title="${%Launch method}"
                   help="/help/system-config/master-slave/startMethod.html">
