@@ -3,11 +3,11 @@ package hudson.security;
 import hudson.ExtensionPoint;
 import hudson.slaves.Cloud;
 import hudson.model.AbstractItem;
-import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.Job;
 import hudson.model.User;
 import hudson.model.View;
 import hudson.model.Node;
@@ -51,7 +51,7 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      */
     public abstract ACL getRootACL();
 
-    public ACL getACL(AbstractProject<?,?> project) {
+    public ACL getACL(Job<?,?> project) {
     	return getRootACL();
     }
 

@@ -1,7 +1,7 @@
 package hudson.security;
 
-import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
+import hudson.model.Job;
 import hudson.model.Jobs;
 import hudson.util.RobustReflectionConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
@@ -19,7 +19,7 @@ import com.thoughtworks.xstream.core.JVM;
  */
 public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizationStrategy {
     @Override
-    public ACL getACL(AbstractProject<?,?> project) {
+    public ACL getACL(Job<?,?> project) {
         AuthorizationMatrixProperty amp = project.getProperty(AuthorizationMatrixProperty.class);
         if (amp != null && amp.isUseProjectSecurity()) {
             return amp.getACL().newInheritingACL(getRootACL());

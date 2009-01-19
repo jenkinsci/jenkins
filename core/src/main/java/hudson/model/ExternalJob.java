@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.model.AbstractProject;
 import hudson.model.RunMap.Constructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -59,6 +60,7 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
      * Used to post the build result from a remote machine.
      */
     public void doPostBuildResult( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        checkPermission(AbstractProject.BUILD);
         ExternalRun run = newBuild();
         run.acceptRemoteSubmission(req.getReader());
         rsp.setStatus(HttpServletResponse.SC_OK);

@@ -13,6 +13,7 @@ import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.search.SearchItems;
+import hudson.security.ACL;
 import hudson.tasks.LogRotator;
 import hudson.util.AtomicFileWriter;
 import hudson.util.ChartUtil;
@@ -1154,5 +1155,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             RunList runs) throws IOException, ServletException {
         RSS.forwardToRss(getDisplayName() + suffix, getUrl(), runs.newBuilds(),
                 Run.FEED_ADAPTER, req, rsp);
+    }
+
+    /**
+     * Returns the {@link ACL} for this object.
+     * We need to override the identical method in AbstractItem because we won't
+     * call getACL(Job) otherwise (single dispatch)
+     */
+    public ACL getACL() {
+        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
     }
 }

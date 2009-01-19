@@ -16,7 +16,6 @@ import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
 import hudson.search.SearchIndexBuilder;
-import hudson.security.ACL;
 import hudson.security.Permission;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
@@ -1157,15 +1156,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         String nearest = EditDistance.findNearest(name, names);
         return (AbstractProject)Hudson.getInstance().getItem(nearest);
-    }
-
-    /**
-     * Returns the {@link ACL} for this object.
-     * We need to override the identical method in AbstractItem because we won't
-     * call getACL(AbstractProject) otherwise (single dispatch)
-     */
-    public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
     private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
