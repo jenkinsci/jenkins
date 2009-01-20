@@ -202,7 +202,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
-    	return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
     public void checkPermission(Permission p) {
@@ -314,20 +314,22 @@ public abstract class View extends AbstractModelObject implements AccessControll
         public People(Hudson parent) {
             this.parent = parent;
             // for Hudson, really load all users
-            Map<User,UserInfo> users = new HashMap<User,UserInfo>();
+            Map<User,UserInfo> users = getUserInfo(parent.getPrimaryView());
             User unknown = User.getUnknown();
             for(User u : User.getAll()) {
                 if(u==unknown)  continue;   // skip the special 'unknown' user
-                UserInfo info = users.get(u);
-                if(info==null)
+                if(!users.containsKey(u))
                     users.put(u,new UserInfo(u,null,null));
             }
-
             this.users = toList(users);
         }
 
         public People(View parent) {
             this.parent = parent;
+            this.users = toList(getUserInfo(parent));
+        }
+
+        private Map<User,UserInfo> getUserInfo(View parent) {
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
             for (Item item : parent.getItems()) {
                 for (Job job : item.getAllJobs()) {
@@ -350,8 +352,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     }
                 }
             }
-
-            this.users = toList(users);
+            return users;
         }
 
         private List<UserInfo> toList(Map<User,UserInfo> users) {
@@ -475,7 +476,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
     
     public RunList getBuilds() {
-    	return new RunList(this);
+        return new RunList(this);
     }
 
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
