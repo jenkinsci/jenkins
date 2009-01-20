@@ -573,24 +573,25 @@ public class CVSSCM extends SCM implements Serializable {
             }
 
             private String isUpdatableModule(File module) {
-                if(!module.isDirectory())
-                    // module is a file, like "foo/bar.txt". Then CVS information is "foo/CVS".
-                    module = module.getParentFile();
+                try {
+                    if(!module.isDirectory())
+                        // module is a file, like "foo/bar.txt". Then CVS information is "foo/CVS".
+                        module = module.getParentFile();
 
-                File cvs = new File(module,"CVS");
-                if(!cvs.exists())
-                    return "No CVS dir in "+module;
+                    File cvs = new File(module,"CVS");
+                    if(!cvs.exists())
+                        return "No CVS dir in "+module;
 
-                // check cvsroot
-                if(!checkContents(new File(cvs,"Root"),cvsroot))
-                    return cvs+"/Root content mismatch";
-                if(branch!=null) {
-                    if(!checkContents(new File(cvs,"Tag"),(isTag()?'N':'T')+branch))
-                        return cvs+" branch mismatch";
-                } else {
-                    File tag = new File(cvs,"Tag");
-                    if (tag.exists()) {
-                        try {
+                    // check cvsroot
+                    File cvsRootFile = new File(cvs, "Root");
+                    if(!checkContents(cvsRootFile,cvsroot))
+                        return cvs+"/Root content mismatch: expected "+cvsroot+" but found "+FileUtils.readFileToString(cvsRootFile);
+                    if(branch!=null) {
+                        if(!checkContents(new File(cvs,"Tag"),(isTag()?'N':'T')+branch))
+                            return cvs+" branch mismatch";
+                    } else {
+                        File tag = new File(cvs,"Tag");
+                        if (tag.exists()) {
                             BufferedReader r = new BufferedReader(new FileReader(tag));
                             try {
                                 String s = r.readLine();
@@ -599,13 +600,13 @@ public class CVSSCM extends SCM implements Serializable {
                             } finally {
                                 r.close();
                             }
-                        } catch (IOException e) {
-                            return e.getMessage();
                         }
                     }
-                }
 
-                return null;
+                    return null;
+                } catch (IOException e) {
+                    return e.getMessage();
+                }
             }
         });
     }
