@@ -87,14 +87,14 @@
         var table = master.parentNode;
         table.removeChild(master);
       
-        makeButton("${id}button", function (e) {
+        makeButton($$('${id}button'), function (e) {
           <!-- when 'add' is clicked... -->
           var name = $$('${id}text').value;
           if(name=="") {
-            alert("Please enter an user name or a group name");
+            alert("Please enter a user name or a group name");
             return;
           }
-          if(findElementsBySelector(table,"TR").find(function(n){return n.getAttribute("name")==name;})!=null) {
+          if(findElementsBySelector(table,"TR").find(function(n){return n.getAttribute("name")=='['+name+']';})!=null) {
             alert("Entry for '"+name+"' already exists");
             return;
           }
