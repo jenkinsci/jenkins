@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.NoSuchElementException;
-import java.util.concurrent.TimeUnit;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -293,7 +292,7 @@ public class Queue extends ResourceController implements Saveable {
             wi.timestamp = due;
             waitingList.add(wi);
         } else {
-            LOGGER.fine(p.getName() + " added to queue");
+            LOGGER.fine(p.getFullDisplayName() + " added to queue");
 
             // put the item in the queue
             waitingList.add(new WaitingItem(due,p));
@@ -310,7 +309,7 @@ public class Queue extends ResourceController implements Saveable {
      *         false if this was no-op.
      */
     public synchronized boolean cancel(Task p) {
-        LOGGER.fine("Cancelling " + p.getName());
+        LOGGER.fine("Cancelling " + p.getFullDisplayName());
         for (Iterator<WaitingItem> itr = waitingList.iterator(); itr.hasNext();) {
             Item item = itr.next();
             if (item.task == p) {
@@ -548,7 +547,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         // if we are a large deployment, then we will favor slaves
-        boolean isLargeHudson = Hudson.getInstance().getSlaves().size() > 10;
+        boolean isLargeHudson = Hudson.getInstance().getNodes().size() > 10;
 
         // otherwise let's see if the last node where this project was built is available
         // it has up-to-date workspace, so that's usually preferable.
@@ -631,7 +630,7 @@ public class Queue extends ResourceController implements Saveable {
             BlockedItem p = itr.next();
             if (!isBuildBlocked(p.task)) {
                 // ready to be executed
-                LOGGER.fine(p.task.getName() + " no longer blocked");
+                LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
                 itr.remove();
                 buildables.put(p.task,new BuildableItem(p));
             }
@@ -647,13 +646,13 @@ public class Queue extends ResourceController implements Saveable {
             if (!isBuildBlocked(p)) {
                 // ready to be executed immediately
                 waitingList.remove(top);
-                LOGGER.fine(p.getName() + " ready to build");
+                LOGGER.fine(p.getFullDisplayName() + " ready to build");
                 buildables.put(p,new BuildableItem(top));
             } else {
                 // this can't be built now because another build is in progress
                 // set this project aside.
                 waitingList.remove(top);
-                LOGGER.fine(p.getName() + " is blocked");
+                LOGGER.fine(p.getFullDisplayName() + " is blocked");
                 blockedProjects.put(p,new BlockedItem(top));
             }
         }
@@ -710,8 +709,8 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Unique name of this task.
          *
-         * @see hudson.model.Item#getName()
-         *      TODO: this doesn't make sense anymore. remove it.
+         * <p>
+         * This method is no longer used, left here for compatibility. Just return {@link #getDisplayName()}.
          */
         String getName();
 
@@ -911,7 +910,7 @@ public class Queue extends ResourceController implements Saveable {
         public String getWhy() {
             Label label = task.getAssignedLabel();
             Hudson hudson = Hudson.getInstance();
-            if (hudson.getSlaves().isEmpty())
+            if (hudson.getNodes().isEmpty())
                 label = null;    // no master/slave. pointless to talk about nodes
 
             String name = null;
@@ -999,7 +998,7 @@ public class Queue extends ResourceController implements Saveable {
 				Job<?,?> job = (Job<?,?>) Hudson.getInstance().getItemByFullName(projectName);
                 if(job==null)  throw new NoSuchElementException("No such job exists: "+projectName);
 				Run<?,?> run = job.getBuildByNumber(buildNumber);
-                if(job==null)  throw new NoSuchElementException("No such build: "+string);
+                if(run==null)  throw new NoSuchElementException("No such build: "+string);
 				return run;
 			}
 
