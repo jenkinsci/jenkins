@@ -942,7 +942,7 @@ public class Queue extends ResourceController implements Saveable {
             long elapsed = System.currentTimeMillis()-buildableStartMilliseconds;
             if(d>=0) {
                 // if we were running elsewhere, we would have done this build ten times.
-                return elapsed > d*10;
+                return elapsed > Math.max(d,60000L)*10;
             } else {
                 // more than a day in the queue
                 return TimeUnit2.MILLISECONDS.toHours(elapsed)>24;
