@@ -45,11 +45,11 @@ public class Engine extends Thread {
     private List<URL> candidateUrls;
 
     /**
-     * URL that points to Hudson's tcp slage agent listener, like <tt>http://myhost/hudson/tcpSlaveAgentListener/</tt>
+     * URL that points to Hudson's tcp slage agent listener, like <tt>http://myhost/hudson/</tt>
      *
      * <p>
      * This value is determined from {@link #candidateUrls} after a successful connection.
-     * Note that this URL also has "tcpSlaveAgentListener" in it.
+     * Note that this URL <b>DOES NOT</b> have "tcpSlaveAgentListener" in it.
      */
     private URL hudsonUrl;
 
