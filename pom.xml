@@ -9,7 +9,7 @@
   
   <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.278-SNAPSHOT</version>
+  <version>1.277-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Hudson main module</name>
