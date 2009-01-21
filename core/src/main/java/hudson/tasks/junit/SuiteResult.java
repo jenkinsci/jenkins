@@ -86,7 +86,7 @@ public final class SuiteResult implements Serializable {
             name = '('+xmlReport.getName()+')';
         else {
             String pkg = suite.attributeValue("package");
-            if(pkg!=null&&!pkg.isEmpty())   name=pkg+'.'+name;
+            if(pkg!=null&& pkg.length()>0)   name=pkg+'.'+name;
         }
         this.name = TestObject.safe(name);
         this.timestamp = suite.attributeValue("timestamp");
