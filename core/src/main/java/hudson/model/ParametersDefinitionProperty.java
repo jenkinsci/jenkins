@@ -160,7 +160,19 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
     public String getUrlName() {
         return "parameters";
     }
-
+    
+    public ParameterizedProjectTask getQueued(String key) {
+    	Queue.Item[] items = Hudson.getInstance().getQueue().getItems();
+    	for (Queue.Item item: items) {
+    		if (item.task instanceof ParameterizedProjectTask) {
+    			ParameterizedProjectTask ppt = (ParameterizedProjectTask) item.task;
+				if (ppt.getProject() == owner && ppt.getQueueKey().equals(key)) {
+    				return ppt;
+    			}
+    		}
+    	}
+    	return null;
+    }
 
     static {
         ParameterDefinition.LIST.add(StringParameterDefinition.DESCRIPTOR);

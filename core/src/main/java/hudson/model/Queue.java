@@ -1,14 +1,14 @@
 package hudson.model;
 
+import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.BulkChange;
 import hudson.model.Node.Mode;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.util.OneShotEvent;
-import hudson.util.XStream2;
 import hudson.util.TimeUnit2;
+import hudson.util.XStream2;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,16 +24,19 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.management.timer.Timer;
+import javax.servlet.ServletException;
 
 import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -745,6 +748,16 @@ public class Queue extends ResourceController implements Saveable {
          * instead of exception.
          */
         boolean hasAbortPermission();
+        
+        /**
+         * The relative url for this task
+         */
+        String getUrl();
+        
+        /**
+         * Called from queue.jelly.
+         */
+        void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
     }
 
     public interface Executable extends Runnable {

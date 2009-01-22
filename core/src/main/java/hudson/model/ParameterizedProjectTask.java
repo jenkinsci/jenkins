@@ -6,6 +6,11 @@ import hudson.util.QueueTaskFilter;
 import java.io.IOException;
 import java.util.List;
 
+import javax.servlet.ServletException;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
 /**
  * A task representing a project that should be built with a certain set of
  * parameter values
@@ -15,19 +20,45 @@ public class ParameterizedProjectTask extends QueueTaskFilter {
     private final AbstractProject<?,?> project;
     private final List<ParameterValue> parameters;
 
+    private static long COUNTER = System.currentTimeMillis(); 
+
+    /**
+     * Used for identifying the task in the queue
+     */
+    private final String key = Long.toString(COUNTER++);
+
     public ParameterizedProjectTask(AbstractProject<?,?> project, List<ParameterValue> parameters) {
         super(project);
         this.project = project;
         this.parameters = parameters;
     }
+    
+    public AbstractProject<?, ?> getProject() {
+		return project;
+	}
 
-    @Override
+	public List<ParameterValue> getParameters() {
+		return parameters;
+	}
+
+	@Override
     public Executable createExecutable() throws IOException {
         AbstractBuild<?, ?> build = project.createExecutable();
         build.addAction(new ParametersAction(parameters, build));
 
         return build;
     }
+	
+    /**
+     * Cancels a scheduled build.
+     */
+    public void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        project.checkPermission(AbstractProject.BUILD);
+
+        Hudson.getInstance().getQueue().cancel(this);
+        rsp.forwardToPreviousPage(req);
+    }
+	
 
     @Override
     public int hashCode() {
@@ -59,4 +90,12 @@ public class ParameterizedProjectTask extends QueueTaskFilter {
         }
         return true;
     }
+    
+    public String getUrl() {
+    	return getProject().getUrl() + "/parameters/queued/" + key + "/";
+    }
+
+	public String getQueueKey() {
+		return key;
+	}
 }
