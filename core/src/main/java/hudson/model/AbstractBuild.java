@@ -243,21 +243,22 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             Result result = doRun(listener);
 
-            // the two if statements here are a real mess.
-            // the "return null to mean success" convention is not very consistent
-            // so we should probably get rid of that. And in the mean time
-            // this check will allows us to create symlinks
-            if(result!=null && result!=Result.SUCCESS)
-                return result;  // abort here
+            // this is ugly, but for historical reason, if non-null value is returned
+            // it should become the final say.
+            if(result==null)    result = getResult();
+            if(result==null)    result = Result.SUCCESS;
 
-            if(getResult()==null || getResult()==Result.SUCCESS)
-                createLastSuccessfulLink(listener);
+            if(result.isBetterOrEqualTo(Result.UNSTABLE))
+                createSymLink(listener,"lastSuccessful");
 
-            return Result.SUCCESS;
+            if(result.isBetterOrEqualTo(Result.SUCCESS))
+                createSymLink(listener,"lastStable");
+
+            return result;
         }
 
-        private void createLastSuccessfulLink(BuildListener listener) throws InterruptedException {
-            Util.createSymlink(getProject().getBuildDir(),"builds/"+getId(),"../lastSuccessful",listener);
+        private void createSymLink(BuildListener listener, String name) throws InterruptedException {
+            Util.createSymlink(getProject().getBuildDir(),"builds/"+getId(),"../"+name,listener);
         }
 
         private boolean checkout(BuildListener listener) throws Exception {
