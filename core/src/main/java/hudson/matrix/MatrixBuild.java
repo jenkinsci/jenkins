@@ -7,11 +7,10 @@ import hudson.model.Executor;
 import hudson.model.Fingerprint;
 import hudson.model.Hudson;
 import hudson.model.JobProperty;
+import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.tasks.Publisher;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Build of {@link MatrixProject}.
@@ -145,7 +147,12 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             try {
                 for(MatrixConfiguration c : activeConfigurations) {
                     logger.println(Messages.MatrixBuild_Triggering(c.getDisplayName()));
-                    c.scheduleBuild();
+                    ParametersAction parameters = getAction(ParametersAction.class);
+                    if (parameters != null) {
+                    	c.scheduleBuild(parameters);
+                    } else {
+                    	c.scheduleBuild();
+                    }
                 }
 
                 // this occupies an executor unnecessarily.

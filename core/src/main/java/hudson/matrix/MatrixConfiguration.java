@@ -10,6 +10,9 @@ import hudson.model.ItemGroup;
 import hudson.model.JDK;
 import hudson.model.Label;
 import hudson.model.Node;
+import hudson.model.ParameterValue;
+import hudson.model.ParameterizedProjectTask;
+import hudson.model.ParametersAction;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
 import hudson.scm.SCM;
@@ -255,4 +258,10 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      * jobs to use longer path names.
      */
     public static boolean useShortWorkspaceName = Boolean.getBoolean(MatrixConfiguration.class.getName()+".useShortWorkspaceName");
+
+	public boolean scheduleBuild(ParametersAction parameters) {
+        return Hudson.getInstance().getQueue().add(
+                new ParameterizedProjectTask(this, parameters.getParameters()), getQuietPeriod());
+	}
+	
 }
