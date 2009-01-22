@@ -178,6 +178,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         FilePath ws = getWorkspace();
         if(ws!=null)
             getScm().processWorkspaceBeforeDeletion(this, ws,getLastBuiltOn());
+        try {
+            ws.deleteRecursive();
+        } catch (InterruptedException e) {
+            // Ignoring for now
+        }
         super.performDelete();
     }
 
