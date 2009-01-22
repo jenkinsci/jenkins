@@ -115,7 +115,7 @@ public class UsageStatistics extends PageDecorator {
             if(c.getNode()==h) {
                 n.put("master",true);
                 n.put("jvm-vendor", System.getProperty("java.vm.vendor"));
-                n.put("jvm-version", System.getProperty("java.vm.version"));
+                n.put("jvm-version", System.getProperty("java.version"));
             }
             n.put("executors",c.getNumExecutors());
             n.put("os", ArchitectureMonitor.DESCRIPTOR.get(c));
