@@ -865,6 +865,7 @@ public final class FilePath implements Serializable {
             // local to local copy.
             return act(new FileCallable<Integer>() {
                 public Integer invoke(File base, VirtualChannel channel) throws IOException {
+                    if(!base.exists())  return 0;
                     assert target.channel==null;
 
                     try {
@@ -966,8 +967,13 @@ public final class FilePath implements Serializable {
 
         TarOutputStream tar = new TarOutputStream(new GZIPOutputStream(new BufferedOutputStream(pipe.getOut())));
         tar.setLongFileMode(TarOutputStream.LONGFILE_GNU);
-        DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
-        String[] files = ds.getIncludedFiles();
+        String[] files;
+        if(baseDir.exists()) {
+            DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+            files = ds.getIncludedFiles();
+        } else {
+            files = new String[0];
+        }
         for( String f : files) {
             if(Functions.isWindows())
                 f = f.replace('\\','/');
