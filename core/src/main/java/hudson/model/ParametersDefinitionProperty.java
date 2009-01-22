@@ -3,14 +3,15 @@ package hudson.model;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletException;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
 
 /**
  * Keeps a list of the parameters defined for a project.
@@ -59,7 +60,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         }
 
         List<ParameterValue> values = new ArrayList<ParameterValue>();
-
+        
         JSONObject formData = req.getSubmittedForm();
         JSONArray a = JSONArray.fromObject(formData.get("parameter"));
 
@@ -74,6 +75,24 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         }
 
         Hudson.getInstance().getQueue().add(
+                new ParameterizedProjectTask(owner, values), 0);
+
+        // send the user back to the job top page.
+        rsp.sendRedirect(".");
+    }
+    
+    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        List<ParameterValue> values = new ArrayList<ParameterValue>();
+        for (ParameterDefinition d: parameterDefinitions) {
+        	ParameterValue value = d.createValue(req);
+        	if (value != null) {
+        		values.add(value);
+        	} else {
+        		throw new IllegalArgumentException("Parameter " + d.getName() + " was missing.");
+        	}
+        }
+
+    	Hudson.getInstance().getQueue().add(
                 new ParameterizedProjectTask(owner, values), 0);
 
         // send the user back to the job top page.

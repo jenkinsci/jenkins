@@ -42,4 +42,9 @@ public class RunParameterDefinition extends ParameterDefinition {
         return req.bindJSON(RunParameterValue.class, jo);
     }
 
+	@Override
+	public ParameterValue createValue(StaplerRequest req) {
+		throw new UnsupportedOperationException();
+	}
+
 }

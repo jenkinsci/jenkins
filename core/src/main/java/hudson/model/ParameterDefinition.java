@@ -80,8 +80,22 @@ public abstract class ParameterDefinition implements
      */
     public abstract ParameterDescriptor getDescriptor();
 
+    /**
+     * Create a parameter value from a form submission
+     * @param req
+     * @param jo
+     * @return
+     */
     public abstract ParameterValue createValue(StaplerRequest req, JSONObject jo);
     
+    /**
+     * Create a parameter value from a GET (with query string) or POST.
+     * If no value is available in the request, it returns a default value if possible, or null.
+     * @param req
+     * @return
+     */
+    public abstract ParameterValue createValue(StaplerRequest req);
+
     /**
      * Returns default parameter value for this definition.
      * 

@@ -59,4 +59,15 @@ public class StringParameterDefinition extends ParameterDefinition {
         return req.bindJSON(StringParameterValue.class, jo);
     }
 
+	@Override
+	public ParameterValue createValue(StaplerRequest req) {
+        String[] value = req.getParameterValues(getName());
+        if (value == null) {
+        	return getDefaultParameterValue();
+        } else if (value.length != 1) {
+        	throw new IllegalArgumentException("Illegal number of parameter values for " + getName() + ": " + value.length);
+        } else 
+        	return new StringParameterValue(getName(), value[0]);
+	}
+
 }

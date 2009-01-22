@@ -46,4 +46,9 @@ public class FileParameterDefinition extends ParameterDefinition {
             return "/help/parameter/file.html";
         }
     }
+
+	@Override
+	public ParameterValue createValue(StaplerRequest req) {
+		throw new UnsupportedOperationException();
+	}
 }

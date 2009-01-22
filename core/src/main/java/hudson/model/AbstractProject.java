@@ -969,6 +969,23 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
         rsp.forwardToPreviousPage(req);
     }
+    
+    /**
+     * Supports build trigger with parameters via an HTTP GET or POST.
+     * Currently only String parameters are supported.
+     */
+    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
+
+        ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
+        if (pp != null) {
+            pp.buildWithParameters(req,rsp);
+            return;
+        } else {
+        	throw new IllegalStateException("This build is not parameterized!");
+        }
+    	
+    }
 
     /**
      * Schedules a new SCM polling command.

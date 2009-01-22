@@ -42,4 +42,9 @@ public class JobParameterDefinition extends ParameterDefinition {
         return req.bindJSON(JobParameterValue.class, jo);
     }
 
+	@Override
+	public ParameterValue createValue(StaplerRequest req) {
+		throw new UnsupportedOperationException();
+	}
+
 }
