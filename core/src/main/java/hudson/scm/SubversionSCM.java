@@ -1098,7 +1098,7 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         private DescriptorImpl() {
-            super(SubversionSCM.class,SubversionRepositoryBrowser.class);
+            super(SubversionRepositoryBrowser.class);
             load();
         }
 

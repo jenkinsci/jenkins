@@ -133,7 +133,6 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         /*package*/ final AdministrativeMonitorImpl monitor = new AdministrativeMonitorImpl();
 
         DescriptorImpl() {
-            super(SCMTrigger.class);
             load();
             /*
              * Need to resize the thread pool here in case there is no existing configuration file for SCMTrigger as

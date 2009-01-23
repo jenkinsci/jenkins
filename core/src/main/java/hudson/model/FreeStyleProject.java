@@ -75,10 +75,6 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {
-        private DescriptorImpl() {
-            super(FreeStyleProject.class);
-        }
-
         public String getDisplayName() {
             return Messages.FreeStyleProject_DisplayName();
         }

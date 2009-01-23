@@ -117,11 +117,6 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
     public static final JobPropertyDescriptor DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends JobPropertyDescriptor {
-
-        protected DescriptorImpl() {
-            super(ParametersDefinitionProperty.class);
-        }
-
         @Override
         public boolean isApplicable(Class<? extends Job> jobType) {
             return AbstractProject.class.isAssignableFrom(jobType);
@@ -146,7 +141,6 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         public String getDisplayName() {
             return Messages.ParametersDefinitionProperty_DisplayName();
         }
-
     }
 
     public String getDisplayName() {

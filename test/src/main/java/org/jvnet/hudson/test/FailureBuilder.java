@@ -31,10 +31,6 @@ public class FailureBuilder extends Builder {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends Descriptor<Builder> {
-        private DescriptorImpl() {
-            super(FailureBuilder.class);
-        }
-
         public Builder newInstance(StaplerRequest req, JSONObject data) {
             throw new UnsupportedOperationException();
         }

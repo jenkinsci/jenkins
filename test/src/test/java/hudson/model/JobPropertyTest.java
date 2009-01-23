@@ -48,10 +48,6 @@ public class JobPropertyTest extends HudsonTestCase {
 
         @SuppressWarnings("unchecked")        
         private static class DescriptorImpl extends JobPropertyDescriptor {
-            protected DescriptorImpl() {
-                super(JobPropertyImpl.class);
-            }
-
             @Override
             public boolean isApplicable(Class<? extends Job> jobType) {
                 return false;

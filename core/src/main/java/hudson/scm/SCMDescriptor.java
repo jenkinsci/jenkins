@@ -1,6 +1,7 @@
 package hudson.scm;
 
 import hudson.model.Descriptor;
+import hudson.model.Describable;
 
 import java.util.List;
 import java.util.Collections;
@@ -30,6 +31,17 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
         super(clazz);
+        this.repositoryBrowser = repositoryBrowser;
+    }
+
+    /**
+     * Infers the type of the corresponding {@link SCM} from the outer class.
+     * This version works when you follow the common convention, where a descriptor
+     * is written as the static nested class of the describable class.
+     *
+     * @since 1.278
+     */
+    protected SCMDescriptor(Class<? extends RepositoryBrowser> repositoryBrowser) {
         this.repositoryBrowser = repositoryBrowser;
     }
 

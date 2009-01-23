@@ -476,10 +476,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {
-        private DescriptorImpl() {
-            super(MatrixProject.class);
-        }
-
         public String getDisplayName() {
             return Messages.MatrixProject_DisplayName();
         }

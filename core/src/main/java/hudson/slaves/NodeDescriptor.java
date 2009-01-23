@@ -22,6 +22,9 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
         super(clazz);
     }
 
+    protected NodeDescriptor() {
+    }
+
     public final String newInstanceDetailPage() {
         return '/'+clazz.getName().replace('.','/').replace('$','/')+"/newInstanceDetail.jelly";
     }

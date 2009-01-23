@@ -20,11 +20,6 @@ public class JobParameterDefinition extends ParameterDefinition {
     public static final ParameterDescriptor DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends ParameterDescriptor {
-
-        protected DescriptorImpl() {
-            super(JobParameterDefinition.class);
-        }
-
         @Override
         public String getDisplayName() {
             return "Project Parameter";

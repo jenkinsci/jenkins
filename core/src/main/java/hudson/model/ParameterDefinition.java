@@ -118,6 +118,16 @@ public abstract class ParameterDefinition implements
             super(klazz);
         }
 
+        /**
+         * Infers the type of the corresponding {@link ParameterDescriptor} from the outer class.
+         * This version works when you follow the common convention, where a descriptor
+         * is written as the static nested class of the describable class.
+         *
+         * @since 1.278
+         */
+        protected ParameterDescriptor() {
+        }
+
         public String getValuePage() {
             return getViewPage(clazz, "index.jelly");
         }

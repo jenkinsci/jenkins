@@ -20,11 +20,6 @@ public class RunParameterDefinition extends ParameterDefinition {
     public static final ParameterDescriptor DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends ParameterDescriptor {
-
-        protected DescriptorImpl() {
-            super(RunParameterDefinition.class);
-        }
-
         @Override
         public String getDisplayName() {
             return "Run Parameter";
@@ -34,7 +29,6 @@ public class RunParameterDefinition extends ParameterDefinition {
         public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(RunParameterDefinition.class, formData);
         }
-
     }
 
     @Override

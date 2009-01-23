@@ -39,7 +39,7 @@ public class NullSCM extends SCM {
 
     public static class DescriptorImpl extends SCMDescriptor<NullSCM> {
         public DescriptorImpl() {
-            super(NullSCM.class, null);
+            super(null);
         }
 
         public String getDisplayName() {

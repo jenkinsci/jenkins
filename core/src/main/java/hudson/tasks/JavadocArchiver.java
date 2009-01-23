@@ -175,10 +175,6 @@ public class JavadocArchiver extends Publisher {
     }
 
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-        private DescriptorImpl() {
-            super(JavadocArchiver.class);
-        }
-
         public String getDisplayName() {
             return Messages.JavadocArchiver_DisplayName();
         }

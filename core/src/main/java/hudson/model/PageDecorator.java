@@ -51,6 +51,16 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
         super(yourClass);
     }
 
+    /**
+     * Infers the type of the corresponding {@link Describable} from the outer class.
+     * This version works when you follow the common convention, where a descriptor
+     * is written as the static nested class of the describable class.
+     *
+     * @since 1.278
+     */
+    protected PageDecorator() {
+    }
+
     public final Descriptor<PageDecorator> getDescriptor() {
         return this;
     }

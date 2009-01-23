@@ -23,10 +23,6 @@ public final class DumbSlave extends Slave {
     public static final class DescriptorImpl extends NodeDescriptor {
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();
 
-        private DescriptorImpl() {
-            super(DumbSlave.class);
-        }
-
         public String getDisplayName() {
             return Messages.DumbSlave_displayName();
         }

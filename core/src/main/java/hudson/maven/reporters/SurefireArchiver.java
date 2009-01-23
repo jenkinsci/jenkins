@@ -141,10 +141,6 @@ public class SurefireArchiver extends MavenReporter {
     public static final class DescriptorImpl extends MavenReporterDescriptor {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-        private DescriptorImpl() {
-            super(SurefireArchiver.class);
-        }
-
         public String getDisplayName() {
             return Messages.SurefireArchiver_DisplayName();
         }

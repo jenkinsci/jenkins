@@ -25,11 +25,6 @@ public class UserTestCase extends HudsonTestCase {
         }
         
         public static class UserPropertyDescriptorImpl extends UserPropertyDescriptor {
-
-            protected UserPropertyDescriptorImpl() {
-                super(UserPropertyImpl.class);
-            }
-
             @Override
             public UserProperty newInstance(User user) {
                 return null;

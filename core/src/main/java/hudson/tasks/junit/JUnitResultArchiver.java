@@ -116,10 +116,6 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
-        public DescriptorImpl() {
-            super(JUnitResultArchiver.class);
-        }
-
         public String getDisplayName() {
             return Messages.JUnitResultArchiver_DisplayName();
         }

@@ -66,10 +66,6 @@ public class ViewSVN extends SubversionRepositoryBrowser {
     public static final class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();
 
-        private DescriptorImpl() {
-            super(ViewSVN.class);
-        }
-
         public String getDisplayName() {
             return "ViewSVN";
         }

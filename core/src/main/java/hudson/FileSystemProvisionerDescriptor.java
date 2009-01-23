@@ -12,10 +12,6 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public abstract class FileSystemProvisionerDescriptor extends Descriptor<FileSystemProvisioner> implements ExtensionPoint {
-    protected FileSystemProvisionerDescriptor(Class<? extends FileSystemProvisioner> clazz) {
-        super(clazz);
-    }
-
     /**
      * Called to clean up a workspace that may potentially belong to this {@link FileSystemProvisioner}.
      *

@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.regex.Pattern;
 
 /**
  * {@link RepositoryBrowser} for Sventon.
@@ -106,10 +105,6 @@ public class Sventon extends SubversionRepositoryBrowser {
     public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
-        public DescriptorImpl() {
-            super(Sventon.class);
-        }
-
         public String getDisplayName() {
             return "Sventon";
         }

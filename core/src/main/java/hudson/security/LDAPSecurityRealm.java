@@ -236,10 +236,6 @@ public class LDAPSecurityRealm extends SecurityRealm {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
-        private DescriptorImpl() {
-            super(LDAPSecurityRealm.class);
-        }
-
         public String getDisplayName() {
             return Messages.LDAPSecurityRealm_DisplayName();
         }

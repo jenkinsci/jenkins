@@ -38,10 +38,6 @@ public class MavenMailer extends MavenReporter {
     public static final class DescriptorImpl extends MavenReporterDescriptor {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-        private DescriptorImpl() {
-            super(MavenMailer.class);
-        }
-
         public String getDisplayName() {
             return Messages.MavenMailer_DisplayName();
         }

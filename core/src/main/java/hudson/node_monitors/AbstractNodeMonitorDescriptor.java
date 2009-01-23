@@ -24,6 +24,15 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {
+    protected AbstractNodeMonitorDescriptor() {
+        this(HOUR);
+    }
+
+    protected AbstractNodeMonitorDescriptor(long interval) {
+        schedule(interval);
+
+    }
+
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz) {
         this(clazz,HOUR);
     }
@@ -31,7 +40,10 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz, long interval) {
         super(clazz);
 
-        // check every hour
+        schedule(interval);
+    }
+
+    private void schedule(long interval) {
         Trigger.timer.scheduleAtFixedRate(new SafeTimerTask() {
             public void doRun() {
                 triggerUpdate();

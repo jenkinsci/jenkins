@@ -16,6 +16,16 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
     }
 
     /**
+     * Infers the type of the corresponding {@link TopLevelItem} from the outer class.
+     * This version works when you follow the common convention, where a descriptor
+     * is written as the static nested class of the describable class.
+     *
+     * @since 1.278
+     */
+    protected TopLevelItemDescriptor() {
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <p>

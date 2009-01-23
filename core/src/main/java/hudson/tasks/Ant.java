@@ -220,7 +220,6 @@ public class Ant extends Builder {
         private volatile AntInstallation[] installations = new AntInstallation[0];
 
         private DescriptorImpl() {
-            super(Ant.class);
             load();
         }
 

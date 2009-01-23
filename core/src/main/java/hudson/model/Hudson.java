@@ -1181,9 +1181,6 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
     public static final class DescriptorImpl extends NodeDescriptor {
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();
-        private DescriptorImpl() {
-            super(Hudson.class);
-        }
 
         public String getDisplayName() {
             throw new UnsupportedOperationException();

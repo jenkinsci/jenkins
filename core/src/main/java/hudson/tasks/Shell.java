@@ -83,7 +83,6 @@ public class Shell extends CommandInterpreter {
         private String shell;
 
         private DescriptorImpl() {
-            super(Shell.class);
             load();
         }
 

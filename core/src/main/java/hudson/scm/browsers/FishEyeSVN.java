@@ -105,10 +105,6 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
     public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
-        public DescriptorImpl() {
-            super(FishEyeSVN.class);
-        }
-
         public String getDisplayName() {
             return "FishEye";
         }

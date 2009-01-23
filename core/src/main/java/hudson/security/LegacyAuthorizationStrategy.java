@@ -33,10 +33,6 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
     public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
-        private DescriptorImpl() {
-            super(LegacyAuthorizationStrategy.class);
-        }
-
         public String getDisplayName() {
             return Messages.LegacyAuthorizationStrategy_DisplayName();
         }

@@ -34,10 +34,6 @@ public class BatchFile extends CommandInterpreter {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends Descriptor<Builder> {
-        private DescriptorImpl() {
-            super(BatchFile.class);
-        }
-
         public String getHelpFile() {
             return "/help/project-config/batch.html";
         }

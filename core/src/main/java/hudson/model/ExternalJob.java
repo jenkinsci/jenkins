@@ -1,6 +1,5 @@
 package hudson.model;
 
-import hudson.model.AbstractProject;
 import hudson.model.RunMap.Constructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -81,10 +80,6 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
     }
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {
-        private DescriptorImpl() {
-            super(ExternalJob.class);
-        }
-
         public String getDisplayName() {
             return Messages.ExternalJob_DisplayName();
         }

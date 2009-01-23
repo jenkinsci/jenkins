@@ -210,10 +210,6 @@ public class AggregatedTestResultPublisher extends Publisher {
     }
 
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-        public DescriptorImpl() {
-            super(AggregatedTestResultPublisher.class);
-        }
-
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;    // for all types
         }

@@ -589,10 +589,6 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {
-        private DescriptorImpl() {
-            super(MavenModuleSet.class);
-        }
-
         public String getDisplayName() {
             return Messages.MavenModuleSet_DiplayName();
         }

@@ -239,7 +239,6 @@ public class Maven extends Builder {
         private volatile MavenInstallation[] installations = new MavenInstallation[0];
 
         private DescriptorImpl() {
-            super(Maven.class);
             load();
         }
 

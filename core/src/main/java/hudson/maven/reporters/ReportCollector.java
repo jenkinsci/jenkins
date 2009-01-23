@@ -80,10 +80,6 @@ public class ReportCollector extends MavenReporter {
     public static final class DescriptorImpl extends MavenReporterDescriptor {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-        private DescriptorImpl() {
-            super(ReportCollector.class);
-        }
-
         public String getDisplayName() {
             return Messages.ReportCollector_DisplayName();
         }

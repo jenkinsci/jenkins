@@ -46,10 +46,6 @@ public class MavenRedeployer extends Publisher {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-        private DescriptorImpl() {
-            super(MavenRedeployer.class);
-        }
-
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return AbstractMavenProject.class.isAssignableFrom(jobType);
         }

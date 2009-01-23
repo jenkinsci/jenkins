@@ -361,10 +361,6 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();
 
-        private DescriptorImpl() {
-            super(HudsonPrivateSecurityRealm.class);
-        }
-
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
         }

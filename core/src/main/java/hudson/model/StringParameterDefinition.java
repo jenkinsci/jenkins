@@ -38,11 +38,6 @@ public class StringParameterDefinition extends ParameterDefinition {
     public static final ParameterDescriptor DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends ParameterDescriptor {
-
-        protected DescriptorImpl() {
-            super(StringParameterDefinition.class);
-        }
-
         @Override
         public String getDisplayName() {
             return Messages.StringParameterDefinition_DisplayName();

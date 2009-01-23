@@ -126,10 +126,6 @@ public class ArtifactArchiver extends Publisher {
     public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-        public DescriptorImpl() {
-            super(ArtifactArchiver.class);
-        }
-
         public String getDisplayName() {
             return Messages.ArtifactArchiver_DisplayName();
         }

@@ -99,8 +99,7 @@ public class RedeployPublisher extends Publisher {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-        public DescriptorImpl() {
-            super(RedeployPublisher.class);
+        private DescriptorImpl() {
         }
 
         protected DescriptorImpl(Class<? extends Publisher> clazz) {

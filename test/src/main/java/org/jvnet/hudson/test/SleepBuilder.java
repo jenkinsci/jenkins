@@ -36,10 +36,6 @@ public class SleepBuilder extends Builder {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends Descriptor<Builder> {
-        private DescriptorImpl() {
-            super(SleepBuilder.class);
-        }
-
         public Builder newInstance(StaplerRequest req, JSONObject data) {
             throw new UnsupportedOperationException();
         }

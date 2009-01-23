@@ -179,10 +179,6 @@ public class Fingerprinter extends Publisher implements Serializable {
     public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-        public DescriptorImpl() {
-            super(Fingerprinter.class);
-        }
-
         public String getDisplayName() {
             return Messages.Fingerprinter_DisplayName();
         }

@@ -222,8 +222,6 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
 
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public DescriptorImpl() {
-            super(BuildTrigger.class);
-
             Hudson.getInstance().getJobListeners().add(new ItemListener() {
                 @Override
                 public void onRenamed(Item item, String oldName, String newName) {

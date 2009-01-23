@@ -2,6 +2,7 @@ package hudson.maven;
 
 import hudson.maven.reporters.MavenArtifactArchiver;
 import hudson.model.Descriptor;
+import hudson.model.Describable;
 import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.StaplerRequest;
@@ -16,6 +17,16 @@ import org.kohsuke.stapler.jelly.JellyClassTearOff;
 public abstract class MavenReporterDescriptor extends Descriptor<MavenReporter> {
     protected MavenReporterDescriptor(Class<? extends MavenReporter> clazz) {
         super(clazz);
+    }
+
+    /**
+     * Infers the type of the corresponding {@link Describable} from the outer class.
+     * This version works when you follow the common convention, where a descriptor
+     * is written as the static nested class of the describable class.
+     *
+     * @since 1.278
+     */
+    protected MavenReporterDescriptor() {
     }
 
     /**

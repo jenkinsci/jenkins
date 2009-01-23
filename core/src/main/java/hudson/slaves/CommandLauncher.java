@@ -119,10 +119,6 @@ public class CommandLauncher extends ComputerLauncher {
     }
 
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
-        public DescriptorImpl() {
-            super(CommandLauncher.class);
-        }
-
         public String getDisplayName() {
             return Messages.CommandLauncher_displayName();
         }

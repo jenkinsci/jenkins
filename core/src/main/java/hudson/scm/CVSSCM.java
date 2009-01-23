@@ -961,7 +961,7 @@ public class CVSSCM extends SCM implements Serializable {
         }
 
         DescriptorImpl() {
-            super(CVSSCM.class,CVSRepositoryBrowser.class);
+            super(CVSRepositoryBrowser.class);
             load();
         }
 

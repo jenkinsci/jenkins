@@ -11,6 +11,16 @@ public abstract class UserPropertyDescriptor extends Descriptor<UserProperty> {
     }
 
     /**
+     * Infers the type of the corresponding {@link Describable} from the outer class.
+     * This version works when you follow the common convention, where a descriptor
+     * is written as the static nested class of the describable class.
+     *
+     * @since 1.278
+     */
+    protected UserPropertyDescriptor() {
+    }
+
+    /**
      * Creates a default instance of {@link UserProperty} to be associated
      * with {@link User} object that wasn't created from a persisted XML data.
      *

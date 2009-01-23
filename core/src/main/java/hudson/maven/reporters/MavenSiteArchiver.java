@@ -111,10 +111,6 @@ public class MavenSiteArchiver extends MavenReporter {
     public static final class DescriptorImpl extends MavenReporterDescriptor {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-        private DescriptorImpl() {
-            super(MavenSiteArchiver.class);
-        }
-
         public String getDisplayName() {
             return "Maven site";
         }

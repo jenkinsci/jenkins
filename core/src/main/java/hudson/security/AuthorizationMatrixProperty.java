@@ -17,9 +17,6 @@ import java.util.Map.Entry;
 
 import net.sf.json.JSONObject;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.acls.sid.GrantedAuthoritySid;
-import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -118,10 +115,6 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				}
 			}
 			return amp;
-		}
-
-		protected DescriptorImpl() {
-			super(AuthorizationMatrixProperty.class);
 		}
 
 		@Override

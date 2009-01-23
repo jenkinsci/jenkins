@@ -207,14 +207,6 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
     }
 
     public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
-
-        /**
-         * Constructs a new DescriptorImpl.
-         */
-        public DescriptorImpl() {
-            super(SimpleScheduledRetentionStrategy.class);
-        }
-
         public String getDisplayName() {
             return Messages.SimpleScheduledRetentionStrategy_displayName();
         }

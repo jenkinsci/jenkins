@@ -22,6 +22,16 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
     }
 
     /**
+     * Infers the type of the corresponding {@link BuildStep} from the outer class.
+     * This version works when you follow the common convention, where a descriptor
+     * is written as the static nested class of the describable class.
+     *
+     * @since 1.278
+     */
+    protected BuildStepDescriptor() {
+    }
+
+    /**
      * Returns true if this task is applicable to the given project.
      *
      * @return

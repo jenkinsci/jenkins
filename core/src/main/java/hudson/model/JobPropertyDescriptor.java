@@ -23,6 +23,16 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     }
 
     /**
+     * Infers the type of the corresponding {@link JobProperty} from the outer class.
+     * This version works when you follow the common convention, where a descriptor
+     * is written as the static nested class of the describable class.
+     *
+     * @since 1.278
+     */
+    protected JobPropertyDescriptor() {
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @return

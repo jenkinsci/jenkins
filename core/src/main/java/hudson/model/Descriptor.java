@@ -173,6 +173,32 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
+     * Infers the type of the corresponding {@link Describable} from the outer class.
+     * This version works when you follow the common convention, where a descriptor
+     * is written as the static nested class of the describable class.
+     * 
+     * @since 1.278
+     */
+    protected Descriptor() {
+        this.clazz = (Class<T>)getClass().getEnclosingClass();
+        if(clazz==null)
+            throw new AssertionError(getClass()+" doesn't have an outer class. Use the constructor that takes the Class object explicitly.");
+
+        // detect an type error
+        Type bt = Types.getBaseClass(getClass(), Descriptor.class);
+        if (bt instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) bt;
+            // this 't' is the closest approximation of T of Descriptor<T>.
+            Class t = Types.erasure(pt.getActualTypeArguments()[0]);
+            if(!t.isAssignableFrom(clazz))
+                throw new AssertionError("Outer class "+clazz+" of "+getClass()+" is not assignable to "+t+". Perhaps wrong outer class?");
+        }
+
+        // same as the init code above
+        ALL.add(this);
+    }
+
+    /**
      * Human readable name of this kind of configurable object.
      */
     public abstract String getDisplayName();

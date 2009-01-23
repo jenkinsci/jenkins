@@ -60,11 +60,6 @@ public final class FishEyeCVS extends CVSRepositoryBrowser {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
-
-        public DescriptorImpl() {
-            super(FishEyeCVS.class);
-        }
-
         @Override
         public String getDisplayName() {
             return "FishEye";

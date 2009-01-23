@@ -7,14 +7,10 @@ import hudson.model.Run;
 import hudson.scm.SCM;
 
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-
-import net.sf.json.JSONObject;
 
 /**
  * Deletes old log files.
@@ -104,10 +100,6 @@ public class LogRotator implements Describable<LogRotator> {
     public static final LRDescriptor DESCRIPTOR = new LRDescriptor();
 
     public static final class LRDescriptor extends Descriptor<LogRotator> {
-        private LRDescriptor() {
-            super(LogRotator.class);
-        }
-
         public String getDisplayName() {
             return "Log Rotation";
         }        

@@ -128,10 +128,6 @@ public class MavenFingerprinter extends MavenReporter {
     public static final class DescriptorImpl extends MavenReporterDescriptor {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-        private DescriptorImpl() {
-            super(MavenFingerprinter.class);
-        }
-
         public String getDisplayName() {
             return Messages.MavenFingerprinter_DisplayName();
         }

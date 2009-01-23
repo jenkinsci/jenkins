@@ -39,10 +39,6 @@ public class TimerTrigger extends Trigger<BuildableItem> {
     public static final TriggerDescriptor DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends TriggerDescriptor {
-        public DescriptorImpl() {
-            super(TimerTrigger.class);
-        }
-
         public boolean isApplicable(Item item) {
             return item instanceof BuildableItem;
         }

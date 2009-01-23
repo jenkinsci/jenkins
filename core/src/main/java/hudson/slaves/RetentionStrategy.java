@@ -109,13 +109,6 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         private static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
-            /**
-             * Constructs a new DescriptorImpl.
-             */
-            public DescriptorImpl() {
-                super(Always.class);
-            }
-
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Always_displayName();
             }
@@ -196,13 +189,6 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         }
 
         private static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
-            /**
-             * Constructs a new DescriptorImpl.
-             */
-            public DescriptorImpl() {
-                super(Demand.class);
-            }
-
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Demand_displayName();
             }

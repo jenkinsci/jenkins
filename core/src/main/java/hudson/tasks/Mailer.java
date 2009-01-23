@@ -149,7 +149,6 @@ public class Mailer extends Publisher {
         
 
         public DescriptorImpl() {
-            super(Mailer.class);
             load();
         }
 
@@ -422,10 +421,6 @@ public class Mailer extends Publisher {
         }
 
         public static final class DescriptorImpl extends UserPropertyDescriptor {
-            public DescriptorImpl() {
-                super(UserProperty.class);
-            }
-
             public String getDisplayName() {
                 return Messages.Mailer_UserProperty_DisplayName();
             }

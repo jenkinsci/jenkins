@@ -69,10 +69,6 @@ public class BuildInfoRecorder extends MavenReporter {
     public static final class DescriptorImpl extends MavenReporterDescriptor {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-        private DescriptorImpl() {
-            super(BuildInfoRecorder.class);
-        }
-
         public String getDisplayName() {
             return Messages.BuildInfoRecorder_DisplayName();
         }
