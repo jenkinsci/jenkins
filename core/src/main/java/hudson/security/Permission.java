@@ -1,6 +1,6 @@
 package hudson.security;
 
-import hudson.model.Hudson;
+import hudson.model.*;
 import net.sf.json.util.JSONUtils;
 
 import java.util.Collections;
@@ -142,6 +142,30 @@ public final class Permission {
 
 //
 //
+// Because of the initialization order issue, these two fields need to be defined here,
+// even though they logically belong to Hudson.
+//
+
+    /**
+     * {@link PermissionGroup} for {@link Hudson}.
+     *
+     * @deprecated
+     *      Access {@link Hudson#PERMISSIONS} instead.
+     */
+    public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
+    /**
+     * {@link Permission} that represents the God-like access. Equivalent of Unix root.
+     *
+     * <p>
+     * All permissions are eventually {@linkplain Permission#impliedBy implied by} this permission.
+     *
+     * @deprecated
+     *      Access {@link Hudson#ADMINISTER} instead.
+     */
+    public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
+
+//
+//
 // Root Permissions.
 //
 // These permisisons are meant to be used as the 'impliedBy' permission for other more specific permissions.
@@ -151,19 +175,23 @@ public final class Permission {
     public static final PermissionGroup GROUP = new PermissionGroup(Permission.class,Messages._Permission_Permissions_Title());
 
     /**
-     * Root of all permissions
+     * Historically this was separate from {@link #HUDSON_ADMINISTER} but such a distinction doesn't make sense
+     * any more, so deprecated.
+     *
+     * @deprecated
+     *      Use {@link Hudson#ADMINISTER}.
      */
-    public static final Permission FULL_CONTROL = new Permission(GROUP,"FullControl");
+    public static final Permission FULL_CONTROL = new Permission(GROUP,"FullControl",HUDSON_ADMINISTER);
 
     /**
      * Generic read access.
      */
-    public static final Permission READ = new Permission(GROUP,"GenericRead",FULL_CONTROL);
+    public static final Permission READ = new Permission(GROUP,"GenericRead",HUDSON_ADMINISTER);
 
     /**
      * Generic write access.
      */
-    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",FULL_CONTROL);
+    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",HUDSON_ADMINISTER);
 
     /**
      * Generic create access.

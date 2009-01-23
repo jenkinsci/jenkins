@@ -90,6 +90,14 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     /**
+     * Checks if the permission is explicitly given, instead of implied through {@link Permission#impliedBy}.
+     */
+    public boolean hasExplicitPermission(String sid, Permission p) {
+        Set<String> set = grantedPermissions.get(p);
+        return set != null && set.contains(sid);
+    }
+
+    /**
      * Returns all SIDs configured in this matrix, minus "anonymous"
      *
      * @return

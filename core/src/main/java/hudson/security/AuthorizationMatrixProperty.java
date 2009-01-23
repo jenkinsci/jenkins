@@ -166,6 +166,14 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		return false;
 	}
 
+    /**
+     * Checks if the permission is explicitly given, instead of implied through {@link Permission#impliedBy}.
+     */
+    public boolean hasExplicitPermission(String sid, Permission p) {
+        Set<String> set = grantedPermissions.get(p);
+        return set != null && set.contains(sid);
+    }
+    
 	/**
 	 * Works like {@link #add(Permission, String)} but takes both parameters
 	 * from a single string of the form <tt>PERMISSIONID:sid</tt>

@@ -9,7 +9,7 @@
           <j:forEach var="p" items="${g.permissions}">
             <j:if test="${descriptor.showPermission(p)}">
               <td width="*">
-                <f:checkbox name="[${p.id}]" checked="${instance.hasPermission(attrs.sid,p)}"/>
+                <f:checkbox name="[${p.id}]" checked="${instance.hasExplicitPermission(attrs.sid,p)}"/>
               </td>
             </j:if>
           </j:forEach>

@@ -3061,8 +3061,8 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
 
-    public static final PermissionGroup PERMISSIONS = new PermissionGroup(Hudson.class,Messages._Hudson_Permissions_Title());
-    public static final Permission ADMINISTER = new Permission(PERMISSIONS,"Administer",Messages._Hudson_AdministerPermission_Description(), Permission.FULL_CONTROL);
+    public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
+    public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ);
 
     static {
@@ -3074,5 +3074,9 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         XSTREAM.alias("listView", ListView.class);
         // this seems to be necessary to force registration of converter early enough
         Mode.class.getEnumConstants();
+
+        // doule check that initialization order didn't do any harm
+        assert PERMISSIONS!=null;
+        assert ADMINISTER!=null;
     }
 }
