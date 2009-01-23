@@ -2822,6 +2822,8 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             || rest.startsWith("/accessDenied")
             || rest.startsWith("/signup")
             || rest.startsWith("/jnlpJars/")
+            || rest.startsWith("/tcpSlaveAgentListener")
+            || rest.endsWith("slave-agent.jnlp")
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
             throw e;
