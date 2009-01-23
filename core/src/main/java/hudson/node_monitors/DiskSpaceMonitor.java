@@ -51,7 +51,7 @@ public class DiskSpaceMonitor extends NodeMonitor {
         return Hudson.getInstance().hasPermission(Hudson.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
-    public static final AbstractNodeMonitorDescriptor<Long> DESCRIPTOR = new AbstractNodeMonitorDescriptor<Long>(DiskSpaceMonitor.class) {
+    public static final AbstractNodeMonitorDescriptor<Long> DESCRIPTOR = new AbstractNodeMonitorDescriptor<Long>() {
         protected Long monitor(Computer c) throws IOException, InterruptedException {
             FilePath p = c.getNode().getRootPath();
             if(p==null) return null;

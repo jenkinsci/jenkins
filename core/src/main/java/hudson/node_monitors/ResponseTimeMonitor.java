@@ -27,7 +27,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         return DESCRIPTOR;
     }
 
-    public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractNodeMonitorDescriptor<Data>(ResponseTimeMonitor.class) {
+    public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractNodeMonitorDescriptor<Data>() {
         protected Data monitor(Computer c) throws IOException, InterruptedException {
             Data old = get(c);
             Data d;

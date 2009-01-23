@@ -32,7 +32,7 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new DescriptorImpl(ProjectMatrixAuthorizationStrategy.class) {
+    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new DescriptorImpl() {
         @Override
         protected GlobalMatrixAuthorizationStrategy create() {
             return new ProjectMatrixAuthorizationStrategy();

@@ -47,7 +47,7 @@ public class JNLPLauncher extends ComputerLauncher {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<ComputerLauncher> DESCRIPTOR = new Descriptor<ComputerLauncher>(JNLPLauncher.class) {
+    public static final Descriptor<ComputerLauncher> DESCRIPTOR = new Descriptor<ComputerLauncher>() {
         public String getDisplayName() {
             return Messages.JNLPLauncher_displayName();
         }

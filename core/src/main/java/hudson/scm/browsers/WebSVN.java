@@ -29,7 +29,7 @@ import java.net.URL;
 public class WebSVN extends SubversionRepositoryBrowser {
 
     public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR =
-        new Descriptor<RepositoryBrowser<?>>(WebSVN.class) {
+        new Descriptor<RepositoryBrowser<?>>() {
             public String getDisplayName() {
                 return "WebSVN";
             }

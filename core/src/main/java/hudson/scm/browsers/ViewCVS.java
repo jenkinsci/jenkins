@@ -60,7 +60,7 @@ public final class ViewCVS extends CVSRepositoryBrowser {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new Descriptor<RepositoryBrowser<?>>(ViewCVS.class) {
+    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new Descriptor<RepositoryBrowser<?>>() {
         public String getDisplayName() {
             return "ViewCVS";
         }

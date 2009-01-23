@@ -57,7 +57,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
         return Hudson.getInstance().hasPermission(Hudson.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
-    public static final AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR = new AbstractNodeMonitorDescriptor<MemoryUsage>(DiskSpaceMonitor.class) {
+    public static final AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR = new AbstractNodeMonitorDescriptor<MemoryUsage>() {
         protected MemoryUsage monitor(Computer c) throws IOException, InterruptedException {
             return c.getChannel().call(new MonitorTask());
         }

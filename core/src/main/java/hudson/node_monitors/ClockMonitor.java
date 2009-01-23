@@ -26,7 +26,7 @@ public class ClockMonitor extends NodeMonitor {
         return DESCRIPTOR.get(c);
     }
 
-    public static final AbstractNodeMonitorDescriptor<ClockDifference> DESCRIPTOR = new AbstractNodeMonitorDescriptor<ClockDifference>(ClockMonitor.class) {
+    public static final AbstractNodeMonitorDescriptor<ClockDifference> DESCRIPTOR = new AbstractNodeMonitorDescriptor<ClockDifference>() {
         protected ClockDifference monitor(Computer c) throws IOException, InterruptedException {
             Node n = c.getNode();
             if(n==null) return null;

@@ -178,7 +178,7 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
             }
         };
 
-        private static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>(Unsecured.class) {
+        private static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>() {
             public String getDisplayName() {
                 return Messages.AuthorizationStrategy_DisplayName();
             }

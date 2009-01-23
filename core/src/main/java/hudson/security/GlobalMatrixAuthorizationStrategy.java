@@ -118,7 +118,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new DescriptorImpl(GlobalMatrixAuthorizationStrategy.class);
+    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new DescriptorImpl();
 
     /**
      * Persist {@link GlobalMatrixAuthorizationStrategy} as a list of IDs that
@@ -168,6 +168,9 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
     public static class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
         protected DescriptorImpl(Class<? extends GlobalMatrixAuthorizationStrategy> clazz) {
             super(clazz);
+        }
+
+        public DescriptorImpl() {
         }
 
         public String getDisplayName() {

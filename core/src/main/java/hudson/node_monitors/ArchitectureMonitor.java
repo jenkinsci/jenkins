@@ -17,7 +17,7 @@ public class ArchitectureMonitor extends NodeMonitor {
         return DESCRIPTOR;
     }
 
-    public static final AbstractNodeMonitorDescriptor<String> DESCRIPTOR = new AbstractNodeMonitorDescriptor<String>(ArchitectureMonitor.class) {
+    public static final AbstractNodeMonitorDescriptor<String> DESCRIPTOR = new AbstractNodeMonitorDescriptor<String>() {
         protected String monitor(Computer c) throws IOException, InterruptedException {
             return c.getChannel().call(new GetArchTask());
         }

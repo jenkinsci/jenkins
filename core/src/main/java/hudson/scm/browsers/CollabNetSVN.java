@@ -20,7 +20,7 @@ import org.kohsuke.stapler.StaplerRequest;
 public class CollabNetSVN extends SubversionRepositoryBrowser
 {
     public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR
-        = new Descriptor<RepositoryBrowser<?>>(CollabNetSVN.class) {
+        = new Descriptor<RepositoryBrowser<?>>() {
         public String getDisplayName() {
             return "CollabNet";
         }

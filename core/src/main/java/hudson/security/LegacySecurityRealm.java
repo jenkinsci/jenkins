@@ -67,7 +67,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<SecurityRealm> DESCRIPTOR = new Descriptor<SecurityRealm>(LegacySecurityRealm.class) {
+    public static final Descriptor<SecurityRealm> DESCRIPTOR = new Descriptor<SecurityRealm>() {
         public SecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new LegacySecurityRealm();
         }

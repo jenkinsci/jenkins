@@ -37,7 +37,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>(FullControlOnceLoggedInAuthorizationStrategy.class) {
+    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>() {
         public String getDisplayName() {
             return Messages.FullControlOnceLoggedInAuthorizationStrategy_DisplayName();
         }
