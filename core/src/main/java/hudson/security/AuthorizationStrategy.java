@@ -11,6 +11,7 @@ import hudson.model.Job;
 import hudson.model.User;
 import hudson.model.View;
 import hudson.model.Node;
+import hudson.model.AbstractProject;
 import hudson.util.DescriptorList;
 
 import java.io.Serializable;
@@ -50,6 +51,14 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      * IOW, this ACL will have the ultimate say on the access control.
      */
     public abstract ACL getRootACL();
+
+    /**
+     * @deprecated
+     *      Override {@link #getACL(Job)} instead.
+     */
+    public ACL getACL(AbstractProject<?,?> project) {
+    	return getACL((Job)project);
+    }
 
     public ACL getACL(Job<?,?> project) {
     	return getRootACL();
