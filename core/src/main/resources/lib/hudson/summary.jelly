@@ -1,18 +1,21 @@
-<!--
-    displays a link with a large icon. Used in the project top page
-
-Attributes:
-  icon: (mandatory)
-    link to the icon image. relative paths will be resolved against images/48x48,
-    and absolute paths (that start with '/') will be resolved against the context root of Hudson
-  href: (mandatory)
-    where the summary icon links to.
-  iconOnly (optional)
-    if true, hyperlink will only cover the icon, not the body.
-  permission (optional) 
-  	permission object. If specified, the link will be displayed only if you have a permission
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Displays a link with a large icon. Used in the project top page.
+
+    <st:attribute name="icon" use="required">
+      link to the icon image. relative paths will be resolved against images/48x48,
+      and absolute paths (that start with '/') will be resolved against the context root of Hudson
+    </st:attribute>
+    <st:attribute name="href">
+      where the summary icon links to.
+    </st:attribute>
+    <st:attribute name="iconOnly" type="boolean">
+      if true, hyperlink will only cover the icon, not the body.
+    </st:attribute>
+    <st:attribute name="permission" type="hudson.security.Permission">
+      permission object. If specified, the link will be displayed only if you have a permission
+    </st:attribute>
+  </st:documentation>
   <j:if test="${h.hasPermission(it,attrs.permission)}">
     <j:if test="${attrs.icon!=null}">
       <tr>

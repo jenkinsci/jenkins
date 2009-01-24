@@ -1,9 +1,18 @@
-<!--
-	<%@ attribute name="build" type="hudson.model.Build" required="true" %>
-	<%@ attribute name="caption" required="true" %>
-	<%@ attribute name="baseURL" %>
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Generates a listing of the build artifacts.
+    Depending on the size of the artifact, this will either produce a list or a link to the directory view.
+
+    <st:attribute name="build" type="hudson.model.Build" use="required">
+      Build object for which the artifacts are displayed
+    </st:attribute>
+    <st:attribute name="caption" use="required">
+      Human readable title text
+    </st:attribute>
+    <st:attribute name="baseURL">
+      If the hyperlink to artifacts are at another URL, specify the prefix.
+    </st:attribute>
+  </st:documentation>
 	<j:set var="artifacts" value="${build.artifacts}" />
 	<j:if test="${!build.building and !empty(artifacts)}">
 	  <t:summary icon="package.gif">
