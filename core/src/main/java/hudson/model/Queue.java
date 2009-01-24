@@ -750,7 +750,14 @@ public class Queue extends ResourceController implements Saveable {
         boolean hasAbortPermission();
         
         /**
-         * The relative url for this task
+         * Returns the URL of this task relative to the context root of the application.
+         *
+         * <p>
+         * When the user clicks an item in the queue, this is the page where the user is taken to.
+         * Hudson expects the current instance to be bound to the URL returned by this method.
+         *
+         * @return
+         *      URL that ends with '/'.
          */
         String getUrl();
         
