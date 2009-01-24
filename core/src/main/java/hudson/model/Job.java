@@ -315,6 +315,23 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * Removes the property of the given type.
+     *
+     * @return
+     *      The property that was just removed.
+     * @since 1.279
+     */
+    public <T extends JobProperty> T removeProperty(Class<T> clazz) throws IOException {
+        for (JobProperty<? super JobT> p : properties) {
+            if (clazz.isInstance(p)) {
+                removeProperty(p);
+                return clazz.cast(p);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Gets all the job properties configured for this job.
      */
     @SuppressWarnings("unchecked")
