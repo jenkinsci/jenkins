@@ -27,6 +27,13 @@ public abstract class AbstractMarkupText {
     public abstract String getText();
 
     /**
+     * Length of the plain text.
+     */
+    public final int length() {
+        return getText().length();
+    }
+
+    /**
      * Adds a start tag and end tag at the specified position.
      *
      * <p>
@@ -39,7 +46,7 @@ public abstract class AbstractMarkupText {
      * Adds a start tag and end tag around the entire text
      */
     public final void wrapBy(String startTag, String endTag) {
-        addMarkup(0,getText().length(),startTag,endTag);
+        addMarkup(0,length(),startTag,endTag);
     }
 
     /**
