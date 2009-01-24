@@ -46,4 +46,11 @@ public class ItemListener implements ExtensionPoint {
      */
     public void onRenamed(Item item, String oldName, String newName) {
     }
+
+    /**
+     * Registers this instance to Hudson and start getting notifications.
+     */
+    public void register() {
+        Hudson.getInstance().getJobListeners().add(this);
+    }
 }
