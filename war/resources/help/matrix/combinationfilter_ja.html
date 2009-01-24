@@ -1,0 +1,38 @@
+<div>
+  デフォルトで、Hudsonは構成軸のすべての組み合わせをビルドします。しかし、場合によっては多すぎることがあります。
+  そのような場合、真偽値を返すGroovyの式で必要のない組み合わせをフィルタリングすると、構成マトリックスをまばらにすることができます。
+
+  <p>
+  Groovyの式をここで指定すると、式の結果が<b>true</b>になる組み合わせのみビルドされます。
+  式の評価では、軸は変数として扱われます(評価中の組み合わせに値をセットします)。
+
+  <p>
+  例えば、異なるOS上で複数のコンパイラを使用してビルドすることを考えてみましょう。
+  スレーブのラベルは<b>label=[linux,solaris]</b>とし、<b>compiler=[gcc,cc]</b>という構成軸を作成したとします。
+
+  次の式は、<b>linux</b>上での<b>cc</b>によるビルドをフィルタリングします。
+  この制約をどう考えるかにもよりますが、たぶん、より直感的であるとわかるでしょう。
+
+  <center>
+    <table>
+        <tr>
+            <td>"linuxとccの場合は無効"</td>
+            <td>
+                <pre>!(label=="linux" && compiler=="cc")</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>"solarisかgccの場合は有効"</td>
+            <td>
+                <pre>label=="solaris" || compiler=="gcc"</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>"solarisであればccのみ使用する"</td>
+            <td>
+                <pre>(label=="solaris").implies(compiler=="cc")</pre>
+            </td>
+        </tr>
+    </table>
+  </center>
+</div>
