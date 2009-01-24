@@ -96,6 +96,12 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>
+     * Invoked after {@link Publisher}s have run.
+     */
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         return true;
     }
