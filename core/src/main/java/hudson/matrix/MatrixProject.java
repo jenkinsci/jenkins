@@ -1,13 +1,15 @@
 package hudson.matrix;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.XmlFile;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
-import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -17,9 +19,10 @@ import hudson.model.Job;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.SCMedItem;
+import hudson.model.Saveable;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.model.Saveable;
+import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
@@ -29,11 +32,7 @@ import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -46,10 +45,18 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * {@link Job} that allows you to run multiple different configurations
@@ -64,6 +71,14 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * This also includes special axis "label" and "jdk" if they are configured.
      */
     private volatile AxisList axes = new AxisList();
+    
+    /**
+     * The filter that is applied to combinatios. It is a Groovy if condition.
+     * This can be null, which means "true".
+     *
+     * @see #getCombinationFilter()
+     */
+    private volatile String combinationFilter;
 
     /**
      * List of active {@link Builder}s configured for this project.
@@ -111,7 +126,36 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         save();
     }
 
-    protected void updateTransientActions() {
+    /**
+     * Sets the combination filter.
+     *
+	 * @param combinationFilter the combinationFilter to set
+	 */
+	public void setCombinationFilter(String combinationFilter) throws IOException {
+		this.combinationFilter = combinationFilter;
+		rebuildConfigurations();
+		save();
+	}
+
+	/**
+     * Obtains the combination filter, used to trim down the size of the matrix.
+     *
+     * <p>
+     * By default, a {@link MatrixConfiguration} is created for every possible combination of axes exhaustively.
+     * But by specifying a Groovy expression as a combination filter, one can trim down the # of combinations built.
+     *
+     * <p>
+     * Namely, this expression is evaluated for each axis value combination, and only when it evaluates to true,
+     * a corresponding {@link MatrixConfiguration} will be created and built. 
+     *
+	 * @return can be null.
+     * @since 1.279
+	 */
+	public String getCombinationFilter() {
+		return combinationFilter;
+	}
+
+	protected void updateTransientActions() {
         synchronized(transientActions) {
             super.updateTransientActions();
 
@@ -272,13 +316,16 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         // find all active configurations
         Set<MatrixConfiguration> active = new LinkedHashSet<MatrixConfiguration>();
         for (Combination c : axes.list()) {
-            MatrixConfiguration config = configurations.get(c);
-            if(config==null) {
-                config = new MatrixConfiguration(this,c);
-                config.save();
-                configurations.put(config.getCombination(), config);
-            }
-            active.add(config);
+            if(c.evalGroovyExpression(combinationFilter)) {
+        		LOGGER.fine("Adding configuration: " + c);
+	            MatrixConfiguration config = configurations.get(c);
+	            if(config==null) {
+	                config = new MatrixConfiguration(this,c);
+	                config.save();
+	                configurations.put(config.getCombination(), config);
+	            }
+	            active.add(config);
+        	}
         }
         this.activeConfigurations = active;
     }
@@ -452,6 +499,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
                 if(a.values.isEmpty())  itr.remove();
             }
         }
+        
+        if(req.getParameter("hasCombinationFilter")!=null)
+            this.combinationFilter = Util.nullify(req.getParameter("combinationFilter"));
+        else
+            this.combinationFilter = null;
 
         // parse system axes
         newAxes.add(Axis.parsePrefixed(req,"jdk"));

@@ -13,6 +13,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import static java.lang.Boolean.TRUE;
+
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 
 /**
  * A particular combination of {@link Axis} values.
@@ -36,6 +40,27 @@ public final class Combination extends TreeMap<String,String> implements Compara
     public Combination(Map<String,String> keyValuePairs) {
         for (Map.Entry<String, String> e : keyValuePairs.entrySet())
             super.put(e.getKey(),e.getValue());
+    }
+
+    /**
+     * Evaluates the given Groovy expression with values bound from this combination.
+     *
+     * <p>
+     * For example, if this combination is a=X,b=Y, then expressions like <tt>a=="X"</tt> would evaluate to
+     * true.
+     */
+    public boolean evalGroovyExpression(String expression) {
+        if(Util.fixEmptyAndTrim(expression)==null)
+            return true;
+
+        Binding binding = new Binding();
+        for (Map.Entry<String, String> e : entrySet())
+            binding.setVariable(e.getKey(),e.getValue());
+
+        GroovyShell shell = new GroovyShell(binding);
+
+        Object result = shell.evaluate("use("+BooleanCategory.class.getName().replace('$','.')+") {"+expression+"}");
+        return TRUE.equals(result);
     }
 
     public int compareTo(Combination that) {
@@ -169,5 +194,19 @@ public final class Combination extends TreeMap<String,String> implements Compara
 
     public String remove(Object key) {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Duck-typing for boolean expressions.
+     *
+     * @see Combination#evalGroovyExpression(String) 
+     */
+    public static final class BooleanCategory {
+        /**
+         * x -> y
+         */
+        public static Boolean implies(Boolean lhs, Boolean rhs) {
+            return !lhs || rhs;
+        }
     }
 }

@@ -81,6 +81,14 @@
         </f:repeatable>
       </f:entry>
     </f:optionalBlock>
+    
+    <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
+        help="/help/matrix/combinationfilter.html">
+	    <f:entry title="${%Filter}">
+	      <f:textbox name="combinationFilter" value="${it.combinationFilter}" />
+	    </f:entry>
+    </f:optionalBlock>
+
   </f:section>
 
   <p:config-buildWrappers />
