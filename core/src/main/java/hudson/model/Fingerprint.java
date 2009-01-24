@@ -33,7 +33,11 @@ import java.util.logging.Logger;
 /**
  * A file being tracked by Hudson.
  *
+ * <p>
+ * Lifecycle is managed by {@link FingerprintMap}.
+ *
  * @author Kohsuke Kawaguchi
+ * @see FingerprintMap
  */
 @ExportedBean
 public class Fingerprint implements ModelObject, Saveable {

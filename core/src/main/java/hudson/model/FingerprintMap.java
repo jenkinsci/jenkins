@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * will be adequately GC-ed to prevent memory leak.
  *
  * @author Kohsuke Kawaguchi
+ * @see Hudson#getFingerprintMap() 
  */
 public final class FingerprintMap extends KeyedDataStorage<Fingerprint,FingerprintParams> {
 
