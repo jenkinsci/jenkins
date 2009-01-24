@@ -36,6 +36,13 @@ public abstract class AbstractMarkupText {
     public abstract void addMarkup( int startPos, int endPos, String startTag, String endTag );
 
     /**
+     * Adds a start tag and end tag around the entire text
+     */
+    public final void wrapBy(String startTag, String endTag) {
+        addMarkup(0,getText().length(),startTag,endTag);
+    }
+
+    /**
      * Find all "tokens" that match the given pattern in this text.
      *
      * <p>
