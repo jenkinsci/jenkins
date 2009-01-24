@@ -393,6 +393,24 @@ public class Fingerprint implements ModelObject, Saveable {
         }
 
         /**
+         * Returns the smallest value in this range.
+         * <p>
+         * If this range is empty, this method throws an exception.
+         */
+        public synchronized int min() {
+            return ranges.get(0).start;
+        }
+
+        /**
+         * Returns the largest value in this range.
+         * <p>
+         * If this range is empty, this method throws an exception.
+         */
+        public synchronized int max() {
+            return ranges.get(ranges.size()-1).end;
+        }
+
+        /**
          * Returns true if all the integers logically in this {@link RangeSet}
          * is smaller than the given integer. For example, {[1,3)} is smaller than 3,
          * but {[1,3),[100,105)} is not smaller than anything less than 105.
