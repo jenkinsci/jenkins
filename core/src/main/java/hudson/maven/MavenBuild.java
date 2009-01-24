@@ -308,6 +308,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             return MavenBuild.this.getTimestamp();
         }
 
+        public long getMilliSecsSinceBuildStart() {
+            return System.currentTimeMillis()-getTimestamp().getTimeInMillis();
+        }
+
         public void registerAsProjectAction(MavenReporter reporter) {
             MavenBuild.this.registerAsProjectAction(reporter);
         }

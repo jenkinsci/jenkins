@@ -82,6 +82,15 @@ public interface MavenBuildProxy {
     Calendar getTimestamp();
 
     /**
+     * # of milliseconds elapsed since {@link #getTimestamp()}.
+     *
+     * Where the clock skew is involved between the master and the Maven JVM, comparing
+     * current time on Maven JVM with {@link #getTimestamp()} could be problematic,
+     * but this value is more robust.
+     */
+    long getMilliSecsSinceBuildStart();
+
+    /**
      * Nominates that the reporter will contribute a project action
      * for this build by using {@link MavenReporter#getProjectAction(MavenModule)}.
      *
@@ -163,6 +172,10 @@ public interface MavenBuildProxy {
 
         public Calendar getTimestamp() {
             return core.getTimestamp();
+        }
+
+        public long getMilliSecsSinceBuildStart() {
+            return core.getMilliSecsSinceBuildStart();
         }
 
         public void registerAsProjectAction(MavenReporter reporter) {

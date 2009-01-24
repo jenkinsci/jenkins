@@ -67,9 +67,10 @@ public class SurefireArchiver extends MavenReporter {
                 // no test in this module
                 return true;
 
-            if(result==null)
-                result = new TestResult(build.getTimestamp().getTimeInMillis() - 1000/*error margin*/, ds);
-            else
+            if(result==null) {
+                long t = System.currentTimeMillis() - build.getMilliSecsSinceBuildStart();
+                result = new TestResult(t - 1000/*error margin*/, ds);
+            } else
                 result.parse(build.getTimestamp().getTimeInMillis() - 1000/*error margin*/, ds);
 
             int failCount = build.execute(new BuildCallable<Integer, IOException>() {
