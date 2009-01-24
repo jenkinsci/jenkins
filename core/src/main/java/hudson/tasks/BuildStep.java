@@ -83,7 +83,9 @@ public interface BuildStep {
      *
      * <p>
      * This action can have optional <tt>jobMain.jelly</tt> view, which will be
-     * aggregated into the main panel of the job top page.
+     * aggregated into the main panel of the job top page. The jelly file
+     * should have an &lt;h2> tag that shows the section title, followed by some
+     * block elements to render the details of the section.
      *
      * @param project
      *      {@link Project} that owns this build step,
