@@ -315,7 +315,7 @@ public class Queue extends ResourceController implements Saveable {
         LOGGER.fine("Cancelling " + p.getFullDisplayName());
         for (Iterator<WaitingItem> itr = waitingList.iterator(); itr.hasNext();) {
             Item item = itr.next();
-            if (item.task == p) {
+            if (item.task.equals(p)) {
                 itr.remove();
                 return true;
             }
