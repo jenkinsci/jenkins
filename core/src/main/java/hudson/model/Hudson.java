@@ -1,11 +1,7 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.mapper.Mapper;
-import com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter;
 import hudson.BulkChange;
-import com.trilead.ssh2.crypto.digest.SHA1;
-import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -82,7 +78,6 @@ import hudson.util.XStream2;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.DescribableList;
 import hudson.util.Futures;
-import hudson.util.HudsonIsRestarting;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -100,9 +95,7 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerFallback;
-import org.kohsuke.stapler.TearOffSupport;
 import org.kohsuke.stapler.WebApp;
-import org.kohsuke.stapler.jelly.JellyClassTearOff;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
@@ -2077,15 +2070,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
                 return null;
             }
 
-            result = createProject(src.getDescriptor(),name);
-
-            // copy config
-            Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
-
-            // reload from the new config
-            result = (TopLevelItem)Items.load(this,result.getRootDir());
-            result.onCopiedFrom(src);
-            items.put(name,result);
+            result = copy(src,name);
         } else {
             if(isXmlSubmission) {
                 // config.xml submission
@@ -2117,10 +2102,10 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
                 }
                 result = createProject(Items.getDescriptor(mode), name);
             }
-        }
 
-        for (ItemListener l : itemListeners)
-            l.onCreated(result);
+            for (ItemListener l : itemListeners)
+                l.onCreated(result);
+        }
 
         if(isXmlSubmission) {
             // it worked
@@ -2131,6 +2116,40 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         }
 
         return result;
+    }
+
+    /**
+     * Copys a job.
+     *
+     * @param src
+     *      A {@link TopLevelItem} to be copied.
+     * @param name
+     *      Name of the newly created project.
+     * @return
+     *      Newly created {@link TopLevelItem}.
+     */
+    @SuppressWarnings({"unchecked"})
+    public <T extends TopLevelItem> T copy(T src, String name) throws IOException {
+        T result = (T)createProject(src.getDescriptor(),name);
+
+        // copy config
+        Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
+
+        // reload from the new config
+        result = (T)Items.load(this,result.getRootDir());
+        result.onCopiedFrom(src);
+        items.put(name,result);
+
+        for (ItemListener l : itemListeners)
+            l.onCreated(result);
+
+        return result;
+    }
+
+    // a little more convenient overloading that assumes the caller gives us the right type
+    // (or else it will fail with ClassCastException)
+    public <T extends AbstractProject<?,?>> T copy(T src, String name) throws IOException {
+        return (T)copy((TopLevelItem)src,name);
     }
 
     public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
