@@ -30,7 +30,7 @@
 
   <!-- merge fragments from the actions -->
   <j:forEach var="a" items="${it.actions}">
-    <st:include page="jobMain.jelly" from="${a}" optional="true" />
+    <st:include page="jobMain.jelly" it="${a}" optional="true" />
   </j:forEach>
 
   <p:upstream-downstream />
