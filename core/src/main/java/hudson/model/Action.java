@@ -2,8 +2,6 @@ package hudson.model;
 
 import hudson.tasks.test.TestResultProjectAction;
 
-import java.io.Serializable;
-
 /**
  * Object that contributes an item to the left hand side menu
  * of a {@link ModelObject}

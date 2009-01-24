@@ -81,6 +81,10 @@ public interface BuildStep {
      * {@link Project} calls this method for every {@link BuildStep} that
      * it owns when the rendering is requested.
      *
+     * <p>
+     * This action can have optional <tt>jobMain.jelly</tt> view, which will be
+     * aggregated into the main panel of the job top page.
+     *
      * @param project
      *      {@link Project} that owns this build step,
      *      since {@link BuildStep} object doesn't usually have this "parent" pointer.

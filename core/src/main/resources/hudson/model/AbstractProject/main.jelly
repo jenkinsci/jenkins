@@ -28,5 +28,10 @@
     </j:if>
   </table>
 
+  <!-- merge fragments from the actions -->
+  <j:forEach var="a" items="${it.actions}">
+    <st:include page="jobMain.jelly" from="${a}" optional="true" />
+  </j:forEach>
+
   <p:upstream-downstream />
 </j:jelly>
