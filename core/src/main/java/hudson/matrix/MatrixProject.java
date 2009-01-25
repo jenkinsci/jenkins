@@ -1,7 +1,5 @@
 package hudson.matrix;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.XmlFile;
@@ -54,7 +52,6 @@ import javax.servlet.ServletException;
 
 import net.sf.json.JSONObject;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -316,7 +313,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         // find all active configurations
         Set<MatrixConfiguration> active = new LinkedHashSet<MatrixConfiguration>();
         for (Combination c : axes.list()) {
-            if(c.evalGroovyExpression(combinationFilter)) {
+            if(c.evalGroovyExpression(axes,combinationFilter)) {
         		LOGGER.fine("Adding configuration: " + c);
 	            MatrixConfiguration config = configurations.get(c);
 	            if(config==null) {

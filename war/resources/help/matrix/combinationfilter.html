@@ -1,5 +1,6 @@
 <div>
-  By default, Hudson builds all the possible combinations of axes exhaustively. But sometimes this is too many.
+  By default, Hudson builds all the possible combinations of axes exhaustively. But sometimes this is too many,
+  or may contain combinations that don't make sense.
   In such a situation, you can make the matrix sparse by filtering out combinations that you don't want through
   a Goorvy expression that returns true or false.
 
@@ -8,6 +9,7 @@
   will be built. In evaluating the expression, axes are exposed as variables (with their values set
   to the current combination evaluated.)
 
+  <h4>Filtering based on values</h4>
   <p>    
   For example, let's say you are building on different operating systems for
   different compilers. Assume that your slave labels are <b>label=[linux,solaris]</b> and you have
@@ -38,4 +40,15 @@
         </tr>
     </table>
   </center>
+
+  <h4>Sparsening of the matrix</h4>
+  <p>
+  In addition to the specific filtering rules based on values, one can also use a special
+  variable "<tt>index</tt>", which can be used to sparsen the matrix.
+
+  <p>
+  For example, <tt>index%2==0</tt> would cut the matrix size in half by removing one
+  combination per every 2 combinations, in such a way that the coverage is still reasonable.
+  Similarly, <tt>index%3!=0</tt> would cut the matrix size into 66% by throwing
+  away every 1 out of 3 combinations.
 </div>

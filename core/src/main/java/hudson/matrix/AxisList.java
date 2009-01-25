@@ -7,6 +7,7 @@ import hudson.util.RobustCollectionConverter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Arrays;
 
 /**
  * List of {@link Axis}.
@@ -19,6 +20,10 @@ public class AxisList extends ArrayList<Axis> {
 
     public AxisList(Collection<Axis> c) {
         super(c);
+    }
+
+    public AxisList(Axis... c) {
+        this(Arrays.asList(c));
     }
 
     public Axis find(String name) {

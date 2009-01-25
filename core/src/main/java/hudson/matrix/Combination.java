@@ -43,19 +43,55 @@ public final class Combination extends TreeMap<String,String> implements Compara
     }
 
     /**
+     * Obtains the continuous unique index number of this {@link Combination}
+     * in the given {@link AxisList}.
+     */
+    public int toIndex(AxisList axis) {
+        int r = 0;
+        for (Axis a : axis) {
+            r *= a.size();
+            r += a.indexOf(get(a.name));
+        }
+        return r;
+    }
+
+    /**
+     * Obtains a number N such that "N%M==0" would create
+     * a reasonable sparse matrix for integer M.
+     *
+     * <p>
+     * This is bit like {@link #toIndex(AxisList)}, but instead
+     * of creating a continuous number (which often maps different
+     * values of the same axis to the same index in modulo N residue ring,
+     * we use a prime number P as the base. I think this guarantees the uniform
+     * distribution in any N smaller than 2P (but proof, anyone?)
+     */
+    private long toModuloIndex(AxisList axis) {
+        long r = 0;
+        for (Axis a : axis) {
+            r += a.indexOf(get(a.name));
+            r *= 31;
+        }
+        return r;
+    }
+
+    /**
      * Evaluates the given Groovy expression with values bound from this combination.
      *
      * <p>
      * For example, if this combination is a=X,b=Y, then expressions like <tt>a=="X"</tt> would evaluate to
      * true.
      */
-    public boolean evalGroovyExpression(String expression) {
+    public boolean evalGroovyExpression(AxisList axes, String expression) {
         if(Util.fixEmptyAndTrim(expression)==null)
             return true;
 
         Binding binding = new Binding();
         for (Map.Entry<String, String> e : entrySet())
             binding.setVariable(e.getKey(),e.getValue());
+
+        binding.setVariable("index",toModuloIndex(axes));
+        binding.setVariable("uniqueId",toIndex(axes));
 
         GroovyShell shell = new GroovyShell(binding);
 
@@ -199,7 +235,7 @@ public final class Combination extends TreeMap<String,String> implements Compara
     /**
      * Duck-typing for boolean expressions.
      *
-     * @see Combination#evalGroovyExpression(String) 
+     * @see Combination#evalGroovyExpression(AxisList,String)
      */
     public static final class BooleanCategory {
         /**

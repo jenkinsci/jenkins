@@ -76,6 +76,13 @@ public final class Axis implements Comparable<Axis>, Iterable<String> {
     }
 
     /**
+     * The inverse of {@link #value(int)}.
+     */
+    public int indexOf(String value) {
+        return values.indexOf(value);
+    }
+
+    /**
      * Axis is fully ordered so that we can convert between a list of axis
      * and a string unambiguously.
      */
