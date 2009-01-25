@@ -126,13 +126,6 @@ public class MarkupText extends AbstractMarkupText {
         }
 
         /**
-         * Returns {@code getText().length()}
-         */
-        public int length() {
-            return end-start;
-        }
-
-        /**
          * Gets the text that represents the captured group.
          */
         public String group(int groupIndex) {
