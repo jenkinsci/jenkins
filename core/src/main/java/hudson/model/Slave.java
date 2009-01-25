@@ -288,7 +288,9 @@ public abstract class Slave implements Node, Serializable {
     }
 
     public FilePath createPath(String absolutePath) {
-        VirtualChannel ch = getComputer().getChannel();
+        SlaveComputer computer = getComputer();
+        if (computer==null) return null; // offline
+        VirtualChannel ch = computer.getChannel();
         if(ch==null)    return null;    // offline
         return new FilePath(ch,absolutePath);
     }
