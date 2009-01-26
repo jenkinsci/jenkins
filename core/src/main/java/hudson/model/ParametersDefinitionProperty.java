@@ -129,6 +129,10 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
                 return null;
             }
 
+            if (req.getParameter("parameterized") == null) {
+            	return null;
+            }
+            
             List<ParameterDefinition> parameterDefinitions = Descriptor.newInstancesFromHeteroList(
                     req, formData, "parameter", ParameterDefinition.LIST);
             if(parameterDefinitions.isEmpty())
