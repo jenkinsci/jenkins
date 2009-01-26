@@ -8,7 +8,15 @@
 
   <h2>Perform a build</h2>
   <p>
-    To programmatically schedule a new build, post to <a href="../build">this URL</a>.
+    To programmatically schedule a new build, post to <a href="../build">this URL</a>. 
+    If the build has parameters, post to <a href="../buildWithParameters">this URL</a> and provide the parameters as form data.
+  </p>
+  <p>
+  	To programmatically schedule SCM polling, post to <a href="../polling">this URL</a>.
+  </p>
+  <p>
+  	If security is enabled, a build authorization token must be provided as a parameter called <i>token</i>. The value of the token 
+  	can be specified on the job configuration page in the 'Trigger builds remotely' section.
   </p>
 
   <h2>Delete a job</h2>
