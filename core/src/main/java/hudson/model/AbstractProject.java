@@ -219,6 +219,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
+     * Returns the root project value.
+     *
+     * @return the root project value.
+     */
+	public AbstractProject getRootProject() {
+        if (this.getParent() instanceof Hudson) {
+            return this;
+        } else {
+            return ((AbstractProject) this.getParent()).getRootProject();
+        }
+    }
+
+    /**
      * Gets the directory where the module is checked out.
      *
      * @return
