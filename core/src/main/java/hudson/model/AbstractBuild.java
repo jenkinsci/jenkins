@@ -163,12 +163,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public Set<User> getCulprits() {
         if(culprits==null) {
             Set<User> r = new HashSet<User>();
-            if(getPreviousBuild()!=null && isBuilding() && getPreviousBuild().getResult().isWorseThan(Result.UNSTABLE)) {
+            R p = getPreviousBuild();
+            if(p !=null && isBuilding() && p.getResult().isWorseThan(Result.UNSTABLE)) {
                 // we are still building, so this is just the current latest information,
                 // but we seems to be failing so far, so inherit culprits from the previous build.
                 // isBuilding() check is to avoid recursion when loading data from old Hudson, which doesn't record
                 // this information
-                r.addAll(getPreviousBuild().getCulprits());
+                r.addAll(p.getCulprits());
             }
             for( Entry e : getChangeSet() )
                 r.add(e.getAuthor());
