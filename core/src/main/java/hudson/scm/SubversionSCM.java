@@ -849,8 +849,6 @@ public class SubversionSCM extends SCM implements Serializable {
             }
         }
 
-        Thread.sleep(60*1000);  // debug
-
         return false; // no change
     }
 
