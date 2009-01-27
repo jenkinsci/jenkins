@@ -138,7 +138,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             }
 
             Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
-            int n = getNumber();
+            final int n = getNumber();
 
             for (MatrixAggregator a : aggregators)
                 if(!a.startBuild())
@@ -164,6 +164,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     long startTime = System.currentTimeMillis();
 
                     // wait for the completion
+                    int appearsCancelledCount = 0;
                     while(true) {
                         MatrixRun b = c.getBuildByNumber(n);
 
@@ -173,17 +174,21 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                         if(b!=null && !b.isBuilding())
                             buildResult = b.getResult();
                         Queue.Item qi = c.getQueueItem();
-                        if(b==null && qi==null) {
-                            // there's conceivably a race condition here, since b is set early on,
-                            // and we are checking c.isInQueue() later. A build might have started
-                            // after we computed b but before we checked c.isInQueue(). So
-                            // double-check 'b' to see if it's really not there. Possibly related to
-                            // http://www.nabble.com/Master-slave-problem-tt14710987.html
-                            b = c.getBuildByNumber(n);
-                            if(b==null) {
-                                logger.println(Messages.MatrixBuild_AppearsCancelled(c.getDisplayName()));
-                                buildResult = Result.ABORTED;
-                            }
+                        if(b==null && qi==null)
+                            appearsCancelledCount++;
+                        else
+                            appearsCancelledCount = 0;
+
+                        if(appearsCancelledCount>=5) {
+                            // there's conceivably a race condition in computating b and qi, as their computation
+                            // are not synchronized. There are indeed several reports of Hudson incorrectly assuming
+                            // builds being cancelled. See
+                            // http://www.nabble.com/Master-slave-problem-tt14710987.html and also
+                            // http://www.nabble.com/Anyone-using-AccuRev-plugin--tt21634577.html#a21671389
+                            // because of this, we really make sure that the build is cancelled by doing this 5
+                            // times over 5 seconds
+                            logger.println(Messages.MatrixBuild_AppearsCancelled(c.getDisplayName()));
+                            buildResult = Result.ABORTED;
                         }
 
                         if(buildResult!=null) {
