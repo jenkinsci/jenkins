@@ -8,8 +8,11 @@
       <j:if test="${it.disabled}">
         <div class="warning">
           <form method="post" action="enable">
-		    ${%This project is currently disabled} <f:submit value="${%Enable}" />
-		  </form>
+            ${%This project is currently disabled}
+            <l:hasPermission permission="${it.CONFIGURE}">
+              <f:submit value="${%Enable}" />
+            </l:hasPermission>
+          </form>
         </div>
       </j:if>
 
