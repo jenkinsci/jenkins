@@ -259,9 +259,8 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      */
     public static boolean useShortWorkspaceName = Boolean.getBoolean(MatrixConfiguration.class.getName()+".useShortWorkspaceName");
 
-	public boolean scheduleBuild(ParametersAction parameters) {
+    public boolean scheduleBuild(ParametersAction parameters) {
         return Hudson.getInstance().getQueue().add(
-                new ParameterizedProjectTask(this, parameters.getParameters()), getQuietPeriod());
-	}
-	
+                new ParameterizedProjectTask(this, parameters.getParameters(), "Matrix"), getQuietPeriod());
+    }
 }

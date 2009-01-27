@@ -63,6 +63,7 @@ import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
+import hudson.triggers.TriggerListener;
 import hudson.triggers.Triggers;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.ClockDifference;
@@ -308,7 +309,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     public transient volatile TcpSlaveAgentListener tcpSlaveAgentListener;
 
     /**
-     * List of registered {@link JobListener}s.
+     * List of registered {@link ItemListener}s.
      */
     private transient final CopyOnWriteList<ItemListener> itemListeners = new CopyOnWriteList<ItemListener>();
 
@@ -485,6 +486,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         UsageStatistics.register();
         LoadStatistics.register();
         NodeProvisioner.launch();
+        new TriggerListener().register();
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
@@ -664,7 +666,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      * Adds a new {@link JobListener}.
      *
      * @deprecated
-     *      Use {@code getJobListners().add(l)} instead.
+     *      Use {@code getJobListeners().add(l)} instead.
      */
     public void addListener(JobListener l) {
         itemListeners.add(new JobListenerAdapter(l));
@@ -674,7 +676,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      * Deletes an existing {@link JobListener}.
      *
      * @deprecated
-     *      Use {@code getJobListners().remove(l)} instead.
+     *      Use {@code getJobListeners().remove(l)} instead.
      */
     public boolean removeListener(JobListener l ) {
         return itemListeners.remove(new JobListenerAdapter(l));

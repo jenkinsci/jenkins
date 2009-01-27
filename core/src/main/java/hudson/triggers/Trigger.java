@@ -8,6 +8,7 @@ import hudson.slaves.ComputerRetentionWork;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
+import hudson.model.BuildableItem;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
 import hudson.model.FingerprintCleanupThread;
@@ -227,5 +228,21 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 ComputerSet.initialize();
             }
         }, 1000*10);
+    }
+
+    /**
+     * Schedule build for given item.
+     * @since 1.279
+     */
+    protected boolean scheduleBuild(BuildableItem job) {
+        return job.scheduleBuild(getDescriptor().getDisplayName());
+    }
+
+    /**
+     * Schedule build for given item.
+     * @since 1.279
+     */
+    protected boolean scheduleBuild(BuildableItem job, int quietPeriod) {
+        return job.scheduleBuild(quietPeriod, getDescriptor().getDisplayName());
     }
 }

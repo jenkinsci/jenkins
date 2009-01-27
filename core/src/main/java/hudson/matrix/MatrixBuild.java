@@ -151,7 +151,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     if (parameters != null) {
                     	c.scheduleBuild(parameters);
                     } else {
-                    	c.scheduleBuild();
+                    	c.scheduleBuild("Matrix");
                     }
                 }
 
