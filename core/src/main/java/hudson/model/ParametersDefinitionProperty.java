@@ -74,7 +74,8 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
             values.add(d.createValue(req, jo));
         }
 
-        scheduleBuild(values);
+        Hudson.getInstance().getQueue().add(
+                new ParameterizedProjectTask(owner, values), 0);
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
@@ -91,18 +92,11 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         	}
         }
 
-        scheduleBuild(values);
+    	Hudson.getInstance().getQueue().add(
+                new ParameterizedProjectTask(owner, values), 0);
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
-    }
-
-    private boolean scheduleBuild(List<ParameterValue> parameters) {
-        User user = User.current();
-        return Hudson.getInstance().getQueue().add(
-                new ParameterizedProjectTask(owner, parameters,
-                    "User " + (user != null ? user.getId() : "anonymous")),
-                0);
     }
 
     /**

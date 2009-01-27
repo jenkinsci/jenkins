@@ -395,49 +395,33 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Schedules a build of this project.
      *
-     * @param triggeredBy
-     *      String describing how build was triggered.
      * @return
      *      true if the project is actually added to the queue.
      *      false if the queue contained it and therefore the add()
      *      was noop
      */
-    public boolean scheduleBuild(String triggeredBy) {
-        return scheduleBuild(getQuietPeriod(), triggeredBy);
+    public boolean scheduleBuild() {
+        return scheduleBuild(getQuietPeriod());
     }
 
-    public boolean scheduleBuild(int quietPeriod, String triggeredBy) {
+    public boolean scheduleBuild(int quietPeriod) {
         if (isDisabled())
             return false;
 
-        return Hudson.getInstance().getQueue().add(
-                    new ParameterizedProjectTask(this, getDefaultParametersValues(), triggeredBy),
-                    quietPeriod);
-    }
-
-    /**
-     * @deprecated
-     *      As of 1.279. Use {@link #scheduleBuild(String)} instead.
-     */
-    @Deprecated
-    public boolean scheduleBuild() {
-        return scheduleBuild(getQuietPeriod(), null);
-    }
-
-    /**
-     * @deprecated
-     *      As of 1.279. Use {@link #scheduleBuild(int, String)} instead.
-     */
-    @Deprecated
-    public boolean scheduleBuild(int quietPeriod) {
-        return scheduleBuild(quietPeriod, null);
+        if (isParameterized())
+            return Hudson.getInstance().getQueue().add(
+                    new ParameterizedProjectTask(this, getDefaultParametersValues()), quietPeriod);
+        else
+            return Hudson.getInstance().getQueue().add(this, quietPeriod);
     }
 
     private List<ParameterValue> getDefaultParametersValues() {
         ParametersDefinitionProperty paramDefProp = getProperty(ParametersDefinitionProperty.class);
         ArrayList<ParameterValue> defValues = new ArrayList<ParameterValue>();
         
-        // In case isParameterized() is false.
+        /*
+         * This check is made ONLY if someone will call this method even if isParametrized() is false.
+         */
         if(paramDefProp == null)
             return defValues;
         
@@ -457,7 +441,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a build of this project, and returns a {@link Future} object
      * to wait for the completion of the build.
      */
-    public Future<R> scheduleBuild2(int quietPeriod, String triggeredBy) {
+    public Future<R> scheduleBuild2(int quietPeriod) {
         R lastBuild = getLastBuild();
         final int n;
         if(lastBuild!=null) n = lastBuild.getNumber();
@@ -476,18 +460,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             { r.register(); }
         };
 
-        scheduleBuild(quietPeriod, triggeredBy);
+        scheduleBuild(quietPeriod);
 
         return f;
-    }
-
-    /**
-     * @deprecated
-     *      As of 1.279. Use {@link #scheduleBuild2(int, String)} instead.
-     */
-    @Deprecated
-    public Future<R> scheduleBuild2(int quietPeriod) {
-        return scheduleBuild2(quietPeriod, null);
     }
 
     /**
@@ -987,20 +962,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         String delay = req.getParameter("delay");
         if (delay!=null) {
-            // TODO: more unit handling
-            if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
-            if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
-        }
-        try {
-            User user = User.current();
-            scheduleBuild(delay != null ? Integer.parseInt(delay) : getQuietPeriod(),
-                          "User " + (user != null ? user.getId() : "anonymous"));
-        } catch (NumberFormatException e) {
-            throw new ServletException("Invalid delay parameter value: "+delay);
+            if (!isDisabled()) {
+                try {
+                    // TODO: more unit handling
+                    if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
+                    if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
+                    Hudson.getInstance().getQueue().add(this, Integer.parseInt(delay));
+                } catch (NumberFormatException e) {
+                    throw new ServletException("Invalid delay parameter value: "+delay);
+                }
+            }
+        } else {
+            scheduleBuild();
         }
         rsp.forwardToPreviousPage(req);
     }
-
+    
     /**
      * Supports build trigger with parameters via an HTTP GET or POST.
      * Currently only String parameters are supported.

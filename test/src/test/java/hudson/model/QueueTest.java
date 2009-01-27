@@ -51,9 +51,7 @@ public class QueueTest extends HudsonTestCase {
         assertEquals(1,q.getItems().length);
 
         // did it bind back to the same object?
-        Queue.Task task = q.getItems()[0].task;
-        assertTrue(task instanceof ParameterizedProjectTask);
-        assertSame(((ParameterizedProjectTask)task).getProject(),testProject);        
+        assertSame(q.getItems()[0].task,testProject);        
     }
 
     /**

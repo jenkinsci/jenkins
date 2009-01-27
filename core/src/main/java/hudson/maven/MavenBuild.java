@@ -554,7 +554,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             if(trigger) {
                 listener.getLogger().println(Messages.MavenBuild_Triggering(down.getName()));
                 downstreams.add(down);
-                down.scheduleBuild("Maven");
+                down.scheduleBuild();
             }
         }
     }

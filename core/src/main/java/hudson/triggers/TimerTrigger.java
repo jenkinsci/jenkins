@@ -29,7 +29,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
     }
 
     public void run() {
-        scheduleBuild(job, 0);
+        job.scheduleBuild(0);
     }
 
     public TriggerDescriptor getDescriptor() {

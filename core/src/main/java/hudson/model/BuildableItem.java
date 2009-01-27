@@ -12,10 +12,6 @@ import hudson.model.Queue.Task;
  * @author Kohsuke Kawaguchi
  */
 public interface BuildableItem extends Item, Task {
-    boolean scheduleBuild(String triggeredBy);
-    boolean scheduleBuild(int quietPeriod, String triggeredBy);
-    /** @deprecated since 1.279 */
-    @Deprecated boolean scheduleBuild();
-    /** @deprecated since 1.279 */
-    @Deprecated boolean scheduleBuild(int quietPeriod);
+    boolean scheduleBuild();
+    boolean scheduleBuild(int quietPeriod);
 }

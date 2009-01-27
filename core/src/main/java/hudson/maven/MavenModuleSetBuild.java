@@ -286,7 +286,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 if(!project.isAggregatorStyleBuild()) {
                     // start module builds
                     logger.println("Triggering "+project.getRootModule().getModuleName());
-                    project.getRootModule().scheduleBuild("Maven");
+                    project.getRootModule().scheduleBuild();
                 } else {
                     // do builds here
                     try {
@@ -469,7 +469,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 if(getResult().isBetterOrEqualTo(Result.SUCCESS)) {
                     for(AbstractProject down : getProject().getDownstreamProjects()) {
                         listener.getLogger().println(Messages.MavenBuild_Triggering(down.getName()));
-                        down.scheduleBuild("Maven");
+                        down.scheduleBuild();
                     }
                 }
             }

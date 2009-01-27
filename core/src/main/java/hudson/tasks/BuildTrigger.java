@@ -141,7 +141,7 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
                 // this is not completely accurate, as a new build might be triggered
                 // between these calls
                 String name = p.getName()+" #"+p.getNextBuildNumber();
-                if(p.scheduleBuild("Upstream project " + build.getProject().getDisplayName())) {
+                if(p.scheduleBuild()) {
                     logger.println(Messages.BuildTrigger_Triggering(name));
                 } else {
                     logger.println(Messages.BuildTrigger_InQueue(name));

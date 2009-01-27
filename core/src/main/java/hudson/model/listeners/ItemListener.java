@@ -3,7 +3,7 @@ package hudson.model.listeners;
 import hudson.ExtensionPoint;
 import hudson.model.Hudson;
 import hudson.model.Item;
-import hudson.model.Queue;
+import hudson.model.Job;
 
 /**
  * Receives notifications about CRUD operations of {@link Item}.
@@ -19,7 +19,8 @@ public class ItemListener implements ExtensionPoint {
     }
 
     /**
-     * Called after all the jobs are loaded from disk into {@link Hudson} object.
+     * Called after all the jobs are loaded from disk into {@link Hudson}
+     * object.
      */
     public void onLoaded() {
     }
@@ -44,16 +45,6 @@ public class ItemListener implements ExtensionPoint {
      * @since 1.146
      */
     public void onRenamed(Item item, String oldName, String newName) {
-    }
-
-    /**
-     * Called when a {@link Queue.Task} is scheduled in the queue.
-     *
-     * @param task
-     *      The pending task.
-     * @since 1.279
-     */
-    public void onScheduled(Queue.Task task) {
     }
 
     /**

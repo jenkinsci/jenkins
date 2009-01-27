@@ -4,7 +4,6 @@ import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Node.Mode;
-import hudson.model.listeners.ItemListener;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.util.OneShotEvent;
@@ -170,7 +169,7 @@ public class Queue extends ResourceController implements Saveable {
                 while ((line = in.readLine()) != null) {
                     AbstractProject j = Hudson.getInstance().getItemByFullName(line, AbstractProject.class);
                     if (j != null)
-                        j.scheduleBuild("Loading saved queue");
+                        j.scheduleBuild();
                 }
                 in.close();
                 // discard the queue file now that we are done
@@ -303,11 +302,6 @@ public class Queue extends ResourceController implements Saveable {
 
         }
         scheduleMaintenance();   // let an executor know that a new item is in the queue.
-        // let listeners know that a new item is in the queue.
-        for (ItemListener l : Hudson.getInstance().getJobListeners()) {
-            l.onScheduled(p);
-        }
-
         return true;
     }
 

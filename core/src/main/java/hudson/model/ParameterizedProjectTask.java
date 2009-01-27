@@ -19,7 +19,6 @@ public class ParameterizedProjectTask extends QueueTaskFilter {
 
     private final AbstractProject<?,?> project;
     private final List<ParameterValue> parameters;
-    private final String triggeredBy;
 
     private static long COUNTER = System.currentTimeMillis(); 
 
@@ -28,40 +27,28 @@ public class ParameterizedProjectTask extends QueueTaskFilter {
      */
     private final String key = Long.toString(COUNTER++);
 
-    public ParameterizedProjectTask(AbstractProject<?,?> project, List<ParameterValue> parameters, String triggeredBy) {
+    public ParameterizedProjectTask(AbstractProject<?,?> project, List<ParameterValue> parameters) {
         super(project);
         this.project = project;
         this.parameters = parameters;
-        this.triggeredBy = triggeredBy;
     }
-
-    /** @deprecated since 1.279 */
-    @Deprecated
-    public ParameterizedProjectTask(AbstractProject<?,?> project, List<ParameterValue> parameters) {
-        this(project, parameters, null);
-    }
-
+    
     public AbstractProject<?, ?> getProject() {
-        return project;
-    }
+		return project;
+	}
 
-    public List<ParameterValue> getParameters() {
-        return parameters;
-    }
+	public List<ParameterValue> getParameters() {
+		return parameters;
+	}
 
-    public String getTriggeredBy() {
-        return triggeredBy;
-    }
-
-    @Override
+	@Override
     public Executable createExecutable() throws IOException {
         AbstractBuild<?, ?> build = project.createExecutable();
-        if (project.isParameterized())
-            build.addAction(new ParametersAction(parameters, build));
+        build.addAction(new ParametersAction(parameters, build));
 
         return build;
     }
-
+	
     /**
      * Cancels a scheduled build.
      */
@@ -77,7 +64,6 @@ public class ParameterizedProjectTask extends QueueTaskFilter {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        // triggeredBy is NOT included so different triggers won't schedule duplicate builds
         result = prime * result
                 + ((parameters == null) ? 0 : parameters.hashCode());
         result = prime * result + ((project == null) ? 0 : project.hashCode());
@@ -93,7 +79,6 @@ public class ParameterizedProjectTask extends QueueTaskFilter {
         if (getClass() != obj.getClass())
             return false;
         ParameterizedProjectTask other = (ParameterizedProjectTask) obj;
-        // triggeredBy is NOT checked so different triggers won't schedule duplicate builds
         if (parameters == null) {
             if (other.parameters != null)
                 return false;

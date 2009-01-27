@@ -412,7 +412,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                     
                     if(foundChanges) {
                         String name = " #"+job.asProject().getNextBuildNumber();
-                        if(scheduleBuild(job)) {
+                        if(job.scheduleBuild()) {
                             LOGGER.info("SCM changes detected in "+ job.getName()+". Triggering "+name);
                         } else {
                             LOGGER.info("SCM changes detected in "+ job.getName()+". Job is already in the queue");
