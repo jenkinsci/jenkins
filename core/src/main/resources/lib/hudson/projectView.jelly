@@ -25,6 +25,9 @@
           <th tooltip="${%Status of the last build}">S</th>
           <th tooltip="${%Weather report showing aggregated status of recent builds}">W</th>
           <th initialSortDir="down">${%Job}</th>
+          <j:forEach var="col" items="${columnExtensions}">
+            <th>${col.columnCaption}</th>
+          </j:forEach>
           <th>${%Last Success}</th>
           <th>${%Last Failure}</th>
           <th>${%Last Duration}</th>

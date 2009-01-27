@@ -1,6 +1,8 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.views.ListViewColumn;
+import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.FormFieldValidator;
 
@@ -14,9 +16,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.text.ParseException;
 
 /**
  * Displays {@link Job}s in a flat list view.
@@ -28,6 +30,8 @@ public class ListView extends View {
      * List of job names. This is what gets serialized.
      */
     /*package*/ final Set<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+
+    private transient List<ListViewColumn> columns = new ArrayList<ListViewColumn>();
 
     /**
      * Include regex string.
@@ -42,12 +46,26 @@ public class ListView extends View {
     @DataBoundConstructor
     public ListView(String name) {
         super(name);
+        initColumns();
     }
 
     private Object readResolve() {
         if(includeRegex!=null)
             includePattern = Pattern.compile(includeRegex);
+        initColumns();
         return this;
+    }
+
+    private void initColumns() {
+        // create all instances
+        ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
+        for (Descriptor<ListViewColumn> d : ListViewColumn.LIST)
+            try {
+                r.add(d.newInstance(null,null));
+            } catch (FormException e) {
+                // so far impossible. TODO: report
+            }
+        columns = Collections.unmodifiableList(r);
     }
 
     /**
@@ -57,6 +75,10 @@ public class ListView extends View {
      */
     public List<Action> getActions() {
         return Hudson.getInstance().getActions();
+    }
+
+    public List<ListViewColumn> getColumns() {
+        return columns;
     }
 
     /**

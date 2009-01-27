@@ -17,6 +17,10 @@
               ${job.displayName}
           </a>
       </td>
+      <j:forEach var="col" items="${columnExtensions}">
+          <st:include page="column.jelly" it="${col}" />
+      </j:forEach>
+
       <td data="${h.ifThenElse(lsBuild==null,'-',lsBuild.timestampString2)}">
           <j:choose>
               <j:when test="${lsBuild!=null}">

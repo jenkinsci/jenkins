@@ -5,7 +5,7 @@
     </j:when>
     <j:otherwise>
       <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
-      <t:projectView jobs="${items}" jobBaseUrl="" showViewTabs="true">
+      <t:projectView jobs="${items}" jobBaseUrl="" showViewTabs="true" columnExtensions="${it.columns}">
         <!-- view tab bar -->
         <l:tabBar>
           <j:forEach var="v" items="${app.views}">
