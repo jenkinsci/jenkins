@@ -1,0 +1,8 @@
+<!--
+  Used to asynchronously update executor queue
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <l:ajax>
+    <t:executors computers="${h.singletonList(it)}" />
+  </l:ajax>
+</j:jelly>

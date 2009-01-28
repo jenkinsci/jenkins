@@ -1,16 +1,21 @@
-<!--
-    displays the status of executors.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Displays the status of executors.
+    <st:attribute name="computers">
+      If specified, this is the list of computers whose executors are rendered. If omitted, all the computers
+      in the system will be rendered.
+    </st:attribute>
+  </st:documentation>
+  <j:set var="computers" value="${h.ifThenElse(attrs.computers!=null, attrs.computers, app.computers)}" />
 	<l:pane title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>" width="3" id="executors">
-	  <j:forEach var="c" items="${app.computers}" varStatus="cloop">
+	  <j:forEach var="c" items="${computers}" varStatus="cloop">
 	    <j:choose>
-	      <j:when test="${c.node==app}">
+	      <j:when test="${c.node==app or computers.size()==1}">
 	        <tr>
 	          <th class="pane">No.</th>
 	          <th class="pane">
               <j:choose>
-                <j:when test="${empty(app.slaves)}">
+                <j:when test="${empty(app.slaves) or computers.size()==1}">
                   ${%Status}
                 </j:when>
                 <j:otherwise>

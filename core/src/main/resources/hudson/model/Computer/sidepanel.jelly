@@ -14,5 +14,6 @@
       <l:task icon="images/24x24/terminal.gif" href="script" title="${%Script Console}" permission="${app.ADMINISTER}" />
       <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for derived class to add more items -->
     </l:tasks>
+    <t:executors computers="${h.singletonList(it)}" />
   </l:side-panel>
 </j:jelly>

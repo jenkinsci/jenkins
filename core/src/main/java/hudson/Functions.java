@@ -989,6 +989,10 @@ public class Functions {
             || (href.equals(".") && url.endsWith("."));
     }
 
+    public <T> List<T> singletonList(T t) {
+        return Collections.singletonList(t);
+    }
+
     /**
      * Gets all the {@link PageDecorator}s.
      */
