@@ -1374,6 +1374,12 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
         }
     }
 
+    public void setAuthorizationStrategy(AuthorizationStrategy a) {
+        if (a == null)
+            a = AuthorizationStrategy.UNSECURED;
+        authorizationStrategy = a;
+    }
+
     public Lifecycle getLifecycle() {
         return Lifecycle.get();
     }
@@ -1843,9 +1849,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
                 useSecurity = true;
                 JSONObject security = json.getJSONObject("use_security");
                 setSecurityRealm(SecurityRealm.LIST.newInstanceFromRadioList(security,"realm"));
-                authorizationStrategy = AuthorizationStrategy.LIST.newInstanceFromRadioList(security,"authorization");
-                if(authorizationStrategy==null)
-                    authorizationStrategy = AuthorizationStrategy.UNSECURED;
+                setAuthorizationStrategy(AuthorizationStrategy.LIST.newInstanceFromRadioList(security, "authorization"));
             } else {
                 useSecurity = null;
                 setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
