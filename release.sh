@@ -9,7 +9,7 @@ svn update
 rm hudson.war || true
 
 tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
-export MAVEN_OPTS="-Xmx512m -XX:MaxPermSize=128m"
+export MAVEN_OPTS="-Xmx512m -XX:MaxPermSize=256m"
 mvn -B -Dtag=$tag release:prepare || mvn -B -Dtag=$tag install release:prepare || true
 svn up -r head
 mvn -B -Dtag=$tag -Dresume release:prepare
