@@ -164,6 +164,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      *
      * @return Value for property 'iconUrl'.
      */
+    @Exported
     public String getIconUrl() {
         return iconUrl;
     }
