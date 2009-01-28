@@ -34,7 +34,7 @@
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.10</version>
+        <version>1.11</version>
         <extensions>true</extensions>
         <dependencies>
           <dependency>
