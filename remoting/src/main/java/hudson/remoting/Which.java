@@ -9,6 +9,8 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
 import java.net.JarURLConnection;
+import java.lang.reflect.Field;
+import java.util.zip.ZipFile;
 
 /**
  * Locates where a given class is loaded from.
@@ -72,6 +74,27 @@ public class Which {
             // return new File(new URL(res).toURI());
 
             return new File(decode(new URL(resURL).getPath()));
+        }
+
+        if(resURL.startsWith("vfszip:")) {
+            // JBoss5
+            InputStream is = res.openStream();
+            try {
+                Field f = is.getClass().getDeclaredField("delegate");
+                f.setAccessible(true);
+                Object delegate = f.get(is);
+                f = delegate.getClass().getDeclaredField("this$0");
+                f.setAccessible(true);
+                ZipFile zipFile = (ZipFile)f.get(delegate);
+                return new File(zipFile.getName());
+            } catch (NoSuchFieldException e) {
+                // something must have changed in JBoss5. fall through
+            } catch (IllegalAccessException e) {
+                // something must have changed in JBoss5. fall through
+            } finally {
+                is.close();
+            }
+
         }
 
         URLConnection con = res.openConnection();
