@@ -450,6 +450,7 @@ public class SubversionSCM extends SCM implements Serializable {
                             if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_OBSTRUCTED_UPDATE) {
                                 // HUDSON-1882. If existence of local files cause an update to fail,
                                 // revert to fresh check out
+                                listener.getLogger().println(e.getMessage()); // show why this happened. Sometimes this is caused by having a build artifact in the repository.
                                 listener.getLogger().println("Updated failed due to local files. Getting a fresh workspace");
                                 update = false;
                                 return invoke(ws,channel);
