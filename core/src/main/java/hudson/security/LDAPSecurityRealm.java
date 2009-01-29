@@ -18,6 +18,8 @@ import org.acegisecurity.userdetails.ldap.LdapUserDetails;
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch;
 import org.acegisecurity.ldap.LdapUserSearch;
 import org.acegisecurity.ldap.LdapDataAccessException;
+import org.acegisecurity.ldap.InitialDirContextFactory;
+import org.acegisecurity.ldap.LdapTemplate;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -36,6 +38,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Hashtable;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -44,6 +47,127 @@ import java.util.regex.Pattern;
 
 /**
  * {@link SecurityRealm} implementation that uses LDAP for authentication.
+ *
+ *
+ * <h2>Key Object Classes</h2>
+ *
+ * <h4>Group Membership</h4>
+ *
+ * <p>
+ * Two object classes seem to be relevant. These are in RFC 2256 and core.schema. These use DN for membership,
+ * so it can create a group of anything. I don't know what the difference between these two are.
+ * <pre>
+   attributetype ( 2.5.4.31 NAME 'member'
+     DESC 'RFC2256: member of a group'
+     SUP distinguishedName )
+
+   attributetype ( 2.5.4.50 NAME 'uniqueMember'
+     DESC 'RFC2256: unique member of a group'
+     EQUALITY uniqueMemberMatch
+     SYNTAX 1.3.6.1.4.1.1466.115.121.1.34 )
+
+   objectclass ( 2.5.6.9 NAME 'groupOfNames'
+     DESC 'RFC2256: a group of names (DNs)'
+     SUP top STRUCTURAL
+     MUST ( member $ cn )
+     MAY ( businessCategory $ seeAlso $ owner $ ou $ o $ description ) )
+
+   objectclass ( 2.5.6.17 NAME 'groupOfUniqueNames'
+     DESC 'RFC2256: a group of unique names (DN and Unique Identifier)'
+     SUP top STRUCTURAL
+     MUST ( uniqueMember $ cn )
+     MAY ( businessCategory $ seeAlso $ owner $ ou $ o $ description ) )
+ * </pre>
+ *
+ * <p>
+ * This one is from nis.schema, and appears to model POSIX group/user thing more closely.
+ * <pre>
+   objectclass ( 1.3.6.1.1.1.2.2 NAME 'posixGroup'
+     DESC 'Abstraction of a group of accounts'
+     SUP top STRUCTURAL
+     MUST ( cn $ gidNumber )
+     MAY ( userPassword $ memberUid $ description ) )
+
+   attributetype ( 1.3.6.1.1.1.1.12 NAME 'memberUid'
+     EQUALITY caseExactIA5Match
+     SUBSTR caseExactIA5SubstringsMatch
+     SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+   objectclass ( 1.3.6.1.1.1.2.0 NAME 'posixAccount'
+     DESC 'Abstraction of an account with POSIX attributes'
+     SUP top AUXILIARY
+     MUST ( cn $ uid $ uidNumber $ gidNumber $ homeDirectory )
+     MAY ( userPassword $ loginShell $ gecos $ description ) )
+
+   attributetype ( 1.3.6.1.1.1.1.0 NAME 'uidNumber'
+     DESC 'An integer uniquely identifying a user in an administrative domain'
+     EQUALITY integerMatch
+     SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+
+   attributetype ( 1.3.6.1.1.1.1.1 NAME 'gidNumber'
+     DESC 'An integer uniquely identifying a group in an administrative domain'
+     EQUALITY integerMatch
+     SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+ * </pre>
+ *
+ * <p>
+ * Active Directory specific schemas (from <a href="http://www.grotan.com/ldap/microsoft.schema">here</a>).
+ * <pre>
+   objectclass ( 1.2.840.113556.1.5.8
+     NAME 'group'
+     SUP top
+     STRUCTURAL
+     MUST (groupType )
+     MAY (member $ nTGroupMembers $ operatorCount $ adminCount $
+         groupAttributes $ groupMembershipSAM $ controlAccessRights $
+         desktopProfile $ nonSecurityMember $ managedBy $
+         primaryGroupToken $ mail ) )
+
+   objectclass ( 1.2.840.113556.1.5.9
+     NAME 'user'
+     SUP organizationalPerson
+     STRUCTURAL
+     MAY (userCertificate $ networkAddress $ userAccountControl $
+         badPwdCount $ codePage $ homeDirectory $ homeDrive $
+         badPasswordTime $ lastLogoff $ lastLogon $ dBCSPwd $
+         localeID $ scriptPath $ logonHours $ logonWorkstation $
+         maxStorage $ userWorkstations $ unicodePwd $
+         otherLoginWorkstations $ ntPwdHistory $ pwdLastSet $
+         preferredOU $ primaryGroupID $ userParameters $
+         profilePath $ operatorCount $ adminCount $ accountExpires $
+         lmPwdHistory $ groupMembershipSAM $ logonCount $
+         controlAccessRights $ defaultClassStore $ groupsToIgnore $
+         groupPriority $ desktopProfile $ dynamicLDAPServer $
+         userPrincipalName $ lockoutTime $ userSharedFolder $
+         userSharedFolderOther $ servicePrincipalName $
+         aCSPolicyName $ terminalServer $ mSMQSignCertificates $
+         mSMQDigests $ mSMQDigestsMig $ mSMQSignCertificatesMig $
+         msNPAllowDialin $ msNPCallingStationID $
+         msNPSavedCallingStationID $ msRADIUSCallbackNumber $
+         msRADIUSFramedIPAddress $ msRADIUSFramedRoute $
+         msRADIUSServiceType $ msRASSavedCallbackNumber $
+         msRASSavedFramedIPAddress $ msRASSavedFramedRoute $
+         mS-DS-CreatorSID ) )
+ * </pre>
+ *
+ *
+ * <h2>References</h2>
+ * <dl>
+ * <dt><a href="http://www.openldap.org/doc/admin22/schema.html">Standard Schemas</a>
+ * <dd>
+ * The downloadable distribution contains schemas that define the structure of LDAP entries.
+ * Because this is a standard, we expect most LDAP servers out there to use it, although
+ * there are different objectClasses that can be used for similar purposes, and apparently
+ * many deployments choose to use different objectClasses.
+ *
+ * <dt><a href="http://www.ietf.org/rfc/rfc2256.txt">RFC 2256</a>
+ * <dd>
+ * Defines the meaning of several key datatypes used in the schemas with some explanations. 
+ *
+ * <dt><a href="http://msdn.microsoft.com/en-us/library/ms675085(VS.85).aspx">Active Directory schema</a>
+ * <dd>
+ * More navigable schema list, including core and MS extensions specific to Active Directory.
+ * </dl>
  * 
  * @author Kohsuke Kawaguchi
  * @since 1.166
@@ -82,7 +206,8 @@ public class LDAPSecurityRealm extends SecurityRealm {
     /**
      * This defines the organizational unit that contains groups.
      *
-     * Normally "ou=groups"
+     * Normally "" to indicate the full LDAP search, but can be often narrowed down to
+     * something like "ou=groups"
      *
      * @see FilterBasedLdapUserSearch
      */
@@ -113,6 +238,11 @@ public class LDAPSecurityRealm extends SecurityRealm {
      * Scrambled password, used to first bind to LDAP.
      */
     private final String managerPassword;
+
+    /**
+     * Created in {@link #createSecurityComponents()}. Can be used to connect to LDAP.
+     */
+    private LdapTemplate ldapTemplate;
 
     @DataBoundConstructor
     public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch, String groupSearchBase, String managerDN, String managerPassword) {
@@ -177,6 +307,8 @@ public class LDAPSecurityRealm extends SecurityRealm {
         builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/LDAPBindSecurityRealm.groovy"),binding);
         final WebApplicationContext appContext = builder.createApplicationContext();
 
+        ldapTemplate = new LdapTemplate(findBean(InitialDirContextFactory.class, appContext));
+
         return new SecurityComponents(
             findBean(AuthenticationManager.class, appContext),
             new UserDetailsService() {
@@ -190,6 +322,22 @@ public class LDAPSecurityRealm extends SecurityRealm {
                     }
                 }
             });
+    }
+
+    @Override
+    public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        // TODO: obtain a DN instead so that we can obtain multiple attributes later
+        final Set<String> groups = (Set<String>)ldapTemplate.searchForSingleAttributeValues(groupSearchBase, GROUP_SEARCH,
+                new String[]{groupname}, "cn");
+
+        if(groups.isEmpty())
+            throw new UsernameNotFoundException(groupname);
+
+        return new GroupDetails() {
+            public String getName() {
+                return groups.iterator().next();
+            }
+        };
     }
 
     /**
@@ -296,4 +444,14 @@ public class LDAPSecurityRealm extends SecurityRealm {
     }
 
     private static final Logger LOGGER = Logger.getLogger(LDAPSecurityRealm.class.getName());
+
+    /**
+     * LDAP filter to look for groups by their names.
+     *
+     * "{0}" is the group name as given by the user.
+     * See http://msdn.microsoft.com/en-us/library/aa746475(VS.85).aspx for the syntax by example.
+     * WANTED: The specification of the syntax.
+     */
+    public static String GROUP_SEARCH = System.getProperty(LDAPSecurityRealm.class.getName()+".groupSearch",
+            "(& (cn={0}) (| (objectclass=groupOfNames) (objectclass=groupOfUniqueNames) (objectclass=posixGroup)))");
 }
