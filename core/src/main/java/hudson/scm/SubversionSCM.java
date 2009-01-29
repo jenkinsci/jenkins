@@ -818,7 +818,7 @@ public class SubversionSCM extends SCM implements Serializable {
         List<External> externals = parseExternalsFile(project);
 
         // are the locations checked out in the workspace consistent with the current configuration?
-        for( ModuleLocation loc : getLocations() ) {
+        for( ModuleLocation loc : getLocations(lastBuild) ) {
             if(!wsRev.containsKey(loc.getURL())) {
                 listener.getLogger().println("Workspace doesn't contain "+loc.getURL()+". Need a new build");
                 return true;
