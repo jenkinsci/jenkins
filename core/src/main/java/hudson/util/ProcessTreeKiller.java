@@ -591,7 +591,7 @@ public abstract class ProcessTreeKiller {
                         for( int n=0; n<argc; n++ ) {
                             // read a pointer to one entry
                             as.seek(to64(argp+n*4));
-                            int p = as.readInt();
+                            int p = adjust(as.readInt());
 
                             arguments.add(readLine(as, p, "argv["+ n +"]"));
                         }
@@ -620,7 +620,7 @@ public abstract class ProcessTreeKiller {
                         for( int n=0; ; n++ ) {
                             // read a pointer to one entry
                             as.seek(to64(envp+n*4));
-                            int p = as.readInt();
+                            int p = adjust(as.readInt());
                             if(p==0)
                                 break;  // completed the walk
 
