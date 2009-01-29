@@ -7,8 +7,6 @@ import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
-import hudson.model.Item;
-import hudson.model.Job;
 import hudson.security.Permission;
 import hudson.security.AccessControlled;
 
@@ -26,7 +24,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.Stapler;
-import org.acegisecurity.AccessDeniedException;
 
 /**
  * Base class that provides the framework for doing on-the-fly form field validation.
@@ -128,8 +125,15 @@ public abstract class FormFieldValidator {
      * Sends out an HTML fragment that indicates a success.
      */
     public void ok() throws IOException, ServletException {
+        respond("<div/>");
+    }
+
+    /**
+     * Sends out an arbitrary HTML fragment.
+     */
+    public void respond(String html) throws IOException, ServletException {
         response.setContentType("text/html");
-        response.getWriter().print("<div/>");
+        response.getWriter().print(html);
     }
 
     /**
