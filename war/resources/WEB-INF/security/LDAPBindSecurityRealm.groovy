@@ -6,7 +6,8 @@ import org.acegisecurity.ldap.DefaultInitialDirContextFactory
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
 import hudson.model.Hudson
-import hudson.security.DeferredCreationLdapAuthoritiesPopulator
+import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator
+import hudson.Util
 
 /*
     Configure LDAP as the authentication realm.
@@ -35,8 +36,9 @@ bindAuthenticator(BindAuthenticator2,initialDirContextFactory) {
     userSearch = ldapUserSearch;
 }
 
-authoritiesPopulator(DeferredCreationLdapAuthoritiesPopulator,initialDirContextFactory,"") {
-  // groupRoleAttribute = "ou";
+authoritiesPopulator(DefaultLdapAuthoritiesPopulator, initialDirContextFactory, Util.fixNull(instance.groupSearchBase)) {
+    // see DefaultLdapAuthoritiesPopulator for other possible configurations
+    searchSubtree = true;
 }
 
 authenticationManager(ProviderManager) {

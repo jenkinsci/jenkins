@@ -9,7 +9,7 @@ import org.acegisecurity.ldap.LdapDataAccessException;
 import org.acegisecurity.providers.ldap.LdapAuthoritiesPopulator;
 import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator;
 import org.acegisecurity.userdetails.ldap.LdapUserDetails;
-import org.springframework.util.Assert;
+import hudson.security.SecurityRealm.SecurityComponents;
 
 /**
  * Implementation of {@link LdapAuthoritiesPopulator} that defers creation of a
@@ -17,6 +17,9 @@ import org.springframework.util.Assert;
  * ensure that the groupSearchBase property can be set.
  * 
  * @author justinedelson
+ * @deprecated as of 1.280
+ *      {@link SecurityComponents} are now created after {@link SecurityRealm} is created, so
+ *      the initialization order issue that this code was trying to address no longer exists.
  */
 public class DeferredCreationLdapAuthoritiesPopulator implements LdapAuthoritiesPopulator {
 

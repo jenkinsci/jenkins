@@ -176,7 +176,6 @@ public class LDAPSecurityRealm extends SecurityRealm {
         BeanBuilder builder = new BeanBuilder();
         builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/LDAPBindSecurityRealm.groovy"),binding);
         final WebApplicationContext appContext = builder.createApplicationContext();
-        correctAuthoritiesPopulator(appContext);
 
         return new SecurityComponents(
             findBean(AuthenticationManager.class, appContext),
@@ -193,15 +192,6 @@ public class LDAPSecurityRealm extends SecurityRealm {
             });
     }
 
-    /**
-     * Adjust the authoritiesPopulator bean to have the correct groupSearchBase
-     * @param appContext 
-     */
-    private void correctAuthoritiesPopulator(WebApplicationContext appContext) {
-        DeferredCreationLdapAuthoritiesPopulator factory = (DeferredCreationLdapAuthoritiesPopulator) appContext.getBean("authoritiesPopulator");
-        factory.setGroupSearchBase(groupSearchBase==null ? "" : groupSearchBase);
-    }
-    
     /**
      * If the security realm is LDAP, try to pick up e-mail address from LDAP.
      */

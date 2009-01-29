@@ -172,6 +172,18 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     }
 
     /**
+     * If this {@link SecurityRealm} supports a look up of {@link GroupDetails} by their names, override this method
+     * to provide the look up.
+     *
+     * <p>
+     * This information, when available, can be used by {@link AuthorizationStrategy}s to improve the UI and
+     * error diagnostics for the user.
+     */
+    public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        throw new UserMayOrMayNotExistException(groupname);
+    }
+
+    /**
      * {@link DefaultManageableImageCaptchaService} holder to defer initialization.
      */
     private static final class CaptchaService {
