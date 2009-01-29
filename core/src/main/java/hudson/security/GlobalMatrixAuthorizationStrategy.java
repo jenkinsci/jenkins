@@ -6,13 +6,17 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
+import hudson.util.FormFieldValidator;
+import hudson.Functions;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.acls.sid.GrantedAuthoritySid;
-import org.acegisecurity.acls.sid.PrincipalSid;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.QueryParameter;
+import org.springframework.dao.DataAccessException;
 
+import javax.servlet.ServletException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.io.IOException;
 
 /**
  * Role-based authorization via a matrix.
@@ -126,7 +131,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new DescriptorImpl();
+    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     /**
      * Persist {@link GlobalMatrixAuthorizationStrategy} as a list of IDs that
@@ -215,6 +220,57 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
 
         public boolean showPermission(Permission p) {
             return true;
+        }
+
+        public void doCheckName(@QueryParameter String value ) throws IOException, ServletException {
+            final String v = value.substring(1,value.length()-1);
+            new FormFieldValidator(Hudson.ADMINISTER) {
+                protected void check() throws IOException, ServletException {
+                    SecurityRealm sr = Hudson.getInstance().getSecurityRealm();
+                    String ev = Functions.escape(v);
+
+                    if(v.equals("authenticated")) {
+                        // systerm reserved group
+                        respond("<span>"+ makeImg("user.gif") +ev+"</span>");
+                        return;
+                    }
+
+                    try {
+                        sr.loadUserByUsername(v);
+                        respond("<span>"+ makeImg("person.gif") +ev+"</span>");
+                        return;
+                    } catch (UserMayOrMayNotExistException e) {
+                        // undecidable, meaning the user may exist
+                        respond("<span>"+ev+"</span>");
+                        return;
+                    } catch (UsernameNotFoundException e) {
+                        // fall through next
+                    } catch (DataAccessException e) {
+                        // fall through next
+                    }
+
+                    try {
+                        sr.loadGroupByGroupname(v);
+                        respond("<span>"+ makeImg("user.gif") +ev+"</span>");
+                        return;
+                    } catch (UserMayOrMayNotExistException e) {
+                        // undecidable, meaning the group may exist
+                        respond("<span>"+ev+"</span>");
+                        return;
+                    } catch (UsernameNotFoundException e) {
+                        // fall through next
+                    } catch (DataAccessException e) {
+                        // fall through next
+                    }
+
+                    // couldn't find it. it doesn't exit
+                    respond("<span>"+ makeImg("error.gif") +ev+"</span>");
+                }
+            }.process();
+        }
+
+        private String makeImg(String gif) {
+            return String.format("<img src='%s/images/16x16/%s' style='margin-right:0.2em'>", Hudson.RESOURCE_PATH, gif);
         }
     }
 }

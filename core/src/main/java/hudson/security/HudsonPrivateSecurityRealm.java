@@ -27,6 +27,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.dao.DataAccessException;
 
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
@@ -59,6 +60,14 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
     @Override
     public boolean allowsSignup() {
         return !disableSignup;
+    }
+
+    /**
+     * This implementation doesn't support groups.
+     */
+    @Override
+    public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        throw new UsernameNotFoundException(groupname);
     }
 
     @Override

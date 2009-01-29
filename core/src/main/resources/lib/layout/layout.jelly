@@ -30,6 +30,7 @@
 <st:header name="Expires" value="0" />
 <!-- Use st:header here rather than st:contentType because Jetty 5.x appears to ignore the latter. -->
 <st:header name="Content-Type" value="text/html;charset=UTF-8" />
+<!-- The path starts with a "/" character but does not end with a "/" character. -->
 <j:set var="rootURL" value="${request.contextPath}" />
 <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null)}"/>

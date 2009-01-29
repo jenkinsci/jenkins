@@ -22,7 +22,19 @@ var FormChecker = {
 
     inProgress : false,
 
+    /**
+     * Schedules a form field check. Executions are serialized to reduce the bandwidth impact.
+     *
+     * @param url
+     *      Remote doXYZ URL that performs the check. Query string should include the field value.
+     * @param method
+     *      HTTP method. GET or POST. I haven't confirmed specifics, but some browsers seem to cache GET requests.
+     * @param target
+     *      HTML element whose innerHTML will be overwritten when the check is completed.
+     */
     delayedCheck : function(url, method, target) {
+        if(url==null || method==null || target==null)
+            return; // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
         this.queue.push({url:url, method:method, target:target});
         this.schedule();
     },
@@ -41,8 +53,6 @@ var FormChecker = {
         if (this.queue.length == 0) return;
 
         var next = this.queue.shift();
-        this.inProgress = true;
-
         this.sendRequest(next.url, {
             method : next.method,
             onComplete : function(x) {
@@ -51,6 +61,7 @@ var FormChecker = {
                 FormChecker.schedule();
             }
         });
+        this.inProgress = true;
     }
 }
 

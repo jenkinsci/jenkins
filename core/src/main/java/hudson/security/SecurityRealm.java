@@ -286,6 +286,10 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
                 public Authentication authenticate(Authentication authentication) {
                     return authentication;
                 }
+            }, new UserDetailsService() {
+                public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+                    throw new UsernameNotFoundException(username);
+                }
             });
         }
 
@@ -295,6 +299,14 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
          */
         public Descriptor<SecurityRealm> getDescriptor() {
             return null;
+        }
+
+        /**
+         * There's no group.
+         */
+        @Override
+        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+            throw new UsernameNotFoundException(groupname);
         }
 
         /**

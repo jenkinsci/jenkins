@@ -14,17 +14,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.io.IOException;
 
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.QueryParameter;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+
+import javax.servlet.ServletException;
 
 /**
  * {@link JobProperty} to associate ACL for each project.
@@ -94,7 +98,6 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 	}
 
 	public static class DescriptorImpl extends JobPropertyDescriptor {
-
 		@Override
 		public JobProperty<?> newInstance(StaplerRequest req,
 				JSONObject formData) throws FormException {
@@ -134,6 +137,10 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 
         public boolean showPermission(Permission p) {
             return p!=Item.CREATE;
+        }
+
+        public void doCheckName(@QueryParameter String value) throws IOException, ServletException {
+            GlobalMatrixAuthorizationStrategy.DESCRIPTOR.doCheckName(value);
         }
 	}
 
