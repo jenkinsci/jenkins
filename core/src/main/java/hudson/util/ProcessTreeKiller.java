@@ -542,6 +542,9 @@ public abstract class ProcessTreeKiller {
                     // see http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/sys/types.h
                     // for the size of the various datatype.
 
+                    // see http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/cmd/ptools/pargs/pargs.c
+                    // for how to read this information
+                    
                     psinfo.seek(8);
                     if(adjust(psinfo.readInt())!=pid)
                         throw new IOException("psinfo PID mismatch");   // sanity check
