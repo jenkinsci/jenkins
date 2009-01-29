@@ -267,7 +267,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      */
     public Filter createFilter(FilterConfig filterConfig) {
         Binding binding = new Binding();
-        SecurityComponents sc = this.createSecurityComponents();
+        SecurityComponents sc = getSecurityComponents();
         binding.setVariable("securityComponents", sc);
         BeanBuilder builder = new BeanBuilder();
         builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
