@@ -187,7 +187,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
                         return ldapSerach.searchForUser(username);
                     } catch (LdapDataAccessException e) {
                         LOGGER.log(Level.WARNING, "Failed to search LDAP for username="+username,e);
-                        throw new UsernameNotFoundException(e.getMessage(),e);
+                        throw new UserMayOrMayNotExistException(e.getMessage(),e);
                     }
                 }
             });

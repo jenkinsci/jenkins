@@ -17,7 +17,7 @@ public class UserDetailsServiceProxy implements UserDetailsService {
         UserDetailsService uds = delegate;  // fix the reference for concurrency support
 
         if(uds ==null)
-            throw new UsernameNotFoundException(Messages.UserDetailsServiceProxy_UnableToQuery(username));
+            throw new UserMayOrMayNotExistException(Messages.UserDetailsServiceProxy_UnableToQuery(username));
         return uds.loadUserByUsername(username);
     }
 

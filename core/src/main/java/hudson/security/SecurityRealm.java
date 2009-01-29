@@ -15,11 +15,14 @@ import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
 import org.acegisecurity.userdetails.UserDetailsService;
+import org.acegisecurity.userdetails.UserDetails;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.dao.DataAccessException;
 
 import javax.imageio.ImageIO;
 import javax.servlet.Filter;
@@ -154,6 +157,18 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     public boolean allowsSignup() {
         Class clz = getClass();
         return clz.getClassLoader().getResource(clz.getName().replace('.','/')+"/signup.jelly")!=null;
+    }
+
+    /**
+     * Shortcut for {@link UserDetailsService#loadUserByUsername(String)}.
+     *
+     * @throws UserMayOrMayNotExistException
+     *      If the security realm cannot even tell if the user exists or not.
+     * @return
+     *      never null.
+     */
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        return getSecurityComponents().userDetails.loadUserByUsername(username);
     }
 
     /**
