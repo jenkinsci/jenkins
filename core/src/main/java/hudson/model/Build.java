@@ -6,6 +6,7 @@ import hudson.tasks.BuildWrapper.Environment;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildTrigger;
 import hudson.triggers.SCMTrigger;
+import hudson.Launcher;
 
 import java.io.File;
 import java.io.IOException;
@@ -126,6 +127,19 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             }
 
             return null;
+        }
+
+        /**
+         * Decorates the {@link Launcher}
+         */
+        @Override
+        protected Launcher createLauncher(BuildListener listener) throws IOException, InterruptedException {
+            Launcher l = super.createLauncher(listener);
+
+            for(BuildWrapper bw : project.getBuildWrappers().values())
+                l = bw.decorateLauncher(Build.this,l,listener);
+
+            return l;
         }
 
         public void post2(BuildListener listener) throws IOException, InterruptedException {

@@ -215,7 +215,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     protected abstract class AbstractRunner implements Runner {
         /**
          * Since configuration can be changed while a build is in progress,
-         * stick to one launcher and use it.
+         * create a launcher once and stick to it for the entire build duration.
          */
         protected Launcher launcher;
 
@@ -232,7 +232,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             builtOn = node.getNodeName();
             hudsonVersion = Hudson.VERSION;
 
-            launcher = node.createLauncher(listener);
+            launcher = createLauncher(listener);
             if(node instanceof Slave)
                 listener.getLogger().println(Messages.AbstractBuild_BuildingRemotely(node.getNodeName()));
 
@@ -256,6 +256,17 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 createSymLink(listener,"lastStable");
 
             return result;
+        }
+
+        /**
+         * Creates a {@link Launcher} that this build will use. This can be overridden by derived types
+         * to decorate the resulting {@link Launcher}.
+         *
+         * @param listener
+         *      Always non-null. Connected to the main build output. 
+         */
+        protected Launcher createLauncher(BuildListener listener) throws IOException, InterruptedException {
+            return getCurrentNode().createLauncher(listener);
         }
 
         private void createSymLink(BuildListener listener, String name) throws InterruptedException {

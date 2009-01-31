@@ -9,6 +9,7 @@ import hudson.model.Describable;
 import hudson.model.Project;
 import hudson.model.Action;
 import hudson.model.AbstractProject;
+import hudson.model.Run.RunnerAbortedException;
 
 import java.io.IOException;
 import java.util.Map;
@@ -134,6 +135,38 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
      */
     public Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
         throw new UnsupportedOperationException(getClass()+" needs to implement the setUp method");
+    }
+
+    /**
+     * Provides an opportunity for a {@link BuildWrapper} to decorate a {@link Launcher} to be used in the build.
+     *
+     * <p>
+     * This hook is called very early on in the build (even before {@link #setUp(AbstractBuild, Launcher, BuildListener)} is invoked.)
+     * The typical use of {@link Launcher} decoration involves in modifying the environment that processes run,
+     * such as the use of sudo/pfexec/chroot, or manipulating environment variables.
+     *
+     * <p>
+     * The default implementation is no-op, which just returns the {@code listener} parameter as-is.
+     *
+     * @param build
+     *      The build in progress for which this {@link BuildWrapper} is called. Never null.
+     * @param launcher
+     *      The default launcher. Never null. This method is expected to wrap this launcher.
+     *      This makes sure that when multiple {@link BuildWrapper}s attempt to decorate the same launcher
+     *      it will sort of work. But if you are developing a plugin where such collision is not a concern,
+     *      you can also simply discard this {@link Launcher} and create an entirely different {@link Launcher}
+     *      and return it, too.
+     * @param listener
+     *      Connected to the build output. Never null. Can be used for error reporting.
+     * @return
+     *      Must not be null. If a fatal error happens, throw an exception.
+     * @throws RunnerAbortedException
+     *      If a fatal error is detected but the implementation handled it gracefully, throw this exception
+     *      to suppress stack trace.
+     * @since 1.280
+     */
+    public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, RunnerAbortedException {
+        return launcher;
     }
 
     /**
