@@ -2665,8 +2665,10 @@ Form.Methods = {
     form = $(form);
     var inputs = form.getElementsByTagName('input');
     var textareas = form.getElementsByTagName('textarea');
+    // KK patch
+    var selects = form.getElementsByTagName('select');
 
-    if (!typeName && !name) return $A(inputs).concat($A(textareas)).map(Element.extend);
+    if (!typeName && !name) return $A(inputs).concat($A(textareas)).concat($A(selects)).map(Element.extend);
 
 
     var matchingInputs = [];
@@ -2680,6 +2682,7 @@ Form.Methods = {
     };
     f(inputs);
     f(textareas);
+    f(selects);
 
     return matchingInputs;
   },
