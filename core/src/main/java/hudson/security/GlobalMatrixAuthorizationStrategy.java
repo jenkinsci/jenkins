@@ -270,7 +270,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         private String makeImg(String gif) {
-            return String.format("<img src='%s/images/16x16/%s' style='margin-right:0.2em'>", Hudson.RESOURCE_PATH, gif);
+            return String.format("<img src='%s%s/images/16x16/%s' style='margin-right:0.2em'>", Hudson.getInstance().getRootUrlFromRequest(), Hudson.RESOURCE_PATH, gif);
         }
     }
 }

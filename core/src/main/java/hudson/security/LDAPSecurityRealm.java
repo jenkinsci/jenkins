@@ -250,8 +250,8 @@ public class LDAPSecurityRealm extends SecurityRealm {
         if(Util.fixEmptyAndTrim(rootDN)==null)    rootDN=Util.fixNull(inferRootDN(server));
         this.rootDN = rootDN.trim();
         this.userSearchBase = userSearchBase.trim();
-        if(Util.fixEmptyAndTrim(userSearch)==null)    userSearch="uid={0}";
-        this.userSearch = userSearch.trim();
+        userSearch = Util.fixEmptyAndTrim(userSearch);
+        this.userSearch = userSearch!=null ? userSearch : "uid={0}";
         this.groupSearchBase = Util.fixEmptyAndTrim(groupSearchBase);
         this.managerDN = Util.fixEmpty(managerDN);
         this.managerPassword = Scrambler.scramble(Util.fixEmpty(managerPassword));
@@ -327,7 +327,8 @@ public class LDAPSecurityRealm extends SecurityRealm {
     @Override
     public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
         // TODO: obtain a DN instead so that we can obtain multiple attributes later
-        final Set<String> groups = (Set<String>)ldapTemplate.searchForSingleAttributeValues(groupSearchBase, GROUP_SEARCH,
+        String searchBase = groupSearchBase != null ? groupSearchBase : "";
+        final Set<String> groups = (Set<String>)ldapTemplate.searchForSingleAttributeValues(searchBase, GROUP_SEARCH,
                 new String[]{groupname}, "cn");
 
         if(groups.isEmpty())
