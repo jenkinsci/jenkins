@@ -242,7 +242,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
     /**
      * Created in {@link #createSecurityComponents()}. Can be used to connect to LDAP.
      */
-    private LdapTemplate ldapTemplate;
+    private transient LdapTemplate ldapTemplate;
 
     @DataBoundConstructor
     public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch, String groupSearchBase, String managerDN, String managerPassword) {
