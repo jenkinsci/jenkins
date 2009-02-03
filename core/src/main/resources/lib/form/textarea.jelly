@@ -1,6 +1,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
-    &lt;textarea> tag on steroid.
+    &lt;textarea> tag on steroids.
     The textarea will be rendered to fit the content. It also gets the resize handle.
 
     <st:attribute name="field">
