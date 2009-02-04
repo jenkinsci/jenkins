@@ -212,7 +212,7 @@
       -->
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.3</version>
+      <version>1.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -222,7 +222,7 @@
       -->
       <groupId>org.jvnet.hudson.winstone</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-hudson-6</version>
+      <version>0.9.10-hudson-7</version>
       <scope>provided</scope>
     </dependency>
     <!-- offline profiler API when we need it -->

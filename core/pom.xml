@@ -578,8 +578,14 @@
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>3.0.9</version>
+      <version>3.0.9</version><!-- executabe-war hardcodes this version, so when you change this, update executable-war as well -->
     </dependency>
+    <dependency>
+      <groupId>com.sun.akuma</groupId>
+      <artifactId>akuma</artifactId>
+      <version>1.1</version><!-- executabe-war hardcodes this version, so when you change this, update executable-war as well -->
+    </dependency>
+    
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>
