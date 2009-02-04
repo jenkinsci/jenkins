@@ -1084,7 +1084,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
                     return auth;
                 } catch (SVNException e) {
-                    logger.log(Level.SEVERE, "Failed to authorize",e);
+                    LOGGER.log(Level.SEVERE, "Failed to authorize",e);
                     throw new RuntimeException("Failed to authorize",e);
                 }
             }
@@ -1356,7 +1356,7 @@ public class SubversionSCM extends SCM implements Serializable {
                         message += "<pre id=svnerror style='display:none'>"+Functions.printThrowable(e)+"</pre>";
                         message += " (Maybe you need to <a target='_new' href='"+req.getContextPath()+"/scm/SubversionSCM/enterCredential?"+url+"'>enter credential</a>?)";
                         message += "<br>";
-                        logger.log(Level.INFO, "Failed to access subversion repository "+url,e);
+                        LOGGER.log(Level.INFO, "Failed to access subversion repository "+url,e);
                         errorWithMarkup(message);
                     }
                 }
@@ -1455,8 +1455,6 @@ public class SubversionSCM extends SCM implements Serializable {
     static final Pattern URL_PATTERN = Pattern.compile("(https?|svn(\\+[a-z0-9]+)?|file)://.+");
 
     private static final long serialVersionUID = 1L;
-
-    private static final Logger logger = Logger.getLogger(SubversionSCM.class.getName());
 
     static {
         new Initializer();
