@@ -3,11 +3,17 @@ package hudson.util;
 import junit.framework.TestCase;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class RobustReflectionConverterTest extends TestCase {
+
+    static {
+        Logger.getLogger(RobustReflectionConverter.class.getName()).setLevel(Level.OFF);
+    }
 
     public void testRobustUnmarshalling() {
         Point p = read(new XStream2());
