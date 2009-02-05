@@ -1,11 +1,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:choose>
-    <j:when test="${empty(items)}">
-      <st:include page="noJob.jelly" />
-    </j:when>
-    <j:otherwise>
-      <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
-      <t:projectView jobs="${items}" jobBaseUrl="" showViewTabs="true" columnExtensions="${it.columns}">
+  <j:choose xmlns:local="local">
+    <d:taglib uri="local">
+      <d:tag name="viewTabs">
         <!-- view tab bar -->
         <l:tabBar>
           <j:forEach var="v" items="${app.views}">
@@ -15,6 +11,17 @@
             <l:tab name="+" href="${rootURL}/newView" active="false" />
           </j:if>
         </l:tabBar>
+      </d:tag>
+    </d:taglib>
+    <j:when test="${empty(items)}">
+      <local:viewTabs/>
+      <br/>
+      <st:include page="noJob.jelly" />
+    </j:when>
+    <j:otherwise>
+      <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
+      <t:projectView jobs="${items}" jobBaseUrl="" showViewTabs="true" columnExtensions="${it.columns}">
+        <local:viewTabs/>
       </t:projectView>
     </j:otherwise>
   </j:choose>
