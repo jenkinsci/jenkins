@@ -203,9 +203,13 @@ public final class TestResult extends MetaTabulatedResult {
     }
 
     @Override
-    @Exported(name="child",inline=true)
     public Collection<PackageResult> getChildren() {
         return byPackages.values();
+    }
+
+    @Exported(inline=true)
+    public Collection<SuiteResult> getSuites() {
+        return suites;
     }
 
     @Override

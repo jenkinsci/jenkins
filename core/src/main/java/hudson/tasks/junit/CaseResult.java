@@ -186,6 +186,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      * If this test failed, then return the build number
      * when this test started failing.
      */
+    @Exported
     public int getFailedSince() {
         return failedSince;
     }
@@ -226,30 +227,6 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     }
 
     /**
-     * The stdout of this test. Note that due to the design of the format,
-     * stdout for the entire {@link SuiteResult} is reported,
-     * and Hudson cannot tell what portion of the output corresponds to this test.
-     *
-     * @since 1.272
-     */
-    @Exported
-    public String getStdout() {
-        return parent.getStdout();
-    }
-
-    /**
-     * The stderr of this test. Note that due to the design of the format,
-     * stdout for the entire {@link SuiteResult} is reported,
-     * and Hudson cannot tell what portion of the output corresponds to this test.
-     *
-     * @since 1.272
-     */
-    @Exported
-    public String getStderr() {
-        return parent.getStderr();
-    }
-
-    /**
      * @return true if the test was not skipped and did not fail, false otherwise.
      */
     public boolean isPassed() {
@@ -262,6 +239,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      * been configured to be skipped.
      * @return true if the test was not executed, false otherwise.
      */
+    @Exported
     public boolean isSkipped() {
         return skipped;
     }

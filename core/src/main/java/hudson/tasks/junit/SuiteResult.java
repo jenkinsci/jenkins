@@ -139,11 +139,25 @@ public final class SuiteResult implements Serializable {
         return duration; 
     }
 
+    /**
+     * The stdout of this test. Note that due to the design of the format,
+     * stdout for the entire {@link SuiteResult} is reported,
+     * and Hudson cannot tell what portion of the output corresponds to this test.
+     *
+     * @since 1.281
+     */
     @Exported
     public String getStdout() {
         return stdout;
     }
 
+    /**
+     * The stderr of this test. Note that due to the design of the format,
+     * stdout for the entire {@link SuiteResult} is reported,
+     * and Hudson cannot tell what portion of the output corresponds to this test.
+     *
+     * @since 1.281
+     */
     @Exported
     public String getStderr() {
         return stderr;
@@ -158,7 +172,7 @@ public final class SuiteResult implements Serializable {
         return timestamp;
     }
 
-    @Exported
+    @Exported(inline=true)
     public List<CaseResult> getCases() {
         return cases;
     }
