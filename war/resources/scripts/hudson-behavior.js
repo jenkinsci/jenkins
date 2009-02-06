@@ -1232,7 +1232,8 @@ function buildFormTree(form) {
                     }
                 }
                 // switch to multipart/form-data to support file submission
-                form.enctype = "multipart/form-data";
+                // @enctype is the standard, but IE needs @encoding.
+                form.enctype = form.encoding = "multipart/form-data";
                 break;
             case "radio":
                 if(!e.checked)  break;
