@@ -177,9 +177,6 @@ public class Maven extends Builder {
         AbstractProject proj = build.getProject();
 
         VariableResolver<String> vr = build.getBuildVariableResolver();
-        ParametersAction parameters = build.getAction(ParametersAction.class);
-        if(parameters!=null)
-            vr = parameters.createVariableResolver(build);
 
         String targets = Util.replaceMacro(this.targets,vr);
 

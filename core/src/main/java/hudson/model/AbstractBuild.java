@@ -45,6 +45,7 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
 import hudson.util.VariableResolver;
+import hudson.util.VariableResolver.ByMap;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -451,10 +452,24 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * {@link Builder}s to decide whether it wants to recognize the values
      * or how to use them.
      *
-     * ugly ugly hack.
+     * <p>
+     * This also includes build parameters if a build is parameterized.
+     *
+     * @return
+     *      The returned map is mutable so that subtypes can put more values.
      */
     public Map<String,String> getBuildVariables() {
-        return Collections.emptyMap();
+        Map<String,String> r = new HashMap<String, String>();
+
+        ParametersAction parameters = getAction(ParametersAction.class);
+        if(parameters!=null) {
+            // this is a rather round about way of doing this...
+            for (ParameterValue p : parameters) {
+                String v = p.createVariableResolver(this).resolve(p.getName());
+                if(v!=null) r.put(p.getName(),v);
+            }
+        }
+        return r;
     }
 
     /**

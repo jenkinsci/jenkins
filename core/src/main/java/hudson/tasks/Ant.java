@@ -167,10 +167,7 @@ public class Ant extends Builder {
         args.addKeyValuePairs("-D",build.getBuildVariables());
 
         VariableResolver<String> vr = build.getBuildVariableResolver();
-        ParametersAction parameters = build.getAction(ParametersAction.class);
-        if(parameters!=null)
-            vr = parameters.createVariableResolver(build);
-        
+
         args.addKeyValuePairsFromPropertyString("-D",properties,vr);
 
         args.addTokenized(Util.replaceMacro(targets,vr).replaceAll("[\t\r\n]+"," "));

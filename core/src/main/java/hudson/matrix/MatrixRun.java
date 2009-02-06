@@ -98,8 +98,10 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
 
     @Override
     public Map<String,String> getBuildVariables() {
+        Map<String,String> r = super.getBuildVariables();
         // pick up user axes
-        return new HashMap<String,String>(getParent().getCombination());
+        r.putAll(getParent().getCombination());
+        return r;
     }
 
     /**

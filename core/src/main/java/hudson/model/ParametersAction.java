@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildStep;
 import hudson.util.VariableResolver;
 
 import java.util.Collection;
@@ -70,6 +71,9 @@ public class ParametersAction implements Action, Iterable<ParameterValue> {
 
     /**
      * Creates an {@link VariableResolver} that aggregates all the parameters.
+     *
+     * <p>
+     * If you are a {@link BuildStep}, most likely you should call {@link AbstractBuild#getBuildVariableResolver()}. 
      */
     public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
         VariableResolver[] resolvers = new VariableResolver[parameters.size()+1];
