@@ -12,6 +12,7 @@ import hudson.Functions;
 import net.sf.json.JSONObject;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.acls.sid.Sid;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
 import org.springframework.dao.DataAccessException;
@@ -270,7 +271,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         private String makeImg(String gif) {
-            return String.format("<img src='%s%s/images/16x16/%s' style='margin-right:0.2em'>", Hudson.getInstance().getRootUrlFromRequest(), Hudson.RESOURCE_PATH, gif);
+            return String.format("<img src='%s%s/images/16x16/%s' style='margin-right:0.2em'>", Stapler.getCurrentRequest().getContextPath(), Hudson.RESOURCE_PATH, gif);
         }
     }
 }
