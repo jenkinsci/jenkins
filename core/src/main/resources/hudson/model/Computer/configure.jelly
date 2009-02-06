@@ -36,8 +36,11 @@ THE SOFTWARE.
                      checkUrl="'${rootURL}/fieldCheck?errorText='+escape('${%Name is mandatory}')+'&amp;value='+escape(this.value)"/>
         </f:entry>
 
+        <j:set var="instance" value="${it.node}" />
+        <j:set var="descriptor" value="${instance.descriptor}" />
+
         <!-- main body of the configuration -->
-        <st:include it="${it.node}" page="configure-entries.jelly" />
+        <st:include it="${instance}" page="configure-entries.jelly" />
 
         <f:block>
           <f:submit value="${%Save}"/>

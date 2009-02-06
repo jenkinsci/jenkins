@@ -33,8 +33,7 @@ THE SOFTWARE.
 
   <f:entry title="${%# of executors}"
            help="/help/system-config/master-slave/numExecutors.html">
-    <f:textbox name="numExecutors" value="${it.numExecutors}"
-               checkUrl="'${rootURL}/fieldCheck?errorText='+escape('${%Number of executors is mandatory.}')+'&amp;type=number-positive&amp;value='+escape(this.value)"/>
+    <f:textbox field="numExecutors" />
   </f:entry>
 
   <f:entry title="${%Remote FS root}" help="/help/system-config/master-slave/remoteFS.html">
