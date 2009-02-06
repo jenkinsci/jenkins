@@ -1,5 +1,6 @@
 package hudson.security;
 
+import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.JobProperty;
@@ -20,6 +21,7 @@ import net.sf.json.JSONObject;
 
 import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
 
 import com.thoughtworks.xstream.converters.Converter;
@@ -139,10 +141,10 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
             return p!=Item.CREATE;
         }
 
-        public void doCheckName(@QueryParameter String value) throws IOException, ServletException {
-            GlobalMatrixAuthorizationStrategy.DESCRIPTOR.doCheckName(value);
+        public void doCheckName(StaplerRequest req, StaplerResponse res, @QueryParameter String value) throws IOException, ServletException {
+            GlobalMatrixAuthorizationStrategy.DESCRIPTOR.doCheckName(value, req.findAncestorObject(AbstractProject.class), AbstractProject.CONFIGURE);
         }
-	}
+    }
 
 	private final class AclImpl extends SidACL {
 		protected Boolean hasPermission(Sid sid, Permission p) {

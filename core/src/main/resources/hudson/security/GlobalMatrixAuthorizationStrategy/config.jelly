@@ -121,9 +121,12 @@
           }
           e = null; <!-- avoid memory leak -->
         },
+        <j:if test="${empty(descriptorPath)}">
+          <j:set var="descriptorPath" value="${rootURL}/descriptor/${descriptor.clazz.name}"/>
+        </j:if>
         <!-- validates the name -->
         "#${strategyid} TR.permission-row" : function(e) {
-          FormChecker.delayedCheck("${rootURL}/descriptor/${descriptor.clazz.name}/checkName?value="+encode(e.getAttribute("name")),"GET",e.firstChild);
+          FormChecker.delayedCheck("${descriptorPath}/checkName?value="+encode(e.getAttribute("name")),"GET",e.firstChild);
         }
       });
     </script>

@@ -224,8 +224,12 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public void doCheckName(@QueryParameter String value ) throws IOException, ServletException {
+            doCheckName(value, Hudson.getInstance(), Hudson.ADMINISTER);
+        }
+
+        void doCheckName(String value, AccessControlled subject, Permission permission) throws IOException, ServletException {
             final String v = value.substring(1,value.length()-1);
-            new FormFieldValidator(Hudson.ADMINISTER) {
+            new FormFieldValidator(subject, permission) {
                 protected void check() throws IOException, ServletException {
                     SecurityRealm sr = Hudson.getInstance().getSecurityRealm();
                     String ev = Functions.escape(v);
