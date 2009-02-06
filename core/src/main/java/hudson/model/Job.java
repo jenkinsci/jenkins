@@ -363,6 +363,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * List of all {@link JobProperty} exposed primarily for the remoting API.
+     * @since 1.282
+     */
+    @Exported(name="property",inline=true)
+    public List<JobProperty<? super JobT>> getAllProperties() {
+        return properties.getView();
+    }
+
+    /**
      * Gets the specific property, or null if the propert is not configured for
      * this job.
      */

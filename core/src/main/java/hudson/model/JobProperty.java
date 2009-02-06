@@ -32,6 +32,8 @@ import hudson.tasks.Publisher;
 
 import java.io.IOException;
 
+import org.kohsuke.stapler.export.ExportedBean;
+
 /**
  * Extensible property of {@link Job}.
  *
@@ -62,6 +64,7 @@ import java.io.IOException;
  * @see JobPropertyDescriptor
  * @since 1.72
  */
+@ExportedBean
 public abstract class JobProperty<J extends Job<?,?>> implements Describable<JobProperty<?>>, BuildStep, ExtensionPoint {
     /**
      * The {@link Job} object that owns this property.
