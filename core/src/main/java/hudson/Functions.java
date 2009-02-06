@@ -427,6 +427,19 @@ public class Functions {
         else        return n+' ';
     }
 
+    /**
+     * One nbsp per 10 pixels in given size, which may be a plain number or "NxN"
+     * (like an iconSize).  Useful in a sortable table heading.
+     */
+    public static String nbspIndent(String size) {
+        int i = size.indexOf('x');
+        i = Integer.parseInt(i > 0 ? size.substring(0, i) : size) / 10;
+        StringBuilder buf = new StringBuilder(30);
+        for (int j = 0; j < i; j++)
+            buf.append("&nbsp;");
+        return buf.toString();
+    }
+
     public static String getWin32ErrorMessage(IOException e) {
         return Util.getWin32ErrorMessage(e);
     }

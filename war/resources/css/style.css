@@ -461,9 +461,6 @@ th.pane {
   white-space: nowrap;
 }
 
-#projectstatus th.ctr {
-  text-align: center;
-}
 #projectstatus th {
   text-align: left;
 }
