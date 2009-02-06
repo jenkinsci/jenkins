@@ -610,4 +610,27 @@ public abstract class FormFieldValidator {
             error(errorMessage);
         }
     }
+
+    /**
+     * Verifies that the 'value' parameter is an integer >= 0.
+     *
+     * @since 1.282
+     */
+    public static class NonNegativeInteger extends FormFieldValidator {
+        public NonNegativeInteger() {
+            super(null);
+        }
+
+        protected void check() throws IOException, ServletException {
+            try {
+                String value = request.getParameter("value");
+                if(Integer.parseInt(value)<0)
+                    error(hudson.model.Messages.Hudson_NotAPositiveNumber());
+                else
+                    ok();
+            } catch (NumberFormatException e) {
+                error(hudson.model.Messages.Hudson_NotANumber());
+            }
+        }
+    }
 }
