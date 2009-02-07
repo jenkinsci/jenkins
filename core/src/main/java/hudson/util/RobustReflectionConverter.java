@@ -135,25 +135,30 @@ public class RobustReflectionConverter implements Converter {
             }
 
             private void writeField(String fieldName, String aliasName, Class fieldType, Class definedIn, Object newObj) {
-                if (!mapper.shouldSerializeMember(definedIn, aliasName)) {
-                    return;
+                try {
+                    if (!mapper.shouldSerializeMember(definedIn, aliasName)) {
+                        return;
+                    }
+                    ExtendedHierarchicalStreamWriterHelper.startNode(writer, mapper.serializedMember(definedIn, aliasName), fieldType);
+
+                    Class actualType = newObj.getClass();
+
+                    Class defaultType = mapper.defaultImplementationOf(fieldType);
+                    if (!actualType.equals(defaultType)) {
+                        writer.addAttribute(mapper.aliasForAttribute("class"), mapper.serializedClass(actualType));
+                    }
+
+                    if (seenFields.contains(aliasName)) {
+                        writer.addAttribute(mapper.aliasForAttribute("defined-in"), mapper.serializedClass(definedIn));
+                    }
+
+                    Field field = reflectionProvider.getField(definedIn,fieldName);
+                    marshallField(context, newObj, field);
+                    writer.endNode();
+                } catch (RuntimeException e) {
+                    // intercept an exception so that the stack trace shows how we end up marshalling the object in question
+                    throw new RuntimeException("Failed to serialize "+definedIn.getName()+"#"+fieldName+" for "+source.getClass(),e);
                 }
-                ExtendedHierarchicalStreamWriterHelper.startNode(writer, mapper.serializedMember(definedIn, aliasName), fieldType);
-
-                Class actualType = newObj.getClass();
-
-                Class defaultType = mapper.defaultImplementationOf(fieldType);
-                if (!actualType.equals(defaultType)) {
-                    writer.addAttribute(mapper.aliasForAttribute("class"), mapper.serializedClass(actualType));
-                }
-
-                if (seenFields.contains(aliasName)) {
-                    writer.addAttribute(mapper.aliasForAttribute("defined-in"), mapper.serializedClass(definedIn));
-                }
-
-                Field field = reflectionProvider.getField(definedIn,fieldName);
-                marshallField(context, newObj, field);
-                writer.endNode();
             }
 
         });
