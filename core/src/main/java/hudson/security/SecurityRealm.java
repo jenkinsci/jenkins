@@ -404,6 +404,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
         LIST.load(LegacySecurityRealm.class);
         LIST.load(HudsonPrivateSecurityRealm.class);
         LIST.load(LDAPSecurityRealm.class);
+        LIST.load(PAMSecurityRealm.class);
     }
 
     private static final Logger LOGGER = Logger.getLogger(SecurityRealm.class.getName());

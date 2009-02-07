@@ -32,18 +32,24 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
+import org.apache.commons.io.IOUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +59,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.beans.Introspector;
+import java.net.URL;
 
 /**
  * Metadata about a configurable instance.
@@ -334,6 +341,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * Returns the resource path to the help screen HTML, if any.
      *
      * <p>
+     * Starting 1.282, this method uses "convention over configuration" &mdash; you should
+     * just put the "help.html" (and its localized versions, if any) in the same directory
+     * you put your Jelly view files, and this method will automatically does the right thing.
+     *
+     * <p>
      * This value is relative to the context root of Hudson, so normally
      * the values are something like <tt>"/plugin/emma/help.html"</tt> to
      * refer to static resource files in a plugin, or <tt>"/publisher/EmmaPublisher/abc"</tt>
@@ -343,6 +355,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *      null to indicate that there's no help.
      */
     public String getHelpFile() {
+        InputStream in = getHelpStream();
+        IOUtils.closeQuietly(in);
+        if(in!=null)    return "/descriptor/"+clazz.getName()+"/help";
         return null;
     }
 
@@ -456,6 +471,44 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     private XmlFile getConfigFile() {
         return new XmlFile(new File(Hudson.getInstance().getRootDir(),clazz.getName()+".xml"));
     }
+
+    /**
+     * Serves <tt>help.html</tt> from the resource of {@link #clazz}.
+     */
+    public void doHelp(StaplerResponse rsp) throws IOException {
+        InputStream in = getHelpStream();
+        if(in==null) {
+            rsp.sendError(SC_NOT_FOUND);
+            return;
+        }
+
+        rsp.setContentType("text/html;charset=UTF-8");
+        IOUtils.copy(in,rsp.getOutputStream());
+        in.close();
+    }
+
+    private InputStream getHelpStream() {
+        Locale locale = Stapler.getCurrentRequest().getLocale();
+
+        String base = clazz.getName().replace('.', '/') + "/help";
+
+        InputStream in;
+        in = clazz.getClassLoader().getResourceAsStream(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");
+        if(in!=null)    return in;
+        in = clazz.getClassLoader().getResourceAsStream(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + ".html");
+        if(in!=null)    return in;
+        in = clazz.getClassLoader().getResourceAsStream(base + '_' + locale.getLanguage() + ".html");
+        if(in!=null)    return in;
+
+        // default
+        return clazz.getClassLoader().getResourceAsStream(base+".html");
+    }
+
+
+//
+// static methods
+//
+
 
     // to work around warning when creating a generic array type
     public static <T> T[] toArray( T... values ) {
