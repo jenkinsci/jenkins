@@ -39,6 +39,7 @@ import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.WebAppMain;
 import hudson.XmlFile;
+import hudson.UDPBroadcastThread;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.WindowsInstallerLink;
 import hudson.lifecycle.Lifecycle;
@@ -330,6 +331,8 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
     public transient volatile TcpSlaveAgentListener tcpSlaveAgentListener;
 
+    private transient UDPBroadcastThread udpBroadcastThread;
+
     /**
      * List of registered {@link JobListener}s.
      */
@@ -496,6 +499,9 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
         else
             tcpSlaveAgentListener = null;
+
+        udpBroadcastThread = new UDPBroadcastThread(this);
+        udpBroadcastThread.start();
 
         updateComputerList();
 
@@ -1804,6 +1810,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             c.kill();
             pending.add(c.disconnect());
         }
+        udpBroadcastThread.shutdown();
         ExternalJob.reloadThread.interrupt();
         Trigger.timer.cancel();
         // TODO: how to wait for the completion of the last job?
