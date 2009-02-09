@@ -490,14 +490,23 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * return the configured profiles. Otherwise null.
      */
     public String getProfiles() {
+        StringBuilder buf = new StringBuilder();
         boolean switchFound=false;
         for (String t : Util.tokenize(getGoals())) {
-            if(switchFound)
-                return t;
+            if(switchFound) {
+                buf.append(',').append(t);
+                switchFound = false;
+            }
             if(t.equals("-P"))
                 switchFound=true;
+            else
+            if(t.startsWith("-P")) {
+                // -Px,y,z
+                buf.append(',').append(t.substring(2));
+            }
         }
-        return null;
+        if(buf.length()==0)     return null;
+        return buf.substring(1);
     }
 
     /**
