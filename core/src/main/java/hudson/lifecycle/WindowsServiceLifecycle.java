@@ -45,6 +45,7 @@ import java.util.logging.Logger;
  * {@link Lifecycle} for Hudson installed as Windows service.
  * 
  * @author Kohsuke Kawaguchi
+ * @see WindowsInstallerLink
  */
 public class WindowsServiceLifecycle extends Lifecycle {
     public WindowsServiceLifecycle() {
