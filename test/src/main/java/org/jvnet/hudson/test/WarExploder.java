@@ -34,6 +34,10 @@ import java.net.URL;
 /**
  * Ensures that <tt>hudson.war</tt> is exploded.
  *
+ * <p>
+ * Depending on where the test is run (for example, inside Maven vs IDE), this code attempts to
+ * use hudson.war from the right place, thereby improving the productivity.
+ *
  * @author Kohsuke Kawaguchi
  */
 final class WarExploder {
