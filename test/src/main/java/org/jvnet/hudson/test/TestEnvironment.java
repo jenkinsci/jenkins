@@ -24,6 +24,9 @@
 package org.jvnet.hudson.test;
 
 /**
+ * TODO: deprecate this, and just consolidate this to {@link HudsonTestCase}.
+ * We can then pin down the current HudsonTestCase to the thread for easier access.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class TestEnvironment {
