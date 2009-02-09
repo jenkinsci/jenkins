@@ -421,17 +421,18 @@ public class LDAPSecurityRealm extends SecurityRealm {
                         ok();   // connected
                     } catch (NamingException e) {
                         // trouble-shoot
-                        Matcher m = Pattern.compile("([^:]+)(?:\\:(\\d+))?").matcher(server.trim());
+//update to allow ldap:// or ldaps:// prefix  (issue #2599)
+                        Matcher m = Pattern.compile("(ldaps://)?([^:]+)(?:\\:(\\d+))?").matcher(server.trim());
                         if(!m.matches()) {
-                            error("Syntax of this field is SERVER or SERVER:PORT");
+                            error("Syntax of this field is SERVER or SERVER:PORT or ldaps://SERVER[:PORT]");
                             return;
                         }
 
                         try {
-                            InetAddress adrs = InetAddress.getByName(m.group(1));
-                            int port=389;
-                            if(m.group(2)!=null)
-                                port = Integer.parseInt(m.group(2));
+                            InetAddress adrs = InetAddress.getByName(m.group(2));
+                            int port = m.group(1)!=null ? 636 : 389;
+                            if(m.group(3)!=null)
+                                port = Integer.parseInt(m.group(3));
                             Socket s = new Socket(adrs,port);
                             s.close();
                         } catch (UnknownHostException x) {
