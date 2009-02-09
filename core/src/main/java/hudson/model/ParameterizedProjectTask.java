@@ -42,7 +42,8 @@ public class ParameterizedProjectTask extends QueueTaskFilter {
 
     private final AbstractProject<?,?> project;
     private final List<ParameterValue> parameters;
-
+    private final Cause cause;
+    
     private static long COUNTER = System.currentTimeMillis(); 
 
     /**
@@ -50,12 +51,25 @@ public class ParameterizedProjectTask extends QueueTaskFilter {
      */
     private final String key = Long.toString(COUNTER++);
 
+	/**
+	 * @deprecated
+	 *    Use {@link #ParameterizedProjectTask(AbstractProject, List, Cause)}.  Since 1.283
+	 */
     public ParameterizedProjectTask(AbstractProject<?,?> project, List<ParameterValue> parameters) {
+        this(project, parameters, new Cause.LegacyCodeCause());
+    }
+    
+    public ParameterizedProjectTask(AbstractProject<?,?> project, List<ParameterValue> parameters, Cause c) {
         super(project);
         this.project = project;
         this.parameters = parameters;
+        this.cause = c;
     }
-    
+
+    public ParameterizedProjectTask(AbstractProject<?,?> project, Cause c) {
+        this(project, null, c);
+    }
+
     public AbstractProject<?, ?> getProject() {
 		return project;
 	}
@@ -67,8 +81,9 @@ public class ParameterizedProjectTask extends QueueTaskFilter {
 	@Override
     public Executable createExecutable() throws IOException {
         AbstractBuild<?, ?> build = project.createExecutable();
-        build.addAction(new ParametersAction(parameters, build));
-
+        if(parameters != null) 
+        	build.addAction(new ParametersAction(parameters, build));
+        build.addAction(new CauseAction(cause));
         return build;
     }
 	
@@ -85,6 +100,7 @@ public class ParameterizedProjectTask extends QueueTaskFilter {
 
     @Override
     public int hashCode() {
+    	// cause is NOT included so distinct causes won't schedule duplicate builds
         final int prime = 31;
         int result = 1;
         result = prime * result
@@ -95,6 +111,7 @@ public class ParameterizedProjectTask extends QueueTaskFilter {
 
     @Override
     public boolean equals(Object obj) {
+    	// cause is NOT included so distinct causes won't schedule duplicate builds
         if (this == obj)
             return true;
         if (obj == null)

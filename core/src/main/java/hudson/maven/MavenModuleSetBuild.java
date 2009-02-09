@@ -41,6 +41,7 @@ import hudson.model.Fingerprint;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.ParametersAction;
+import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
@@ -309,7 +310,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 if(!project.isAggregatorStyleBuild()) {
                     // start module builds
                     logger.println("Triggering "+project.getRootModule().getModuleName());
-                    project.getRootModule().scheduleBuild();
+                    project.getRootModule().scheduleBuild(new UpstreamCause(MavenModuleSetBuild.this));
                 } else {
                     // do builds here
                     try {
@@ -492,7 +493,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 if(getResult().isBetterOrEqualTo(Result.SUCCESS)) {
                     for(AbstractProject down : getProject().getDownstreamProjects()) {
                         listener.getLogger().println(Messages.MavenBuild_Triggering(down.getName()));
-                        down.scheduleBuild();
+                        down.scheduleBuild(new UpstreamCause(MavenModuleSetBuild.this));
                     }
                 }
             }

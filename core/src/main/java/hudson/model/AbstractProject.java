@@ -28,6 +28,8 @@ import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.maven.MavenModule;
+import hudson.model.Cause.UserCause;
+import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
@@ -415,6 +417,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         Hudson.getInstance().rebuildDependencyGraph();
     }
 
+	/**
+	 * @deprecated
+	 *    Use {@link #scheduleBuild(Cause)}.  Since 1.283
+	 */
+    public boolean scheduleBuild() {
+    	return scheduleBuild(new LegacyCodeCause());
+    }
+    
+	/**
+	 * @deprecated
+	 *    Use {@link #scheduleBuild(int, Cause)}.  Since 1.283
+	 */
+    public boolean scheduleBuild(int quietPeriod) {
+    	return scheduleBuild(quietPeriod, new LegacyCodeCause());
+    }
+    
     /**
      * Schedules a build of this project.
      *
@@ -423,19 +441,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      false if the queue contained it and therefore the add()
      *      was noop
      */
-    public boolean scheduleBuild() {
-        return scheduleBuild(getQuietPeriod());
+    public boolean scheduleBuild(Cause c) {
+        return scheduleBuild(getQuietPeriod(), c);
     }
 
-    public boolean scheduleBuild(int quietPeriod) {
+    public boolean scheduleBuild(int quietPeriod, Cause c) {
         if (isDisabled())
             return false;
 
         if (isParameterized())
             return Hudson.getInstance().getQueue().add(
-                    new ParameterizedProjectTask(this, getDefaultParametersValues()), quietPeriod);
+                    new ParameterizedProjectTask(this, getDefaultParametersValues(), c), quietPeriod);
         else
-            return Hudson.getInstance().getQueue().add(this, quietPeriod);
+            return Hudson.getInstance().getQueue().add(new ParameterizedProjectTask(this, c), quietPeriod);
     }
 
     private List<ParameterValue> getDefaultParametersValues() {
@@ -460,11 +478,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return defValues;
     }
 
+	/**
+	 * @deprecated
+	 *    Use {@link #scheduleBuild2(int, Cause)}.  Since 1.283
+	 */
+    public Future<R> scheduleBuild2(int quietPeriod) {
+    	return scheduleBuild2(quietPeriod, new LegacyCodeCause());
+    }
+    
     /**
      * Schedules a build of this project, and returns a {@link Future} object
      * to wait for the completion of the build.
      */
-    public Future<R> scheduleBuild2(int quietPeriod) {
+    public Future<R> scheduleBuild2(int quietPeriod, Cause c) {
         R lastBuild = getLastBuild();
         final int n;
         if(lastBuild!=null) n = lastBuild.getNumber();
@@ -483,7 +509,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             { r.register(); }
         };
 
-        scheduleBuild(quietPeriod);
+        scheduleBuild(quietPeriod, c);
 
         return f;
     }
@@ -990,13 +1016,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     // TODO: more unit handling
                     if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
                     if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
-                    Hudson.getInstance().getQueue().add(this, Integer.parseInt(delay));
+                    Hudson.getInstance().getQueue().add(
+                    		new ParameterizedProjectTask(this, new UserCause()), 
+                    		Integer.parseInt(delay)
+                    );
                 } catch (NumberFormatException e) {
                     throw new ServletException("Invalid delay parameter value: "+delay);
                 }
             }
         } else {
-            scheduleBuild();
+            scheduleBuild(new UserCause());
         }
         rsp.forwardToPreviousPage(req);
     }

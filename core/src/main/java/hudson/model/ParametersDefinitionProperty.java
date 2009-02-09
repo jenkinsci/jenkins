@@ -98,7 +98,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         }
 
         Hudson.getInstance().getQueue().add(
-                new ParameterizedProjectTask(owner, values), 0);
+                new ParameterizedProjectTask(owner, values, new Cause.UserCause()), 0);
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
@@ -116,7 +116,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         }
 
     	Hudson.getInstance().getQueue().add(
-                new ParameterizedProjectTask(owner, values), 0);
+                new ParameterizedProjectTask(owner, values, new Cause.UserCause()), 0);
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");

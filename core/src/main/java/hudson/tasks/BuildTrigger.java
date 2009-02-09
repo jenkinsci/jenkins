@@ -40,6 +40,7 @@ import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.Project;
 import hudson.model.Result;
+import hudson.model.Cause.UpstreamCause;
 import hudson.model.listeners.ItemListener;
 import hudson.util.FormFieldValidator;
 import net.sf.json.JSONObject;
@@ -164,7 +165,7 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
                 // this is not completely accurate, as a new build might be triggered
                 // between these calls
                 String name = p.getName()+" #"+p.getNextBuildNumber();
-                if(p.scheduleBuild()) {
+                if(p.scheduleBuild(new UpstreamCause(build))) {
                     logger.println(Messages.BuildTrigger_Triggering(name));
                 } else {
                     logger.println(Messages.BuildTrigger_InQueue(name));

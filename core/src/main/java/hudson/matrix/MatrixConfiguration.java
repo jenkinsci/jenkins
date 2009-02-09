@@ -25,6 +25,7 @@ package hudson.matrix;
 
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Cause;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -32,6 +33,7 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.JDK;
 import hudson.model.Label;
+import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Node;
 import hudson.model.ParameterValue;
 import hudson.model.ParameterizedProjectTask;
@@ -282,9 +284,17 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      */
     public static boolean useShortWorkspaceName = Boolean.getBoolean(MatrixConfiguration.class.getName()+".useShortWorkspaceName");
 
-	public boolean scheduleBuild(ParametersAction parameters) {
+	/**
+	 * @deprecated
+	 *    Use {@link #scheduleBuild(ParametersAction, Cause)}.  Since 1.283
+	 */
+    public boolean scheduleBuild(ParametersAction parameters) {
+    	return scheduleBuild(parameters, new LegacyCodeCause());
+    }
+    
+	public boolean scheduleBuild(ParametersAction parameters, Cause c) {
         return Hudson.getInstance().getQueue().add(
-                new ParameterizedProjectTask(this, parameters.getParameters()), getQuietPeriod());
+                new ParameterizedProjectTask(this, parameters.getParameters(), c), getQuietPeriod());
 	}
 	
 }

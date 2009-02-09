@@ -33,6 +33,7 @@ import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -577,7 +578,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             if(trigger) {
                 listener.getLogger().println(Messages.MavenBuild_Triggering(down.getName()));
                 downstreams.add(down);
-                down.scheduleBuild();
+                down.scheduleBuild(new UpstreamCause(this));
             }
         }
     }

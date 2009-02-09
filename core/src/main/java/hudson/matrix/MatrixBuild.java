@@ -33,6 +33,7 @@ import hudson.model.JobProperty;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Result;
+import hudson.model.Cause.UpstreamCause;
 import hudson.tasks.Publisher;
 
 import java.io.File;
@@ -172,9 +173,9 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     logger.println(Messages.MatrixBuild_Triggering(c.getDisplayName()));
                     ParametersAction parameters = getAction(ParametersAction.class);
                     if (parameters != null) {
-                    	c.scheduleBuild(parameters);
+                    	c.scheduleBuild(parameters, new UpstreamCause(MatrixBuild.this));
                     } else {
-                    	c.scheduleBuild();
+                    	c.scheduleBuild(new UpstreamCause(MatrixBuild.this));
                     }
                 }
 

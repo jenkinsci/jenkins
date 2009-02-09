@@ -25,6 +25,7 @@ package hudson.triggers;
 
 import static hudson.Util.fixNull;
 import hudson.model.BuildableItem;
+import hudson.model.Cause;
 import hudson.model.Item;
 import hudson.scheduler.CronTabList;
 import hudson.util.FormFieldValidator;
@@ -36,6 +37,8 @@ import javax.servlet.ServletException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import antlr.ANTLRException;
 
@@ -52,7 +55,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
     }
 
     public void run() {
-        job.scheduleBuild(0);
+        job.scheduleBuild(0, new TimerTriggerCause());
     }
 
     public TriggerDescriptor getDescriptor() {
@@ -94,5 +97,16 @@ public class TimerTrigger extends Trigger<BuildableItem> {
                 }
             }.process();
         }
+    }
+    
+    @ExportedBean
+    public static class TimerTriggerCause extends Cause {
+
+    	@Override
+    	@Exported
+		public String getShortDescription() {
+    		return "A timer trigger started this job";
+    	}
+
     }
 }

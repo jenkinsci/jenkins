@@ -27,6 +27,7 @@ import antlr.ANTLRException;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Cause;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Project;
@@ -36,6 +37,8 @@ import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
@@ -435,7 +438,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                     
                     if(foundChanges) {
                         String name = " #"+job.asProject().getNextBuildNumber();
-                        if(job.scheduleBuild()) {
+                        if(job.scheduleBuild(new SCMTriggerCause())) {
                             LOGGER.info("SCM changes detected in "+ job.getName()+". Triggering "+name);
                         } else {
                             LOGGER.info("SCM changes detected in "+ job.getName()+". Job is already in the queue");
@@ -446,6 +449,17 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                 LOGGER.info("Aborted");
             }
         }
+    }
+
+    @ExportedBean
+    public static class SCMTriggerCause extends Cause {
+
+    	@Override
+    	@Exported
+    	public String getShortDescription() {
+    		return "A SCM change trigger started this job";
+    	}
+
     }
 
     /**
