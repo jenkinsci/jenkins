@@ -30,7 +30,7 @@ THE SOFTWARE.
   <l:layout norefresh="true" permission="${app.ADMINISTER}">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
-      <f:form method="post" action="configSubmit">
+      <f:form method="post" action="configSubmit" name="config">
         <f:entry title="${%Name}" help="/help/system-config/master-slave/name.html">
           <f:textbox name="name" value="${it.name}"
                      checkUrl="'${rootURL}/fieldCheck?errorText='+escape('${%Name is mandatory}')+'&amp;value='+escape(this.value)"/>
