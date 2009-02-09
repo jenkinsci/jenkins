@@ -30,6 +30,14 @@ import com.sun.jna.ptr.IntByReference;
 public interface Advapi32  extends StdCallLibrary {
   Advapi32 INSTANCE = (Advapi32) Native.loadLibrary("Advapi32", Advapi32.class, Options.UNICODE_OPTIONS);
 
+    /**
+     * Retrieves the name of the user associated with the current thread.
+     *
+     * <p>
+     * See http://msdn.microsoft.com/en-us/library/ms724432(VS.85).aspx
+     */
+    boolean GetUserName(char[] buffer, IntByReference lpnSize);
+
 /*
 BOOL WINAPI LookupAccountName(
   LPCTSTR lpSystemName,
