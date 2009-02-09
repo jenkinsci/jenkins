@@ -34,6 +34,7 @@ import hudson.remoting.Future;
 import hudson.remoting.Pipe;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.RemoteInputStream;
 import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
 import hudson.util.StreamResource;
@@ -316,39 +317,60 @@ public final class FilePath implements Serializable {
      *      Target directory to expand files to. All the necessary directories will be created.
      * @since 1.248
      */
-    public void unzip(FilePath target) throws IOException, InterruptedException {
+    public void unzip(final FilePath target) throws IOException, InterruptedException {
         target.act(new FileCallable<Void>() {
             public Void invoke(File dir, VirtualChannel channel) throws IOException {
-                dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
-                ZipInputStream zip = new ZipInputStream(FilePath.this.read());
-                java.util.zip.ZipEntry e;
-
-                try {
-                    while((e=zip.getNextEntry())!=null) {
-                        File f = new File(dir,e.getName());
-                        if(e.isDirectory()) {
-                            f.mkdirs();
-                        } else {
-                            File p = f.getParentFile();
-                            if(p!=null) p.mkdirs();
-                            FileOutputStream out = new FileOutputStream(f);
-                            try {
-                                IOUtils.copy(zip, out);
-                            } finally {
-                                out.close();
-                            }
-                            f.setLastModified(e.getTime());
-                            zip.closeEntry();
-                        }
-                    }
-                } finally {
-                    zip.close();
-                }
+                unzip(dir,FilePath.this.read());
                 return null;
             }
-
             private static final long serialVersionUID = 1L;
         });
+    }
+
+    /**
+     * Reads the given InputStream as a zip file and extracts it into this directory.
+     *
+     * @param _in
+     *      The stream will be closed by this method after it's fully read.
+     * @since 1.283
+     */
+    public void unzipFrom(InputStream _in) throws IOException, InterruptedException {
+        final InputStream in = new RemoteInputStream(_in);
+        act(new FileCallable<Void>() {
+            public Void invoke(File dir, VirtualChannel channel) throws IOException {
+                unzip(dir, in);
+                return null;
+            }
+            private static final long serialVersionUID = 1L;
+        });
+    }
+
+    private void unzip(File dir, InputStream in) throws IOException {
+        dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
+        ZipInputStream zip = new ZipInputStream(in);
+        java.util.zip.ZipEntry e;
+
+        try {
+            while((e=zip.getNextEntry())!=null) {
+                File f = new File(dir,e.getName());
+                if(e.isDirectory()) {
+                    f.mkdirs();
+                } else {
+                    File p = f.getParentFile();
+                    if(p!=null) p.mkdirs();
+                    FileOutputStream out = new FileOutputStream(f);
+                    try {
+                        IOUtils.copy(zip, out);
+                    } finally {
+                        out.close();
+                    }
+                    f.setLastModified(e.getTime());
+                    zip.closeEntry();
+                }
+            }
+        } finally {
+            zip.close();
+        }
     }
 
     /**
