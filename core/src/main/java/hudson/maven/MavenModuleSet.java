@@ -485,28 +485,48 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return goals;
     }
 
+    private List<String> getMavenArgument(String shortForm, String longForm) {
+        List<String> args = new ArrayList<String>();
+        boolean switchFound=false;
+        for (String t : Util.tokenize(getGoals())) {
+            if(switchFound) {
+                args.add(t);
+                switchFound = false;
+            }
+            else
+            if(t.equals(shortForm) || t.equals(longForm))
+                switchFound=true;
+            else
+            if(t.startsWith(shortForm)) {
+                args.add(t.substring(shortForm.length()));
+            }
+            else
+            if(t.startsWith(longForm)) {
+                args.add(t.substring(longForm.length()));
+            }
+        }
+        return args;
+    }
+
     /**
      * If the list of configured goals contain the "-P" option,
      * return the configured profiles. Otherwise null.
      */
     public String getProfiles() {
-        StringBuilder buf = new StringBuilder();
-        boolean switchFound=false;
-        for (String t : Util.tokenize(getGoals())) {
-            if(switchFound) {
-                buf.append(',').append(t);
-                switchFound = false;
-            }
-            if(t.equals("-P"))
-                switchFound=true;
-            else
-            if(t.startsWith("-P")) {
-                // -Px,y,z
-                buf.append(',').append(t.substring(2));
-            }
+        return Util.join(getMavenArgument("-P","--activate-profiles"),",");
+    }
+
+    /**
+     * Gets the system properties explicitly set in the Maven command line (the "-D" option.)
+     */
+    public Properties getMavenProperties() {
+        Properties props = new Properties();
+        for (String arg : getMavenArgument("-D","--define")) {
+            int idx = arg.indexOf('=');
+            if(idx<0)   props.put(arg,"true");
+            else        props.put(arg.substring(0,idx),arg.substring(idx+1));
         }
-        if(buf.length()==0)     return null;
-        return buf.substring(1);
+        return props;
     }
 
     /**

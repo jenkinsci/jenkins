@@ -163,6 +163,8 @@ public class MavenEmbedder
 
     private String profiles;
 
+    private Properties systemProperties;
+
     /**
      * This option determines whether the embedder is to be aligned to the user
      * installation.
@@ -236,6 +238,20 @@ public class MavenEmbedder
      */
     public void setProfiles(String profiles) {
         this.profiles = profiles;
+    }
+
+    /**
+     * Sets the properties that the embedded Maven sees as system properties.
+     *
+     * <p>
+     * In various places inside Maven, {@link System#getProperties()} are still referenced,
+     * and still in other places, the values given to this method is only used as overrides
+     * and not the replacement of the real {@link System#getProperties()}. So Maven still
+     * doesn't quite behave as it should, but at least this allows Hudson to add system properties
+     * to Maven without really messing up our current JVM.
+     */
+    public void setSystemProperties(Properties props) {
+        this.systemProperties = props;
     }
 
     /**
@@ -664,7 +680,7 @@ public class MavenEmbedder
 
             pluginDescriptorBuilder = new PluginDescriptorBuilder();
 
-            profileManager = new DefaultProfileManager( embedder.getContainer() );
+            profileManager = new DefaultProfileManager( embedder.getContainer(), systemProperties );
             activeProfiles();
 
             mavenProjectBuilder = (MavenProjectBuilder) embedder.lookup( MavenProjectBuilder.ROLE );

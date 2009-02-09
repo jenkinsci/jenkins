@@ -70,6 +70,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -410,7 +411,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
             List<PomInfo> poms;
             try {
-                poms = project.getModuleRoot().act(new PomParser(listener, mvn,project.getRootPOM(),project.getProfiles()));
+                poms = project.getModuleRoot().act(new PomParser(listener, mvn, project));
             } catch (IOException e) {
                 if (e.getCause() instanceof AbortException)
                     throw (AbortException) e.getCause();
@@ -670,12 +671,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         private final boolean versbose = debug;
         private final MavenInstallation mavenHome;
         private final String profiles;
+        private final Properties properties;
 
-        public PomParser(BuildListener listener, MavenInstallation mavenHome, String rootPOM, String profiles) {
+        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project) {
+            // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             this.listener = listener;
             this.mavenHome = mavenHome;
-            this.rootPOM = rootPOM;
-            this.profiles = profiles;
+            this.rootPOM = project.getRootPOM();
+            this.profiles = project.getProfiles();
+            this.properties = project.getMavenProperties();
         }
 
         /**
@@ -711,7 +715,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 logger.println("Parsing "+pom);
 
             try {
-                MavenEmbedder embedder = mavenHome.createEmbedder(listener,profiles);
+                MavenEmbedder embedder = mavenHome.createEmbedder(listener,profiles,properties);
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
                 MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener);

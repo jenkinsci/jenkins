@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -67,6 +68,10 @@ public class MavenUtil {
         return createEmbedder(listener,m!=null?m.getHomeDir():null,profiles);
     }
 
+    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles) throws MavenEmbedderException, IOException {
+        return createEmbedder(listener,mavenHome,profiles,new Properties());
+    }
+
     /**
      * Creates a fresh {@link MavenEmbedder} instance.
      *
@@ -77,8 +82,10 @@ public class MavenUtil {
      *      from here. Can be null.
      * @param profiles
      *      Profiles to activate/deactivate. Can be null.
+     * @param systemProperties
+     *      The system properties that the embedded Maven sees. See {@link MavenEmbedder#setSystemProperties(Properties)}.
      */
-    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles) throws MavenEmbedderException, IOException {
+    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties) throws MavenEmbedderException, IOException {
         MavenEmbedder maven = new MavenEmbedder(mavenHome);
 
         ClassLoader cl = MavenUtil.class.getClassLoader();
@@ -95,6 +102,7 @@ public class MavenUtil {
         }
 
         maven.setProfiles(profiles);
+        maven.setSystemProperties(systemProperties);
         maven.start();
 
         return maven;

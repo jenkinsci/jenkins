@@ -397,8 +397,8 @@ public class Maven extends Builder {
             }
         }
 
-        public MavenEmbedder createEmbedder(BuildListener listener, String profiles) throws MavenEmbedderException, IOException {
-            return MavenUtil.createEmbedder(listener,getHomeDir(),profiles);
+        public MavenEmbedder createEmbedder(BuildListener listener, String profiles, Properties systemProperties) throws MavenEmbedderException, IOException {
+            return MavenUtil.createEmbedder(listener,getHomeDir(),profiles,systemProperties);
         }
 
         private static final long serialVersionUID = 1L;
