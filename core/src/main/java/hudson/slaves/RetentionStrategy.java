@@ -99,7 +99,15 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         }
 
         public Descriptor<RetentionStrategy<?>> getDescriptor() {
-            throw new UnsupportedOperationException();
+            return DESCRIPTOR;
+        }
+
+        private final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+
+        class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+            public String getDisplayName() {
+                return "";
+            }
         }
     };
 
