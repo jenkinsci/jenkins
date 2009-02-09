@@ -54,6 +54,7 @@ import hudson.model.Run;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.UpdateCenter;
+import hudson.model.Node;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
@@ -640,6 +641,14 @@ public abstract class HudsonTestCase extends TestCase {
 
         public HtmlPage getPage(Item item, String relative) throws IOException, SAXException {
             return goTo(item.getUrl()+relative);
+        }
+
+        public HtmlPage getPage(Node item) throws IOException, SAXException {
+            return getPage(item,"");
+        }
+
+        public HtmlPage getPage(Node item, String relative) throws IOException, SAXException {
+            return goTo(item.toComputer().getUrl()+relative);
         }
 
         /**
