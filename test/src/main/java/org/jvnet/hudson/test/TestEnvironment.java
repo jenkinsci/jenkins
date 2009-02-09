@@ -29,6 +29,10 @@ package org.jvnet.hudson.test;
 public class TestEnvironment {
     public final TemporaryDirectoryAllocator temporaryDirectoryAllocator = new TemporaryDirectoryAllocator();
 
+    /**
+     * Associates (or pin down) this {@link TestEnvironment} to the current thread, so that
+     * from within the test you can access this object without referring to any context.
+     */
     public void pin() {
         ENVIRONMENT.set(this);
     }
