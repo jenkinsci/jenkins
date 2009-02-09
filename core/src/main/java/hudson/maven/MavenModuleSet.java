@@ -57,7 +57,7 @@ import net.sf.json.JSONObject;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, DescribableList.Owner {
+public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable {
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
