@@ -31,7 +31,7 @@ THE SOFTWARE.
   <l:layout norefresh="true" permission="${app.ADMINISTER}" title="${%title(it.fullName)}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <f:form method="post" action="configSubmit">
+      <f:form method="post" action="configSubmit" name="config">
         <f:entry title="${%Your name}" help="/help/user/fullName.html">
           <f:textbox name="fullName" value="${it.fullName}" />
         </f:entry>
