@@ -56,6 +56,19 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.jvnet.hudson.tools</groupId>
+        <artifactId>maven-encoding-plugin</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check-encoding</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
         <version>1.11</version>
