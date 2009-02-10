@@ -80,8 +80,6 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
      */
     private final boolean disableSignup;
 
-    private transient DaoAuthenticationProvider provider;
-
     @DataBoundConstructor
     public HudsonPrivateSecurityRealm(boolean allowsSignup) {
         this.disableSignup = !allowsSignup;
@@ -108,7 +106,6 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         BeanBuilder builder = new BeanBuilder();
         builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/HudsonPrivateSecurityRealm.groovy"),binding);
         WebApplicationContext context = builder.createApplicationContext();
-        this.provider = findBean(DaoAuthenticationProvider.class, context);
         return new SecurityComponents(
                 findBean(AuthenticationManager.class, context),
                 findBean(UserDetailsService.class, context));
@@ -194,11 +191,19 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         }
 
         // register the user
-        User user = User.get(si.username);
-        user.addProperty(Details.fromPlainPassword(si.password1));
+        User user = createAccount(si.username,si.password1);
         user.addProperty(new Mailer.UserProperty(si.email));
         user.setFullName(si.fullname);
         user.save();
+        return user;
+    }
+
+    /**
+     * Creates a new user account by registering a password to the user.
+     */
+    public User createAccount(String userName, String password) throws IOException {
+        User user = User.get(userName);
+        user.addProperty(Details.fromPlainPassword(password));
         return user;
     }
 
@@ -459,7 +464,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             SecureRandom sr = new SecureRandom();
             for( int i=0; i<6; i++ ) {// log2(52^6)=34.20... so, this is about 32bit strong.
                 boolean upper = sr.nextBoolean();
-                int ch = sr.nextInt(26) + 'a';
+                char ch = (char)(sr.nextInt(26) + 'a');
                 if(upper)   ch=Character.toUpperCase(ch);
                 buf.append(ch);
             }
