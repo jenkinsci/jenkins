@@ -41,7 +41,9 @@ import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.providers.ProviderManager;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.acegisecurity.providers.dao.DaoAuthenticationProvider;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
@@ -57,6 +59,8 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
@@ -74,6 +78,8 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
      * This is a negative switch so that the default value 'false' remains compatible with older installations. 
      */
     private final boolean disableSignup;
+
+    private transient DaoAuthenticationProvider provider;
 
     @DataBoundConstructor
     public HudsonPrivateSecurityRealm(boolean allowsSignup) {
@@ -98,6 +104,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         BeanBuilder builder = new BeanBuilder();
         builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/HudsonPrivateSecurityRealm.groovy"));
         WebApplicationContext context = builder.createApplicationContext();
+        this.provider = findBean(DaoAuthenticationProvider.class, context);
         return new SecurityComponents(
                 findBean(AuthenticationManager.class, context),
                 findBean(UserDetailsService.class, context));
@@ -118,7 +125,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         User u = createAccount(req, rsp, true, "signup.jelly");
         if(u!=null) {
             // ... and let him login
-            Authentication a = u.getProperty(Details.class).createAuthentication();
+            Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
             a = this.getSecurityComponents().manager.authenticate(a);
             SecurityContextHolder.getContext().setAuthentication(a);
 
@@ -184,7 +191,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
 
         // register the user
         User user = User.get(si.username);
-        user.addProperty(new Details(si.password1));
+        user.addProperty(new Details(si.password1, user));
         user.addProperty(new Mailer.UserProperty(si.email));
         user.setFullName(si.fullname);
         user.save();
@@ -257,12 +264,30 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
      */
     public static final class Details extends UserProperty implements InvalidatableUserDetails {
         /**
-         * Scrambled password.
+         * Hashed password.
          */
-        private final String password;
+        private final String passwordHash;
 
-        Details(String password) {
-            this.password = Scrambler.scramble(password);
+        /**
+         * @deprecated Scrambled password.
+         * Field kept here to load old (pre 1.283) user records,
+         * but now marked transient so field is no longer saved.
+         */
+        private transient String password;
+
+        Details(String password, User user) {
+            this.user = user;  // Hudson will do this, but we need it now for getSalt below
+            SecurityRealm realm = Hudson.getInstance().getSecurityRealm();
+            if (realm instanceof HudsonPrivateSecurityRealm) {
+                DaoAuthenticationProvider dao = ((HudsonPrivateSecurityRealm)realm).provider;
+                this.passwordHash = dao.getPasswordEncoder().encodePassword(password, dao.getSaltSource().getSalt(this));
+            } else {
+                this.passwordHash = null;
+            }
+        }
+
+        Details(String passwordHash) {
+            this.passwordHash = passwordHash;
         }
 
         public GrantedAuthority[] getAuthorities() {
@@ -271,7 +296,17 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         }
 
         public String getPassword() {
-            return Scrambler.descramble(password);
+            if (password != null) {
+                // Data loaded from old style config.. encode password now and resave user data.
+                Details encoded = new Details(Scrambler.descramble(password), user);
+                try {
+                    user.addProperty(encoded);
+                } catch (IOException ex) {
+                    Logger.getLogger(Details.class.getName()).log(Level.WARNING, "Failed to save user " + user.getId(), ex);
+                }
+                return encoded.getPassword();
+            }
+            return passwordHash;
         }
 
         public String getProtectedPassword() {
@@ -310,10 +345,6 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         public UserPropertyDescriptor getDescriptor() {
             return DETAILS_DESCRIPTOR;
         }
-
-        /*package*/ Authentication createAuthentication() {
-            return new UsernamePasswordAuthenticationToken(getUsername(), getPassword());
-        }
     }
 
     public static final UserPropertyDescriptor DETAILS_DESCRIPTOR = new UserPropertyDescriptor(Details.class) {
@@ -338,7 +369,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
                 if(data.startsWith(prefix))
                     return new Details(data.substring(prefix.length()));
             }
-            return new Details(Util.fixNull(pwd));
+            return new Details(Util.fixNull(pwd), req.findAncestorObject(User.class));
         }
 
         public boolean isEnabled() {

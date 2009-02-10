@@ -27,6 +27,8 @@
 import org.acegisecurity.providers.ProviderManager
 import hudson.security.HudsonPrivateSecurityRealm.HudsonUserDetailsService
 import org.acegisecurity.providers.dao.DaoAuthenticationProvider
+import org.acegisecurity.providers.dao.salt.SystemWideSaltSource
+import org.acegisecurity.providers.encoding.ShaPasswordEncoder
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
 import hudson.model.Hudson
@@ -34,12 +36,18 @@ import hudson.model.Hudson
 
 userDetailsService(HudsonUserDetailsService) {}
 
+daoAuthenticationProvider(DaoAuthenticationProvider) {
+    userDetailsService = userDetailsService
+    passwordEncoder = bean(ShaPasswordEncoder, 256) {}
+    saltSource = bean(SystemWideSaltSource) {
+        systemWideSalt = "hudson"
+    }
+}
+
 authenticationManager(ProviderManager) {
     providers = [
         // the primary authentication source is Hudson's own user database
-        bean(DaoAuthenticationProvider) {
-            userDetailsService = userDetailsService
-        },
+        daoAuthenticationProvider,
 
     // these providers apply everywhere
         bean(RememberMeAuthenticationProvider) {
