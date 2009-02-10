@@ -26,14 +26,13 @@ package hudson.security;
 import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.ManagementLink;
+import hudson.model.ModelObject;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
-import hudson.model.ManagementLink;
-import hudson.model.ModelObject;
 import hudson.tasks.Mailer;
 import hudson.util.Protector;
-import hudson.util.Scrambler;
 import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -41,26 +40,28 @@ import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.ProviderManager;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.dao.DaoAuthenticationProvider;
+import org.acegisecurity.providers.encoding.PasswordEncoder;
+import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.dao.DataAccessException;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
-import java.util.List;
+import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
+
+import groovy.lang.Binding;
 
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
@@ -101,8 +102,11 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
 
     @Override
     public SecurityComponents createSecurityComponents() {
+        Binding binding = new Binding();
+        binding.setVariable("passwordEncoder", PASSWORD_ENCODER);
+
         BeanBuilder builder = new BeanBuilder();
-        builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/HudsonPrivateSecurityRealm.groovy"));
+        builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/HudsonPrivateSecurityRealm.groovy"),binding);
         WebApplicationContext context = builder.createApplicationContext();
         this.provider = findBean(DaoAuthenticationProvider.class, context);
         return new SecurityComponents(
@@ -191,7 +195,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
 
         // register the user
         User user = User.get(si.username);
-        user.addProperty(new Details(si.password1, user));
+        user.addProperty(Details.fromPlainPassword(si.password1));
         user.addProperty(new Mailer.UserProperty(si.email));
         user.setFullName(si.fullname);
         user.save();
@@ -275,19 +279,16 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
          */
         private transient String password;
 
-        Details(String password, User user) {
-            this.user = user;  // Hudson will do this, but we need it now for getSalt below
-            SecurityRealm realm = Hudson.getInstance().getSecurityRealm();
-            if (realm instanceof HudsonPrivateSecurityRealm) {
-                DaoAuthenticationProvider dao = ((HudsonPrivateSecurityRealm)realm).provider;
-                this.passwordHash = dao.getPasswordEncoder().encodePassword(password, dao.getSaltSource().getSalt(this));
-            } else {
-                this.passwordHash = null;
-            }
+        private Details(String passwordHash) {
+            this.passwordHash = passwordHash;
         }
 
-        Details(String passwordHash) {
-            this.passwordHash = passwordHash;
+        static Details fromHashedPassword(String hashed) {
+            return new Details(hashed);
+        }
+
+        static Details fromPlainPassword(String rawPassword) {
+            return new Details(PASSWORD_ENCODER.encodePassword(rawPassword,null));
         }
 
         public GrantedAuthority[] getAuthorities() {
@@ -297,14 +298,9 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
 
         public String getPassword() {
             if (password != null) {
-                // Data loaded from old style config.. encode password now and resave user data.
-                Details encoded = new Details(Scrambler.descramble(password), user);
-                try {
-                    user.addProperty(encoded);
-                } catch (IOException ex) {
-                    Logger.getLogger(Details.class.getName()).log(Level.WARNING, "Failed to save user " + user.getId(), ex);
-                }
-                return encoded.getPassword();
+                // Data loaded from old style config.. encode password now
+                // but don't force update now to allow room for downgrading
+                return PASSWORD_ENCODER.encodePassword(password,null);
             }
             return passwordHash;
         }
@@ -367,9 +363,9 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             if(data!=null) {
                 String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
                 if(data.startsWith(prefix))
-                    return new Details(data.substring(prefix.length()));
+                    return Details.fromHashedPassword(data.substring(prefix.length()));
             }
-            return new Details(Util.fixNull(pwd), req.findAncestorObject(User.class));
+            return Details.fromPlainPassword(Util.fixNull(pwd));
         }
 
         public boolean isEnabled() {
@@ -420,6 +416,56 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             return Messages.HudsonPrivateSecurityRealm_ManageUserLinks_Description();
         }
     }
+
+    /**
+     * {@link PasswordEncoder} based on SHA-256 and random salt generation.
+     *
+     * <p>
+     * The salt is prepended to the hashed password and returned. So the encoded password is of the form
+     * <tt>SALT ':' hash(PASSWORD,SALT)</tt>.
+     *
+     * <p>
+     * This abbreviates the need to store the salt separately, which in turn allows us to hide the salt handling
+     * in this little class. The rest of the Acegi thinks that we are not using salt.
+     */
+    public static final PasswordEncoder PASSWORD_ENCODER = new PasswordEncoder() {
+        private final PasswordEncoder passwordEncoder = new ShaPasswordEncoder(256);
+
+        public String encodePassword(String rawPass, Object _) throws DataAccessException {
+            return hash(rawPass);
+        }
+
+        public boolean isPasswordValid(String encPass, String rawPass, Object _) throws DataAccessException {
+            // pull out the sale from the encoded password
+            int i = encPass.indexOf(':');
+            if(i<0) return false;
+            String salt = encPass.substring(0,i);
+            return encPass.substring(i+1).equals(passwordEncoder.encodePassword(rawPass,salt));
+        }
+
+        /**
+         * Creates a hashed password by generating a random salt.
+         */
+        private String hash(String password) {
+            String salt = generateSalt();
+            return salt+':'+passwordEncoder.encodePassword(password,salt);
+        }
+
+        /**
+         * Generates random salt.
+         */
+        private String generateSalt() {
+            StringBuilder buf = new StringBuilder();
+            SecureRandom sr = new SecureRandom();
+            for( int i=0; i<6; i++ ) {// log2(52^6)=34.20... so, this is about 32bit strong.
+                boolean upper = sr.nextBoolean();
+                int ch = sr.nextInt(26) + 'a';
+                if(upper)   ch=Character.toUpperCase(ch);
+                buf.append(ch);
+            }
+            return buf.toString();
+        }
+    };
 
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();

@@ -38,10 +38,7 @@ userDetailsService(HudsonUserDetailsService) {}
 
 daoAuthenticationProvider(DaoAuthenticationProvider) {
     userDetailsService = userDetailsService
-    passwordEncoder = bean(ShaPasswordEncoder, 256) {}
-    saltSource = bean(SystemWideSaltSource) {
-        systemWideSalt = "hudson"
-    }
+    passwordEncoder = passwordEncoder  // this variable is injected by the parsing code in HudsonPrivateSecurityRealm
 }
 
 authenticationManager(ProviderManager) {
