@@ -461,7 +461,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
     	@Override
     	@Exported
     	public String getShortDescription() {
-    		return "A SCM change trigger started this job";
+			return Messages.SCMTrigger_SCMTriggerCause_ShortDescription();
     	}
 
     }

@@ -105,7 +105,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
     	@Override
     	@Exported
 		public String getShortDescription() {
-    		return "A timer trigger started this job";
+			return Messages.TimerTrigger_TimerTriggerCause_ShortDescription();
     	}
 
     }
