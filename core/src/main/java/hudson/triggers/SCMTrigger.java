@@ -417,6 +417,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public void run() {
+            String threadName = Thread.currentThread().getName();
+            Thread.currentThread().setName("SCM polling for "+job);
             try {
                 while(pollingScheduled) {
                     getLock().lockInterruptibly();
@@ -447,6 +449,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                 }
             } catch (InterruptedException e) {
                 LOGGER.info("Aborted");
+            } finally {
+                Thread.currentThread().setName(threadName);
             }
         }
     }
