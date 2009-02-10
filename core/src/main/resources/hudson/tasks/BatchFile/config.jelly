@@ -23,8 +23,8 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="Command"
-           description="See &lt;a href='${rootURL}/env-vars.html' target=_new>the list of available environment variables&lt;/a>">
+  <f:entry title="${%Command}"
+           description="${%description(rootURL)}">
     <f:textarea name="batchFile" value="${instance.command}"/>
   </f:entry>
 </j:jelly>
