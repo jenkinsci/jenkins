@@ -40,6 +40,7 @@ public interface GNUCLibrary extends Library {
     int setsid();
     int umask(int mask);
     int getpid();
+    int geteuid();
     int getppid();
     int chdir(String dir);
     int execv(String file, StringArray args);
