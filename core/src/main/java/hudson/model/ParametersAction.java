@@ -27,6 +27,8 @@ import hudson.Util;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildStep;
 import hudson.util.VariableResolver;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -40,6 +42,7 @@ import java.util.Map;
  * This object is associated with the build record so that we remember what parameters
  * were used for what build.
  */
+@ExportedBean
 public class ParametersAction implements Action, Iterable<ParameterValue> {
 
     private final List<ParameterValue> parameters;
@@ -94,6 +97,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue> {
         return parameters.iterator();
     }
 
+    @Exported(visibility=2)
     public List<ParameterValue> getParameters() {
         return parameters;
     }

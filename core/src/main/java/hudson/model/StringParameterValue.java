@@ -24,6 +24,7 @@
 package hudson.model;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.export.Exported;
 
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import hudson.util.VariableResolver;
  * {@link ParameterValue} created from {@link StringParameterDefinition}.
  */
 public class StringParameterValue extends ParameterValue {
+    @Exported(visibility=3)
     public final String value;
 
     @DataBoundConstructor

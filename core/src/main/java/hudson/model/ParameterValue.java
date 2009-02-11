@@ -30,6 +30,8 @@ import hudson.util.VariableResolver;
 import java.util.Map;
 
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 import net.sf.json.JSONObject;
 
 /**
@@ -58,6 +60,7 @@ import net.sf.json.JSONObject;
  * </ol>
  * @see ParameterDefinition
  */
+@ExportedBean
 public abstract class ParameterValue {
     protected final String name;
 
@@ -71,6 +74,7 @@ public abstract class ParameterValue {
      * This uniquely distinguishes {@link ParameterValue} among other parameters
      * for the same build. This must be the same as {@link ParameterDefinition#getName()}.
      */
+    @Exported(visibility=3)
     public final String getName() {
         return name;
     }
