@@ -289,10 +289,6 @@ public class SCMTrigger extends Trigger<SCMedItem> {
     public static final class AdministrativeMonitorImpl extends AdministrativeMonitor {
         private boolean on;
 
-        AdministrativeMonitorImpl() {
-            super(SCMTrigger.class.getName());
-        }
-
         public boolean isActivated() {
             return on;
         }

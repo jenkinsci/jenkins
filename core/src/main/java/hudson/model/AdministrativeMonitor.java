@@ -81,6 +81,10 @@ public abstract class AdministrativeMonitor implements ExtensionPoint {
         this.id = id;
     }
 
+    protected AdministrativeMonitor() {
+        this.id = this.getClass().getName();
+    }
+
     /**
      * Mark this monitor as disabled, to prevent this from showing up in the UI.
      */

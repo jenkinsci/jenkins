@@ -327,10 +327,6 @@ public class UpdateCenter extends AbstractModelObject {
      * {@link AdministrativeMonitor} that checks if there's Hudson update.
      */
     public final class CoreUpdateMonitor extends AdministrativeMonitor {
-        public CoreUpdateMonitor() {
-            super(CoreUpdateMonitor.class.getName());
-        }
-
         public boolean isActivated() {
             Data data = getData();
             return data!=null && data.hasCoreUpdates();
