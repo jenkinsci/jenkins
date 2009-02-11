@@ -32,7 +32,6 @@ import java.io.IOException;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
 
 /**
  * Checks the health of a subsystem of Hudson and if there's something
@@ -72,7 +71,7 @@ import org.kohsuke.stapler.Stapler;
  * @since 1.273
  * @see Hudson#administrativeMonitors
  */
-public abstract class AdministrativeMonitor implements ExtensionPoint {
+public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint {
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.
      *
@@ -95,6 +94,14 @@ public abstract class AdministrativeMonitor implements ExtensionPoint {
      */
     public String getUrl() {
         return "administrativeMonitor/"+id;
+    }
+
+    public String getDisplayName() {
+        return id;
+    }
+
+    public final String getSearchUrl() {
+        return getUrl();
     }
 
     /**
