@@ -23,8 +23,14 @@
  */
 package hudson.model;
 
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+
+@ExportedBean
 public class CauseAction implements Action {
 	private Cause cause;
+
+	@Exported(visibility=2)
 	public Cause getCause() {
 		return cause;
 	}

@@ -37,8 +37,6 @@ import javax.servlet.ServletException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 import antlr.ANTLRException;
 
@@ -48,9 +46,9 @@ import antlr.ANTLRException;
  * @author Kohsuke Kawaguchi
  */
 public class TimerTrigger extends Trigger<BuildableItem> {
-	
-	@DataBoundConstructor
-	public TimerTrigger(String timer_spec) throws ANTLRException {
+
+    @DataBoundConstructor
+    public TimerTrigger(String timer_spec) throws ANTLRException {
         super(timer_spec);
     }
 
@@ -99,14 +97,10 @@ public class TimerTrigger extends Trigger<BuildableItem> {
         }
     }
     
-    @ExportedBean
     public static class TimerTriggerCause extends Cause {
-
-    	@Override
-    	@Exported
-		public String getShortDescription() {
-			return Messages.TimerTrigger_TimerTriggerCause_ShortDescription();
-    	}
-
+        @Override
+        public String getShortDescription() {
+            return Messages.TimerTrigger_TimerTriggerCause_ShortDescription();
+        }
     }
 }

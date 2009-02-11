@@ -33,10 +33,11 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * @author Michael Donohue
  */
+@ExportedBean
 public abstract class Cause {
+	@Exported(visibility=3)
 	abstract public String getShortDescription();
 	
-	@ExportedBean
 	public static class LegacyCodeCause extends Cause {
 		private StackTraceElement [] stackTrace;
 		public LegacyCodeCause() {
@@ -44,13 +45,11 @@ public abstract class Cause {
 		}
 		
 		@Override
-		@Exported
 		public String getShortDescription() {
 			return Messages.Cause_LegacyCodeCause_ShortDescription();
 		}
 	}
 	
-	@ExportedBean
 	public static class UpstreamCause extends Cause {
 		private String upstreamProject;
 		private int upstreamBuild;
@@ -64,13 +63,11 @@ public abstract class Cause {
 		}
 		
 		@Override
-		@Exported
 		public String getShortDescription() {
 			return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, upstreamBuild);
 		}
 	}
 
-	@ExportedBean
 	public static class UserCause extends Cause {
 		private String authenticationName;
 		public UserCause() {
@@ -78,7 +75,6 @@ public abstract class Cause {
 		}
 		
 		@Override
-		@Exported
 		public String getShortDescription() {
 			return Messages.Cause_UserCause_ShortDescription(authenticationName);
 		}

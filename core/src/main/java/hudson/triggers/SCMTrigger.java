@@ -37,8 +37,6 @@ import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
@@ -455,15 +453,11 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
     }
 
-    @ExportedBean
     public static class SCMTriggerCause extends Cause {
-
-    	@Override
-    	@Exported
-    	public String getShortDescription() {
-			return Messages.SCMTrigger_SCMTriggerCause_ShortDescription();
-    	}
-
+        @Override
+        public String getShortDescription() {
+            return Messages.SCMTrigger_SCMTriggerCause_ShortDescription();
+        }
     }
 
     /**
