@@ -32,6 +32,7 @@ import java.io.IOException;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * Checks the health of a subsystem of Hudson and if there's something
@@ -49,6 +50,10 @@ import org.kohsuke.stapler.StaplerResponse;
  * this can be done by updating a flag from code (see {@link SCMTrigger}
  * for one such example), while other times it's more convenient to do
  * so by running some code periodically (for this, use {@link TimerTrigger#timer})
+ *
+ * <p>
+ * {@link AdministrativeMonitor}s are bound to URL by {@link Hudson#getAdministrativeMonitor(String)}.
+ * See {@link #getUrl()}.
  *
  * <h3>Views</h3>
  * <dl>
@@ -83,6 +88,13 @@ public abstract class AdministrativeMonitor implements ExtensionPoint {
 
     protected AdministrativeMonitor() {
         this.id = this.getClass().getName();
+    }
+
+    /**
+     * Returns the URL of this monitor, relative to the context path, like "administrativeMonitor/foobar".
+     */
+    public String getUrl() {
+        return "administrativeMonitor/"+id;
     }
 
     /**
