@@ -27,6 +27,12 @@ import hudson.ExtensionPoint;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 
+import java.util.Set;
+import java.io.IOException;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
 /**
  * Checks the health of a subsystem of Hudson and if there's something
  * that requires administrator's attention, notify the administrator.
@@ -66,14 +72,35 @@ public abstract class AdministrativeMonitor implements ExtensionPoint {
      * Human-readable ID of this monitor, which needs to be unique within the system.
      *
      * <p>
-     * In the future we intend to have some persistable user preference about
-     * monitors (such as disabling it or configuring it for e-mail notification),
+     * This ID is used to remember persisted setting for this monitor,
      * so the ID should remain consistent beyond the Hudson JVM lifespan.
      */
     public final String id;
 
     protected AdministrativeMonitor(String id) {
         this.id = id;
+    }
+
+    /**
+     * Mark this monitor as disabled, to prevent this from showing up in the UI.
+     */
+    public void disable(boolean value) throws IOException {
+        Hudson hudson = Hudson.getInstance();
+        Set<String> set = hudson.disabledAdministrativeMonitors;
+        if(value)   set.add(id);
+        else        set.remove(id);
+        hudson.save();
+    }
+
+    /**
+     * Returns true if this monitor {@link #disable(boolean) isn't disabled} earlier.
+     *
+     * <p>
+     * This flag implements the ability for the admin to say "no thank you" to the monitor that
+     * he wants to ignore.
+     */
+    public boolean isEnabled() {
+        return !Hudson.getInstance().disabledAdministrativeMonitors.contains(id);
     }
 
     /**
@@ -85,4 +112,13 @@ public abstract class AdministrativeMonitor implements ExtensionPoint {
      * so it should run efficiently.
      */
     public abstract boolean isActivated();
+
+    /**
+     * URL binding to disable this monitor.
+     */
+    public void doDisable(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        disable(true);
+        rsp.sendRedirect2(req.getContextPath()+"/manage");
+    }
 }

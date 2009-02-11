@@ -173,6 +173,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -391,6 +392,8 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      * @see AdministrativeMonitor
      */
     public transient final List<AdministrativeMonitor> administrativeMonitors = new CopyOnWriteArrayList<AdministrativeMonitor>();
+
+    /*package*/ final Set<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
 
     /**
      * {@link AdjunctManager}
