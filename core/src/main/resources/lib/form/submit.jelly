@@ -27,9 +27,14 @@ THE SOFTWARE.
     Submit button themed by YUI. This should be always
     used instead of the plain &lt;input tag.
 
+    <s:attribute name="name">
+      If specified, becomes the value of the name attribute.
+      When you have more than one submit button on the form, this can be used to determine
+      which button is pressed, as the server will get a parameter by this name.
+    </s:attribute>
     <s:attribute name="value" use="required">
       The text of the submit button. Something like "submit", "OK", etc.
     </s:attribute>
   </s:documentation>
-  <input type="submit" name="Submit" value="${attrs.value}" class="submit-button" />
+  <input type="submit" name="${h.defaulted(attrs.name,'Submit')}" value="${attrs.value}" class="submit-button" />
 </j:jelly>
