@@ -394,7 +394,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      */
     public transient final List<AdministrativeMonitor> administrativeMonitors = new CopyOnWriteArrayList<AdministrativeMonitor>();
 
-    /*package*/ final Set<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
+    /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
 
     /**
      * {@link AdjunctManager}

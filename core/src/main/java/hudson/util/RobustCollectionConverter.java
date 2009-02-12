@@ -34,6 +34,7 @@ import com.thoughtworks.xstream.XStream;
 
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * {@link CollectionConverter} that ignores {@link CannotResolveClassException}.
@@ -57,7 +58,7 @@ public class RobustCollectionConverter extends CollectionConverter {
     }
 
     public boolean canConvert(Class type) {
-        return super.canConvert(type) || type==CopyOnWriteArrayList.class;
+        return super.canConvert(type) || type==CopyOnWriteArrayList.class || type==CopyOnWriteArraySet.class;
     }
 
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
