@@ -225,8 +225,8 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                     new String[]{"/usr/bin/pfexec", javaExe, "-jar", slaveJar},
                     listener.getLogger(), null, Collections.<String, String>emptyMap());
         } else {
-            // try sudo with the given password
-            ProcessBuilder pb = new ProcessBuilder(javaExe,"-jar",slaveJar);
+            // try sudo with the given password. Also run in pfexec so that we can elevate the privileges
+            ProcessBuilder pb = new ProcessBuilder("/usr/bin/pfexec",javaExe,"-jar",slaveJar);
             proc = EmbeddedSu.startWithSu(rootUsername, rootPassword, pb);
             channel = new Channel("zfs migration thread", Computer.threadPoolForRemoting,
                     proc.getInputStream(), proc.getOutputStream(), listener.getLogger());
