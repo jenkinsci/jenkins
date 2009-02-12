@@ -152,7 +152,8 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     private String createZfsFileSystem(final TaskListener listener, String rootUsername, String rootPassword) throws IOException, InterruptedException, ZFSException {
         // capture the UID that Hudson runs under
         // so that we can allow this user to do everything on this new partition
-        int uid = LIBC.geteuid();
+        final int uid = LIBC.geteuid();
+        final int gid = LIBC.getegid();
         passwd pwd = LIBC.getpwuid(uid);
         if(pwd==null)
             throw new IOException("Failed to obtain the current user information for "+uid);
@@ -177,6 +178,14 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                 String name = computeHudsonFileSystemName(zfs, zfs.roots().get(0));
                 out.println("Creating "+name);
                 ZFSFileSystem hudson = zfs.create(name, ZFSFileSystem.class);
+
+                // mount temporarily to set the owner right
+                File dir = Util.createTempDir();
+                hudson.setMountPoint(dir);
+                hudson.mount();
+                if(LIBC.chown(dir.getPath(),uid,gid)!=0)
+                    throw new IOException("Failed to chown "+dir);
+                hudson.unmount();
 
                 try {
                     hudson.setProperty("hudson:managed-by","hudson"); // mark this file system as "managed by Hudson"
@@ -286,7 +295,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                     }
 
                     // re-exec with the system property to indicate where to migrate the data to.
-                    // the 2nd phase starts in the init method.
+                    // the 2nd phase is implemented in the migrate method.
                     JavaVMArguments args = JavaVMArguments.current();
                     args.setSystemProperty(ZFSInstaller.class.getName()+".migrate",datasetName);
                     Daemon.selfExec(args);

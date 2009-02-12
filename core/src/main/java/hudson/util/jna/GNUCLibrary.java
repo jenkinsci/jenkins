@@ -42,6 +42,7 @@ public interface GNUCLibrary extends Library {
     int umask(int mask);
     int getpid();
     int geteuid();
+    int getegid();
     int getppid();
     int chdir(String dir);
     int getdtablesize();
@@ -61,6 +62,8 @@ public interface GNUCLibrary extends Library {
     static final int F_GETFD = 1;
     static final int F_SETFD = 2;
     static final int FD_CLOEXEC = 1;
+
+    int chown(String fileName, int uid, int gid);
     
 
     // this is listed in http://developer.apple.com/DOCUMENTATION/Darwin/Reference/ManPages/man3/sysctlbyname.3.html
