@@ -332,9 +332,10 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
             return;
         }
 
-        if(System.getProperty(ZFSInstaller.class.getName())!=null)
-            // this feature is still being tested, so only activate this during a test
-            monitors.add(new ZFSInstaller());
+        // install the monitor if applicable
+        ZFSInstaller zi = new ZFSInstaller();
+        if(zi.isActivated())
+            monitors.add(zi);
     }
 
     /**
