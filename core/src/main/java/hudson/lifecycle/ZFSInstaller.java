@@ -226,6 +226,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                     listener.getLogger(), null, Collections.<String, String>emptyMap());
         } else {
             // try sudo with the given password. Also run in pfexec so that we can elevate the privileges
+            listener.getLogger().println("Running with embedded_su");
             ProcessBuilder pb = new ProcessBuilder("/usr/bin/pfexec",javaExe,"-jar",slaveJar);
             proc = EmbeddedSu.startWithSu(rootUsername, rootPassword, pb);
             channel = new Channel("zfs migration thread", Computer.threadPoolForRemoting,
@@ -397,9 +398,13 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
         hudson.mount();
 
         out.println("Sharing "+target);
-        hudson.setProperty("sharesmb","on");
-        hudson.setProperty("sharenfs","on");
-        hudson.share();
+        try {
+            hudson.setProperty("sharesmb","on");
+            hudson.setProperty("sharenfs","on");
+            hudson.share();
+        } catch (ZFSException e) {
+            listener.error("Failed to share the file systems: "+e.getCode());
+        }
 
         // delete back up
         out.println("Deleting "+backup);
