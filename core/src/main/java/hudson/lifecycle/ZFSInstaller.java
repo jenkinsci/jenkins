@@ -25,30 +25,41 @@ package hudson.lifecycle;
 
 import com.sun.akuma.Daemon;
 import com.sun.akuma.JavaVMArguments;
+import com.sun.solaris.EmbeddedSu;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
+import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
+import hudson.remoting.Channel;
+import hudson.remoting.Launcher;
+import hudson.remoting.Which;
+import hudson.util.ForkOutputStream;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.StreamTaskListener;
-import hudson.util.ForkOutputStream;
 import static hudson.util.jna.GNUCLibrary.*;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.jvnet.libpam.impl.CLibrary.passwd;
+import org.jvnet.solaris.libzfs.ACLBuilder;
 import org.jvnet.solaris.libzfs.LibZFS;
+import org.jvnet.solaris.libzfs.ZFSException;
 import org.jvnet.solaris.libzfs.ZFSFileSystem;
 import org.jvnet.solaris.libzfs.ZFSPool;
-import org.jvnet.solaris.libzfs.ZFSType;
-import org.jvnet.solaris.libzfs.ZFSException;
+import org.jvnet.solaris.libzfs.ErrorCode;
 import org.jvnet.solaris.mount.MountFlags;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +70,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  * @since 1.283
  */
-public class ZFSInstaller extends AdministrativeMonitor {
+public class ZFSInstaller extends AdministrativeMonitor implements Serializable {
     /**
      * True if $HUDSON_HOME is a ZFS file system by itself.
      */
@@ -127,12 +138,133 @@ public class ZFSInstaller extends AdministrativeMonitor {
     }
 
     /**
+     * Creates a ZFS file system to migrate the data to.
+     *
+     * <p>
+     * This has to be done while we still have an interactive access with the user, since it involves the password.
+     *
+     * <p>
+     * An exception will be thrown if the operation fails. A normal completion means a success.
+     *
+     * @return
+     *      The ZFS dataset name to migrate the data to.
+     */
+    private String createZfsFileSystem(final TaskListener listener, String rootUsername, String rootPassword) throws IOException, InterruptedException, ZFSException {
+        // capture the UID that Hudson runs under
+        // so that we can allow this user to do everything on this new partition
+        int uid = LIBC.geteuid();
+        passwd pwd = LIBC.getpwuid(uid);
+        if(pwd==null)
+            throw new IOException("Failed to obtain the current user information for "+uid);
+        final String userName = pwd.pw_name;
+
+        final File home = Hudson.getInstance().getRootDir();
+
+        // this is the actual creation of the file system.
+        // return true indicating a success
+        Callable<String,IOException> task = new Callable<String,IOException>() {
+            public String call() throws IOException {
+                PrintStream out = listener.getLogger();
+
+                LibZFS zfs = new LibZFS();
+                ZFSFileSystem existing = zfs.getFileSystemByMountPoint(home);
+                if(existing!=null) {
+                    // no need for migration
+                    out.println(home+" is already on ZFS. Doing nothing");
+                    return existing.getName();
+                }
+
+                String name = computeHudsonFileSystemName(zfs, zfs.roots().get(0));
+                out.println("Creating "+name);
+                ZFSFileSystem hudson = zfs.create(name, ZFSFileSystem.class);
+
+                try {
+                    hudson.setProperty("hudson:managed-by","hudson"); // mark this file system as "managed by Hudson"
+
+                    ACLBuilder acl = new ACLBuilder();
+                    acl.user(userName).withEverything();
+                    hudson.allow(acl);
+                } catch (ZFSException e) {
+                    // revert the file system creation
+                    try {
+                        hudson.destory();
+                    } catch (Exception _) {
+                        // but ignore the error and let the original error thrown
+                    }
+                    throw e;
+                }
+                return hudson.getName();
+            }
+        };
+
+
+        // if we are the root user already, we can just do it here.
+        // if that fails, no amount of pfexec and embedded_sudo would do.
+        if(uid==0)
+            return task.call();
+
+        String javaExe = System.getProperty("java.home") + "/bin/java";
+        String slaveJar = Which.jarFile(Launcher.class).getAbsolutePath();
+
+        // otherwise first attempt pfexec, as that doesn't require password
+        Channel channel;
+        Process proc=null;
+
+        if(rootPassword==null) {
+            // try pfexec, in the hope that the user has the permission
+            channel = new LocalLauncher(listener).launchChannel(
+                    new String[]{"/usr/bin/pfexec", javaExe, "-jar", slaveJar},
+                    listener.getLogger(), null, Collections.<String, String>emptyMap());
+        } else {
+            // try sudo with the given password
+            ProcessBuilder pb = new ProcessBuilder(javaExe,"-jar",slaveJar);
+            proc = EmbeddedSu.startWithSu(rootUsername, rootPassword, pb);
+            channel = new Channel("zfs migration thread", Computer.threadPoolForRemoting,
+                    proc.getInputStream(), proc.getOutputStream(), listener.getLogger());
+        }
+
+        try {
+            return channel.call(task);
+        } finally {
+            channel.close();
+            if(proc!=null)
+                proc.destroy();
+        }
+    }
+
+    /**
      * Called from the confirmation screen to actually initiate the migration.
      */
-    public void doStart(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
-        requirePOST();
+    public void doStart(StaplerRequest req, StaplerResponse rsp, @QueryParameter String username, @QueryParameter String password) throws ServletException, IOException {
+        requirePOST(); 
         Hudson hudson = Hudson.getInstance();
         hudson.checkPermission(Hudson.ADMINISTER);
+
+        final String datasetName;
+        ByteArrayOutputStream log = new ByteArrayOutputStream();
+        StreamTaskListener listener = new StreamTaskListener(log);
+        try {
+            datasetName = createZfsFileSystem(listener,username,password);
+        } catch (Exception e) {
+            e.printStackTrace(listener.error(e.getMessage()));
+
+            if (e instanceof ZFSException) {
+                ZFSException ze = (ZFSException) e;
+                if(ze.getCode()==ErrorCode.EZFS_PERM) {
+                    // permission problem. ask the user to give us the root password
+                    req.setAttribute("message",log.toString());
+                    rsp.forward(this,"askRootPassword",req);
+                    return;
+                }
+            }
+
+            // for other kinds of problems, report and bail out
+            req.setAttribute("pre",true);
+            sendError(log.toString(),req,rsp);
+            return;
+        }
+
+        // file system creation successful, so restart
 
         hudson.servletContext.setAttribute("app",new HudsonIsRestarting());
         // redirect the user to the manage page
@@ -153,8 +285,10 @@ public class ZFSInstaller extends AdministrativeMonitor {
                         LIBC.fcntl(i, F_SETFD,flags| FD_CLOEXEC);
                     }
 
+                    // re-exec with the system property to indicate where to migrate the data to.
+                    // the 2nd phase starts in the init method.
                     JavaVMArguments args = JavaVMArguments.current();
-                    args.setSystemProperty(ZFSInstaller.class.getName(),"migrate");
+                    args.setSystemProperty(ZFSInstaller.class.getName()+".migrate",datasetName);
                     Daemon.selfExec(args);
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.SEVERE, "Restart failed",e);
@@ -169,11 +303,12 @@ public class ZFSInstaller extends AdministrativeMonitor {
     public static void init() {
         List<AdministrativeMonitor> monitors = Hudson.getInstance().administrativeMonitors;
 
-        if("migrate".equals(System.getProperty(ZFSInstaller.class.getName()))) {
+        String migrationTarget = System.getProperty(ZFSInstaller.class.getName() + ".migrate");
+        if(migrationTarget!=null) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             StreamTaskListener listener = new StreamTaskListener(new ForkOutputStream(System.out, out));
             try {
-                if(migrate(listener)) {
+                if(migrate(listener,migrationTarget)) {
                     // completed successfully
                     monitors.add(new MigrationCompleteNotice());
                     return;
@@ -199,10 +334,12 @@ public class ZFSInstaller extends AdministrativeMonitor {
      *
      * @param listener
      *      Log of migration goes here.
+     * @param target
+     *      Dataset to move the data to.
      * @return
      *      false if a migration failed.
      */
-    private static boolean migrate(TaskListener listener) throws IOException, InterruptedException {
+    private static boolean migrate(TaskListener listener, String target) throws IOException, InterruptedException {
         PrintStream out = listener.getLogger();
 
         File home = Hudson.getInstance().getRootDir();
@@ -217,9 +354,8 @@ public class ZFSInstaller extends AdministrativeMonitor {
         File tmpDir = Util.createTempDir();
 
         // mount a new file system to a temporary location
-        String name = computeHudsonFileSystemName(zfs, zfs.roots().get(0));
-        out.println("Creating "+name);
-        ZFSFileSystem hudson = (ZFSFileSystem)zfs.create(name, ZFSType.FILESYSTEM);
+        out.println("Opening "+target);
+        ZFSFileSystem hudson = zfs.open(target, ZFSFileSystem.class);
         hudson.setMountPoint(tmpDir);
         hudson.setProperty("hudson:managed-by","hudson"); // mark this file system as "managed by Hudson"
         hudson.mount();
@@ -232,7 +368,7 @@ public class ZFSInstaller extends AdministrativeMonitor {
         }
 
         // unmount
-        out.println("Unmounting "+name);
+        out.println("Unmounting "+target);
         hudson.unmount(MountFlags.MS_FORCE);
 
         // move the original directory to the side
@@ -247,11 +383,11 @@ public class ZFSInstaller extends AdministrativeMonitor {
         if(!home.mkdir())
             throw new IOException("Failed to create mount point "+home);
 
-        out.println("Mounting "+name);
+        out.println("Mounting "+target);
         hudson.setMountPoint(home);
         hudson.mount();
 
-        out.println("Sharing "+name);
+        out.println("Sharing "+target);
         hudson.setProperty("sharesmb","on");
         hudson.setProperty("sharenfs","on");
         hudson.share();

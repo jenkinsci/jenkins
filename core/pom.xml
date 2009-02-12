@@ -635,7 +635,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.libzfs</groupId>
       <artifactId>libzfs</artifactId>
-      <version>0.2</version>
+      <version>0.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.solaris</groupId>
+      <artifactId>embedded_su4j</artifactId>
+      <version>1.0</version>
     </dependency>
 
     <!-- offline profiler API to put in the classpath if we need it -->
