@@ -43,6 +43,7 @@ import hudson.UDPBroadcastThread;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.WindowsInstallerLink;
 import hudson.lifecycle.Lifecycle;
+import hudson.lifecycle.ZFSInstaller;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -470,6 +471,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
 
         // run the init code of SubversionSCM before we load plugins so that plugins can change SubversionWorkspaceSelector.
         SubversionSCM.DescriptorImpl.DESCRIPTOR.getDisplayName();
+        ZFSInstaller.init();
 
         // load plugins.
         pluginManager = new PluginManager(context);
@@ -1198,6 +1200,16 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
             if(l.isEmpty())
                 itr.remove();
         }
+    }
+
+    /**
+     * Binds {@link AdministrativeMonitor}s to URL.
+     */
+    public AdministrativeMonitor getAdministrativeMonitor(String id) {
+        for (AdministrativeMonitor m : administrativeMonitors)
+            if(m.id.equals(id))
+                return m;
+        return null;
     }
 
     public NodeDescriptor getDescriptor() {
