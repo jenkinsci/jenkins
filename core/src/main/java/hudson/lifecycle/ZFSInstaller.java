@@ -39,6 +39,7 @@ import org.jvnet.solaris.libzfs.LibZFS;
 import org.jvnet.solaris.libzfs.ZFSFileSystem;
 import org.jvnet.solaris.libzfs.ZFSPool;
 import org.jvnet.solaris.libzfs.ZFSType;
+import org.jvnet.solaris.libzfs.ZFSException;
 import org.jvnet.solaris.mount.MountFlags;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -177,9 +178,8 @@ public class ZFSInstaller extends AdministrativeMonitor {
                     monitors.add(new MigrationCompleteNotice());
                     return;
                 }
-            } catch (IOException e) {
-                e.printStackTrace(listener.error("Migration failed"));
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
+                // if we let any exception from here, it will prevent Hudson from starting.
                 e.printStackTrace(listener.error("Migration failed"));
             }
             // migration failed
@@ -221,6 +221,7 @@ public class ZFSInstaller extends AdministrativeMonitor {
         out.println("Creating "+name);
         ZFSFileSystem hudson = (ZFSFileSystem)zfs.create(name, ZFSType.FILESYSTEM);
         hudson.setMountPoint(tmpDir);
+        hudson.setProperty("hudson:managed-by","hudson"); // mark this file system as "managed by Hudson"
         hudson.mount();
 
         // copy all the files
@@ -249,6 +250,11 @@ public class ZFSInstaller extends AdministrativeMonitor {
         out.println("Mounting "+name);
         hudson.setMountPoint(home);
         hudson.mount();
+
+        out.println("Sharing "+name);
+        hudson.setProperty("sharesmb","on");
+        hudson.setProperty("sharenfs","on");
+        hudson.share();
 
         // delete back up
         out.println("Deleting "+backup);
