@@ -640,7 +640,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.sun.solaris</groupId>
       <artifactId>embedded_su4j</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
 
     <!-- offline profiler API to put in the classpath if we need it -->
