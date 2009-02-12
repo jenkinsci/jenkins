@@ -384,6 +384,8 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
         // move the original directory to the side
         File backup = new File(home.getPath()+".backup");
         out.println("Moving "+home+" to "+backup);
+        if(backup.exists())
+            Util.deleteRecursive(backup);
         if(!home.renameTo(backup)) {
             out.println("Failed to move your current data "+home+" out of the way");
         }
