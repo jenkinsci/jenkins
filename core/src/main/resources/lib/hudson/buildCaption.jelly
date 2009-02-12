@@ -43,7 +43,7 @@ THE SOFTWARE.
 	    </div>
 	  </j:if>
 	  
-	  <img src="buildStatus" width="48" height="48" alt="${it.iconColor.description}" />
+	  <img src="buildStatus" width="48" height="48" alt="${it.iconColor.description}" tooltip="${it.iconColor.description}" />
 	  <d:invokeBody />
 	</h1>
 </j:jelly>

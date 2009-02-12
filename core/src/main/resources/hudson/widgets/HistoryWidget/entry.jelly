@@ -29,7 +29,7 @@ THE SOFTWARE.
   <j:set var="link" value="${it.baseUrl}/${build.number}/" />
   <tr class="build-row ${h.ifThenElse(build.building,'transitive',null)}">
     <td nowrap="nowrap">
-      <img width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description}" /><st:nbsp/>
+      <img width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description}" tooltip="${build.iconColor.description}" /><st:nbsp/>
       #${build.number}
     </td>
     <td nowrap="nowrap">
