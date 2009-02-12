@@ -118,7 +118,7 @@ public class ZFSInstaller extends AdministrativeMonitor {
         if(req.hasParameter("n")) {
             // we'll shut up
             disable(true);
-            rsp.sendRedirect2(req.getContextPath());
+            rsp.sendRedirect2(req.getContextPath()+"/manage");
             return;
         }
 
