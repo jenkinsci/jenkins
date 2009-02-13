@@ -67,34 +67,42 @@ import java.util.logging.Logger;
  */
 public abstract class ProcessTreeKiller {
     /**
-     * Kills the given process (like {@link Process#destroy()}
-     * but also attempts to kill descendant processes created from the given
-     * process.
-     *
-     * <p>
-     * The implementation is obviously OS-dependent.
-     *
-     * <p>
-     * The execution doesn't have to be blocking; the method may return
-     * before processes are actually killed.
+     * Short for {@code kill(proc,null)}
      */
-    public abstract void kill(Process proc);
+    public void kill(Process proc) {
+        kill(proc,null);
+    }
 
     /**
      * In addition to what {@link #kill(Process)} does, also tries to
      * kill all the daemon processes launched.
      *
      * <p>
-     * Daemon processes are hard to find because they normally detach themselves
-     * from the parent process. In this method, the method is given a
+     * Kills the given process (like {@link Process#destroy()}
+     * but also attempts to kill descendant processes created from the given
+     * process.
+     *
+     * <p>
+     * In addition, optionally perform "search and destroy" based on environment
+     * variables. In this method, the method is given a
      * "model environment variables", which is a list of environment variables
      * and their values that are characteristic to the launched process.
      * The implementation is expected to find processes
      * in the system that inherit these environment variables, and kill
-     * them even if the {@code proc} and such processes do not have direct
-     * ancestor/descendant relationship. 
+     * them all. This is suitable for locating daemon processes
+     * that cannot be tracked by the regular
+     *
+     * <p>
+     * The implementation is obviously OS-dependent.
      */
     public abstract void kill(Process proc, Map<String, String> modelEnvVars);
+
+    /**
+     * Short for {@code kill(null,modelEnvVars)}
+     */
+    public void kill(Map<String, String> modelEnvVars) {
+        kill(null,modelEnvVars);
+    }
 
     /**
      * Creates a magic cookie that can be used as the model environment variable
@@ -154,12 +162,9 @@ public abstract class ProcessTreeKiller {
      * Fallback implementation that doesn't do anything clever.
      */
     private static final ProcessTreeKiller DEFAULT = new ProcessTreeKiller() {
-        public void kill(Process proc) {
-            proc.destroy();
-        }
-
         public void kill(Process proc, Map<String, String> modelEnvVars) {
             proc.destroy();
+            // kill by model unsupported
         }
     };
 
@@ -170,27 +175,26 @@ public abstract class ProcessTreeKiller {
      * Not a singleton pattern because loading this class requires Windows specific library.
      */
     private static final class Windows extends ProcessTreeKiller {
-        public void kill(Process proc) {
-            new WinProcess(proc).killRecursively();
-        }
-
         public void kill(Process proc, Map<String,String> modelEnvVars) {
-            kill(proc);
+            if(proc!=null)
+                new WinProcess(proc).killRecursively();
 
-            for( WinProcess p : WinProcess.all() ) {
-                if(p.getPid()<10)
-                    continue;   // ignore system processes like "idle process"
+            if(modelEnvVars!=null) {
+                for( WinProcess p : WinProcess.all() ) {
+                    if(p.getPid()<10)
+                        continue;   // ignore system processes like "idle process"
 
-                boolean matched;
-                try {
-                    matched = hasMatchingEnvVars(p.getEnvironmentVariables(), modelEnvVars);
-                } catch (WinpException e) {
-                    // likely a missing privilege
-                    continue;
+                    boolean matched;
+                    try {
+                        matched = hasMatchingEnvVars(p.getEnvironmentVariables(), modelEnvVars);
+                    } catch (WinpException e) {
+                        // likely a missing privilege
+                        continue;
+                    }
+
+                    if(matched)
+                        p.killRecursively();
                 }
-
-                if(matched)
-                    p.killRecursively();
             }
         }
 
@@ -203,42 +207,37 @@ public abstract class ProcessTreeKiller {
      * Implementation for Unix that supports reasonably powerful <tt>/proc</tt> FS.
      */
     private static abstract class Unix<S extends Unix.UnixSystem<?>> extends ProcessTreeKiller {
-        public void kill(Process proc) {
-            kill(proc,null);
-        }
-
         protected abstract S createSystem();
 
         public void kill(Process proc, Map<String, String> modelEnvVars) {
             S system = createSystem();
-            UnixProcess p;
-            try {
-                p = system.get((Integer) PID_FIELD.get(proc));
-            } catch (IllegalAccessException e) { // impossible
-                IllegalAccessError x = new IllegalAccessError();
-                x.initCause(e);
-                throw x;
-            }
 
-            if(p==null) {
-                // process already dead?
-                proc.destroy();
-                return;
-            }
+            if(proc!=null) {
+                UnixProcess p;
+                try {
+                    p = system.get((Integer) PID_FIELD.get(proc));
+                } catch (IllegalAccessException e) { // impossible
+                    IllegalAccessError x = new IllegalAccessError();
+                    x.initCause(e);
+                    throw x;
+                }
 
-            if(modelEnvVars ==null)
-                p.killRecursively();
-            else {
-                for (UnixProcess lp : system) {
-                    if(hasMatchingEnvVars(lp.getEnvVars(),modelEnvVars))
-                        lp.kill();
+                if(p==null) {
+                    // process already dead?
+                    // call destroy if only for a kick
+                    proc.destroy();
+                } else {
+                    p.killRecursively();
+                    proc.destroy(); // just for a kick
                 }
             }
 
-            // in case the child enumeration fails for some reasons
-            // (like the child process changing environment variables by itself),
-            // let's make sure that at least 'proc' is destroyed.
-            proc.destroy();
+            if(modelEnvVars!=null) {
+                for (UnixProcess lp : system) {
+                    if(hasMatchingEnvVars(lp.getEnvVars(),modelEnvVars))
+                        lp.killRecursively();
+                }
+            }
         }
 
         /**
