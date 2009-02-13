@@ -28,7 +28,7 @@ THE SOFTWARE.
 
     <st:attribute name="items" use="required">
       Queue items to be displayed. Normally you should specify ${app.queue.items},
-      but for example yuo can specify a sublist after some filtering to narrow down
+      but for example you can specify a sublist after some filtering to narrow down
       the list.
     </st:attribute>
   </st:documentation>
@@ -65,7 +65,7 @@ THE SOFTWARE.
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <j:if test="${item.hasCancelPermission()}">
-                <a href="${rootURL}/${item.task.url}cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
+                <a href="${rootURL}/queue/item/${item.id}/cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
               </j:if>
              </td>
           </tr>
