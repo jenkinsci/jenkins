@@ -33,6 +33,7 @@ import hudson.lifecycle.Lifecycle;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
+import hudson.util.IOException2;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -568,9 +569,13 @@ public class UpdateCenter extends AbstractModelObject {
             OutputStream out = new FileOutputStream(tmp);
 
             LOGGER.info("Downloading "+job.getName());
-            while((len=in.read(buf))>=0) {
-                out.write(buf,0,len);
-                job.status = job.new Installing(total==-1 ? -1 : in.getCount()*100/total);
+            try {
+                while((len=in.read(buf))>=0) {
+                    out.write(buf,0,len);
+                    job.status = job.new Installing(total==-1 ? -1 : in.getCount()*100/total);
+                }
+            } catch (IOException e) {
+                throw new IOException2("Failed to load "+src+" to "+tmp,e);
             }
 
             in.close();
