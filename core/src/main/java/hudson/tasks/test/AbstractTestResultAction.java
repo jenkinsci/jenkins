@@ -124,11 +124,11 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         final int totalCount = getTotalCount();
         final int failCount = getFailCount();
         int score = (totalCount == 0) ? 100 : (int) (100.0 * (1.0 - ((double)failCount) / totalCount));
-        Localizable description;
+        Localizable description, displayName = Messages._AbstractTestResultAction_getDisplayName();
         if (totalCount == 0) {
-        	description = Messages._AbstractTestResultAction_zeroTestDescription(getDisplayName());
+        	description = Messages._AbstractTestResultAction_zeroTestDescription(displayName);
         } else {
-        	description = Messages._AbstractTestResultAction_TestsDescription(getDisplayName(), failCount, totalCount);
+        	description = Messages._AbstractTestResultAction_TestsDescription(displayName, failCount, totalCount);
         }
         return new HealthReport(score, description);
     }

@@ -89,6 +89,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
@@ -860,16 +861,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 score--;
             }
 
-            String description;
+            Localizable description;
             if (failCount == 0) {
-                description = Messages.Job_NoRecentBuildFailed();
+                description = Messages._Job_NoRecentBuildFailed();
             } else if (totalCount == failCount) {
                 // this should catch the case where totalCount == 1
                 // as failCount must be between 0 and totalCount
                 // and we can't get here if failCount == 0
-                description = Messages.Job_AllRecentBuildFailed();
+                description = Messages._Job_AllRecentBuildFailed();
             } else {
-                description = Messages.Job_NOfMFailed(failCount, totalCount);
+                description = Messages._Job_NOfMFailed(failCount, totalCount);
             }
             return new HealthReport(score, Messages._Job_BuildStability(description));
         }
