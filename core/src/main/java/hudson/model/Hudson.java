@@ -336,7 +336,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
     private transient UDPBroadcastThread udpBroadcastThread;
 
     /**
-     * List of registered {@link JobListener}s.
+     * List of registered {@link ItemListener}s.
      */
     private transient final CopyOnWriteList<ItemListener> itemListeners = new CopyOnWriteList<ItemListener>();
 
@@ -698,7 +698,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      * Adds a new {@link JobListener}.
      *
      * @deprecated
-     *      Use {@code getJobListners().add(l)} instead.
+     *      Use {@code getJobListeners().add(l)} instead.
      */
     public void addListener(JobListener l) {
         itemListeners.add(new JobListenerAdapter(l));
@@ -708,7 +708,7 @@ public final class Hudson extends AbstractModelObject implements ItemGroup<TopLe
      * Deletes an existing {@link JobListener}.
      *
      * @deprecated
-     *      Use {@code getJobListners().remove(l)} instead.
+     *      Use {@code getJobListeners().remove(l)} instead.
      */
     public boolean removeListener(JobListener l ) {
         return itemListeners.remove(new JobListenerAdapter(l));
