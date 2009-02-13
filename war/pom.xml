@@ -246,7 +246,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jvnet.hudson.winstone</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-hudson-8</version>
+      <version>0.9.10-hudson-9</version>
       <scope>provided</scope>
     </dependency>
     <!-- offline profiler API when we need it -->
