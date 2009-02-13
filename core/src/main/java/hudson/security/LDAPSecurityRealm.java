@@ -34,15 +34,18 @@ import hudson.util.FormFieldValidator;
 import hudson.util.Scrambler;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.AuthenticationManager;
+import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.userdetails.ldap.LdapUserDetails;
+import org.acegisecurity.userdetails.ldap.LdapUserDetailsImpl;
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch;
 import org.acegisecurity.ldap.LdapUserSearch;
 import org.acegisecurity.ldap.LdapDataAccessException;
 import org.acegisecurity.ldap.InitialDirContextFactory;
 import org.acegisecurity.ldap.LdapTemplate;
+import org.acegisecurity.providers.ldap.LdapAuthoritiesPopulator;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -335,10 +338,22 @@ public class LDAPSecurityRealm extends SecurityRealm {
         return new SecurityComponents(
             findBean(AuthenticationManager.class, appContext),
             new UserDetailsService() {
-                final LdapUserSearch ldapSerach = findBean(LdapUserSearch.class, appContext);
+                final LdapUserSearch ldapSearch = findBean(LdapUserSearch.class, appContext);
+                final LdapAuthoritiesPopulator authoritiesPopulator = findBean(LdapAuthoritiesPopulator.class, appContext);
                 public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
                     try {
-                        return ldapSerach.searchForUser(username);
+                        LdapUserDetails ldapUser = ldapSearch.searchForUser(username);
+                        // LdapUserSearch does not populate granted authorities (group search).
+                        // Add those, as done in LdapAuthenticationProvider.createUserDetails().
+                        if (ldapUser != null) {
+                            LdapUserDetailsImpl.Essence user = new LdapUserDetailsImpl.Essence(ldapUser);
+                            GrantedAuthority[] extraAuthorities = authoritiesPopulator.getGrantedAuthorities(ldapUser);
+                            for (int i = 0; i < extraAuthorities.length; i++) {
+                                user.addAuthority(extraAuthorities[i]);
+                            }
+                            ldapUser = user.createUserDetails();
+                        }
+                        return ldapUser;
                     } catch (LdapDataAccessException e) {
                         LOGGER.log(Level.WARNING, "Failed to search LDAP for username="+username,e);
                         throw new UserMayOrMayNotExistException(e.getMessage(),e);
@@ -421,10 +436,9 @@ public class LDAPSecurityRealm extends SecurityRealm {
                         ok();   // connected
                     } catch (NamingException e) {
                         // trouble-shoot
-//update to allow ldap:// or ldaps:// prefix  (issue #2599)
                         Matcher m = Pattern.compile("(ldaps://)?([^:]+)(?:\\:(\\d+))?").matcher(server.trim());
                         if(!m.matches()) {
-                            error("Syntax of this field is SERVER or SERVER:PORT or ldaps://SERVER[:PORT]");
+                            error("Syntax of server field is SERVER or SERVER:PORT or ldaps://SERVER[:PORT]");
                             return;
                         }
 
