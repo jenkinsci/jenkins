@@ -867,9 +867,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     LOGGER.info(toString()+" main build action completed: "+result);
                 } catch (ThreadDeath t) {
                     throw t;
-                } catch( AbortException e ) {
+                } catch( AbortException e ) {// orderly abortion
                     result = Result.FAILURE;
-                } catch( RunnerAbortedException e ) {
+                } catch( RunnerAbortedException e ) {// orderly abortion.
                     result = Result.FAILURE;
                 } catch( InterruptedException e) {
                     // aborted
@@ -917,14 +917,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 try {
                     save();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Failed to save build record",e);
                 }
             }
 
             try {
                 getParent().logRotate();
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
             }
         } finally {
             onEndBuilding();
