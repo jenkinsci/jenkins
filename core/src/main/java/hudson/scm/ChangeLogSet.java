@@ -79,6 +79,16 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     }
 
     /**
+     * Optional identification of the kind of SCM being used.
+     * @return a short token, such as the SCM's main CLI executable name
+     * @since 1.284
+     */
+    @Exported
+    public String getKind() {
+        return null;
+    }
+
+    /**
      * Constant instance that represents no changes.
      */
     public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(AbstractBuild build) {

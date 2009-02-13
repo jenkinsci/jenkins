@@ -78,6 +78,11 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
         return logs.iterator();
     }
 
+    @Override
+    public String getKind() {
+        return "svn";
+    }
+
     public synchronized Map<String,Long> getRevisionMap() throws IOException {
         if(revisionMap==null)
             revisionMap = SubversionSCM.parseRevisionFile(build);
