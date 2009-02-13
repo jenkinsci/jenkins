@@ -27,6 +27,10 @@ import hudson.model.Hudson;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Displays the build history on the side panel.
  *
@@ -46,9 +50,18 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task,T> {
     }
 
     /**
-     * Returns the queue item if the owner is scheduled for execution in the queue.
+     * Returns the first queue item if the owner is scheduled for execution in the queue.
      */
     public Item getQueuedItem() {
         return Hudson.getInstance().getQueue().getItem(owner);
+    }
+
+    /**
+     * Returns the queue item if the owner is scheduled for execution in the queue, in REVERSE ORDER
+     */
+    public List<Item> getQueuedItems() {
+    	List<Item> list = new ArrayList<Item>(Hudson.getInstance().getQueue().getItems(owner));
+    	Collections.reverse(list);
+    	return list;
     }
 }

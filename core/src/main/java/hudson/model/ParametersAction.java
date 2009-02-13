@@ -24,33 +24,41 @@
 package hudson.model;
 
 import hudson.Util;
-import hudson.tasks.BuildWrapper;
+import hudson.model.Queue.QueueAction;
 import hudson.tasks.BuildStep;
+import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Records the parameter values used for a build.
  *
  * <P>
  * This object is associated with the build record so that we remember what parameters
- * were used for what build.
+ * were used for what build. It is also attached to the queue item to remember parameter
+ * that were specified when scheduling.
  */
 @ExportedBean
-public class ParametersAction implements Action, Iterable<ParameterValue> {
+public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction {
 
     private final List<ParameterValue> parameters;
-    private final AbstractBuild<?, ?> build;
 
-    public ParametersAction(List<ParameterValue> parameters, AbstractBuild<?, ?> build) {
+    public ParametersAction(List<ParameterValue> parameters) {
         this.parameters = parameters;
-        this.build = build;
+    }
+    
+    public ParametersAction(ParameterValue... parameters) {
+    	this(Arrays.asList(parameters));
     }
 
     public void createBuildWrappers(AbstractBuild<?,?> build, Collection<? super BuildWrapper> result) {
@@ -89,17 +97,13 @@ public class ParametersAction implements Action, Iterable<ParameterValue> {
         return new VariableResolver.Union<String>(resolvers);
     }
 
-    public AbstractBuild<?, ?> getBuild() {
-        return build;
-    }
-
     public Iterator<ParameterValue> iterator() {
         return parameters.iterator();
     }
 
     @Exported(visibility=2)
     public List<ParameterValue> getParameters() {
-        return parameters;
+        return Collections.unmodifiableList(parameters);
     }
 
     public String getDisplayName() {
@@ -113,4 +117,22 @@ public class ParametersAction implements Action, Iterable<ParameterValue> {
     public String getUrlName() {
         return "parameters";
     }
+
+    /**
+     * Allow an other build of the same project to be scheduled, if it has other parameters parameters.
+     */
+	public boolean shouldSchedule(List<Action> actions) {
+		List<ParametersAction> others = Util.filter(actions, ParametersAction.class);
+		if (others.isEmpty()) {
+			return parameters.isEmpty();
+		} else {
+			// I don't think we need multiple ParametersActions, but let's be defensive 
+			Set<ParameterValue> parameters = new HashSet<ParameterValue>();
+			for (ParametersAction other: others) {
+				parameters.addAll(other.parameters);
+			}
+		return !parameters.equals(new HashSet<ParameterValue>(this.parameters));
+		}
+	}
+
 }

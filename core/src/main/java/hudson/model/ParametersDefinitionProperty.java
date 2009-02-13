@@ -26,7 +26,6 @@ package hudson.model;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 
@@ -97,8 +96,8 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
             values.add(d.createValue(req, jo));
         }
 
-        Hudson.getInstance().getQueue().add(
-                new ParameterizedProjectTask(owner, values, new Cause.UserCause()), 0);
+    	Hudson.getInstance().getQueue().add(
+    			owner, 0, new ParametersAction(values), new CauseAction(new Cause.UserCause()));
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
@@ -116,7 +115,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         }
 
     	Hudson.getInstance().getQueue().add(
-                new ParameterizedProjectTask(owner, values, new Cause.UserCause()), 0);
+    			owner, 0, new ParametersAction(values), new CauseAction(new Cause.UserCause()));
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
@@ -182,19 +181,6 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         return "parameters";
     }
     
-    public ParameterizedProjectTask getQueued(String key) {
-    	Queue.Item[] items = Hudson.getInstance().getQueue().getItems();
-    	for (Queue.Item item: items) {
-    		if (item.task instanceof ParameterizedProjectTask) {
-    			ParameterizedProjectTask ppt = (ParameterizedProjectTask) item.task;
-				if (ppt.getProject() == owner && ppt.getQueueKey().equals(key)) {
-    				return ppt;
-    			}
-    		}
-    	}
-    	return null;
-    }
-
     static {
         ParameterDefinition.LIST.add(StringParameterDefinition.DESCRIPTOR);
         ParameterDefinition.LIST.add(FileParameterDefinition.DESCRIPTOR);

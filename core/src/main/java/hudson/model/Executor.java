@@ -92,13 +92,14 @@ public class Executor extends Thread implements ModelObject {
                     }
                 }
 
-                Queue.Task task;
+                Queue.Item queueItem;
                 try {
-                    task = queue.pop();
+                	queueItem = queue.pop();
                 } catch (InterruptedException e) {
                     continue;
                 }
 
+                Queue.Task task = queueItem.task;
                 Throwable problems = null;
                 owner.taskAccepted(this, task);
                 try {
@@ -110,6 +111,11 @@ public class Executor extends Thread implements ModelObject {
 
                         startTime = System.currentTimeMillis();
                         executable = task.createExecutable();
+                        if (executable instanceof Actionable) {
+                        	for (Action action: queueItem.getActions()) {
+                        		((Actionable) executable).addAction(action);
+                        	}
+                        }
                         queue.execute(executable, task);
                     } catch (Throwable e) {
                         // for some reason the executor died. this is really

@@ -64,6 +64,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -450,10 +451,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return false;
 
         if (isParameterized())
-            return Hudson.getInstance().getQueue().add(
-                    new ParameterizedProjectTask(this, getDefaultParametersValues(), c), quietPeriod);
+        	return Hudson.getInstance().getQueue().add(
+        			this, quietPeriod, new ParametersAction(getDefaultParametersValues()), new CauseAction(c));
         else
-            return Hudson.getInstance().getQueue().add(new ParameterizedProjectTask(this, c), quietPeriod);
+            return Hudson.getInstance().getQueue().add(this, quietPeriod, new CauseAction(c));
     }
 
     private List<ParameterValue> getDefaultParametersValues() {
@@ -1016,10 +1017,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     // TODO: more unit handling
                     if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
                     if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
-                    Hudson.getInstance().getQueue().add(
-                    		new ParameterizedProjectTask(this, new UserCause()), 
-                    		Integer.parseInt(delay)
-                    );
+                    Hudson.getInstance().getQueue().add(this, Integer.parseInt(delay), 
+                    		new CauseAction(new UserCause()));
                 } catch (NumberFormatException e) {
                     throw new ServletException("Invalid delay parameter value: "+delay);
                 }

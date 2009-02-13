@@ -26,6 +26,7 @@ package hudson.matrix;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
+import hudson.model.CauseAction;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -33,13 +34,11 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.JDK;
 import hudson.model.Label;
-import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Node;
-import hudson.model.ParameterValue;
-import hudson.model.ParameterizedProjectTask;
 import hudson.model.ParametersAction;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
+import hudson.model.Cause.LegacyCodeCause;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
@@ -47,8 +46,8 @@ import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 /**
  * One configuration of {@link MatrixProject}.
@@ -293,8 +292,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
     
 	public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-        return Hudson.getInstance().getQueue().add(
-                new ParameterizedProjectTask(this, parameters.getParameters(), c), getQuietPeriod());
+        return Hudson.getInstance().getQueue().add(this, getQuietPeriod(), parameters, new CauseAction(c));
 	}
 	
 }

@@ -73,4 +73,34 @@ public class FileParameterValue extends ParameterValue {
             }
         };
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((location == null) ? 0 : location.hashCode());
+		return result;
+	}
+
+	/**
+	 * In practice this will always be false, since location should be unique.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		FileParameterValue other = (FileParameterValue) obj;
+		if (location == null) {
+			if (other.location != null)
+				return false;
+		} else if (!location.equals(other.location))
+			return false;
+		return true;
+	}
+    
 }

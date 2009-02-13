@@ -27,23 +27,25 @@ THE SOFTWARE.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <!-- pending build -->
-  <j:set var="pending" value="${it.queuedItem}" />
-  <j:if test="${pending!=null}">
+  <j:set var="queuedItems" value="${it.queuedItems}" />
+  <j:if test="${!pending.isEmpty()}">
+	  <j:forEach var="item" items="${queuedItems}" indexVar="i">
     <j:set var="id" value="${h.generateId()}"/>
     <tr class="build-row transitive" id="${id}">
       <td nowrap="nowrap">
         <img width="16" height="16" src="${imagesURL}/16x16/grey.gif" alt="${%pending}" /><st:nbsp/>
-        #${it.owner.nextBuildNumber}
+        #${it.owner.nextBuildNumber+queuedItems.size()-i-1}
       </td>
-      <td nowrap="nowrap" tooltip="${pending.why}">
+      <td nowrap="nowrap" tooltip="${item.task.why}">
         <div style="float:right">
-          <j:if test="${pending.hasCancelPermission()}">
-            <a href="${rootURL}/${pending.task.url}cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="${%cancel this build}" /></a>
+          <j:if test="${item.hasCancelPermission()}">
+            <a href="${rootURL}/queue/item/${item.id}/cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
           </j:if>
         </div>
         (${%pending})
       </td>
     </tr>
+	  </j:forEach>
   </j:if>
 
   <st:include page="/hudson/widgets/HistoryWidget/entries.jelly" />
