@@ -123,7 +123,7 @@ public final class Pipe implements Serializable {
         if(in!=null && out==null) {
             // remote will write to local
             PipedOutputStream pos = new PipedOutputStream((PipedInputStream)in);
-            int oid = Channel.current().export(pos,false);
+            int oid = Channel.current().export(pos,false);  // this export is unexported in ProxyOutputStream.finalize() 
 
             oos.writeBoolean(true); // marker
             oos.writeInt(oid);
