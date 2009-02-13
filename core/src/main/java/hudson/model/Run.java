@@ -49,6 +49,7 @@ import hudson.tasks.Mailer;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
 import hudson.util.XStream2;
+import hudson.util.ProcessTreeKiller;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -867,7 +868,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     LOGGER.info(toString()+" main build action completed: "+result);
                 } catch (ThreadDeath t) {
                     throw t;
-                } catch( AbortException e ) {// orderly abortion
+                } catch( AbortException e ) {// orderly abortion.
                     result = Result.FAILURE;
                 } catch( RunnerAbortedException e ) {// orderly abortion.
                     result = Result.FAILURE;
@@ -1211,11 +1212,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      */
     public Map<String,String> getEnvVars() {
-        EnvVars env = new EnvVars();
-        env.put("BUILD_NUMBER",String.valueOf(number));
-        env.put("BUILD_ID",getId());
-        env.put("BUILD_TAG","hudson-"+getParent().getName()+"-"+number);
-        env.put("JOB_NAME",getParent().getFullName());
+        EnvVars env = getCharacteristicEnvVars();
         String rootUrl = Hudson.getInstance().getRootUrl();
         if(rootUrl!=null)
             env.put("HUDSON_URL", rootUrl);
@@ -1226,6 +1223,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             env.put("EXECUTOR_NUMBER",String.valueOf(e.getNumber()));
         }
 
+        return env;
+    }
+
+    /**
+     * Builds up the environment variable map that's sufficient to identify a process
+     * as ours. This is used to kill run-away processes via {@link ProcessTreeKiller}.
+     */
+    protected final EnvVars getCharacteristicEnvVars() {
+        EnvVars env = new EnvVars();
+        env.put("BUILD_NUMBER",String.valueOf(number));
+        env.put("BUILD_ID",getId());
+        env.put("BUILD_TAG","hudson-"+getParent().getName()+"-"+number);
+        env.put("JOB_NAME",getParent().getFullName());
         return env;
     }
 

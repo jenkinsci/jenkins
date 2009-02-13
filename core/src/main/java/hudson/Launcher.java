@@ -264,6 +264,11 @@ public abstract class Launcher {
     }
 
     /**
+     * Calls {@link ProcessTreeKiller#kill(Map)} to kill processes.
+     */
+    public abstract void kill(Map<String,String> modelEnvVars) throws IOException, InterruptedException;
+
+    /**
      * Prints out the command line to the listener so that users know what we are doing.
      */
     protected final void printCommandLine(String[] cmd, FilePath workDir) {
@@ -351,6 +356,11 @@ public abstract class Launcher {
             return launchChannel(out, pb);
         }
 
+        @Override
+        public void kill(Map<String, String> modelEnvVars) {
+            ProcessTreeKiller.get().kill(modelEnvVars);
+        }
+
         /**
          * @param out
          *      Where the stderr from the launched process will be sent.
@@ -433,6 +443,26 @@ public abstract class Launcher {
         @Override
         public boolean isUnix() {
             return isUnix;
+        }
+
+        @Override
+        public void kill(final Map<String,String> modelEnvVars) throws IOException, InterruptedException {
+            getChannel().call(new KillTask(modelEnvVars));
+        }
+
+        private static final class KillTask implements Callable<Void,RuntimeException> {
+            private final Map<String, String> modelEnvVars;
+
+            public KillTask(Map<String, String> modelEnvVars) {
+                this.modelEnvVars = modelEnvVars;
+            }
+
+            public Void call() throws RuntimeException {
+                ProcessTreeKiller.get().kill(modelEnvVars);
+                return null;
+            }
+
+            private static final long serialVersionUID = 1L;
         }
     }
 
