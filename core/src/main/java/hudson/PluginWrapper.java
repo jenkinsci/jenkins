@@ -224,6 +224,24 @@ public final class PluginWrapper {
         return plugin;
     }
 
+    /**
+     * Gets the URL that shows more information about this plugin.
+     * @return
+     *      null if this information is unavailable.
+     * @since 1.283
+     */
+    public String getUrl() {
+        // first look for the manifest entry. This is new in maven-hpi-plugin 1.30
+        String url = manifest.getMainAttributes().getValue("Url");
+        if(url!=null)      return url;
+
+        // fallback to update center metadata
+        UpdateCenter.Plugin ui = getInfo();
+        if(ui!=null)    return ui.wiki;
+
+        return null;
+    }
+
     @Override
     public String toString() {
         return "Plugin:" + getShortName();

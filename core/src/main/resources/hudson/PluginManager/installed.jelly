@@ -52,25 +52,9 @@ THE SOFTWARE.
                 </td>
                 <td class="pane">
                   <h4>
-                    <j:choose>
-                      <j:when test="${p.updateInfo!=null}">
-                        <a href="${p.updateInfo.wiki}">
-                          ${p.updateInfo.title}
-                        </a>
-                      </j:when>
-                      <j:otherwise>
-	                      <j:choose>
-		                      <j:when test="${p.info!=null}">
-			                      <div>
-			                        <a href="${p.info.wiki}"><st:out value="${p.longName}"/></a>
-			                      </div>
-		                      </j:when>
-		                      <j:otherwise>
-		                        ${p.longName}
-		                      </j:otherwise>
-	                      </j:choose>
-	                  </j:otherwise>    
-                    </j:choose>
+                    <a href="${p.url}">
+                      ${h.ifThenElse(p.updateInfo!=null, p.updateInfo.title, p.longName)}
+                    </a>
                   </h4>
                   <div stlyle="padding-left: 1em">
                     <j:set var="indexPage" value="${p.indexPage.toString()}" />
