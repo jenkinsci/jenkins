@@ -52,8 +52,8 @@ import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.nio.charset.Charset;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Future;
+import java.security.Security;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -297,7 +297,7 @@ public class SlaveComputer extends Computer {
             copyJar(log, dst, PluginManagerInterceptor.class, "maven-interceptor");
         }
 
-        channel.call(new LogInstaller());
+        channel.call(new SlaveInitializer());
         channel.call(new WindowsSlaveInstaller(remoteFs));
 
         // update the data structure atomically to prevent others from seeing a channel that's not properly initialized yet
@@ -491,12 +491,20 @@ public class SlaveComputer extends Computer {
      */
     private static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
 
-    private static class LogInstaller implements Callable<Void,RuntimeException> {
+    private static class SlaveInitializer implements Callable<Void,RuntimeException> {
         public Void call() {
             // avoid double installation of the handler
             Logger logger = Logger.getLogger("hudson");
             logger.removeHandler(SLAVE_LOG_HANDLER);
             logger.addHandler(SLAVE_LOG_HANDLER);
+
+            // remove Sun PKCS11 provider if present. See http://hudson.gotdns.com/wiki/display/HUDSON/Solaris+Issue+6276483
+            try {
+                Security.removeProvider("SunPKCS11-Solaris");
+            } catch (SecurityException e) {
+                // ignore this error.
+            }
+
             return null;
         }
         private static final long serialVersionUID = 1L;

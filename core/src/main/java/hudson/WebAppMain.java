@@ -61,6 +61,7 @@ import java.net.URLClassLoader;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.security.Security;
 
 /**
  * Entry point when Hudson is used as a webapp.
@@ -99,6 +100,12 @@ public final class WebAppMain implements ServletContextListener {
             } catch(SecurityException e) {
                 context.setAttribute(APP,new InsufficientPermissionDetected(e));
                 return;
+            }
+
+            try {// remove Sun PKCS11 provider if present. See http://hudson.gotdns.com/wiki/display/HUDSON/Solaris+Issue+6276483
+                Security.removeProvider("SunPKCS11-Solaris");
+            } catch (SecurityException e) {
+                // ignore this error.
             }
 
             installLogger();
