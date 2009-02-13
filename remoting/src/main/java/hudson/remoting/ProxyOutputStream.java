@@ -129,6 +129,17 @@ final class ProxyOutputStream extends OutputStream {
         oid = -1;
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        // if we haven't done so, release the exported object on the remote side.
+        if(channel!=null) {
+            channel.send(new Unexport(oid));
+            channel = null;
+            oid = -1;
+        }
+    }
+
     /**
      * {@link Command} for sending bytes.
      */
@@ -184,19 +195,36 @@ final class ProxyOutputStream extends OutputStream {
     }
 
     /**
-     * {@link Command} for sending EOF.
+     * {@link Command} for releasing an export table.
      */
-    private static final class EOF extends Command {
-        private final int oid;
+    private static class Unexport extends Command {
+        protected final int oid;
 
-        public EOF(int oid) {
+        public Unexport(int oid) {
             this.oid = oid;
         }
 
+        protected void execute(Channel channel) {
+            channel.unexport(oid);
+        }
+
+        public String toString() {
+            return "Pipe.Unexport("+oid+")";
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * {@link Command} for sending EOF.
+     */
+    private static final class EOF extends Unexport {
+        public EOF(int oid) {
+            super(oid);
+        }
 
         protected void execute(Channel channel) {
             OutputStream os = (OutputStream) channel.getExportedObject(oid);
-            channel.unexport(oid);
             try {
                 os.close();
             } catch (IOException e) {
