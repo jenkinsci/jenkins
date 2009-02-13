@@ -94,6 +94,11 @@ public abstract class ProcessTreeKiller {
      *
      * <p>
      * The implementation is obviously OS-dependent.
+     *
+     * @param proc
+     *      Process to be killed recursively. Can be null.
+     * @param modelEnvVars
+     *      If non-null, search-and-destroy will be performed.
      */
     public abstract void kill(Process proc, Map<String, String> modelEnvVars);
 
