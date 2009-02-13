@@ -23,6 +23,7 @@
  */
 package hudson.matrix;
 
+import hudson.model.Cause;
 import hudson.model.Result;
 import hudson.tasks.Ant;
 import hudson.tasks.Maven;
@@ -44,9 +45,9 @@ public class MatrixProjectTest extends HudsonTestCase {
         p.getBuildersList().add(new Ant("-Dprop=${db} test",null,null,null,null));
 
         // we need a dummy build script that echos back our property
-        p.setScm(new SingleFileSCM("build.xml","<project><target name='test'><echo>assertion ${prop}=${db}</echo></target></project>"));
+        p.setScm(new SingleFileSCM("build.xml","<project default='test'><target name='test'><echo>assertion ${prop}=${db}</echo></target></project>"));
 
-        MatrixBuild build = p.scheduleBuild2(0).get();
+        MatrixBuild build = p.scheduleBuild2(0, new Cause.UserCause()).get();
         List<MatrixRun> runs = build.getRuns();
         assertEquals(4,runs.size());
         for (MatrixRun run : runs) {

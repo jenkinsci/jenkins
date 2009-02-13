@@ -428,9 +428,8 @@ public abstract class HudsonTestCase extends TestCase {
         if(status==r.getResult())
             return r;
 
-        // dump the build output
-        System.out.println(r.getLog());
-        assertEquals(status,r.getResult());
+        // dump the build output in failure message
+        assertEquals("unexpected build status; build log was:\n------\n" + r.getLog() + "\n------\n", status,r.getResult());
         return r;
     }
 
