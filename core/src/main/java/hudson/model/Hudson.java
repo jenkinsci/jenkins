@@ -43,7 +43,7 @@ import hudson.UDPBroadcastThread;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.WindowsInstallerLink;
 import hudson.lifecycle.Lifecycle;
-import hudson.lifecycle.ZFSInstaller;
+import hudson.os.solaris.ZFSInstaller;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;

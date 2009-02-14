@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.lifecycle;
+package hudson.os.solaris;
 
 import com.sun.akuma.Daemon;
 import com.sun.akuma.JavaVMArguments;
