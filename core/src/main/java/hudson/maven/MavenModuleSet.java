@@ -415,7 +415,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return super.assignBuildNumber();
     }
 
-    public void logRotate() throws IOException {
+    public void logRotate() throws IOException, InterruptedException {
         super.logRotate();
         // perform the log rotation of modules
         for (MavenModule m : modules.values())
