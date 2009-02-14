@@ -230,7 +230,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         rebuildConfigurations();
     }
 
-    public void logRotate() throws IOException {
+    public void logRotate() throws IOException, InterruptedException {
         super.logRotate();
         // perform the log rotation of inactive configurations to make sure
         // their logs get eventually discarded 
