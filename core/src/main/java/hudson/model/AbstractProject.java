@@ -580,7 +580,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected abstract Class<R> getBuildClass();
 
     // keep track of the previous time we started a build
-    private long lastBuildStartTime;
+    private transient long lastBuildStartTime;
     
     /**
      * Creates a new build of this project for immediate execution.
