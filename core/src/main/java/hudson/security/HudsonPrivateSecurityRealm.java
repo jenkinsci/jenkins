@@ -33,6 +33,7 @@ import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.tasks.Mailer;
 import hudson.util.Protector;
+import hudson.util.Scrambler;
 import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -304,7 +305,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             if (password != null) {
                 // Data loaded from old style config.. encode password now
                 // but don't force update now to allow room for downgrading
-                return PASSWORD_ENCODER.encodePassword(password,null);
+                return PASSWORD_ENCODER.encodePassword(Scrambler.descramble(password),null);
             }
             return passwordHash;
         }
