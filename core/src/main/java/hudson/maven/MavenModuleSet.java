@@ -613,7 +613,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     /**
      * Delete all disabled modules.
      */
-    public void doDoDeleteAllDisabledModules(StaplerRequest req, StaplerResponse rsp) throws IOException, InterruptedException {
+    public void doDoDeleteAllDisabledModules(StaplerResponse rsp) throws IOException, InterruptedException {
         checkPermission(DELETE);
         for( MavenModule m : getDisabledModules(true))
             m.delete();
