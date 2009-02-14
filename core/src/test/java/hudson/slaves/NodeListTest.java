@@ -104,6 +104,10 @@ public class NodeListTest extends TestCase {
         public Cloud getCloud() {
             throw new UnsupportedOperationException();
         }
+
+        public Node asNode() {
+            return this;
+        }
     }
 
     public void testSerialization() throws Exception {
