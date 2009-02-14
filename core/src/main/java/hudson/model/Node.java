@@ -26,7 +26,10 @@ package hudson.model;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.ExtensionPoint;
+import hudson.remoting.VirtualChannel;
 import hudson.security.AccessControlled;
+import hudson.security.Permission;
+import hudson.security.ACL;
 import hudson.slaves.NodeDescriptor;
 import hudson.node_monitors.NodeMonitor;
 import hudson.util.ClockDifference;
@@ -46,14 +49,23 @@ import java.util.Set;
  * @see NodeMonitor
  * @see NodeDescriptor
  */
-public interface Node extends Describable<Node>, ExtensionPoint, AccessControlled {
+public abstract class Node extends AbstractModelObject implements Describable<Node>, ExtensionPoint, AccessControlled {
+
+    public String getDisplayName() {
+        return getNodeName(); // default implementation
+    }
+
+    public String getSearchUrl() {
+        return "computer/"+getNodeName();
+    }
+
     /**
      * Name of this node.
      *
      * @return
      *      "" if this is master
      */
-    String getNodeName();
+    public abstract String getNodeName();
 
     /**
      * When the user clones a {@link Node}, Hudson uses this method to change the node name right after
@@ -65,17 +77,17 @@ public interface Node extends Describable<Node>, ExtensionPoint, AccessControlle
      *
      * @deprecated to indicate that this method isn't really meant to be called by random code.
      */
-    void setNodeName(String name);
+    public abstract void setNodeName(String name);
 
     /**
      * Human-readable description of this node.
      */
-    String getNodeDescription();
+    public abstract String getNodeDescription();
 
     /**
      * Returns a {@link Launcher} for executing programs on this node.
      */
-    Launcher createLauncher(TaskListener listener);
+    public abstract Launcher createLauncher(TaskListener listener);
 
     /**
      * Returns the number of {@link Executor}s.
@@ -83,14 +95,14 @@ public interface Node extends Describable<Node>, ExtensionPoint, AccessControlle
      * This may be different from <code>getExecutors().size()</code>
      * because it takes time to adjust the number of executors.
      */
-    int getNumExecutors();
+    public abstract int getNumExecutors();
 
     /**
      * Returns {@link Mode#EXCLUSIVE} if this node is only available
      * for those jobs that exclusively specifies this node
      * as the assigned node.
      */
-    Mode getMode();
+    public abstract Mode getMode();
 
     /**
      * Gets the corresponding {@link Computer} object.
@@ -99,30 +111,34 @@ public interface Node extends Describable<Node>, ExtensionPoint, AccessControlle
      *      this method can return null if there's no {@link Computer} object for this node,
      *      such as when this node has no executors at all.
      */
-    Computer toComputer();
+    public final Computer toComputer() {
+        return Hudson.getInstance().getComputer(this);
+    }
 
     /**
      * Creates a new {@link Computer} object that acts as the UI peer of this {@link Node}.
      * Nobody but {@link Hudson#updateComputerList()} should call this method.
      */
-    Computer createComputer();
+    protected abstract Computer createComputer();
 
     /**
      * Returns the possibly empty set of labels that are assigned to this node,
      * including the automatic {@link #getSelfLabel() self label}.
      */
-    Set<Label> getAssignedLabels();
+    public abstract Set<Label> getAssignedLabels();
 
     /**
      * Returns the possibly empty set of labels that it has been determined as supported by this node.
      * @see hudson.tasks.LabelFinder
      */
-    Set<Label> getDynamicLabels();
+    public abstract Set<Label> getDynamicLabels();
 
     /**
      * Gets the special label that represents this node itself.
      */
-    Label getSelfLabel();
+    public Label getSelfLabel() {
+        return Hudson.getInstance().getLabel(getNodeName());
+    }
 
     /**
      * Returns a "workspace" directory for the given {@link TopLevelItem}.
@@ -134,7 +150,7 @@ public interface Node extends Describable<Node>, ExtensionPoint, AccessControlle
      * @return
      *      null if this node is not connected hence the path is not available
      */
-    FilePath getWorkspaceFor(TopLevelItem item);
+    public abstract FilePath getWorkspaceFor(TopLevelItem item);
 
     /**
      * Gets the root directory of this node.
@@ -147,14 +163,32 @@ public interface Node extends Describable<Node>, ExtensionPoint, AccessControlle
      *      null if the node is offline and hence the {@link FilePath}
      *      object is not available.
      */
-    FilePath getRootPath();
+    public abstract FilePath getRootPath();
 
     /**
      * Gets the {@link FilePath} on this node.
      */
-    FilePath createPath(String absolutePath);
+    public FilePath createPath(String absolutePath) {
+        Computer computer = toComputer();
+        if (computer==null) return null; // offline
+        VirtualChannel ch = computer.getChannel();
+        if(ch==null)    return null;    // offline
+        return new FilePath(ch,absolutePath);
+    }
 
-    NodeDescriptor getDescriptor();
+    public ACL getACL() {
+        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+    }
+    
+    public final void checkPermission(Permission permission) {
+        getACL().checkPermission(permission);
+    }
+
+    public final boolean hasPermission(Permission permission) {
+        return getACL().hasPermission(permission);
+    }
+
+    public abstract NodeDescriptor getDescriptor();
 
     /**
      * Estimates the clock difference with this slave.
@@ -164,7 +198,7 @@ public interface Node extends Describable<Node>, ExtensionPoint, AccessControlle
      * @throws InterruptedException
      *      if the operation is aborted.
      */
-    ClockDifference getClockDifference() throws IOException, InterruptedException;
+    public abstract ClockDifference getClockDifference() throws IOException, InterruptedException;
 
     /**
      * Constants that control how Hudson allocates jobs to slaves.

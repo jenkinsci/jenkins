@@ -27,8 +27,6 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
-import hudson.security.ACL;
-import hudson.security.Permission;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.CommandLauncher;
@@ -68,7 +66,7 @@ import java.util.*;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class Slave implements Node, Serializable {
+public abstract class Slave extends Node implements Serializable {
     /**
      * Name of this slave node.
      */
@@ -272,10 +270,6 @@ public abstract class Slave implements Node, Serializable {
         }
     }
 
-    public Label getSelfLabel() {
-        return Hudson.getInstance().getLabel(name);
-    }
-
     public ClockDifference getClockDifference() throws IOException, InterruptedException {
         VirtualChannel channel = getComputer().getChannel();
         if(channel==null)
@@ -286,18 +280,6 @@ public abstract class Slave implements Node, Serializable {
         long endTime = System.currentTimeMillis();
 
         return new ClockDifference((startTime+endTime)/2 - slaveTime);
-    }
-
-    public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
-    }
-
-    public final void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public final boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
     }
 
     public Computer createComputer() {
@@ -312,14 +294,6 @@ public abstract class Slave implements Node, Serializable {
 
     public FilePath getRootPath() {
         return createPath(remoteFS);
-    }
-
-    public FilePath createPath(String absolutePath) {
-        SlaveComputer computer = getComputer();
-        if (computer==null) return null; // offline
-        VirtualChannel ch = computer.getChannel();
-        if(ch==null)    return null;    // offline
-        return new FilePath(ch,absolutePath);
     }
 
     /**
@@ -385,10 +359,6 @@ public abstract class Slave implements Node, Serializable {
      */
     public SlaveComputer getComputer() {
         return (SlaveComputer)Hudson.getInstance().getComputer(this);
-    }
-
-    public Computer toComputer() {
-        return getComputer();
     }
 
     public boolean equals(Object o) {

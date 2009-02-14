@@ -30,12 +30,12 @@ import hudson.model.Node;
  *
  * @author Kohsuke Kawaguchi
  */
-public interface EphemeralNode extends Node {
+public abstract class EphemeralNode extends Node {
     /**
      * Gets the {@link Cloud} that created this {@link EphemeralNode}.
      *
      * @return
      *      never null.
      */
-    public Cloud getCloud();
+    public abstract Cloud getCloud();
 }
