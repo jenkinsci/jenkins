@@ -145,7 +145,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      *      Workspace to be discarded. This workspace is on the node
      *      this {@link FileSystemProvisioner} is provisioned for.
      */
-    public abstract void discardWorkspace(AbstractProject<?,?> project, FilePath ws) throws IOException, InterruptedException;
+    public abstract void discardWorkspace(AbstractProject<?, ?> project, FilePath ws) throws IOException, InterruptedException;
 
 //    public abstract void moveWorkspace(AbstractProject<?,?> project, File oldWorkspace, File newWorkspace) throws IOException;
 
@@ -192,7 +192,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
         public void prepareWorkspace(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
         }
 
-        public void discardWorkspace(AbstractProject<?,?> project, FilePath ws) throws IOException, InterruptedException {
+        public void discardWorkspace(AbstractProject<?, ?> project, FilePath ws) throws IOException, InterruptedException {
         }
 
         /**

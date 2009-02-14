@@ -64,7 +64,7 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
         });
     }
 
-    public void prepareWorkspace(AbstractBuild<?,?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
+    public void prepareWorkspace(AbstractBuild<?,?> build, FilePath ws, final TaskListener listener) throws IOException, InterruptedException {
         final String name = build.getProject().getFullName();
         
         ws.act(new FileCallable<Void>() {
@@ -73,7 +73,9 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
                 if(fs!=null)    return null;    // already on ZFS
 
                 // nope. create a file system
-                fs = libzfs.create(rootDataset+'/'+name, ZFSFileSystem.class);
+                String fullName = rootDataset + '/' + name;
+                listener.getLogger().println("Creating a ZFS file system "+fullName+" at "+f);
+                fs = libzfs.create(fullName, ZFSFileSystem.class);
                 fs.setMountPoint(f);
                 fs.mount();
                 return null;
@@ -81,7 +83,7 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
         });
     }
 
-    public void discardWorkspace(AbstractProject<?,?> project, FilePath ws) throws IOException, InterruptedException {
+    public void discardWorkspace(AbstractProject<?, ?> project, FilePath ws) throws IOException, InterruptedException {
         ws.act(new FileCallable<Void>() {
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 ZFSFileSystem fs = libzfs.getFileSystemByMountPoint(f);
