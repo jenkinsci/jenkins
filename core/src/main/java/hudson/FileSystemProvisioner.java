@@ -30,6 +30,7 @@ import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Job;
 import hudson.model.TaskListener;
+import hudson.model.Node;
 import hudson.model.listeners.RunListener;
 import hudson.util.DescriptorList;
 import hudson.scm.SCM;
@@ -47,7 +48,7 @@ import java.io.OutputStream;
  *
  *
  * <p>
- * STILL A WORK IN PROGRESS. SUBJECT TO CHANGE!
+ * STILL A WORK IN PROGRESS. SUBJECT TO CHANGE! DO NOT EXTEND.
  *
  * TODO: is this per {@link Computer}? Per {@link Job}?
  *   -> probably per slave.
@@ -82,14 +83,18 @@ import java.io.OutputStream;
  * - when a slave connects, we auto-detect the file system provisioner.
  *   (for example, ZFS FSP would check the slave root user prop
  *   and/or attempt to "pfexec zfs create" and take over.)
- *     -> hmm, is it better to do this manually?
  *
  * - the user may configure jobs for snapshot collection, along with
  *   the retention policy.
  *
+ * - keep workspace snapshots that correspond to the permalinks
+ *   In ZFS, use a user property to remember the build and the job.
+ *
  * Can't the 2nd step happen automatically, when someone else depends on
  * the workspace snapshot of the upstream? Yes, by using {@link RunListener}.
  * So this becomes like a special SCM type.
+ *
+ *
  *
  * <h2>Design take 2</h2>
  * <p>
@@ -161,6 +166,15 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
     public abstract WorkspaceSnapshot snapshot(AbstractBuild<?,?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException;
 
     public abstract FileSystemProvisionerDescriptor getDescriptor();
+
+    /**
+     * TODO: eventually move this to {@link Node} since it needs to be configurable
+     * per node, but as of now kept here to avoid interfering with the production code.
+     */
+    public static FileSystemProvisioner get(Node node) {
+        return DEFAULT;
+    }
+
 
     /**
      * A list of available file system provider types.
