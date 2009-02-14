@@ -198,12 +198,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         updateTransientActions();
     }
 
-    protected void performDelete() throws IOException {
+    protected void performDelete() throws IOException, InterruptedException {
         // prevent a new build while a delete operation is in progress
         makeDisabled(true);
         FilePath ws = getWorkspace();
         if(ws!=null)
             getScm().processWorkspaceBeforeDeletion(this, ws,getLastBuiltOn());
+
+        getLastBuiltOn().getFileSystemProvisioner().discardWorkspace(this);
+
         super.performDelete();
     }
 

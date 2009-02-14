@@ -45,7 +45,7 @@ final class LinkedLogRotator extends LogRotator {
     }
 
     @Override
-    public void perform(Job _job) throws IOException {
+    public void perform(Job _job) throws IOException, InterruptedException {
         // copy it to the array because we'll be deleting builds as we go.
         MatrixConfiguration job = (MatrixConfiguration) _job;
 

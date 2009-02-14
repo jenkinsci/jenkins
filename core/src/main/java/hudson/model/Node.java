@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.ExtensionPoint;
+import hudson.FileSystemProvisioner;
 import hudson.remoting.VirtualChannel;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
@@ -174,6 +175,11 @@ public abstract class Node extends AbstractModelObject implements Describable<No
         VirtualChannel ch = computer.getChannel();
         if(ch==null)    return null;    // offline
         return new FilePath(ch,absolutePath);
+    }
+
+    public FileSystemProvisioner getFileSystemProvisioner() {
+        // TODO: make this configurable or auto-detectable or something else
+        return FileSystemProvisioner.DEFAULT;
     }
 
     public ACL getACL() {

@@ -255,7 +255,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Deletes this item.
      */
-    public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         checkPermission(DELETE);
         if(!"POST".equals(req.getMethod())) {
             rsp.setStatus(SC_BAD_REQUEST);
@@ -267,13 +267,18 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        doDoDelete(req,rsp);
+        try {
+            doDoDelete(req,rsp);
+        } catch (InterruptedException e) {
+            // TODO: allow this in Stapler
+            throw new ServletException(e);
+        }
     }
 
     /**
      * Deletes this item.
      */
-    public synchronized void delete() throws IOException {
+    public synchronized void delete() throws IOException, InterruptedException {
         performDelete();
 
         if(this instanceof TopLevelItem)
@@ -285,7 +290,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Does the real job of deleting the item.
      */
-    protected void performDelete() throws IOException {
+    protected void performDelete() throws IOException, InterruptedException {
         Util.deleteRecursive(getRootDir());
     }
 

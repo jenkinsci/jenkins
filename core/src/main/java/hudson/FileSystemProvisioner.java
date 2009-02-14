@@ -30,7 +30,6 @@ import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Job;
 import hudson.model.TaskListener;
-import hudson.model.Node;
 import hudson.model.listeners.RunListener;
 import hudson.util.DescriptorList;
 import hudson.scm.SCM;
@@ -140,7 +139,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      * When a project is deleted, this method is called to undo the effect of
      * {@link #prepareWorkspace(AbstractBuild, FilePath, TaskListener)}.
      */
-    public abstract void discardWorkspace(AbstractProject<?,?> project, TaskListener listener) throws IOException, InterruptedException;
+    public abstract void discardWorkspace(AbstractProject<?,?> project) throws IOException, InterruptedException;
 
 //    public abstract void moveWorkspace(AbstractProject<?,?> project, File oldWorkspace, File newWorkspace) throws IOException;
 
@@ -168,15 +167,6 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
     public abstract FileSystemProvisionerDescriptor getDescriptor();
 
     /**
-     * TODO: eventually move this to {@link Node} since it needs to be configurable
-     * per node, but as of now kept here to avoid interfering with the production code.
-     */
-    public static FileSystemProvisioner get(Node node) {
-        return DEFAULT;
-    }
-
-
-    /**
      * A list of available file system provider types.
      */
     public static final DescriptorList<FileSystemProvisioner> LIST = new DescriptorList<FileSystemProvisioner>();
@@ -194,11 +184,9 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
         private Default() {}
 
         public void prepareWorkspace(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
-            ws.mkdirs();
         }
 
-        public void discardWorkspace(AbstractProject<?, ?> project, TaskListener listener) throws IOException, InterruptedException {
-            project.getWorkspace().deleteRecursive();
+        public void discardWorkspace(AbstractProject<?,?> project) throws IOException, InterruptedException {
         }
 
         /**

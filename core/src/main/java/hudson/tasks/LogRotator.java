@@ -75,7 +75,7 @@ public class LogRotator implements Describable<LogRotator> {
         this.numToKeep = numToKeep;
     }
 
-    public void perform(Job<?,?> job) throws IOException {
+    public void perform(Job<?,?> job) throws IOException, InterruptedException {
         // keep the last successful build regardless of the status
         Run lsb = job.getLastSuccessfulBuild();
 

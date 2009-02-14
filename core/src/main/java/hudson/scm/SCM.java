@@ -167,7 +167,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * 
      * @since 1.246
      */
-    public boolean processWorkspaceBeforeDeletion(AbstractProject<?,?> project, FilePath workspace, Node node) {
+    public boolean processWorkspaceBeforeDeletion(AbstractProject<?,?> project, FilePath workspace, Node node) throws IOException, InterruptedException {
         return true;
     }
 

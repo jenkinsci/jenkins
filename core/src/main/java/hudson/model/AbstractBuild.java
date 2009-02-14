@@ -259,6 +259,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if(node instanceof Slave)
                 listener.getLogger().println(Messages.AbstractBuild_BuildingRemotely(node.getNodeName()));
 
+            node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,project.getWorkspace(),listener);
+
             if(checkout(listener))
                 return Result.FAILURE;
 

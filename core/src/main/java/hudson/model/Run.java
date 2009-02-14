@@ -68,7 +68,6 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
-import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -746,7 +745,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return builder;
     }
 
-    public Api getApi(final StaplerRequest req) {
+    public Api getApi() {
         return new Api(this);
     }
 
@@ -925,6 +924,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             try {
                 getParent().logRotate();
             } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
+            } catch (InterruptedException e) {
                 LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
             }
         } finally {

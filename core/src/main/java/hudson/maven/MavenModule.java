@@ -421,7 +421,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         Hudson.getInstance().rebuildDependencyGraph();
     }
 
-    protected void performDelete() throws IOException {
+    protected void performDelete() throws IOException, InterruptedException {
         super.performDelete();
         getParent().onModuleDeleted(this);
     }

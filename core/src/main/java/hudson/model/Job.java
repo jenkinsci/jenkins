@@ -173,7 +173,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         this.nextBuildNumber = 1; // reset the next build number
     }
 
-    protected void performDelete() throws IOException {
+    protected void performDelete() throws IOException, InterruptedException {
         // if a build is in progress. Cancel it.
         RunT lb = getLastBuild();
         if (lb != null) {
@@ -278,7 +278,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Perform log rotation.
      */
-    public void logRotate() throws IOException {
+    public void logRotate() throws IOException, InterruptedException {
         LogRotator lr = getLogRotator();
         if (lr != null)
             lr.perform(this);
