@@ -124,12 +124,12 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
 
     /**
-     * Allow an other build of the same project to be scheduled, if it has other parameters parameters.
+     * Allow an other build of the same project to be scheduled, if it has other parameters.
      */
 	public boolean shouldSchedule(List<Action> actions) {
 		List<ParametersAction> others = Util.filter(actions, ParametersAction.class);
 		if (others.isEmpty()) {
-			return parameters.isEmpty();
+			return !parameters.isEmpty();
 		} else {
 			// I don't think we need multiple ParametersActions, but let's be defensive 
 			Set<ParameterValue> parameters = new HashSet<ParameterValue>();

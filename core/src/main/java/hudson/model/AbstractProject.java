@@ -579,10 +579,23 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     protected abstract Class<R> getBuildClass();
 
+    // keep track of the previous time we started a build
+    private long lastBuildStartTime;
+    
     /**
      * Creates a new build of this project for immediate execution.
      */
-    protected R newBuild() throws IOException {
+    protected synchronized R newBuild() throws IOException {
+    	// make sure we don't start two builds in the same second
+    	// so the build directories will be different too
+    	long timeSinceLast = System.currentTimeMillis() - lastBuildStartTime;
+    	if (timeSinceLast < 1000) {
+    		try {
+				Thread.sleep(1000 - timeSinceLast);
+			} catch (InterruptedException e) {
+			}
+    	}
+    	lastBuildStartTime = System.currentTimeMillis();
         try {
             R lastBuild = getBuildClass().getConstructor(getClass()).newInstance(this);
             builds.put(lastBuild);
