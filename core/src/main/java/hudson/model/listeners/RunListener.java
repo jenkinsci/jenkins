@@ -77,8 +77,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      The started build.
      * @param listener
      *      The listener for this build. This can be used to produce log messages, for example,
-     *      which becomes a part of the "console output" of this build. But when this method runs,
-     *      the build is considered completed, so its status cannot be changed anymore.
+     *      which becomes a part of the "console output" of this build.
      */
     public void onStarted(R r, TaskListener listener) {}
 
