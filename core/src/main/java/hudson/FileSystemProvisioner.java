@@ -138,8 +138,14 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
     /**
      * When a project is deleted, this method is called to undo the effect of
      * {@link #prepareWorkspace(AbstractBuild, FilePath, TaskListener)}.
+     *
+     * @param project
+     *      Project whose workspace is being discarded.
+     * @param ws
+     *      Workspace to be discarded. This workspace is on the node
+     *      this {@link FileSystemProvisioner} is provisioned for.
      */
-    public abstract void discardWorkspace(AbstractProject<?,?> project) throws IOException, InterruptedException;
+    public abstract void discardWorkspace(AbstractProject<?,?> project, FilePath ws) throws IOException, InterruptedException;
 
 //    public abstract void moveWorkspace(AbstractProject<?,?> project, File oldWorkspace, File newWorkspace) throws IOException;
 
@@ -186,7 +192,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
         public void prepareWorkspace(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
         }
 
-        public void discardWorkspace(AbstractProject<?,?> project) throws IOException, InterruptedException {
+        public void discardWorkspace(AbstractProject<?,?> project, FilePath ws) throws IOException, InterruptedException {
         }
 
         /**

@@ -202,11 +202,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         // prevent a new build while a delete operation is in progress
         makeDisabled(true);
         FilePath ws = getWorkspace();
-        if(ws!=null)
+        if(ws!=null) {
             getScm().processWorkspaceBeforeDeletion(this, ws,getLastBuiltOn());
-
-        getLastBuiltOn().getFileSystemProvisioner().discardWorkspace(this);
-
+            getLastBuiltOn().getFileSystemProvisioner().discardWorkspace(this,ws);
+        }
         super.performDelete();
     }
 
