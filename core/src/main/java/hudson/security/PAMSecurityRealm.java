@@ -116,8 +116,14 @@ public class PAMSecurityRealm extends SecurityRealm {
 
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public String getDisplayName() {
-            return "Unix user/group database";
+            return Messages.PAMSecurityRealm_DisplayName();
         }
+
+        @Override
+        public String getHelpFile() {
+            return "/help/security/pam-realm.html";
+        }
+
     }
 
     static {
