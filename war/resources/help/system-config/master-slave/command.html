@@ -1,24 +1,8 @@
 <div>
   Command to be used to launch a slave agent program, which controls the slave
-  computer and communicates with the master.
-
-  <h3>JNLP slave agents</h3>
-  <p>
-  Leave this field empty if you'd like to launch slave agents via JNLP.
-  With this setting, the slave information page (hudson/computer/***/) will
-  have a JNLP launch icon, and you can click that link from the correct slave
-  machine to launch a slave agent via JNLP.
-  <p>
-  This mode is convenient for Windows slaves that often do not have a remote execution
-  mechanism.
-
-  <h3>ssh/rsh slave agents</h3>
-  <p>
-  When an actual command is specified in this field,
-  this command is executed on the
-  master, and Hudson assumes that the executed program launches the <tt>slave.jar</tt>
-  program on the correct slave machine.
-
+  computer and communicates with the master. Hudson assumes that
+  the executed program launches the <tt>slave.jar</tt> program on the correct
+    slave machine.
 
   <p>
   A copy of <tt>slave.jar</tt> can be found in <tt>WEB-INF/slave.jar</tt> inside

@@ -2,16 +2,6 @@
   Slave ajan&#305;, slave bilgisayar&#305; kontrol eder ve master bilgisayar ile ileti&#351;iminden
   sorumludur. Buraya yaz&#305;lacak komut, slave ajan&#305; &#231;al&#305;&#351;t&#305;racak komuttur.
 
-  <h3>JNLP slave ajanlar&#305;</h3>
-  <p>
-  Slave ajan&#305;, JNLP ile &#231;al&#305;&#351;t&#305;racaksan&#305;z bu alan&#305; bo&#351; b&#305;rak&#305;n. Bu &#351;ekilde, slave bilgi
-  sayfas&#305;nda (hudson/computer/***/) JNLP &#231;al&#305;&#351;t&#305;rma ikonu belirecektir ve bu linkte
-  t&#305;klayarak slave ajan&#305; &#231;al&#305;&#351;t&#305;rabilirsiniz.
-  <p>
-  Bu mod, daha &#231;ok uzaktan &#231;al&#305;&#351;t&#305;rma mekanizmas&#305; olmayan Windows slave'leri i&#231;in
-  uygundur.
-
-  <h3>ssh/rsh slave ajanlar&#305;</h3>
   <p>
   Hudson, burada belirtilen komutun, do&#287;ru slave &#252;zerinde slave.jar'&#305; do&#287;ru &#351;ekilde
   &#231;al&#305;&#351;t&#305;raca&#287;&#305;n&#305; varsayar ve bu komutu master &#252;zerinde &#231;al&#305;&#351;t&#305;r&#305;r.
@@ -35,7 +25,7 @@ exec java -jar ~/bin/slave.jar
 </pre>
 
   <p>
-  Çal&#305;&#351;t&#305;r&#305;lacak komutun stdin/stdout metodlar&#305; "java -jar ~/bin/slave.jar" ile
+  ?al&#305;&#351;t&#305;r&#305;lacak komutun stdin/stdout metodlar&#305; "java -jar ~/bin/slave.jar" ile
   ili&#351;kili oldu&#287;u s&#252;rece, slave makinede RSH gibi komutlar&#305; &#231;al&#305;&#351;t&#305;rabilirsiniz.
 
   <p>
