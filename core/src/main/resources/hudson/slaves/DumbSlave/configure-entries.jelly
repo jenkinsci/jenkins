@@ -28,7 +28,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
-    <f:textbox name="description" value="${it.nodeDescription}"/>
+    <f:textbox field="nodeDescription" />
   </f:entry>
 
   <f:entry title="${%# of executors}"
@@ -37,8 +37,7 @@ THE SOFTWARE.
   </f:entry>
 
   <f:entry title="${%Remote FS root}" help="/help/system-config/master-slave/remoteFS.html">
-    <f:textbox name="remoteFS" value="${it.remoteFS}"
-               checkUrl="'${rootURL}/remoteFSCheck?value='+escape(this.value)"/>
+    <f:textbox field="remoteFS" />
   </f:entry>
 
   <f:entry title="${%Labels}" help="/help/system-config/master-slave/label.html">

@@ -35,8 +35,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public final class DumbSlave extends Slave {
     @DataBoundConstructor
-    public DumbSlave(String name, String description, String remoteFS, String numExecutors, Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException {
-        super(name, description, remoteFS, numExecutors, mode, label, launcher, retentionStrategy);
+    public DumbSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException {
+        super(name, nodeDescription, remoteFS, numExecutors, mode, label, launcher, retentionStrategy);
     }
 
     public DescriptorImpl getDescriptor() {

@@ -2720,30 +2720,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Performs syntactical check on the remote FS for slaves.
-     *
-     * TODO: find a better home for this method.
-     */
-    public void doRemoteFSCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
-        new FormFieldValidator(req,rsp,false) {
-            protected void check() throws IOException, ServletException {
-                if(Util.fixEmptyAndTrim(value)==null) {
-                    error("Remote directory is mandatory");
-                    return;
-                }
-
-                if(value.startsWith("\\\\") || value.startsWith("/net/")) {
-                    warning("Are you sure you want to use network mounted file system for FS root? " +
-                            "Note that this directory needs not be visible to the master.");
-                    return;
-                }
-
-                ok();
-            }
-        }.process();
-    }
-
-    /**
      * Serves static resources placed along with Jelly view files.
      * <p>
      * This method can serve a lot of files, so care needs to be taken

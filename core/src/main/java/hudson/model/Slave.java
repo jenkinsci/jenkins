@@ -34,11 +34,12 @@ import hudson.remoting.VirtualChannel;
 import hudson.tasks.DynamicLabeler;
 import hudson.tasks.LabelFinder;
 import hudson.util.ClockDifference;
+import hudson.util.FormFieldValidator;
 import hudson.util.FormFieldValidator.NonNegativeInteger;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.QueryParameter;
 import org.apache.commons.io.IOUtils;
 
 import javax.servlet.ServletException;
@@ -114,15 +115,15 @@ public abstract class Slave extends Node implements Serializable {
     private transient volatile int dynamicLabelsInstanceHash;
 
     @DataBoundConstructor
-    public Slave(String name, String description, String remoteFS, String numExecutors,
+    public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
                  Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException {
-        this(name,description,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,label,launcher,retentionStrategy);
+        this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,label,launcher,retentionStrategy);
     }
 
-    public Slave(String name, String description, String remoteFS, int numExecutors,
+    public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException {
         this.name = name;
-        this.description = description;
+        this.description = nodeDescription;
         this.numExecutors = numExecutors;
         this.mode = mode;
         this.remoteFS = remoteFS;
@@ -393,6 +394,28 @@ public abstract class Slave extends Node implements Serializable {
     public static abstract class SlaveDescriptor extends NodeDescriptor {
         public void doCheckNumExecutors() throws IOException, ServletException {
             new NonNegativeInteger().process();
+        }
+
+        /**
+         * Performs syntactical check on the remote FS for slaves.
+         */
+        public void doCheckRemoteFs(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
+            new FormFieldValidator(req,rsp,false) {
+                protected void check() throws IOException, ServletException {
+                    if(Util.fixEmptyAndTrim(value)==null) {
+                        error("Remote directory is mandatory");
+                        return;
+                    }
+
+                    if(value.startsWith("\\\\") || value.startsWith("/net/")) {
+                        warning("Are you sure you want to use network mounted file system for FS root? " +
+                                "Note that this directory needs not be visible to the master.");
+                        return;
+                    }
+
+                    ok();
+                }
+            }.process();
         }
     }
 
