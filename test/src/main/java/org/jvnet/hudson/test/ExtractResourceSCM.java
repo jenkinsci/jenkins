@@ -50,6 +50,10 @@ public class ExtractResourceSCM extends NullSCM {
 
     @Override
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
+    	if (workspace.exists()) {
+            listener.getLogger().println("Deleting existing workspace " + workspace.getRemote());
+    		workspace.deleteRecursive();
+    	}
         listener.getLogger().println("Staging "+zip);
         workspace.unzipFrom(zip.openStream());
         return true;
