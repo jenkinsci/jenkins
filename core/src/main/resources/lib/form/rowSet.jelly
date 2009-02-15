@@ -22,25 +22,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Adds @nameRef to all table rows inside this tag, so that when the form is submitted,
-  it gets grouped in one JSON object.
-
-  @ref: id of the thing that serves as the group head, if that's available separately
-
-  @name: if the group head is not available outside, use this attribute to specify the name.
-         @name and @ref are mutually exclusive.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Adds @nameRef to all table rows inside this tag, so that when the form is submitted,
+    it gets grouped in one JSON object.
 
-  <j:set var="id" value="${h.generateId()}" />
-  <j:set var="head" value="rowGroupStart${id}"/>
-  <j:set var="ref" value="${h.ifThenElse(attrs.ref!=null, attrs.ref, head)}"/>
+    <st:attribute name="name">
+      if the group head is not available outside, use this attribute to specify the name.
+      @name and @ref are mutually exclusive.
+    </st:attribute>
+    <st:attribute name="ref">
+      id of the thing that serves as the group head, if that's available separately
+    </st:attribute>
+  </st:documentation>
 
-  <tr id="${head}" style="display:none" name="${attrs.name}" />
-  <d:invokeBody />
-  <tr id="rowGroupEnd${id}" style="display:none" />
-  <script>
-    applyNameRef($$('${head}') , $$('rowGroupEnd${id}') , '${ref}')
-  </script>
+  <j:choose>
+    <j:when test="${attrs.ref==null and attrs.name==null}">
+      <!-- noop -->
+      <d:invokeBody />
+    </j:when>
+    <j:otherwise>
+      <j:set var="id" value="${h.generateId()}" />
+      <j:set var="head" value="rowGroupStart${id}"/>
+      <j:set var="ref" value="${h.ifThenElse(attrs.ref!=null, attrs.ref, head)}"/>
+
+      <tr id="${head}" style="display:none" name="${attrs.name}" />
+      <d:invokeBody />
+      <tr id="rowGroupEnd${id}" style="display:none" />
+      <script>
+        applyNameRef($$('${head}') , $$('rowGroupEnd${id}') , '${ref}')
+      </script>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

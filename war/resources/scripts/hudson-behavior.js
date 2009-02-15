@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 //
+initOptionalBlock//
 // JavaScript for Hudson
 //     See http://www.ibm.com/developerworks/web/library/wa-memleak/?ca=dgr-lnxw97JavascriptLeaks
 //     for memory leak patterns and how to prevent them.
@@ -580,8 +581,11 @@ function replaceDescription() {
 function applyNameRef(s,e,id) {
     $(id).groupingNode = true;
     // s contains the node itself
-    for(var x=s.nextSibling; x!=e; x=x.nextSibling)
-        x.setAttribute("nameRef",id);
+    for(var x=s.nextSibling; x!=e; x=x.nextSibling) {
+        // to handle nested <f:rowSet> correctly, don't overwrite the existing value
+        if(x.getAttribute("nameRef")==null)
+            x.setAttribute("nameRef",id);
+    }
 }
 
 function initOptionalBlock(sid, eid, cid) {

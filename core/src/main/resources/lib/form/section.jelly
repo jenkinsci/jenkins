@@ -30,13 +30,19 @@ THE SOFTWARE.
       The section header text.
       If null is given, the entire &lt;f:section> tag becomes no-op.
     </st:attribute>
+    <st:attribute name="name">
+      Optional attribute to create a JSON object from this section.
+    </st:attribute>
   </st:documentation>
-  <j:if test="${attrs.title!=null}">
-    <f:block>
-      <div style="font-weight:bold; border-bottom: 1px solid black; margin-bottom:0.2em; margin-top:0.4em">
-        ${title}
-      </div>
-    </f:block>
-  </j:if>
-	<d:invokeBody />
+
+  <f:rowSet name="${attrs.name}">
+    <j:if test="${attrs.title!=null}">
+      <f:block>
+        <div style="font-weight:bold; border-bottom: 1px solid black; margin-bottom:0.2em; margin-top:0.4em">
+          ${title}
+        </div>
+      </f:block>
+    </j:if>
+    <d:invokeBody />
+  </f:rowSet>
 </j:jelly>

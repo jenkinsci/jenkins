@@ -97,6 +97,11 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         onModified();
     }
 
+    public void replaceBy(Collection<? extends T> col) throws IOException {
+        data.replaceBy(col);
+        onModified();
+    }
+
     public T get(D descriptor) {
         for (T t : data)
             if(t.getDescriptor()==descriptor)
