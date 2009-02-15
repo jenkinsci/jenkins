@@ -21,15 +21,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  Foldable block expanded when the corresponding item is selected in the drop-down list.
-
-  @name (mandatory)
-    name of the drop-down list.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Foldable block expanded when the corresponding item is selected in the drop-down list.
+
+    <st:attribute name="title">
+      Human readable title text of this drop-down listbox.
+      Shown in the same position as &lt;f:entry title="..." />
+    </st:attribute>
+    <st:attribute name="name" use="required">
+      name of the drop-down list.
+    </st:attribute>
+    <st:attribute name="help">
+      Path to the inline help. See &lt;f:entry help="..." />
+    </st:attribute>
+  </st:documentation>
 
     <j:set var="id" value="${h.generateId()}"/>
     <tr>
