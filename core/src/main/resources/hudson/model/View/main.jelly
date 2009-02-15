@@ -38,8 +38,10 @@ THE SOFTWARE.
       </d:tag>
     </d:taglib>
     <j:when test="${empty(items)}">
-      <local:viewTabs/>
-      <br/>
+      <j:if test="${!empty(app.items)}">
+        <local:viewTabs/>
+        <br/>
+      </j:if>
       <st:include page="noJob.jelly" />
     </j:when>
     <j:otherwise>
