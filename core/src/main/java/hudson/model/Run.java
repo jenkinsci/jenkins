@@ -23,17 +23,16 @@
  */
 package hudson.model;
 
-import com.thoughtworks.xstream.XStream;
+import static hudson.Util.combine;
+import hudson.AbortException;
+import hudson.BulkChange;
 import hudson.CloseProofOutputStream;
 import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Util;
-import static hudson.Util.combine;
 import hudson.XmlFile;
-import hudson.AbortException;
-import hudson.BulkChange;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
@@ -48,26 +47,22 @@ import hudson.tasks.LogRotator;
 import hudson.tasks.Mailer;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
-import hudson.util.XStream2;
 import hudson.util.ProcessTreeKiller;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.framework.io.LargeText;
+import hudson.util.XStream2;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.Writer;
-import java.io.InputStreamReader;
-import java.io.FileInputStream;
+import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -85,7 +80,19 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.nio.charset.Charset;
+import java.util.zip.GZIPInputStream;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.framework.io.LargeText;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * A particular execution of {@link Job}.
@@ -734,6 +741,28 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return new File(getRootDir(),"log");
     }
 
+    /**
+     * Returns a Reader that reads from the log file.
+     * It will use a gzip-compressed log file (log.gz) if that exists.
+     * @throws IOException 
+     * @return a reader from the log file, or null if none exists
+     */
+    public Reader getLogReader() throws IOException {
+    	File logFile = getLogFile();
+    	if (logFile.exists() ) {
+    		return new FileReader(logFile);
+    	} 
+
+    	File compressedLogFile = new File(logFile.getParentFile(), logFile.getName()+ ".gz");
+    	if (compressedLogFile.exists()) {
+    		return new InputStreamReader(
+    				new GZIPInputStream(
+    						new FileInputStream(compressedLogFile)));
+    	} 
+    	
+    	return null;
+    }
+    
     protected SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder builder = super.makeSearchIndex()
                 .add("console")

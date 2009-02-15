@@ -26,4 +26,4 @@ THE SOFTWARE.
   Displays the console output as plain/text
 -->
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-<st:contentType value="text/plain;charset=UTF-8" />${it.log}</st:compress>
+<st:copyStream reader="${it.getLogReader()}"/></st:compress>

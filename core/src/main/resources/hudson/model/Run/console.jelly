@@ -48,7 +48,7 @@ THE SOFTWARE.
         </j:when>
         <!-- output is completed now. -->
         <j:otherwise>
-          <pre><st:copyStream file="${it.logFile}"/></pre>
+          <pre><st:copyStream reader="${it.getLogReader()}"/></pre>
         </j:otherwise>
       </j:choose>
     </l:main-panel>
