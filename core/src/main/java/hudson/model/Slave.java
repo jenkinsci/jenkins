@@ -27,21 +27,18 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.RetentionStrategy;
-import hudson.slaves.CommandLauncher;
-import hudson.slaves.JNLPLauncher;
-import hudson.slaves.SlaveComputer;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.*;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.DynamicLabeler;
 import hudson.tasks.LabelFinder;
 import hudson.util.ClockDifference;
+import hudson.util.FormFieldValidator.NonNegativeInteger;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.WebMethod;
 import org.apache.commons.io.IOUtils;
 
 import javax.servlet.ServletException;
@@ -390,6 +387,15 @@ public abstract class Slave extends Node implements Serializable {
         }
         return this;
     }
+
+    public abstract SlaveDescriptor getDescriptor();
+
+    public static abstract class SlaveDescriptor extends NodeDescriptor {
+        public void doCheckNumExecutors() throws IOException, ServletException {
+            new NonNegativeInteger().process();
+        }
+    }
+
 
 //
 // backwrad compatibility

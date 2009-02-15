@@ -25,11 +25,7 @@ package hudson.slaves;
 
 import hudson.model.Descriptor.FormException;
 import hudson.model.Slave;
-import hudson.util.FormFieldValidator.NonNegativeInteger;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 /**
  * Default {@link Slave} implementation for computers that do not belong to a higher level structure,
@@ -47,15 +43,11 @@ public final class DumbSlave extends Slave {
         return DescriptorImpl.INSTANCE;
     }
 
-    public static final class DescriptorImpl extends NodeDescriptor {
+    public static final class DescriptorImpl extends SlaveDescriptor {
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();
 
         public String getDisplayName() {
             return Messages.DumbSlave_displayName();
-        }
-
-        public void doCheckNumExecutors() throws IOException, ServletException {
-            new NonNegativeInteger().process();
         }
     }
 

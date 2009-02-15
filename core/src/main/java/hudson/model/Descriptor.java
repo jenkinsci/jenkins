@@ -33,13 +33,19 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.jelly.JellyClassTearOff;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.jelly.Script;
+import org.apache.commons.jelly.JellyException;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import javax.servlet.ServletException;
+import javax.servlet.RequestDispatcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +66,6 @@ import java.lang.reflect.Type;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.beans.Introspector;
-import java.net.URL;
 
 /**
  * Metadata about a configurable instance.
@@ -355,9 +361,32 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *      null to indicate that there's no help.
      */
     public String getHelpFile() {
-        InputStream in = getHelpStream();
+        return getHelpFile(null);
+    }
+
+    /**
+     * Returns the path to the help screen HTML for the given field.
+     *
+     * <p>
+     * The help files are assumed to be at "help/FIELDNAME.html" with possible
+     * locale variations.
+     */
+    public String getHelpFile(String fieldName) {
+        if(fieldName==null) fieldName="";
+        else                fieldName='/'+fieldName;
+
+        String page = "/descriptor/" + clazz.getName() + "/help"+fieldName;
+
+        try {
+            if(Stapler.getCurrentRequest().getView(clazz,"help"+fieldName+".jelly")!=null)
+                return page;
+        } catch (IOException e) {
+            throw new Error(e);
+        }
+
+        InputStream in = getHelpStream(fieldName);
         IOUtils.closeQuietly(in);
-        if(in!=null)    return "/descriptor/"+clazz.getName()+"/help";
+        if(in!=null)    return page;
         return null;
     }
 
@@ -475,8 +504,17 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * Serves <tt>help.html</tt> from the resource of {@link #clazz}.
      */
-    public void doHelp(StaplerResponse rsp) throws IOException {
-        InputStream in = getHelpStream();
+    public void doHelp(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        String path = req.getRestOfPath();
+        if(path.contains("..")) throw new ServletException("Illegal path: "+path);
+
+        RequestDispatcher rd = Stapler.getCurrentRequest().getView(clazz, "help"+path+".jelly");
+        if(rd!=null) {// Jelly-generated help page
+            rd.forward(req,rsp);
+            return;
+        }
+
+        InputStream in = getHelpStream(path);
         if(in==null) {
             rsp.sendError(SC_NOT_FOUND);
             return;
@@ -487,10 +525,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         in.close();
     }
 
-    private InputStream getHelpStream() {
+    private InputStream getHelpStream(String suffix) {
         Locale locale = Stapler.getCurrentRequest().getLocale();
 
-        String base = clazz.getName().replace('.', '/') + "/help";
+        String base = clazz.getName().replace('.', '/') + "/help"+suffix;
 
         InputStream in;
         in = clazz.getClassLoader().getResourceAsStream(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");
@@ -516,10 +554,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public static <T> List<T> toList( T... values ) {
-        final ArrayList<T> r = new ArrayList<T>();
-        for (T v : values)
-            r.add(v);
-        return r;
+        return new ArrayList<T>(Arrays.asList(values));
     }
 
     public static <T extends Describable<T>>
