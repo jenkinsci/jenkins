@@ -33,14 +33,9 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.MetaClass;
-import org.kohsuke.stapler.WebApp;
-import org.kohsuke.stapler.jelly.JellyClassTearOff;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.jelly.Script;
-import org.apache.commons.jelly.JellyException;
 
 import javax.servlet.http.HttpServletRequest;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
@@ -372,13 +367,16 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * locale variations.
      */
     public String getHelpFile(String fieldName) {
-        if(fieldName==null) fieldName="";
-        else                fieldName='/'+fieldName;
-
-        String page = "/descriptor/" + clazz.getName() + "/help"+fieldName;
+        String page = "/descriptor/" + clazz.getName() + "/help";
+        if(fieldName==null) {
+            fieldName="";
+        } else {
+            page += '/'+fieldName;
+            fieldName='-'+fieldName;
+        }
 
         try {
-            if(Stapler.getCurrentRequest().getView(clazz,"help"+fieldName+".jelly")!=null)
+            if(Stapler.getCurrentRequest().getView(clazz,"help"+fieldName)!=null)
                 return page;
         } catch (IOException e) {
             throw new Error(e);
@@ -508,7 +506,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         String path = req.getRestOfPath();
         if(path.contains("..")) throw new ServletException("Illegal path: "+path);
 
-        RequestDispatcher rd = Stapler.getCurrentRequest().getView(clazz, "help"+path+".jelly");
+        path = path.replace('/','-');
+
+        RequestDispatcher rd = Stapler.getCurrentRequest().getView(clazz, "help"+path);
         if(rd!=null) {// Jelly-generated help page
             rd.forward(req,rsp);
             return;
