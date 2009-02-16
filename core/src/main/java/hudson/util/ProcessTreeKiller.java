@@ -168,7 +168,8 @@ public abstract class ProcessTreeKiller {
      */
     private static final ProcessTreeKiller DEFAULT = new ProcessTreeKiller() {
         public void kill(Process proc, Map<String, String> modelEnvVars) {
-            proc.destroy();
+            if (proc!=null)
+                proc.destroy();
             // kill by model unsupported
         }
     };
