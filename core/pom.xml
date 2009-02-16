@@ -346,7 +346,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
-      <version>1.95</version>
+      <version>1.94</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
