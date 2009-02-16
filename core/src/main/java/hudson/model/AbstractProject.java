@@ -750,7 +750,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(scm==null)
             return true;    // no SCM
 
+        // Acquire lock for SCMTrigger so poll won't run while we checkout/update
+        SCMTrigger scmt = getTrigger(SCMTrigger.class);
+        boolean locked = false;
         try {
+            if (scmt!=null) {
+                scmt.getLock().lockInterruptibly();
+                locked = true;
+            }
+
             FilePath workspace = getWorkspace();
             workspace.mkdirs();
 
@@ -759,6 +767,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             listener.getLogger().println(Messages.AbstractProject_ScmAborted());
             LOGGER.log(Level.INFO,build.toString()+" aborted",e);
             return false;
+        } finally {
+            if (locked)
+                scmt.getLock().unlock();
         }
     }
 
