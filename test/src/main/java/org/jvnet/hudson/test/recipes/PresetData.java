@@ -35,6 +35,7 @@ import java.lang.annotation.Target;
  * Runs a test case with one of the preset HUDSON_HOME data set.
  *
  * @author Kohsuke Kawaguchi
+ * @see LocalData
  */
 @Documented
 @Recipe(PresetData.RunnerImpl.class)
