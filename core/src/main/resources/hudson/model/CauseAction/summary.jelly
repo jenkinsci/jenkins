@@ -24,6 +24,6 @@ THE SOFTWARE.
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<t:summary icon="orange-square.gif">
-	<p>${it.shortDescription}</p>
+	<p>${it.HTMLDescription}</p>
 	</t:summary>
 </j:jelly>
