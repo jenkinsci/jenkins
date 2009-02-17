@@ -275,7 +275,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         /**
          * Hashed password.
          */
-        private final String passwordHash;
+        private /*almost final*/ String passwordHash;
 
         /**
          * @deprecated Scrambled password.
@@ -302,11 +302,6 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         }
 
         public String getPassword() {
-            if (password != null) {
-                // Data loaded from old style config.. encode password now
-                // but don't force update now to allow room for downgrading
-                return PASSWORD_ENCODER.encodePassword(Scrambler.descramble(password),null);
-            }
             return passwordHash;
         }
 
@@ -345,6 +340,13 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
 
         public UserPropertyDescriptor getDescriptor() {
             return DETAILS_DESCRIPTOR;
+        }
+
+        private Object readResolve() {
+            // If we are being read back in from an older version
+            if (password!=null && passwordHash==null)
+                passwordHash = PASSWORD_ENCODER.encodePassword(Scrambler.descramble(password),null);
+            return this;
         }
     }
 
