@@ -761,11 +761,15 @@ public final class FilePath implements Serializable {
         final Pipe p = Pipe.createRemoteToLocal();
         channel.callAsync(new Callable<Void,IOException>() {
             public Void call() throws IOException {
-                FileInputStream fis = new FileInputStream(new File(remote));
-                Util.copyStream(fis,p.getOut());
-                fis.close();
-                p.getOut().close();
-                return null;
+                FileInputStream fis=null;
+                try {
+                    fis = new FileInputStream(new File(remote));
+                    Util.copyStream(fis,p.getOut());
+                    return null;
+                } finally {
+                    IOUtils.closeQuietly(fis);
+                    IOUtils.closeQuietly(p.getOut());
+                }
             }
         });
 
