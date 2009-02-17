@@ -118,12 +118,6 @@ public class PAMSecurityRealm extends SecurityRealm {
         public String getDisplayName() {
             return Messages.PAMSecurityRealm_DisplayName();
         }
-
-        @Override
-        public String getHelpFile() {
-            return "/help/security/pam-realm.html";
-        }
-
     }
 
     static {
