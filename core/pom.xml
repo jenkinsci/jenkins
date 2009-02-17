@@ -412,7 +412,7 @@ THE SOFTWARE.
       -->
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
-      <version>1.7.0</version>
+      <version>1.8.0</version>
     </dependency>
     <dependency>
       <groupId>javax.mail</groupId>
