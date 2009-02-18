@@ -1406,6 +1406,17 @@ public class SubversionSCM extends SCM implements Serializable {
             SVNRepository repository = SVNRepositoryFactory.create(repoURL);
 
             ISVNAuthenticationManager sam = SVNWCUtil.createDefaultAuthenticationManager();
+            sam = new FilterSVNAuthenticationManager(sam) {
+                // If there's no time out, the blocking read operation may hang forever, because TCP itself
+                // has no timeout. So always use some time out. If the underlying implementation gives us some
+                // value (which may come from ~/.subversion), honor that, as long as it sets some timeout value.
+                @Override
+                public int getReadTimeout(SVNRepository repository) {
+                    int r = super.getReadTimeout(repository);
+                    if(r<=0)    r = DEFAULT_TIMEOUT;
+                    return r;
+                }
+            };
             sam.setAuthenticationProvider(createAuthenticationProvider());
             repository.setAuthenticationManager(sam);
 
@@ -1611,6 +1622,13 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
     private static final Logger LOGGER = Logger.getLogger(SubversionSCM.class.getName());
+
+    /**
+     * Network timeout in milliseconds.
+     * The main point of this is to prevent infinite hang, so it should be a rather long value to avoid
+     * accidental time out problem.
+     */
+    public static int DEFAULT_TIMEOUT = Integer.getInteger(SubversionSCM.class.getName()+".timeout",3600*1000);
 
     /**
      * Enables trace logging of Ganymed SSH library.
