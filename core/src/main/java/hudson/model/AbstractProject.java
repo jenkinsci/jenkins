@@ -202,8 +202,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         makeDisabled(true);
         FilePath ws = getWorkspace();
         if(ws!=null) {
-            getScm().processWorkspaceBeforeDeletion(this, ws,getLastBuiltOn());
-            getLastBuiltOn().getFileSystemProvisioner().discardWorkspace(this,ws);
+            Node on = getLastBuiltOn();
+            getScm().processWorkspaceBeforeDeletion(this, ws, on);
+            if(on!=null)
+                on.getFileSystemProvisioner().discardWorkspace(this,ws);
         }
         super.performDelete();
     }
