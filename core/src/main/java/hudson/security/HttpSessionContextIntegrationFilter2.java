@@ -43,6 +43,7 @@ import java.io.IOException;
  */
 public class HttpSessionContextIntegrationFilter2 extends HttpSessionContextIntegrationFilter {
     public HttpSessionContextIntegrationFilter2() throws ServletException {
+        setContext(NotSerilizableSecurityContext.class);
     }
 
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {

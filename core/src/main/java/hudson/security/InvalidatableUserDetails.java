@@ -49,6 +49,9 @@ import javax.servlet.http.HttpSession;
  * See https://hudson.dev.java.net/issues/show_bug.cgi?id=1482
  * 
  * @author Kohsuke Kawaguchi
+ * @deprecated
+ *      Starting 1.285, Hudson stops persisting {@link Authentication} altogether
+ *      (see {@link NotSerilizableSecurityContext}), so there's no need to use this mechanism.
  */
 public interface InvalidatableUserDetails extends UserDetails {
     boolean isInvalid();
