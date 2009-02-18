@@ -41,8 +41,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public abstract class Actionable extends AbstractModelObject {
     /**
      * Actions contributed to this model object.
+     *
+     * Typed more strongly than it should to improve the serialization signature.
      */
-    private volatile List<Action> actions;
+    private volatile CopyOnWriteArrayList<Action> actions;
 
     /**
      * Gets actions contributed to this build.
