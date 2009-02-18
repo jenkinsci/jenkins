@@ -31,6 +31,7 @@ import hudson.Proc;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
+import static hudson.Util.fixEmptyAndTrim;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -93,6 +94,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import net.sf.json.JSONObject;
 
@@ -140,8 +142,10 @@ public class CVSSCM extends SCM implements Serializable {
 
     private boolean isTag;
 
+	 private String excludedRegions;
+
     @DataBoundConstructor
-    public CVSSCM(String cvsRoot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy, boolean isTag) {
+    public CVSSCM(String cvsRoot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy, boolean isTag, String excludedRegions) {
         if(fixNull(branch).equals("HEAD"))
             branch = null;
 
@@ -152,6 +156,7 @@ public class CVSSCM extends SCM implements Serializable {
         this.canUseUpdate = canUseUpdate;
         this.flatten = !legacy && getAllModulesNormalized().length==1;
         this.isTag = isTag;
+	     this.excludedRegions = excludedRegions;
     }
 
     @Override
@@ -217,6 +222,32 @@ public class CVSSCM extends SCM implements Serializable {
         return module;
     }
 
+	 public String getExcludedRegions() {
+		  return excludedRegions;
+	 }
+
+	 public String[] getExcludedRegionsNormalized() {
+		  return excludedRegions == null ? null : excludedRegions.split("[\\r\\n]+");
+	 }
+
+	 private Pattern[] getExcludedRegionsPatterns() {
+		 String[] excludedRegions = getExcludedRegionsNormalized();
+		 if (excludedRegions != null)
+		 {
+			 Pattern[] patterns = new Pattern[excludedRegions.length];
+
+			 int i = 0;
+			 for (String excludedRegion : excludedRegions)
+			 {
+				 patterns[i++] = Pattern.compile(excludedRegion);
+			 }
+
+			 return patterns;
+		 }
+
+		 return null;
+	 }
+
     /**
      * List up all modules to check out.
      */
@@ -257,7 +288,43 @@ public class CVSSCM extends SCM implements Serializable {
 
         List<String> changedFiles = update(true, launcher, dir, listener, new Date());
 
-        return changedFiles!=null && !changedFiles.isEmpty();
+	     if (changedFiles != null && !changedFiles.isEmpty())
+	     {
+		     Pattern[] patterns = getExcludedRegionsPatterns();
+
+		     if (patterns != null)
+		     {
+			     boolean areThereChanges = false;
+
+			     for (String changedFile : changedFiles)
+			     {
+				     boolean patternMatched = false;
+
+				     for (Pattern pattern : patterns)
+				     {
+					     if (pattern.matcher(changedFile).matches())
+					     {
+						     patternMatched = true;
+						     break;
+					     }
+				     }
+
+				     if (!patternMatched)
+				     {
+					     areThereChanges = true;
+					     break;
+				     }
+			     }
+
+			     return areThereChanges;
+		     }
+
+		     // no excluded patterns so just return true as
+		     // changedFiles != null && !changedFiles.isEmpty() is true
+		     return true;
+	     }
+
+	     return false;
     }
 
     private void configureDate(ArgumentListBuilder cmd, Date date) { // #192
@@ -1165,6 +1232,30 @@ public class CVSSCM extends SCM implements Serializable {
                     }
 
                     // all tests passed so far
+                    ok();
+                }
+            }.process();
+        }
+
+	     /**
+         * Validates the excludeRegions Regex
+         */
+        public void doExcludeRegionsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new FormFieldValidator(req,rsp,false) {
+                protected void check() throws IOException, ServletException {
+                    String v = fixEmptyAndTrim(request.getParameter("value"));
+
+                    if(v != null) {
+	                    String[] regions = v.split("\\r\\n");
+	                    for (String region : regions) {
+		                    try {
+			                    Pattern.compile(region);
+		                    }
+		                    catch (PatternSyntaxException e) {
+			                    error("Invalid regular expression. " + e.getMessage());
+		                    }
+	                    }
+                    }
                     ok();
                 }
             }.process();

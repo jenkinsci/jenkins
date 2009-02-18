@@ -48,5 +48,8 @@ THE SOFTWARE.
       <f:checkbox name="cvs.canUseUpdate" checked="${h.defaultToTrue(scm.canUseUpdate)}"/>
     </f:entry>
     <t:listScmBrowsers name="cvs.browser" />
+    <f:entry title="${%Excluded Regions}" help="/help/_cvs/excludedRegions.html">
+	   <f:textarea name="cvs.excludedRegions" value="${scm.excludedRegions}" checkUrl="'${rootURL}/scm/CVSSCM/excludeRegionsCheck?value='+escape(this.value)"/>
+	 </f:entry>
   </f:advanced>
 </j:jelly>
