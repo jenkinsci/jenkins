@@ -57,7 +57,7 @@ THE SOFTWARE.
           </webResources>
           <!-- for putting Main-Class into war -->
           <archive>
-            <manifest>e
+            <manifest>
               <mainClass>Main</mainClass>
             </manifest>
           </archive>
