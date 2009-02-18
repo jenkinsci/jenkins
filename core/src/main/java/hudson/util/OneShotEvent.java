@@ -24,7 +24,16 @@
 package hudson.util;
 
 /**
- * Concurrency primitive "event".
+ * OConcurrency primitive.
+ *
+ * <p>
+ * A {@link OneShotEvent} is like a pandora's box.
+ * It starts with the closed (non-signaled) state.
+ * Multiple threads can wait for the event to become the signaled state.
+ *
+ * <p>
+ * Once the event becomes signaled, or the pandora's box is opened,
+ * every thread gets through freely, and there's no way to turn it back off. 
  *
  * @author Kohsuke Kawaguchi
  */
@@ -37,7 +46,7 @@ public final class OneShotEvent {
     public synchronized void signal() {
         if(signaled)        return;
         this.signaled = true;
-        notify();
+        notifyAll();
     }
 
     /**
