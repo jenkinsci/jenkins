@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
   <st:documentation>
     Displays the status of executors.
     <st:attribute name="computers">
@@ -30,6 +30,13 @@ THE SOFTWARE.
       in the system will be rendered.
     </st:attribute>
   </st:documentation>
+  <d:taglib uri="local">
+    <d:tag name="computerCaption">
+      <a href="${rootURL}/${c.url}">${title}</a>
+      <j:if test="${c.offline}"> (${%offline})</j:if>
+      <j:if test="${!c.acceptingTasks}"> (${%suspended})</j:if>
+    </d:tag>
+  </d:taglib>
   <j:set var="computers" value="${h.ifThenElse(attrs.computers!=null, attrs.computers, app.computers)}" />
 	<l:pane title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>" width="3" id="executors">
 	  <j:forEach var="c" items="${computers}" varStatus="cloop">
@@ -43,9 +50,7 @@ THE SOFTWARE.
                   ${%Status}
                 </j:when>
                 <j:otherwise>
-                  <a href="${rootURL}/computer/(master)/">${%Master}</a>
-                  <j:if test="${c.offline}">(${%offline})</j:if>
-                  <j:if test="${!c.acceptingTasks}">(${%suspended})</j:if>
+                  <local:computerCaption title="${%Master}" />
                 </j:otherwise>
               </j:choose>
             </th>
@@ -55,10 +60,8 @@ THE SOFTWARE.
 	      <j:otherwise>
 	        <tr>
 	          <th class="pane" colspan="3">
-	            <a href="${rootURL}/computer/${c.displayName}">${c.displayName}</a>
-	            <j:if test="${c.offline}">(${%offline})</j:if>
-                <j:if test="${!c.acceptingTasks}">(${%suspended})</j:if>                    
-              </th>
+              <local:computerCaption title="${c.displayName}" />
+            </th>
 	        </tr>
 	      </j:otherwise>
 	    </j:choose>
@@ -79,7 +82,14 @@ THE SOFTWARE.
             </j:when>
             <j:when test="${e.idle}">
 	            <td class="pane" width="70%">
-	              ${%Idle}
+                <j:choose>
+                  <j:when test="${c.offline}">
+                    <a href="${rootURL}/${c.url}">${%Offline}</a>
+                  </j:when>
+                  <j:otherwise>
+                    ${%Idle}
+                  </j:otherwise>
+                </j:choose>
 	            </td>
 	            <td class="pane"/>
 	          </j:when>
