@@ -35,7 +35,7 @@ import org.kohsuke.stapler.export.Exported;
  * Extension point for adding a column to {@link ListView}.
  *
  * <p>
- * This object must have the <tt>cell.jelly</tt>. This view
+ * This object must have the <tt>column.jelly</tt>. This view
  * is called for each cell of this column. The {@link Item} object
  * is passed in the "job" variable. The view should render
  * the &lt;td> tag.
