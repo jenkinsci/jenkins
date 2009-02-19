@@ -198,6 +198,9 @@ final class ProxyOutputStream extends OutputStream {
 
     /**
      * {@link Command} for releasing an export table.
+     *
+     * <p>
+     * Unlike {@link EOF}, this just unexports but not closes the stream.
      */
     private static class Unexport extends Command {
         protected final int oid;
