@@ -69,8 +69,7 @@ public class FilePathTest extends TestCase {
 
     @Override
     protected void tearDown() throws Exception {
-        french.close();
-        british.close();
+        french.close(); // this will automatically initiate the close on the other channel, too.
         french.join();
         british.join();
         executors.shutdown();
