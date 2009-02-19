@@ -24,26 +24,62 @@
 package hudson;
 
 import junit.framework.TestCase;
+import hudson.remoting.Channel;
+import hudson.util.NullStream;
+
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.File;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class FilePathTest extends /*RmiTestBase*/ TestCase {
-    public void testDummy() {
-        // TODO: figure out how to reuse test code from the remoting module.
-        // currently it fails because the remoting.jar is signed but
-        // test code is not.
+public class FilePathTest extends TestCase {
+    /**
+     * Two channels that are connected to each other, but shares the same classloader. 
+     */
+    private Channel french, british;
+    private ExecutorService executors = Executors.newCachedThreadPool();
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        final PipedInputStream p1i = new PipedInputStream();
+        final PipedInputStream p2i = new PipedInputStream();
+        final PipedOutputStream p1o = new PipedOutputStream(p1i);
+        final PipedOutputStream p2o = new PipedOutputStream(p2i);
+
+        Future<Channel> f1 = executors.submit(new Callable<Channel>() {
+            public Channel call() throws Exception {
+                return new Channel("This side of the channel", executors, p1i, p2o);
+            }
+        });
+        Future<Channel> f2 = executors.submit(new Callable<Channel>() {
+            public Channel call() throws Exception {
+                return new Channel("The other side of the channel", executors, p2i, p1o);
+            }
+        });
+        french = f1.get();
+        british = f2.get();
     }
 
-    ///**
-    // * Copy zero files.
-    // */
-    //public void testEmptyCopy() throws Exception {
-    //    File src = Util.createTempDir();
-    //    File dst = Util.createTempDir();
-    //    src.deleteOnExit();
-    //    dst.deleteOnExit();
-    //
-    //    new FilePath(src).copyRecursiveTo("**/*",new FilePath(channel,dst.getPath()));
-    //}
+    @Override
+    protected void tearDown() throws Exception {
+        french.close();
+        british.close();
+        french.join();
+        british.join();
+        executors.shutdown();
+    }
+
+    public void testCopyTo() throws Exception {
+        File tmp = File.createTempFile("tmp","");
+        FilePath f = new FilePath(french,tmp.getPath());
+        f.copyTo(new NullStream());
+    }
+
 }

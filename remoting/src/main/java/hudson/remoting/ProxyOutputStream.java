@@ -71,6 +71,8 @@ final class ProxyOutputStream extends OutputStream {
     synchronized void connect(Channel channel, int oid) throws IOException {
         if(this.channel!=null)
             throw new IllegalStateException("Cannot connect twice");
+        if(oid==0)
+            throw new IllegalArgumentException("oid=0");
         this.channel = channel;
         this.oid = oid;
 

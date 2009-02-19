@@ -73,6 +73,8 @@ public final class RemoteOutputStream extends OutputStream implements Serializab
     private transient OutputStream core;
 
     public RemoteOutputStream(OutputStream core) {
+        if(core==null)
+            throw new IllegalArgumentException();
         this.core = core;
     }
 
