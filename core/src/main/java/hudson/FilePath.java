@@ -868,11 +868,15 @@ public final class FilePath implements Serializable {
 
         act(new FileCallable<Void>() {
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                FileInputStream fis = new FileInputStream(f);
-                Util.copyStream(fis,out);
-                fis.close();
-                out.close();
-                return null;
+                FileInputStream fis = null;
+                try {
+                    fis = new FileInputStream(f);
+                    Util.copyStream(fis,out);
+                    return null;
+                } finally {
+                    IOUtils.closeQuietly(fis);
+                    IOUtils.closeQuietly(out);
+                }
             }
         });
     }
