@@ -77,9 +77,10 @@ public class FilePathTest extends TestCase {
     }
 
     public void testCopyTo() throws Exception {
-        File tmp = File.createTempFile("tmp","");
+        File tmp = File.createTempFile("testCopyTo","");
         FilePath f = new FilePath(french,tmp.getPath());
         f.copyTo(new NullStream());
+        tmp.delete();
     }
 
 }
