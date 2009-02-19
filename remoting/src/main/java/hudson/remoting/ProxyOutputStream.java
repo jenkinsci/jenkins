@@ -227,6 +227,7 @@ final class ProxyOutputStream extends OutputStream {
 
         protected void execute(Channel channel) {
             OutputStream os = (OutputStream) channel.getExportedObject(oid);
+            channel.unexport(oid);
             try {
                 os.close();
             } catch (IOException e) {
