@@ -29,7 +29,7 @@ THE SOFTWARE.
   <l:ajax>
     <p:matrix autoRefresh="true">
       <a href="${p.shortUrl}">
-        <img src="${imagesURL}/24x24/${p.buildStatusUrl}" title="${p.iconColor.description}" alt="${p.iconColor.description}"/>
+        <img src="${imagesURL}/24x24/${p.buildStatusUrl}" tooltip="${p.iconColor.description}" alt="${p.iconColor.description}"/>
         <j:if test="${empty(o.x) and empty(o.y)}">
           ${p.combination.toString(o.z)}
         </j:if>

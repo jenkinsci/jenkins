@@ -112,7 +112,7 @@ public abstract class Layouter<T> {
     }
 
     /**
-     * Computes the width of n-th X-axis.
+     * Computes the width of n-th Y-axis.
      */
     public int height(int n) {
         return calc(y,n);

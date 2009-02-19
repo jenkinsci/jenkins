@@ -29,9 +29,9 @@ THE SOFTWARE.
   <l:ajax>
     <p:matrix autoRefresh="${it.isBuilding()}">
       <j:set var="b" value="${p.run}" />
-      <a href="${p.combination}" tooltip="${p.tooltip}">
+      <a href="${p.combination}/">
         <img src="${imagesURL}/24x24/${h.ifThenElse(b!=null,b.buildStatusUrl,'grey.gif')}"
-             title="${b.iconColor.description}" alt="${b.iconColor.description}"/>
+             tooltip="${p.tooltip}" alt="${p.tooltip}"/>
         <j:if test="${empty(o.x) and empty(o.y)}">
           ${p.combination.toString(o.z)}
         </j:if>

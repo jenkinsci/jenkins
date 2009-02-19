@@ -53,6 +53,8 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
+    private AxisList axes;
+
     public MatrixBuild(MatrixProject job) throws IOException {
         super(job);
     }
@@ -63,6 +65,13 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
     public MatrixBuild(MatrixProject project, File buildDir) throws IOException {
         super(project, buildDir);
+    }
+
+    public Object readResolve() {
+        // MatrixBuild.axes added in 1.285; default to parent axes for old data
+        if (axes==null)
+            axes = getParent().getAxes();
+        return this;
     }
 
     /**
@@ -83,7 +92,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     }
 
     public Layouter<RunPtr> getLayouter() {
-        return new Layouter<RunPtr>(getParent().getAxes()) {
+        return new Layouter<RunPtr>(axes) {
             protected RunPtr getT(Combination c) {
                 return new RunPtr(c);
             }
@@ -114,7 +123,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         try {
             MatrixRun item = getRun(Combination.fromString(token));
             if(item!=null)
-            return item;
+                return item;
         } catch (IllegalArgumentException _) {
             // failed to parse the token as Combination. Must be something else
         }
@@ -161,6 +170,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 }
             }
 
+            axes = p.getAxes();
             Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
             final int n = getNumber();
 
