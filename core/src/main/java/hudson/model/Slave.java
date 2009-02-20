@@ -25,32 +25,49 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
-import hudson.slaves.*;
+import hudson.Launcher.RemoteLauncher;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
+import hudson.slaves.CommandLauncher;
+import hudson.slaves.ComputerLauncher;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.JNLPLauncher;
+import hudson.slaves.NodeDescriptor;
+import hudson.slaves.NodeProperties;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
+import hudson.slaves.RetentionStrategy;
+import hudson.slaves.SlaveComputer;
 import hudson.tasks.DynamicLabeler;
 import hudson.tasks.LabelFinder;
 import hudson.util.ClockDifference;
+import hudson.util.DescribableList;
 import hudson.util.FormFieldValidator;
 import hudson.util.FormFieldValidator.NonNegativeInteger;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.apache.commons.io.IOUtils;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.MalformedURLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.servlet.ServletException;
+
+import org.apache.commons.io.IOUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Information about a Hudson slave node.
@@ -105,6 +122,8 @@ public abstract class Slave extends Node implements Serializable {
      * Whitespace-separated labels.
      */
     private String label="";
+    
+	private final DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Hudson.getInstance());
 
     /**
      * Lazily computed set of labels from {@link #label}.
@@ -116,12 +135,18 @@ public abstract class Slave extends Node implements Serializable {
 
     @DataBoundConstructor
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
-                 Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException {
-        this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,label,launcher,retentionStrategy);
+                 Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
+        this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,label,launcher,retentionStrategy, nodeProperties);
     }
 
+    @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
-                 Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException {
+            Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
+    	this(name, nodeDescription, remoteFS, numExecutors, mode, label, launcher, retentionStrategy, new ArrayList());
+    }
+    
+    public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
+                 Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
         this.description = nodeDescription;
         this.numExecutors = numExecutors;
@@ -131,6 +156,8 @@ public abstract class Slave extends Node implements Serializable {
         this.launcher = launcher;
         this.retentionStrategy = retentionStrategy;
         getAssignedLabels();    // compute labels now
+        
+        this.nodeProperties.replaceBy(nodeProperties);
 
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
@@ -184,6 +211,14 @@ public abstract class Slave extends Node implements Serializable {
         this.mode = mode;
     }
 
+    public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
+    	return nodeProperties;
+    }
+    
+    public void setNodeProperties(Collection<NodeProperty<?>> nodeProperties) throws IOException {
+    	this.nodeProperties.replaceBy(nodeProperties);
+    }
+    
     public RetentionStrategy getRetentionStrategy() {
         return retentionStrategy == null ? RetentionStrategy.Always.INSTANCE : retentionStrategy;
     }

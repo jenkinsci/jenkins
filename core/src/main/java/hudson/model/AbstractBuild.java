@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.EnvVars;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
@@ -117,7 +118,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * During the build this field remembers {@link BuildWrapper.Environment}s created by
      * {@link BuildWrapper}. This design is bit ugly but forced due to compatibility.
      */
-    protected transient List<BuildWrapper.Environment> buildEnvironments;
+    protected transient List<Environment> buildEnvironments;
 
     protected AbstractBuild(P job) throws IOException {
         super(job);
@@ -434,13 +435,15 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             jdk.buildEnvVars(env);
         project.getScm().buildEnvVars(this,env);
 
+        if(buildEnvironments!=null)
+        	for (Environment e : buildEnvironments)
+        		e.buildEnvVars(env);
+
         ParametersAction parameters = getAction(ParametersAction.class);
         if (parameters != null)
-            parameters.buildEnvVars(this,env);
-
-        if(buildEnvironments!=null)
-            for (BuildWrapper.Environment e : buildEnvironments)
-                e.buildEnvVars(env);
+        	parameters.buildEnvVars(this,env);
+        
+        EnvVars.resolve(env);
         
         return env;
     }

@@ -89,6 +89,15 @@ public class EnvVars extends TreeMap<String,String> {
     }
 
     /**
+     * Resolves environment variables against each other.
+     */
+	public static void resolve(Map<String, String> env) {
+		for (Map.Entry<String,String> entry: env.entrySet()) {
+			entry.setValue(Util.replaceMacro(entry.getValue(), env));
+		}
+	}
+    
+    /**
      * Takes a string that looks like "a=b" and adds that to this map.
      */
     public void addLine(String line) {
@@ -130,4 +139,5 @@ public class EnvVars extends TreeMap<String,String> {
      * variable of the slave agent.
      */
     public static final Map<String,String> masterEnvVars = new EnvVars(System.getenv());
+
 }

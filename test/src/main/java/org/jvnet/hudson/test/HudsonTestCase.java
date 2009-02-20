@@ -23,22 +23,11 @@
  */
 package org.jvnet.hudson.test;
 
-import com.gargoylesoftware.htmlunit.AjaxController;
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
-import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
-import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
 import hudson.CloseProofOutputStream;
 import hudson.FilePath;
 import hudson.Functions;
-import hudson.Launcher.LocalLauncher;
 import hudson.WebAppMain;
+import hudson.Launcher.LocalLauncher;
 import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenReporters;
@@ -48,13 +37,13 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.JDK;
 import hudson.model.Label;
-import hudson.model.Node.Mode;
+import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.UpdateCenter;
-import hudson.model.Node;
+import hudson.model.Node.Mode;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
@@ -64,13 +53,44 @@ import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamTaskListener;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.jar.Manifest;
+import java.util.logging.Filter;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+
 import junit.framework.TestCase;
-import org.apache.commons.io.IOUtils;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.recipes.Recipe.Runner;
 import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
+import org.kohsuke.stapler.Dispatcher;
+import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.MetaClassLoader;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.security.HashUserRealm;
@@ -84,33 +104,18 @@ import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
 import org.xml.sax.SAXException;
-import org.kohsuke.stapler.MetaClass;
-import org.kohsuke.stapler.Dispatcher;
-import org.kohsuke.stapler.MetaClassLoader;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.jar.Manifest;
-import java.util.logging.Filter;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import com.gargoylesoftware.htmlunit.AjaxController;
+import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
+import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
+import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
 
 /**
  * Base class for all Hudson test cases.
@@ -292,12 +297,13 @@ public abstract class HudsonTestCase extends TestCase {
     /**
      * Locates Maven2 and configure that as the only Maven in the system.
      */
-    protected void configureDefaultMaven() throws Exception {
+    protected MavenInstallation configureDefaultMaven() throws Exception {
         // first if we are running inside Maven, pick that Maven.
         String home = System.getProperty("maven.home");
         if(home!=null) {
-            Maven.DESCRIPTOR.setInstallations(new MavenInstallation("default",home));
-            return;
+            MavenInstallation mavenInstallation = new MavenInstallation("default",home);
+			Maven.DESCRIPTOR.setInstallations(mavenInstallation);
+            return mavenInstallation;
         }
 
         // otherwise extract the copy we have.
@@ -314,8 +320,10 @@ public abstract class HudsonTestCase extends TestCase {
         File mvnHome = createTmpDir();
         mvn.unzip(new FilePath(mvnHome));
 
-        Maven.DESCRIPTOR.setInstallations(new MavenInstallation("default",
-                new File(mvnHome,"maven-2.0.7").getAbsolutePath()));
+        MavenInstallation mavenInstallation = new MavenInstallation("default",
+                new File(mvnHome,"maven-2.0.7").getAbsolutePath());
+		Maven.DESCRIPTOR.setInstallations(mavenInstallation);
+		return mavenInstallation;
     }
 
 //
@@ -382,16 +390,24 @@ public abstract class HudsonTestCase extends TestCase {
      * Creates and launches a new slave on the local host.
      */
     public DumbSlave createSlave(Label l) throws Exception {
-        CommandLauncher launcher = new CommandLauncher(
-                System.getProperty("java.home") + "/bin/java -jar " + new File(hudson.getJnlpJars("slave.jar").getURL().getPath()).getPath());
-
-        // this synchronization block is so that we don't end up adding the same slave name more than once.
-        synchronized (hudson) {
-            DumbSlave slave = new DumbSlave("slave" + hudson.getNodes().size(), "dummy",
-                    createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), launcher, RetentionStrategy.NOOP);
-            hudson.addNode(slave);
-            return slave;
-        }
+    	return createSlave(l, null);
+    }
+    
+    /**
+     * Creates a slave with certain additional environment variables
+     */
+    public DumbSlave createSlave(Label l, Map<String,String> env) throws Exception {
+    	CommandLauncher launcher = new CommandLauncher(
+    			System.getProperty("java.home") + "/bin/java -jar \"" + 
+    			new File(hudson.getJnlpJars("slave.jar").getURL().toURI()).getAbsolutePath() + "\"", env);
+    	
+    	// this synchronization block is so that we don't end up adding the same slave name more than once.
+    	synchronized (hudson) {
+    		DumbSlave slave = new DumbSlave("slave" + hudson.getNodes().size(), "dummy",
+    				createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), launcher, RetentionStrategy.NOOP);
+    		hudson.addNode(slave);
+    		return slave;
+    	}
     }
 
     /**

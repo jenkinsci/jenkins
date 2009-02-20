@@ -32,6 +32,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.EnvironmentSpecific;
 import hudson.model.ParametersAction;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
@@ -126,12 +127,18 @@ public class Ant extends Builder {
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         AbstractProject proj = build.getProject();
 
+        
         ArgumentListBuilder args = new ArgumentListBuilder();
 
+        Map<String,String> slaveEnv = EnvVars.getRemote(launcher.getChannel());
+        EnvVars env = new EnvVars(slaveEnv);
+        env.overrideAll(build.getEnvVars());
+        
         AntInstallation ai = getAnt();
         if(ai==null) {
             args.add(launcher.isUnix() ? "ant" : "ant.bat");
         } else {
+        	ai = ai.forEnvironment(env);
             String exe = ai.getExecutable(launcher);
             if (exe==null) {
                 listener.fatalError(Messages.Ant_ExecutableNotFound(ai.name));
@@ -140,7 +147,12 @@ public class Ant extends Builder {
             args.add(exe);
         }
 
-        FilePath buildFilePath = buildFilePath(proj.getModuleRoot());
+        VariableResolver<String> vr = build.getBuildVariableResolver();
+
+        String buildFile = Util.replaceMacro(this.buildFile, env);
+        String targets = Util.replaceMacro(Util.replaceMacro(this.targets, env), vr);
+        
+        FilePath buildFilePath = buildFilePath(proj.getModuleRoot(), buildFile, targets);
 
         if(!buildFilePath.exists()) {
             // because of the poor choice of getModuleRoot() with CVS/Subversion, people often get confused
@@ -149,7 +161,7 @@ public class Ant extends Builder {
             // and diagnosing it nicely. See HUDSON-1782
 
             // first check if this appears to be a valid relative path from workspace root
-            FilePath buildFilePath2 = buildFilePath(proj.getWorkspace());
+            FilePath buildFilePath2 = buildFilePath(proj.getWorkspace(), buildFile, targets);
             if(buildFilePath2.exists()) {
                 // This must be what the user meant. Let it continue.
                 buildFilePath = buildFilePath2;
@@ -166,17 +178,14 @@ public class Ant extends Builder {
 
         args.addKeyValuePairs("-D",build.getBuildVariables());
 
-        VariableResolver<String> vr = build.getBuildVariableResolver();
-
         args.addKeyValuePairsFromPropertyString("-D",properties,vr);
 
-        args.addTokenized(Util.replaceMacro(targets,vr).replaceAll("[\t\r\n]+"," "));
+        args.addTokenized(targets.replaceAll("[\t\r\n]+"," "));
 
-        Map<String,String> env = build.getEnvVars();
         if(ai!=null)
             env.put("ANT_HOME",ai.getAntHome());
         if(antOpts!=null)
-            env.put("ANT_OPTS",antOpts);
+            env.put("ANT_OPTS",Util.replaceMacro(antOpts, env));
 
         if(!launcher.isUnix()) {
             // on Windows, executing batch file can't return the correct error code,
@@ -216,7 +225,7 @@ public class Ant extends Builder {
         }
     }
 
-    private FilePath buildFilePath(FilePath base) {
+    private static FilePath buildFilePath(FilePath base, String buildFile, String targets) {
         if(buildFile!=null)     return base.child(buildFile);
         // some users specify the -f option in the targets field, so take that into account as well.
         // see 
@@ -302,9 +311,13 @@ public class Ant extends Builder {
                 }
             }.process();
         }
+
+		public void setInstallations(AntInstallation... antInstallations) {
+			this.installations = antInstallations;
+		}
     }
 
-    public static final class AntInstallation implements Serializable {
+    public static final class AntInstallation implements Serializable, EnvironmentSpecific<AntInstallation> {
         private final String name;
         private final String antHome;
 
@@ -367,5 +380,9 @@ public class Ant extends Builder {
         }
 
         private static final long serialVersionUID = 1L;
+
+		public AntInstallation forEnvironment(Map<String, String> environment) {
+			return new AntInstallation(name, Util.replaceMacro(antHome, environment));
+		}
      }
 }

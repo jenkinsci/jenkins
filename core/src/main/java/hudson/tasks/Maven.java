@@ -37,6 +37,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.EnvironmentSpecific;
 import hudson.model.ParametersAction;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
@@ -178,7 +179,15 @@ public class Maven extends Builder {
 
         VariableResolver<String> vr = build.getBuildVariableResolver();
 
+        Map<String,String> slaveEnv = EnvVars.getRemote(launcher.getChannel());
+        EnvVars env = new EnvVars(slaveEnv);
+        env.overrideAll(build.getEnvVars());
+
         String targets = Util.replaceMacro(this.targets,vr);
+        targets = Util.replaceMacro(targets, env);
+        String pom = Util.replaceMacro(this.pom, env);
+        String jvmOptions = Util.replaceMacro(this.jvmOptions, env);
+        String properties =Util.replaceMacro(this.properties, env);
 
         int startIndex = 0;
         int endIndex;
@@ -189,12 +198,9 @@ public class Maven extends Builder {
                 endIndex = targets.length();
             }
 
-            Map<String,String> env = build.getEnvVars();
-
             String normalizedTarget = targets
                     .substring(startIndex, endIndex)
                     .replaceAll("[\t\r\n]+"," ");
-            normalizedTarget = Util.replaceMacro(normalizedTarget,env);
 
             ArgumentListBuilder args = new ArgumentListBuilder();
             MavenInstallation ai = getMaven();
@@ -202,6 +208,7 @@ public class Maven extends Builder {
                 String execName = proj.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
                 args.add(execName);
             } else {
+            	ai = ai.forEnvironment(env);
                 String exec = ai.getExecutable(launcher);
                 if(exec==null) {
                     listener.fatalError(Messages.Maven_NoExecutable(ai.getMavenHome()));
@@ -330,7 +337,7 @@ public class Maven extends Builder {
         }
     }
 
-    public static final class MavenInstallation implements Serializable {
+    public static final class MavenInstallation implements Serializable, EnvironmentSpecific<MavenInstallation> {
         private final String name;
         private final String mavenHome;
 
@@ -402,6 +409,11 @@ public class Maven extends Builder {
         }
 
         private static final long serialVersionUID = 1L;
+
+		@Override
+		public MavenInstallation forEnvironment(Map<String, String> environment) {
+			return new MavenInstallation(name, Util.replaceMacro(mavenHome, environment));
+		}
     }
 
     /**

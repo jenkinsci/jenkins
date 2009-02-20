@@ -340,7 +340,15 @@ public abstract class Launcher {
         }
 
         private Proc createLocalProc(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
-            return new LocalProc(cmd, Util.mapToEnv(inherit(env)), in, out, toFile(workDir));
+            Map jobEnv = inherit(env);
+
+            // replace variables in command line
+            String[] jobCmd = new String[cmd.length];
+            for ( int idx = 0 ; idx < jobCmd.length; idx++ ) {
+            	jobCmd[idx] = Util.replaceMacro(cmd[idx],jobEnv);
+            }
+
+            return new LocalProc(jobCmd, Util.mapToEnv(jobEnv), in, out, toFile(workDir));
         }
 
         private File toFile(FilePath f) {

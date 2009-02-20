@@ -1,0 +1,23 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<f:entry title="List of key-value pairs" help="${descriptor.getHelpPage()}">
+		<f:repeatable var="env" items="${instance.envVars.entrySet()}">
+			<table width="100%">
+				<f:entry title="${%name}">
+					<input class="setting-input" name="env.key" type="text"
+						value="${env.key}" />
+				</f:entry>
+				<f:entry title="${%value}">
+					<input class="setting-input" name="env.value" type="text"
+						value="${env.value}" />
+				</f:entry>
+				<f:entry title="">
+					<div align="right">
+						<f:repeatableDeleteButton />
+					</div>
+				</f:entry>
+			</table>
+		</f:repeatable>
+	</f:entry>
+
+</j:jelly>

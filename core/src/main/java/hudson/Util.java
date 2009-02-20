@@ -107,7 +107,7 @@ public class Util {
     public static String replaceMacro(String s, Map<String,String> properties) {
         return replaceMacro(s,new VariableResolver.ByMap<String>(properties));
     }
-
+    
     /**
      * Replaces the occurrence of '$key' by <tt>resolver.get('key')</tt>.
      *
@@ -115,6 +115,10 @@ public class Util {
      * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)
      */
     public static String replaceMacro(String s, VariableResolver<String> resolver) {
+    	if (s == null) {
+    		return null;
+    	}
+    	
         int idx=0;
         while(true) {
             Matcher m = VARIABLE.matcher(s);

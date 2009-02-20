@@ -72,6 +72,8 @@ import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.NodeList;
 import hudson.slaves.Cloud;
@@ -386,6 +388,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * on the left.
      */
     private transient final List<Action> actions = new CopyOnWriteArrayList<Action>();
+
+    /**
+     * List of global/master node properties
+     */
+    private DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(this);
 
     /**
      * {@link AdministrativeMonitor}s installed on this system.
@@ -1185,6 +1192,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         trimLabels();
         save();
     }
+    
+    public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
+    	return nodeProperties;
+    }
+    
+    public void setNodeProperties(Collection<NodeProperty<?>> nodeProperties) throws IOException {
+    	this.nodeProperties.replaceBy(nodeProperties);
+    }
 
     /**
      * Resets all labels and remove invalid ones.
@@ -1972,6 +1987,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 pluginManager.getPlugin(o.getString("name")).getPlugin().configure(o);
 
             clouds.rebuildHetero(req,json, Cloud.ALL, "cloud");
+
+            nodeProperties.rebuild(req, json.getJSONObject("nodeProperties"), getNodePropertyDescriptors());
 
             save();
             if(result)

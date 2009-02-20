@@ -23,22 +23,30 @@
  */
 package hudson.model;
 
-import hudson.FilePath;
-import hudson.Launcher;
 import hudson.ExtensionPoint;
+import hudson.FilePath;
 import hudson.FileSystemProvisioner;
+import hudson.Launcher;
+import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.VirtualChannel;
+import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
-import hudson.security.ACL;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeDescriptor;
-import hudson.node_monitors.NodeMonitor;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.ClockDifference;
+import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
-import org.kohsuke.stapler.Stapler;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+
+import org.kohsuke.stapler.Stapler;
 
 /**
  * Base type of Hudson slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
@@ -52,6 +60,9 @@ import java.util.Set;
  */
 public abstract class Node extends AbstractModelObject implements Describable<Node>, ExtensionPoint, AccessControlled {
 
+	public static final List<NodePropertyDescriptor> PROPERTIES = Descriptor
+		.toList((NodePropertyDescriptor) EnvironmentVariablesNodeProperty.DESCRIPTOR);
+	
     public String getDisplayName() {
         return getNodeName(); // default implementation
     }
@@ -128,7 +139,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      */
     public abstract Set<Label> getAssignedLabels();
 
-    /**
+    /*
      * Returns the possibly empty set of labels that it has been determined as supported by this node.
      * @see hudson.tasks.LabelFinder
      */
@@ -182,6 +193,30 @@ public abstract class Node extends AbstractModelObject implements Describable<No
         return FileSystemProvisioner.DEFAULT;
     }
 
+    // these are abstract because of possibly different owners for the nodeProperties list in subclasses
+    public abstract DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
+    
+    public abstract void setNodeProperties(Collection<NodeProperty<?>> nodeProperties) throws IOException;
+    
+    public List<NodePropertyDescriptor> getNodePropertyDescriptors() {
+		List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+		for (NodePropertyDescriptor npd : PROPERTIES) {
+			if (npd.isApplicable(getClass())) {
+				result.add(npd);
+			}
+		}
+		return result;
+    }
+    
+    public <N extends NodeProperty<?>> N getNodeProperty(Class<N> clazz) {
+    	for (NodeProperty<?> p: getNodeProperties()) {
+    		if (clazz.isInstance(p)) {
+    			return clazz.cast(p);
+    		}
+    	}
+    	return null;
+    }
+    
     public ACL getACL() {
         return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
     }

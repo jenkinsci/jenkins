@@ -23,8 +23,13 @@
  */
 package hudson.slaves;
 
-import hudson.model.Descriptor.FormException;
 import hudson.model.Slave;
+import hudson.model.Descriptor.FormException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -34,9 +39,15 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Kohsuke Kawaguchi
  */
 public final class DumbSlave extends Slave {
+	
+	@Deprecated
+    public DumbSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
+        this(name, nodeDescription, remoteFS, numExecutors, mode, label, launcher, retentionStrategy, new ArrayList());
+    }
+    
     @DataBoundConstructor
-    public DumbSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException {
-        super(name, nodeDescription, remoteFS, numExecutors, mode, label, launcher, retentionStrategy);
+    public DumbSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws IOException, FormException {
+    	super(name, nodeDescription, remoteFS, numExecutors, mode, label, launcher, retentionStrategy, nodeProperties);
     }
 
     public DescriptorImpl getDescriptor() {

@@ -1,0 +1,12 @@
+<project name="proba" default="viewprops">
+   <target name="viewprops">
+       <echo message="The base directory: ${basedir}"/>      
+       <echo message="This file: ${ant.file}"/>
+       <echo message="Ant version: ${ant.version}"/> 
+       <echo message="Project name: ${ant.project.name}"/>     
+       <echo message="Java version: ${ant.java.version}"/>
+       <echo message="Ant home: ${ant.home}"/>
+       <echo message="Test property: ${test.property}"/>
+   </target>
+</project>
+

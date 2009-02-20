@@ -23,24 +23,27 @@
  */
 package hudson.slaves;
 
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
+import hudson.EnvVars;
+import hudson.Util;
 import hudson.model.Descriptor;
-import hudson.util.StreamTaskListener;
+import hudson.remoting.Channel;
+import hudson.util.FormFieldValidator;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
-import hudson.util.FormFieldValidator;
-import hudson.Util;
-import hudson.EnvVars;
-import hudson.remoting.Channel;
+import hudson.util.StreamTaskListener;
 
-import javax.servlet.ServletException;
+import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.IOException;
+
+import javax.servlet.ServletException;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * {@link ComputerLauncher} through a remote login mechanism like ssh/rsh.
@@ -54,11 +57,21 @@ public class CommandLauncher extends ComputerLauncher {
      * Command line to launch the agent, like
      * "ssh myslave java -jar /path/to/hudson-remoting.jar"
      */
-    private String agentCommand;
+    private final String agentCommand;
+    
+    /**
+     * Optional environment variables to add to the current environment
+     */
+	private final Map<String, String> env;
 
     @DataBoundConstructor
     public CommandLauncher(String command) {
-        this.agentCommand = command;
+        this(command, null);
+    }
+    
+    public CommandLauncher(String command, Map<String,String> env) {
+    	this.agentCommand = command;
+    	this.env = env;
     }
 
     public String getCommand() {
@@ -93,6 +106,11 @@ public class CommandLauncher extends ComputerLauncher {
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
             final EnvVars cookie = _cookie = ProcessTreeKiller.createCookie();
             pb.environment().putAll(cookie);
+            
+            if (env != null) {
+            	pb.environment().putAll(env);
+            }
+            
             final Process proc = _proc = pb.start();
 
             // capture error information from stderr. this will terminate itself
