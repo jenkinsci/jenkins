@@ -82,4 +82,21 @@ public class FilePathTest extends TestCase {
         tmp.delete();
     }
 
+    /**
+     * An attempt to reproduce the file descriptor leak.
+     * If this operation leaks a file descriptor, 2500 should be enough, I think.
+     */
+    public void testCopyTo2() throws Exception {
+        for (int j=0; j<2500; j++) {
+            File tmp = File.createTempFile("testCopyTo","");
+            FilePath f = new FilePath(tmp);
+            File tmp2 = File.createTempFile("testCopyTo","");
+            FilePath f2 = new FilePath(british,tmp.getPath());
+
+            f.copyTo(f2);
+
+            tmp.delete();
+            tmp2.delete();
+        }
+    }
 }
