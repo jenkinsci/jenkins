@@ -103,7 +103,7 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
             try {
                 byte[] response;
                 try {
-                    response = serialize(e, channel);
+                    response = _serialize(e, channel);
                 } catch (NotSerializableException x) {
                     // perhaps the thrown runtime exception is of type we can't handle
                     response = serialize(new ProxyException(e), channel);
@@ -116,18 +116,24 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
         }
     }
 
-    private byte[] serialize(Object o, Channel localChannel) throws IOException {
+    private byte[] _serialize(Object o, Channel localChannel) throws IOException {
         Channel old = Channel.setCurrent(localChannel);
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             new ObjectOutputStream(baos).writeObject(o);
             return baos.toByteArray();
+        } finally {
+            Channel.setCurrent(old);
+        }
+    }
+
+    private byte[] serialize(Object o, Channel localChannel) throws IOException {
+        try {
+            return _serialize(o,localChannel);
         } catch( NotSerializableException e ) {
             IOException x = new IOException("Unable to serialize " + o);
             x.initCause(e);
             throw x;
-        } finally {
-            Channel.setCurrent(old);
         }
     }
 

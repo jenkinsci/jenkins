@@ -41,6 +41,14 @@ public class ProxyException extends IOException {
 
         // wrap all the chained exceptions
         if(cause.getCause()!=null)
-            initCause(new ProxyException(getCause()));
+            initCause(new ProxyException(cause.getCause()));
+    }
+
+    /**
+     * {@link ProxyException} all the way down.
+     */
+    @Override
+    public ProxyException getCause() {
+        return (ProxyException)super.getCause();
     }
 }
