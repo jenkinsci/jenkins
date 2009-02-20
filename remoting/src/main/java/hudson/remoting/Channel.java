@@ -349,7 +349,12 @@ public class Channel implements VirtualChannel {
         } finally {
             Channel.setCurrent(old);
         }
-        oos.reset();
+        // unless this is the last command, have OOS and remote OIS forget all the objects we sent
+        // in this command. Otherwise it'll keep objects in memory unnecessarily.
+        // However, this may fail if the command was the close, because that's supposed to be the last command
+        // ever sent. See the comment from jglick on HUDSON-3077 about what happens if we do oos.reset(). 
+        if(!(cmd instanceof CloseCommand))
+            oos.reset();
     }
 
     /**
