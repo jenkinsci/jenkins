@@ -50,6 +50,11 @@ public abstract class Proc {
     private Proc() {}
 
     /**
+     * Checks if the process is still alive.
+     */
+    public abstract boolean isAlive() throws IOException, InterruptedException;
+
+    /**
      * Terminates the process.
      *
      * @throws IOException
@@ -177,6 +182,16 @@ public abstract class Proc {
         }
 
         @Override
+        public boolean isAlive() throws IOException, InterruptedException {
+            try {
+                proc.exitValue();
+                return false;
+            } catch (IllegalThreadStateException e) {
+                return true;
+            }
+        }
+
+        @Override
         public void kill() throws InterruptedException, IOException {
             destroy();
             join();
@@ -253,6 +268,11 @@ public abstract class Proc {
                     throw (IOException)e.getCause();
                 throw new IOException2("Failed to join the process",e);
             }
+        }
+
+        @Override
+        public boolean isAlive() throws IOException, InterruptedException {
+            return !process.isDone();
         }
     }
 

@@ -26,6 +26,7 @@ package hudson.maven;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Proc;
+import hudson.AbortException;
 import static hudson.Util.fixNull;
 import hudson.maven.agent.Main;
 import hudson.model.BuildListener;
@@ -60,6 +61,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.jar.JarFile;
@@ -196,7 +198,19 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             String[] cmds = cmdLine.toCommandArray();
             final Proc proc = launcher.launch(cmds, envVars, out, workDir);
 
-            Connection con = acceptor.accept();
+            Connection con;
+            try {
+                con = acceptor.accept();
+            } catch (SocketTimeoutException e) {
+                // failed to connect. Is the process dead?
+                // if so, the error should have been provided by the launcher already.
+                // so abort gracefully without a stack trace.
+                if(!proc.isAlive()) {
+                    listener.getLogger().println("Failed to launch Maven. Exit code = "+proc.join());
+                    throw new AbortException();
+                }
+                throw e;
+            }
 
             return new Channel("Channel to Maven "+ Arrays.toString(cmds),
                 Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out)) {
