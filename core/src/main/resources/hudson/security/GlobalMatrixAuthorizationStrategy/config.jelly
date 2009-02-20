@@ -49,7 +49,7 @@ THE SOFTWARE.
     </d:taglib>
     <link rel="stylesheet" href="${rootURL}${app.VIEW_RESOURCE_PATH}/hudson/security/table.css" type="text/css" />
     <j:set var="strategyid" value="${descriptor.jsonSafeClassName}" />
-    <table id="${strategyid}" class="center-align global-matrix-authorization-strategy-table" name="data" width="100%">
+    <table id="${strategyid}" class="center-align global-matrix-authorization-strategy-table" name="data">
 
       <!-- The first row will show grouping -->
       <tr class="group-row">

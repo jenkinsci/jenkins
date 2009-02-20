@@ -37,7 +37,9 @@
 }
 
 .global-matrix-authorization-strategy-table .caption-row TH {
-  font-weight: bold;
+  font-weight: lighter;
+  writing-mode: tb-rl; /* works in IE, not FF */
+  padding: 0;
 }
 
 .global-matrix-authorization-strategy-table TD {
