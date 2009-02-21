@@ -27,9 +27,10 @@ import hudson.AbortException;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.maven.MavenModule;
-import hudson.model.Cause.UserCause;
 import hudson.model.Cause.LegacyCodeCause;
+import hudson.model.Cause.UserCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
@@ -64,6 +65,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -450,14 +452,34 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public boolean scheduleBuild(int quietPeriod, Cause c) {
+        return scheduleBuild(quietPeriod, c, new Action[0]);
+    }
+
+    /**
+     * Schedules a build.
+     *
+     * Important: the actions should be persistable without outside references (e.g. don't store
+     * references to this project). To provide parameters for a parameterized project, add a ParametersAction. If
+     * no ParametersAction is provided for such a project, one will be created with the default parameter values.
+     *
+     * @param quietPeriod the quiet period to observer
+     * @param c the cause for this build which should be recorded
+     * @param actions a list of Actions that will be added to the build
+     * @return whether the build was actually scheduled
+     */
+    public boolean scheduleBuild(int quietPeriod, Cause c, Action... actions) {
         if (isDisabled())
             return false;
 
-        if (isParameterized())
-        	return Hudson.getInstance().getQueue().add(
-        			this, quietPeriod, new ParametersAction(getDefaultParametersValues()), new CauseAction(c));
-        else
-            return Hudson.getInstance().getQueue().add(this, quietPeriod, new CauseAction(c));
+        List<Action> queueActions = new ArrayList(Arrays.asList(actions));
+        if (isParameterized() && Util.filter(queueActions, ParametersAction.class).isEmpty()) {
+            queueActions.add(new ParametersAction(getDefaultParametersValues()));
+        }
+
+        return Hudson.getInstance().getQueue().add(
+                this,
+                quietPeriod,
+                queueActions.toArray(new Action[queueActions.size()]));
     }
 
     private List<ParameterValue> getDefaultParametersValues() {
