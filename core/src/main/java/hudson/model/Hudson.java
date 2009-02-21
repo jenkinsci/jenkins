@@ -149,6 +149,7 @@ import java.net.URL;
 import java.security.SecureRandom;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1009,10 +1010,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public Computer[] getComputers() {
         Computer[] r = computers.values().toArray(new Computer[computers.size()]);
         Arrays.sort(r,new Comparator<Computer>() {
+            final Collator collator = Collator.getInstance();
             public int compare(Computer lhs, Computer rhs) {
                 if(lhs.getNode()==Hudson.this)  return -1;
                 if(rhs.getNode()==Hudson.this)  return 1;
-                return lhs.getDisplayName().toUpperCase().compareTo(rhs.getDisplayName().toUpperCase());
+                return collator.compare(lhs, rhs);
             }
         });
         return r;
