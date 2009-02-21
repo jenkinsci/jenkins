@@ -517,6 +517,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * to wait for the completion of the build.
      */
     public Future<R> scheduleBuild2(int quietPeriod, Cause c) {
+        return scheduleBuild2(quietPeriod, c, new Action[0]);
+    }
+
+    /**
+     * Schedules a build of this project, and returns a {@link Future} object
+     * to wait for the completion of the build.
+     */
+    public Future<R> scheduleBuild2(int quietPeriod, Cause c, Action... actions) {
         R lastBuild = getLastBuild();
         final int n;
         if(lastBuild!=null) n = lastBuild.getNumber();
@@ -535,7 +543,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             { r.register(); }
         };
 
-        scheduleBuild(quietPeriod, c);
+        scheduleBuild(quietPeriod, c, actions);
 
         return f;
     }
