@@ -37,6 +37,7 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.recipes.PresetData;
 import static org.jvnet.hudson.test.recipes.PresetData.DataSet.ANONYMOUS_READONLY;
 
@@ -177,4 +178,23 @@ public class SubversionSCMTest extends HudsonTestCase {
         // then no more change should be detected
         assertFalse(p.pollSCMChanges(listener));
     }
+
+    public void testURLWithVariable() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        String url = "http://svn.codehaus.org/plexus/tags/JASF_INIT/plexus-avalon-components/jasf/";
+        p.setScm(new SubversionSCM(
+                new String[]{"$REPO" + url.substring(10)},
+                new String[]{null},
+                true, null
+        ));
+
+        String var = url.substring(0, 10);
+
+        FreeStyleBuild b = p.scheduleBuild2(0, new Cause.LegacyCodeCause(), 
+                new ParametersAction(new StringParameterValue("REPO", var))).get();
+        System.out.println(b.getLog());
+        assertBuildStatus(Result.SUCCESS,b);
+        assertTrue(p.getWorkspace().child("jasf/maven.xml").exists());
+    }
+
 }
