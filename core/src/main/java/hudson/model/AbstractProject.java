@@ -477,6 +477,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             queueActions.add(new ParametersAction(getDefaultParametersValues()));
         }
 
+        if (c != null) {
+            queueActions.add(new CauseAction(c));
+        }
+
         return Hudson.getInstance().getQueue().add(
                 this,
                 quietPeriod,
