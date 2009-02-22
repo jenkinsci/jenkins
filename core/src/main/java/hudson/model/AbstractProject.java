@@ -31,6 +31,7 @@ import hudson.Util;
 import hudson.maven.MavenModule;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.UserCause;
+import hudson.model.Cause.RemoteCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
@@ -1067,6 +1068,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return;
         }
 
+        Cause cause;
+        if (authToken != null && authToken.getToken() != null && req.getParameter("token") != null) {
+            cause = new RemoteCause(req.getRemoteAddr());
+        } else {
+            cause = new UserCause();
+        }
+
         String delay = req.getParameter("delay");
         if (delay!=null) {
             if (!isDisabled()) {
@@ -1075,17 +1083,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
                     if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
                     Hudson.getInstance().getQueue().add(this, Integer.parseInt(delay), 
-                    		new CauseAction(new UserCause()));
+                    		new CauseAction(cause));
                 } catch (NumberFormatException e) {
                     throw new ServletException("Invalid delay parameter value: "+delay);
                 }
             }
         } else {
-            scheduleBuild(new UserCause());
+            scheduleBuild(cause);
         }
         rsp.forwardToPreviousPage(req);
     }
-    
+
     /**
      * Supports build trigger with parameters via an HTTP GET or POST.
      * Currently only String parameters are supported.

@@ -97,4 +97,18 @@ public abstract class Cause {
 			return Messages.Cause_UserCause_HTMLDescription(authenticationName, Stapler.getCurrentRequest().getContextPath());
 		}
 	}
+
+    public static class RemoteCause extends Cause {
+        private String addr;
+
+        public RemoteCause(String addr) {
+            this.addr = addr;
+        }
+
+        @Override
+        public String getShortDescription() {
+            return Messages.Cause_RemoteCause_ShortDescription(addr);
+        }
+
+    }
 }
