@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -38,11 +37,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 public abstract class Cause {
 	@Exported(visibility=3)
 	abstract public String getShortDescription();
-
-        public String getHTMLDescription() {
-            // Default to same as ShortDescription; subclasses can override
-            return getShortDescription();
-        }
 
 	public static class LegacyCodeCause extends Cause {
 		private StackTraceElement [] stackTrace;
@@ -68,16 +62,22 @@ public abstract class Cause {
 			CauseAction ca = up.getAction(CauseAction.class);
 			upstreamCause = ca == null ? null : ca.getCause();
 		}
+
+        public String getUpstreamProject() {
+            return upstreamProject;
+        }
+
+        public int getUpstreamBuild() {
+            return upstreamBuild;
+        }
+
+        public String getUpstreamUrl() {
+            return upstreamUrl;
+        }
 		
 		@Override
 		public String getShortDescription() {
 			return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, upstreamBuild);
-		}
-		
-		@Override
-		public String getHTMLDescription() {
-                        // upstreamUrl added in 1.284, so handle missing value
-			return upstreamUrl==null ? getShortDescription() : Messages.Cause_UpstreamCause_HTMLDescription(upstreamProject, upstreamBuild, upstreamUrl, Stapler.getCurrentRequest().getContextPath());
 		}
 	}
 
@@ -87,14 +87,13 @@ public abstract class Cause {
 			this.authenticationName = Hudson.getAuthentication().getName();
 		}
 		
+        public String getUserName() {
+            return authenticationName;
+        }
+
 		@Override
 		public String getShortDescription() {
 			return Messages.Cause_UserCause_ShortDescription(authenticationName);
-		}
-		
-		@Override
-		public String getHTMLDescription() {
-			return Messages.Cause_UserCause_HTMLDescription(authenticationName, Stapler.getCurrentRequest().getContextPath());
 		}
 	}
 
@@ -109,6 +108,5 @@ public abstract class Cause {
         public String getShortDescription() {
             return Messages.Cause_RemoteCause_ShortDescription(addr);
         }
-
     }
 }

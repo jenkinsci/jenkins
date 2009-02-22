@@ -39,10 +39,6 @@ public class CauseAction implements Action {
 		return cause.getShortDescription();
 	}
 	
-	public String getHTMLDescription() {
-		return cause.getHTMLDescription();
-	}
-	
 	public CauseAction(Cause c) {
 		this.cause = c;
 	}
