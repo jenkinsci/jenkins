@@ -1014,7 +1014,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             public int compare(Computer lhs, Computer rhs) {
                 if(lhs.getNode()==Hudson.this)  return -1;
                 if(rhs.getNode()==Hudson.this)  return 1;
-                return collator.compare(lhs, rhs);
+                return collator.compare(lhs.getDisplayName(), rhs.getDisplayName());
             }
         });
         return r;
