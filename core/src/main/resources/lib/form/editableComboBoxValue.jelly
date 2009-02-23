@@ -31,5 +31,5 @@ THE SOFTWARE.
     Normally one would use multiple values.
     <st:attribute name="value" use="required" />
   </st:documentation>
-	values.push("${value}");
+	values.push("${value.toString().replace('"','\"')}");
 </j:jelly>
