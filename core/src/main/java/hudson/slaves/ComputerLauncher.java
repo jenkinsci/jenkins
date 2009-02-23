@@ -24,6 +24,7 @@
 package hudson.slaves;
 
 import hudson.ExtensionPoint;
+import hudson.os.windows.ManagedWindowsServiceLauncher;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.remoting.Channel.Listener;
@@ -104,5 +105,6 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
     static {
         LIST.load(JNLPLauncher.class);
         LIST.load(CommandLauncher.class);
+        LIST.load(ManagedWindowsServiceLauncher.class);
     }
 }

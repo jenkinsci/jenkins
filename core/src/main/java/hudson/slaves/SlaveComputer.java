@@ -264,7 +264,7 @@ public class SlaveComputer extends Computer {
      *      when the established communication channel might include some data that might
      *      be useful for debugging/trouble-shooting.
      * @param listener
-     *      Gets a notification when the channel closes, to perform clean up.
+     *      Gets a notification when the channel closes, to perform clean up. Can be null.
      */
     public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
         if(this.channel!=null)
@@ -277,7 +277,8 @@ public class SlaveComputer extends Computer {
                 SlaveComputer.this.channel = null;
             }
         });
-        channel.addListener(listener);
+        if(listener!=null)
+            channel.addListener(listener);
 
         PrintWriter log = new PrintWriter(launchLog,true);
 

@@ -23,8 +23,15 @@
  */
 package hudson.util.jna;
 
-import java.util.regex.Pattern;
+import org.jinterop.dcom.common.IJIAuthInfo;
+import org.jinterop.dcom.common.JIException;
+import org.jinterop.winreg.IJIWinReg;
+import org.jinterop.winreg.JIPolicyHandle;
+import org.jinterop.winreg.JIWinRegFactory;
+
+import java.net.UnknownHostException;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * .NET related code.
@@ -37,21 +44,14 @@ public class DotNet {
      */
     public static boolean isInstalled(int major, int minor) {
         try {
-// see http://support.microsoft.com/?scid=kb;en-us;315291 for the basic algorithm
+            // see http://support.microsoft.com/?scid=kb;en-us;315291 for the basic algorithm
             // observation in my registry shows that the actual key name can be things like "v2.0 SP1"
             // or "v2.0.50727", so the regexp is written to accomodate this.
             RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly("SOFTWARE\\Microsoft\\.NETFramework");
             try {
                 for( String keyName : key.getSubKeys() ) {
-                    Matcher m = VERSION_PATTERN.matcher(keyName);
-                    if(m.matches()) {
-                        int mj = Integer.parseInt(m.group(1));
-                        if(mj>=major) {
-                            int mn = Integer.parseInt(m.group(2));
-                            if(mn>=minor)
-                                return true;
-                        }
-                    }
+                    if (matches(keyName, major, minor))
+                        return true;
                 }
                 return false;
             } finally {
@@ -62,6 +62,50 @@ public class DotNet {
                 return false;
             throw e;
         }
+    }
+
+    /**
+     * Returns true if the .NET framework of the given version (or grater) is installed
+     * on a remote machine. 
+     */
+    public static boolean isInstalled(int major, int minor, String targetMachine, IJIAuthInfo session) throws JIException, UnknownHostException {
+        IJIWinReg registry = JIWinRegFactory.getSingleTon().getWinreg(session,targetMachine,true);
+        JIPolicyHandle hklm=null;
+        JIPolicyHandle key=null;
+
+        try {
+            hklm = registry.winreg_OpenHKLM();
+            key = registry.winreg_OpenKey(hklm,"SOFTWARE\\Microsoft\\.NETFramework", IJIWinReg.KEY_READ );
+
+            for( int i=0; ; i++ ) {
+                String keyName = registry.winreg_EnumKey(key,i)[0];
+                if(matches(keyName,major,minor))
+                    return true;
+            }
+        } catch (JIException e) {
+            if(e.getErrorCode()==2)
+                return false;       // not found
+            throw e;
+        } finally {
+            if(hklm!=null)
+                registry.winreg_CloseKey(hklm);
+            if(key!=null)
+                registry.winreg_CloseKey(key);
+            registry.closeConnection();
+        }
+    }
+
+    private static boolean matches(String keyName, int major, int minor) {
+        Matcher m = VERSION_PATTERN.matcher(keyName);
+        if(m.matches()) {
+            int mj = Integer.parseInt(m.group(1));
+            if(mj>=major) {
+                int mn = Integer.parseInt(m.group(2));
+                if(mn>=minor)
+                    return true;
+            }
+        }
+        return false;
     }
 
     private static final Pattern VERSION_PATTERN = Pattern.compile("v(\\d+)\\.(\\d+).*");

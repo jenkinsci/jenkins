@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <st:documentation>
     Generates an input field <tt>&lt;input type="text" ... /></tt> to be
     used inside &lt;f:entry/>
@@ -48,7 +48,7 @@ THE SOFTWARE.
       which is the recommended approach.
     </st:attribute>
   </st:documentation>
-  <j:set var="checkUrl" value="${h.getCheckUrl(attrs.checkUrl,descriptor,attrs.field)}" />
+  <f:prepareDatabinding />
   <input class="setting-input ${h.ifThenElse(checkUrl!=null,'validated','')}"
          name ="${h.defaulted(attrs.name,'_.'+attrs.field)}"
          value="${h.defaulted(attrs.value,instance[attrs.field])}"

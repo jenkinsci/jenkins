@@ -41,10 +41,16 @@ import javax.net.ssl.SSLSession;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.File;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -66,6 +72,7 @@ public class Launcher {
         Mode m = Mode.BINARY;
         boolean ping = false;
         URL slaveJnlpURL = null;
+        File tcpPortFile = null;
 
         for(int i=0; i<args.length; i++) {
             String arg = args[i];
@@ -84,6 +91,14 @@ public class Launcher {
                     System.exit(1);
                 }
                 slaveJnlpURL = new URL(args[++i]);
+                continue;
+            }
+            if(arg.equals("-tcp")) {
+                if(i+1==args.length) {
+                    System.err.println("The -tcp option is missing a file name parameter");
+                    System.exit(1);
+                }
+                tcpPortFile = new File(args[++i]);
                 continue;
             }
             if(arg.equals("-noCertificateCheck")) {
@@ -108,6 +123,10 @@ public class Launcher {
         if(slaveJnlpURL!=null) {
             List<String> jnlpArgs = parseJnlpArguments(slaveJnlpURL);
             hudson.remoting.jnlp.Main.main(jnlpArgs.toArray(new String[jnlpArgs.size()]));
+        } else
+        if(tcpPortFile!=null) {
+            runAsTcpServer(tcpPortFile,m,ping);
+            System.exit(0);
         } else {
             runWithStdinStdout(m, ping);
             System.exit(0);
@@ -154,6 +173,35 @@ public class Launcher {
                 // retry
             }
         }
+    }
+
+    /**
+     * Listens on an ephemeral port, record that port number in a port file,
+     * then accepts one TCP connection.
+     */
+    private static void runAsTcpServer(File portFile, Mode m, boolean ping) throws IOException, InterruptedException {
+        // if no one connects for too long, assume something went wrong
+        // and avoid hanging foreever
+        ServerSocket ss = new ServerSocket(0,1);
+        ss.setSoTimeout(30*1000);
+
+        // write a port file to report the port number
+        FileWriter w = new FileWriter(portFile);
+        w.write(String.valueOf(ss.getLocalPort()));
+        w.close();
+
+        // accept just one connection and that's it.
+        // when we are done, remove the port file to avoid stale port file
+        Socket s;
+        try {
+            s = ss.accept();
+            ss.close();
+        } finally {
+            portFile.delete();
+        }
+
+        main(new BufferedInputStream(new SocketInputStream(s)),
+             new BufferedOutputStream(new SocketOutputStream(s)),m,ping);
     }
 
     private static void runWithStdinStdout(Mode m, boolean ping) throws IOException, InterruptedException {

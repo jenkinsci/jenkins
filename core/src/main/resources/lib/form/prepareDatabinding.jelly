@@ -22,16 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:if test="${it.offline and !it.temporarilyOffline}">
-    <p class="error">
-      This node is offline because Hudson failed to launch the slave agent on it.
-      <a href="log">See log for more details</a>
-    </p>
-    <l:isAdmin>
-      <form method="get" action="launchSlaveAgent">
-        <f:submit value="Launch slave agent" />
-      </form>
-    </l:isAdmin>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+  <st:documentation>
+    Modifies the 'attrs.field' of the parent to inherit @field from the enclosing &lt;f:entry>
+    if available. Also computes the @checkUrl attribute.
+  </st:documentation>
+  <j:set var="pattrs" value="${parentScope.attrs}" />
+  <j:if test="${pattrs.field==null}">
+    <j:set target="${pattrs}" property="field"
+           value="${h.findAncestorTag(pattrs,'/lib/form','entry').attributes.field}" />
   </j:if>
+  <j:set target="${pattrs}" property="checkUrl"
+         value="${h.getCheckUrl(pattrs.checkUrl,descriptor,pattrs.field)}" />
 </j:jelly>

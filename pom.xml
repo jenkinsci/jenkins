@@ -109,6 +109,14 @@ THE SOFTWARE.
         </configuration>
       </plugin>
 
+      <plugin><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+
       <!--<plugin>
         <groupId>org.jvnet.fix1600</groupId>
         <artifactId>fix1600</artifactId>

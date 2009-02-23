@@ -32,6 +32,11 @@ THE SOFTWARE.
     <st:attribute name="title">
       Name of the entry. Think of this like a label for the control.
     </st:attribute>
+    <st:attribute name="field">
+      Used for the databinding. TBD. When this attribute
+      is specified, @help is inferred, and nested input controls don't need
+      the @field nor @name.
+    </st:attribute>
     <st:attribute name="description">
       If it's not obvious to the user as to what the control expects,
       specify some description text (which currently gets rendered as
@@ -51,6 +56,11 @@ THE SOFTWARE.
       so it's normally something like "/plugin/foobar/help/abc.html".
     </st:attribute>
   </st:documentation>
+  <j:if test="${attrs.help==null}">
+    <!-- infer the help page from the current descriptor and field if possible -->
+    <j:set target="${attrs}" property="help"
+           value="${descriptor.getHelpFile(attrs.field)}" />
+  </j:if>
   <tr>
     <td class="setting-leftspace"><st:nbsp/></td>
     <td class="setting-name">
@@ -72,7 +82,7 @@ THE SOFTWARE.
       ${description}
     </f:description>
   </j:if>
-  <j:if test="${help!=null}">
+  <j:if test="${attrs.help!=null}">
     <f:helpArea />
   </j:if>
 </j:jelly>

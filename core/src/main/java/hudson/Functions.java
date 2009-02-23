@@ -63,6 +63,8 @@ import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
+import org.apache.commons.jelly.Tag;
+import org.apache.commons.jelly.TagSupport;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
@@ -70,6 +72,7 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.jelly.CustomTagLibrary.StaplerDynamicTag;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -1038,6 +1041,21 @@ public class Functions {
     
     public static DescriptorList<Cloud> getCloudDescriptors() {
         return Cloud.ALL;
+    }
+
+    /**
+     * Used to assist form databinding. Given the "attrs" object,
+     * find the ancestor tag file of the given name.
+     */
+    public Tag findAncestorTag(Map attributes, String nsUri, String local) {
+        Tag tag = (Tag) attributes.get("ownerTag");
+        while(tag!=null) {
+            tag = TagSupport.findAncestorWithClass(tag.getParent(), StaplerDynamicTag.class);
+            StaplerDynamicTag stag = (StaplerDynamicTag)tag;
+            if(stag.getLocalName().equals(local) && stag.getNsUri().equals(nsUri))
+                return tag;
+        }
+        return null;
     }
 
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");

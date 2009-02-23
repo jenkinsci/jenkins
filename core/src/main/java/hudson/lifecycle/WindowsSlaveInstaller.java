@@ -114,10 +114,8 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
             FileUtils.copyURLToFile(getClass().getResource("/windows-service/hudson.exe"), slaveExe);
 
             // write out the descriptor
-            String xml = IOUtils.toString(getClass().getResourceAsStream("/windows-service/hudson-slave.xml"), "UTF-8");
-            xml = xml.replace("@JAVA@",System.getProperty("java.home")+"\\bin\\java.exe");
             URL jnlp = new URL(engine.getHudsonUrl(),"computer/"+engine.slaveName+"/slave-agent.jnlp");
-            xml = xml.replace("@URL@",jnlp.toExternalForm());
+            String xml = generateSlaveXml(System.getProperty("java.home")+"\\bin\\java.exe", "-jnlpUrl "+jnlp.toExternalForm());
             FileUtils.writeStringToFile(new File(dir, "hudson-slave.xml"),xml,"UTF-8");
 
             // copy slave.jar
@@ -166,6 +164,13 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
                 dialog,sw.toString(),"Error",
                 JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    public static String generateSlaveXml(String java, String args) throws IOException {
+        String xml = IOUtils.toString(WindowsSlaveInstaller.class.getResourceAsStream("/windows-service/hudson-slave.xml"), "UTF-8");
+        xml = xml.replace("@JAVA@", java);
+        xml = xml.replace("@ARGS@", args);
+        return xml;
     }
 
     private static final long serialVersionUID = 1L;
