@@ -56,4 +56,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
     protected ViewDescriptor(Class<? extends View> clazz) {
         super(clazz);
     }
+
+    protected ViewDescriptor() {
+    }
 }
