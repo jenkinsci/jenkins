@@ -115,7 +115,7 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
     /**
      * All registered {@link Cloud} implementations.
      */
-    public static final DescriptorList<Cloud> ALL = new DescriptorList<Cloud>();
+    public static final DescriptorList<Cloud> ALL = new DescriptorList<Cloud>(Cloud.class);
 
     /**
      * Permission constant to control mutation operations on {@link Cloud}.

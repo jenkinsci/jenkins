@@ -141,7 +141,7 @@ public class UsageStatistics extends PageDecorator {
                 n.put("jvm-version", System.getProperty("java.version"));
             }
             n.put("executors",c.getNumExecutors());
-            n.put("os", ArchitectureMonitor.DESCRIPTOR.get(c));
+            n.put("os", ((ArchitectureMonitor.DescriptorImpl)h.getDescriptor(ArchitectureMonitor.class)).get(c));
             nodes.add(n);
         }
         o.put("nodes",nodes);

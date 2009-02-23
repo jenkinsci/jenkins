@@ -27,6 +27,7 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Descriptor;
 import hudson.util.ClockDifference;
+import hudson.Extension;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -41,14 +42,11 @@ import net.sf.json.JSONObject;
  * @since 1.123
  */
 public class ClockMonitor extends NodeMonitor {
-    public AbstractNodeMonitorDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
     public ClockDifference getDifferenceFor(Computer c) {
         return DESCRIPTOR.get(c);
     }
 
+    @Extension
     public static final AbstractNodeMonitorDescriptor<ClockDifference> DESCRIPTOR = new AbstractNodeMonitorDescriptor<ClockDifference>() {
         protected ClockDifference monitor(Computer c) throws IOException, InterruptedException {
             Node n = c.getNode();
@@ -65,8 +63,4 @@ public class ClockMonitor extends NodeMonitor {
             return new ClockMonitor();
         }
     };
-
-    static {
-        LIST.add(DESCRIPTOR);
-    }
 }

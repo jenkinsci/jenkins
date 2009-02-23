@@ -67,6 +67,18 @@ public class ExtensionListTest extends HudsonTestCase {
         public static final class DescriptorImpl extends FishDescriptor {}
     }
 
+    /**
+     * Verifies that the automated {@link Descriptor} lookup works.
+     */
+    public void testDescriptorLookup() throws Exception {
+        Descriptor<Fish> d = new Sishamo().getDescriptor();
+
+        DescriptorExtensionList<Fish> list = hudson.getDescriptorList(Fish.class);
+        assertSame(d,list.get(Sishamo.DescriptorImpl.class));
+
+        assertSame(d,hudson.getDescriptor(Sishamo.class));
+    }
+
     public void testFishDiscovery() throws Exception {
         // imagine that this is a static instance, like it is in many LIST static field in Hudson.
         DescriptorList<Fish> LIST = new DescriptorList<Fish>(Fish.class);

@@ -24,6 +24,7 @@
 package hudson.node_monitors;
 
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.remoting.Callable;
@@ -43,10 +44,6 @@ import java.io.IOException;
  * @sine 1.233
  */
 public class SwapSpaceMonitor extends NodeMonitor {
-    public AbstractNodeMonitorDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
     /**
      * Returns the HTML representation of the space.
      */
@@ -80,6 +77,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
         return Hudson.getInstance().hasPermission(Hudson.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
+    @Extension
     public static final AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR = new AbstractNodeMonitorDescriptor<MemoryUsage>() {
         protected MemoryUsage monitor(Computer c) throws IOException, InterruptedException {
             return c.getChannel().call(new MonitorTask());
@@ -163,9 +161,5 @@ public class SwapSpaceMonitor extends NodeMonitor {
         public long getAvailableSwapSpace() {
             return availableSwapSpace;
         }
-    }
-
-    static {
-        LIST.add(DESCRIPTOR);
     }
 }

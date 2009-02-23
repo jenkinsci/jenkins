@@ -24,6 +24,7 @@
 package hudson.node_monitors;
 
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import hudson.remoting.Future;
@@ -46,10 +47,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @author Kohsuke Kawaguchi
  */
 public class ResponseTimeMonitor extends NodeMonitor {
-    public AbstractNodeMonitorDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
+    @Extension
     public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractNodeMonitorDescriptor<Data>() {
         protected Data monitor(Computer c) throws IOException, InterruptedException {
             Data old = get(c);
@@ -160,10 +158,6 @@ public class ResponseTimeMonitor extends NodeMonitor {
         }
 
         private static final long serialVersionUID = 1L;
-    }
-
-    static {
-        LIST.add(DESCRIPTOR);
     }
 
     /**

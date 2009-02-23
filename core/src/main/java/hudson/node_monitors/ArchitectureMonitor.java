@@ -24,7 +24,9 @@
 package hudson.node_monitors;
 
 import hudson.model.Computer;
+import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
+import hudson.Extension;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -36,11 +38,8 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class ArchitectureMonitor extends NodeMonitor {
-    public AbstractNodeMonitorDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final AbstractNodeMonitorDescriptor<String> DESCRIPTOR = new AbstractNodeMonitorDescriptor<String>() {
+    @Extension
+    public static final class DescriptorImpl extends AbstractNodeMonitorDescriptor<String> {
         protected String monitor(Computer c) throws IOException, InterruptedException {
             return c.getChannel().call(new GetArchTask());
         }
@@ -52,7 +51,7 @@ public class ArchitectureMonitor extends NodeMonitor {
         public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new ArchitectureMonitor();
         }
-    };
+    }
 
     /**
      * Obtains the string that represents the architecture.
@@ -65,9 +64,5 @@ public class ArchitectureMonitor extends NodeMonitor {
         }
 
         private static final long serialVersionUID = 1L;
-    }
-
-    static {
-        LIST.add(DESCRIPTOR);
     }
 }

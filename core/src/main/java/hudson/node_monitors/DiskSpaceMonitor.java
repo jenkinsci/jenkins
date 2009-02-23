@@ -26,6 +26,8 @@ package hudson.node_monitors;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Util;
+import hudson.Functions;
+import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.remoting.VirtualChannel;
@@ -46,10 +48,6 @@ import java.util.logging.Logger;
  * @since 1.123
  */
 public class DiskSpaceMonitor extends NodeMonitor {
-    public AbstractNodeMonitorDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
     public Long getFreeSpace(Computer c) {
         return DESCRIPTOR.get(c);
     }
@@ -101,6 +99,12 @@ public class DiskSpaceMonitor extends NodeMonitor {
         }
     };
 
+    @Extension
+    public static AbstractNodeMonitorDescriptor<Long> install() {
+        if(Functions.isMustangOrAbove())    return DESCRIPTOR;
+        return null;
+    }
+
     private static final class GetUsableSpace implements FileCallable<Long> {
         @IgnoreJRERequirement
         public Long invoke(File f, VirtualChannel channel) throws IOException {
@@ -112,10 +116,6 @@ public class DiskSpaceMonitor extends NodeMonitor {
             }
         }
         private static final long serialVersionUID = 1L;
-    }
-
-    static {
-        LIST.add(DESCRIPTOR);
     }
 
     private static final Logger LOGGER = Logger.getLogger(DiskSpaceMonitor.class.getName());

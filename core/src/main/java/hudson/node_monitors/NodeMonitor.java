@@ -29,6 +29,7 @@ import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
 import hudson.model.Node;
+import hudson.model.Hudson;
 import hudson.util.DescriptorList;
 
 import java.util.logging.Level;
@@ -65,7 +66,9 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
         return getDescriptor().getDisplayName();
     }
 
-    public abstract AbstractNodeMonitorDescriptor<?> getDescriptor();
+    public AbstractNodeMonitorDescriptor<?> getDescriptor() {
+        return (AbstractNodeMonitorDescriptor<?>)Hudson.getInstance().getDescriptor(getClass());
+    }
 
     public Object data(Computer c) {
         return getDescriptor().get(c);
@@ -96,18 +99,5 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
     /**
      * All registered {@link NodeMonitor}s.
      */
-    public static final DescriptorList<NodeMonitor> LIST = new DescriptorList<NodeMonitor>();
-
-    static {
-        try {
-            LIST.load(ClockMonitor.class);
-            if(Functions.isMustangOrAbove())
-                LIST.load(DiskSpaceMonitor.class);
-            LIST.load(SwapSpaceMonitor.class);
-            LIST.load(ResponseTimeMonitor.class);
-            LIST.load(ArchitectureMonitor.class);
-        } catch (Throwable e) {
-            Logger.getLogger(NodeMonitor.class.getName()).log(Level.SEVERE, "Failed to load built-in monitors",e);
-        }
-    }
+    public static final DescriptorList<NodeMonitor> LIST = new DescriptorList<NodeMonitor>(NodeMonitor.class);
 }
