@@ -78,11 +78,12 @@ public class LogRotator implements Describable<LogRotator> {
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
         // keep the last successful build regardless of the status
         Run lsb = job.getLastSuccessfulBuild();
+        Run lstb = job.getLastStableBuild();
 
         if(numToKeep!=-1) {
             Run[] builds = job.getBuilds().toArray(new Run[0]);
             for( int i=numToKeep; i<builds.length; i++ ) {
-                if(!builds[i].isKeepLog() && builds[i]!=lsb)
+                if(!builds[i].isKeepLog() && builds[i]!=lsb && builds[i]!=lstb)
                     builds[i].delete();
             }
         }
@@ -92,7 +93,7 @@ public class LogRotator implements Describable<LogRotator> {
             cal.add(Calendar.DAY_OF_YEAR,-daysToKeep);
             // copy it to the array because we'll be deleting builds as we go.
             for( Run r : job.getBuilds().toArray(new Run[0]) ) {
-                if(r.getTimestamp().before(cal) && !r.isKeepLog() && r!=lsb)
+                if(r.getTimestamp().before(cal) && !r.isKeepLog() && r!=lsb && r!=lstb)
                     r.delete();
             }
         }

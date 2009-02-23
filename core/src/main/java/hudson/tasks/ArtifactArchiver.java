@@ -117,13 +117,18 @@ public class ArtifactArchiver extends Publisher {
             return true;
         }
 
-        if(latestOnly) {
-            AbstractBuild<?,?> b = p.getLastSuccessfulBuild();
-            if(b!=null) {
-                while(true) {
-                    b = b.getPreviousBuild();
-                    if(b==null)     break;
+        return true;
+    }
 
+
+    public @Override boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
+        if(latestOnly) {
+            AbstractBuild<?,?> b = build.getProject().getLastCompletedBuild();
+            Result bestResultSoFar = Result.NOT_BUILT;
+            while(b!=null) {
+                if (b.getResult().isBetterThan(bestResultSoFar)) {
+                    bestResultSoFar = b.getResult();
+                } else {
                     // remove old artifacts
                     File ad = b.getArtifactsDir();
                     if(ad.exists()) {
@@ -135,9 +140,9 @@ public class ArtifactArchiver extends Publisher {
                         }
                     }
                 }
+                b = b.getPreviousBuild();
             }
         }
-
         return true;
     }
 

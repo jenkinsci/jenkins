@@ -31,7 +31,7 @@ THE SOFTWARE.
     <f:entry title="${%Excludes}" help="/help/tasks/artifactArchiver/excludes.html">
       <f:textbox name="artifacts.excludes" value="${instance.excludes}"/>
     </f:entry>
-    <f:entry title="">
+    <f:entry title="" help="/help/tasks/artifactArchiver/latestOnly.html">
       <f:checkbox name="artifacts.latestOnly" checked="${instance.latestOnly}" />
       <label class="attach-previous">${%lastBuildOnly}</label>
     </f:entry>
