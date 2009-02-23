@@ -40,10 +40,12 @@ import static hudson.Util.fixEmpty;
 import hudson.WebAppMain;
 import hudson.XmlFile;
 import hudson.UDPBroadcastThread;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
+import hudson.ExtensionList.DescriptorSubList;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.WindowsInstallerLink;
 import hudson.lifecycle.Lifecycle;
-import hudson.os.solaris.ZFSInstaller;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -116,7 +118,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.MetaClass;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
@@ -129,6 +130,7 @@ import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.xml.sax.InputSource;
+import org.jvnet.tiger_types.Types;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -183,6 +185,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
+import java.lang.reflect.Type;
+import java.lang.reflect.ParameterizedType;
 import javax.servlet.RequestDispatcher;
 
 /**
@@ -277,6 +281,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient final List<Widget> widgets = new CopyOnWriteArrayList<Widget>();
 
     private transient volatile DependencyGraph dependencyGraph;
+
+    /**
+     * All {@link ExtensionList} keyed by their {@link ExtensionList#extensionType}.
+     */
+    private transient final ConcurrentHashMap<Class,ExtensionList> extensionLists = new ConcurrentHashMap<Class,ExtensionList>();
+
+    /**
+     * All {@link DescriptorSubList} keyed by their {@link DescriptorSubList#describableType}.
+     */
+    private transient final ConcurrentHashMap<Class,DescriptorSubList> descriptorLists = new ConcurrentHashMap<Class,DescriptorSubList>();
 
     /**
      * Active {@link Cloud}s.
@@ -400,7 +414,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * @see AdministrativeMonitor
      */
-    public transient final List<AdministrativeMonitor> administrativeMonitors = new CopyOnWriteArrayList<AdministrativeMonitor>();
+    public transient final List<AdministrativeMonitor> administrativeMonitors = getExtensionList(AdministrativeMonitor.class).asList();
 
     /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
 
@@ -479,7 +493,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         // run the init code of SubversionSCM before we load plugins so that plugins can change SubversionWorkspaceSelector.
         SubversionSCM.DescriptorImpl.DESCRIPTOR.getDisplayName();
-        ZFSInstaller.init();
 
         // load plugins.
         pluginManager = new PluginManager(context);
@@ -678,6 +691,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public Descriptor getDescriptor(String fullyQualifiedClassName) {
         for( Descriptor d : Descriptor.ALL )
             if(d.clazz.getName().equals(fullyQualifiedClassName))
+                return d;
+        return null;
+    }
+
+    public Descriptor getDescriptor(Class<? extends Describable> type) {
+        for( Descriptor d : Descriptor.ALL )
+            if(d.clazz==type)
                 return d;
         return null;
     }
@@ -1194,11 +1214,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         trimLabels();
         save();
     }
-    
+
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
     	return nodeProperties;
     }
-    
+
     public void setNodeProperties(Collection<NodeProperty<?>> nodeProperties) throws IOException {
     	this.nodeProperties.replaceBy(nodeProperties);
     }
@@ -1439,6 +1459,48 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     public Lifecycle getLifecycle() {
         return Lifecycle.get();
+    }
+
+    /**
+     * Returns {@link ExtensionList} that retains the discovered instances for the given extension type.
+     *
+     * @param extensionType
+     *      The base type that represents the extension point. Normally {@link ExtensionPoint} subtype
+     *      but that's not a hard requirement.
+     * @return
+     *      Can be an empty list but never null.
+     */
+    @SuppressWarnings({"unchecked"})
+    public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {
+        // by far the common case is where we find an instance already created.
+        ExtensionList<T> r = extensionLists.get(extensionType);
+        if(r!=null) return r;
+
+        // if we have to create a new one, make sure we don't create two at the same time.
+        r = ExtensionList.create(this,extensionType);
+        ExtensionList<T> x = extensionLists.putIfAbsent(extensionType, r);
+        if(x==null) return r;
+        else        return x;
+    }
+
+    /**
+     * Returns {@link ExtensionList} that retains the discovered {@link Descriptor} instances for the given
+     * kind of {@link Describable}.
+     *
+     * @return
+     *      Can be an empty list but never null.
+     */
+    @SuppressWarnings({"unchecked"})
+    public <T extends Describable<T>> ExtensionList<Descriptor<T>> getDescriptorList(final Class<T> type) {
+        // by far the common case is where we find an instance already created.
+        DescriptorSubList<T> r = descriptorLists.get(type);
+        if(r!=null) return r;
+
+        // if we have to create a new one, make sure we don't create two at the same time.
+        r = new DescriptorSubList<T>(this,type);
+        ExtensionList x = descriptorLists.putIfAbsent(type, r);
+        if(x==null) return r;
+        else        return x;
     }
 
     /**

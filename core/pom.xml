@@ -709,6 +709,11 @@ THE SOFTWARE.
       <version>1.1</version>
     </dependency>
     <dependency>
+      <groupId>net.java.sezpoz</groupId>
+      <artifactId>sezpoz</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>jinterop-wmi</artifactId>
       <version>1.0</version>

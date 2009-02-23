@@ -29,6 +29,7 @@ import com.sun.solaris.EmbeddedSu;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Computer;
 import hudson.model.Hudson;
@@ -312,10 +313,8 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
         }.start();
     }
 
-
-    public static void init() {
-        List<AdministrativeMonitor> monitors = Hudson.getInstance().administrativeMonitors;
-
+    @Extension
+    public static AdministrativeMonitor init() {
         String migrationTarget = System.getProperty(ZFSInstaller.class.getName() + ".migrate");
         if(migrationTarget!=null) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -323,22 +322,22 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
             try {
                 if(migrate(listener,migrationTarget)) {
                     // completed successfully
-                    monitors.add(new MigrationCompleteNotice());
-                    return;
+                    return new MigrationCompleteNotice();
                 }
             } catch (Exception e) {
                 // if we let any exception from here, it will prevent Hudson from starting.
                 e.printStackTrace(listener.error("Migration failed"));
             }
             // migration failed
-            monitors.add(new MigrationFailedNotice(out));
-            return;
+            return new MigrationFailedNotice(out);
         }
 
         // install the monitor if applicable
         ZFSInstaller zi = new ZFSInstaller();
         if(zi.isActivated())
-            monitors.add(zi);
+            return zi;
+
+        return null;
     }
 
     /**

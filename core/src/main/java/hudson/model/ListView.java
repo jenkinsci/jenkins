@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.Extension;
 import hudson.views.ListViewColumn;
 import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
@@ -177,21 +178,8 @@ public class ListView extends View {
         }
     }
 
-    public ViewDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
-    static {
-        LIST.add(DESCRIPTOR);
-    }
-
+    @Extension
     public static final class DescriptorImpl extends ViewDescriptor {
-        private DescriptorImpl() {
-            super(ListView.class);
-        }
-
         public String getDisplayName() {
             return Messages.ListView_DisplayName();
         }

@@ -23,28 +23,121 @@
  */
 package hudson.util;
 
+import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Hudson;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.Stapler;
 
+import java.util.AbstractList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * List of {@link Descriptor}s.
  *
  * <p>
- * This class is really just a list but also defines
- * some Hudson specific methods that operate on
- * {@link Descriptor} list.
- * 
+ * Before Hudson 1.286, this class stored {@link Descriptor}s directly, but since 1.286,
+ * this class works in two modes that are rather different.
+ *
+ * <p>
+ * One is the compatibility mode, where it works just like pre 1.286 and store everything locally,
+ * disconnected from any of the additions of 1.286. This is necessary for situations where
+ * {@link DescriptorList} is owned by pre-1.286 plugins where this class doesn't know 'T'.
+ * In this mode, {@link #legacy} is non-null but {@link #type} is null.
+ *
+ * <p>
+ * The other mode is the new mode, where the {@link Descriptor}s are actually stored in {@link ExtensionList}
+ * (see {@link Hudson#getDescriptorList(Class)}) and this class acts as a view to it. This enables
+ * bi-directional interoperability &mdash; both descriptors registred automatically and descriptors registered
+ * manually are visible from both {@link DescriptorList} and {@link ExtensionList}. In this mode,
+ * {@link #legacy} is null but {@link #type} is non-null.
+ *
+ * <p>
+ * The number of plugins that define extension points are limited, so we expect to be able to remove
+ * this dual behavior first, then when everyone stops using {@link DescriptorList},  we can remove this class
+ * altogether.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.161
  */
-public final class DescriptorList<T extends Describable<T>> extends CopyOnWriteArrayList<Descriptor<T>> {
+public final class DescriptorList<T extends Describable<T>> extends AbstractList<Descriptor<T>> {
+
+    private final Class<T> type;
+
+    private final CopyOnWriteArrayList<Descriptor<T>> legacy;
+
+    /**
+     * This will create a legacy {@link DescriptorList} that is disconnected from
+     * {@link ExtensionList}.
+     *
+     * @deprecated
+     *      As of 1.286. Use {@link #DescriptorList(Class)} instead.
+     */
     public DescriptorList(Descriptor<T>... descriptors) {
-        super(descriptors);
+        this.type = null;
+        this.legacy = new CopyOnWriteArrayList<Descriptor<T>>(descriptors);
+    }
+
+    /**
+     * Creates a {@link DescriptorList} backed by {@link ExtensionList}.
+     */
+    public DescriptorList(Class<T> type) {
+        this.type = type;
+        this.legacy = null;
+    }
+
+    @Override
+    public Descriptor<T> get(int index) {
+        return store().get(index);
+    }
+
+    @Override
+    public int size() {
+        return store().size();
+    }
+
+    @Override
+    public Iterator<Descriptor<T>> iterator() {
+        return store().iterator();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated
+     *      As of 1.286. Put {@link Extension} on your descriptor to have it auto-registered,
+     *      instead of registering a descriptor manually.
+     */
+    @Override
+    public boolean add(Descriptor<T> d) {
+        return super.add(d);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated
+     *      As of 1.286. Put {@link Extension} on your descriptor to have it auto-registered,
+     *      instead of registering a descriptor manually.
+     */
+    @Override
+    public void add(int index, Descriptor<T> element) {
+        store().add(element);
+    }
+
+    /**
+     * Gets the actual data store. This is the key to control the dual-mode nature of {@link DescriptorList}
+     */
+    private List<Descriptor<T>> store() {
+        if(type==null)
+            return legacy;
+        else
+            return Hudson.getInstance().getDescriptorList(type).asList();
     }
 
     /**

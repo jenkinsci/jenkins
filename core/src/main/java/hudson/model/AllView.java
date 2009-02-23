@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import hudson.model.Descriptor.FormException;
+import hudson.Extension;
 
 /**
  * {@link View} that contains everything.
@@ -81,21 +82,8 @@ public class AllView extends View {
         // noop
     }
 
-    public ViewDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
-    static {
-        LIST.add(DESCRIPTOR);
-    }
-
+    @Extension
     public static final class DescriptorImpl extends ViewDescriptor {
-        private DescriptorImpl() {
-            super(AllView.class);
-        }
-
         @Override
         public boolean isInstantiable() {
             for (View v : Hudson.getInstance().getViews())

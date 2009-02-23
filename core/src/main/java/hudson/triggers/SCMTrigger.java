@@ -25,6 +25,7 @@ package hudson.triggers;
 
 import antlr.ANTLRException;
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Cause;
@@ -154,8 +155,6 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          */
         private int maximumThreads;
 
-        /*package*/ final AdministrativeMonitorImpl monitor = new AdministrativeMonitorImpl();
-
         DescriptorImpl() {
             load();
             /*
@@ -163,16 +162,6 @@ public class SCMTrigger extends Trigger<SCMedItem> {
              * setPollingThreadCount() is not called in this case
              */
             resizeThreadPool();
-        }
-
-        @Override
-        public void load() {
-            super.load();
-
-            // install the monitor
-            List<AdministrativeMonitor> monitorList = Hudson.getInstance().administrativeMonitors;
-            if(!monitorList.contains(monitor))
-                monitorList.add(monitor);
         }
 
         public boolean isApplicable(Item item) {
@@ -200,10 +189,10 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         /**
          * Checks if the queue is clogged, and if so,
-         * activate {@link #monitor}.
+         * activate {@link AdministrativeMonitorImpl}.
          */
         public void clogCheck() {
-            monitor.on = isClogged();
+            AdministrativeMonitor.all().of(AdministrativeMonitorImpl.class).on = isClogged();
         }
 
         /**
@@ -286,6 +275,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
     }
 
+    @Extension
     public static final class AdministrativeMonitorImpl extends AdministrativeMonitor {
         private boolean on;
 

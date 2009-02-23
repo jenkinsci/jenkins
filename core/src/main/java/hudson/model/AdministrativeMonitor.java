@@ -24,6 +24,8 @@
 package hudson.model;
 
 import hudson.ExtensionPoint;
+import hudson.ExtensionList;
+import hudson.Extension;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 
@@ -40,8 +42,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * <h2>How to implement?</h2>
  * <p>
  * Plugins who wish to contribute such notifications can implement this
- * class and add to {@link Hudson#administrativeMonitors} to register
- * the object to Hudson.
+ * class and put to {@link Extension} to register it to Hudson.
  *
  * <p>
  * Once installed, it's the implementor's responsibility to perform
@@ -143,5 +144,12 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         disable(true);
         rsp.sendRedirect2(req.getContextPath()+"/manage");
+    }
+
+    /**
+     * All registered {@link AdministrativeMonitor} instances.
+     */
+    public static ExtensionList<AdministrativeMonitor> all() {
+        return Hudson.getInstance().getExtensionList(AdministrativeMonitor.class);
     }
 }

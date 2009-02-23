@@ -29,6 +29,7 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.ProxyConfiguration;
+import hudson.Extension;
 import hudson.lifecycle.Lifecycle;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.TextFile;
@@ -126,8 +127,6 @@ public class UpdateCenter extends AbstractModelObject {
      */
     public UpdateCenter(Hudson parent) {
         configure(new UpdateCenterConfiguration());
-        if(parent!=null)    // parent==null just for test
-            parent.administrativeMonitors.add(new CoreUpdateMonitor());
     }
     
     /**
@@ -327,14 +326,15 @@ public class UpdateCenter extends AbstractModelObject {
     /**
      * {@link AdministrativeMonitor} that checks if there's Hudson update.
      */
-    public final class CoreUpdateMonitor extends AdministrativeMonitor {
+    @Extension
+    public static final class CoreUpdateMonitor extends AdministrativeMonitor {
         public boolean isActivated() {
             Data data = getData();
             return data!=null && data.hasCoreUpdates();
         }
 
         public Data getData() {
-            return UpdateCenter.this.getData();
+            return Hudson.getInstance().getUpdateCenter().getData();
         }
     }
 

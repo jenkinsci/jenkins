@@ -158,7 +158,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return description;
     }
 
-    public abstract ViewDescriptor getDescriptor();
+    public ViewDescriptor getDescriptor() {
+        return (ViewDescriptor)Hudson.getInstance().getDescriptor(getClass());
+    }
 
     public String getDisplayName() {
         return getViewName();
@@ -523,11 +525,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * A list of available view types.
      */
-    public static final DescriptorList<View> LIST = new DescriptorList<View>();
+    public static final DescriptorList<View> LIST = new DescriptorList<View>(View.class);
 
     static {
-        LIST.load(ListView.class);
-        LIST.load(AllView.class);
         LIST.load(MyView.class);
         if(Boolean.getBoolean("hudson.TreeView"))
             LIST.load(TreeView.class);

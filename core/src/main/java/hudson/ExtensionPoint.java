@@ -29,10 +29,16 @@ package hudson;
  *
  * <p>
  * See respective interfaces/classes for more about how to register custom
- * implementations to Hudson.
+ * implementations to Hudson. See {@link Extension} for how to have
+ * Hudson auto-discover your implementations.
+ *
+ * <p>
+ * This interface is used for auto-generating
+ * documentation.
  *
  * @author Kohsuke Kawaguchi
  * @see Plugin
+ * @see Extension
  */
 public interface ExtensionPoint {
 }

@@ -186,6 +186,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      * Default implementation that doesn't rely on any file system specific capability,
      * and thus can be used anywhere that Hudson runs.
      */
+    @Extension
     public static final class Default extends FileSystemProvisioner {
         private Default() {}
 
