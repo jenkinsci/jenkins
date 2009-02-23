@@ -43,7 +43,7 @@ THE SOFTWARE.
   </j:if>
 
   <!-- master/slave -->
-  <j:if test="${!empty(app.slaves)}">
+  <j:if test="${!empty(app.slaves) || it.assignedLabel!=null}">
     <f:optionalBlock name="hasSlaveAffinity" title="${%Tie this project to a node}" checked="${it.assignedLabel!=null}"
         help="/help/project-config/slave.html">
       <f:entry title="${%Node}">
