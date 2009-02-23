@@ -192,7 +192,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          * activate {@link AdministrativeMonitorImpl}.
          */
         public void clogCheck() {
-            AdministrativeMonitor.all().of(AdministrativeMonitorImpl.class).on = isClogged();
+            AdministrativeMonitor.all().get(AdministrativeMonitorImpl.class).on = isClogged();
         }
 
         /**

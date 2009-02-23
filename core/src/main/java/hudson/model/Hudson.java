@@ -42,7 +42,7 @@ import hudson.XmlFile;
 import hudson.UDPBroadcastThread;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.ExtensionList.DescriptorSubList;
+import hudson.DescriptorExtensionList;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.WindowsInstallerLink;
 import hudson.lifecycle.Lifecycle;
@@ -130,7 +130,6 @@ import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.xml.sax.InputSource;
-import org.jvnet.tiger_types.Types;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -185,8 +184,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
 import javax.servlet.RequestDispatcher;
 
 /**
@@ -288,9 +285,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient final ConcurrentHashMap<Class,ExtensionList> extensionLists = new ConcurrentHashMap<Class,ExtensionList>();
 
     /**
-     * All {@link DescriptorSubList} keyed by their {@link DescriptorSubList#describableType}.
+     * All {@link DescriptorExtensionList} keyed by their {@link DescriptorExtensionList#describableType}.
      */
-    private transient final ConcurrentHashMap<Class,DescriptorSubList> descriptorLists = new ConcurrentHashMap<Class,DescriptorSubList>();
+    private transient final ConcurrentHashMap<Class, DescriptorExtensionList> descriptorLists = new ConcurrentHashMap<Class, DescriptorExtensionList>();
 
     /**
      * Active {@link Cloud}s.
@@ -1491,14 +1488,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *      Can be an empty list but never null.
      */
     @SuppressWarnings({"unchecked"})
-    public <T extends Describable<T>> ExtensionList<Descriptor<T>> getDescriptorList(final Class<T> type) {
+    public <T extends Describable<T>> DescriptorExtensionList<T> getDescriptorList(Class<T> type) {
         // by far the common case is where we find an instance already created.
-        DescriptorSubList<T> r = descriptorLists.get(type);
+        DescriptorExtensionList r = descriptorLists.get(type);
         if(r!=null) return r;
 
         // if we have to create a new one, make sure we don't create two at the same time.
-        r = new DescriptorSubList<T>(this,type);
-        ExtensionList x = descriptorLists.putIfAbsent(type, r);
+        r = new DescriptorExtensionList(this,type);
+        DescriptorExtensionList x = descriptorLists.putIfAbsent(type, r);
         if(x==null) return r;
         else        return x;
     }

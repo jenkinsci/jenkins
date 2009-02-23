@@ -24,23 +24,17 @@
 package hudson;
 
 import hudson.model.Hudson;
-import hudson.model.Descriptor;
-import hudson.model.Describable;
 import hudson.util.DescriptorList;
 
+import java.util.AbstractCollection;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
-
-import org.jvnet.tiger_types.Types;
+import java.util.logging.Logger;
 
 /**
  * Retains the known extension instances for the given type 'T'.
@@ -63,7 +57,7 @@ import org.jvnet.tiger_types.Types;
  * @see Hudson#getExtensionList(Class)
  * @see Hudson#getDescriptorList(Class)
  */
-public class ExtensionList<T> implements Iterable<T> {
+public class ExtensionList<T> extends AbstractCollection<T> {
     public final Hudson hudson;
     public final Class<T> extensionType;
 
@@ -93,8 +87,7 @@ public class ExtensionList<T> implements Iterable<T> {
 
         @Override
         public int size() {
-            ensureLoaded();
-            return extensions.size();
+            return ExtensionList.this.size();
         }
 
         @Override
@@ -132,7 +125,7 @@ public class ExtensionList<T> implements Iterable<T> {
      * Looks for the extension instance of the given type (subclasses excluded),
      * or return null.
      */
-    public <U extends T> U of(Class<U> type) {
+    public <U extends T> U get(Class<U> type) {
         for (T ext : this)
             if(ext.getClass()==type)
                 return type.cast(ext);
@@ -142,7 +135,11 @@ public class ExtensionList<T> implements Iterable<T> {
     public Iterator<T> iterator() {
         ensureLoaded();
         return extensions.iterator();
+    }
 
+    public int size() {
+        ensureLoaded();
+        return extensions.size();
     }
 
     /**
@@ -185,58 +182,6 @@ public class ExtensionList<T> implements Iterable<T> {
      */
     public List<T> asList() {
         return listView;
-    }
-
-    /**
-     * {@link ExtensionList} for holding a subset of {@link Descriptor}s, which is a group of descriptors for
-     * the same extension point.
-     */
-    public static final class DescriptorSubList<T extends Describable<T>> extends ExtensionList<Descriptor<T>> {
-        /**
-         * Type of the {@link Describable} that this extension list retains.
-         */
-        private final Class<T> describableType;
-
-        public DescriptorSubList(Hudson hudson, Class<T> describableType) {
-            super(hudson, (Class)Descriptor.class,allocateLegacyInstanceStore(describableType));
-            this.describableType = describableType;
-        }
-
-        /**
-         * Loading the descriptors in this case means filtering the descriptor from the master {@link ExtensionList}.
-         */
-        @Override
-        protected List<Descriptor<T>> load() {
-            List r = new ArrayList();
-            for( Descriptor d : hudson.getExtensionList(Descriptor.class) ) {
-                Type subTyping = Types.getBaseClass(d.getClass(), Descriptor.class);
-                if (!(subTyping instanceof ParameterizedType)) {
-                    LOGGER.severe(d.getClass()+" doesn't extend Descriptor with a type parameter");
-                    continue;   // skip this one
-                }
-                if(Types.getTypeArgument(subTyping,0)==describableType)
-                    r.add(d);
-            }
-            return r;
-        }
-
-        /**
-         * Obtain the statically-scoped storage to store manulaly registered {@link Descriptor}s.
-         */
-        private static List allocateLegacyInstanceStore(Class describableType) {
-            List r = legacyDescriptors.get(describableType);
-            if(r!=null)     return r;
-
-            r = new CopyOnWriteArrayList();
-            List x = legacyDescriptors.putIfAbsent(describableType, r);
-            if(x==null) return r;
-            return x;
-        }
-
-        /**
-         * Stores manually registered Descriptor instances.
-         */
-        private static final ConcurrentHashMap<Class,List> legacyDescriptors = new ConcurrentHashMap<Class,List>();
     }
 
     public static <T> ExtensionList<T> create(Hudson hudson, Class<T> type) {
