@@ -85,6 +85,6 @@ THE SOFTWARE.
     </f:dropdownList>
   </j:if>
   
-  <f:descriptorList title="Node Properties" descriptors="${it.nodePropertyDescriptors}" field="nodeProperties" />
+  <f:descriptorList title="${%Node Properties}" descriptors="${it.nodePropertyDescriptors}" field="nodeProperties" />
   
 </j:jelly>

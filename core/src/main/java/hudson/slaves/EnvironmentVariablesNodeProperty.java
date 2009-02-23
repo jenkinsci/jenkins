@@ -48,7 +48,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
 		@Override
 		public String getDisplayName() {
-			return "Environment variables";
+			return Messages.EnvironmentVariablesNodeProperty_displayName();
 		}
 
         public String getHelpPage() {

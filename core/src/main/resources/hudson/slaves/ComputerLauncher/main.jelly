@@ -25,12 +25,12 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${it.launchSupported and it.offline and !it.temporarilyOffline}">
     <p class="error">
-      This node is offline because Hudson failed to launch the slave agent on it.
-      <a href="log">See log for more details</a>
+      ${%description}
+      <a href="log">${%See log for more details}</a>
     </p>
     <l:isAdmin>
       <form method="get" action="launchSlaveAgent">
-        <f:submit value="Launch slave agent" />
+        <f:submit value="${%Launch slave agent}" />
       </form>
     </l:isAdmin>
   </j:if>
