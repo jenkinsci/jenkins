@@ -86,5 +86,29 @@ public class ExtensionListTest extends HudsonTestCase {
         assertNotNull(LIST.findByName(Tai.class.getName()));
         assertNotNull(LIST.findByName(Sishamo.class.getName()));
         assertNotNull(LIST.findByName(Saba.class.getName()));
+
+        // DescriptorList can be gone and new one created but it should still have the same list
+        LIST = new DescriptorList<Fish>(Fish.class);
+        assertEquals(3,LIST.size());
+        assertNotNull(LIST.findByName(Tai.class.getName()));
+        assertNotNull(LIST.findByName(Sishamo.class.getName()));
+        assertNotNull(LIST.findByName(Saba.class.getName()));
+    }
+
+    public void testLegacyDescriptorList() throws Exception {
+        // created in a legacy fashion without any tie to ExtensionList
+        DescriptorList<Fish> LIST = new DescriptorList<Fish>();
+
+        // we won't auto-discover anything
+        assertEquals(0,LIST.size());
+
+        // registration can happen later, and it should be still visible
+        LIST.add(new Sishamo.DescriptorImpl());
+        assertEquals(1,LIST.size());
+        assertNotNull(LIST.findByName(Sishamo.class.getName()));
+
+        // create a new list and it forgets everything.
+        LIST = new DescriptorList<Fish>();
+        assertEquals(0,LIST.size());
     }
 }
