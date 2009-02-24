@@ -23,26 +23,26 @@
  */
 package hudson.tasks;
 
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
-import hudson.Plugin;
+import hudson.model.Hudson;
 import hudson.model.User;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Finds full name off the user when none is specified.
  *
  * <p>
  * This is an extension point of Hudson. Plugins tha contribute new implementation
- * of this class must register it to {@link #LIST}. The typical way to do this is:
+ * of this class should use {@link Extension} to register the instance into Hudson, like this:
  *
  * <pre>
- * class PluginImpl extends {@link Plugin} {
- *   public void start() {
- *     ...
- *     UserNameResolver.LIST.add(new UserNameResolver());
- *   }
+ * &#64;Extension
+ * class MyserNameResolver extends UserNameResolver {
+ *   ...
  * }
  * </pre>
  *
@@ -71,7 +71,7 @@ public abstract class UserNameResolver implements ExtensionPoint {
     public abstract String findNameFor(User u);
     
     public static String resolve(User u) {
-        for (UserNameResolver r : LIST) {
+        for (UserNameResolver r : all()) {
             String name = r.findNameFor(u);
             if(name!=null) return name;
         }
@@ -80,7 +80,17 @@ public abstract class UserNameResolver implements ExtensionPoint {
     }
 
     /**
-     * All registered {@link UserNameResolver} implementations.
+     * Returns all the registered {@link UserNameResolver} descriptors.
      */
-    public static final List<UserNameResolver> LIST = new CopyOnWriteArrayList<UserNameResolver>();
+    public static ExtensionList<UserNameResolver> all() {
+        return Hudson.getInstance().getExtensionList(UserNameResolver.class);
+    }
+
+    /**
+     * All registered {@link UserNameResolver} implementations.
+     *
+     * @deprecated
+     *      Use {@link #all()} for read access, and use {@link Extension} for registration.
+     */
+    public static final List<UserNameResolver> LIST = ExtensionListView.createList(UserNameResolver.class);
 }
