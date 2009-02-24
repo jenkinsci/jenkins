@@ -112,6 +112,18 @@ public class ExtensionList<T> extends AbstractList<T> {
         return ensureLoaded().size();
     }
 
+    @Override
+    public synchronized T remove(int index) {
+        T t = get(index);
+        legacyInstances.remove(t);
+        if(extensions!=null) {
+            List<T> r = new ArrayList<T>(extensions);
+            r.remove(t);
+            extensions = sort(r);
+        }
+        return t;
+    }
+
     /**
      * Write access will put the instance into a legacy store.
      *
@@ -134,6 +146,8 @@ public class ExtensionList<T> extends AbstractList<T> {
     public void add(int index, T element) {
         add(element);
     }
+
+
 
     /**
      * Returns {@link ExtensionFinder}s used to search for the extension instances.
