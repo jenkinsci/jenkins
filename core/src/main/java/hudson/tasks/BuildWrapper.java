@@ -41,9 +41,6 @@ import java.util.Map;
  * Pluggability point for performing pre/post actions for the build process.
  *
  * <p>
- * <b>STILL EXPERIMENTAL. SUBJECT TO CHANGE</b>
- *
- * <p>
  * This extension point enables a plugin to set up / tear down additional
  * services needed to perform a build, such as setting up local X display,
  * or launching and stopping application servers for testing.
