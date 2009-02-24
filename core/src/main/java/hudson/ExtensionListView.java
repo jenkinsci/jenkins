@@ -72,6 +72,15 @@ public class ExtensionListView {
             public int size() {
                 return storage().size();
             }
+
+            public boolean add(T t) {
+                return storage().add(t);
+            }
+
+            public void add(int index, T t) {
+                // index ignored
+                storage().add(t);
+            }
         };
     }
 
