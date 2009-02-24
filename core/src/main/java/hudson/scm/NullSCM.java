@@ -25,6 +25,7 @@ package hudson.scm;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -50,16 +51,11 @@ public class NullSCM extends SCM {
         return createEmptyChangeLog(changeLogFile, listener, "log");
     }
 
-    public SCMDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
     public ChangeLogParser createChangeLogParser() {
         return new NullChangeLogParser();
     }
 
-    static final SCMDescriptor DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends SCMDescriptor<NullSCM> {
         public DescriptorImpl() {
             super(null);

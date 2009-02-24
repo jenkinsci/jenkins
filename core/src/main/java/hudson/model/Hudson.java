@@ -626,7 +626,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the SCM descriptor by name. Primarily used for making them web-visible.
      */
     public Descriptor<SCM> getScm(String shortClassName) {
-        return findDescriptor(shortClassName,SCMS.SCMS);
+        return findDescriptor(shortClassName,SCM.all());
     }
 
     /**
@@ -2033,7 +2033,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             for( Descriptor<BuildWrapper> d : BuildWrapper.all() )
                 result &= configureDescriptor(req,json,d);
 
-            for( SCMDescriptor scmd : SCMS.SCMS )
+            for( SCMDescriptor scmd : SCM.all() )
                 result &= configureDescriptor(req,json,scmd);
 
             for( TriggerDescriptor d : Trigger.all() )
@@ -2048,7 +2048,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             for( JSONObject o : StructuredForm.toList(json,"plugin"))
                 pluginManager.getPlugin(o.getString("name")).getPlugin().configure(o);
 
-            clouds.rebuildHetero(req,json, Cloud.ALL, "cloud");
+            clouds.rebuildHetero(req,json, Cloud.all(), "cloud");
 
             nodeProperties.rebuild(req, json.getJSONObject("nodeProperties"), getNodePropertyDescriptors());
 

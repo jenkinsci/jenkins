@@ -26,6 +26,8 @@ package hudson.scm;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.security.PermissionGroup;
 import hudson.security.Permission;
 import hudson.tasks.Builder;
@@ -36,6 +38,7 @@ import hudson.model.Describable;
 import hudson.model.TaskListener;
 import hudson.model.Node;
 import hudson.model.WorkspaceCleanupThread;
+import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -47,7 +50,7 @@ import java.util.Map;
  *
  * <p>
  * To register a custom {@link SCM} implementation from a plugin,
- * add it to {@link SCMS#SCMS}.
+ * put {@link Extension} on your {@link SCMDescriptor}.
  *
  * <p>
  * Use the "project-changes" view to render change list to be displayed
@@ -323,7 +326,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public abstract ChangeLogParser createChangeLogParser();
 
-    public abstract SCMDescriptor<?> getDescriptor();
+    public SCMDescriptor<?> getDescriptor() {
+        return (SCMDescriptor)Hudson.getInstance().getDescriptor(getClass());
+    }
 
     protected final boolean createEmptyChangeLog(File changelogFile, BuildListener listener, String rootTag) {
         try {
@@ -349,4 +354,11 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @since 1.171
      */
     public static final Permission TAG = new Permission(PERMISSIONS,"Tag",Messages._SCM_TagPermission_Description(),Permission.CREATE);
+
+    /**
+     * Returns all the registered {@link SCMDescriptor}s.
+     */
+    public static DescriptorExtensionList<SCM,SCMDescriptor<?>> all() {
+        return Hudson.getInstance().getDescriptorList(SCM.class);
+    }
 }

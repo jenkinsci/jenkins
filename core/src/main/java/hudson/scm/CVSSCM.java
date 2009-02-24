@@ -29,6 +29,7 @@ import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
+import hudson.Extension;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
 import static hudson.Util.fixEmptyAndTrim;
@@ -920,7 +921,7 @@ public class CVSSCM extends SCM implements Serializable {
     }
 
     public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.DESCRIPTOR;
+        return (DescriptorImpl)super.getDescriptor();
     }
 
     public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
@@ -1023,9 +1024,8 @@ public class CVSSCM extends SCM implements Serializable {
         private static final Pattern STICKY_DATE = Pattern.compile("D\\d\\d\\d\\d\\.\\d\\d\\.\\d\\d\\.\\d\\d\\.\\d\\d\\.\\d\\d");
     }
 
+    @Extension
     public static final class DescriptorImpl extends SCMDescriptor<CVSSCM> implements ModelObject {
-        static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
         /**
          * Path to <tt>.cvspass</tt>. Null to default.
          */
@@ -1050,7 +1050,7 @@ public class CVSSCM extends SCM implements Serializable {
             String browseURL;
         }
 
-        DescriptorImpl() {
+        public DescriptorImpl() {
             super(CVSRepositoryBrowser.class);
             load();
         }

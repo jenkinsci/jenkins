@@ -1041,7 +1041,7 @@ public class Functions {
     }
     
     public static DescriptorList<Cloud> getCloudDescriptors() {
-        return Cloud.ALL;
+        return Cloud.all();
     }
 
     /**

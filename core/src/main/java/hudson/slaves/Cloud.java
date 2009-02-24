@@ -24,12 +24,15 @@
 package hudson.slaves;
 
 import hudson.ExtensionPoint;
+import hudson.Extension;
+import hudson.DescriptorExtensionList;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
 import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.AbstractModelObject;
 import hudson.model.Label;
+import hudson.model.Descriptor;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
@@ -112,10 +115,24 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      */
     public abstract boolean canProvision(Label label);
 
+    public Descriptor<Cloud> getDescriptor() {
+        return Hudson.getInstance().getDescriptor(getClass());
+    }
+
     /**
      * All registered {@link Cloud} implementations.
+     *
+     * @deprecated as of 1.286
+     *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     public static final DescriptorList<Cloud> ALL = new DescriptorList<Cloud>(Cloud.class);
+
+    /**
+     * Returns all the registered {@link Cloud} descriptors.
+     */
+    public static DescriptorExtensionList<Cloud,Descriptor<Cloud>> all() {
+        return Hudson.getInstance().getDescriptorList(Cloud.class);
+    }
 
     /**
      * Permission constant to control mutation operations on {@link Cloud}.

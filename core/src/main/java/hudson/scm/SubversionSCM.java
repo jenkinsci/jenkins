@@ -32,6 +32,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.Functions;
+import hudson.Extension;
 import static hudson.Util.fixEmptyAndTrim;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -598,7 +599,7 @@ public class SubversionSCM extends SCM implements Serializable {
      * from the master via remoting. 
      */
     public static SVNClientManager createSvnClientManager() {
-        return createSvnClientManager(DescriptorImpl.DESCRIPTOR.createAuthenticationProvider());
+        return createSvnClientManager(Hudson.getInstance().getDescriptorByType(DescriptorImpl.class).createAuthenticationProvider());
     }
 
     public static final class SvnInfo implements Serializable, Comparable<SvnInfo> {
@@ -1000,7 +1001,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
 
     public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.DESCRIPTOR;
+        return (DescriptorImpl)super.getDescriptor();
     }
 
     public FilePath getModuleRoot(FilePath workspace) {
@@ -1026,9 +1027,8 @@ public class SubversionSCM extends SCM implements Serializable {
         return tokens[tokens.length-1]; // return the last token
     }
 
+    @Extension
     public static class DescriptorImpl extends SCMDescriptor<SubversionSCM> {
-        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
         /**
          * SVN authentication realm to its associated credentials.
          */
@@ -1237,7 +1237,7 @@ public class SubversionSCM extends SCM implements Serializable {
             private static final long serialVersionUID = 1L;
         }
 
-        private DescriptorImpl() {
+        public DescriptorImpl() {
             super(SubversionRepositoryBrowser.class);
             load();
         }

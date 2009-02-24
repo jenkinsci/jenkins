@@ -24,7 +24,11 @@
 package hudson.scm;
 
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.model.Descriptor.FormException;
+import hudson.util.DescriptorList;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
 
 import java.util.List;
 
@@ -40,13 +44,10 @@ import javax.servlet.ServletException;
 public class SCMS {
     /**
      * List of all installed SCMs.
+     * @deprecated as of 1.286
+     *      Use {@link SCM#all()} for read access and {@link Extension} for registration.
      */
-    @SuppressWarnings("unchecked") // generic array creation
-    public static final List<SCMDescriptor<?>> SCMS =
-        Descriptor.<SCMDescriptor<?>>toList(
-            NullSCM.DESCRIPTOR,
-            CVSSCM.DescriptorImpl.DESCRIPTOR,
-            SubversionSCM.DescriptorImpl.DESCRIPTOR);
+    public static final List<SCMDescriptor<?>> SCMS = (List)new DescriptorList<SCM>(SCM.class);
 
     /**
      * Parses {@link SCM} configuration from the submitted form.
@@ -56,7 +57,7 @@ public class SCMS {
         if(scm==null)   return new NullSCM();
 
         int scmidx = Integer.parseInt(scm);
-        SCMDescriptor<?> d = SCMS.get(scmidx);
+        SCMDescriptor<?> d = SCM.all().get(scmidx);
         d.generation++;
         return d.newInstance(req, req.getSubmittedForm().getJSONObject("scm"));
     }
