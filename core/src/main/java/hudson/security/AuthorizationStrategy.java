@@ -25,7 +25,9 @@ package hudson.security;
 
 import hudson.ExtensionPoint;
 import hudson.Extension;
+import hudson.DescriptorExtensionList;
 import hudson.slaves.Cloud;
+import hudson.slaves.RetentionStrategy;
 import hudson.model.AbstractItem;
 import hudson.model.Computer;
 import hudson.model.Describable;
@@ -174,17 +176,30 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
     public abstract Collection<String> getGroups();
 
     public Descriptor<AuthorizationStrategy> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass()); 
+        return Hudson.getInstance().getDescriptor(getClass());
+    }
+
+    /**
+     * Returns all the registered {@link AuthorizationStrategy} descriptors.
+     */
+    public static DescriptorExtensionList<AuthorizationStrategy> all() {
+        return Hudson.getInstance().getDescriptorList(AuthorizationStrategy.class);
     }
 
     /**
      * All registered {@link SecurityRealm} implementations.
+     *
+     * @deprecated
+     *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(AuthorizationStrategy.class);
     
     /**
      * {@link AuthorizationStrategy} that implements the semantics
      * of unsecured Hudson where everyone has full control.
+     *
+     * <p>
+     * This singleton is safe because {@link Unsecured} is stateless.
      */
     public static final AuthorizationStrategy UNSECURED = new Unsecured();
 

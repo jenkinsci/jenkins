@@ -26,6 +26,7 @@ package hudson;
 import hudson.model.Descriptor;
 import hudson.model.Describable;
 import hudson.model.Hudson;
+import hudson.model.Descriptor.FormException;
 import hudson.util.Memoizer;
 
 import java.util.List;
@@ -36,6 +37,8 @@ import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 
 import org.jvnet.tiger_types.Types;
+import org.kohsuke.stapler.Stapler;
+import net.sf.json.JSONObject;
 
 /**
  * {@link ExtensionList} for holding a set of {@link Descriptor}s, which is a group of descriptors for
@@ -64,6 +67,22 @@ public final class DescriptorExtensionList<T extends Describable<T>> extends Ext
      */
     public Descriptor<T> find(String fqcn) {
         return Descriptor.find(this,fqcn);
+    }
+
+    /**
+     * Creates a new instance of a {@link Describable}
+     * from the structured form submission data posted
+     * by a radio button group.
+     */
+    public T newInstanceFromRadioList(JSONObject config) throws FormException {
+        if(config.isNullObject())
+            return null;    // none was selected
+        int idx = config.getInt("value");
+        return get(idx).newInstance(Stapler.getCurrentRequest(),config);
+    }
+
+    public T newInstanceFromRadioList(JSONObject parent, String name) throws FormException {
+        return newInstanceFromRadioList(parent.getJSONObject(name));
     }
 
     /**

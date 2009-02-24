@@ -597,7 +597,7 @@ public class Functions {
     }
 
     public static List<Descriptor<AuthorizationStrategy>> getAuthorizationStrategyDescriptors() {
-        return AuthorizationStrategy.LIST;
+        return AuthorizationStrategy.all();
     }
 
     public static List<Descriptor<Builder>> getBuilderDescriptors(AbstractProject<?,?> project) {

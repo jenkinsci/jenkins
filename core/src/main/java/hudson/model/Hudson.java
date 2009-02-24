@@ -1966,7 +1966,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 useSecurity = true;
                 JSONObject security = json.getJSONObject("use_security");
                 setSecurityRealm(SecurityRealm.LIST.newInstanceFromRadioList(security,"realm"));
-                setAuthorizationStrategy(AuthorizationStrategy.LIST.newInstanceFromRadioList(security, "authorization"));
+                setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
             } else {
                 useSecurity = null;
                 setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
