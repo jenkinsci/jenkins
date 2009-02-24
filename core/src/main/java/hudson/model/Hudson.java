@@ -55,7 +55,6 @@ import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.CVSSCM;
 import hudson.scm.RepositoryBrowser;
-import hudson.scm.RepositoryBrowsers;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMS;
@@ -91,7 +90,6 @@ import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
-import hudson.triggers.Triggers;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.ClockDifference;
 import hudson.util.CopyOnWriteList;
@@ -272,11 +270,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     private List<JDK> jdks = new ArrayList<JDK>();
 
-    /**
-     * Widgets on Hudson.
-     */
-    private transient final List<Widget> widgets = getExtensionList(Widget.class);
-
     private transient volatile DependencyGraph dependencyGraph;
 
     /**
@@ -422,6 +415,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public transient final List<AdministrativeMonitor> administrativeMonitors = getExtensionList(AdministrativeMonitor.class);
 
     /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
+
+    /**
+     * Widgets on Hudson.
+     */
+    private transient final List<Widget> widgets = getExtensionList(Widget.class);
 
     /**
      * {@link AdjunctManager}
