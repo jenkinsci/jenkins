@@ -24,8 +24,15 @@
 package hudson.model.listeners;
 
 import hudson.ExtensionPoint;
+import hudson.ExtensionListView;
+import hudson.Extension;
+import hudson.DescriptorExtensionList;
+import hudson.ExtensionList;
+import hudson.scm.RepositoryBrowser;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.util.CopyOnWriteList;
 
 /**
@@ -84,6 +91,9 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     /**
      * Registers this object as an active listener so that it can start getting
      * callbacks invoked.
+     *
+     * @deprecated
+     *      Put {@link Extension} on your class to get it auto-registered.
      */
     public void register() {
         LISTENERS.add(this);
@@ -98,14 +108,16 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
 
     /**
      * List of registered listeners.
+     * @deprecated as of 1.281
+     *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
-    public static final CopyOnWriteList<RunListener> LISTENERS = new CopyOnWriteList<RunListener>();
+    public static final CopyOnWriteList<RunListener> LISTENERS = ExtensionListView.createCopyOnWriteList(RunListener.class);
 
     /**
      * Fires the {@link #onCompleted} event.
      */
     public static void fireCompleted(Run r, TaskListener listener) {
-        for (RunListener l : LISTENERS) {
+        for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
                 l.onCompleted(r,listener);
         }
@@ -115,7 +127,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onStarted} event.
      */
     public static void fireStarted(Run r, TaskListener listener) {
-        for (RunListener l : LISTENERS) {
+        for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
                 l.onStarted(r,listener);
         }
@@ -125,9 +137,16 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onFinalized(Run)} event.
      */
     public static void fireFinalized(Run r) {
-        for (RunListener l : LISTENERS) {
+        for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
                 l.onFinalized(r);
         }
+    }
+
+    /**
+     * Returns all the registered {@link RunListener} descriptors.
+     */
+    public static ExtensionList<RunListener> all() {
+        return Hudson.getInstance().getExtensionList(RunListener.class);
     }
 }

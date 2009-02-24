@@ -221,12 +221,15 @@ public class AggregatedTestResultPublisher extends Recorder {
             return "aggregatedTestReport";
         }
 
-        static {
-            new RunListener<Run>(Run.class) {
-                public void onCompleted(Run run, TaskListener listener) {
-                    lastChanged = System.currentTimeMillis();
-                }
-            }.register();
+        @Extension
+        public static class RunListenerImpl extends RunListener<Run> {
+            public RunListenerImpl() {
+                super(Run.class);
+            }
+
+            public void onCompleted(Run run, TaskListener listener) {
+                lastChanged = System.currentTimeMillis();
+            }
         }
     }
 
