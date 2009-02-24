@@ -25,6 +25,7 @@ package hudson.maven.reporters;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.Extension;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
@@ -127,13 +128,8 @@ public class MavenSiteArchiver extends MavenReporter {
         }
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.DESCRIPTOR;
-    }
-
+    @Extension
     public static final class DescriptorImpl extends MavenReporterDescriptor {
-        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
         public String getDisplayName() {
             return "Maven site";
         }

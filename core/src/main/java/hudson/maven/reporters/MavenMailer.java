@@ -24,6 +24,7 @@
 package hudson.maven.reporters;
 
 import hudson.Launcher;
+import hudson.Extension;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
@@ -54,13 +55,8 @@ public class MavenMailer extends MavenReporter {
         return true;
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.DESCRIPTOR;
-    }
-
+    @Extension
     public static final class DescriptorImpl extends MavenReporterDescriptor {
-        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
         public String getDisplayName() {
             return Messages.MavenMailer_DisplayName();
         }

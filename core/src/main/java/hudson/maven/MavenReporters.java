@@ -24,6 +24,7 @@
 package hudson.maven;
 
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.maven.reporters.MavenArtifactArchiver;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenJavadocArchiver;
@@ -31,6 +32,7 @@ import hudson.maven.reporters.SurefireArchiver;
 import hudson.maven.reporters.MavenMailer;
 import hudson.maven.reporters.BuildInfoRecorder;
 import hudson.maven.reporters.MavenSiteArchiver;
+import hudson.util.DescriptorList;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -42,23 +44,22 @@ import java.util.ArrayList;
 public final class MavenReporters {
     /**
      * List of all installed {@link MavenReporter}s.
+     *
+     * @deprecated as of 1.286. Use {@code Hudson.getInstance().getExtensionList(MavenReporterDescriptor.class)} 
      */
-    public static final List<MavenReporterDescriptor> LIST = Descriptor.toList(
-        MavenArtifactArchiver.DescriptorImpl.DESCRIPTOR,
-        MavenFingerprinter.DescriptorImpl.DESCRIPTOR,
-        MavenJavadocArchiver.DescriptorImpl.DESCRIPTOR,
-        MavenSiteArchiver.DescriptorImpl.DESCRIPTOR,
-        SurefireArchiver.DescriptorImpl.DESCRIPTOR,
-        MavenMailer.DescriptorImpl.DESCRIPTOR,
-        BuildInfoRecorder.DescriptorImpl.DESCRIPTOR
-    );
+    public static final List<MavenReporterDescriptor> LIST = (List)new DescriptorList<MavenReporter>(MavenReporter.class);
+
+    static {
+        // emulate the behavior of the legacy code
+        LIST.add(MavenJavadocArchiver.DescriptorImpl.DESCRIPTOR);
+    }
 
     /**
      * Gets the subset of {@link #LIST} that has configuration screen.
      */
     public static List<MavenReporterDescriptor> getConfigurableList() {
         List<MavenReporterDescriptor> r = new ArrayList<MavenReporterDescriptor>();
-        for (MavenReporterDescriptor d : LIST) {
+        for (MavenReporterDescriptor d : Hudson.getInstance().getExtensionList(MavenReporterDescriptor.class)) {
             if(d.hasConfigScreen())
                 r.add(d);
         }

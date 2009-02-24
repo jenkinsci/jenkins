@@ -24,6 +24,7 @@
 package hudson.maven.reporters;
 
 import hudson.Util;
+import hudson.Extension;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
@@ -158,13 +159,8 @@ public class SurefireArchiver extends MavenReporter {
         return true;
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.DESCRIPTOR;
-    }
-
+    @Extension
     public static final class DescriptorImpl extends MavenReporterDescriptor {
-        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
         public String getDisplayName() {
             return Messages.SurefireArchiver_DisplayName();
         }

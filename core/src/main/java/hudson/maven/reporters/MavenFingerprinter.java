@@ -24,6 +24,7 @@
 package hudson.maven.reporters;
 
 import hudson.FilePath;
+import hudson.Extension;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
@@ -144,13 +145,8 @@ public class MavenFingerprinter extends MavenReporter {
         record.put(groupId+':'+f.getName(),digest);
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.DESCRIPTOR;
-    }
-
+    @Extension
     public static final class DescriptorImpl extends MavenReporterDescriptor {
-        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
         public String getDisplayName() {
             return Messages.MavenFingerprinter_DisplayName();
         }

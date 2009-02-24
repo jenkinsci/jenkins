@@ -158,7 +158,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         disabled = false;
 
         if (pom.mailNotifier != null) {
-            MavenReporter reporter = getReporters().get(MavenMailer.DescriptorImpl.DESCRIPTOR);
+            MavenReporter reporter = getReporters().get(MavenMailer.class);
             if (reporter != null) {
                 MavenMailer mailer = (MavenMailer) reporter;
                 mailer.dontNotifyEveryUnstableBuild = !pom.mailNotifier.isSendOnFailure();
@@ -435,7 +435,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         getReporters().addAllTo(reporters);
         getParent().getReporters().addAllTo(reporters);
 
-        for (MavenReporterDescriptor d : MavenReporters.LIST) {
+        for (MavenReporterDescriptor d : Hudson.getInstance().getExtensionList(MavenReporterDescriptor.class)) {
             if(getReporters().contains(d))
                 continue;   // already configured
             MavenReporter auto = d.newAutoInstance(this);

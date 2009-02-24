@@ -32,6 +32,7 @@ import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
+import hudson.Extension;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
@@ -85,13 +86,8 @@ public class BuildInfoRecorder extends MavenReporter {
         return super.preExecute(build, pom, mojo, listener);
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.DESCRIPTOR;
-    }
-
+    @Extension
     public static final class DescriptorImpl extends MavenReporterDescriptor {
-        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
         public String getDisplayName() {
             return Messages.BuildInfoRecorder_DisplayName();
         }

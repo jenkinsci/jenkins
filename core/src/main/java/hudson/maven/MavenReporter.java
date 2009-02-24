@@ -30,6 +30,7 @@ import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
+import hudson.model.Hudson;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Publisher;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -280,5 +281,7 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
         return null;
     }
 
-    public abstract MavenReporterDescriptor getDescriptor();
+    public MavenReporterDescriptor getDescriptor() {
+        return (MavenReporterDescriptor)Hudson.getInstance().getDescriptor(getClass());
+    }
 }

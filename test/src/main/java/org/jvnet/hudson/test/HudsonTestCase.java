@@ -207,7 +207,6 @@ public abstract class HudsonTestCase extends TestCase {
         // without this, plugins loaded in the tests will be left and interferes with the later tests.
         cleanUpDescriptors(Descriptor.ALL);
         cleanUpDescriptors(BuildStep.PUBLISHERS);
-        cleanUpDescriptors(MavenReporters.LIST);
 
         hudson.cleanUp();
         env.dispose();

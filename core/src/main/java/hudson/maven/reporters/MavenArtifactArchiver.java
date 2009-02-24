@@ -32,6 +32,7 @@ import hudson.maven.MavenBuild;
 import hudson.model.BuildListener;
 import hudson.util.InvocationInterceptor;
 import hudson.FilePath;
+import hudson.Extension;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.project.MavenProject;
@@ -152,13 +153,8 @@ public class MavenArtifactArchiver extends MavenReporter {
         return true;
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.DESCRIPTOR;
-    }
-
+    @Extension
     public static final class DescriptorImpl extends MavenReporterDescriptor {
-        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
         public String getDisplayName() {
             return Messages.MavenArtifactArchiver_DisplayName();
         }
