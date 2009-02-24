@@ -25,6 +25,7 @@ package hudson.scm;
 
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
+import hudson.model.Hudson;
 import hudson.scm.SubversionSCM.ModuleLocation;
 import hudson.FilePath;
 import hudson.util.IOException2;
@@ -117,7 +118,7 @@ public final class SubversionChangeLogBuilder {
     }
 
     private ISVNAuthenticationProvider createAuthenticationProvider() {
-        return SubversionSCM.DescriptorImpl.DESCRIPTOR.createAuthenticationProvider();
+        return Hudson.getInstance().getDescriptorByType(SubversionSCM.DescriptorImpl.class).createAuthenticationProvider();
     }
 
     private boolean buildModule(String url, SVNLogClient svnlc, SVNXMLLogHandler logHandler) throws IOException2 {
