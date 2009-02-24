@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.model.Descriptor;
 import hudson.util.StreamTaskListener;
 import hudson.Util;
+import hudson.Extension;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -66,17 +67,11 @@ public class JNLPLauncher extends ComputerLauncher {
         // do nothing as we cannot self start
     }
 
-    public Descriptor<ComputerLauncher> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
+    @Extension
     public static final Descriptor<ComputerLauncher> DESCRIPTOR = new Descriptor<ComputerLauncher>() {
         public String getDisplayName() {
             return Messages.JNLPLauncher_displayName();
         }
     };
 
-    static {
-        LIST.add(DESCRIPTOR);
-    }
 }

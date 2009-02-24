@@ -26,7 +26,6 @@ package hudson;
 import hudson.model.Hudson;
 import hudson.util.DescriptorList;
 
-import java.util.AbstractCollection;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +55,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @see Hudson#getExtensionList(Class)
  * @see Hudson#getDescriptorList(Class)
  */
-public class ExtensionList<T> extends AbstractCollection<T> {
+public class ExtensionList<T> extends AbstractList<T> {
     public final Hudson hudson;
     public final Class<T> extensionType;
 
@@ -69,44 +68,6 @@ public class ExtensionList<T> extends AbstractCollection<T> {
      * Place to store manually registered instances with the per-Hudson scope.
      */
     private final List<T> legacyInstances;
-
-    /**
-     * View of the {@link ExtensionList} as a mutable list.
-     *
-     * <p>
-     * Read access on this instance will see the full list that {@link ExtensionList} has,
-     * and the write access will allow the legacy manual registrations.
-     */
-    private final List<T> listView = new AbstractList<T>() {
-        @Override
-        public T get(int index) {
-            return ensureLoaded().get(index);
-        }
-
-        @Override
-        public int size() {
-            return ExtensionList.this.size();
-        }
-
-        @Override
-        public Iterator<T> iterator() {
-            return ExtensionList.this.iterator(); // performance optimization as this is a common path
-        }
-
-        @Override
-        public boolean add(T t) {
-            legacyInstances.add(t);
-            // if we've already filled extensions, add it
-            if(extensions!=null)
-                extensions.add(t);
-            return true;
-        }
-
-        @Override
-        public void add(int index, T element) {
-            add(element);
-        }
-    };
 
     protected ExtensionList(Hudson hudson, Class<T> extensionType) {
         this(hudson,extensionType,new Vector<T>());
@@ -140,8 +101,32 @@ public class ExtensionList<T> extends AbstractCollection<T> {
         return ensureLoaded().iterator();
     }
 
+    public T get(int index) {
+        return ensureLoaded().get(index);
+    }
+    
     public int size() {
         return ensureLoaded().size();
+    }
+
+    /**
+     * Write access will put the instance into a legacy store.
+     *
+     * @deprecated
+     *      Prefer automatic registration.
+     */
+    @Override
+    public boolean add(T t) {
+        legacyInstances.add(t);
+        // if we've already filled extensions, add it
+        if(extensions!=null)
+            extensions.add(t);
+        return true;
+    }
+
+    @Override
+    public void add(int index, T element) {
+        add(element);
     }
 
     /**
@@ -175,19 +160,6 @@ public class ExtensionList<T> extends AbstractCollection<T> {
         for (ExtensionFinder finder : finders())
             r.addAll(finder.findExtensions(extensionType, hudson));
         return r;
-    }
-
-    /**
-     * Provides the {@link List} adapter for the extension list, in case
-     * the compatibility with older Hudson requires that there be a mutable list.
-     *
-     * <p>
-     * Read access to this list will see the same thing as {@link ExtensionList#iterator()},
-     * and write acecss will keep the objects in a separate list, so that they can be merged
-     * to the list of auto-disovered instances.
-     */
-    public List<T> asList() {
-        return listView;
     }
 
     public static <T> ExtensionList<T> create(Hudson hudson, Class<T> type) {

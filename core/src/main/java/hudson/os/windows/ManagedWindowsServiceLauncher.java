@@ -35,6 +35,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
 import hudson.remoting.Channel.Listener;
+import hudson.Extension;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbException;
 import jcifs.smb.NtlmPasswordAuthentication;
@@ -233,20 +234,14 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         }
     }
 
-    public Descriptor<ComputerLauncher> getDescriptor() {
-        return DescriptorImpl.INSTANCE;
-    }
-
+    @Extension
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
-        public static final DescriptorImpl INSTANCE = new DescriptorImpl();
-
         public String getDisplayName() {
             return "Let Hudson control this Windows slave as a Windows service";
         }
     }
 
     static {
-        LIST.add(DescriptorImpl.INSTANCE);
         Logger.getLogger("org.jinterop").setLevel(Level.WARNING);
     }
 }

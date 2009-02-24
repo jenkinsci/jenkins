@@ -25,6 +25,7 @@ package hudson.slaves;
 
 import hudson.EnvVars;
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.remoting.Channel;
 import hudson.util.FormFieldValidator;
@@ -77,12 +78,6 @@ public class CommandLauncher extends ComputerLauncher {
     public String getCommand() {
         return agentCommand;
     }
-
-    public Descriptor<ComputerLauncher> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final Descriptor<ComputerLauncher> DESCRIPTOR = new DescriptorImpl();
 
     /**
      * Gets the formatted current time stamp.
@@ -155,10 +150,7 @@ public class CommandLauncher extends ComputerLauncher {
 
     private static final Logger LOGGER = Logger.getLogger(CommandLauncher.class.getName());
 
-    static {
-        LIST.add(DESCRIPTOR);
-    }
-
+    @Extension
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
         public String getDisplayName() {
             return Messages.CommandLauncher_displayName();

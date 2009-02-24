@@ -84,7 +84,6 @@ import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProvisioner;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
-import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.DynamicLabeler;
 import hudson.tasks.LabelFinder;
@@ -411,7 +410,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * @see AdministrativeMonitor
      */
-    public transient final List<AdministrativeMonitor> administrativeMonitors = getExtensionList(AdministrativeMonitor.class).asList();
+    public transient final List<AdministrativeMonitor> administrativeMonitors = getExtensionList(AdministrativeMonitor.class);
 
     /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
 

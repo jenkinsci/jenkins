@@ -24,9 +24,11 @@
 package hudson.slaves;
 
 import hudson.ExtensionPoint;
-import hudson.os.windows.ManagedWindowsServiceLauncher;
+import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.remoting.Channel.Listener;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
@@ -97,14 +99,16 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
     public void beforeDisconnect(SlaveComputer computer, StreamTaskListener listener) {
     }
 
+    public Descriptor<ComputerLauncher> getDescriptor() {
+        return (Descriptor<ComputerLauncher>)Hudson.getInstance().getDescriptor(getClass());
+    }
+
     /**
      * All registered {@link ComputerLauncher} implementations.
+     *
+     * @deprecated as of 1.281
+     *      Use {@link Extension} for registration, and use
+     *      {@link Hudson#getDescriptorList(Class)} for read access.
      */
-    public static final DescriptorList<ComputerLauncher> LIST = new DescriptorList<ComputerLauncher>();
-
-    static {
-        LIST.load(JNLPLauncher.class);
-        LIST.load(CommandLauncher.class);
-        LIST.load(ManagedWindowsServiceLauncher.class);
-    }
+    public static final DescriptorList<ComputerLauncher> LIST = new DescriptorList<ComputerLauncher>(ComputerLauncher.class);
 }
