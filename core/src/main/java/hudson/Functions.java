@@ -1040,7 +1040,7 @@ public class Functions {
         return PageDecorator.all();
     }
     
-    public static DescriptorList<Cloud> getCloudDescriptors() {
+    public static List<Descriptor<Cloud>> getCloudDescriptors() {
         return Cloud.all();
     }
 
