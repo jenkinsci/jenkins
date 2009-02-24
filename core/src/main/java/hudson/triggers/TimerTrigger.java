@@ -29,6 +29,7 @@ import hudson.model.Cause;
 import hudson.model.Item;
 import hudson.scheduler.CronTabList;
 import hudson.util.FormFieldValidator;
+import hudson.Extension;
 
 import java.io.IOException;
 
@@ -56,12 +57,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
         job.scheduleBuild(0, new TimerTriggerCause());
     }
 
-    public TriggerDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final TriggerDescriptor DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends TriggerDescriptor {
         public boolean isApplicable(Item item) {
             return item instanceof BuildableItem;

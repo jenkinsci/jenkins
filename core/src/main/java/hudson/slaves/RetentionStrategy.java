@@ -90,7 +90,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
     /**
      * Returns all the registered {@link RetentionStrategy} descriptors.
      */
-    public static DescriptorExtensionList<RetentionStrategy<?>> all() {
+    public static DescriptorExtensionList<RetentionStrategy<?>,Descriptor<RetentionStrategy<?>>> all() {
         return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(RetentionStrategy.class);
     }
 

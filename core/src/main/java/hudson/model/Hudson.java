@@ -668,7 +668,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the trigger descriptor by name. Primarily used for making them web-visible.
      */
     public TriggerDescriptor getTrigger(String shortClassName) {
-        return (TriggerDescriptor) findDescriptor(shortClassName, Triggers.TRIGGERS);
+        return (TriggerDescriptor) findDescriptor(shortClassName, Trigger.all());
     }
 
     /**
@@ -1504,7 +1504,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *      Can be an empty list but never null.
      */
     @SuppressWarnings({"unchecked"})
-    public <T extends Describable<T>> DescriptorExtensionList<T> getDescriptorList(Class<T> type) {
+    public <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
         return descriptorLists.get(type);
     }
 
@@ -2043,7 +2043,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             for( SCMDescriptor scmd : SCMS.SCMS )
                 result &= configureDescriptor(req,json,scmd);
 
-            for( TriggerDescriptor d : Triggers.TRIGGERS )
+            for( TriggerDescriptor d : Trigger.all() )
                 result &= configureDescriptor(req,json,d);
 
             for( JobPropertyDescriptor d : JobPropertyDescriptor.all() )

@@ -182,7 +182,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
     /**
      * Returns all the registered {@link FileSystemProvisioner} descriptors.
      */
-    public static DescriptorExtensionList<FileSystemProvisioner> all() {
+    public static DescriptorExtensionList<FileSystemProvisioner,FileSystemProvisionerDescriptor> all() {
         return Hudson.getInstance().getDescriptorList(FileSystemProvisioner.class);
     }
 

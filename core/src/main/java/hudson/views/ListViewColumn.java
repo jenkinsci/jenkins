@@ -33,6 +33,7 @@ import hudson.model.Describable;
 import hudson.model.ListView;
 import hudson.model.Item;
 import hudson.model.Hudson;
+import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.export.Exported;
 
@@ -69,7 +70,7 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
     /**
      * Returns all the registered {@link ListViewColumn} descriptors.
      */
-    public static DescriptorExtensionList<ListViewColumn> all() {
+    public static DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all() {
         return Hudson.getInstance().getDescriptorList(ListViewColumn.class);
     }
 

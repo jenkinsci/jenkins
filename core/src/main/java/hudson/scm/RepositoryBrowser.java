@@ -101,7 +101,7 @@ public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> implements
     /**
      * Returns all the registered {@link RepositoryBrowser} descriptors.
      */
-    public static DescriptorExtensionList<RepositoryBrowser<?>> all() {
+    public static DescriptorExtensionList<RepositoryBrowser<?>,Descriptor<RepositoryBrowser<?>>> all() {
         return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(RepositoryBrowser.class);
     }
 

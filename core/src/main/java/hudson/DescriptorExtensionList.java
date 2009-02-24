@@ -26,8 +26,10 @@ package hudson;
 import hudson.model.Descriptor;
 import hudson.model.Describable;
 import hudson.model.Hudson;
+import hudson.model.ViewDescriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.util.Memoizer;
+import hudson.slaves.NodeDescriptor;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -46,9 +48,17 @@ import net.sf.json.JSONObject;
  *
  * Use {@link Hudson#getDescriptorList(Class)} to obtain instances.
  *
+ * @param <D>
+ *      Represents the descriptor type. This is {@code Descriptor<T>} normally but often there are subtypes
+ *      of descriptors, like {@link ViewDescriptor}, {@link NodeDescriptor}, etc, and this parameter points
+ *      to those for better type safety of users.
+ *
+ *      The actual value of 'D' is not necessary for the operation of this code, so it's purely for convenience
+ *      of the users of this class.
+ *
  * @since 1.286
  */
-public final class DescriptorExtensionList<T extends Describable<T>> extends ExtensionList<Descriptor<T>> {
+public final class DescriptorExtensionList<T extends Describable<T>, D extends Descriptor<T>> extends ExtensionList<D> {
     /**
      * Type of the {@link Describable} that this extension list retains.
      */
@@ -65,7 +75,7 @@ public final class DescriptorExtensionList<T extends Describable<T>> extends Ext
      * @param fqcn
      *      Fully qualified name of the descriptor, not the describable.
      */
-    public Descriptor<T> find(String fqcn) {
+    public D find(String fqcn) {
         return Descriptor.find(this,fqcn);
     }
 
@@ -89,7 +99,7 @@ public final class DescriptorExtensionList<T extends Describable<T>> extends Ext
      * Loading the descriptors in this case means filtering the descriptor from the master {@link ExtensionList}.
      */
     @Override
-    protected List<Descriptor<T>> load() {
+    protected List<D> load() {
         List r = new ArrayList();
         for( Descriptor d : hudson.getExtensionList(Descriptor.class) ) {
             Type subTyping = Types.getBaseClass(d.getClass(), Descriptor.class);

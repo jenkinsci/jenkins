@@ -137,7 +137,7 @@ public abstract class ParameterDefinition implements
     /**
      * Returns all the registered {@link ParameterDefinition} descriptors.
      */
-    public static DescriptorExtensionList<ParameterDefinition> all() {
+    public static DescriptorExtensionList<ParameterDefinition,ParameterDescriptor> all() {
         return Hudson.getInstance().getDescriptorList(ParameterDefinition.class);
     }
 

@@ -27,6 +27,7 @@ import antlr.ANTLRException;
 import hudson.DependencyRunner;
 import hudson.DependencyRunner.ProjectRunnable;
 import hudson.ExtensionPoint;
+import hudson.DescriptorExtensionList;
 import hudson.slaves.ComputerRetentionWork;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -50,6 +51,8 @@ import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.Timer;
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +62,7 @@ import java.util.logging.Logger;
  *
  * <p>
  * To register a custom {@link Trigger} from a plugin,
- * add it to {@link Triggers#TRIGGERS}.
+ * put {@link Extension} on your {@link TriggerDescriptor} class.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -105,7 +108,9 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         return null;
     }
 
-    public abstract TriggerDescriptor getDescriptor();
+    public TriggerDescriptor getDescriptor() {
+        return (TriggerDescriptor)Hudson.getInstance().getDescriptor(getClass());
+    }
 
 
 
@@ -181,7 +186,8 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         Hudson inst = Hudson.getInstance();
 
         // Are we using synchronous polling?
-        if (SCMTrigger.DESCRIPTOR.synchronousPolling) {
+        SCMTrigger.DescriptorImpl scmd = inst.getDescriptorByType(SCMTrigger.DescriptorImpl.class);
+        if (scmd.synchronousPolling) {
             LOGGER.fine("using synchronous polling");
 
             // Check that previous synchronous polling job is done to prevent piling up too many jobs
@@ -190,7 +196,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 // ignored, only the global setting is honored. The polling job is submitted only if the previous job has
                 // terminated.
                 // FIXME allow to set a global crontab spec
-                previousSynchronousPolling = SCMTrigger.DESCRIPTOR.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
+                previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
                     public void run(AbstractProject p) {
                         for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
                             if (t instanceof SCMTrigger) {
@@ -208,7 +214,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         // Process all triggers, except SCMTriggers when synchronousPolling is set
         for (AbstractProject<?,?> p : inst.getAllItems(AbstractProject.class)) {
             for (Trigger t : p.getTriggers().values()) {
-                if (! (t instanceof SCMTrigger && SCMTrigger.DESCRIPTOR.synchronousPolling)) {
+                if (! (t instanceof SCMTrigger && scmd.synchronousPolling)) {
                     LOGGER.fine("cron checking "+p.getName());
 
                     if (t.tabs.check(cal)) {
@@ -250,5 +256,24 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 ComputerSet.initialize();
             }
         }, 1000*10);
+    }
+
+    /**
+     * Returns all the registered {@link Trigger} descriptors.
+     */
+    public static DescriptorExtensionList<Trigger<?>,TriggerDescriptor> all() {
+        return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(Trigger.class);
+    }
+
+    /**
+     * Returns a subset of {@link TriggerDescriptor}s that applys to the given item.
+     */
+    public static List<TriggerDescriptor> for_(Item i) {
+        List<TriggerDescriptor> r = new ArrayList<TriggerDescriptor>();
+        for (TriggerDescriptor t : all()) {
+            if(t.isApplicable(i))
+                r.add(t);
+        }
+        return r;
     }
 }

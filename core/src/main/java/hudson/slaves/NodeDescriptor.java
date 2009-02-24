@@ -63,7 +63,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     /**
      * Returns all the registered {@link NodeDescriptor} descriptors.
      */
-    public static DescriptorExtensionList<Node> all() {
+    public static DescriptorExtensionList<Node,NodeDescriptor> all() {
         return Hudson.getInstance().getDescriptorList(Node.class);
     }
 

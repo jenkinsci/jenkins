@@ -34,6 +34,7 @@ import hudson.model.Project;
 import hudson.model.Action;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
+import hudson.model.Descriptor;
 import hudson.model.Run.RunnerAbortedException;
 
 import java.io.IOException;
@@ -187,7 +188,8 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
     /**
      * Returns all the registered {@link BuildWrapper} descriptors.
      */
-    public static DescriptorExtensionList<BuildWrapper> all() {
+    // for compatibility we can't use BuildWrapperDescriptor
+    public static DescriptorExtensionList<BuildWrapper,Descriptor<BuildWrapper>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
         return Hudson.getInstance().getDescriptorList(BuildWrapper.class);
     }

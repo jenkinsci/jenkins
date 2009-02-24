@@ -41,6 +41,7 @@ import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
+import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.search.SearchableModelObject;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
@@ -616,7 +617,7 @@ public class Functions {
         return RetentionStrategy.all();
     }
 
-    public static List<Descriptor<ParameterDefinition>> getParameterDescriptors() {
+    public static List<ParameterDescriptor> getParameterDescriptors() {
         return ParameterDefinition.all();
     }
 

@@ -101,7 +101,9 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         pollingScheduled = true;
         LOGGER.fine("Scheduling a polling for "+job);
 
-        if (DESCRIPTOR.synchronousPolling) {
+        DescriptorImpl d = getDescriptor();
+
+        if (d.synchronousPolling) {
         	LOGGER.fine("Running the trigger directly without threading, " +
         			"as it's already taken care of by Trigger.Cron");
             new Runner().run();
@@ -110,9 +112,13 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             // even if we end up submitting this too many times, that's OK.
             // the real exclusion control happens inside Runner.
         	LOGGER.fine("scheduling the trigger to (asynchronously) run");
-            DESCRIPTOR.getExecutor().submit(new Runner());
-            DESCRIPTOR.clogCheck();
+            d.getExecutor().submit(new Runner());
+            d.clogCheck();
         }
+    }
+
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl)super.getDescriptor();
     }
 
     public Action getProjectAction() {
@@ -126,12 +132,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         return new File(job.getRootDir(),"scm-polling.log");
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static final class DescriptorImpl extends TriggerDescriptor {
         /**
          * Used to control the execution of the polling tasks.
@@ -155,7 +156,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          */
         private int maximumThreads;
 
-        DescriptorImpl() {
+        public DescriptorImpl() {
             load();
             /*
              * Need to resize the thread pool here in case there is no existing configuration file for SCMTrigger as

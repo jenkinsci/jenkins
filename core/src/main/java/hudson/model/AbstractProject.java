@@ -1165,7 +1165,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         for (Trigger t : triggers)
             t.stop();
-        triggers = buildDescribable(req, Triggers.getApplicableTriggers(this));
+        triggers = buildDescribable(req, Trigger.for_(this));
         for (Trigger t : triggers)
             t.start(this,true);
 

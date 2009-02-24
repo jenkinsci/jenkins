@@ -70,7 +70,8 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Bui
     /**
      * Returns all the registered {@link Builder} descriptors.
      */
-    public static DescriptorExtensionList<Builder> all() {
+    // for backward compatibility, the signature is not BuildStepDescriptor
+    public static DescriptorExtensionList<Builder,Descriptor<Builder>> all() {
         return Hudson.getInstance().getDescriptorList(Builder.class);
     }
 

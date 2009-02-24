@@ -44,6 +44,7 @@ import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.triggers.SCMTrigger;
+import hudson.triggers.SCMTrigger.DescriptorImpl;
 import hudson.util.EditDistance;
 import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
@@ -516,7 +517,7 @@ public class SubversionSCM extends SCM implements Serializable {
                             e.printStackTrace(listener.error("Failed to update "+l.remote));
                             // trouble-shooting probe for #591
                             if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_NOT_LOCKED) {
-                                listener.getLogger().println("Polled jobs are "+ SCMTrigger.DESCRIPTOR.getItemsBeingPolled());
+                                listener.getLogger().println("Polled jobs are "+ Hudson.getInstance().getDescriptorByType(SCMTrigger.DescriptorImpl.class).getItemsBeingPolled());
                             }
                             return null;
                         }

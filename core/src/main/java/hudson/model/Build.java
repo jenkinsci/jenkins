@@ -74,7 +74,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
     @Override
     protected void onStartBuilding() {
         super.onStartBuilding();
-        SCMTrigger t = (SCMTrigger)project.getTriggers().get(SCMTrigger.DESCRIPTOR);
+        SCMTrigger t = (SCMTrigger)project.getTriggers().get(Hudson.getInstance().getDescriptorByType(SCMTrigger.DescriptorImpl.class));
         if(t!=null) {
             // acquire the lock
             buildLock = t.getLock();
