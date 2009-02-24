@@ -178,7 +178,7 @@ public class Functions {
      * Adds the proper suffix.
      */
     public static String addSuffix(int n, String singular, String plural) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(n).append(' ');
         if(n==1)
             buf.append(singular);
