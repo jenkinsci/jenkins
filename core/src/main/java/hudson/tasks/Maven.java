@@ -264,6 +264,7 @@ public class Maven extends Builder {
      * @deprecated as of 1.286
      *      Use {@link Hudson#getDescriptorByType(Class)} to obtain the current instance.
      *      For compatibility, this field retains the last created {@link DescriptorImpl}.
+     *      TODO: fix sonar plugin that depends on this. That's the only plugin that depends on this field.
      */
     public static DescriptorImpl DESCRIPTOR;
 
