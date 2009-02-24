@@ -1037,7 +1037,7 @@ public class Functions {
      * Gets all the {@link PageDecorator}s.
      */
     public static List<PageDecorator> getPageDecorators() {
-        return (List)PageDecorator.ALL;
+        return PageDecorator.all();
     }
     
     public static DescriptorList<Cloud> getCloudDescriptors() {

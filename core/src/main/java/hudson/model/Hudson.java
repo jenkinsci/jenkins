@@ -536,7 +536,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             l.onLoaded();
 
         WindowsInstallerLink.registerIfApplicable();
-        UsageStatistics.register();
         LoadStatistics.register();
         NodeProvisioner.launch();
     }
@@ -2043,7 +2042,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             for( JobPropertyDescriptor d : JobPropertyDescriptor.all() )
                 result &= configureDescriptor(req,json,d);
 
-            for( PageDecorator d : PageDecorator.ALL )
+            for( PageDecorator d : PageDecorator.all() )
                 result &= configureDescriptor(req,json,d);
 
             for( JSONObject o : StructuredForm.toList(json,"plugin"))

@@ -25,9 +25,11 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Plugin;
+import hudson.ExtensionListView;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Participates in the rendering of HTML pages for all pages of Hudson.
@@ -42,8 +44,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * <h2>Life-cycle</h2>
  * <p>
- * Instances of this class is singleton. {@link Plugin}s that contribute this extension point
- * should instantiate a new decorator and add it to the {@link #ALL} list in {@link Plugin#start()}. 
+ * {@link Plugin}s that contribute this extension point
+ * should implement a new decorator and put {@link Extension} on the class.
  *
  * <h2>Associated Views</h2>
  * <h4>global.jelly</h4>
@@ -74,15 +76,9 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
         super(yourClass);
     }
 
-    /**
-     * Infers the type of the corresponding {@link Describable} from the outer class.
-     * This version works when you follow the common convention, where a descriptor
-     * is written as the static nested class of the describable class.
-     *
-     * @since 1.278
-     */
-    protected PageDecorator() {
-    }
+// this will never work because Descriptor and Describable are the same thing.
+//    protected PageDecorator() {
+//    }
 
     public final Descriptor<PageDecorator> getDescriptor() {
         return this;
@@ -98,6 +94,15 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
 
     /**
      * All the registered instances.
+     * @deprecated as of 1.286
+     *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
-    public static final List<PageDecorator> ALL = new CopyOnWriteArrayList<PageDecorator>();
+    public static final List<PageDecorator> ALL = ExtensionListView.createList(PageDecorator.class);
+
+    /**
+     * Returns all the registered {@link PageDecorator} descriptors.
+     */
+    public static DescriptorExtensionList<PageDecorator,PageDecorator> all() {
+        return Hudson.getInstance().getDescriptorList(PageDecorator.class);
+    }
 }

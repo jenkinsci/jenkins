@@ -26,6 +26,7 @@ package hudson.model;
 import com.trilead.ssh2.crypto.Base64;
 import hudson.PluginWrapper;
 import hudson.Util;
+import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
@@ -55,6 +56,7 @@ import java.util.zip.GZIPOutputStream;
 /**
  * @author Kohsuke Kawaguchi
  */
+@Extension
 public class UsageStatistics extends PageDecorator {
     private final String keyImage;
 
@@ -80,16 +82,6 @@ public class UsageStatistics extends PageDecorator {
         this.keyImage = keyImage;
         load();
     }
-
-    // register the instance
-    static {
-        PageDecorator.ALL.add(new UsageStatistics());
-    }
-
-    /**
-     * No-op, but calling this method makes sure that the static initializer is run.
-     */
-    static void register() {}
 
     /**
      * Returns true if it's time for us to check for new version.

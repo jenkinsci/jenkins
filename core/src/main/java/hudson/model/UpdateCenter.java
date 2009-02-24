@@ -894,14 +894,11 @@ public class UpdateCenter extends AbstractModelObject {
     /**
      * Adds the update center data retriever to HTML.
      */
+    @Extension
     public static class PageDecoratorImpl extends PageDecorator {
         public PageDecoratorImpl() {
             super(PageDecoratorImpl.class);
         }
-    }
-
-    static {
-        PageDecorator.ALL.add(new PageDecoratorImpl());
     }
 
     /**
