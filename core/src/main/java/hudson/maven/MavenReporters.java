@@ -24,7 +24,6 @@
 package hudson.maven;
 
 import hudson.Extension;
-import hudson.maven.reporters.MavenJavadocArchiver;
 import hudson.util.DescriptorList;
 
 import java.util.ArrayList;
@@ -42,11 +41,6 @@ public final class MavenReporters {
      * use {@link Extension} for automatic registration. 
      */
     public static final List<MavenReporterDescriptor> LIST = (List)new DescriptorList<MavenReporter>(MavenReporter.class);
-
-    static {
-        // emulate the behavior of the legacy code
-        LIST.add(MavenJavadocArchiver.DescriptorImpl.DESCRIPTOR);
-    }
 
     /**
      * Gets the subset of {@link #LIST} that has configuration screen.

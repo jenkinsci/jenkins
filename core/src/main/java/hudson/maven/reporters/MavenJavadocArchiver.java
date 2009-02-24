@@ -25,6 +25,7 @@ package hudson.maven.reporters;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.Extension;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
@@ -114,13 +115,8 @@ public class MavenJavadocArchiver extends MavenReporter {
         return new JavadocAction(project);
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.DESCRIPTOR;
-    }
-
+    @Extension
     public static final class DescriptorImpl extends MavenReporterDescriptor {
-        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
         public String getDisplayName() {
             return Messages.MavenJavadocArchiver_DisplayName();
         }
