@@ -25,6 +25,8 @@ package hudson;
 
 import hudson.model.Hudson;
 import hudson.util.DescriptorList;
+import hudson.util.Memoizer;
+import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Retains the known extension instances for the given type 'T'.
@@ -174,6 +177,19 @@ public class ExtensionList<T> extends AbstractList<T> {
                     return Collections.singleton(new ExtensionFinder.Sezpoz());
                 }
             };
-        return new ExtensionList<T>(hudson,type);
+        if(type.getAnnotation(LegacyInstancesAreScopedToHudson.class)!=null)
+            return new ExtensionList<T>(hudson,type);
+        else {
+            return new ExtensionList<T>(hudson,type,staticLegacyInstances.get(type));
+        }
     }
+
+    /**
+     * Places to store static-scope legacy instances.
+     */
+    private static final Memoizer<Class,List> staticLegacyInstances = new Memoizer<Class,List>() {
+        public List compute(Class key) {
+            return new CopyOnWriteArrayList();
+        }
+    };
 }

@@ -32,6 +32,7 @@ import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.scm.SubversionRepositoryBrowser;
 import hudson.scm.EditType;
 import hudson.util.FormFieldValidator;
+import hudson.Extension;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -121,12 +122,7 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
         return new URL(url,"../../changelog/"+getProjectName()+"/?cs="+changeSet.getRevision());
     }
 
-    public Descriptor<RepositoryBrowser<?>> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
         public String getDisplayName() {
             return "FishEye";

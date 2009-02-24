@@ -24,6 +24,7 @@
 package hudson.scm.browsers;
 
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.scm.CVSChangeLogSet;
@@ -76,12 +77,7 @@ public final class FishEyeCVS extends CVSRepositoryBrowser {
         return null;
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
         @Override
         public String getDisplayName() {

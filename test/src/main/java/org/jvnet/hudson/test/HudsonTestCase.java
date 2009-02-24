@@ -30,7 +30,6 @@ import hudson.WebAppMain;
 import hudson.Launcher.LocalLauncher;
 import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenReporters;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
@@ -300,7 +299,7 @@ public abstract class HudsonTestCase extends TestCase {
         String home = System.getProperty("maven.home");
         if(home!=null) {
             MavenInstallation mavenInstallation = new MavenInstallation("default",home);
-			Maven.DESCRIPTOR.setInstallations(mavenInstallation);
+			((Maven.DescriptorImpl)hudson.getDescriptor(Maven.class)).setInstallations(mavenInstallation);
             return mavenInstallation;
         }
 
@@ -320,7 +319,7 @@ public abstract class HudsonTestCase extends TestCase {
 
         MavenInstallation mavenInstallation = new MavenInstallation("default",
                 new File(mvnHome,"maven-2.0.7").getAbsolutePath());
-		Maven.DESCRIPTOR.setInstallations(mavenInstallation);
+		((Maven.DescriptorImpl)hudson.getDescriptor(Maven.class)).setInstallations(mavenInstallation);
 		return mavenInstallation;
     }
 

@@ -29,6 +29,7 @@ import hudson.scm.CVSChangeLogSet.File;
 import hudson.scm.CVSChangeLogSet.Revision;
 import hudson.scm.CVSRepositoryBrowser;
 import hudson.scm.RepositoryBrowser;
+import hudson.Extension;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -79,15 +80,12 @@ public final class ViewCVS extends CVSRepositoryBrowser {
         return new QueryBuilder(url.getQuery());
     }
 
-    public Descriptor<RepositoryBrowser<?>> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR = new Descriptor<RepositoryBrowser<?>>() {
+    @Extension
+    public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
         public String getDisplayName() {
             return "ViewCVS";
         }
-    };
+    }
 
     private static final long serialVersionUID = 1L;
 }

@@ -24,10 +24,13 @@
 package hudson.scm.browsers;
 
 import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.scm.EditType;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SubversionChangeLogSet;
 import hudson.scm.SubversionRepositoryBrowser;
+import hudson.Extension;
+
 import java.io.IOException;
 import java.net.URL;
 import net.sf.json.JSONObject;
@@ -42,19 +45,17 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class CollabNetSVN extends SubversionRepositoryBrowser
 {
-    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR
-        = new Descriptor<RepositoryBrowser<?>>() {
+    @Extension
+    public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
         public String getDisplayName() {
             return "CollabNet";
         }
 
-
         @Override
-        public RepositoryBrowser<?> newInstance(StaplerRequest req,
-                                                JSONObject formData) throws FormException {
+        public RepositoryBrowser<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindParameters(CollabNetSVN.class, "collabnet.svn.");
         }
-    };
+    }
 
 
     public final URL url;
@@ -109,13 +110,5 @@ public class CollabNetSVN extends SubversionRepositoryBrowser
         query.add("rev=" + revision);
         query.add("view=rev");
         return new URL(url, query.toString());
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */    
-    public Descriptor<RepositoryBrowser<?>> getDescriptor() {
-        return DESCRIPTOR;
     }
 }

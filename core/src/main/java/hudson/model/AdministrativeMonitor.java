@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
+import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 
@@ -72,6 +73,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @since 1.273
  * @see Hudson#administrativeMonitors
  */
+@LegacyInstancesAreScopedToHudson
 public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint {
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.

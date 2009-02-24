@@ -106,6 +106,7 @@ import hudson.util.XStream2;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.DescribableList;
 import hudson.util.Futures;
+import hudson.util.Memoizer;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -281,12 +282,20 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * All {@link ExtensionList} keyed by their {@link ExtensionList#extensionType}.
      */
-    private transient final ConcurrentHashMap<Class,ExtensionList> extensionLists = new ConcurrentHashMap<Class,ExtensionList>();
+    private transient final Memoizer<Class,ExtensionList> extensionLists = new Memoizer<Class,ExtensionList>() {
+        public ExtensionList compute(Class key) {
+            return ExtensionList.create(Hudson.this,key);
+        }
+    };
 
     /**
      * All {@link DescriptorExtensionList} keyed by their {@link DescriptorExtensionList#describableType}.
      */
-    private transient final ConcurrentHashMap<Class, DescriptorExtensionList> descriptorLists = new ConcurrentHashMap<Class, DescriptorExtensionList>();
+    private transient final Memoizer<Class,DescriptorExtensionList> descriptorLists = new Memoizer<Class,DescriptorExtensionList>() {
+        public DescriptorExtensionList compute(Class key) {
+            return new DescriptorExtensionList(Hudson.this,key);
+        }
+    };
 
     /**
      * Active {@link Cloud}s.
@@ -631,7 +640,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the repository browser descriptor by name. Primarily used for making them web-visible.
      */
     public Descriptor<RepositoryBrowser<?>> getRepositoryBrowser(String shortClassName) {
-        return findDescriptor(shortClassName,RepositoryBrowsers.LIST);
+        return findDescriptor(shortClassName,RepositoryBrowser.all());
     }
 
     /**
@@ -1468,15 +1477,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     @SuppressWarnings({"unchecked"})
     public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {
-        // by far the common case is where we find an instance already created.
-        ExtensionList<T> r = extensionLists.get(extensionType);
-        if(r!=null) return r;
-
-        // if we have to create a new one, make sure we don't create two at the same time.
-        r = ExtensionList.create(this,extensionType);
-        ExtensionList<T> x = extensionLists.putIfAbsent(extensionType, r);
-        if(x==null) return r;
-        else        return x;
+        return extensionLists.get(extensionType);
     }
 
     /**
@@ -1488,15 +1489,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     @SuppressWarnings({"unchecked"})
     public <T extends Describable<T>> DescriptorExtensionList<T> getDescriptorList(Class<T> type) {
-        // by far the common case is where we find an instance already created.
-        DescriptorExtensionList r = descriptorLists.get(type);
-        if(r!=null) return r;
-
-        // if we have to create a new one, make sure we don't create two at the same time.
-        r = new DescriptorExtensionList(this,type);
-        DescriptorExtensionList x = descriptorLists.putIfAbsent(type, r);
-        if(x==null) return r;
-        else        return x;
+        return descriptorLists.get(type);
     }
 
     /**

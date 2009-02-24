@@ -29,6 +29,7 @@ import hudson.scm.RepositoryBrowser;
 import hudson.scm.SubversionChangeLogSet;
 import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.scm.SubversionRepositoryBrowser;
+import hudson.Extension;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -80,15 +81,10 @@ public class ViewSVN extends SubversionRepositoryBrowser {
         return new QueryBuilder(url.getQuery());
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.INSTANCE;
-    }
-
     private static final long serialVersionUID = 1L;
 
+    @Extension
     public static final class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
-        public static final DescriptorImpl INSTANCE = new DescriptorImpl();
-
         public String getDisplayName() {
             return "ViewSVN";
         }

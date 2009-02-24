@@ -26,12 +26,12 @@ package hudson;
 import hudson.model.Descriptor;
 import hudson.model.Describable;
 import hudson.model.Hudson;
+import hudson.util.Memoizer;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 
@@ -52,7 +52,7 @@ public final class DescriptorExtensionList<T extends Describable<T>> extends Ext
     private final Class<T> describableType;
 
     public DescriptorExtensionList(Hudson hudson, Class<T> describableType) {
-        super(hudson, (Class)Descriptor.class,allocateLegacyInstanceStore(describableType));
+        super(hudson, (Class)Descriptor.class, legacyDescriptors.get(describableType));
         this.describableType = describableType;
     }
 
@@ -78,19 +78,17 @@ public final class DescriptorExtensionList<T extends Describable<T>> extends Ext
      * Obtain the statically-scoped storage to store manulaly registered {@link Descriptor}s.
      */
     private static List allocateLegacyInstanceStore(Class describableType) {
-        List r = legacyDescriptors.get(describableType);
-        if(r!=null)     return r;
-
-        r = new CopyOnWriteArrayList();
-        List x = legacyDescriptors.putIfAbsent(describableType, r);
-        if(x==null) return r;
-        return x;
+        return legacyDescriptors.get(describableType);
     }
 
     /**
      * Stores manually registered Descriptor instances.
      */
-    private static final ConcurrentHashMap<Class,List> legacyDescriptors = new ConcurrentHashMap<Class,List>();
+    private static final Memoizer<Class,List> legacyDescriptors = new Memoizer<Class,List>() {
+        public List compute(Class key) {
+            return new CopyOnWriteArrayList();
+        }
+    };
 
     private static final Logger LOGGER = Logger.getLogger(DescriptorExtensionList.class.getName());
 }

@@ -32,6 +32,7 @@ import hudson.scm.SubversionChangeLogSet;
 import hudson.scm.SubversionChangeLogSet.Path;
 
 import hudson.scm.SubversionRepositoryBrowser;
+import hudson.Extension;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -51,12 +52,12 @@ import java.net.URL;
  */
 public class WebSVN extends SubversionRepositoryBrowser {
 
-    public static final Descriptor<RepositoryBrowser<?>> DESCRIPTOR =
-        new Descriptor<RepositoryBrowser<?>>() {
-            public String getDisplayName() {
-                return "WebSVN";
-            }
-        };
+    @Extension
+    public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
+        public String getDisplayName() {
+            return "WebSVN";
+        }
+    }
 
 
     private static final long serialVersionUID = 1L;
@@ -134,14 +135,5 @@ public class WebSVN extends SubversionRepositoryBrowser {
 
     private QueryBuilder param() {
         return new QueryBuilder(url.getQuery());
-    }
-
-    /**
-     * Returns the descriptor value.
-     *
-     * @return  the descriptor value.
-     */
-    public Descriptor<RepositoryBrowser<?>> getDescriptor() {
-        return DESCRIPTOR;
     }
 }

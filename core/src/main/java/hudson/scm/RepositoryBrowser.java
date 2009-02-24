@@ -24,7 +24,12 @@
 package hudson.scm;
 
 import hudson.ExtensionPoint;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.tasks.BuildWrapper;
 import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.Hudson;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -44,8 +49,7 @@ import java.net.MalformedURLException;
  * {@link RepositoryBrowser} is persisted with {@link SCM}.
  *
  * <p>
- * To have Hudson recognize {@link RepositoryBrowser}, add the descriptor
- * to {@link RepositoryBrowsers#LIST}.
+ * To have Hudson recognize {@link RepositoryBrowser}, put {@link Extension} on your {@link Descriptor}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.89
@@ -88,6 +92,17 @@ public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> implements
             // impossible
             throw new Error(e);
         }
+    }
+
+    public Descriptor<RepositoryBrowser<?>> getDescriptor() {
+        return Hudson.getInstance().getDescriptor(getClass());
+    }
+
+    /**
+     * Returns all the registered {@link RepositoryBrowser} descriptors.
+     */
+    public static DescriptorExtensionList<RepositoryBrowser<?>> all() {
+        return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(RepositoryBrowser.class);
     }
 
     private static final long serialVersionUID = 1L;
