@@ -30,8 +30,8 @@ import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Job;
 import hudson.model.TaskListener;
+import hudson.model.Hudson;
 import hudson.model.listeners.RunListener;
-import hudson.util.DescriptorList;
 import hudson.scm.SCM;
 
 import java.io.BufferedOutputStream;
@@ -170,12 +170,9 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      */
     public abstract WorkspaceSnapshot snapshot(AbstractBuild<?,?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException;
 
-    public abstract FileSystemProvisionerDescriptor getDescriptor();
-
-    /**
-     * A list of available file system provider types.
-     */
-    public static final DescriptorList<FileSystemProvisioner> LIST = new DescriptorList<FileSystemProvisioner>();
+    public FileSystemProvisionerDescriptor getDescriptor() {
+        return (FileSystemProvisionerDescriptor) Hudson.getInstance().getDescriptor(getClass());
+    }
 
     /**
      * Default implementation.
@@ -208,10 +205,6 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
                 os.close();
             }
             return new WorkspaceSnapshotImpl();
-        }
-
-        public FileSystemProvisionerDescriptor getDescriptor() {
-            return null;
         }
 
         public static final class WorkspaceSnapshotImpl extends WorkspaceSnapshot {

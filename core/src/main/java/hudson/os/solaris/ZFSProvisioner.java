@@ -98,9 +98,5 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
         throw new UnsupportedOperationException();
     }
 
-    public FileSystemProvisionerDescriptor getDescriptor() {
-        return null;
-    }
-
     private static final long serialVersionUID = 1L;
 }
