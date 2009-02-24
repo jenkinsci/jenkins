@@ -115,7 +115,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      */
     @Override
     public boolean add(Descriptor<T> d) {
-        return super.add(d);
+        return store().add(d);
     }
 
     /**
@@ -127,7 +127,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      */
     @Override
     public void add(int index, Descriptor<T> element) {
-        store().add(element);
+        add(element); // order is ignored
     }
 
     /**
