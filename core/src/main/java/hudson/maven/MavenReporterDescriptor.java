@@ -26,11 +26,14 @@ package hudson.maven;
 import hudson.maven.reporters.MavenArtifactArchiver;
 import hudson.model.Descriptor;
 import hudson.model.Describable;
+import hudson.model.Hudson;
 import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.jelly.JellyClassTearOff;
+
+import java.util.Collection;
 
 /**
  * {@link Descriptor} for {@link MavenReporter}.
@@ -92,5 +95,13 @@ public abstract class MavenReporterDescriptor extends Descriptor<MavenReporter> 
         } catch(JellyException e) {
             return false;
         }
+    }
+
+    /**
+     * Lists all the currently registered instances of {@link MavenReporterDescriptor}.
+     */
+    public static Collection<MavenReporterDescriptor> all() {
+        // use getDescriptorList and not getExtensionList to pick up legacy instances
+        return (Collection)Hudson.getInstance().getDescriptorList(MavenReporter.class);
     }
 }

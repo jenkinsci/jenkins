@@ -435,7 +435,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         getReporters().addAllTo(reporters);
         getParent().getReporters().addAllTo(reporters);
 
-        for (MavenReporterDescriptor d : Hudson.getInstance().getExtensionList(MavenReporterDescriptor.class)) {
+        for (MavenReporterDescriptor d : MavenReporterDescriptor.all()) {
             if(getReporters().contains(d))
                 continue;   // already configured
             MavenReporter auto = d.newAutoInstance(this);

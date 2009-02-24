@@ -23,19 +23,12 @@
  */
 package hudson.maven;
 
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
-import hudson.maven.reporters.MavenArtifactArchiver;
-import hudson.maven.reporters.MavenFingerprinter;
+import hudson.Extension;
 import hudson.maven.reporters.MavenJavadocArchiver;
-import hudson.maven.reporters.SurefireArchiver;
-import hudson.maven.reporters.MavenMailer;
-import hudson.maven.reporters.BuildInfoRecorder;
-import hudson.maven.reporters.MavenSiteArchiver;
 import hudson.util.DescriptorList;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -45,7 +38,8 @@ public final class MavenReporters {
     /**
      * List of all installed {@link MavenReporter}s.
      *
-     * @deprecated as of 1.286. Use {@code Hudson.getInstance().getExtensionList(MavenReporterDescriptor.class)} 
+     * @deprecated as of 1.286. Use {@code MavenReporterDescriptor#all()} for listing reporters, and
+     * use {@link Extension} for automatic registration. 
      */
     public static final List<MavenReporterDescriptor> LIST = (List)new DescriptorList<MavenReporter>(MavenReporter.class);
 
@@ -59,7 +53,7 @@ public final class MavenReporters {
      */
     public static List<MavenReporterDescriptor> getConfigurableList() {
         List<MavenReporterDescriptor> r = new ArrayList<MavenReporterDescriptor>();
-        for (MavenReporterDescriptor d : Hudson.getInstance().getExtensionList(MavenReporterDescriptor.class)) {
+        for (MavenReporterDescriptor d : MavenReporterDescriptor.all()) {
             if(d.hasConfigScreen())
                 r.add(d);
         }
