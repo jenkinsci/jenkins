@@ -26,6 +26,8 @@ package hudson.tasks;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.Extension;
+import hudson.util.DescriptorList;
+import hudson.maven.MavenReporter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +43,7 @@ public class BuildWrappers {
      *      as of 1.281. Use {@link Extension} for registration, and use {@link BuildWrapper#all()}
      *      for listing them.
      */
-    public static final List<Descriptor<BuildWrapper>> WRAPPERS = Descriptor.toList(
-    );
+    public static final List<Descriptor<BuildWrapper>> WRAPPERS = new DescriptorList<BuildWrapper>(BuildWrapper.class);
 
     /**
      * List up all {@link BuildWrapperDescriptor}s that are applicable for the given project.
