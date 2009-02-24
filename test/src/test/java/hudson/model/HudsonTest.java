@@ -37,6 +37,7 @@ import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
+import hudson.tasks.Ant.DescriptorImpl;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -73,7 +74,7 @@ public class HudsonTest extends HudsonTestCase {
         assertJDK(jdks.get(0),"jdk1","/tmp");
         assertJDK(jdks.get(1),"jdk2","/tmp");
 
-        AntInstallation[] ants = Ant.DESCRIPTOR.getInstallations();
+        AntInstallation[] ants = hudson.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
         assertEquals(2,ants.length);
         assertAnt(ants[0],"ant1","/tmp");
         assertAnt(ants[1],"ant2","/tmp");

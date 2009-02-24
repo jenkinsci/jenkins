@@ -51,7 +51,7 @@ public class MavenTest extends HudsonTestCase {
 	 * Tests the round-tripping of the configuration.
 	 */
 	public void testConfigRoundtrip() throws Exception {
-		Maven.DESCRIPTOR.setInstallations(); // reset
+		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(); // reset
 
 		FreeStyleProject p = createFreeStyleProject();
 		p.getBuildersList().add(new Maven("a", null, "b.pom", "c=d", "-e"));
@@ -62,7 +62,7 @@ public class MavenTest extends HudsonTestCase {
 		HtmlForm form = page.getFormByName("config");
 		submit(form);
 
-		Maven m = (Maven) p.getBuildersList().get(Maven.DESCRIPTOR);
+		Maven m = p.getBuildersList().get(Maven.class);
 		assertNotNull(m);
 		assertEquals("a", m.targets);
 		assertNull("found " + m.mavenName, m.mavenName);
@@ -78,7 +78,7 @@ public class MavenTest extends HudsonTestCase {
 		String mavenVar = mavenHome.substring(0, 3);
 		MavenInstallation varMaven = new MavenInstallation("varMaven",
 				mavenHomeVar);
-		Maven.DESCRIPTOR.setInstallations(maven, varMaven);
+		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
 
 		JDK jdk = hudson.getJDK("default");
 		String javaHome = jdk.getJavaHome();
@@ -107,7 +107,7 @@ public class MavenTest extends HudsonTestCase {
 		String mavenVar = mavenHome.substring(0, 3);
 		MavenInstallation varMaven = new MavenInstallation("varMaven",
 				mavenHomeVar);
-		Maven.DESCRIPTOR.setInstallations(maven, varMaven);
+		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
 
 		JDK jdk = hudson.getJDK("default");
 		String javaHome = jdk.getJavaHome();

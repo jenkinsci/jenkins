@@ -45,7 +45,7 @@ public class AntTest extends HudsonTestCase {
         HtmlForm form = page.getFormByName("config");
         submit(form);
 
-        Ant a = (Ant)p.getBuildersList().get(Ant.DESCRIPTOR);
+        Ant a = p.getBuildersList().get(Ant.class);
         assertNotNull(a);
         assertEquals("a",a.getTargets());
         assertNull(a.getAnt());

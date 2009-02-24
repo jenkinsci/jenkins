@@ -6,6 +6,11 @@ import hudson.model.Describable;
 import hudson.model.Hudson;
 import hudson.util.DescriptorList;
 
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Collection;
+
 /**
  * @author Kohsuke Kawaguchi
  */
@@ -33,6 +38,28 @@ public class ExtensionListTest extends HudsonTestCase {
         assertEquals(2,list.size());
         assertNotNull(list.get(Dog.class));
         assertNotNull(list.get(Cat.class));
+    }
+
+    public void testExtensionListView() throws Exception {
+        // this is how legacy list like UserNameResolver.LIST gets created.
+        List<Animal> LIST = ExtensionListView.createList(Animal.class);
+
+        // we should see auto-registered instances here
+        assertEquals(2,LIST.size());
+        assertTrue(hasInstanceOf(LIST,Dog.class));
+        assertTrue(hasInstanceOf(LIST,Cat.class));
+
+        Animal lion = new Animal() {};
+        LIST.add(lion);
+        assertEquals(3,LIST.size());
+        assertTrue(LIST.contains(lion));
+    }
+
+    private boolean hasInstanceOf(Collection c, Class type) {
+        for (Object o : c)
+            if(o.getClass()==type)
+                return true;
+        return false;
     }
 
 //

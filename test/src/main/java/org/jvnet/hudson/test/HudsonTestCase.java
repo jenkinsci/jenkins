@@ -299,7 +299,7 @@ public abstract class HudsonTestCase extends TestCase {
         String home = System.getProperty("maven.home");
         if(home!=null) {
             MavenInstallation mavenInstallation = new MavenInstallation("default",home);
-			((Maven.DescriptorImpl)hudson.getDescriptor(Maven.class)).setInstallations(mavenInstallation);
+			hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
             return mavenInstallation;
         }
 
@@ -319,7 +319,7 @@ public abstract class HudsonTestCase extends TestCase {
 
         MavenInstallation mavenInstallation = new MavenInstallation("default",
                 new File(mvnHome,"maven-2.0.7").getAbsolutePath());
-		((Maven.DescriptorImpl)hudson.getDescriptor(Maven.class)).setInstallations(mavenInstallation);
+		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
 		return mavenInstallation;
     }
 

@@ -714,6 +714,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Gets the {@link Descriptor} instance in the current Hudson by its type.
+     */
+    public <T extends Descriptor> T getDescriptorByType(Class<T> type) {
+        for( Descriptor d : getExtensionList(Descriptor.class) )
+            if(d.getClass()==type)
+                return type.cast(d);
+        return null;
+    }
+
+    /**
      * Gets the {@link SecurityRealm} descriptors by name. Primarily used for making them web-visible.
      */
     public Descriptor<SecurityRealm> getSecurityRealms(String shortClassName) {

@@ -32,10 +32,10 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 
 		// Maven with a variable in its path
 		configureDefaultMaven();
-		MavenInstallation defaultMaven = Maven.DESCRIPTOR.getInstallations()[0];
+		MavenInstallation defaultMaven = hudson.getDescriptorByType(Maven.DescriptorImpl.class).getInstallations()[0];
 		MavenInstallation varMaven = new MavenInstallation("varMaven",
 				withVariable(defaultMaven.getMavenHome()));
-		Maven.DESCRIPTOR.setInstallations(varMaven);
+		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(varMaven);
 
 		// Ant with a variable in its path
 		// TODO: create HudsonTestCase.configureDefaultAnt()
@@ -43,7 +43,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
         if (guessedAntHome != null) {
             AntInstallation antInstallation = new AntInstallation("varAnt",
                     withVariable(guessedAntHome));
-            Ant.DESCRIPTOR.setInstallations(antInstallation);
+            hudson.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
         }
 
 		// createSlaves
@@ -96,7 +96,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 	}
 
 	public void testFreeStyleAntOnSlave() throws Exception {
-        if (Ant.DESCRIPTOR.getInstallations().length == 0) {
+        if (hudson.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations().length == 0) {
             System.out.println("Cannot do testFreeStyleAntOnSlave without ANT_HOME");
             return;
         }

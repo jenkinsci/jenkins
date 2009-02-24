@@ -142,7 +142,7 @@ public class UsageStatistics extends PageDecorator {
                 n.put("jvm-version", System.getProperty("java.version"));
             }
             n.put("executors",c.getNumExecutors());
-            DescriptorImpl descriptor = (DescriptorImpl) h.getDescriptor(ArchitectureMonitor.class);
+            DescriptorImpl descriptor = h.getDescriptorByType(DescriptorImpl.class);
             n.put("os", descriptor.get(c));
             nodes.add(n);
         }

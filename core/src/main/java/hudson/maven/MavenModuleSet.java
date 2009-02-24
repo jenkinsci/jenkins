@@ -650,7 +650,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         }
 
         public Maven.DescriptorImpl getMavenDescriptor() {
-            return (Maven.DescriptorImpl)Hudson.getInstance().getDescriptor(Maven.class);
+            return Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class);
         }
     }
 }
