@@ -35,7 +35,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Retains the known extension instances for the given type 'T'.
@@ -65,7 +64,8 @@ public class ExtensionList<T> extends AbstractList<T> {
     /**
      * Once discovered, extensions are retained here.
      */
-    private volatile CopyOnWriteArrayList<T> extensions;
+    @CopyOnWrite
+    private volatile List<T> extensions;
 
     /**
      * Place to store manually registered instances with the per-Hudson scope.
@@ -119,11 +119,14 @@ public class ExtensionList<T> extends AbstractList<T> {
      *      Prefer automatic registration.
      */
     @Override
-    public boolean add(T t) {
+    public synchronized boolean add(T t) {
         legacyInstances.add(t);
         // if we've already filled extensions, add it
-        if(extensions!=null)
-            extensions.add(t);
+        if(extensions!=null) {
+            List<T> r = new ArrayList<T>(extensions);
+            r.add(t);
+            extensions = sort(r);
+        }
         return true;
     }
 
@@ -149,7 +152,7 @@ public class ExtensionList<T> extends AbstractList<T> {
             if(extensions==null) {
                 List<T> r = load();
                 r.addAll(legacyInstances);
-                extensions = new CopyOnWriteArrayList<T>(r);
+                extensions = sort(r);
             }
             return extensions;
         }
@@ -162,6 +165,17 @@ public class ExtensionList<T> extends AbstractList<T> {
         List<T> r = new ArrayList<T>();
         for (ExtensionFinder finder : finders())
             r.addAll(finder.findExtensions(extensionType, hudson));
+        return r;
+    }
+
+    /**
+     * If the {@link ExtensionList} implementation requires sorting extensions,
+     * override this method to do so.
+     *
+     * <p>
+     * The implementation should copy a list, do a sort, and return the new instance.
+     */
+    protected List<T> sort(List<T> r) {
         return r;
     }
 

@@ -30,6 +30,8 @@ import hudson.model.ViewDescriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.util.Memoizer;
 import hudson.slaves.NodeDescriptor;
+import hudson.tasks.Publisher;
+import hudson.tasks.Publisher.DescriptorExtensionListImpl;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -58,13 +60,23 @@ import net.sf.json.JSONObject;
  *
  * @since 1.286
  */
-public final class DescriptorExtensionList<T extends Describable<T>, D extends Descriptor<T>> extends ExtensionList<D> {
+public class DescriptorExtensionList<T extends Describable<T>, D extends Descriptor<T>> extends ExtensionList<D> {
+    /**
+     * Creates a new instance.
+     */
+    public static <T extends Describable<T>,D extends Descriptor<T>>
+    DescriptorExtensionList<T,D> create(Hudson hudson, Class<T> describableType) {
+        if(describableType==Publisher.class)
+            return (DescriptorExtensionList)new DescriptorExtensionListImpl(hudson);
+        return new DescriptorExtensionList<T,D>(hudson,describableType);
+    }
+
     /**
      * Type of the {@link Describable} that this extension list retains.
      */
     private final Class<T> describableType;
 
-    public DescriptorExtensionList(Hudson hudson, Class<T> describableType) {
+    protected DescriptorExtensionList(Hudson hudson, Class<T> describableType) {
         super(hudson, (Class)Descriptor.class, legacyDescriptors.get(describableType));
         this.describableType = describableType;
     }

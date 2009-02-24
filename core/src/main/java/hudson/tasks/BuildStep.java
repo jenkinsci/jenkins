@@ -25,6 +25,7 @@ package hudson.tasks;
 
 import hudson.Launcher;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.util.DescriptorList;
 import hudson.maven.RedeployPublisher;
 import hudson.model.AbstractBuild;
@@ -34,6 +35,7 @@ import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
+import hudson.model.Hudson;
 import hudson.tasks.junit.JUnitResultArchiver;
 import hudson.tasks.test.AggregatedTestResultPublisher;
 
@@ -41,6 +43,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.AbstractList;
+import java.util.Iterator;
+import java.util.WeakHashMap;
 
 /**
  * One step of the whole build process.
@@ -140,25 +145,32 @@ public interface BuildStep {
      * results, etc.
      *
      * @see PublisherList#addNotifier(Descriptor)
-     * @see PublisherList#addRecorder(Descriptor) 
+     * @see PublisherList#addRecorder(Descriptor)
+     *
+     * @deprecated as of 1.286.
+     *      Use {@link Publisher#all()} for read access, and use
+     *      {@link Extension} for registration.
      */
-    public static final PublisherList PUBLISHERS = new PublisherList(Descriptor.toList(
-        ArtifactArchiver.DESCRIPTOR,
-        Fingerprinter.DESCRIPTOR,
-        JavadocArchiver.DESCRIPTOR,
-        JUnitResultArchiver.DescriptorImpl.DESCRIPTOR,
-        AggregatedTestResultPublisher.DescriptorImpl.INSTANCE,
-        BuildTrigger.DESCRIPTOR,
-        RedeployPublisher.DESCRIPTOR,
-        Mailer.DESCRIPTOR
-    ));
+    public static final PublisherList PUBLISHERS = new PublisherList();
 
     /**
      * List of publisher descriptor.
      */
-    public static final class PublisherList extends ArrayList<Descriptor<Publisher>> {
-        public PublisherList(Collection<? extends Descriptor<Publisher>> c) {
-            super(c);
+    public static final class PublisherList extends AbstractList<Descriptor<Publisher>> {
+        /**
+         * {@link Descriptor}s are actually stored in here.
+         * Since {@link PublisherList} lives longer than {@link Hudson} we cannot directly use {@link ExtensionList}.
+         */
+        private final DescriptorList<Publisher> core = new DescriptorList<Publisher>(Publisher.class);
+
+        /**
+         * For descriptors that are manually registered, remember what kind it was since
+         * older plugins don't extend from neither {@link Recorder} nor {@link Notifier}.
+         */
+        /*package*/ static final WeakHashMap<Descriptor<Publisher>,Class<? extends Publisher>/*either Recorder.class or Notifier.class*/>
+                KIND = new WeakHashMap<Descriptor<Publisher>, Class<? extends Publisher>>();
+
+        private PublisherList() {
         }
 
         /**
@@ -172,7 +184,8 @@ public interface BuildStep {
          * @see #addRecorder(Descriptor)
          */
         public void addNotifier( Descriptor<Publisher> d ) {
-            add(d);
+            KIND.put(d,Notifier.class);
+            core.add(d);
         }
         
         /**
@@ -185,18 +198,31 @@ public interface BuildStep {
          * @see #addNotifier(Descriptor) 
          */
         public void addRecorder( Descriptor<Publisher> d ) {
-            int idx = super.indexOf(Mailer.DESCRIPTOR);
-            add(idx,d);
+            KIND.put(d,Recorder.class);
+            core.add(d);
         }
 
         @Override
         public boolean add(Descriptor<Publisher> d) {
-            return !contains(d) && super.add(d);
+            return !contains(d) && core.add(d);
         }
 
         @Override
         public void add(int index, Descriptor<Publisher> d) {
-            if(!contains(d)) super.add(index, d);
+            if(!contains(d)) core.add(d);
+        }
+
+        public Descriptor<Publisher> get(int index) {
+            return core.get(index);
+        }
+
+        public int size() {
+            return core.size();
+        }
+
+        @Override
+        public Iterator<Descriptor<Publisher>> iterator() {
+            return core.iterator();
         }
     }
 }

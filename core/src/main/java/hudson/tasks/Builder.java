@@ -74,5 +74,4 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Bui
     public static DescriptorExtensionList<Builder,Descriptor<Builder>> all() {
         return Hudson.getInstance().getDescriptorList(Builder.class);
     }
-
 }

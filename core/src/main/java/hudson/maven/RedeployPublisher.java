@@ -24,6 +24,7 @@
 package hudson.maven;
 
 import hudson.Launcher;
+import hudson.Extension;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -31,6 +32,7 @@ import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
+import hudson.tasks.Recorder;
 import net.sf.json.JSONObject;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -50,7 +52,7 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  * @since 1.191
  */
-public class RedeployPublisher extends Publisher {
+public class RedeployPublisher extends Recorder {
     /**
      * Repository ID. This is matched up with <tt>~/.m2/settings.xml</tt> for authentication related information.
      */
@@ -115,16 +117,8 @@ public class RedeployPublisher extends Publisher {
         return build.getAction(MavenAbstractArtifactRecord.class);
     }
 
-    public BuildStepDescriptor<Publisher> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-        private DescriptorImpl() {
-        }
-
         protected DescriptorImpl(Class<? extends Publisher> clazz) {
             super(clazz);
         }

@@ -26,6 +26,7 @@ package hudson.tasks.junit;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.Extension;
 import hudson.maven.AbstractMavenProject;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
@@ -34,6 +35,7 @@ import hudson.model.*;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.Publisher;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Recorder;
 import hudson.tasks.test.TestResultAggregator;
 import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.FormFieldValidator;
@@ -53,7 +55,7 @@ import java.io.Serializable;
  *
  * @author Kohsuke Kawaguchi
  */
-public class JUnitResultArchiver extends Publisher implements Serializable, MatrixAggregatable {
+public class JUnitResultArchiver extends Recorder implements Serializable, MatrixAggregatable {
 
     /**
      * {@link FileSet} "includes" string, like "foo/bar/*.xml"
@@ -130,15 +132,10 @@ public class JUnitResultArchiver extends Publisher implements Serializable, Matr
         return new TestResultAggregator(build,launcher,listener);
     }
 
-    public Descriptor<Publisher> getDescriptor() {
-        return DescriptorImpl.DESCRIPTOR;
-    }
-
     private static final long serialVersionUID = 1L;
 
+    @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-        public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
-
         public String getDisplayName() {
             return Messages.JUnitResultArchiver_DisplayName();
         }

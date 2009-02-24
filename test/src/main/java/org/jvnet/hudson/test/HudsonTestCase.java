@@ -49,6 +49,7 @@ import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
+import hudson.tasks.Publisher;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamTaskListener;
@@ -200,11 +201,6 @@ public abstract class HudsonTestCase extends TestCase {
         server.stop();
         for (LenientRunnable r : tearDowns)
             r.run();
-
-        // TODO: avoid relying on singletons and switch to some DI container.
-        // In the mean time, discard descriptors created during this exercise.
-        // without this, plugins loaded in the tests will be left and interferes with the later tests.
-        cleanUpDescriptors(BuildStep.PUBLISHERS);
 
         hudson.cleanUp();
         env.dispose();

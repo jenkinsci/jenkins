@@ -26,6 +26,7 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.Extension;
 import hudson.maven.AbstractMavenProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -48,7 +49,7 @@ import net.sf.json.JSONObject;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ArtifactArchiver extends Publisher {
+public class ArtifactArchiver extends Recorder {
 
     /**
      * Comma- or space-separated list of patterns of files/directories to be archived.
@@ -146,13 +147,7 @@ public class ArtifactArchiver extends Publisher {
         return true;
     }
 
-    public Descriptor<Publisher> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-
-    public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public String getDisplayName() {
             return Messages.ArtifactArchiver_DisplayName();

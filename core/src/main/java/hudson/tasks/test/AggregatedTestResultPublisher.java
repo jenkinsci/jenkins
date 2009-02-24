@@ -25,6 +25,7 @@ package hudson.tasks.test;
 
 import hudson.Launcher;
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -37,6 +38,7 @@ import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
+import hudson.tasks.Recorder;
 import hudson.util.FormFieldValidator;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.QueryParameter;
@@ -57,7 +59,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-public class AggregatedTestResultPublisher extends Publisher {
+public class AggregatedTestResultPublisher extends Recorder {
     /**
      * Jobs to aggregate. Camma separated.
      * Null if triggering downstreams.
@@ -72,10 +74,6 @@ public class AggregatedTestResultPublisher extends Publisher {
         // add a TestResult just so that it can show up later.
         build.addAction(new TestResultAction(jobs,build));
         return true;
-    }
-
-    public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.INSTANCE;
     }
 
     /**
@@ -232,6 +230,7 @@ public class AggregatedTestResultPublisher extends Publisher {
         }
     }
 
+    @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;    // for all types
@@ -268,8 +267,6 @@ public class AggregatedTestResultPublisher extends Publisher {
             else
                 return new AggregatedTestResultPublisher(s.getString("jobs"));
         }
-
-        public static final DescriptorImpl INSTANCE = new DescriptorImpl();
     }
 
 }

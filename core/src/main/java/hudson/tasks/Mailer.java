@@ -25,12 +25,11 @@ package hudson.tasks;
 
 import hudson.Launcher;
 import hudson.Functions;
+import hudson.Extension;
 import hudson.maven.AbstractMavenProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Build;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
 import hudson.util.FormFieldValidator;
@@ -66,7 +65,7 @@ import net.sf.json.JSONObject;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Mailer extends Publisher {
+public class Mailer extends Notifier {
     protected static final Logger LOGGER = Logger.getLogger(Mailer.class.getName());
 
     /**
@@ -97,7 +96,7 @@ public class Mailer extends Publisher {
             /** Check whether a path (/-separated) will be archived. */
             @Override
             public boolean artifactMatches(String path, AbstractBuild<?,?> build) {
-                ArtifactArchiver aa = (ArtifactArchiver) build.getProject().getPublishersList().toMap().get(ArtifactArchiver.DESCRIPTOR);
+                ArtifactArchiver aa = build.getProject().getPublishersList().get(ArtifactArchiver.class);
                 if (aa == null) {
                     LOGGER.finer("No ArtifactArchiver found");
                     return false;
@@ -119,12 +118,7 @@ public class Mailer extends Publisher {
         }.execute(build,listener);
     }
 
-    public Descriptor<Publisher> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         /**
          * The default e-mail address suffix appended to the user name found from changelog,

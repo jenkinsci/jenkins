@@ -27,13 +27,13 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.Extension;
 import hudson.maven.AbstractMavenProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.Fingerprint;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.FingerprintMap;
@@ -67,7 +67,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Fingerprinter extends Publisher implements Serializable {
+public class Fingerprinter extends Recorder implements Serializable {
 
     /**
      * Comma-separated list of files/directories to be fingerprinted.
@@ -103,7 +103,7 @@ public class Fingerprinter extends Publisher implements Serializable {
                 record(build, listener, record, targets);
 
             if(recordBuildArtifacts && build instanceof Build) {
-                ArtifactArchiver aa = (ArtifactArchiver) ((Build<?,?>)build).getProject().getPublishers().get(ArtifactArchiver.DESCRIPTOR);
+                ArtifactArchiver aa = ((Build<?,?>)build).getProject().getPublishersList().get(ArtifactArchiver.class);
                 if(aa==null) {
                     // configuration error
                     listener.error(Messages.Fingerprinter_NoArchiving());
@@ -195,12 +195,7 @@ public class Fingerprinter extends Publisher implements Serializable {
         }
     }
 
-    public Descriptor<Publisher> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public String getDisplayName() {
             return Messages.Fingerprinter_DisplayName();

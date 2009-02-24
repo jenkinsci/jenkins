@@ -604,7 +604,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         ignoreUpstremChanges = !json.has("triggerByDependency");
 
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
-        publishers.rebuild(req,json,BuildStepDescriptor.filter(BuildStep.PUBLISHERS,this.getClass()));
+        publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
 
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.

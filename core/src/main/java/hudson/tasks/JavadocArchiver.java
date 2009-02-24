@@ -26,6 +26,7 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.Extension;
 import hudson.maven.AbstractMavenProject;
 import hudson.model.*;
 import hudson.util.FormFieldValidator;
@@ -43,7 +44,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class JavadocArchiver extends Publisher {
+public class JavadocArchiver extends Recorder {
     /**
      * Path to the Javadoc directory in the workspace.
      */
@@ -114,12 +115,6 @@ public class JavadocArchiver extends Publisher {
     public Action getProjectAction(Project project) {
         return new JavadocAction(project);
     }
-
-    public Descriptor<Publisher> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
     protected static abstract class BaseJavadocAction implements Action {
         public String getUrlName() {
@@ -197,6 +192,7 @@ public class JavadocArchiver extends Publisher {
         }
     }
 
+    @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public String getDisplayName() {
             return Messages.JavadocArchiver_DisplayName();

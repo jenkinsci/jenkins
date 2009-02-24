@@ -286,7 +286,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final Memoizer<Class,DescriptorExtensionList> descriptorLists = new Memoizer<Class,DescriptorExtensionList>() {
         public DescriptorExtensionList compute(Class key) {
-            return new DescriptorExtensionList(Hudson.this,key);
+            return DescriptorExtensionList.create(Hudson.this,key);
         }
     };
 
@@ -654,7 +654,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the publisher descriptor by name. Primarily used for making them web-visible.
      */
     public Descriptor<Publisher> getPublisher(String shortClassName) {
-        return findDescriptor(shortClassName, BuildStep.PUBLISHERS);
+        return findDescriptor(shortClassName, Publisher.all());
     }
 
     /**
@@ -2027,7 +2027,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             for( Descriptor<Builder> d : Builder.all() )
                 result &= configureDescriptor(req,json,d);
 
-            for( Descriptor<Publisher> d : BuildStep.PUBLISHERS )
+            for( Descriptor<Publisher> d : Publisher.all() )
                 result &= configureDescriptor(req,json,d);
 
             for( Descriptor<BuildWrapper> d : BuildWrapper.all() )

@@ -25,6 +25,8 @@ package hudson.tasks;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.maven.MavenReporter;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -32,13 +34,20 @@ import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Project;
 import hudson.model.AbstractBuild;
+import hudson.model.Descriptor;
+import hudson.model.Hudson;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * {@link BuildStep}s that run after the build is completed.
  *
  * <p>
  * To register a custom {@link Publisher} from a plugin,
- * add it to {@link BuildStep#PUBLISHERS}.
+ * put {@link Extension} on your descriptor implementation.
  *
  * <p>
  * Starting 1.178, publishers are exposed to all kinds of different
@@ -55,7 +64,15 @@ import hudson.model.AbstractBuild;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Publisher extends BuildStepCompatibilityLayer implements BuildStep, Describable<Publisher>, ExtensionPoint {
-//
+    /**
+     * @deprecated
+     *      Don't extend from {@link Publisher} directly. Instead, choose {@link Recorder} or {@link Notifier}
+     *      as your base class.
+     */
+    protected Publisher() {
+    }
+
+    //
 // these two methods need to remain to keep binary compatibility with plugins built with Hudson < 1.150
 //
     /**
@@ -98,5 +115,56 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
      */
     public boolean needsToRunAfterFinalized() {
         return false;
+    }
+
+    public Descriptor<Publisher> getDescriptor() {
+        return Hudson.getInstance().getDescriptor(getClass());
+    }
+
+    /**
+     * {@link Publisher} has a special sort semantics that requires a subtype.
+     *
+     * @see DescriptorExtensionList#create(Hudson, Class) 
+     */
+    public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher,Descriptor<Publisher>>
+            implements Comparator<Descriptor<Publisher>> {
+        public DescriptorExtensionListImpl(Hudson hudson) {
+            super(hudson,Publisher.class);
+        }
+
+        @Override
+        protected List<Descriptor<Publisher>> sort(List<Descriptor<Publisher>> r) {
+            List<Descriptor<Publisher>> copy = new ArrayList<Descriptor<Publisher>>(r);
+            Collections.sort(copy,this);
+            return copy;
+        }
+
+        public int compare(Descriptor<Publisher> lhs, Descriptor<Publisher> rhs) {
+            return classify(lhs)-classify(rhs);
+        }
+
+        /**
+         * If recorder, return 0, if unknown return 1, if notifier returns 2.
+         * This is used as a sort key.
+         */
+        private int classify(Descriptor<Publisher> d) {
+            if(Recorder.class.isAssignableFrom(d.clazz))    return 0;
+            if(Notifier.class.isAssignableFrom(d.clazz))    return 2;
+
+            // for compatibility, if the descriptor is manually registered in a specific way, detect that.
+            Class<? extends Publisher> kind = PublisherList.KIND.get(d);
+            if(kind==Recorder.class)    return 0;
+            if(kind==Notifier.class)    return 2;
+
+            return 1;
+        }
+    }
+
+    /**
+     * Returns all the registered {@link Publisher} descriptors.
+     */
+    // for backward compatibility, the signature is not BuildStepDescriptor
+    public static DescriptorExtensionList<Publisher,Descriptor<Publisher>> all() {
+        return Hudson.getInstance().getDescriptorList(Publisher.class);
     }
 }

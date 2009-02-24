@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import hudson.Launcher;
+import hudson.Extension;
 import hudson.security.AccessControlled;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
@@ -33,7 +34,6 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
-import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Items;
@@ -74,7 +74,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class BuildTrigger extends Publisher implements DependecyDeclarer, MatrixAggregatable {
+public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixAggregatable {
 
     /**
      * Comma-separated list of other projects to be scheduled.
@@ -237,13 +237,7 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
         return this;
     }
 
-    public Descriptor<Publisher> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-
-    public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public DescriptorImpl() {
             Hudson.getInstance().getJobListeners().add(new ItemListener() {
@@ -251,8 +245,8 @@ public class BuildTrigger extends Publisher implements DependecyDeclarer, Matrix
                 public void onRenamed(Item item, String oldName, String newName) {
                     // update BuildTrigger of other projects that point to this object.
                     // can't we generalize this?
-                    for( Project p : Hudson.getInstance().getProjects() ) {
-                        BuildTrigger t = (BuildTrigger) p.getPublishers().get(BuildTrigger.DESCRIPTOR);
+                    for( Project<?,?> p : Hudson.getInstance().getProjects() ) {
+                        BuildTrigger t = p.getPublishersList().get(BuildTrigger.class);
                         if(t!=null) {
                             if(t.onJobRenamed(oldName,newName)) {
                                 try {
