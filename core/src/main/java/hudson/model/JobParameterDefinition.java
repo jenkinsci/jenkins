@@ -35,13 +35,7 @@ public class JobParameterDefinition extends ParameterDefinition {
         super(name);
     }
 
-    @Override
-    public ParameterDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final ParameterDescriptor DESCRIPTOR = new DescriptorImpl();
-
+    // @Extension --- not live yet
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

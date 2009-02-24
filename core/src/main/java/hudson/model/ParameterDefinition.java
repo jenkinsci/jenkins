@@ -29,6 +29,9 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import hudson.util.DescriptorList;
 import hudson.ExtensionPoint;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.views.ListViewColumn;
 
 /**
  * Defines a parameter for a build.
@@ -40,7 +43,7 @@ import hudson.ExtensionPoint;
  * <p>
  * The actual meaning and the purpose of parameters are entirely up to users, so
  * what the concrete parameter implmentation is pluggable. Write subclasses
- * in a plugin and hook it up to {@link #LIST} to register it.
+ * in a plugin and put {@link Extension} on the descriptor to register them.
  *
  * <p>
  * Three classes are used to model build parameters. First is the
@@ -101,7 +104,9 @@ public abstract class ParameterDefinition implements
     /**
      * {@inheritDoc}
      */
-    public abstract ParameterDescriptor getDescriptor();
+    public ParameterDescriptor getDescriptor() {
+        return (ParameterDescriptor)Hudson.getInstance().getDescriptor(getClass());
+    }
 
     /**
      * Create a parameter value from a form submission
@@ -130,9 +135,18 @@ public abstract class ParameterDefinition implements
     }
 
     /**
-     * A list of available parameter definition types
+     * Returns all the registered {@link ParameterDefinition} descriptors.
      */
-    public static final DescriptorList<ParameterDefinition> LIST = new DescriptorList<ParameterDefinition>();
+    public static DescriptorExtensionList<ParameterDefinition> all() {
+        return Hudson.getInstance().getDescriptorList(ParameterDefinition.class);
+    }
+
+    /**
+     * A list of available parameter definition types
+     * @deprecated as of 1.286
+     *      Use {@link #all()} for read access, and {@link Extension} for registration.
+     */
+    public static final DescriptorList<ParameterDefinition> LIST = new DescriptorList<ParameterDefinition>(ParameterDefinition.class);
 
     public abstract static class ParameterDescriptor extends
             Descriptor<ParameterDefinition> {

@@ -617,7 +617,7 @@ public class Functions {
     }
 
     public static List<Descriptor<ParameterDefinition>> getParameterDescriptors() {
-        return ParameterDefinition.LIST;
+        return ParameterDefinition.all();
     }
 
     /**

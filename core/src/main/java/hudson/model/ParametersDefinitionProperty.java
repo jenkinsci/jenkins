@@ -158,7 +158,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
             }
             
             List<ParameterDefinition> parameterDefinitions = Descriptor.newInstancesFromHeteroList(
-                    req, parameterized, "parameter", ParameterDefinition.LIST);
+                    req, parameterized, "parameter", ParameterDefinition.all());
             if(parameterDefinitions.isEmpty())
                 return null;
 
@@ -181,10 +181,5 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
 
     public String getUrlName() {
         return "parameters";
-    }
-    
-    static {
-        ParameterDefinition.LIST.add(StringParameterDefinition.DESCRIPTOR);
-        ParameterDefinition.LIST.add(FileParameterDefinition.DESCRIPTOR);
     }
 }

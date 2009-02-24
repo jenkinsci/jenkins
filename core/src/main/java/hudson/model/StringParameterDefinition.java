@@ -27,6 +27,7 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+import hudson.Extension;
 
 /**
  * Parameter whose value is a string value.
@@ -41,11 +42,6 @@ public class StringParameterDefinition extends ParameterDefinition {
         this.defaultValue = defaultValue;
     }
 
-    @Override
-    public ParameterDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
     public String getDefaultValue() {
         return defaultValue;
     }
@@ -58,8 +54,7 @@ public class StringParameterDefinition extends ParameterDefinition {
         return new StringParameterValue(getName(), defaultValue);
     }
 
-    public static final ParameterDescriptor DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

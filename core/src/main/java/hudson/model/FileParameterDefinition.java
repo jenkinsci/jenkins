@@ -26,6 +26,7 @@ package hudson.model;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+import hudson.Extension;
 
 /**
  * {@link ParameterDefinition} for doing file upload.
@@ -41,18 +42,13 @@ public class FileParameterDefinition extends ParameterDefinition {
         super(name);
     }
 
-    public ParameterDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
     public FileParameterValue createValue(StaplerRequest req, JSONObject jo) {
         FileParameterValue p = req.bindJSON(FileParameterValue.class, jo);
         p.setLocation(getName());
         return p;
     }
 
-    public static final ParameterDescriptor DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
