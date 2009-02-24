@@ -53,7 +53,7 @@ public class SCMTriggerTest extends HudsonTestCase {
         FreeStyleProject p = createFreeStyleProject();
         final Object notifier = new Object();
         p.setScm(new TestSCM(notifier));
-        SCMTrigger.DESCRIPTOR.synchronousPolling = true;
+        hudson.getDescriptorByType(SCMTrigger.DescriptorImpl.class).synchronousPolling = true;
         SCMTrigger trigger = new SCMTrigger("0 0 1 1 0");
         p.addTrigger(trigger);
         trigger.start(p, true);
