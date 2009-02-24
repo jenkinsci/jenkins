@@ -23,15 +23,11 @@
  */
 package hudson.tasks;
 
-import hudson.model.Label;
-import hudson.model.Node;
-import hudson.model.Descriptor;
+import hudson.ExtensionListView;
 import hudson.remoting.VirtualChannel;
-import hudson.tasks.labelers.OSLabeler;
 
-import java.util.Set;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Support for autoconfiguration of nodes.
@@ -40,12 +36,7 @@ import java.util.ArrayList;
  */
 public interface LabelFinder {
 
-    public static final List<DynamicLabeler> LABELERS = new ArrayList<DynamicLabeler>()/*{
-        // Taking adding default DynamicLabelers out of main trunk
-        {
-            add(OSLabeler.INSTANCE);
-        }
-    }*/;
+    public static final List<DynamicLabeler> LABELERS = ExtensionListView.createList(DynamicLabeler.class);
 
     /**
      * Find the labels that the node supports.

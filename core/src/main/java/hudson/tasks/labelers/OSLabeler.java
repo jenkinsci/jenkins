@@ -37,13 +37,8 @@ import java.util.Set;
  * @author connollys
  * @since 25-May-2007 15:25:03
  */
+// @Extension --- not live yet
 public class OSLabeler extends DynamicLabeler {
-
-    public static OSLabeler INSTANCE = new OSLabeler();
-
-    private OSLabeler() {
-    }
-
     public Set<String> findLabels(VirtualChannel channel) {
         try {
             return channel.call(new OSLabelFinder());
