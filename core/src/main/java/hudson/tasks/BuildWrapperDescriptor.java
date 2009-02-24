@@ -32,7 +32,6 @@ import hudson.model.Describable;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.150
- * @see BuildWrappers#WRAPPERS
  */
 public abstract class BuildWrapperDescriptor extends Descriptor<BuildWrapper> {
     protected BuildWrapperDescriptor(Class<? extends BuildWrapper> clazz) {

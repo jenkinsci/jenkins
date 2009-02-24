@@ -25,7 +25,7 @@ package hudson.tasks;
 
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
-import hudson.model.Project;
+import hudson.Extension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +36,11 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class BuildWrappers {
+    /**
+     * @deprecated
+     *      as of 1.281. Use {@link Extension} for registration, and use {@link BuildWrapper#all()}
+     *      for listing them.
+     */
     public static final List<Descriptor<BuildWrapper>> WRAPPERS = Descriptor.toList(
     );
 
@@ -48,7 +53,7 @@ public class BuildWrappers {
      */
     public static List<Descriptor<BuildWrapper>> getFor(AbstractProject<?, ?> project) {
         List<Descriptor<BuildWrapper>> result = new ArrayList<Descriptor<BuildWrapper>>();
-        for (Descriptor<BuildWrapper> w : WRAPPERS) {
+        for (Descriptor<BuildWrapper> w : BuildWrapper.all()) {
             if (w instanceof BuildWrapperDescriptor) {
                 BuildWrapperDescriptor bwd = (BuildWrapperDescriptor) w;
                 if(bwd.isApplicable(project))
