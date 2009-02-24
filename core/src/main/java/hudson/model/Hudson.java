@@ -700,6 +700,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return null;
     }
 
+    /**
+     * Gets the {@link Descriptor} that corresponds to the given {@link Describable} type.
+     * <p>
+     * If you have an instance of {@code type} and call {@link Describable#getDescriptor()},
+     * you'll get the same instance that this method returns.
+     */
     public Descriptor getDescriptor(Class<? extends Describable> type) {
         for( Descriptor d : getExtensionList(Descriptor.class) )
             if(d.clazz==type)
