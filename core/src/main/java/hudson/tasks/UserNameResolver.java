@@ -25,17 +25,9 @@ package hudson.tasks;
 
 import hudson.ExtensionPoint;
 import hudson.Plugin;
-import hudson.scm.SCM;
-import hudson.scm.CVSSCM;
-import hudson.scm.SubversionSCM;
 import hudson.model.User;
-import hudson.model.AbstractProject;
 
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -84,12 +76,11 @@ public abstract class UserNameResolver implements ExtensionPoint {
             if(name!=null) return name;
         }
 
-            return null;
+        return null;
     }
 
     /**
      * All registered {@link UserNameResolver} implementations.
      */
     public static final List<UserNameResolver> LIST = new CopyOnWriteArrayList<UserNameResolver>();
-
 }
