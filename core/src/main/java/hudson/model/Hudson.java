@@ -58,7 +58,6 @@ import hudson.scm.CVSSCM;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
-import hudson.scm.SCMS;
 import hudson.scm.SubversionSCM;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -82,7 +81,6 @@ import hudson.slaves.Cloud;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProvisioner;
-import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.DynamicLabeler;
@@ -353,8 +351,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     /**
      * List of registered {@link ItemListener}s.
+     * @deprecated as of 1.286
      */
-    private transient final CopyOnWriteList<ItemListener> itemListeners = new CopyOnWriteList<ItemListener>();
+    private transient final CopyOnWriteList<ItemListener> itemListeners = ExtensionListView.createCopyOnWriteList(ItemListener.class);
 
     /**
      * List of registered {@link SCMListener}s.
@@ -534,7 +533,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         getQueue().load();
 
-        for (ItemListener l : itemListeners)
+        for (ItemListener l : ItemListener.all())
             l.onLoaded();
 
         WindowsInstallerLink.registerIfApplicable();
@@ -760,6 +759,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     /**
      * Gets all the installed {@link ItemListener}s.
+     *
+     * @deprecated as of 1.286.
+     *      Use {@link ItemListener#all()}.
      */
     public CopyOnWriteList<ItemListener> getJobListeners() {
         return itemListeners;
@@ -776,7 +778,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets all the installed {@link ComputerListener}s.
      *
      * @deprecated as of 1.286.
-     *      Use {@link #getExtensionList(Class)} with {@code ComputerListener}.
+     *      Use {@link ComputerListener#all()}.
      */
     public CopyOnWriteList<ComputerListener> getComputerListeners() {
         return computerListeners;
@@ -1653,7 +1655,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
      */
     /*package*/ void deleteJob(TopLevelItem item) throws IOException {
-        for (ItemListener l : itemListeners)
+        for (ItemListener l : ItemListener.all())
             l.onDeleted(item);
 
         items.remove(item.getName());
@@ -2224,7 +2226,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 result = createProject(Items.getDescriptor(mode), name);
             }
 
-            for (ItemListener l : itemListeners)
+            for (ItemListener l : ItemListener.all())
                 l.onCreated(result);
         }
 
@@ -2261,7 +2263,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         result.onCopiedFrom(src);
         items.put(name,result);
 
-        for (ItemListener l : itemListeners)
+        for (ItemListener l : ItemListener.all())
             l.onCreated(result);
 
         return result;

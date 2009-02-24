@@ -239,28 +239,6 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
 
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-        public DescriptorImpl() {
-            Hudson.getInstance().getJobListeners().add(new ItemListener() {
-                @Override
-                public void onRenamed(Item item, String oldName, String newName) {
-                    // update BuildTrigger of other projects that point to this object.
-                    // can't we generalize this?
-                    for( Project<?,?> p : Hudson.getInstance().getProjects() ) {
-                        BuildTrigger t = p.getPublishersList().get(BuildTrigger.class);
-                        if(t!=null) {
-                            if(t.onJobRenamed(oldName,newName)) {
-                                try {
-                                    p.save();
-                                } catch (IOException e) {
-                                    LOGGER.log(Level.WARNING, "Failed to persist project setting during rename from "+oldName+" to "+newName,e);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
         public String getDisplayName() {
             return Messages.BuildTrigger_DisplayName();
         }
@@ -312,6 +290,27 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
                     ok();
                 }
             }.process();
+        }
+
+        @Extension
+        public static class ItemListenerImpl extends ItemListener {
+            @Override
+            public void onRenamed(Item item, String oldName, String newName) {
+                // update BuildTrigger of other projects that point to this object.
+                // can't we generalize this?
+                for( Project<?,?> p : Hudson.getInstance().getProjects() ) {
+                    BuildTrigger t = p.getPublishersList().get(BuildTrigger.class);
+                    if(t!=null) {
+                        if(t.onJobRenamed(oldName,newName)) {
+                            try {
+                                p.save();
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING, "Failed to persist project setting during rename from "+oldName+" to "+newName,e);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

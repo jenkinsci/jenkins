@@ -24,9 +24,10 @@
 package hudson.model.listeners;
 
 import hudson.ExtensionPoint;
+import hudson.ExtensionList;
+import hudson.Extension;
 import hudson.model.Hudson;
 import hudson.model.Item;
-import hudson.model.Job;
 
 /**
  * Receives notifications about CRUD operations of {@link Item}.
@@ -72,8 +73,18 @@ public class ItemListener implements ExtensionPoint {
 
     /**
      * Registers this instance to Hudson and start getting notifications.
+     *
+     * @deprecated as of 1.286
+     *      put {@link Extension} on your class to have it auto-registered.
      */
     public void register() {
-        Hudson.getInstance().getJobListeners().add(this);
+        all().add(this);
+    }
+
+    /**
+     * All the registered {@link ItemListener}s.
+     */
+    public static ExtensionList<ItemListener> all() {
+        return Hudson.getInstance().getExtensionList(ItemListener.class);
     }
 }
