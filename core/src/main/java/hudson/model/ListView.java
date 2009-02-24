@@ -83,7 +83,7 @@ public class ListView extends View {
     private void initColumns() {
         // create all instances
         ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
-        for (Descriptor<ListViewColumn> d : ListViewColumn.LIST)
+        for (Descriptor<ListViewColumn> d : ListViewColumn.all())
             try {
                 r.add(d.newInstance(null,null));
             } catch (FormException e) {

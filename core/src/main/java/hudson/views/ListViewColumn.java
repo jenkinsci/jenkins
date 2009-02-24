@@ -24,10 +24,15 @@
 package hudson.views;
 
 import hudson.ExtensionPoint;
+import hudson.ExtensionList;
+import hudson.Extension;
+import hudson.DescriptorExtensionList;
 import hudson.tasks.Publisher;
+import hudson.tasks.UserNameResolver;
 import hudson.model.Describable;
 import hudson.model.ListView;
 import hudson.model.Item;
+import hudson.model.Hudson;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.export.Exported;
 
@@ -42,7 +47,7 @@ import org.kohsuke.stapler.export.Exported;
  *
  * <p>
  * For now, {@link ListView} doesn't allow {@link ListViewColumn}s to be configured
- * (instead it just shows all the columns available in {@link #LIST}),
+ * (instead it just shows all the columns available in {@link #all()}),
  * but the intention is eventually make each {@link ListViewColumn} fully configurable
  * like {@link Publisher}.
  *
@@ -62,7 +67,17 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
     }
 
     /**
-     * All registered {@link ListViewColumn}s.
+     * Returns all the registered {@link ListViewColumn} descriptors.
      */
-    public static final DescriptorList<ListViewColumn> LIST = new DescriptorList<ListViewColumn>();
+    public static DescriptorExtensionList<ListViewColumn> all() {
+        return Hudson.getInstance().getDescriptorList(ListViewColumn.class);
+    }
+
+    /**
+     * All registered {@link ListViewColumn}s.
+     * @deprecated as of 1.281
+     *      Use {@link #all()} for read access and {@link Extension} for registration.
+     */
+    public static final DescriptorList<ListViewColumn> LIST = new DescriptorList<ListViewColumn>(ListViewColumn.class);
+
 }
