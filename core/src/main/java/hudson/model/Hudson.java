@@ -43,6 +43,7 @@ import hudson.UDPBroadcastThread;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
+import hudson.ExtensionListView;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.WindowsInstallerLink;
 import hudson.lifecycle.Lifecycle;
@@ -362,8 +363,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     /**
      * List of registered {@link ComputerListener}s.
+     * @deprecated as of 1.286
      */
-    private transient final CopyOnWriteList<ComputerListener> computerListeners = new CopyOnWriteList<ComputerListener>();
+    private transient final CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
 
     /**
      * TCP slave agent port.
@@ -772,6 +774,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     /**
      * Gets all the installed {@link ComputerListener}s.
+     *
+     * @deprecated as of 1.286.
+     *      Use {@link #getExtensionList(Class)} with {@code ComputerListener}.
      */
     public CopyOnWriteList<ComputerListener> getComputerListeners() {
         return computerListeners;

@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.ExtensionPoint;
+import hudson.Extension;
 
 /**
  * Receives notifications about status changes of {@link Computer}s.
@@ -46,9 +47,12 @@ public abstract class ComputerListener implements ExtensionPoint {
 
     /**
      * Registers this {@link ComputerListener} so that it will start receiving events.
+     *
+     * @deprecated as of 1.286
+     *      put {@link Extension} on your class to have it auto-registered.
      */
     public final void register() {
-        Hudson.getInstance().getComputerListeners().add(this);
+        Hudson.getInstance().getExtensionList(ComputerListener.class).add(this);
     }
 
     /**
@@ -58,6 +62,6 @@ public abstract class ComputerListener implements ExtensionPoint {
      * Unless {@link ComputerListener} is unregistered, it will never be a subject of GC.
      */
     public final boolean unregister() {
-        return Hudson.getInstance().getComputerListeners().remove(this);
+        return Hudson.getInstance().getExtensionList(ComputerListener.class).remove(this);
     }
 }
