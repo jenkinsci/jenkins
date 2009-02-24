@@ -32,6 +32,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
+import hudson.model.Hudson;
 import hudson.util.FormFieldValidator;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.stapler.QueryParameter;
@@ -118,6 +119,16 @@ public class Mailer extends Notifier {
         }.execute(build,listener);
     }
 
+    /**
+     * @deprecated as of 1.286
+     *      Use {@link #descriptor()} to obtain the current instance.
+     */
+    public static DescriptorImpl DESCRIPTOR;
+
+    public static DescriptorImpl descriptor() {
+        return Hudson.getInstance().getDescriptorByType(Mailer.DescriptorImpl.class);
+    }
+
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         /**
@@ -167,6 +178,7 @@ public class Mailer extends Notifier {
 
         public DescriptorImpl() {
             load();
+            DESCRIPTOR = this;
         }
 
         /**

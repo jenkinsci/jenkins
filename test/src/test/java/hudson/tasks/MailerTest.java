@@ -39,7 +39,7 @@ public class MailerTest extends HudsonTestCase {
     @Bug(1566)
     public void testSenderAddress() throws Exception {
         // intentionally give the whole thin in a double quote
-        Mailer.DESCRIPTOR.setAdminAddress("\"me <me@sun.com>\"");
+        Mailer.descriptor().setAdminAddress("\"me <me@sun.com>\"");
 
         String recipient = "you <you@sun.com>";
         Mailbox yourInbox = Mailbox.get(new InternetAddress(recipient));

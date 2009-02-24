@@ -120,6 +120,19 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         return get(d)!=null;
     }
 
+    /**
+     * Removes an instance by its type.
+     */
+    public void remove(Class<? extends T> type) throws IOException {
+        for (T t : data) {
+            if(t.getClass()==type) {
+                data.remove(t);
+                onModified();
+                return;
+            }
+        }
+    }
+
     public void remove(D descriptor) throws IOException {
         for (T t : data) {
             if(t.getDescriptor()==descriptor) {

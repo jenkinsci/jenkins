@@ -176,7 +176,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         public void cleanUp(BuildListener listener) throws Exception {
             performAllBuildStep(listener, project.getPublishers(),false);
             performAllBuildStep(listener, project.getProperties(),false);
-            BuildTrigger.execute(Build.this,listener, (BuildTrigger)project.getPublisher(BuildTrigger.DESCRIPTOR));
+            BuildTrigger.execute(Build.this,listener, project.getPublishersList().get(BuildTrigger.class));
         }
 
         private boolean build(BuildListener listener, Collection<Builder> steps) throws IOException, InterruptedException {

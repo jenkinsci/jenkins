@@ -171,7 +171,7 @@ public class LogRecorderManager extends AbstractModelObject {
             }
 
             public String getEntryAuthor(LogRecord entry) {
-                return Mailer.DESCRIPTOR.getAdminAddress();
+                return Mailer.descriptor().getAdminAddress();
             }
         },req,rsp);
     }

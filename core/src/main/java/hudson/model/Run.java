@@ -1350,7 +1350,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
 
         public String getEntryAuthor(Run entry) {
-            return Mailer.DESCRIPTOR.getAdminAddress();
+            return Mailer.descriptor().getAdminAddress();
         }
     }
 

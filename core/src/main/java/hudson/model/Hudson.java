@@ -1360,7 +1360,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public String getRootUrl() {
         // for compatibility. the actual data is stored in Mailer
-        String url = Mailer.DESCRIPTOR.getUrl();
+        String url = Mailer.descriptor().getUrl();
         if(url!=null)   return url;
 
         StaplerRequest req = Stapler.getCurrentRequest();

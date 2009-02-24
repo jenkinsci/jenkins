@@ -183,7 +183,7 @@ public abstract class HudsonTestCase extends TestCase {
 
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
-        Mailer.DESCRIPTOR.setHudsonUrl(null);
+        Mailer.descriptor().setHudsonUrl(null);
         for( Descriptor d : hudson.getExtensionList(Descriptor.class) )
             d.load();
     }

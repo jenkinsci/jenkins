@@ -97,7 +97,7 @@ public abstract class MailAddressResolver implements ExtensionPoint {
             // this already looks like an e-mail ID
             return u.getId();
 
-        String ds = Mailer.DESCRIPTOR.getDefaultSuffix();
+        String ds = Mailer.descriptor().getDefaultSuffix();
         if(ds!=null)
             return u.getId()+ds;
         else

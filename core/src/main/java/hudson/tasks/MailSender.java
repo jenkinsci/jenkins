@@ -170,7 +170,7 @@ public class MailSender {
     }
 
     private void appendBuildUrl(AbstractBuild<?, ?> build, StringBuffer buf) {
-        String baseUrl = Mailer.DESCRIPTOR.getUrl();
+        String baseUrl = Mailer.descriptor().getUrl();
         if (baseUrl != null) {
             buf.append("See ").append(baseUrl).append(Util.encode(build.getUrl()));
             if(!build.getChangeSet().isEmptySet())
@@ -213,7 +213,7 @@ public class MailSender {
 
             String workspaceUrl = null, artifactUrl = null;
             Pattern wsPattern = null;
-            String baseUrl = Mailer.DESCRIPTOR.getUrl();
+            String baseUrl = Mailer.descriptor().getUrl();
             if (baseUrl != null) {
                 // Hyperlink local file paths to the repository workspace or build artifacts.
                 // Note that it is possible for a failure mail to refer to a file using a workspace
@@ -263,11 +263,11 @@ public class MailSender {
     }
 
     private MimeMessage createEmptyMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException {
-        MimeMessage msg = new MimeMessage(Mailer.DESCRIPTOR.createSession());
+        MimeMessage msg = new MimeMessage(Mailer.descriptor().createSession());
         // TODO: I'd like to put the URL to the page in here,
         // but how do I obtain that?
         msg.setContent("", "text/plain");
-        msg.setFrom(new InternetAddress(Mailer.DESCRIPTOR.getAdminAddress()));
+        msg.setFrom(new InternetAddress(Mailer.descriptor().getAdminAddress()));
         msg.setSentDate(new Date());
 
         Set<InternetAddress> rcp = new LinkedHashSet<InternetAddress>();

@@ -51,7 +51,6 @@ import hudson.tasks.Publisher;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
-import hudson.triggers.Triggers;
 import hudson.util.DescribableList;
 import hudson.util.EditDistance;
 import hudson.widgets.BuildHistoryWidget;
@@ -396,7 +395,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             synchronized(p) {
                 // does 'p' include us in its BuildTrigger? 
                 DescribableList<Publisher,Descriptor<Publisher>> pl = p.getPublishersList();
-                BuildTrigger trigger = (BuildTrigger) pl.get(BuildTrigger.DESCRIPTOR);
+                BuildTrigger trigger = pl.get(BuildTrigger.class);
                 List<AbstractProject> newChildProjects = trigger == null ? new ArrayList<AbstractProject>():trigger.getChildProjects();
                 if(isUpstream) {
                     if(!newChildProjects.contains(this))
@@ -406,9 +405,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
 
                 if(newChildProjects.isEmpty()) {
-                    pl.remove(BuildTrigger.DESCRIPTOR);
+                    pl.remove(BuildTrigger.class);
                 } else {
-                    BuildTrigger existing = (BuildTrigger)pl.get(BuildTrigger.DESCRIPTOR);
+                    BuildTrigger existing = pl.get(BuildTrigger.class);
                     if(existing!=null && existing.hasSame(newChildProjects))
                         continue;   // no need to touch
                     pl.add(new BuildTrigger(newChildProjects,
@@ -967,8 +966,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public final List<AbstractProject> getBuildTriggerUpstreamProjects() {
         ArrayList<AbstractProject> result = new ArrayList<AbstractProject>();
-        for (AbstractProject ap : getUpstreamProjects()) {
-            BuildTrigger buildTrigger = (BuildTrigger)ap.getPublishersList().get(BuildTrigger.DESCRIPTOR);
+        for (AbstractProject<?,?> ap : getUpstreamProjects()) {
+            BuildTrigger buildTrigger = ap.getPublishersList().get(BuildTrigger.class);
             if (buildTrigger != null)
                 if (buildTrigger.getChildProjects().contains(this))
                     result.add(ap);
@@ -1289,7 +1288,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
 
                 public String getEntryAuthor(FeedItem entry) {
-                    return Mailer.DESCRIPTOR.getAdminAddress();
+                    return Mailer.descriptor().getAdminAddress();
                 }
             },
             req, rsp );

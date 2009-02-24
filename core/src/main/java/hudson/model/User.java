@@ -487,7 +487,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
         }
 
         public String getEntryAuthor(Run entry) {
-            return Mailer.DESCRIPTOR.getAdminAddress();
+            return Mailer.descriptor().getAdminAddress();
         }
     };
 

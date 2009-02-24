@@ -66,7 +66,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     public static <T extends Describable<T>,D extends Descriptor<T>>
     DescriptorExtensionList<T,D> create(Hudson hudson, Class<T> describableType) {
-        if(describableType==(Class)Publisher.class) // javac complains if I don't have this cast
+        if(describableType==(Class)Publisher.class) // javac or IntelliJ compiler complains if I don't have this cast
             return (DescriptorExtensionList)new DescriptorExtensionListImpl(hudson);
         return new DescriptorExtensionList<T,D>(hudson,describableType);
     }
