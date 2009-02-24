@@ -29,6 +29,7 @@ import hudson.model.AbstractProject;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * {@link Descriptor} for {@link Builder} and {@link Publisher}.
@@ -65,9 +66,20 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
 
     /**
      * Fiters a descriptor for {@link BuildStep}s by using {@link BuildStepDescriptor#isApplicable(Class)}.
+     *
+     * @deprecated as of 1.286.
+     *      Use the {@link Collection} version which is more general.
      */
     public static <T extends BuildStep&Describable<T>>
     List<Descriptor<T>> filter(List<Descriptor<T>> base, Class<? extends AbstractProject> type) {
+        return filter((Collection<Descriptor<T>>)base,type);
+    }
+
+    /**
+     * Fiters a descriptor for {@link BuildStep}s by using {@link BuildStepDescriptor#isApplicable(Class)}.
+     */
+    public static <T extends BuildStep&Describable<T>>
+    List<Descriptor<T>> filter(Collection<? extends Descriptor<T>> base, Class<? extends AbstractProject> type) {
         List<Descriptor<T>> r = new ArrayList<Descriptor<T>>(base.size());
         for (Descriptor<T> d : base) {
             if (d instanceof BuildStepDescriptor) {

@@ -24,18 +24,22 @@
 package hudson.tasks;
 
 import hudson.ExtensionPoint;
+import hudson.Extension;
+import hudson.DescriptorExtensionList;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Project;
+import hudson.model.Descriptor;
+import hudson.model.Hudson;
 
 /**
  * {@link BuildStep}s that perform the actual build.
  *
  * <p>
  * To register a custom {@link Builder} from a plugin,
- * add it to {@link BuildStep#BUILDERS}.
+ * put {@link Extension} on your descriptor.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -58,4 +62,16 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Bui
     public Action getProjectAction(Project project) {
         return null;
     }
+
+    public Descriptor<Builder> getDescriptor() {
+        return Hudson.getInstance().getDescriptor(getClass());
+    }
+
+    /**
+     * Returns all the registered {@link Builder} descriptors.
+     */
+    public static DescriptorExtensionList<Builder> all() {
+        return Hudson.getInstance().getDescriptorList(Builder.class);
+    }
+
 }

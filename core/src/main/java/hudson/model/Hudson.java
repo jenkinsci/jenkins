@@ -639,7 +639,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the builder descriptor by name. Primarily used for making them web-visible.
      */
     public Descriptor<Builder> getBuilder(String shortClassName) {
-        return findDescriptor(shortClassName, BuildStep.BUILDERS);
+        return findDescriptor(shortClassName, Builder.all());
     }
 
     /**
@@ -2023,7 +2023,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             boolean result = true;
 
-            for( Descriptor<Builder> d : BuildStep.BUILDERS )
+            for( Descriptor<Builder> d : Builder.all() )
                 result &= configureDescriptor(req,json,d);
 
             for( Descriptor<Publisher> d : BuildStep.PUBLISHERS )

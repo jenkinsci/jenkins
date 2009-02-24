@@ -25,6 +25,7 @@ package hudson.tasks;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.Descriptor;
 import static hudson.model.Hudson.isWindows;
 import hudson.util.FormFieldValidator;
@@ -82,7 +83,7 @@ public class Shell extends CommandInterpreter {
             args.set(0,args.get(0).substring(2));   // trim off "#!"
             return args.toArray(new String[args.size()]);
         } else
-            return new String[] { DESCRIPTOR.getShellOrDefault(),"-xe",script.getRemote()};
+            return new String[] { getDescriptor().getShellOrDefault(),"-xe",script.getRemote()};
     }
 
     protected String getContents() {
@@ -93,19 +94,18 @@ public class Shell extends CommandInterpreter {
         return ".sh";
     }
 
-    public Descriptor<Builder> getDescriptor() {
-        return DESCRIPTOR;
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl)super.getDescriptor();
     }
 
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static final class DescriptorImpl extends Descriptor<Builder> {
         /**
          * Shell executable, or null to default.
          */
         private String shell;
 
-        private DescriptorImpl() {
+        public DescriptorImpl() {
             load();
         }
 

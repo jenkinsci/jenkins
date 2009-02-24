@@ -24,6 +24,8 @@
 package hudson.tasks;
 
 import hudson.Launcher;
+import hudson.Extension;
+import hudson.util.DescriptorList;
 import hudson.maven.RedeployPublisher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -123,13 +125,12 @@ public interface BuildStep {
      * List of all installed builders.
      *
      * Builders are invoked to perform the build itself.
+     *
+     * @deprecated as of 1.286.
+     *      Use {@link Builder#all()} for read access, and use
+     *      {@link Extension} for registration.
      */
-    public static final List<Descriptor<Builder>> BUILDERS = Descriptor.toList(
-        Shell.DESCRIPTOR,
-        BatchFile.DESCRIPTOR,
-        Ant.DESCRIPTOR,
-        Maven.DESCRIPTOR
-    );
+    public static final List<Descriptor<Builder>> BUILDERS = new DescriptorList<Builder>(Builder.class);
 
     /**
      * List of all installed publishers.

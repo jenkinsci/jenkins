@@ -24,12 +24,12 @@
 package org.jvnet.hudson.test;
 
 import hudson.Launcher;
+import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.tasks.Builder;
-import hudson.tasks.BuildStep;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -47,12 +47,7 @@ public class FailureBuilder extends Builder {
         return false;
     }
 
-    public Descriptor<Builder> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static final class DescriptorImpl extends Descriptor<Builder> {
         public Builder newInstance(StaplerRequest req, JSONObject data) {
             throw new UnsupportedOperationException();
@@ -61,9 +56,5 @@ public class FailureBuilder extends Builder {
         public String getDisplayName() {
             return "Always fail";
         }
-    }
-
-    static {
-        BuildStep.BUILDERS.add(DESCRIPTOR);
     }
 }

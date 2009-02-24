@@ -30,6 +30,7 @@ import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.maven.MavenEmbedder;
 import hudson.maven.MavenUtil;
 import hudson.maven.RedeployPublisher;
@@ -38,7 +39,6 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.EnvironmentSpecific;
-import hudson.model.ParametersAction;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
@@ -119,7 +119,7 @@ public class Maven extends Builder {
      * or null to invoke the default one.
      */
     public MavenInstallation getMaven() {
-        for( MavenInstallation i : DESCRIPTOR.getInstallations() ) {
+        for( MavenInstallation i : getDescriptor().getInstallations() ) {
             if(mavenName !=null && i.getName().equals(mavenName))
                 return i;
         }
@@ -255,20 +255,18 @@ public class Maven extends Builder {
         return true;
     }
 
-    public Descriptor<Builder> getDescriptor() {
-        return DESCRIPTOR;
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl)super.getDescriptor();
     }
 
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static final class DescriptorImpl extends Descriptor<Builder> {
         @CopyOnWrite
         private volatile MavenInstallation[] installations = new MavenInstallation[0];
 
-        private DescriptorImpl() {
+        public DescriptorImpl() {
             load();
         }
-
 
         protected void convert(Map<String, Object> oldPropertyBag) {
             if(oldPropertyBag.containsKey("installations"))

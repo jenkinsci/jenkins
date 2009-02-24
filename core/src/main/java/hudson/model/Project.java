@@ -186,7 +186,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         JSONObject json = req.getSubmittedForm();
 
         buildWrappers.rebuild(req,json, BuildWrappers.getFor(this));
-        builders.rebuildHetero(req,json, BuildStep.BUILDERS, "builder");
+        builders.rebuildHetero(req,json, Builder.all(), "builder");
         publishers.rebuild(req, json, BuildStepDescriptor.filter(BuildStep.PUBLISHERS, this.getClass()));
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }

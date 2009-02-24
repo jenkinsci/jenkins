@@ -28,12 +28,12 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.EnvironmentSpecific;
-import hudson.model.ParametersAction;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.util.ArgumentListBuilder;
@@ -110,7 +110,7 @@ public class Ant extends Builder {
      * or null to invoke the default one.
      */
     public AntInstallation getAnt() {
-        for( AntInstallation i : DESCRIPTOR.getInstallations() ) {
+        for( AntInstallation i : getDescriptor().getInstallations() ) {
             if(antName!=null && i.getName().equals(antName))
                 return i;
         }
@@ -213,7 +213,7 @@ public class Ant extends Builder {
 
             String errorMessage = Messages.Ant_ExecFailed();
             if(ai==null && (System.currentTimeMillis()-startTime)<1000) {
-                if(DESCRIPTOR.getInstallations()==null)
+                if(getDescriptor().getInstallations()==null)
                     // looks like the user didn't configure any Ant installation
                     errorMessage += Messages.Ant_GlobalConfigNeeded();
                 else
@@ -238,17 +238,16 @@ public class Ant extends Builder {
         return base.child("build.xml");
     }
 
-    public Descriptor<Builder> getDescriptor() {
-        return DESCRIPTOR;
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl)super.getDescriptor();
     }
 
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends Descriptor<Builder> {
         @CopyOnWrite
         private volatile AntInstallation[] installations = new AntInstallation[0];
 
-        private DescriptorImpl() {
+        public DescriptorImpl() {
             load();
         }
 

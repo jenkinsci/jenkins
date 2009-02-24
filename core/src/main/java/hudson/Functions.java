@@ -601,7 +601,7 @@ public class Functions {
     }
 
     public static List<Descriptor<Builder>> getBuilderDescriptors(AbstractProject<?,?> project) {
-        return BuildStepDescriptor.filter(BuildStep.BUILDERS, project.getClass());
+        return BuildStepDescriptor.filter(Builder.all(), project.getClass());
     }
 
     public static List<Descriptor<Publisher>> getPublisherDescriptors(AbstractProject<?,?> project) {

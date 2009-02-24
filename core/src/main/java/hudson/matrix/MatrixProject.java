@@ -534,7 +534,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         JSONObject json = req.getSubmittedForm();
 
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
-        builders.rebuildHetero(req, json, BuildStep.BUILDERS, "builder");
+        builders.rebuildHetero(req, json, Builder.all(), "builder");
         publishers.rebuild(req, json, BuildStepDescriptor.filter(BuildStep.PUBLISHERS,this.getClass()));
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
 

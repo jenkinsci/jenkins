@@ -25,6 +25,7 @@ package hudson.tasks;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
+import hudson.DescriptorExtensionList;
 import hudson.model.AbstractBuild;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -32,12 +33,10 @@ import hudson.model.Describable;
 import hudson.model.Project;
 import hudson.model.Action;
 import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Run.RunnerAbortedException;
 
 import java.io.IOException;
-import java.util.Collection;
 
 /**
  * Pluggability point for performing pre/post actions for the build process.
@@ -188,7 +187,7 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
     /**
      * Returns all the registered {@link BuildWrapper} descriptors.
      */
-    public static Collection<Descriptor<BuildWrapper>> all() {
+    public static DescriptorExtensionList<BuildWrapper> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
         return Hudson.getInstance().getDescriptorList(BuildWrapper.class);
     }
