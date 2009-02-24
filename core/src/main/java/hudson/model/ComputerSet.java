@@ -259,7 +259,7 @@ public final class ComputerSet extends AbstractModelObject {
     static {
         // create all instances
         ArrayList<NodeMonitor> r = new ArrayList<NodeMonitor>();
-        for (Descriptor<NodeMonitor> d : NodeMonitor.LIST)
+        for (Descriptor<NodeMonitor> d : NodeMonitor.all())
             try {
                 r.add(d.newInstance(null,null));
             } catch (FormException e) {

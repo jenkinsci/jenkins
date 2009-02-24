@@ -25,11 +25,15 @@ package hudson.node_monitors;
 
 import hudson.ExtensionPoint;
 import hudson.Functions;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.scm.RepositoryBrowser;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
 import hudson.model.Node;
 import hudson.model.Hudson;
+import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 
 import java.util.logging.Level;
@@ -98,6 +102,15 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
 
     /**
      * All registered {@link NodeMonitor}s.
+     * @deprecated as of 1.286.
+     *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
     public static final DescriptorList<NodeMonitor> LIST = new DescriptorList<NodeMonitor>(NodeMonitor.class);
+
+    /**
+     * Returns all the registered {@link NodeMonitor} descriptors.
+     */
+    public static DescriptorExtensionList<NodeMonitor,Descriptor<NodeMonitor>> all() {
+        return Hudson.getInstance().getDescriptorList(NodeMonitor.class);
+    }
 }
