@@ -25,6 +25,7 @@ package hudson.security;
 
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.Extension;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.kohsuke.stapler.StaplerRequest;
 import net.sf.json.JSONObject;
@@ -50,12 +51,7 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
         return Collections.singleton("admin");
     }
 
-    public Descriptor<AuthorizationStrategy> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
         public String getDisplayName() {
             return Messages.LegacyAuthorizationStrategy_DisplayName();
@@ -69,9 +65,4 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
             return new LegacyAuthorizationStrategy();
         }
     }
-
-    static {
-        LIST.add(DESCRIPTOR);
-    }
-
 }

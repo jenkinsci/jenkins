@@ -32,6 +32,7 @@ import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.util.FormFieldValidator;
 import hudson.Functions;
+import hudson.Extension;
 import net.sf.json.JSONObject;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.acls.sid.Sid;
@@ -151,10 +152,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
     }
 
-    public Descriptor<AuthorizationStrategy> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
+    @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     /**
@@ -198,10 +196,6 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
     }
     
-    static {
-        LIST.add(DESCRIPTOR);
-    }
-
     public static class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
         protected DescriptorImpl(Class<? extends GlobalMatrixAuthorizationStrategy> clazz) {
             super(clazz);

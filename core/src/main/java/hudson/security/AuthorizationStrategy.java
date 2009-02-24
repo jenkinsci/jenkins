@@ -24,6 +24,7 @@
 package hudson.security;
 
 import hudson.ExtensionPoint;
+import hudson.Extension;
 import hudson.slaves.Cloud;
 import hudson.model.AbstractItem;
 import hudson.model.Computer;
@@ -35,6 +36,7 @@ import hudson.model.User;
 import hudson.model.View;
 import hudson.model.Node;
 import hudson.model.AbstractProject;
+import hudson.model.Descriptor.FormException;
 import hudson.util.DescriptorList;
 
 import java.io.Serializable;
@@ -172,10 +174,14 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      */
     public abstract Collection<String> getGroups();
 
+    public Descriptor<AuthorizationStrategy> getDescriptor() {
+        return Hudson.getInstance().getDescriptor(getClass()); 
+    }
+
     /**
      * All registered {@link SecurityRealm} implementations.
      */
-    public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>();
+    public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(AuthorizationStrategy.class);
     
     /**
      * {@link AuthorizationStrategy} that implements the semantics
@@ -183,16 +189,12 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      */
     public static final AuthorizationStrategy UNSECURED = new Unsecured();
 
-    private static final class Unsecured extends AuthorizationStrategy implements Serializable {
+    public static final class Unsecured extends AuthorizationStrategy implements Serializable {
         /**
          * Maintains the singleton semantics.
          */
         private Object readResolve() {
             return UNSECURED;
-        }
-
-        public Descriptor<AuthorizationStrategy> getDescriptor() {
-            return DESCRIPTOR;
         }
 
         @Override
@@ -210,7 +212,8 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
             }
         };
 
-        private static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>() {
+        @Extension
+        public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
             public String getDisplayName() {
                 return Messages.AuthorizationStrategy_DisplayName();
             }
@@ -222,17 +225,6 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
             public String getHelpFile() {
                 return "/help/security/no-authorization.html";
             }
-        };
-
-        static {
-            LIST.load(FullControlOnceLoggedInAuthorizationStrategy.class);
-            LIST.load(GlobalMatrixAuthorizationStrategy.class);
-            LIST.load(LegacyAuthorizationStrategy.class);
-            LIST.load(ProjectMatrixAuthorizationStrategy.class);
-            
-            // can't do this in the constructor due to the initialization order
-            LIST.add(Unsecured.DESCRIPTOR);
         }
     }
-
 }

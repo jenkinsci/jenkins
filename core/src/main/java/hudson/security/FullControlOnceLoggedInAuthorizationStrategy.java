@@ -25,6 +25,7 @@ package hudson.security;
 
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.Extension;
 
 import java.util.Collections;
 import java.util.List;
@@ -57,10 +58,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
         THE_ACL.add(ACL.ANONYMOUS,Permission.READ,true);
     }
 
-    public Descriptor<AuthorizationStrategy> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
+    @Extension
     public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>() {
         public String getDisplayName() {
             return Messages.FullControlOnceLoggedInAuthorizationStrategy_DisplayName();
@@ -74,8 +72,4 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
             return "/help/security/full-control-once-logged-in.html";
         }
     };
-
-    static {
-        LIST.add(DESCRIPTOR);
-    }
 }

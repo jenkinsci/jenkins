@@ -27,6 +27,7 @@ import hudson.model.Descriptor;
 import hudson.model.Job;
 import hudson.model.Jobs;
 import hudson.util.RobustReflectionConverter;
+import hudson.Extension;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.mapper.Mapper;
@@ -51,10 +52,7 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
         }
     }
 
-    public Descriptor<AuthorizationStrategy> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
+    @Extension
     public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new DescriptorImpl() {
         @Override
         protected GlobalMatrixAuthorizationStrategy create() {
@@ -94,7 +92,6 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
     }
 
     static {
-        LIST.add(DESCRIPTOR);
         Jobs.PROPERTIES.add(AuthorizationMatrixProperty.DESCRIPTOR);
     }
 }
