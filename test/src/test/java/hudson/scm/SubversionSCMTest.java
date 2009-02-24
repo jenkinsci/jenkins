@@ -105,7 +105,7 @@ public class SubversionSCMTest extends HudsonTestCase {
         p.setScm(new SubversionSCM(
                 new String[]{"https://svn.dev.java.net/svn/hudson/trunk/hudson/test-projects/trivial-ant"},
                 new String[]{null},
-                true, null
+                true, null, null
         ));
 
         FreeStyleBuild b = p.scheduleBuild2(0).get();
@@ -120,7 +120,7 @@ public class SubversionSCMTest extends HudsonTestCase {
         p.setScm(new SubversionSCM(
                 new String[]{"http://svn.codehaus.org/plexus/tags/JASF_INIT/plexus-avalon-components/jasf/"},
                 new String[]{null},
-                true, null
+                true, null, null
         ));
 
         FreeStyleBuild b = p.scheduleBuild2(0).get();
@@ -138,7 +138,7 @@ public class SubversionSCMTest extends HudsonTestCase {
         p.setScm(new SubversionSCM(
                 new String[]{"https://svn.dev.java.net/svn/hudson/trunk/hudson/test-projects/trivial-ant@13000"},
                 new String[]{null},
-                true, null
+                true, null, null
         ));
 
         FreeStyleBuild b = p.scheduleBuild2(0).get();
@@ -185,7 +185,7 @@ public class SubversionSCMTest extends HudsonTestCase {
         p.setScm(new SubversionSCM(
                 new String[]{"$REPO" + url.substring(10)},
                 new String[]{null},
-                true, null
+                true, null, null
         ));
 
         String var = url.substring(0, 10);
