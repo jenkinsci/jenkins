@@ -39,6 +39,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.EnvironmentSpecific;
+import hudson.model.Hudson;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
@@ -259,12 +260,20 @@ public class Maven extends Builder {
         return (DescriptorImpl)super.getDescriptor();
     }
 
+    /**
+     * @deprecated as of 1.286
+     *      Use {@link Hudson#getDescriptorByType(Class)} to obtain the current instance.
+     *      For compatibility, this field retains the last created {@link DescriptorImpl}.
+     */
+    public static DescriptorImpl DESCRIPTOR;
+
     @Extension
     public static final class DescriptorImpl extends Descriptor<Builder> {
         @CopyOnWrite
         private volatile MavenInstallation[] installations = new MavenInstallation[0];
 
         public DescriptorImpl() {
+            DESCRIPTOR = this;
             load();
         }
 
