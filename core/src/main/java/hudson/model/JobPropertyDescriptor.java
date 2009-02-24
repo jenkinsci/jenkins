@@ -28,6 +28,7 @@ import org.jvnet.tiger_types.Types;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 
@@ -37,7 +38,6 @@ import net.sf.json.JSONObject;
  * {@link Descriptor} for {@link JobProperty}.
  * 
  * @author Kohsuke Kawaguchi
- * @see Jobs#PROPERTIES
  * @since 1.72
  */
 public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
@@ -93,9 +93,13 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
      */
     public static List<JobPropertyDescriptor> getPropertyDescriptors(Class<? extends Job> clazz) {
         List<JobPropertyDescriptor> r = new ArrayList<JobPropertyDescriptor>();
-        for (JobPropertyDescriptor p : Jobs.PROPERTIES)
+        for (JobPropertyDescriptor p : all())
             if(p.isApplicable(clazz))
                 r.add(p);
         return r;
+    }
+
+    public static Collection<JobPropertyDescriptor> all() {
+        return (Collection)Hudson.getInstance().getDescriptorList(JobProperty.class);
     }
 }

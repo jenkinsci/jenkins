@@ -25,7 +25,6 @@ package hudson.security;
 
 import hudson.model.Descriptor;
 import hudson.model.Job;
-import hudson.model.Jobs;
 import hudson.util.RobustReflectionConverter;
 import hudson.Extension;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
@@ -89,10 +88,6 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
         public boolean canConvert(Class type) {
             return type==ProjectMatrixAuthorizationStrategy.class;
         }
-    }
-
-    static {
-        Jobs.PROPERTIES.add(AuthorizationMatrixProperty.DESCRIPTOR);
     }
 }
 

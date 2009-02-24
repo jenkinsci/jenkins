@@ -675,7 +675,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public JobPropertyDescriptor getJobProperty(String shortClassName) {
         // combining these two lines triggers javac bug. See issue #610.
-        Descriptor d = findDescriptor(shortClassName, Jobs.PROPERTIES);
+        Descriptor d = findDescriptor(shortClassName, JobPropertyDescriptor.all());
         return (JobPropertyDescriptor) d;
     }
 
@@ -2038,7 +2038,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             for( TriggerDescriptor d : Triggers.TRIGGERS )
                 result &= configureDescriptor(req,json,d);
 
-            for( JobPropertyDescriptor d : Jobs.PROPERTIES )
+            for( JobPropertyDescriptor d : JobPropertyDescriptor.all() )
                 result &= configureDescriptor(req,json,d);
 
             for( PageDecorator d : PageDecorator.ALL )

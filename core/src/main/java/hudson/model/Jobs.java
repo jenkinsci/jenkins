@@ -23,6 +23,9 @@
  */
 package hudson.model;
 
+import hudson.util.DescriptorList;
+import hudson.Extension;
+
 import java.util.List;
 
 /**
@@ -38,8 +41,11 @@ public class Jobs {
      * Plugins can add their {@link JobPropertyDescriptor}s to this list.
      *
      * @see JobPropertyDescriptor#getPropertyDescriptors(Class)
+     *
+     * @deprecated as of 1.281
+     *      Use {@link JobPropertyDescriptor#all()} for read access,
+     *      and {@link Extension} for registration.
      */
-    public static final List<JobPropertyDescriptor> PROPERTIES = Descriptor.toList(
-    		ParametersDefinitionProperty.DESCRIPTOR
-    );
+    public static final List<JobPropertyDescriptor> PROPERTIES = (List)
+            new DescriptorList<JobProperty<?>>((Class)JobProperty.class);
 }

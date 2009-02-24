@@ -35,6 +35,7 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import hudson.Extension;
 
 /**
  * Keeps a list of the parameters defined for a project.
@@ -136,13 +137,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         return null;
     }
 
-    @Override
-    public JobPropertyDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final JobPropertyDescriptor DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static class DescriptorImpl extends JobPropertyDescriptor {
         @Override
         public boolean isApplicable(Class<? extends Job> jobType) {

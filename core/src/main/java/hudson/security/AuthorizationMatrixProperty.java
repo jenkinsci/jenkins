@@ -30,6 +30,7 @@ import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.Hudson;
 import hudson.model.Run;
+import hudson.Extension;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -59,8 +60,6 @@ import javax.servlet.ServletException;
  * {@link JobProperty} to associate ACL for each project.
  */
 public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
-
-	public static final JobPropertyDescriptor DESCRIPTOR = new DescriptorImpl();
 
 	private transient SidACL acl = new AclImpl();
 
@@ -117,11 +116,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		sids.add(sid);
 	}
 
-	@Override
-	public JobPropertyDescriptor getDescriptor() {
-		return DESCRIPTOR;
-	}
-
+    @Extension
 	public static class DescriptorImpl extends JobPropertyDescriptor {
 		@Override
 		public JobProperty<?> newInstance(StaplerRequest req,

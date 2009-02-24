@@ -88,7 +88,9 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
     /**
      * {@inheritDoc}
      */
-    public abstract JobPropertyDescriptor getDescriptor();
+    public JobPropertyDescriptor getDescriptor() {
+        return (JobPropertyDescriptor)Hudson.getInstance().getDescriptor(getClass());
+    }
 
     /**
      * {@link Action} to be displayed in the job page.
