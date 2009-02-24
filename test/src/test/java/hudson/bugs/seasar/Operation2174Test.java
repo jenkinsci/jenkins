@@ -28,6 +28,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.maven.MavenModuleSet;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildTrigger;
+import hudson.tasks.BuildTrigger.DescriptorImpl;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.util.Collections;
@@ -52,12 +53,13 @@ public class Operation2174Test extends HudsonTestCase {
         HtmlForm form = page.getFormByName("config");
 
         // configure downstream build
-        form.getInputByName(BuildTrigger.DESCRIPTOR.getJsonSafeClassName()).click();
+        DescriptorImpl btd = hudson.getDescriptorByType(DescriptorImpl.class);
+        form.getInputByName(btd.getJsonSafeClassName()).click();
         form.getInputByName("buildTrigger.childProjects").setValueAttribute("dp");
         submit(form);
 
         // verify that the relationship is set up
-        BuildTrigger trigger = (BuildTrigger) up.getPublishersList().get(BuildTrigger.DESCRIPTOR);
+        BuildTrigger trigger = up.getPublishersList().get(BuildTrigger.class);
         assertEquals(trigger.getChildProjects(), Collections.singletonList(dp));
 
         // now go ahead and edit the downstream
@@ -66,7 +68,7 @@ public class Operation2174Test extends HudsonTestCase {
         submit(form);
 
         // verify that the relationship is set up
-        trigger = (BuildTrigger) up.getPublishersList().get(BuildTrigger.DESCRIPTOR);
+        trigger = up.getPublishersList().get(BuildTrigger.class);
         assertNotNull(trigger);
         assertEquals(trigger.getChildProjects(), Collections.singletonList(dp));
     }
