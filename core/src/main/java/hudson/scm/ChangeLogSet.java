@@ -146,7 +146,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          */
         public String getMsgAnnotated() {
             MarkupText markup = new MarkupText(getMsgEscaped());
-            for (ChangeLogAnnotator a : ChangeLogAnnotator.annotators)
+            for (ChangeLogAnnotator a : ChangeLogAnnotator.all())
                 a.annotate(parent.build,this,markup);
 
             return markup.toString();

@@ -25,9 +25,15 @@ package hudson.scm;
 
 import hudson.ExtensionPoint;
 import hudson.MarkupText;
+import hudson.ExtensionListView;
+import hudson.Extension;
+import hudson.DescriptorExtensionList;
+import hudson.ExtensionList;
+import hudson.slaves.RetentionStrategy;
 import hudson.util.CopyOnWriteList;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.model.AbstractBuild;
+import hudson.model.Hudson;
 
 import java.util.logging.Logger;
 
@@ -40,7 +46,7 @@ import java.util.logging.Logger;
  * external issue tracking system.)
  *
  * <p>
- * Plugins that are interested in doing so may extend this class and call {@link #register()}.
+ * Plugins that are interested in doing so may extend this class and put {@link Extension} on it.
  * When multiple annotators are registered, their results will be combined.
  *
  * @author Kohsuke Kawaguchi
@@ -77,6 +83,9 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
     /**
      * Registers this annotator, so that Hudson starts using this object
      * for adding markup.
+     *
+     * @deprecated as of 1.286
+     *      Prefer automatic registration via {@link Extension}
      */
     public final void register() {
         annotators.add(this);
@@ -91,6 +100,16 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
 
     /**
      * All registered {@link ChangeLogAnnotator}s.
+     *
+     * @deprecated as of 1.286
+     *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
-    public static final CopyOnWriteList<ChangeLogAnnotator> annotators = new CopyOnWriteList<ChangeLogAnnotator>();
+    public static final CopyOnWriteList<ChangeLogAnnotator> annotators = ExtensionListView.createCopyOnWriteList(ChangeLogAnnotator.class);
+
+    /**
+     * Returns all the registered {@link ChangeLogAnnotator} descriptors.
+     */
+    public static ExtensionList<ChangeLogAnnotator> all() {
+        return Hudson.getInstance().getExtensionList(ChangeLogAnnotator.class);
+    }
 }

@@ -25,10 +25,12 @@ package hudson;
 
 import hudson.model.Hudson;
 import hudson.tasks.UserNameResolver;
+import hudson.util.CopyOnWriteList;
 
 import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Collection;
 
 /**
  * Compatibility layer for legacy manual registration of extension points.
@@ -69,6 +71,74 @@ public class ExtensionListView {
 
             public int size() {
                 return storage().size();
+            }
+        };
+    }
+
+    /**
+     * Creates a seriously hacked up {@link CopyOnWriteList} that acts as a view to the current {@link ExtensionList}.
+     */
+    public static <T> CopyOnWriteList<T> createCopyOnWriteList(final Class<T> type) {
+        return new CopyOnWriteList<T>() {
+            private ExtensionList<T> storage() {
+                return Hudson.getInstance().getExtensionList(type);
+            }
+
+            @Override
+            public void add(T t) {
+                storage().add(t);
+            }
+
+            @Override
+            public boolean remove(T t) {
+                // silently ignore, because we don't support that and some plugins might be
+                // kind enough to unregister
+                return false;
+            }
+
+            @Override
+            public Iterator<T> iterator() {
+                return storage().iterator();
+            }
+
+            @Override
+            public void replaceBy(CopyOnWriteList<? extends T> that) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void replaceBy(Collection<? extends T> that) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void replaceBy(T... that) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void clear() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public T[] toArray(T[] array) {
+                return storage().toArray(array);
+            }
+
+            @Override
+            public List<T> getView() {
+                return storage();
+            }
+
+            @Override
+            public void addAllTo(Collection<? super T> dst) {
+                dst.addAll(storage());
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return storage().isEmpty();
             }
         };
     }
