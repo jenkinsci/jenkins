@@ -194,7 +194,7 @@ public final class ComputerSet extends AbstractModelObject {
                 return;
             }
 
-            req.setAttribute("descriptor", NodeDescriptor.ALL.find(mode));
+            req.setAttribute("descriptor", NodeDescriptor.all().find(mode));
             req.getView(this,"_new.jelly").forward(req,rsp);
         }
     }
@@ -211,7 +211,7 @@ public final class ComputerSet extends AbstractModelObject {
 
             if (checkName(req, rsp, name)) return;
 
-            Node result = NodeDescriptor.ALL.find(type).newInstance(req, req.getSubmittedForm());
+            Node result = NodeDescriptor.all().find(type).newInstance(req, req.getSubmittedForm());
             app.addNode(result);
 
             // take the user back to the slave list top page

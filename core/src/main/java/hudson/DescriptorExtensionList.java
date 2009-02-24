@@ -57,6 +57,16 @@ public final class DescriptorExtensionList<T extends Describable<T>> extends Ext
     }
 
     /**
+     * Finds the descriptor that has the matching fully-qualified class name.
+     *
+     * @param fqcn
+     *      Fully qualified name of the descriptor, not the describable.
+     */
+    public Descriptor<T> find(String fqcn) {
+        return Descriptor.find(this,fqcn);
+    }
+
+    /**
      * Loading the descriptors in this case means filtering the descriptor from the master {@link ExtensionList}.
      */
     @Override
@@ -72,13 +82,6 @@ public final class DescriptorExtensionList<T extends Describable<T>> extends Ext
                 r.add(d);
         }
         return r;
-    }
-
-    /**
-     * Obtain the statically-scoped storage to store manulaly registered {@link Descriptor}s.
-     */
-    private static List allocateLegacyInstanceStore(Class describableType) {
-        return legacyDescriptors.get(describableType);
     }
 
     /**

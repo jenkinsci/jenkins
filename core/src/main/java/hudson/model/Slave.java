@@ -35,7 +35,6 @@ import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.NodeDescriptor;
-import hudson.slaves.NodeProperties;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
@@ -424,7 +423,9 @@ public abstract class Slave extends Node implements Serializable {
         return this;
     }
 
-    public abstract SlaveDescriptor getDescriptor();
+    public SlaveDescriptor getDescriptor() {
+        return (SlaveDescriptor)Hudson.getInstance().getDescriptor(getClass());
+    }
 
     public static abstract class SlaveDescriptor extends NodeDescriptor {
         public void doCheckNumExecutors() throws IOException, ServletException {

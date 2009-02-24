@@ -25,6 +25,7 @@ package hudson.slaves;
 
 import hudson.model.Slave;
 import hudson.model.Descriptor.FormException;
+import hudson.Extension;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,7 +40,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Kohsuke Kawaguchi
  */
 public final class DumbSlave extends Slave {
-	
 	@Deprecated
     public DumbSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
         this(name, nodeDescription, remoteFS, numExecutors, mode, label, launcher, retentionStrategy, new ArrayList());
@@ -50,19 +50,10 @@ public final class DumbSlave extends Slave {
     	super(name, nodeDescription, remoteFS, numExecutors, mode, label, launcher, retentionStrategy, nodeProperties);
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DescriptorImpl.INSTANCE;
-    }
-
+    @Extension
     public static final class DescriptorImpl extends SlaveDescriptor {
-        public static final DescriptorImpl INSTANCE = new DescriptorImpl();
-
         public String getDisplayName() {
             return Messages.DumbSlave_displayName();
         }
-    }
-
-    static {
-        NodeDescriptor.ALL.add(DescriptorImpl.INSTANCE);
     }
 }

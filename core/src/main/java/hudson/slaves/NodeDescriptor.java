@@ -26,7 +26,10 @@ package hudson.slaves;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
 import hudson.model.Node;
+import hudson.model.Hudson;
 import hudson.util.DescriptorList;
+import hudson.Extension;
+import hudson.DescriptorExtensionList;
 
 /**
  * {@link Descriptor} for {@link Slave}.
@@ -58,11 +61,16 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     }
 
     /**
-     * All the registered instances.
+     * Returns all the registered {@link NodeDescriptor} descriptors.
      */
-    public static final DescriptorList<Node> ALL = new DescriptorList<Node>();
-
-    static {
-        ALL.load(DumbSlave.class);
+    public static DescriptorExtensionList<Node> all() {
+        return Hudson.getInstance().getDescriptorList(Node.class);
     }
+
+    /**
+     * All the registered instances.
+     * @deprecated as of 1.286
+     *      Use {@link #all()} for read access, and {@link Extension} for registration.
+     */
+    public static final DescriptorList<Node> ALL = new DescriptorList<Node>(Node.class);
 }
