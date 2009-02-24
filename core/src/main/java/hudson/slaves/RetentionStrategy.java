@@ -25,9 +25,13 @@ package hudson.slaves;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
+import hudson.model.ParameterDefinition;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -79,11 +83,23 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         check(c);
     }
 
+    public Descriptor<RetentionStrategy<?>> getDescriptor() {
+        return Hudson.getInstance().getDescriptor(getClass());
+    }
+
+    /**
+     * Returns all the registered {@link RetentionStrategy} descriptors.
+     */
+    public static DescriptorExtensionList<RetentionStrategy<?>> all() {
+        return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(RetentionStrategy.class);
+    }
 
     /**
      * All registered {@link RetentionStrategy} implementations.
+     * @deprecated as of 1.286
+     *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
-    public static final DescriptorList<RetentionStrategy<?>> LIST = new DescriptorList<RetentionStrategy<?>>();
+    public static final DescriptorList<RetentionStrategy<?>> LIST = new DescriptorList<RetentionStrategy<?>>((Class)RetentionStrategy.class);
 
     /**
      * Dummy instance that doesn't do any attempt to retention.
@@ -133,20 +149,11 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
             return 1;
         }
 
-        public DescriptorImpl getDescriptor() {
-            return DESCRIPTOR;
-        }
-
-        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
-        private static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+        @Extension
+        public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Always_displayName();
             }
-        }
-
-        static {
-            LIST.add(DESCRIPTOR);
         }
     }
 
@@ -191,8 +198,6 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
             return idleDelay;
         }
 
-        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
         public synchronized long check(SlaveComputer c) {
             if (c.isOffline()) {
                 final long demandMilliseconds = System.currentTimeMillis() - c.getDemandStartMilliseconds();
@@ -215,25 +220,11 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
             return 1;
         }
 
-        public Descriptor<RetentionStrategy<?>> getDescriptor() {
-            return DESCRIPTOR;
-        }
-
-        private static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+        @Extension
+        public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Demand_displayName();
             }
         }
-
-        static {
-            LIST.add(DESCRIPTOR);
-        }
-    }
-
-    static {
-        LIST.load(Always.class);
-        LIST.load(Demand.class);
-        if (Boolean.getBoolean("hudson.scheduledRetention"))
-            LIST.load(SimpleScheduledRetentionStrategy.class);
     }
 }

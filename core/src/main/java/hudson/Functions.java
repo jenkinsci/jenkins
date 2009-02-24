@@ -613,7 +613,7 @@ public class Functions {
     }
 
     public static List<Descriptor<RetentionStrategy<?>>> getRetentionStrategyDescriptors() {
-        return RetentionStrategy.LIST;
+        return RetentionStrategy.all();
     }
 
     public static List<Descriptor<ParameterDefinition>> getParameterDescriptors() {

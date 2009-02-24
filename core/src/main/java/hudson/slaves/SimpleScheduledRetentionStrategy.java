@@ -39,6 +39,7 @@ import hudson.model.Computer;
 import hudson.scheduler.CronTabList;
 import hudson.util.FormFieldValidator;
 import static hudson.Util.fixNull;
+import hudson.Extension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -223,10 +224,15 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
     }
 
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
-    public Descriptor<RetentionStrategy<?>> getDescriptor() {
-        return DESCRIPTOR;
+    /**
+     * This feature is activated only when a property is set, while we test this feature.
+     */
+    @Extension
+    public static DescriptorImpl init() {
+        if (Boolean.getBoolean("hudson.scheduledRetention"))
+            return new DescriptorImpl();
+        else
+            return null;
     }
 
     public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
@@ -256,9 +262,4 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
             }.process();
         }
     }
-
-    static {
-        LIST.add(DESCRIPTOR);
-    }
-
 }

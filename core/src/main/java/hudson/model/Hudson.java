@@ -675,7 +675,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the retention strategy descriptor by name. Primarily used for making them web-visible.
      */
     public Descriptor<RetentionStrategy<?>> getRetentionStrategy(String shortClassName) {
-        return findDescriptor(shortClassName, RetentionStrategy.LIST);
+        return findDescriptor(shortClassName, RetentionStrategy.all());
     }
 
     /**
