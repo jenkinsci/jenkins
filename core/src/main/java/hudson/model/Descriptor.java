@@ -187,7 +187,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
          */
         public Descriptor getItemTypeDescriptor() {
             Class itemType = getItemType();
-            for( Descriptor d : Descriptor.ALL )
+            for( Descriptor d : Hudson.getInstance().getExtensionList(Descriptor.class) )
                 if(d.clazz==itemType)
                     return d;
             return null;
@@ -197,7 +197,6 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
     protected Descriptor(Class<? extends T> clazz) {
         this.clazz = clazz;
-        ALL.add(this);
         // doing this turns out to be very error prone,
         // as field initializers in derived types will override values.
         // load();
@@ -224,9 +223,6 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             if(!t.isAssignableFrom(clazz))
                 throw new AssertionError("Outer class "+clazz+" of "+getClass()+" is not assignable to "+t+". Perhaps wrong outer class?");
         }
-
-        // same as the init code above
-        ALL.add(this);
     }
 
     /**
@@ -610,7 +606,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public static Descriptor find(String className) {
-        return find(ALL.getView(),className);
+        return find(Hudson.getInstance().getExtensionList(Descriptor.class),className);
     }
 
     public static final class FormException extends Exception {
@@ -640,13 +636,6 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     private static final Logger LOGGER = Logger.getLogger(Descriptor.class.getName());
-
-    /**
-     * All the live instances of {@link Descriptor}.
-     * {@link Descriptor}s are all supposed to have the singleton semantics, so
-     * this shouldn't cause a memory leak. 
-     */
-    public static final CopyOnWriteList<Descriptor> ALL = new CopyOnWriteList<Descriptor>();
 
     /**
      * Used in {@link #checkMethods} to indicate that there's no check method.

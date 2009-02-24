@@ -230,7 +230,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      *      Either fully qualified class name (recommended) or the short name.
      */
     public Descriptor getDescriptorByName(String className) {
-        for( Descriptor d : Descriptor.ALL ) {
+        for( Descriptor d : Hudson.getInstance().getExtensionList(Descriptor.class) ) {
             String name = d.clazz.getName();
             if(name.equals(className))
                 return d;

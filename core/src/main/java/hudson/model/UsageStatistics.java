@@ -27,6 +27,7 @@ import com.trilead.ssh2.crypto.Base64;
 import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.node_monitors.ArchitectureMonitor;
+import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -141,7 +142,8 @@ public class UsageStatistics extends PageDecorator {
                 n.put("jvm-version", System.getProperty("java.version"));
             }
             n.put("executors",c.getNumExecutors());
-            n.put("os", ((ArchitectureMonitor.DescriptorImpl)h.getDescriptor(ArchitectureMonitor.class)).get(c));
+            DescriptorImpl descriptor = (DescriptorImpl) h.getDescriptor(ArchitectureMonitor.class);
+            n.put("os", descriptor.get(c));
             nodes.add(n);
         }
         o.put("nodes",nodes);

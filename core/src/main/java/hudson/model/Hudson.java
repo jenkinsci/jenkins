@@ -646,7 +646,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the build wrapper descriptor by name. Primarily used for making them web-visible.
      */
     public Descriptor<BuildWrapper> getBuildWrapper(String shortClassName) {
-        return findDescriptor(shortClassName, BuildWrappers.WRAPPERS);
+        return findDescriptor(shortClassName, BuildWrapper.all());
     }
 
     /**
@@ -686,14 +686,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * this just doesn't scale.
      */
     public Descriptor getDescriptor(String fullyQualifiedClassName) {
-        for( Descriptor d : Descriptor.ALL )
+        for( Descriptor d : getExtensionList(Descriptor.class) )
             if(d.clazz.getName().equals(fullyQualifiedClassName))
                 return d;
         return null;
     }
 
     public Descriptor getDescriptor(Class<? extends Describable> type) {
-        for( Descriptor d : Descriptor.ALL )
+        for( Descriptor d : getExtensionList(Descriptor.class) )
             if(d.clazz==type)
                 return d;
         return null;
@@ -2029,7 +2029,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             for( Descriptor<Publisher> d : BuildStep.PUBLISHERS )
                 result &= configureDescriptor(req,json,d);
 
-            for( Descriptor<BuildWrapper> d : BuildWrappers.WRAPPERS )
+            for( Descriptor<BuildWrapper> d : BuildWrapper.all() )
                 result &= configureDescriptor(req,json,d);
 
             for( SCMDescriptor scmd : SCMS.SCMS )

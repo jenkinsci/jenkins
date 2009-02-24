@@ -184,7 +184,7 @@ public abstract class HudsonTestCase extends TestCase {
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
         Mailer.DESCRIPTOR.setHudsonUrl(null);
-        for( Descriptor d : Descriptor.ALL )
+        for( Descriptor d : hudson.getExtensionList(Descriptor.class) )
             d.load();
     }
 
@@ -205,7 +205,6 @@ public abstract class HudsonTestCase extends TestCase {
         // TODO: avoid relying on singletons and switch to some DI container.
         // In the mean time, discard descriptors created during this exercise.
         // without this, plugins loaded in the tests will be left and interferes with the later tests.
-        cleanUpDescriptors(Descriptor.ALL);
         cleanUpDescriptors(BuildStep.PUBLISHERS);
 
         hudson.cleanUp();
