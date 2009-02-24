@@ -275,7 +275,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Widgets on Hudson.
      */
-    private transient final List<Widget> widgets = new CopyOnWriteArrayList<Widget>();
+    private transient final List<Widget> widgets = getExtensionList(Widget.class);
 
     private transient volatile DependencyGraph dependencyGraph;
 
