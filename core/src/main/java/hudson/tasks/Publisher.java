@@ -23,7 +23,6 @@
  */
 package hudson.tasks;
 
-import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
@@ -63,7 +62,7 @@ import java.util.Comparator;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class Publisher extends BuildStepCompatibilityLayer implements BuildStep, Describable<Publisher>, ExtensionPoint {
+public abstract class Publisher extends BuildStepCompatibilityLayer implements BuildStep, Describable<Publisher> {
     /**
      * @deprecated
      *      Don't extend from {@link Publisher} directly. Instead, choose {@link Recorder} or {@link Notifier}
