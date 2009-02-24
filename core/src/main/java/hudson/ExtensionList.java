@@ -34,7 +34,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
 
 /**
  * Retains the known extension instances for the given type 'T'.
@@ -81,8 +80,7 @@ public class ExtensionList<T> extends AbstractCollection<T> {
     private final List<T> listView = new AbstractList<T>() {
         @Override
         public T get(int index) {
-            ensureLoaded();
-            return extensions.get(index);
+            return ensureLoaded().get(index);
         }
 
         @Override
@@ -96,11 +94,17 @@ public class ExtensionList<T> extends AbstractCollection<T> {
         }
 
         @Override
-        public void add(int index, T element) {
-            legacyInstances.add(element);
+        public boolean add(T t) {
+            legacyInstances.add(t);
             // if we've already filled extensions, add it
             if(extensions!=null)
-                extensions.add(element);
+                extensions.add(t);
+            return true;
+        }
+
+        @Override
+        public void add(int index, T element) {
+            add(element);
         }
     };
 
@@ -133,13 +137,11 @@ public class ExtensionList<T> extends AbstractCollection<T> {
     }
 
     public Iterator<T> iterator() {
-        ensureLoaded();
-        return extensions.iterator();
+        return ensureLoaded().iterator();
     }
 
     public int size() {
-        ensureLoaded();
-        return extensions.size();
+        return ensureLoaded().size();
     }
 
     /**
@@ -149,15 +151,19 @@ public class ExtensionList<T> extends AbstractCollection<T> {
         return hudson.getExtensionList(ExtensionFinder.class);
     }
 
-    private void ensureLoaded() {
+    private List<T> ensureLoaded() {
         if(extensions!=null)
-            return; // already loaded
+            return extensions; // already loaded
+        if(Hudson.getInstance().getPluginManager()==null)
+            return legacyInstances; // can't perform the auto discovery until all plugins are loaded, so just make the legacy instances visisble
+
         synchronized (this) {
             if(extensions==null) {
                 List<T> r = load();
                 r.addAll(legacyInstances);
                 extensions = new CopyOnWriteArrayList<T>(r);
             }
+            return extensions;
         }
     }
 
@@ -198,6 +204,4 @@ public class ExtensionList<T> extends AbstractCollection<T> {
             };
         return new ExtensionList<T>(hudson,type);
     }
-
-    private static final Logger LOGGER = Logger.getLogger(ExtensionList.class.getName());
 }
