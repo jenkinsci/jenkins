@@ -59,9 +59,6 @@ import java.util.logging.Logger;
  * Pluggable security realm that connects external user database to Hudson.
  *
  * <p>
- * New implementations should be registered to {@link #LIST}.
- *
- * <p>
  * If additional views/URLs need to be exposed,
  * an active {@link SecurityRealm} is bound to <tt>CONTEXT_ROOT/securityRealm/</tt>
  * through {@link Hudson#getSecurityRealm()}, so you can define additional pages and
@@ -143,7 +140,9 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * it's always configured through <tt>config.jelly</tt> and never with
      * <tt>global.jelly</tt>. 
      */
-    public abstract Descriptor<SecurityRealm> getDescriptor();
+    public Descriptor<SecurityRealm> getDescriptor() {
+        return Hudson.getInstance().getDescriptor(getClass());
+    }
 
     /**
      * Returns the URL to submit a form for the authentication.
@@ -398,14 +397,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     /**
      * All registered {@link SecurityRealm} implementations.
      */
-    public static final DescriptorList<SecurityRealm> LIST = new DescriptorList<SecurityRealm>();
-
-    static {
-        LIST.load(LegacySecurityRealm.class);
-        LIST.load(HudsonPrivateSecurityRealm.class);
-        LIST.load(LDAPSecurityRealm.class);
-        LIST.load(PAMSecurityRealm.class);
-    }
+    public static final DescriptorList<SecurityRealm> LIST = new DescriptorList<SecurityRealm>(SecurityRealm.class);
 
     private static final Logger LOGGER = Logger.getLogger(SecurityRealm.class.getName());
 }

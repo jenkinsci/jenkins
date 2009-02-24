@@ -24,6 +24,7 @@
 package hudson.security;
 
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.ManagementLink;
@@ -109,10 +110,6 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         return new SecurityComponents(
                 findBean(AuthenticationManager.class, context),
                 findBean(UserDetailsService.class, context));
-    }
-
-    public Descriptor<SecurityRealm> getDescriptor() {
-        return DescriptorImpl.INSTANCE;
     }
 
     /**
@@ -474,9 +471,8 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         }
     };
 
+    @Extension
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
-        public static final DescriptorImpl INSTANCE = new DescriptorImpl();
-
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
         }
@@ -487,7 +483,6 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
     }
 
     static {
-        LIST.add(DescriptorImpl.INSTANCE);
         ManageUserLinks.LIST.add(new ManageUserLinks());
     }
 }

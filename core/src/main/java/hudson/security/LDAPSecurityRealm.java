@@ -26,6 +26,7 @@ package hudson.security;
 import com.sun.jndi.ldap.LdapCtxFactory;
 import groovy.lang.Binding;
 import hudson.Util;
+import hudson.Extension;
 import hudson.tasks.MailAddressResolver;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -406,12 +407,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
         }
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public String getDisplayName() {
             return Messages.LDAPSecurityRealm_DisplayName();
@@ -476,10 +472,6 @@ public class LDAPSecurityRealm extends SecurityRealm {
     private static String addPrefix(String server) {
         if(server.contains("://"))  return server;
         else    return "ldap://"+server;
-    }
-
-    static {
-        LIST.add(DESCRIPTOR);
     }
 
     private static final Logger LOGGER = Logger.getLogger(LDAPSecurityRealm.class.getName());

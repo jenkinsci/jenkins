@@ -26,6 +26,7 @@ package hudson.security;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.Util;
+import hudson.Extension;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.AuthenticationManager;
@@ -108,20 +109,15 @@ public class PAMSecurityRealm extends SecurityRealm {
         };
     }
 
-    public Descriptor<SecurityRealm> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public String getDisplayName() {
             return Messages.PAMSecurityRealm_DisplayName();
         }
     }
 
-    static {
-        if(!Hudson.isWindows())
-            LIST.add(DESCRIPTOR);
+    @Extension
+    public static DescriptorImpl install() {
+        if(!Hudson.isWindows()) return new DescriptorImpl();
+        return null;
     }
 }

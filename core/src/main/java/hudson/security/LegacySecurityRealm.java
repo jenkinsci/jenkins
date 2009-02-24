@@ -31,6 +31,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import groovy.lang.Binding;
 import hudson.model.Descriptor;
 import hudson.util.spring.BeanBuilder;
+import hudson.Extension;
 import net.sf.json.JSONObject;
 
 import javax.servlet.Filter;
@@ -86,10 +87,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         return (Filter) context.getBean("legacy");
     }
 
-    public Descriptor<SecurityRealm> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
+    @Extension
     public static final Descriptor<SecurityRealm> DESCRIPTOR = new Descriptor<SecurityRealm>() {
         public SecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new LegacySecurityRealm();
@@ -103,8 +101,4 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
             return "/help/security/container-realm.html";
         }
     };
-
-    static {
-        LIST.add(DESCRIPTOR);
-    }
 }
