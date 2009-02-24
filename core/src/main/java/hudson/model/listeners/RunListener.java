@@ -96,14 +96,14 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      Put {@link Extension} on your class to get it auto-registered.
      */
     public void register() {
-        LISTENERS.add(this);
+        all().add(this);
     }
 
     /**
      * Reverse operation of {@link #register()}.
      */
     public void unregister() {
-        LISTENERS.remove(this);
+        all().remove(this);
     }
 
     /**
