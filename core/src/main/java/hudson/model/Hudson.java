@@ -495,7 +495,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         // run the init code of SubversionSCM before we load plugins so that plugins can change SubversionWorkspaceSelector.
-        SubversionSCM.DescriptorImpl.DESCRIPTOR.getDisplayName();
+        SubversionSCM.init();
 
         // load plugins.
         pluginManager = new PluginManager(context);

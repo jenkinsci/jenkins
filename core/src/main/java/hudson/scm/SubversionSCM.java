@@ -1633,6 +1633,9 @@ public class SubversionSCM extends SCM implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    // noop, but this forces the initializer to run.
+    public static void init() {}
+
     static {
         new Initializer();
     }
