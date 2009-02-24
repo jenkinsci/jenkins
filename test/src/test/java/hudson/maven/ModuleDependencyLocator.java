@@ -24,6 +24,10 @@
 package hudson.maven;
 
 import hudson.ExtensionPoint;
+import hudson.ExtensionList;
+import hudson.Extension;
+import hudson.scm.ChangeLogAnnotator;
+import hudson.model.Hudson;
 import org.apache.maven.project.MavenProject;
 
 import java.util.Collection;
@@ -41,7 +45,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * this interface to find such hidden dependencies.
  *
  * <p>
- *
+ * To register implementations, put {@link Extension} on your subclass.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.264
@@ -61,15 +65,20 @@ public abstract class ModuleDependencyLocator implements ExtensionPoint {
     public abstract Collection<ModuleDependency> find(MavenProject project, PomInfo pomInfo);
 
     /**
+     * Returns all the registered {@link ModuleDependencyLocator} descriptors.
+     */
+    public static ExtensionList<ModuleDependencyLocator> all() {
+        return Hudson.getInstance().getExtensionList(ModuleDependencyLocator.class);
+    }
+
+    /**
      * Facade of {@link ModuleDependencyLocator}.
      */
     /*package*/ static class ModuleDependencyLocatorFacade extends ModuleDependencyLocator {
-        private final List<ModuleDependencyLocator> members = new CopyOnWriteArrayList<ModuleDependencyLocator>();
-
         @Override
         public Collection<ModuleDependency> find(MavenProject project, PomInfo pomInfo) {
             Set<ModuleDependency> r = new HashSet<ModuleDependency>();
-            for (ModuleDependencyLocator m : members)
+            for (ModuleDependencyLocator m : all())
                 r.addAll(m.find(project,pomInfo));
             return r;
         }
