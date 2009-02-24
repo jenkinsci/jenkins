@@ -36,7 +36,6 @@ import hudson.model.User;
 import hudson.model.View;
 import hudson.model.Node;
 import hudson.model.AbstractProject;
-import hudson.model.Descriptor.FormException;
 import hudson.util.DescriptorList;
 
 import java.io.Serializable;
