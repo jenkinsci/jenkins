@@ -408,7 +408,6 @@ public class Maven extends Builder {
 
         private static final long serialVersionUID = 1L;
 
-		@Override
 		public MavenInstallation forEnvironment(Map<String, String> environment) {
 			return new MavenInstallation(name, Util.replaceMacro(mavenHome, environment));
 		}
