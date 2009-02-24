@@ -27,6 +27,7 @@ import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.XmlFile;
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
@@ -545,6 +546,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return DESCRIPTOR;
     }
 
+    @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {

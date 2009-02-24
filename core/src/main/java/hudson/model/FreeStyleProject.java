@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.FilePath;
+import hudson.Extension;
 
 import java.io.File;
 import java.io.IOException;
@@ -95,6 +96,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
         return DESCRIPTOR;
     }
 
+    @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {

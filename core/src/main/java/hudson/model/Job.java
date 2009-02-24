@@ -102,7 +102,7 @@ import org.kohsuke.stapler.export.Exported;
  * Every time it "runs", it will be recorded as a {@link Run} object.
  *
  * <p>
- * To create a custom job type, add it to {@link Items#LIST}.
+ * To create a custom job type, extend {@link TopLevelItemDescriptor} and put {@link Extension} on it.
  *
  * @author Kohsuke Kawaguchi
  */

@@ -505,10 +505,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         // if we are loading old data that doesn't have this field
         if(slaves==null)    slaves = new NodeList();
 
-        // work around to have MavenModule register itself until we either move it to a plugin
-        // or make it a part of the core.
-        Items.LIST.hashCode();
-
         adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
 
         load();

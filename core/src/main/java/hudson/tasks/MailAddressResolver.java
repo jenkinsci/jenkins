@@ -23,34 +23,34 @@
  */
 package hudson.tasks;
 
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
-import hudson.Plugin;
-import hudson.scm.SCM;
-import hudson.scm.CVSSCM;
-import hudson.scm.SubversionSCM;
-import hudson.model.User;
 import hudson.model.AbstractProject;
+import hudson.model.Hudson;
+import hudson.model.User;
+import hudson.scm.CVSSCM;
+import hudson.scm.SCM;
+import hudson.scm.SubversionSCM;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 
 /**
  * Infers e-mail addresses for the user when none is specified.
  *
  * <p>
  * This is an extension point of Hudson. Plugins tha contribute new implementation
- * of this class must register it to {@link #LIST}. The typical way to do this is:
+ * of this class should put {@link Extension} on your implementation class, like this:
  *
  * <pre>
- * class PluginImpl extends {@link Plugin} {
- *   public void start() {
- *     ...
- *     MailAddressResolver.LIST.add(new MyMailAddressResolver());
- *   }
+ * &#64;Extension
+ * class MyMailAddressResolver extends {@link MailAddressResolver} {
+ *   ...
  * }
  * </pre>
  *
@@ -83,7 +83,7 @@ public abstract class MailAddressResolver implements ExtensionPoint {
     public abstract String findMailAddressFor(User u);
     
     public static String resolve(User u) {
-        for (MailAddressResolver r : LIST) {
+        for (MailAddressResolver r : all()) {
             String email = r.findMailAddressFor(u);
             if(email!=null) return email;
         }
@@ -123,12 +123,17 @@ public abstract class MailAddressResolver implements ExtensionPoint {
 
     /**
      * All registered {@link MailAddressResolver} implementations.
+     *
+     * @deprecated as of 1.286
+     *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
-    public static final List<MailAddressResolver> LIST = new CopyOnWriteArrayList<MailAddressResolver>();
+    public static final List<MailAddressResolver> LIST = ExtensionListView.createList(MailAddressResolver.class);
 
-    static {
-        // register built-in instances
-        LIST.add(new DefaultAddressResolver());
+    /**
+     * Returns all the registered {@link MailAddressResolver} descriptors.
+     */
+    public static ExtensionList<MailAddressResolver> all() {
+        return Hudson.getInstance().getExtensionList(MailAddressResolver.class);
     }
 
     /**
@@ -138,6 +143,7 @@ public abstract class MailAddressResolver implements ExtensionPoint {
      * Since this has low UI visibility, we are open to having a large number of rules here.
      * If you'd like to add one, please contribute more rules.
      */
+    @Extension
     public static class DefaultAddressResolver extends MailAddressResolver {
         public String findMailAddressFor(User u) {
             for (AbstractProject<?,?> p : u.getProjects()) {

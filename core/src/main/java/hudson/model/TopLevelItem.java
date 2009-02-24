@@ -24,13 +24,14 @@
 package hudson.model;
 
 import hudson.ExtensionPoint;
+import hudson.Extension;
 
 /**
  * {@link Item} that can be directly displayed under {@link Hudson}. 
  *
  * <p>
- * To register a custom {@link TopLevelItem} class from a plugin, add it to
- * {@link Items#LIST}. Also see {@link Items#XSTREAM}.
+ * To register a custom {@link TopLevelItem} class from a plugin, put {@link Extension} on your
+ * {@link TopLevelItemDescriptor}. Also see {@link Items#XSTREAM}.
  *
  * @author Kohsuke Kawaguchi
  */

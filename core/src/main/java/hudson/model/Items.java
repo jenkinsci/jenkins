@@ -25,6 +25,9 @@ package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.scm.RepositoryBrowser;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.Axis;
@@ -32,6 +35,7 @@ import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.ModuleDependency;
 import hudson.util.XStream2;
+import hudson.util.DescriptorList;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,16 +52,21 @@ import java.util.StringTokenizer;
 public class Items {
     /**
      * List of all installed {@link TopLevelItem} types.
+     *
+     * @deprecated as of 1.286
+     *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
-    public static final List<TopLevelItemDescriptor> LIST = Descriptor.toList(
-        FreeStyleProject.DESCRIPTOR,
-        MavenModuleSet.DESCRIPTOR,
-        MatrixProject.DESCRIPTOR,
-        ExternalJob.DESCRIPTOR
-    );
+    public static final List<TopLevelItemDescriptor> LIST = (List)new DescriptorList<TopLevelItem>(TopLevelItem.class);
+
+    /**
+     * Returns all the registered {@link TopLevelItemDescriptor}s.
+     */
+    public static DescriptorExtensionList<TopLevelItem,TopLevelItemDescriptor> all() {
+        return Hudson.getInstance().getDescriptorList(TopLevelItem.class);
+    }
 
     public static TopLevelItemDescriptor getDescriptor(String fqcn) {
-        return Descriptor.find(LIST,fqcn);
+        return Descriptor.find(all(),fqcn);
     }
 
     /**

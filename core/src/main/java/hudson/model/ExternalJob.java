@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.model.RunMap.Constructor;
+import hudson.Extension;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -109,6 +110,7 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
         return DESCRIPTOR;
     }
 
+    @Extension
     public static final TopLevelItemDescriptor DESCRIPTOR = new DescriptorImpl();
 
     @Override

@@ -26,7 +26,6 @@ package hudson.model;
 import com.trilead.ssh2.crypto.Base64;
 import hudson.PluginWrapper;
 import hudson.Util;
-import hudson.node_monitors.ArchitectureMonitor;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
@@ -160,7 +159,7 @@ public class UsageStatistics extends PageDecorator {
 
         JSONObject jobs = new JSONObject();
         List<TopLevelItem> items = h.getItems();
-        for (TopLevelItemDescriptor d : Items.LIST) {
+        for (TopLevelItemDescriptor d : Items.all()) {
             int cnt=0;
             for (TopLevelItem item : items) {
                 if(item.getDescriptor()==d)
