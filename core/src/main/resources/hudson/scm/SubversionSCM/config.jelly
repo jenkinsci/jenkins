@@ -47,5 +47,10 @@ THE SOFTWARE.
     <f:checkbox name="svn_use_update" checked="${h.defaultToTrue(scm.useUpdate)}"/>
   </f:entry>
 
-  <t:listScmBrowsers name="svn.browser" />  
+  <t:listScmBrowsers name="svn.browser" />
+  <f:advanced>
+	 <f:entry title="${%Excluded Regions}" help="/help/subversion/excludedRegions.html">
+			<f:textarea name="svn.excludedRegions" value="${scm.excludedRegions}" checkUrl="'${rootURL}/scm/SubversionSCM/excludeRegionsCheck?value='+escape(this.value)"/>
+    </f:entry>
+  </f:advanced>
 </j:jelly>

@@ -32,6 +32,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.Functions;
+import static hudson.Util.fixEmptyAndTrim;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -64,6 +65,9 @@ import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.SVNCancelException;
+import org.tmatesoft.svn.core.ISVNLogEntryHandler;
+import org.tmatesoft.svn.core.SVNLogEntry;
+import org.tmatesoft.svn.core.SVNLogEntryPath;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
 import org.tmatesoft.svn.core.auth.SVNAuthentication;
@@ -88,6 +92,7 @@ import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
+import org.tmatesoft.svn.core.wc.SVNLogClient;
 
 import javax.servlet.ServletException;
 import javax.xml.transform.stream.StreamResult;
@@ -118,6 +123,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import net.sf.json.JSONObject;
 
@@ -154,13 +160,14 @@ public class SubversionSCM extends SCM implements Serializable {
 
     private boolean useUpdate;
     private final SubversionRepositoryBrowser browser;
+	 private String excludedRegions;
 
     // No longer in use but left for serialization compatibility.
     @Deprecated
     private String modules;
 
     public SubversionSCM(String[] remoteLocations, String[] localLocations,
-                         boolean useUpdate, SubversionRepositoryBrowser browser) {
+                         boolean useUpdate, SubversionRepositoryBrowser browser, String excludedRegions) {
 
         List<ModuleLocation> modules = new ArrayList<ModuleLocation>();
         if (remoteLocations != null && localLocations != null) {
@@ -180,13 +187,14 @@ public class SubversionSCM extends SCM implements Serializable {
 
         this.useUpdate = useUpdate;
         this.browser = browser;
+	     this.excludedRegions = excludedRegions;
     }
 
     /**
      * Convenience constructor, especially during testing.
      */
     public SubversionSCM(String svnUrl) {
-        this(new String[]{svnUrl},new String[]{null},true,null);
+        this(new String[]{svnUrl},new String[]{null},true,null,null);
     }
 
     /**
@@ -252,6 +260,32 @@ public class SubversionSCM extends SCM implements Serializable {
     public SubversionRepositoryBrowser getBrowser() {
         return browser;
     }
+
+	 public String getExcludedRegions() {
+		  return excludedRegions;
+	 }
+
+	 public String[] getExcludedRegionsNormalized() {
+		  return excludedRegions == null ? null : excludedRegions.split("[\\r\\n]+");
+	 }
+
+	 private Pattern[] getExcludedRegionsPatterns() {
+		 String[] excludedRegions = getExcludedRegionsNormalized();
+		 if (excludedRegions != null)
+		 {
+			 Pattern[] patterns = new Pattern[excludedRegions.length];
+
+			 int i = 0;
+			 for (String excludedRegion : excludedRegions)
+			 {
+				 patterns[i++] = Pattern.compile(excludedRegion);
+			 }
+
+			 return patterns;
+		 }
+
+		 return null;
+	 }
 
     /**
      * Sets the <tt>SVN_REVISION</tt> environment variable during the build.
@@ -860,21 +894,104 @@ public class SubversionSCM extends SCM implements Serializable {
                 if(ext.url.equals(url) && ext.isRevisionFixed())
                     continue OUTER;
 
-            try {
-                SvnInfo remoteInfo = new SvnInfo(parseSvnInfo(SVNURL.parseURIDecoded(url),authProvider));
-                listener.getLogger().println(Messages.SubversionSCM_pollChanges_remoteRevisionAt(url,remoteInfo.revision));
-                if(remoteInfo.revision > localInfo.getValue()) {
-                    listener.getLogger().println(Messages.SubversionSCM_pollChanges_changedFrom(localInfo.getValue()));
-                    return true;    // change found
-                }
-            } catch (SVNException e) {
-                e.printStackTrace(listener.error("Failed to check repository revision for "+ url));
-                return false;
-            }
+	        boolean changesFound = false;
+			  try {
+				  final SVNURL decodedURL = SVNURL.parseURIDecoded(url);
+				  SvnInfo remoteInfo = new SvnInfo(parseSvnInfo(decodedURL,authProvider));
+					listener.getLogger().println(Messages.SubversionSCM_pollChanges_remoteRevisionAt(url,remoteInfo.revision));
+					if(remoteInfo.revision > localInfo.getValue()) {
+						Pattern[] excludedPatterns = getExcludedRegionsPatterns();
+						if (excludedPatterns == null) {
+							changesFound = true; // change found
+						} else {
+							try {
+							  SVNLogHandler handler = new SVNLogHandler(excludedPatterns);
+							  final SVNClientManager manager = createSvnClientManager(authProvider);
+							  try {
+								  final SVNLogClient svnlc = manager.getLogClient();
+								  svnlc.doLog(decodedURL, null, SVNRevision.UNDEFINED,
+												  SVNRevision.create(localInfo.getValue()+1), // get log entries from the local revision + 1
+												  SVNRevision.create(remoteInfo.revision), // to the remote revision
+												  false, // Don't stop on copy.
+												  true, // Report paths.
+												  0, // Retrieve log entries for unlimited number of revisions.
+												  handler);
+							  } finally {
+								  manager.dispose();
+							  }
+
+							  changesFound = handler.isChangesFound();
+							} catch (SVNException e) {
+								e.printStackTrace(listener.error("Failed to check repository revision for "+ url));
+								changesFound = false;
+							}
+					  }
+
+					  if (changesFound) {
+						  listener.getLogger().println(Messages.SubversionSCM_pollChanges_changedFrom(localInfo.getValue()));
+					  }
+					}
+			  } catch (SVNException e) {
+					e.printStackTrace(listener.error("Failed to check repository revision for "+ url));
+					changesFound = false;
+			  }
+
+	        return changesFound;
         }
 
         return false; // no change
     }
+
+	 private final class SVNLogHandler implements ISVNLogEntryHandler {
+		 private boolean changesFound = false;
+
+		 private Pattern[] excludedPatterns;
+
+		 private SVNLogHandler(Pattern[] excludedPatterns) {
+			 this.excludedPatterns = excludedPatterns;
+		 }
+
+		 public boolean isChangesFound() {
+			 return changesFound;
+		 }
+
+		 /**
+		  * Handles a log entry passed.
+		  * Check for paths that should be excluded from triggering a build.
+		  * If a path is not a path that should be excluded, set changesFound to true
+		  *
+		  * @param logEntry an {@link org.tmatesoft.svn.core.SVNLogEntry} object
+		  *                 that represents per revision information
+		  *                 (committed paths, log message, etc.)
+		  * @throws org.tmatesoft.svn.core.SVNException
+		  */
+		 public void handleLogEntry(SVNLogEntry logEntry) throws SVNException {
+			 if (excludedPatterns != null && excludedPatterns.length > 0) {
+				 Map changedPaths = logEntry.getChangedPaths();
+				 for (Object paths : changedPaths.values()) {
+	             SVNLogEntryPath logEntryPath = (SVNLogEntryPath) paths;
+	             String path = logEntryPath.getPath();
+
+					 boolean patternMatched = false;
+
+					 for (Pattern pattern : excludedPatterns) {
+					    if (pattern.matcher(path).matches()) {
+						    patternMatched = true;
+							 break;
+						 }
+					 }
+
+					 if (!patternMatched) {
+					    changesFound = true;
+						 break;
+					 }
+	          }
+			 } else if (!logEntry.getChangedPaths().isEmpty())	{
+				 // no excluded patterns and paths have changed, so just return true
+				 changesFound = true;
+			 }
+		 }
+	 }
 
     public ChangeLogParser createChangeLogParser() {
         return new SubversionChangeLogParser();
@@ -1137,7 +1254,8 @@ public class SubversionSCM extends SCM implements Serializable {
                 req.getParameterValues("svn.location_remote"),
                 req.getParameterValues("svn.location_local"),
                 req.getParameter("svn_use_update") != null,
-                    RepositoryBrowsers.createInstance(SubversionRepositoryBrowser.class, req, formData, "browser"));
+                RepositoryBrowsers.createInstance(SubversionRepositoryBrowser.class, req, formData, "browser"),
+                req.getParameter("svn.excludedRegions"));
         }
 
         /**
@@ -1452,6 +1570,30 @@ public class SubversionSCM extends SCM implements Serializable {
                     }
 
                     // all tests passed so far
+                    ok();
+                }
+            }.process();
+        }
+
+	     /**
+         * Validates the excludeRegions Regex
+         */
+        public void doExcludeRegionsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new FormFieldValidator(req,rsp,false) {
+                protected void check() throws IOException, ServletException {
+                    String v = fixEmptyAndTrim(request.getParameter("value"));
+
+                    if(v != null) {
+	                    String[] regions = v.split("\\r\\n");
+	                    for (String region : regions) {
+		                    try {
+			                    Pattern.compile(region);
+		                    }
+		                    catch (PatternSyntaxException e) {
+			                    error("Invalid regular expression. " + e.getMessage());
+		                    }
+	                    }
+                    }
                     ok();
                 }
             }.process();

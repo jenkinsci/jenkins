@@ -1,0 +1,12 @@
+<div>
+  If set, and Hudson is set to poll for changes, Hudson will ignore any files and/or folders in this list when determining if a build needs to be triggered.
+  <p/>Each exclusion uses regular expression pattern matching, and must be separated by a new line.
+  <p/>
+  <pre>
+	 src/main/web/.*\.html
+	 src/main/web/.*\.jpeg
+	 src/main/web/.*\.gif
+  </pre>
+  The example above illustrates that if only html/jpeg/gif files have been committed to the SCM a build will not occur.
+  <p/>More information on regular expressions can be found <a href="http://www.regular-expressions.info/">here</a>.
+</div>
