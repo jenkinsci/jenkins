@@ -26,8 +26,8 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.Plugin;
 import hudson.ExtensionListView;
-import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionList;
 
 import java.util.List;
 
@@ -102,7 +102,7 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
     /**
      * Returns all the registered {@link PageDecorator} descriptors.
      */
-    public static DescriptorExtensionList<PageDecorator,PageDecorator> all() {
-        return Hudson.getInstance().getDescriptorList(PageDecorator.class);
+    public static ExtensionList<PageDecorator> all() {
+        return Hudson.getInstance().getExtensionList(PageDecorator.class);
     }
 }
