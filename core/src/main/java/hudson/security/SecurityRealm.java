@@ -27,6 +27,8 @@ import com.octo.captcha.service.CaptchaServiceException;
 import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
 import groovy.lang.Binding;
 import hudson.ExtensionPoint;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -396,8 +398,19 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
 
     /**
      * All registered {@link SecurityRealm} implementations.
+     *
+     * @deprecated as of 1.286
+     *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
     public static final DescriptorList<SecurityRealm> LIST = new DescriptorList<SecurityRealm>(SecurityRealm.class);
+
+    /**
+     * Returns all the registered {@link SecurityRealm} descriptors.
+     */
+    public static DescriptorExtensionList<SecurityRealm,Descriptor<SecurityRealm>> all() {
+        return Hudson.getInstance().getDescriptorList(SecurityRealm.class);
+    }
+
 
     private static final Logger LOGGER = Logger.getLogger(SecurityRealm.class.getName());
 }

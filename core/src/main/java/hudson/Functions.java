@@ -594,7 +594,7 @@ public class Functions {
     }
 
     public static List<Descriptor<SecurityRealm>> getSecurityRealmDescriptors() {
-        return SecurityRealm.LIST;
+        return SecurityRealm.all();
     }
 
     public static List<Descriptor<AuthorizationStrategy>> getAuthorizationStrategyDescriptors() {

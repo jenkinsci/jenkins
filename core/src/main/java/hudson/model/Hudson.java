@@ -45,7 +45,6 @@ import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionListView;
 import hudson.logging.LogRecorderManager;
-import hudson.lifecycle.WindowsInstallerLink;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
@@ -720,7 +719,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the {@link SecurityRealm} descriptors by name. Primarily used for making them web-visible.
      */
     public Descriptor<SecurityRealm> getSecurityRealms(String shortClassName) {
-        return findDescriptor(shortClassName,SecurityRealm.LIST);
+        return findDescriptor(shortClassName,SecurityRealm.all());
     }
 
     /**
@@ -1960,7 +1959,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if (json.has("use_security")) {
                 useSecurity = true;
                 JSONObject security = json.getJSONObject("use_security");
-                setSecurityRealm(SecurityRealm.LIST.newInstanceFromRadioList(security,"realm"));
+                setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security,"realm"));
                 setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
             } else {
                 useSecurity = null;
