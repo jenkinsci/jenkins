@@ -43,11 +43,14 @@ import java.util.List;
  * @since 1.286
  */
 public class ToolLocationNodeProperty extends NodeProperty<Node> {
-
+    /**
+     * Override locations. Never null.
+     */
     private final List<ToolLocation> locations;
 
     @DataBoundConstructor
     public ToolLocationNodeProperty(List<ToolLocation> locations) {
+        if(locations==null) throw new IllegalArgumentException();
         this.locations = locations;
     }
 
@@ -56,7 +59,6 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
     }
 
     public List<ToolLocation> getLocations() {
-        if (locations == null) return Collections.emptyList();
         return Collections.unmodifiableList(locations);
     }
 
