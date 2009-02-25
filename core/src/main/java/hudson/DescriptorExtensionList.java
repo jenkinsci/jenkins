@@ -131,7 +131,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
                 LOGGER.severe(d.getClass()+" doesn't extend Descriptor with a type parameter");
                 continue;   // skip this one
             }
-            if(Types.getTypeArgument(subTyping,0)==describableType)
+            if(Types.erasure(Types.getTypeArgument(subTyping,0))==(Class)describableType)
                 r.add(d);
         }
         return r;
