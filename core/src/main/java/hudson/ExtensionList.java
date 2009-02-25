@@ -69,11 +69,12 @@ public class ExtensionList<T> extends AbstractList<T> {
 
     /**
      * Place to store manually registered instances with the per-Hudson scope.
+     * {@link CopyOnWriteArrayList} is used here to support concurrent iterations and mutation.
      */
-    private final List<T> legacyInstances;
+    private final CopyOnWriteArrayList<T> legacyInstances;
 
     protected ExtensionList(Hudson hudson, Class<T> extensionType) {
-        this(hudson,extensionType,new Vector<T>());
+        this(hudson,extensionType,new CopyOnWriteArrayList<T>());
     }
 
     /**
@@ -83,7 +84,7 @@ public class ExtensionList<T> extends AbstractList<T> {
      *      omits this uses a new {@link Vector}, making the storage lifespan tied to the life of  {@link ExtensionList}.
      *      If the manually registerd instances are scoped to VM level, the caller should pass in a static list. 
      */
-    protected ExtensionList(Hudson hudson, Class<T> extensionType, List<T> legacyStore) {
+    protected ExtensionList(Hudson hudson, Class<T> extensionType, CopyOnWriteArrayList<T> legacyStore) {
         this.hudson = hudson;
         this.extensionType = extensionType;
         this.legacyInstances = legacyStore;
@@ -215,8 +216,8 @@ public class ExtensionList<T> extends AbstractList<T> {
     /**
      * Places to store static-scope legacy instances.
      */
-    private static final Memoizer<Class,List> staticLegacyInstances = new Memoizer<Class,List>() {
-        public List compute(Class key) {
+    private static final Memoizer<Class,CopyOnWriteArrayList> staticLegacyInstances = new Memoizer<Class,CopyOnWriteArrayList>() {
+        public CopyOnWriteArrayList compute(Class key) {
             return new CopyOnWriteArrayList();
         }
     };
