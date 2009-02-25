@@ -186,18 +186,13 @@ public abstract class Node extends AbstractModelObject implements Describable<No
         return FileSystemProvisioner.DEFAULT;
     }
 
-    // these are abstract because of possibly different owners for the nodeProperties list in subclasses
+    /**
+     * Gets the {@link NodeProperty} instances configured for this {@link Node}.
+     */
     public abstract DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
-    
-    public abstract void setNodeProperties(Collection<NodeProperty<?>> nodeProperties) throws IOException;
 
     public <N extends NodeProperty<?>> N getNodeProperty(Class<N> clazz) {
-    	for (NodeProperty<?> p: getNodeProperties()) {
-    		if (clazz.isInstance(p)) {
-    			return clazz.cast(p);
-    		}
-    	}
-    	return null;
+        return getNodeProperties().get(clazz);
     }
     
     public ACL getACL() {

@@ -1240,10 +1240,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     	return nodeProperties;
     }
 
-    public void setNodeProperties(Collection<NodeProperty<?>> nodeProperties) throws IOException {
-    	this.nodeProperties.replaceBy(nodeProperties);
-    }
-
     /**
      * Resets all labels and remove invalid ones.
      */

@@ -106,12 +106,6 @@ public class NodeListTest extends TestCase {
 		public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
             throw new UnsupportedOperationException();
 		}
-
-		@Override
-		public void setNodeProperties(Collection<NodeProperty<?>> nodeProperties)
-				throws IOException {
-            throw new UnsupportedOperationException();
-		}
     }
     static class EphemeralNode extends DummyNode implements hudson.slaves.EphemeralNode {
         public Cloud getCloud() {

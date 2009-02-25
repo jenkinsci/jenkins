@@ -214,10 +214,6 @@ public abstract class Slave extends Node implements Serializable {
     	return nodeProperties;
     }
     
-    public void setNodeProperties(Collection<NodeProperty<?>> nodeProperties) throws IOException {
-    	this.nodeProperties.replaceBy(nodeProperties);
-    }
-    
     public RetentionStrategy getRetentionStrategy() {
         return retentionStrategy == null ? RetentionStrategy.Always.INSTANCE : retentionStrategy;
     }

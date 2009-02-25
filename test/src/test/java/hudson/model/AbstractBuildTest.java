@@ -17,9 +17,8 @@ public class AbstractBuildTest extends HudsonTestCase {
 
 	public void testVariablesResolved() throws Exception {
 		FreeStyleProject project = createFreeStyleProject();
-		Hudson.getInstance().setNodeProperties(
-				Collections
-						.<NodeProperty<?>>singleton(new EnvironmentVariablesNodeProperty(
+		Hudson.getInstance().getNodeProperties().replaceBy(
+				Collections.singleton(new EnvironmentVariablesNodeProperty(
 								new Entry("KEY1", "value"), new Entry("KEY2",
 										"$KEY1"))));
 		CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
