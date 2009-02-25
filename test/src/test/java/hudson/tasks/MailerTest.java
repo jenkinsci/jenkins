@@ -32,6 +32,9 @@ import org.jvnet.mock_javamail.Mailbox;
 import javax.mail.Address;
 import javax.mail.internet.InternetAddress;
 
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
+
 /**
  * @author Kohsuke Kawaguchi
  */
@@ -58,5 +61,15 @@ public class MailerTest extends HudsonTestCase {
         Address[] senders = yourInbox.get(0).getFrom();
         assertEquals(1,senders.length);
         assertEquals("me <me@sun.com>",senders[0].toString());
+    }
+
+    /**
+     * Makes sure the use of "localhost" in the Hudson URL reports a warning.
+     */
+    public void testLocalHostWarning() throws Exception {
+        HtmlPage p = new WebClient().goTo("configure");
+        HtmlInput url = p.getFormByName("config").getInputByName("_.url");
+        url.setValueAttribute("http://localhost:1234/");
+        assertTrue(p.getDocumentElement().getTextContent().contains("instead of localhost"));
     }
 }
