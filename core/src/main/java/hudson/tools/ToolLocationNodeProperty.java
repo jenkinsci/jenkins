@@ -84,7 +84,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
             return "Tool Locations";
         }
 
-        public synchronized DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> getToolDescriptors() {
+        public DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> getToolDescriptors() {
             return ToolInstallation.all();
         }
 
