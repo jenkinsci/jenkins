@@ -128,8 +128,8 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     /**
      * Stores manually registered Descriptor instances.
      */
-    private static final Memoizer<Class,List> legacyDescriptors = new Memoizer<Class,List>() {
-        public List compute(Class key) {
+    private static final Memoizer<Class,CopyOnWriteArrayList> legacyDescriptors = new Memoizer<Class,CopyOnWriteArrayList>() {
+        public CopyOnWriteArrayList compute(Class key) {
             return new CopyOnWriteArrayList();
         }
     };
