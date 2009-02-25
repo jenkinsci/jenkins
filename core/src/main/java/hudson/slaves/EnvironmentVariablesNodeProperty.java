@@ -1,6 +1,7 @@
 package hudson.slaves;
 
 import hudson.Launcher;
+import hudson.Extension;
 import hudson.model.*;
 
 import java.io.IOException;
@@ -38,12 +39,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
     	return Environment.create(envVars);
 	}
 
-    public NodePropertyDescriptor getDescriptor() {
-		return DESCRIPTOR;
-	}
-	
-	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-	
+    @Extension
 	public static class DescriptorImpl extends NodePropertyDescriptor {
 
 		@Override

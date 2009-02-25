@@ -32,7 +32,6 @@ import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
-import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
@@ -41,9 +40,7 @@ import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.kohsuke.stapler.Stapler;
@@ -59,10 +56,6 @@ import org.kohsuke.stapler.Stapler;
  * @see NodeDescriptor
  */
 public abstract class Node extends AbstractModelObject implements Describable<Node>, ExtensionPoint, AccessControlled {
-
-	public static final List<NodePropertyDescriptor> PROPERTIES = Descriptor
-		.toList((NodePropertyDescriptor) EnvironmentVariablesNodeProperty.DESCRIPTOR);
-	
     public String getDisplayName() {
         return getNodeName(); // default implementation
     }
@@ -197,17 +190,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     public abstract DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
     
     public abstract void setNodeProperties(Collection<NodeProperty<?>> nodeProperties) throws IOException;
-    
-    public List<NodePropertyDescriptor> getNodePropertyDescriptors() {
-		List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
-		for (NodePropertyDescriptor npd : PROPERTIES) {
-			if (npd.isApplicable(getClass())) {
-				result.add(npd);
-			}
-		}
-		return result;
-    }
-    
+
     public <N extends NodeProperty<?>> N getNodeProperty(Class<N> clazz) {
     	for (NodeProperty<?> p: getNodeProperties()) {
     		if (clazz.isInstance(p)) {

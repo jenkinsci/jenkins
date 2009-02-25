@@ -2057,7 +2057,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             clouds.rebuildHetero(req,json, Cloud.all(), "cloud");
 
-            nodeProperties.rebuild(req, json.getJSONObject("nodeProperties"), getNodePropertyDescriptors());
+            nodeProperties.rebuild(req, json.getJSONObject("nodeProperties"), NodeProperty.for_(this));
 
             save();
             if(result)
