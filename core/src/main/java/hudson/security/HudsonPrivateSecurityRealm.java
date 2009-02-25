@@ -396,6 +396,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
      * Displays "manage users" link in the system config if {@link HudsonPrivateSecurityRealm}
      * is in effect.
      */
+    @Extension
     public static final class ManageUserLinks extends ManagementLink {
         public String getIconFileName() {
             if(Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
@@ -477,9 +478,5 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
         public String getHelpFile() {
             return "/help/security/private-realm.html"; 
         }
-    }
-
-    static {
-        ManageUserLinks.LIST.add(new ManageUserLinks());
     }
 }

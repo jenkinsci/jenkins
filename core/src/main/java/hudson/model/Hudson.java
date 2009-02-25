@@ -2909,7 +2909,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     // for Jelly
     public List<ManagementLink> getManagementLinks() {
-        return ManagementLink.LIST;
+        return ManagementLink.all();
     }
 
     /**

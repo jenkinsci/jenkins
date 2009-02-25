@@ -27,6 +27,7 @@ import hudson.model.ManagementLink;
 import hudson.model.Hudson;
 import hudson.AbortException;
 import hudson.FilePath;
+import hudson.Extension;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.DotNet;
 import hudson.Launcher.LocalLauncher;
@@ -228,26 +229,30 @@ public class WindowsInstallerLink extends ManagementLink {
     /**
      * Decide if {@link WindowsInstallerLink} should show up in UI, and if so, register it.
      */
-    public static void registerIfApplicable() {
+    @Extension
+    public static WindowsInstallerLink registerIfApplicable() {
         if(!Hudson.isWindows())
-            return; // this is a Windows only feature
+            return null; // this is a Windows only feature
 
         if(Lifecycle.get() instanceof WindowsServiceLifecycle)
-            return; // already installed as Windows service
+            return null; // already installed as Windows service
 
         // this system property is set by the launcher when we run "java -jar hudson.war"
         // and this is how we know where is hudson.war.
         String war = System.getProperty("executable-war");
         if(war!=null && new File(war).exists()) {
             WindowsInstallerLink link = new WindowsInstallerLink(new File(war));
-            LIST.add(link);
 
             // in certain situations where we know the user is just trying Hudson (like when Hudson is launched
             // from JNLP from https://hudson.dev.java.net/), also put this link on the navigation bar to increase
             // visibility
             if(System.getProperty(WindowsInstallerLink.class.getName()+".prominent")!=null)
                 Hudson.getInstance().getActions().add(link);
+
+            return link;
         }
+
+        return null;
     }
 
     private static final Logger LOGGER = Logger.getLogger(WindowsInstallerLink.class.getName());

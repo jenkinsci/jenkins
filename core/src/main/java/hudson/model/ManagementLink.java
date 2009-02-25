@@ -24,9 +24,11 @@
 package hudson.model;
 
 import hudson.ExtensionPoint;
+import hudson.ExtensionListView;
+import hudson.Extension;
+import hudson.ExtensionList;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Extension point to add icon to <tt>http://server/hudson/manage</tt> page.
@@ -37,10 +39,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * be added to {@link Hudson#getActions()}.) 
  *
  * <p>
- * To register a new instance, the typical code looks like this:
- * <pre>
- * ManagementLink.LIST.add(new MyManagementLinkImpl());
- * </pre>
+ * To register a new instance, put {@link Extension} on your implementation class.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.194
@@ -81,6 +80,15 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
 
     /**
      * All registered instances.
+     * @deprecated as of 1.286
+     *      Use {@link #all()} for read access and put {@link Extension} for registration.
      */
-    public static final List<ManagementLink> LIST = new CopyOnWriteArrayList<ManagementLink>();
+    public static final List<ManagementLink> LIST = ExtensionListView.createList(ManagementLink.class);
+
+    /**
+     * All regsitered instances.
+     */
+    public static ExtensionList<ManagementLink> all() {
+        return Hudson.getInstance().getExtensionList(ManagementLink.class);
+    }
 }
