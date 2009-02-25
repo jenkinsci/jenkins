@@ -26,6 +26,7 @@ package hudson;
 import hudson.model.Hudson;
 import hudson.util.DescriptorList;
 import hudson.util.Memoizer;
+import hudson.util.Iterators;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 
 import java.util.AbstractList;
@@ -102,7 +103,8 @@ public class ExtensionList<T> extends AbstractList<T> {
     }
 
     public Iterator<T> iterator() {
-        return ensureLoaded().iterator();
+        // we need to intercept mutation, so for now don't allow Iterator.remove 
+        return Iterators.readOnly(ensureLoaded().iterator());
     }
 
     public T get(int index) {
@@ -114,14 +116,20 @@ public class ExtensionList<T> extends AbstractList<T> {
     }
 
     @Override
-    public synchronized T remove(int index) {
-        T t = get(index);
-        legacyInstances.remove(t);
+    public synchronized boolean remove(Object o) {
+        legacyInstances.remove(o);
         if(extensions!=null) {
             List<T> r = new ArrayList<T>(extensions);
-            r.remove(t);
+            r.remove(o);
             extensions = sort(r);
         }
+        return true;
+    }
+
+    @Override
+    public synchronized T remove(int index) {
+        T t = get(index);
+        remove(t);
         return t;
     }
 
