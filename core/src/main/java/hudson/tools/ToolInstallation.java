@@ -53,11 +53,11 @@ public abstract class ToolInstallation implements Serializable, Describable<Tool
         return name;
     }
     
-    public ToolDescriptor getDescriptor() {
+    public ToolDescriptor<?> getDescriptor() {
         return (ToolDescriptor) Hudson.getInstance().getDescriptor(getClass());
     }
 
-    public static DescriptorExtensionList<ToolInstallation,ToolDescriptor<ToolInstallation>> all() {
+    public static DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
         return Hudson.getInstance().getDescriptorList(ToolInstallation.class);
     }
