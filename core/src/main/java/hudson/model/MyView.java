@@ -35,6 +35,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.model.Descriptor.FormException;
+import hudson.Extension;
 
 /**
  * {@link View} that only contains projects for which the current user has access to.
@@ -85,16 +86,7 @@ public class MyView extends View {
         // noop
     }
 
-    public ViewDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
-    static {
-        LIST.add(DESCRIPTOR);
-    }
-    
+    @Extension
     public static final class DescriptorImpl extends ViewDescriptor {
         private DescriptorImpl() {
             super(MyView.class);

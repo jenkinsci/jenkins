@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.Indenter;
+import hudson.Extension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -159,21 +160,16 @@ public class TreeView extends View implements ViewGroup {
         }
     }
 
-    public ViewDescriptor getDescriptor() {
-        return DESCRIPTOR;
-    }
-
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
-    static {
-        LIST.add(DESCRIPTOR);
+    // this feature is not public yet
+    @Extension
+    public static ViewDescriptor register() {
+        if(Boolean.getBoolean("hudson.TreeView"))
+            return new DescriptorImpl();
+        else
+            return null;
     }
 
     public static final class DescriptorImpl extends ViewDescriptor {
-        private DescriptorImpl() {
-            super(TreeView.class);
-        }
-
         public String getDisplayName() {
             return "Tree View";
         }

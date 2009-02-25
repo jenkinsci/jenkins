@@ -25,6 +25,8 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.Extension;
+import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor.FormException;
 import static hudson.model.Hudson.checkGoodName;
 import hudson.scm.ChangeLogSet.Entry;
@@ -524,13 +526,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * A list of available view types.
+     * @deprecated as of 1.286
+     *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
     public static final DescriptorList<View> LIST = new DescriptorList<View>(View.class);
 
-    static {
-        LIST.load(MyView.class);
-        if(Boolean.getBoolean("hudson.TreeView"))
-            LIST.load(TreeView.class);
+    /**
+     * Returns all the registered {@link ViewDescriptor}s.
+     */
+    public static DescriptorExtensionList<View,ViewDescriptor> all() {
+        return Hudson.getInstance().getDescriptorList(View.class);
     }
 
     public static final Comparator<View> SORTER = new Comparator<View>() {
@@ -561,7 +566,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             throw new FormException(Messages.Hudson_ViewAlreadyExists(name),"name");
 
         // create a view
-        View v = LIST.findByName(req.getParameter("mode")).newInstance(req,req.getSubmittedForm());
+        View v = all().findByName(req.getParameter("mode")).newInstance(req,req.getSubmittedForm());
         v.owner = owner;
 
         // redirect to the config screen

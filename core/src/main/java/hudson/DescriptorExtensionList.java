@@ -108,6 +108,18 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     /**
+     * Finds a descriptor by their {@link Descriptor#clazz}.
+     *
+     * If none is found, null is returned.
+     */
+    public Descriptor<T> findByName(String fullyQualifiedClassName) {
+        for (Descriptor<T> d : this)
+            if(d.clazz.getName().equals(fullyQualifiedClassName))
+                return d;
+        return null;
+    }
+    
+    /**
      * Loading the descriptors in this case means filtering the descriptor from the master {@link ExtensionList}.
      */
     @Override
