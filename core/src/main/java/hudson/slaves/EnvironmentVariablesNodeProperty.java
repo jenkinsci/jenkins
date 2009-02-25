@@ -71,7 +71,6 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
     @Extension
 	public static class DescriptorImpl extends NodePropertyDescriptor {
-
 		@Override
 		public String getDisplayName() {
 			return Messages.EnvironmentVariablesNodeProperty_displayName();
@@ -88,7 +87,6 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
                 return "/help/system-config/globalEnvironmentVariables.html";
             }
         }
-		
 	}
 	
 	public static class Entry {
