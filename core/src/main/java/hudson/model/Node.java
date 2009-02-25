@@ -41,6 +41,7 @@ import hudson.util.EnumConverter;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.List;
 
 import org.kohsuke.stapler.Stapler;
 
@@ -190,6 +191,10 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      */
     public abstract DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
 
+    // used in the Jelly script to expose descriptors
+    public List<NodePropertyDescriptor> getNodePropertyDescriptors() {
+        return NodeProperty.for_(this);
+    }
     /**
      * @deprecated
      *      Check with Tom to see if we really need this method.
