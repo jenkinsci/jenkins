@@ -27,9 +27,11 @@ package hudson.tools;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.EnvVars;
 import hudson.model.Describable;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Hudson;
+import hudson.model.Node;
 import hudson.slaves.NodeSpecific;
 
 import java.io.Serializable;
@@ -52,7 +54,9 @@ import java.io.Serializable;
  * </ul>
  *
  * <p>
- * Implementation of this class should consider implementing {@link NodeSpecific} and {@link EnvironmentSpecific}.
+ * Implementations of this class are strongly encouraged to also implement {@link NodeSpecific}
+ * (by using {@link ToolLocationNodeProperty#getToolHome(Node, ToolInstallation)}) and
+ * {@link EnvironmentSpecific} (by using {@link EnvVars#expand(String)}.)
  *
  * <p>
  * To contribute an extension point, put {@link Extension} on your {@link ToolDescriptor} class.

@@ -402,12 +402,7 @@ public class Ant extends Builder {
 		}
 
         public AntInstallation forNode(Node node) {
-            String newHome = ToolLocationNodeProperty.getToolHome(node, this);
-            if (newHome != null) {
-                return new AntInstallation(getName(), newHome);
-            } else {
-                return this;
-            }
+            return new AntInstallation(getName(),ToolLocationNodeProperty.getToolHome(node, this));
         }
 
         @Extension

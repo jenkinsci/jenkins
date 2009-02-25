@@ -429,12 +429,7 @@ public class Maven extends Builder {
 		}
 
         public MavenInstallation forNode(Node node) {
-            String newHome = ToolLocationNodeProperty.getToolHome(Computer.currentComputer().getNode(), this);
-            if (newHome != null) {
-                return new MavenInstallation(getName(), newHome);
-            } else {
-                return this;
-            }
+            return new MavenInstallation(getName(),ToolLocationNodeProperty.getToolHome(node,this));
         }
 
         @Extension

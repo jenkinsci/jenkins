@@ -101,12 +101,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK> {
     }
 
     public JDK forNode(Node node) {
-        String newHome = ToolLocationNodeProperty.getToolHome(node, this);
-        if (newHome != null) {
-            return new JDK(getName(), newHome);
-        } else {
-            return this;
-        }
+        return new JDK(getName(),ToolLocationNodeProperty.getToolHome(node, this));
     }
 
     /**

@@ -31,6 +31,7 @@ import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
+import hudson.slaves.NodeSpecific;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Arrays;
@@ -71,12 +72,22 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
         return null;
     }
 
+    /**
+     * Checks if the location of the tool is overridden for the given node, and if so,
+     * return the node-specific home directory. Otherwise return {@code installation.getHome()}
+     *
+     * <p>
+     * This is the core logic behind {@link NodeSpecific#forNode(Node)} for {@link ToolInstallation}.
+     *
+     * @return
+     *      never null.
+     */
     public static String getToolHome(Node node, ToolInstallation installation) {
         ToolLocationNodeProperty property = node.getNodeProperties().get(ToolLocationNodeProperty.class);
         if (property != null) {
             return property.getHome(installation);
         }
-        return null;
+        return installation.getHome();
     }
 
     @Extension
