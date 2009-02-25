@@ -340,12 +340,12 @@ public abstract class Launcher {
         }
 
         private Proc createLocalProc(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
-            Map jobEnv = inherit(env);
+            EnvVars jobEnv = inherit(env);
 
             // replace variables in command line
             String[] jobCmd = new String[cmd.length];
             for ( int idx = 0 ; idx < jobCmd.length; idx++ ) {
-            	jobCmd[idx] = Util.replaceMacro(cmd[idx],jobEnv);
+            	jobCmd[idx] = jobEnv.expand(cmd[idx]);
             }
 
             return new LocalProc(jobCmd, Util.mapToEnv(jobEnv), in, out, toFile(workDir));
@@ -539,7 +539,7 @@ public abstract class Launcher {
     /**
      * Expands the list of environment variables by inheriting current env variables.
      */
-    private static Map<String,String> inherit(String[] env) {
+    private static EnvVars inherit(String[] env) {
         // convert String[] to Map first
         EnvVars m = new EnvVars();
         for (String e : env) {
@@ -556,7 +556,7 @@ public abstract class Launcher {
     private static EnvVars inherit(Map<String,String> overrides) {
         EnvVars m = new EnvVars(EnvVars.masterEnvVars);
         for (Map.Entry<String,String> o : overrides.entrySet()) 
-            m.override(o.getKey(),Util.replaceMacro(o.getValue(),m));
+            m.override(o.getKey(),m.expand(o.getValue()));
         return m;
     }
 

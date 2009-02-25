@@ -117,6 +117,13 @@ public class EnvVars extends TreeMap<String,String> {
     }
 
     /**
+     * Expands the variables in the given string by using environment variables represented in 'this'.
+     */
+    public String expand(String s) {
+        return Util.replaceMacro(s, this);
+    }
+
+    /**
      * Obtains the environment variables of a remote peer.
      *
      * @param channel

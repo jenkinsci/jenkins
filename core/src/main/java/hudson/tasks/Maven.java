@@ -185,10 +185,10 @@ public class Maven extends Builder {
         env.overrideAll(build.getEnvVars());
 
         String targets = Util.replaceMacro(this.targets,vr);
-        targets = Util.replaceMacro(targets, env);
-        String pom = Util.replaceMacro(this.pom, env);
-        String jvmOptions = Util.replaceMacro(this.jvmOptions, env);
-        String properties =Util.replaceMacro(this.properties, env);
+        targets = env.expand(targets);
+        String pom = env.expand(this.pom);
+        String jvmOptions = env.expand(this.jvmOptions);
+        String properties =env.expand(this.properties);
 
         int startIndex = 0;
         int endIndex;
@@ -418,8 +418,8 @@ public class Maven extends Builder {
 
         private static final long serialVersionUID = 1L;
 
-		public MavenInstallation forEnvironment(Map<String, String> environment) {
-			return new MavenInstallation(name, Util.replaceMacro(mavenHome, environment));
+		public MavenInstallation forEnvironment(EnvVars environment) {
+			return new MavenInstallation(name, environment.expand(mavenHome));
 		}
     }
 

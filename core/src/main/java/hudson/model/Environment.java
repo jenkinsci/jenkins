@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.tasks.Builder;
+import hudson.EnvVars;
 
 import java.io.IOException;
 import java.util.Map;
@@ -58,9 +59,10 @@ public abstract class Environment {
 	 * "planned export" list.
 	 * 
 	 * @param env
-	 *            never null.
+	 *          never null. This really should have been typed as {@link EnvVars}
+     *          but by the time we realized it it was too late.
 	 */
-	public void buildEnvVars(Map<String, String> env) {
+	public void buildEnvVars(Map<String,String> env) {
 		// no-op by default
 	}
 
@@ -87,8 +89,11 @@ public abstract class Environment {
 			throws IOException, InterruptedException {
 		return true;
 	}
-	
-	public static Environment create(final Map<String,String> envVars) {
+
+    /**
+     * Creates {@link Environment} implementation that just sets the variables as given in the parameter.
+     */
+	public static Environment create(final EnvVars envVars) {
 		return new Environment() {
 			@Override
 			public void buildEnvVars(Map<String, String> env) {

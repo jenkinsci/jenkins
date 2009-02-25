@@ -149,8 +149,8 @@ public class Ant extends Builder {
 
         VariableResolver<String> vr = build.getBuildVariableResolver();
 
-        String buildFile = Util.replaceMacro(this.buildFile, env);
-        String targets = Util.replaceMacro(Util.replaceMacro(this.targets, env), vr);
+        String buildFile = env.expand(this.buildFile);
+        String targets = Util.replaceMacro(env.expand(this.targets), vr);
         
         FilePath buildFilePath = buildFilePath(proj.getModuleRoot(), buildFile, targets);
 
@@ -185,7 +185,7 @@ public class Ant extends Builder {
         if(ai!=null)
             env.put("ANT_HOME",ai.getAntHome());
         if(antOpts!=null)
-            env.put("ANT_OPTS",Util.replaceMacro(antOpts, env));
+            env.put("ANT_OPTS",env.expand(antOpts));
 
         if(!launcher.isUnix()) {
             // on Windows, executing batch file can't return the correct error code,
@@ -380,8 +380,8 @@ public class Ant extends Builder {
 
         private static final long serialVersionUID = 1L;
 
-		public AntInstallation forEnvironment(Map<String, String> environment) {
-			return new AntInstallation(name, Util.replaceMacro(antHome, environment));
+		public AntInstallation forEnvironment(EnvVars environment) {
+			return new AntInstallation(name, environment.expand(antHome));
 		}
      }
 }

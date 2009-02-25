@@ -23,7 +23,7 @@
  */
 package hudson.model;
 
-import java.util.Map;
+import hudson.EnvVars;
 
 /**
  * Represents any concept that can be adapted for a certain environment.
@@ -37,5 +37,5 @@ public interface EnvironmentSpecific<T> {
 	/**
 	 * Returns a specialized copy of T for functioning in the given environment.
 	 */
-	T forEnvironment(Map<String,String> environment);
+	T forEnvironment(EnvVars environment);
 }
