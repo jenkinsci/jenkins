@@ -191,6 +191,10 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      */
     public abstract DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
 
+    /**
+     * @deprecated
+     *      Check with Tom to see if we really need this method.
+     */
     public <N extends NodeProperty<?>> N getNodeProperty(Class<N> clazz) {
         return getNodeProperties().get(clazz);
     }
