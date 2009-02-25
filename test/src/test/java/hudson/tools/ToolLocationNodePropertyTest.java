@@ -25,32 +25,21 @@
 package hudson.tools;
 
 import hudson.model.*;
-import hudson.slaves.EnvironmentVariablesNodeProperty.Entry;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.slaves.NodeProperty;
 import hudson.tasks.Maven;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Ant;
+import hudson.tasks.Shell;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
-import hudson.tasks.Maven.MavenInstallation.DescriptorImpl;
-import hudson.maven.MavenBuilder;
 import hudson.EnvVars;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Arrays;
-import java.util.HashMap;
 
 import junit.framework.Assert;
 
-import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
-import org.jvnet.hudson.test.HudsonTestCase.WebClient;
-import org.codehaus.groovy.tools.shell.Command;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -112,7 +101,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
         Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG"));
 
         project.getBuildersList().add(new Maven("--version", "maven"));
-        project.getBuildersList().add(new BatchFile("set"));
+        configureDumpEnvBuilder();
 
         Build build = project.scheduleBuild2(0).get();
         assertBuildStatus(Result.FAILURE, build);
@@ -125,6 +114,13 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
         assertBuildStatus(Result.SUCCESS, build);
     }
 
+    private void configureDumpEnvBuilder() throws IOException {
+        if(Hudson.isWindows())
+            project.getBuildersList().add(new BatchFile("set"));
+        else
+            project.getBuildersList().add(new Shell("export"));
+    }
+
     public void testAnt() throws Exception {
         Ant.AntInstallation ant = configureDefaultAnt();
         String antPath = ant.getHome();
@@ -132,7 +128,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
 
         project.setScm(new SingleFileSCM("build.xml", "<project name='foo'/>"));
         project.getBuildersList().add(new Ant("-version", "ant", null,null,null));
-        project.getBuildersList().add(new BatchFile("set"));
+        configureDumpEnvBuilder();
 
         Build build = project.scheduleBuild2(0).get();
         assertBuildStatus(Result.FAILURE, build);

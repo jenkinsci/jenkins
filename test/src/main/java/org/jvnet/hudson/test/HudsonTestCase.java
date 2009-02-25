@@ -48,14 +48,13 @@ import hudson.model.Node.Mode;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
-import hudson.tasks.BuildStep;
 import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
 import hudson.tasks.Ant;
-import hudson.tasks.Publisher;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamTaskListener;
+import hudson.util.jna.GNUCLibrary;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -73,7 +72,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -316,6 +314,9 @@ public abstract class HudsonTestCase extends TestCase {
         }
         File mvnHome = createTmpDir();
         mvn.unzip(new FilePath(mvnHome));
+        // TODO: switch to tar that preserves file permissions more easily
+        if(!Hudson.isWindows())
+            GNUCLibrary.LIBC.chmod(new File(mvnHome,"maven-2.0.7/bin/mvn").getPath(),0755);
 
         MavenInstallation mavenInstallation = new MavenInstallation("default",
                 new File(mvnHome,"maven-2.0.7").getAbsolutePath());
@@ -336,6 +337,9 @@ public abstract class HudsonTestCase extends TestCase {
         }
         File antHome = createTmpDir();
         ant.unzip(new FilePath(antHome));
+        // TODO: switch to tar that preserves file permissions more easily
+        if(!Hudson.isWindows())
+            GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.7.1/bin/ant").getPath(),0755);
 
         Ant.AntInstallation antInstallation = new Ant.AntInstallation("default",
                 new File(antHome,"apache-ant-1.7.1").getAbsolutePath());

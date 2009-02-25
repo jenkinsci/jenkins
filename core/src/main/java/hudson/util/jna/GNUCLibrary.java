@@ -30,6 +30,8 @@ import com.sun.jna.Native;
 import com.sun.jna.ptr.IntByReference;
 import org.jvnet.libpam.impl.CLibrary.passwd;
 
+import java.io.File;
+
 /**
  * GNU C library.
  *
@@ -64,7 +66,8 @@ public interface GNUCLibrary extends Library {
     static final int FD_CLOEXEC = 1;
 
     int chown(String fileName, int uid, int gid);
-    
+    int chmod(String fileName, int i);
+
 
     // this is listed in http://developer.apple.com/DOCUMENTATION/Darwin/Reference/ManPages/man3/sysctlbyname.3.html
     // but not in http://www.gnu.org/software/libc/manual/html_node/System-Parameters.html#index-sysctl-3493
