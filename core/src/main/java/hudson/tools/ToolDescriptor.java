@@ -29,11 +29,14 @@ import hudson.model.Describable;
 import hudson.tasks.BuildStep;
 
 /**
+ * {@link Descriptor} for {@link ToolInstallation}.
+ *
  * @author huybrechts
+ * @since 1.286
  */
 public abstract class ToolDescriptor<T extends ToolInstallation> extends Descriptor<ToolInstallation> {
 
-    T[] installations;
+    private T[] installations;
 
     public T[] getInstallations() {                 
         return installations;
@@ -42,6 +45,4 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
     public void setInstallations(T[] installations) {
         this.installations = installations;
     }
-
-    public abstract String getDisplayName();
 }

@@ -24,25 +24,24 @@
 
 package hudson.tools;
 
-import hudson.model.Node;
-import hudson.model.Hudson;
-import hudson.model.Descriptor;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.NodePropertyDescriptor;
-import hudson.tasks.Ant;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
+import hudson.model.Descriptor;
+import hudson.model.Hudson;
+import hudson.model.Node;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * {@link NodeProperty} that allows users to specify different locations for {@link ToolInstallation}s.
+ *
+ * @since 1.286
+ */
 public class ToolLocationNodeProperty extends NodeProperty<Node> {
 
     private final List<ToolLocation> locations;
@@ -85,7 +84,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
             return "Tool Locations";
         }
 
-        public synchronized DescriptorExtensionList<ToolInstallation,ToolDescriptor<ToolInstallation>> getToolDescriptors() {
+        public synchronized DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> getToolDescriptors() {
             return ToolInstallation.all();
         }
 
