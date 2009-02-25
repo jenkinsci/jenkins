@@ -40,7 +40,6 @@ import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Set;
 
 import org.kohsuke.stapler.Stapler;
