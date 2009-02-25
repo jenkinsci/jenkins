@@ -102,7 +102,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
         private final String type;
         private final String name;
         private final String home;
-        private transient ToolDescriptor descriptor;
+        private transient volatile ToolDescriptor descriptor;
 
         public ToolLocation(ToolDescriptor type, String name, String home) {
             this.descriptor = type;
