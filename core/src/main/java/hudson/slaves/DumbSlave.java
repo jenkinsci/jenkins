@@ -40,7 +40,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Kohsuke Kawaguchi
  */
 public final class DumbSlave extends Slave {
-	@Deprecated
+    /**
+     * @deprecated as of 1.286.
+     *      Use {@link #DumbSlave(String, String, String, String, Mode, String, ComputerLauncher, RetentionStrategy, List)}
+     */
     public DumbSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
         this(name, nodeDescription, remoteFS, numExecutors, mode, label, launcher, retentionStrategy, new ArrayList());
     }
