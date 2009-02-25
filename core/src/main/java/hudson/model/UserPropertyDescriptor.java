@@ -63,7 +63,7 @@ public abstract class UserPropertyDescriptor extends Descriptor<UserProperty> {
      * <p>
      * Returning false from this method essentially has the same effect of
      * making Hudson behaves as if this {@link UserPropertyDescriptor} is
-     * not a part of {@link UserProperties#LIST}.
+     * not a part of {@link UserProperty#all()}.
      *
      * <p>
      * This mechanism is useful if the availability of the property is

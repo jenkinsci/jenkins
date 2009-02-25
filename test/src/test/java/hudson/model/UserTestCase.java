@@ -66,7 +66,7 @@ public class UserTestCase extends HudsonTestCase {
     public void testUserPropertySummaryIsShownInUserPage() throws Exception {
         
         UserProperty property = new UserPropertyImpl("NeedleInPage");
-        UserProperties.LIST.add(property.getDescriptor());
+        UserProperty.all().add(property.getDescriptor());
         
         User user = User.get("user-test-case");
         user.addProperty(property);

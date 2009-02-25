@@ -23,18 +23,20 @@
  */
 package hudson.model;
 
-import hudson.tasks.Mailer;
-import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.Extension;
+import hudson.util.DescriptorList;
 
 import java.util.List;
 
 /**
  * List of all installed {@link UserProperty} types.
  * @author Kohsuke Kawaguchi
+ * @deprecated as of 1.286
  */
 public class UserProperties {
-    public static final List<UserPropertyDescriptor> LIST = Descriptor.toList(
-        Mailer.UserProperty.DESCRIPTOR,
-        HudsonPrivateSecurityRealm.DETAILS_DESCRIPTOR
-    );
+    /**
+     * @deprecated as of 1.286
+     *      Use {@link UserProperty#all()} for read access and {@link Extension} for auto-registration.
+     */
+    public static final List<UserPropertyDescriptor> LIST = (List)new DescriptorList<UserProperty>(UserProperty.class);
 }

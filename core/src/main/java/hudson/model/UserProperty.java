@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Plugin;
+import hudson.DescriptorExtensionList;
 import hudson.tasks.Mailer;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -44,7 +45,6 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  *
  * @author Kohsuke Kawaguchi
- * @see UserProperties#LIST
  */
 @ExportedBean
 public abstract class UserProperty implements Describable<UserProperty>, ExtensionPoint {
@@ -60,5 +60,14 @@ public abstract class UserProperty implements Describable<UserProperty>, Extensi
     }
 
     // descriptor must be of the UserPropertyDescriptor type
-    public abstract UserPropertyDescriptor getDescriptor();
+    public UserPropertyDescriptor getDescriptor() {
+        return (UserPropertyDescriptor)Hudson.getInstance().getDescriptor(getClass());
+    }
+
+    /**
+     * Returns all the registered {@link UserPropertyDescriptor}s.
+     */
+    public static DescriptorExtensionList<UserProperty,UserPropertyDescriptor> all() {
+        return Hudson.getInstance().getDescriptorList(UserProperty.class);
+    }
 }

@@ -132,7 +132,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
 
         // allocate default instances if needed.
         // doing so after load makes sure that newly added user properties do get reflected
-        for (UserPropertyDescriptor d : UserProperties.LIST) {
+        for (UserPropertyDescriptor d : UserProperty.all()) {
             if(getProperty(d.clazz)==null) {
                 UserProperty up = d.newInstance(this);
                 if(up!=null)
@@ -212,7 +212,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     }
 
     /**
-     * List of all {@link UserProperties} exposed primarily for the remoting API.
+     * List of all {@link UserProperty}s exposed primarily for the remoting API.
      */
     @Exported(name="property",inline=true)
     public List<UserProperty> getAllProperties() {
@@ -415,7 +415,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
 
             List<UserProperty> props = new ArrayList<UserProperty>();
             int i=0;
-            for (Descriptor<UserProperty> d : UserProperties.LIST) {
+            for (UserPropertyDescriptor d : UserProperty.all()) {
                 UserProperty p = d.newInstance(req, json.getJSONObject("userProperty"+(i++)));
                 p.setUser(this);
                 props.add(p);

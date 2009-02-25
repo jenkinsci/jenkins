@@ -424,8 +424,6 @@ public class Mailer extends Notifier {
      * Per user property that is e-mail address.
      */
     public static class UserProperty extends hudson.model.UserProperty {
-        public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
         /**
          * The user's e-mail address.
          * Null to leave it to default.
@@ -445,10 +443,7 @@ public class Mailer extends Notifier {
             return MailAddressResolver.resolve(user);
         }
 
-        public DescriptorImpl getDescriptor() {
-            return DESCRIPTOR;
-        }
-
+        @Extension
         public static final class DescriptorImpl extends UserPropertyDescriptor {
             public String getDisplayName() {
                 return Messages.Mailer_UserProperty_DisplayName();

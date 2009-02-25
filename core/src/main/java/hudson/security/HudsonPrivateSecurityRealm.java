@@ -335,51 +335,48 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             return user==null;
         }
 
-        public UserPropertyDescriptor getDescriptor() {
-            return DETAILS_DESCRIPTOR;
-        }
-
         private Object readResolve() {
             // If we are being read back in from an older version
             if (password!=null && passwordHash==null)
                 passwordHash = PASSWORD_ENCODER.encodePassword(Scrambler.descramble(password),null);
             return this;
         }
-    }
 
-    public static final UserPropertyDescriptor DETAILS_DESCRIPTOR = new UserPropertyDescriptor(Details.class) {
-        public String getDisplayName() {
-            // this feature is only when HudsonPrivateSecurityRealm is enabled
-            if(isEnabled())
-                return Messages.HudsonPrivateSecurityRealm_Details_DisplayName();
-            else
-                return null;
-        }
-
-        public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            String pwd = Util.fixEmpty(req.getParameter("user.password"));
-            String pwd2= Util.fixEmpty(req.getParameter("user.password2"));
-
-            if(!Util.fixNull(pwd).equals(Util.fixNull(pwd2)))
-                throw new FormException("Please confirm the password by typing it twice","user.password2");
-
-            String data = Protector.unprotect(pwd);
-            if(data!=null) {
-                String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
-                if(data.startsWith(prefix))
-                    return Details.fromHashedPassword(data.substring(prefix.length()));
+        @Extension
+        public static final class DescriptorImpl extends UserPropertyDescriptor {
+            public String getDisplayName() {
+                // this feature is only when HudsonPrivateSecurityRealm is enabled
+                if(isEnabled())
+                    return Messages.HudsonPrivateSecurityRealm_Details_DisplayName();
+                else
+                    return null;
             }
-            return Details.fromPlainPassword(Util.fixNull(pwd));
-        }
 
-        public boolean isEnabled() {
-            return Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
-        }
+            public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+                String pwd = Util.fixEmpty(req.getParameter("user.password"));
+                String pwd2= Util.fixEmpty(req.getParameter("user.password2"));
 
-        public UserProperty newInstance(User user) {
-            return null;
+                if(!Util.fixNull(pwd).equals(Util.fixNull(pwd2)))
+                    throw new FormException("Please confirm the password by typing it twice","user.password2");
+
+                String data = Protector.unprotect(pwd);
+                if(data!=null) {
+                    String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
+                    if(data.startsWith(prefix))
+                        return Details.fromHashedPassword(data.substring(prefix.length()));
+                }
+                return Details.fromPlainPassword(Util.fixNull(pwd));
+            }
+
+            public boolean isEnabled() {
+                return Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
+            }
+
+            public UserProperty newInstance(User user) {
+                return null;
+            }
         }
-    };
+    }
 
     /**
      * {@link UserDetailsService} that loads user information from {@link User} object. 
