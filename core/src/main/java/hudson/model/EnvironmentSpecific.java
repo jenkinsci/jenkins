@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.slaves.NodeSpecific;
 
 /**
  * Represents any concept that can be adapted for a certain environment.
@@ -32,8 +33,10 @@ import hudson.EnvVars;
  *
  * @since 1.286
  * @param <T>
+ *      Concrete type that represents the thing that can be adapted.
+ * @see NodeSpecific
  */
-public interface EnvironmentSpecific<T extends EnvironmentSpecific<?>> {
+public interface EnvironmentSpecific<T extends EnvironmentSpecific<T>> {
 	/**
 	 * Returns a specialized copy of T for functioning in the given environment.
 	 */
