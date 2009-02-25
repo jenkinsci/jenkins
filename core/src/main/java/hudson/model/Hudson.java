@@ -536,7 +536,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         for (ItemListener l : ItemListener.all())
             l.onLoaded();
 
-        WindowsInstallerLink.registerIfApplicable();
         LoadStatistics.register();
         NodeProvisioner.launch();
     }
