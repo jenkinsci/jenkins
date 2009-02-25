@@ -58,4 +58,11 @@ public abstract class Memoizer<K,V> {
      * Creates a new instance.
      */
     public abstract V compute(K key);
+
+    /**
+     * Clears all the computed values.
+     */
+    public void clear() {
+        store.clear();
+    }
 }
