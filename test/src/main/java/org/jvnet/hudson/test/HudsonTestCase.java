@@ -27,6 +27,7 @@ import hudson.CloseProofOutputStream;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.WebAppMain;
+import hudson.EnvVars;
 import hudson.Launcher.LocalLauncher;
 import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
@@ -389,7 +390,7 @@ public abstract class HudsonTestCase extends TestCase {
     /**
      * Creates a slave with certain additional environment variables
      */
-    public DumbSlave createSlave(Label l, Map<String,String> env) throws Exception {
+    public DumbSlave createSlave(Label l, EnvVars env) throws Exception {
     	CommandLauncher launcher = new CommandLauncher(
     			System.getProperty("java.home") + "/bin/java -jar \"" + 
     			new File(hudson.getJnlpJars("slave.jar").getURL().toURI()).getAbsolutePath() + "\"", env);

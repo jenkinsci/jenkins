@@ -114,9 +114,7 @@ public abstract class ProcessTreeKiller {
      * when we later kill the processes.
      */
     public static EnvVars createCookie() {
-        EnvVars r = new EnvVars();
-        r.put("HUDSON_COOKIE",UUID.randomUUID().toString());
-        return r;
+        return new EnvVars("HUDSON_COOKIE",UUID.randomUUID().toString());
     }
 
     /**

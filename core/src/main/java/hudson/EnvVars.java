@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Arrays;
 
 /**
  * Environment variables.
@@ -53,8 +54,16 @@ public class EnvVars extends TreeMap<String,String> {
     }
 
     public EnvVars(Map<String,String> m) {
-        super(CaseInsensitiveComparator.INSTANCE);
+        this();
         putAll(m);
+    }
+
+    public EnvVars(String... keyValuePairs) {
+        this();
+        if(keyValuePairs.length%2!=0)
+            throw new IllegalArgumentException(Arrays.asList(keyValuePairs).toString());
+        for( int i=0; i<keyValuePairs.length; i+=2 )
+            put(keyValuePairs[i],keyValuePairs[i+1]);
     }
 
     /**

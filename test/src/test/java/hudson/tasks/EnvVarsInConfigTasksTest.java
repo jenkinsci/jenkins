@@ -11,7 +11,6 @@ import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.File;
-import java.util.TreeMap;
 
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -47,8 +46,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
         }
 
 		// createSlaves
-		TreeMap<String, String> additionalEnv = new TreeMap<String, String>();
-		additionalEnv.put(DUMMY_LOCATION_VARNAME, "");
+		EnvVars additionalEnv = new EnvVars(DUMMY_LOCATION_VARNAME, "");
 		slaveEnv = createSlave(new Label("slaveEnv"), additionalEnv);
 
 		slaveRegular = createSlave(new Label("slaveRegular"));

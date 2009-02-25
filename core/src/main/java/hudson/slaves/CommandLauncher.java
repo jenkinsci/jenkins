@@ -35,7 +35,6 @@ import hudson.util.StreamTaskListener;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,16 +60,16 @@ public class CommandLauncher extends ComputerLauncher {
     private final String agentCommand;
     
     /**
-     * Optional environment variables to add to the current environment
+     * Optional environment variables to add to the current environment. Can be null.
      */
-	private final Map<String, String> env;
+    private final EnvVars env;
 
     @DataBoundConstructor
     public CommandLauncher(String command) {
         this(command, null);
     }
     
-    public CommandLauncher(String command, Map<String,String> env) {
+    public CommandLauncher(String command, EnvVars env) {
     	this.agentCommand = command;
     	this.env = env;
     }
