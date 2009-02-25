@@ -33,7 +33,7 @@ import hudson.EnvVars;
  * @since 1.286
  * @param <T>
  */
-public interface EnvironmentSpecific<T> {
+public interface EnvironmentSpecific<T extends EnvironmentSpecific<?>> {
 	/**
 	 * Returns a specialized copy of T for functioning in the given environment.
 	 */

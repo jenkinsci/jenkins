@@ -37,11 +37,11 @@ import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.PageDecorator;
 import hudson.model.ParameterDefinition;
+import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
-import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.search.SearchableModelObject;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
@@ -49,23 +49,23 @@ import hudson.security.Permission;
 import hudson.security.SecurityRealm;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
-import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.util.Area;
-import hudson.util.DescriptorList;
 import hudson.util.Iterators;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
-import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jelly.Tag;
 import org.apache.commons.jelly.TagSupport;
+import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
@@ -92,6 +92,7 @@ import java.lang.management.ThreadMXBean;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -619,6 +620,17 @@ public class Functions {
 
     public static List<ParameterDescriptor> getParameterDescriptors() {
         return ParameterDefinition.all();
+    }
+
+    public static List<NodePropertyDescriptor> getNodePropertyDescriptors(Class<? extends Node> clazz) {
+        List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+        Collection<NodePropertyDescriptor> list = (Collection) Hudson.getInstance().getDescriptorList(NodeProperty.class);
+        for (NodePropertyDescriptor npd : list) {
+            if (npd.isApplicable(clazz)) {
+                result.add(npd);
+            }
+        }
+        return result;
     }
 
     /**

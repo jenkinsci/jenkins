@@ -71,7 +71,8 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
     @Extension
 	public static class DescriptorImpl extends NodePropertyDescriptor {
-		@Override
+
+        @Override
 		public String getDisplayName() {
 			return Messages.EnvironmentVariablesNodeProperty_displayName();
 		}

@@ -26,37 +26,40 @@ package hudson.model;
 import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
 import hudson.Launcher;
+import hudson.Extension;
+import hudson.slaves.NodeSpecific;
+import hudson.tools.ToolInstallation;
+import hudson.tools.ToolDescriptor;
+import hudson.tools.ToolLocationNodeProperty;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.List;
 
 /**
  * Information about JDK installation.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class JDK {
-    private final String name;
-    private final String javaHome;
+public final class JDK extends ToolInstallation implements NodeSpecific<JDK> {
+    @Deprecated // kept for backward compatibility - use getHome() instead
+    private String javaHome;
 
     public JDK(String name, String javaHome) {
-        this.name = name;
-        this.javaHome = javaHome;
+        super(name, javaHome);
     }
 
     /**
      * install directory.
      */
     public String getJavaHome() {
-        return javaHome;
+        return getHome();
     }
 
-    /**
-     * Human readable display name.
-     */
-    public String getName() {
-        return name;
+    public String getHome() {
+        if (javaHome != null) return javaHome;
+        return super.getHome();
     }
 
     /**
@@ -92,9 +95,18 @@ public final class JDK {
         // see EnvVars javadoc for why this adss PATH.
         env.put("PATH+JDK",getBinDir().getPath());
 
-        env.put("JAVA_HOME",javaHome);
+        env.put("JAVA_HOME",getJavaHome());
         if(!env.containsKey("HUDSON_HOME"))
             env.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath() );
+    }
+
+    public JDK forNode(Node node) {
+        String newHome = ToolLocationNodeProperty.getToolHome(node, this);
+        if (newHome != null) {
+            return new JDK(getName(), newHome);
+        } else {
+            return this;
+        }
     }
 
     /**
@@ -114,5 +126,25 @@ public final class JDK {
         } catch (InterruptedException e) {
             return false;
         }
+    }
+
+    @Extension
+    public static class DescriptorImpl extends ToolDescriptor<JDK> {
+
+        public String getDisplayName() {
+            return "Java Development Kit";
+        }
+
+        public JDK[] getInstallations() {
+            return Hudson.getInstance().getJDKs().toArray(new JDK[0]);
+        }
+
+        // this isn't really synchronized well since the list is Hudson.jdks :(
+        public synchronized void setInstallations(JDK... jdks) {
+            List<JDK> list = Hudson.getInstance().getJDKs();
+            list.clear();
+            for (JDK jdk: jdks) list.add(jdk);
+        }
+
     }
 }

@@ -123,8 +123,19 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             try {
                 List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(project.getBuildWrappers().values());
                 
-                Node node = Computer.currentComputer().getNode();
-                NodeProperty.setup(node, buildEnvironments, Build.this, launcher, listener);
+                for (NodeProperty nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
+                    Environment environment = nodeProperty.setUp(Build.this, launcher, listener);
+                    if (environment != null) {
+                        buildEnvironments.add(environment);
+                    }
+                }
+
+                for (NodeProperty nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
+                    Environment environment = nodeProperty.setUp(Build.this, launcher, listener);
+                    if (environment != null) {
+                        buildEnvironments.add(environment);
+                    }
+                }
 
                 ParametersAction parameters = getAction(ParametersAction.class);
                 if (parameters != null)

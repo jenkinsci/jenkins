@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
 import hudson.Launcher;
+import hudson.tools.ToolLocationNodeProperty;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -56,6 +57,7 @@ import org.kohsuke.stapler.Stapler;
  * @see NodeDescriptor
  */
 public abstract class Node extends AbstractModelObject implements Describable<Node>, ExtensionPoint, AccessControlled {
+
     public String getDisplayName() {
         return getNodeName(); // default implementation
     }
@@ -194,13 +196,6 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     // used in the Jelly script to expose descriptors
     public List<NodePropertyDescriptor> getNodePropertyDescriptors() {
         return NodeProperty.for_(this);
-    }
-    /**
-     * @deprecated
-     *      Check with Tom to see if we really need this method.
-     */
-    public <N extends NodeProperty<?>> N getNodeProperty(Class<N> clazz) {
-        return getNodeProperties().get(clazz);
     }
     
     public ACL getACL() {

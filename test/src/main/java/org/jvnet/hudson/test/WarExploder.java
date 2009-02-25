@@ -67,7 +67,14 @@ final class WarExploder {
     private static File explode() throws Exception {
         // are we in the hudson main workspace? If so, pick up hudson/main/war/resources
         // this saves the effort of packaging a war file and makes the debug cycle faster
+
         File d = new File(".").getAbsoluteFile();
+
+        // just in case we were started from hudson instead of from hudson/main/...
+        if (new File(d, "main/war/target/hudson").exists()) {
+            return new File(d, "main/war/target/hudson");
+        }
+
         for( ; d!=null; d=d.getParentFile()) {
             if(!d.getName().equals("main")) continue;
             if(new File(d,".hudson").exists())

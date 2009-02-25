@@ -403,9 +403,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient final List<Action> actions = new CopyOnWriteArrayList<Action>();
 
     /**
-     * List of global/master node properties
+     * List of master node properties
      */
     private DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(this);
+
+    /**
+     * List of global properties
+     */
+    private DescribableList<NodeProperty<?>,NodePropertyDescriptor> globalNodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(this);
 
     /**
      * {@link AdministrativeMonitor}s installed on this system.
@@ -1238,6 +1243,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     	return nodeProperties;
     }
 
+    public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getGlobalNodeProperties() {
+    	return globalNodeProperties;
+    }
+
     /**
      * Resets all labels and remove invalid ones.
      */
@@ -2051,7 +2060,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             clouds.rebuildHetero(req,json, Cloud.all(), "cloud");
 
-            nodeProperties.rebuild(req, json.getJSONObject("nodeProperties"), NodeProperty.for_(this));
+            JSONObject np = json.getJSONObject("globalNodeProperties");
+            if (np != null) {
+                globalNodeProperties.rebuild(req, np, NodeProperty.for_(this));
+            }
 
             save();
             if(result)

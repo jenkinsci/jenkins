@@ -44,7 +44,7 @@ import org.jvnet.tiger_types.Types;
 public abstract class NodePropertyDescriptor extends Descriptor<NodeProperty<?>> {
     /**
      * Returns true if this {@link NodeProperty} type is applicable to the
-     * given job type.
+     * given node type.
      * 
      * <p>
      * The default implementation of this method checks if the given node type is assignable to 'N' of

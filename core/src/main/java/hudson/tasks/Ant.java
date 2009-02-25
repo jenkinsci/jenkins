@@ -25,17 +25,24 @@ package hudson.tasks;
 
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.EnvironmentSpecific;
+import hudson.model.Hudson;
+import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
+import hudson.slaves.NodeSpecific;
+import hudson.tools.ToolDescriptor;
+import hudson.tools.ToolInstallation;
+import hudson.tools.ToolLocationNodeProperty;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormFieldValidator;
 import hudson.util.VariableResolver;
@@ -47,7 +54,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
 
@@ -135,13 +141,16 @@ public class Ant extends Builder {
         env.overrideAll(build.getEnvVars());
         
         AntInstallation ai = getAnt();
+        if (ai != null) {
+            ai = ai.forNode(Computer.currentComputer().getNode());
+        }
         if(ai==null) {
             args.add(launcher.isUnix() ? "ant" : "ant.bat");
         } else {
         	ai = ai.forEnvironment(env);
             String exe = ai.getExecutable(launcher);
             if (exe==null) {
-                listener.fatalError(Messages.Ant_ExecutableNotFound(ai.name));
+                listener.fatalError(Messages.Ant_ExecutableNotFound(ai.getName()));
                 return false;
             }
             args.add(exe);
@@ -316,13 +325,13 @@ public class Ant extends Builder {
 		}
     }
 
-    public static final class AntInstallation implements Serializable, EnvironmentSpecific<AntInstallation> {
-        private final String name;
+    public static final class AntInstallation extends ToolInstallation implements
+            EnvironmentSpecific<AntInstallation>, NodeSpecific<AntInstallation> {
         private final String antHome;
 
         @DataBoundConstructor
         public AntInstallation(String name, String home) {
-            this.name = name;
+            super(name, launderHome(home));
             if(home.endsWith("/") || home.endsWith("\\"))
                 // see https://issues.apache.org/bugzilla/show_bug.cgi?id=26947
                 // Ant doesn't like the trailing slash, especially on Windows
@@ -330,18 +339,26 @@ public class Ant extends Builder {
             this.antHome = home;
         }
 
+        private static String launderHome(String home) {
+            if(home.endsWith("/") || home.endsWith("\\")) {
+                // see https://issues.apache.org/bugzilla/show_bug.cgi?id=26947
+                // Ant doesn't like the trailing slash, especially on Windows
+                return home.substring(0,home.length()-1);
+            } else {
+                return home;
+            }
+        }
+
         /**
          * install directory.
          */
         public String getAntHome() {
-            return antHome;
+            return getHome();
         }
 
-        /**
-         * Human readable display name.
-         */
-        public String getName() {
-            return name;
+        public String getHome() {
+            if (antHome != null) return antHome;
+            return super.getHome();
         }
 
         /**
@@ -381,7 +398,36 @@ public class Ant extends Builder {
         private static final long serialVersionUID = 1L;
 
 		public AntInstallation forEnvironment(EnvVars environment) {
-			return new AntInstallation(name, environment.expand(antHome));
+			return new AntInstallation(getName(), environment.expand(antHome));
 		}
+
+        public AntInstallation forNode(Node node) {
+            String newHome = ToolLocationNodeProperty.getToolHome(node, this);
+            if (newHome != null) {
+                return new AntInstallation(getName(), newHome);
+            } else {
+                return this;
+            }
+        }
+
+        @Extension
+        public static class DescriptorImpl extends ToolDescriptor<AntInstallation> {
+
+            @Override
+            public String getDisplayName() {
+                return "Ant";
+            }
+
+            @Override
+            public AntInstallation[] getInstallations() {
+                return Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
+            }
+
+            @Override
+            public void setInstallations(AntInstallation... installations) {
+                Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(installations);
+            }
+        }
+
      }
 }

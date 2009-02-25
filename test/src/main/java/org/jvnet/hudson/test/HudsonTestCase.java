@@ -43,6 +43,7 @@ import hudson.model.Run;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.UpdateCenter;
+import hudson.model.AbstractProject;
 import hudson.model.Node.Mode;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.DumbSlave;
@@ -50,6 +51,7 @@ import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
+import hudson.tasks.Ant;
 import hudson.tasks.Publisher;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ProcessTreeKiller;
@@ -159,7 +161,7 @@ public abstract class HudsonTestCase extends TestCase {
      * <p>
      * Unlike Java debugger, which you as a human interfaces directly and interactively,
      * this JavaScript debugger is to be interfaced by your program (or through the
-     * expression evaluation capability of your Java debugger.) 
+     * expression evaluation capability of your Java debugger.)
      */
     protected JavaScriptDebugger jsDebugger = new JavaScriptDebugger();
 
@@ -173,6 +175,7 @@ public abstract class HudsonTestCase extends TestCase {
     protected void setUp() throws Exception {
         env.pin();
         recipe();
+        AbstractProject.WORKSPACE.toString();
         hudson = newHudson();
         hudson.setNoUsageStatistics(true); // collecting usage stats from tests are pointless.
         hudson.servletContext.setAttribute("app",hudson);
@@ -318,6 +321,26 @@ public abstract class HudsonTestCase extends TestCase {
                 new File(mvnHome,"maven-2.0.7").getAbsolutePath());
 		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
 		return mavenInstallation;
+    }
+
+    /**
+     * Extracts Ant and configures it.
+     */
+    protected Ant.AntInstallation configureDefaultAnt() throws Exception {
+        FilePath ant = hudson.getRootPath().createTempFile("ant", "zip");
+        OutputStream os = ant.write();
+        try {
+            IOUtils.copy(HudsonTestCase.class.getClassLoader().getResourceAsStream("apache-ant-1.7.1-bin.zip"), os);
+        } finally {
+            os.close();
+        }
+        File antHome = createTmpDir();
+        ant.unzip(new FilePath(antHome));
+
+        Ant.AntInstallation antInstallation = new Ant.AntInstallation("default",
+                new File(antHome,"apache-ant-1.7.1").getAbsolutePath());
+		hudson.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
+		return antInstallation;
     }
 
 //

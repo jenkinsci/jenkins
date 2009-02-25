@@ -96,6 +96,7 @@ public class MavenTest extends HudsonTestCase {
 		project.setJDK(varJDK);
 
 		Build<?,?> build = project.scheduleBuild2(0).get();
+        
 		Assert.assertEquals(Result.SUCCESS, build.getResult());
 
 	}

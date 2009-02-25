@@ -90,13 +90,10 @@ THE SOFTWARE.
                        title="${%statsBlurb}"
                        help="/help/system-config/usage-statistics.html" />
 
-	  <j:set var="propertyDescriptors" value="${it.nodePropertyDescriptors}" />
-	  <j:if test="${!empty(propertyDescriptors)}">
-	    <f:descriptorList title="${%Global properties}"
-	    				  name="nodeProperties"
-	                      descriptors="${propertyDescriptors}"
-	                      instances="${it.nodeProperties}" />
-		</j:if>
+        <f:descriptorList title="${%Global properties}"
+                          name="globalNodeProperties"
+                          descriptors="${h.getNodePropertyDescriptors(it.class)}"
+                          instances="${it.globalNodeProperties}" />
 
       <f:section title="${%JDKs}">
         <f:entry title="${%JDK installations}"

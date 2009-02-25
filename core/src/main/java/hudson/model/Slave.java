@@ -488,17 +488,4 @@ public abstract class Slave extends Node implements Serializable {
 
         private static final long serialVersionUID = 1L;
     }
-
-//    static {
-//        ConvertUtils.register(new Converter(){
-//            public Object convert(Class type, Object value) {
-//                if (value != null) {
-//                System.out.println("CVT: " + type + " from (" + value.getClass() + ") " + value);
-//                } else {
-//                    System.out.println("CVT: " + type + " from " + value);
-//                }
-//                return null;  //To change body of implemented methods use File | Settings | File Templates.
-//            }
-//        }, ComputerLauncher.class);
-//    }
 }

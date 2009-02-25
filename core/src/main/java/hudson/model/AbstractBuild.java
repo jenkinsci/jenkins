@@ -431,8 +431,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         env.put("CLASSPATH","");
 
         JDK jdk = project.getJDK();
-        if(jdk !=null)
+        if(jdk != null) {
+            Computer computer = Computer.currentComputer();
+            if (computer != null) { // just in case were not in a build
+                jdk = jdk.forNode(computer.getNode());            
+            }
             jdk.buildEnvVars(env);
+        }
         project.getScm().buildEnvVars(this,env);
 
         if(buildEnvironments!=null)

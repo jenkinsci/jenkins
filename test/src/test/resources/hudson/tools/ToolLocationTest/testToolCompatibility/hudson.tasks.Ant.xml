@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.tasks.Ant_-DescriptorImpl>
+  <installations>
+    <hudson.tasks.Ant_-AntInstallation>
+      <name>Ant 1</name>
+      <antHome>foo</antHome>
+    </hudson.tasks.Ant_-AntInstallation>
+  </installations>
+</hudson.tasks.Ant_-DescriptorImpl>

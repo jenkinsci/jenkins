@@ -93,25 +93,6 @@ public abstract class NodeProperty<N extends Node> implements Describable<NodePr
     public Environment setUp( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
     	return new Environment() {};
     }
-    
-    public static void setup(Node node, List<Environment> buildEnvironments, AbstractBuild build, Launcher launcher, BuildListener listener) 
-    throws IOException, InterruptedException {
-    	if (node != Hudson.getInstance()) {
-    		for (NodeProperty nodeProperty: Hudson.getInstance().getNodeProperties()) {
-    			Environment environment = nodeProperty.setUp(build, launcher, listener);
-    			if (environment != null) {
-    				buildEnvironments.add(environment);
-    			}
-    		}
-    	}
-    	
-		for (NodeProperty nodeProperty: node.getNodeProperties()) {
-			Environment environment = nodeProperty.setUp(build, launcher, listener);
-			if (environment != null) {
-				buildEnvironments.add(environment);
-			}
-		}
-    }
 
     /**
      * Lists up all the registered {@link NodeDescriptor}s in the system.

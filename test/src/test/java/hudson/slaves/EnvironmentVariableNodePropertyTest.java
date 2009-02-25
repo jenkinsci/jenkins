@@ -49,9 +49,11 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	 * Master properties are available
 	 */
 	public void testMasterPropertyOnMaster() throws Exception {
-		setVariables(Hudson.getInstance(), new Entry("KEY", "masterValue"));
+        hudson.getGlobalNodeProperties().replaceBy(
+                Collections.singleton(new EnvironmentVariablesNodeProperty(
+                        new Entry("KEY", "masterValue"))));
 
-		Map<String, String> envVars = executeBuild(Hudson.getInstance());
+		Map<String, String> envVars = executeBuild(hudson);
 
 		Assert.assertEquals("masterValue", envVars.get("KEY"));
 	}
@@ -60,7 +62,9 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	 * Both slave and master properties are available, but slave properties have priority
 	 */
 	public void testSlaveAndMasterPropertyOnSlave() throws Exception {
-		setVariables(Hudson.getInstance(), new Entry("KEY", "masterValue"));
+        hudson.getGlobalNodeProperties().replaceBy(
+                Collections.singleton(new EnvironmentVariablesNodeProperty(
+                        new Entry("KEY", "masterValue"))));
 		setVariables(slave, new Entry("KEY", "slaveValue"));
 
 		Map<String, String> envVars = executeBuild(slave);
@@ -79,7 +83,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 				new StringParameterDefinition("KEY", "parameterValue"));
 		project.addProperty(pdp);
 
-		setVariables(Hudson.getInstance(), new Entry("KEY", "masterValue"));
+		setVariables(hudson, new Entry("KEY", "masterValue"));
 		setVariables(slave, new Entry("KEY", "slaveValue"));
 
 		Map<String, String> envVars = executeBuild(slave);
@@ -88,23 +92,27 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	}
 	
 	public void testVariableResolving() throws Exception {
-		setVariables(Hudson.getInstance(), new Entry("KEY1", "value"), new Entry("KEY2", "$KEY1"));
-		Map<String,String> envVars = executeBuild(Hudson.getInstance());
+        hudson.getGlobalNodeProperties().replaceBy(
+                Collections.singleton(new EnvironmentVariablesNodeProperty(
+                        new Entry("KEY1", "value"), new Entry("KEY2", "$KEY1"))));
+		Map<String,String> envVars = executeBuild(hudson);
 		Assert.assertEquals("value", envVars.get("KEY1"));
 		Assert.assertEquals("value", envVars.get("KEY2"));
 	}
 	
 	public void testFormRoundTripForMaster() throws Exception {
-		setVariables(hudson, new Entry("KEY", "value"));
+        hudson.getGlobalNodeProperties().replaceBy(
+                Collections.singleton(new EnvironmentVariablesNodeProperty(
+                        new Entry("KEY", "value"))));
 		
 		WebClient webClient = new WebClient();
 		HtmlPage page = webClient.getPage(hudson, "configure");
 		HtmlForm form = page.getFormByName("config");
 		submit(form);
 		
-		Assert.assertEquals(1, hudson.getNodeProperties().toList().size());
+		Assert.assertEquals(1, hudson.getGlobalNodeProperties().toList().size());
 		
-		EnvironmentVariablesNodeProperty prop = hudson.getNodeProperty(EnvironmentVariablesNodeProperty.class);
+		EnvironmentVariablesNodeProperty prop = hudson.getGlobalNodeProperties().get(EnvironmentVariablesNodeProperty.class);
 		Assert.assertEquals(1, prop.getEnvVars().size());
 		Assert.assertEquals("value", prop.getEnvVars().get("KEY"));
 	}
@@ -119,7 +127,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 		
 		Assert.assertEquals(1, slave.getNodeProperties().toList().size());
 		
-		EnvironmentVariablesNodeProperty prop = slave.getNodeProperty(EnvironmentVariablesNodeProperty.class);
+		EnvironmentVariablesNodeProperty prop = slave.getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
 		Assert.assertEquals(1, prop.getEnvVars().size());
 		Assert.assertEquals("value", prop.getEnvVars().get("KEY"));
 	}
