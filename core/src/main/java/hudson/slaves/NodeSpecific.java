@@ -25,10 +25,22 @@
 package hudson.slaves;
 
 import hudson.model.Node;
+import hudson.model.EnvironmentSpecific;
 
 /**
+ * Represents any concept that can be adapted for a node.
+ *
+ * Mainly for documentation purposes.
+ *
  * @author huybrechts
+ * @since 1.286
+ * @see EnvironmentSpecific
+ * @param <T>
+ *      Concrete type that represents the thing that can be adapted.
  */
-public interface NodeSpecific<T extends NodeSpecific<?>> {
+public interface NodeSpecific<T extends NodeSpecific<T>> {
+    /**
+     * Returns a specialized copy of T for functioning in the given node.
+     */
     T forNode(Node node);
 }
