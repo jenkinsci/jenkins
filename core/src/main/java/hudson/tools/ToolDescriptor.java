@@ -25,8 +25,6 @@
 package hudson.tools;
 
 import hudson.model.Descriptor;
-import hudson.model.Describable;
-import hudson.tasks.BuildStep;
 
 /**
  * {@link Descriptor} for {@link ToolInstallation}.
@@ -38,10 +36,22 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
 
     private T[] installations;
 
-    public T[] getInstallations() {                 
+    /**
+     * Configured instances of {@link ToolInstallation}s.
+     *
+     * @return
+     *      can be empty but never null. Treat this as a read-only copy, do not mutate.
+     */
+    public T[] getInstallations() {
         return installations;
     }
 
+    /**
+     * Overwrites {@link ToolInstallation}s.
+     *
+     * @return
+     *      can be empty but never null.
+     */
     public void setInstallations(T[] installations) {
         this.installations = installations;
     }
