@@ -27,9 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.MarkupText;
 import hudson.ExtensionListView;
 import hudson.Extension;
-import hudson.DescriptorExtensionList;
 import hudson.ExtensionList;
-import hudson.slaves.RetentionStrategy;
 import hudson.util.CopyOnWriteList;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.model.AbstractBuild;
@@ -88,14 +86,14 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      *      Prefer automatic registration via {@link Extension}
      */
     public final void register() {
-        annotators.add(this);
+        all().add(this);
     }
 
     /**
      * Unregisters this annotator, so that Hudson stops using this object.
      */
     public final boolean unregister() {
-        return annotators.remove(this);
+        return all().remove(this);
     }
 
     /**
