@@ -54,7 +54,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -122,7 +121,7 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String label="";
     
-	private final DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Hudson.getInstance());
+	private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Hudson.getInstance());
 
     /**
      * Lazily computed set of labels from {@link #label}.
@@ -416,6 +415,8 @@ public abstract class Slave extends Node implements Serializable {
                     ? new JNLPLauncher()
                     : new CommandLauncher(agentCommand);
         }
+        if(nodeProperties==null)
+            nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Hudson.getInstance());
         return this;
     }
 
