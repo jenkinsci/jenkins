@@ -81,6 +81,16 @@ public class ExtensionListView {
                 // index ignored
                 storage().add(t);
             }
+
+            @Override
+            public T remove(int index) {
+                return storage().remove(index);
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                return storage().remove(o);
+            }
         };
     }
 
@@ -100,9 +110,7 @@ public class ExtensionListView {
 
             @Override
             public boolean remove(T t) {
-                // silently ignore, because we don't support that and some plugins might be
-                // kind enough to unregister
-                return false;
+                return storage().remove(t);
             }
 
             @Override
