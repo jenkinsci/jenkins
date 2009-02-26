@@ -61,12 +61,12 @@ import hudson.ExtensionFinder.Sezpoz;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.286
- * @see Sezpoz
+ * @see <a href="https://sezpoz.dev.java.net/nonav/">SezPoz</a>
  * @see ExtensionFinder
  * @see ExtensionList
  */
 @Indexable
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 @Target({TYPE, FIELD, METHOD})
 @Documented
 public @interface Extension {

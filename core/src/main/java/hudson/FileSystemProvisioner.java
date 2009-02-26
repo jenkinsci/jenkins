@@ -192,7 +192,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      */
     @Extension
     public static final class Default extends FileSystemProvisioner {
-        private Default() {}
+        public Default() {}
 
         public void prepareWorkspace(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
         }
