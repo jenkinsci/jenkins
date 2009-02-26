@@ -162,7 +162,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
     private boolean useUpdate;
     private final SubversionRepositoryBrowser browser;
-	 private String excludedRegions;
+    private String excludedRegions;
 
     // No longer in use but left for serialization compatibility.
     @Deprecated
@@ -197,7 +197,7 @@ public class SubversionSCM extends SCM implements Serializable {
 
         this.useUpdate = useUpdate;
         this.browser = browser;
-	     this.excludedRegions = excludedRegions;
+        this.excludedRegions = excludedRegions;
     }
 
     /**
