@@ -33,6 +33,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
+import hudson.model.Hudson;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -147,8 +148,19 @@ public class ArtifactArchiver extends Recorder {
         return true;
     }
 
+    /**
+     * @deprecated as of 1.286
+     *      Some plugin depends on this, so this field is left here and points to the last created instance.
+     *      Use {@link Hudson#getDescriptorByType(Class)} instead.
+     */
+    public static volatile DescriptorImpl DESCRIPTOR;
+
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        public DescriptorImpl() {
+            DESCRIPTOR = this; // backward compatibility
+        }
+
         public String getDisplayName() {
             return Messages.ArtifactArchiver_DisplayName();
         }
