@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.ListIterator;
 import java.util.AbstractList;
+import java.util.Arrays;
 
 /**
  * Varios {@link Iterator} implementations.
@@ -204,6 +205,22 @@ public class Iterators {
     }
 
     /**
+     * Casts {@link Iterator} by taking advantage of its covariant-ness.
+     */
+    @SuppressWarnings({"unchecked"})
+    public static <T> Iterator<T> cast(Iterator<? extends T> itr) {
+        return (Iterator)itr;
+    }
+
+    /**
+     * Casts {@link Iterable} by taking advantage of its covariant-ness.
+     */
+    @SuppressWarnings({"unchecked"})
+    public static <T> Iterable<T> cast(Iterable<? extends T> itr) {
+        return (Iterable)itr;
+    }
+
+    /**
      * Creates a read-only mutator that disallows {@link Iterator#remove()}.
      */
     public static <T> Iterator<T> readOnly(final Iterator<T> itr) {
@@ -218,6 +235,24 @@ public class Iterators {
 
             public void remove() {
                 throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    /**
+     * Returns an {@link Iterable} that iterates over all the given {@link Iterable}s.
+     *
+     * <p>
+     * That is, this creates {A,B,C,D} from {A,B},{C,D}.
+     */
+    public static <T> Iterable<T> sequence( final Iterable<? extends T>... iterables ) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new FlattenIterator<T,Iterable<? extends T>>(Arrays.asList(iterables)) {
+                    protected Iterator<T> expand(Iterable<? extends T> iterable) {
+                        return cast(iterable).iterator();
+                    }
+                };
             }
         };
     }
