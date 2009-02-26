@@ -29,8 +29,9 @@ import org.acegisecurity.ldap.DefaultInitialDirContextFactory
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
 import hudson.model.Hudson
-import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator
+import hudson.security.LDAPSecurityRealm.AuthoritiesPopulatorImpl
 import hudson.Util
+import javax.naming.Context
 
 /*
     Configure LDAP as the authentication realm.
@@ -44,6 +45,7 @@ initialDirContextFactory(DefaultInitialDirContextFactory, instance.getLDAPURL() 
     managerDn = instance.managerDN;
     managerPassword = instance.getManagerPassword();
   }
+  extraEnvVars = [(Context.REFERRAL):"follow"];
 }
 
 ldapUserSearch(FilterBasedLdapUserSearch, instance.userSearchBase, instance.userSearch, initialDirContextFactory) {
@@ -59,7 +61,7 @@ bindAuthenticator(BindAuthenticator2,initialDirContextFactory) {
     userSearch = ldapUserSearch;
 }
 
-authoritiesPopulator(DefaultLdapAuthoritiesPopulator, initialDirContextFactory, Util.fixNull(instance.groupSearchBase)) {
+authoritiesPopulator(AuthoritiesPopulatorImpl, initialDirContextFactory, Util.fixNull(instance.groupSearchBase)) {
     // see DefaultLdapAuthoritiesPopulator for other possible configurations
     searchSubtree = true;
 }

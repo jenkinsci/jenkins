@@ -61,7 +61,7 @@ public final class ContainerAuthentication implements Authentication {
                 if(request.isUserInRole(g))
                     l.add(new GrantedAuthorityImpl(g));
             }
-            l.add(AUTHENTICATED);
+            l.add(SecurityRealm.AUTHENTICATED_AUTHORITY);
             authorities = l.toArray(new GrantedAuthority[l.size()]);
         }
         return authorities;
@@ -90,6 +90,4 @@ public final class ContainerAuthentication implements Authentication {
     public String getName() {
         return getPrincipal();
     }
-
-    private static final GrantedAuthorityImpl AUTHENTICATED = new GrantedAuthorityImpl("authenticated");
 }

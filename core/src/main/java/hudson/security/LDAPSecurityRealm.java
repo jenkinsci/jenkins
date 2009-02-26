@@ -36,6 +36,7 @@ import hudson.util.Scrambler;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
@@ -47,6 +48,7 @@ import org.acegisecurity.ldap.LdapDataAccessException;
 import org.acegisecurity.ldap.InitialDirContextFactory;
 import org.acegisecurity.ldap.LdapTemplate;
 import org.acegisecurity.providers.ldap.LdapAuthoritiesPopulator;
+import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -66,6 +68,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.Set;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -404,6 +407,20 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 LOGGER.log(Level.FINE, "Failed to look up LDAP for e-mail address",e);
                 return null;
             }
+        }
+    }
+
+    /**
+     * {@link LdapAuthoritiesPopulator} that adds the automatic 'authenticated' role.
+     */
+    public static final class AuthoritiesPopulatorImpl extends DefaultLdapAuthoritiesPopulator {
+        public AuthoritiesPopulatorImpl(InitialDirContextFactory initialDirContextFactory, String groupSearchBase) {
+            super(initialDirContextFactory, groupSearchBase);
+        }
+
+        @Override
+        protected Set getAdditionalRoles(LdapUserDetails ldapUser) {
+            return Collections.singleton(AUTHENTICATED_AUTHORITY);
         }
     }
 

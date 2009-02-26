@@ -37,6 +37,8 @@ import hudson.util.PluginServletFilter;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
+import org.acegisecurity.GrantedAuthorityImpl;
+import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
 import org.acegisecurity.userdetails.UserDetailsService;
@@ -413,4 +415,10 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
 
 
     private static final Logger LOGGER = Logger.getLogger(SecurityRealm.class.getName());
+
+    /**
+     * {@link GrantedAuthority} that represents the built-in "authenticated" role, which is granted to
+     * anyone non-anomyous.
+     */
+    public static final GrantedAuthority AUTHENTICATED_AUTHORITY = new GrantedAuthorityImpl("authenticated");
 }

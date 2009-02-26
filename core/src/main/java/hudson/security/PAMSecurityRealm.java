@@ -91,7 +91,7 @@ public class PAMSecurityRealm extends SecurityRealm {
                         throw new UsernameNotFoundException("No such Unix user: "+username);
                     // return some dummy instance
                     return new User(username,"",true,true,true,true,
-                            new GrantedAuthority[]{new GrantedAuthorityImpl("authenticated")});
+                            new GrantedAuthority[]{AUTHENTICATED_AUTHORITY});
                 }
             }
         );

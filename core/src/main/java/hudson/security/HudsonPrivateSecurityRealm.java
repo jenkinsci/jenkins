@@ -245,7 +245,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
     }
 
     // TODO
-    private static final GrantedAuthority[] TEST_AUTHORITY = {new GrantedAuthorityImpl("authenticated")};
+    private static final GrantedAuthority[] TEST_AUTHORITY = {AUTHENTICATED_AUTHORITY};
 
     public static final class SignupInfo {
         public String username,password1,password2,fullname,email,captcha;
