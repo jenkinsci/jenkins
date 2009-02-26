@@ -52,6 +52,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -385,12 +386,15 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             } catch (AbortException e) {
                 // error should have been already reported.
                 return Result.FAILURE;
-            } catch (IOException e) {
-                e.printStackTrace(listener.error(Messages.MavenModuleSetBuild_FailedToParsePom()));
-                return Result.FAILURE;
+            } catch (InterruptedIOException e) {
+                listener.error("Aborted");
+                return Result.ABORTED;
             } catch (InterruptedException e) {
                 listener.error("Aborted");
                 return Result.ABORTED;
+            } catch (IOException e) {
+                e.printStackTrace(listener.error(Messages.MavenModuleSetBuild_FailedToParsePom()));
+                return Result.FAILURE;
             } catch (RunnerAbortedException e) {
                 return Result.FAILURE;
             } catch (RuntimeException e) {
