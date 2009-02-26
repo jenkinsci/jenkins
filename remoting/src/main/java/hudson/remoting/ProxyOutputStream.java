@@ -203,7 +203,7 @@ final class ProxyOutputStream extends OutputStream {
      * Unlike {@link EOF}, this just unexports but not closes the stream.
      */
     private static class Unexport extends Command {
-        protected final int oid;
+        private final int oid;
 
         public Unexport(int oid) {
             this.oid = oid;
@@ -223,10 +223,13 @@ final class ProxyOutputStream extends OutputStream {
     /**
      * {@link Command} for sending EOF.
      */
-    private static final class EOF extends Unexport {
+    private static final class EOF extends Command {
+        private final int oid;
+
         public EOF(int oid) {
-            super(oid);
+            this.oid = oid;
         }
+
 
         protected void execute(Channel channel) {
             OutputStream os = (OutputStream) channel.getExportedObject(oid);
