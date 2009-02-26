@@ -29,6 +29,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.Callable;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
@@ -51,6 +52,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -574,15 +576,30 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     /**
      * Dumps the contents of the export table.
      */
-    public void doDumpExportTable( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doDumpExportTable( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         // this is a debug probe and may expose sensitive information
         checkPermission(Hudson.ADMINISTER);
 
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("UTF-8");
         PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req));
+        w.println("Master to slave");
         ((Channel)getChannel()).dumpExportTable(w);
+        w.flush(); // flush here once so that even if the dump from the slave fails, the client gets some useful info
+
+        w.println("\n\n\nSlave to master");
+        w.print(getChannel().call(new DumpExportTableTask()));
         w.close();
+    }
+
+    private static final class DumpExportTableTask implements Callable<String,IOException> {
+        public String call() throws IOException {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            Channel.current().dumpExportTable(pw);
+            pw.close();
+            return sw.toString();
+        }
     }
 
     /**
