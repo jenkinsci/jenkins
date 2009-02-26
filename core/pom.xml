@@ -570,8 +570,8 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
-      <artifactId>groovy</artifactId>
-      <version>1.5.7</version>
+      <artifactId>groovy-all</artifactId>
+      <version>1.6.0</version>
     </dependency>
     <dependency>
       <!--
