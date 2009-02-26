@@ -103,6 +103,7 @@ import hudson.util.HudsonIsRestarting;
 import hudson.util.DescribableList;
 import hudson.util.Futures;
 import hudson.util.Memoizer;
+import hudson.util.Iterators;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -691,7 +692,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * this just doesn't scale.
      */
     public Descriptor getDescriptor(String fullyQualifiedClassName) {
-        for( Descriptor d : getExtensionList(Descriptor.class) )
+        // legacy descriptors that are reigstered manually doesn't show up in getExtensionList, so check them explicitly.
+        for( Descriptor d : Iterators.sequence(getExtensionList(Descriptor.class),DescriptorExtensionList.listLegacyInstances()) )
             if(d.clazz.getName().equals(fullyQualifiedClassName))
                 return d;
         return null;

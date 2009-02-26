@@ -130,6 +130,11 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
         add(element); // order is ignored
     }
 
+    @Override
+    public boolean remove(Object o) {
+        return store().remove(o);
+    }
+
     /**
      * Gets the actual data store. This is the key to control the dual-mode nature of {@link DescriptorList}
      */

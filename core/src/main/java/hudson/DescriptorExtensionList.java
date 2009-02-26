@@ -29,12 +29,15 @@ import hudson.model.Hudson;
 import hudson.model.ViewDescriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.util.Memoizer;
+import hudson.util.Iterators;
+import hudson.util.Iterators.FlattenIterator;
 import hudson.slaves.NodeDescriptor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Publisher.DescriptorExtensionListImpl;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.lang.reflect.Type;
@@ -138,13 +141,28 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     /**
-     * Stores manually registered Descriptor instances.
+     * Stores manually registered Descriptor instances. Keyed by the {@link Describable} type.
      */
     private static final Memoizer<Class,CopyOnWriteArrayList> legacyDescriptors = new Memoizer<Class,CopyOnWriteArrayList>() {
         public CopyOnWriteArrayList compute(Class key) {
             return new CopyOnWriteArrayList();
         }
     };
+
+    /**
+     * List up all the legacy instances currently in use.
+     */
+    public static Iterable<Descriptor> listLegacyInstances() {
+        return new Iterable<Descriptor>() {
+            public Iterator<Descriptor> iterator() {
+                return new FlattenIterator<Descriptor,CopyOnWriteArrayList>(legacyDescriptors.values()) {
+                    protected Iterator expand(CopyOnWriteArrayList v) {
+                        return v.iterator();
+                    }
+                };
+            }
+        };
+    }
 
     private static final Logger LOGGER = Logger.getLogger(DescriptorExtensionList.class.getName());
 }

@@ -36,6 +36,7 @@ import hudson.search.SearchTest;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
+import hudson.tasks.BuildStep;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Ant.DescriptorImpl;
 import org.jvnet.hudson.test.Email;
@@ -144,5 +145,23 @@ public class HudsonTest extends HudsonTestCase {
 
         // the master computer object should be still here
         wc.goTo("computer/(master)/");
+    }
+
+    /**
+     * Legacy descriptors should be visible in the /descriptor/xyz URL.
+     */
+    @Email("http://www.nabble.com/1.286-version-and-description-The-requested-resource-%28%29-is-not--available.-td22233801.html")
+    public void testLegacyDescriptorLookup() throws Exception {
+        Descriptor dummy = new Descriptor(HudsonTest.class) {
+            public String getDisplayName() {
+                return "dummy";
+            }
+        };
+
+        BuildStep.PUBLISHERS.addRecorder(dummy);
+        assertSame(dummy,hudson.getDescriptor(HudsonTest.class.getName()));
+
+        BuildStep.PUBLISHERS.remove(dummy);
+        assertNull(hudson.getDescriptor(HudsonTest.class.getName()));
     }
 }

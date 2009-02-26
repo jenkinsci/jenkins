@@ -65,4 +65,11 @@ public abstract class Memoizer<K,V> {
     public void clear() {
         store.clear();
     }
+
+    /**
+     * Provides a snapshot view of all {@code V}s.
+     */
+    public Iterable<V> values() {
+        return store.values();
+    }
 }

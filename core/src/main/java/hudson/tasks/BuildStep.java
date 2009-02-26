@@ -219,5 +219,10 @@ public interface BuildStep {
         public Iterator<Descriptor<Publisher>> iterator() {
             return core.iterator();
         }
+
+        @Override
+        public boolean remove(Object o) {
+            return core.remove(o);
+        }
     }
 }
