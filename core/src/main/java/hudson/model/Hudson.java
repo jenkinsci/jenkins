@@ -1655,6 +1655,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Creates a new job.
+     *
+     * <p>
+     * This version infers the descriptor from the type of the top-level item.
+     *
+     * @throws IllegalArgumentException
+     *      if the project of the given name already exists.
+     */
+    public synchronized <T extends TopLevelItem> T createProject( Class<T> type, String name ) throws IOException {
+        return type.cast(createProject((TopLevelItemDescriptor)getDescriptor(type),name));
+    }
+
+    /**
      * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
      */
     /*package*/ void deleteJob(TopLevelItem item) throws IOException {
