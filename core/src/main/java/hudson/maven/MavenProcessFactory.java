@@ -304,7 +304,13 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         args.add(mvn.getMavenHome());
 
         // remoting.jar
-        args.add(launcher.getChannel().call(new GetRemotingJar()));
+        String remotingJar = launcher.getChannel().call(new GetRemotingJar());
+        if(remotingJar==null) {// this shouldn't be possible, but there are still reports indicating this, so adding a probe here.
+            listener.error("Failed to determine the location of slave.jar");
+            throw new RunnerAbortedException();
+        }
+        args.add(remotingJar);
+
         // interceptor.jar
         args.add(isMaster?
             Which.jarFile(hudson.maven.agent.PluginManagerInterceptor.class).getAbsolutePath():
