@@ -37,6 +37,7 @@ import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.SCM;
+import hudson.scm.NullChangeLogParser;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
@@ -305,6 +306,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         private boolean checkout(BuildListener listener) throws Exception {
+            // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
+            // in case check out fails and leaves a broken changelog.xml behind.
+            // see http://www.nabble.com/CVSChangeLogSet.parse-yields-SAXParseExceptions-when-parsing-bad-*AccuRev*-changelog.xml-files-td22213663.html
+            AbstractBuild.this.scm = new NullChangeLogParser();
+
             if(!project.checkout(AbstractBuild.this,launcher,listener,new File(getRootDir(),"changelog.xml")))
                 return true;
 
