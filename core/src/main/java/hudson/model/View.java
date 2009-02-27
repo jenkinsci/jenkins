@@ -27,6 +27,8 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.Plugin;
+import hudson.widgets.Widget;
 import hudson.model.Descriptor.FormException;
 import static hudson.model.Hudson.checkGoodName;
 import hudson.scm.ChangeLogSet.Entry;
@@ -166,6 +168,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     public String getDisplayName() {
         return getViewName();
+    }
+
+    /**
+     * Gets the {@link Widget}s registered on this object.
+     *
+     * <p>
+     * For now, this just returns the widgets registered to Hudson.
+     */
+    public List<Widget> getWidgets() {
+        return Collections.unmodifiableList(Hudson.getInstance().getWidgets());
     }
 
     /**
