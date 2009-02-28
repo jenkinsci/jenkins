@@ -292,71 +292,87 @@ public class Queue extends ResourceController implements Saveable {
     public synchronized boolean add(AbstractProject p, int quietPeriod) {
         return add((Task) p, quietPeriod);
     }
-
+    
     /**
      * Schedules an execution of a task.
      *
      * @param quietPeriod Number of seconds that the task will be placed in queue.
      *                    Useful when the same task is likely scheduled for multiple
      *                    times.
+     * @return true if the project 'p' is actually added to the queue.
+     *         false if the queue contained it and therefore the add()
+     *         was noop, or just changed the due date of the task.
      * @since 1.114
      */
-    public synchronized boolean add(Task p, int quietPeriod, List<Action> actions) {
-        Item item = getItem(p);
-        Calendar due = new GregorianCalendar();
-        due.add(Calendar.SECOND, quietPeriod);
-        if (item != null) {
-        	
-        	boolean shouldSchedule = false;
-        	for (Action action: item.getActions()) {
-        		if (action instanceof QueueAction)
-        			shouldSchedule |= ((QueueAction) action).shouldSchedule(actions);
-        	}
-        	for (Action action: actions) {
-        		if (action instanceof QueueAction) {
-        			shouldSchedule |= ((QueueAction) action).shouldSchedule(item.getActions());
-        		}
-        	}
-        	if (shouldSchedule) {
-        		//TODO rework the if-s to only have this once
-                LOGGER.fine(p.getFullDisplayName() + " added to queue");
+    private synchronized boolean add(Task p, int quietPeriod, List<Action> actions) {
+    	boolean taskConsumed=false;
+    	List<Item> items = getItems(p);
+    	Calendar due = new GregorianCalendar();
+    	due.add(Calendar.SECOND, quietPeriod);
 
-                // put the item in the queue
-                waitingList.add(new WaitingItem(due,p,actions));
-        	} else {
-	            if (!(item instanceof WaitingItem))
-	                // already in the blocked or buildable stage
-	                // no need to requeue
-	                return false;
-	
-	            WaitingItem wi = (WaitingItem) item;
-	
-	            if(quietPeriod<=0) {
-	                // the user really wants to build now, and they mean NOW.
-	                // so let's pull in the timestamp if we can.
-	                if (wi.timestamp.before(due))
-	                    return false;
-	            } else {
-	                // otherwise we do the normal quiet period implementation
-	                if (wi.timestamp.after(due))
-	                    return false;
-	                // quiet period timer reset. start the period over again
-	            }
-	        	
-	            // waitingList is sorted, so when we change a timestamp we need to maintain order
-	            waitingList.remove(wi);
-	            wi.timestamp = due;
-	            waitingList.add(wi);
-        	}
-        } else {
-            LOGGER.fine(p.getFullDisplayName() + " added to queue");
+    	List<Item> duplicatesInQueue = new ArrayList<Item>();
+    	for(Item item : items) {
+    		boolean shouldScheduleItem = false;
+    		for (Action action: item.getActions()) {
+    			if (action instanceof QueueAction)
+    				shouldScheduleItem |= ((QueueAction) action).shouldSchedule(actions);
+    		}
+    		for (Action action: actions) {
+    			if (action instanceof QueueAction) {
+    				shouldScheduleItem |= ((QueueAction) action).shouldSchedule(item.getActions());
+    			}
+    		}
+    		if(!shouldScheduleItem) {
+    			duplicatesInQueue.add(item);
+    		}
+    	}
+    	if (duplicatesInQueue.size() == 0) {
+    		LOGGER.fine(p.getFullDisplayName() + " added to queue");
 
-            // put the item in the queue
-            waitingList.add(new WaitingItem(due,p,actions));
+    		// put the item in the queue
+    		waitingList.add(new WaitingItem(due,p,actions));
+    		taskConsumed=true;
+    	} else {
+    		// the requested build is already queued, so will not be added
+    		List<WaitingItem> waitingDuplicates = new ArrayList<WaitingItem>();
+    		for(Item item : duplicatesInQueue) {
+    			for(Action a : actions) {
+    				if(a instanceof FoldableAction) {
+    					((FoldableAction)a).foldIntoExisting(item.task, item.getActions());
+    				}
+    			}
+    			if ((item instanceof WaitingItem))
+    				waitingDuplicates.add((WaitingItem)item);
+    		}
+    		if(duplicatesInQueue.size() == 0) {
+    			// all duplicates in the queue are already in the blocked or 
+    			// buildable stage no need to requeue
+    			return false;
+    		}
+    		// TODO: avoid calling scheduleMaintenance() if none of the waiting items 
+    		// actually change
+    		for(WaitingItem wi : waitingDuplicates) {
+    			if(quietPeriod<=0) {
+    				// the user really wants to build now, and they mean NOW.
+    				// so let's pull in the timestamp if we can.
+    				if (wi.timestamp.before(due))
+    					continue;
+    			} else {
+    				// otherwise we do the normal quiet period implementation
+    				if (wi.timestamp.after(due))
+    					continue;
+    				// quiet period timer reset. start the period over again
+    			}
 
-        }
-        scheduleMaintenance();   // let an executor know that a new item is in the queue.
-        return true;
+    			// waitingList is sorted, so when we change a timestamp we need to maintain order
+    			waitingList.remove(wi);
+    			wi.timestamp = due;
+    			waitingList.add(wi);
+    		}
+
+    	}
+    	scheduleMaintenance();   // let an executor know that a new item is in the queue.
+    	return taskConsumed;
     }
     
     public synchronized boolean add(Task p, int quietPeriod) {

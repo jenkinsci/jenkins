@@ -23,24 +23,33 @@
  */
 package hudson.model;
 
+import hudson.model.Queue.Task;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 @ExportedBean
-public class CauseAction implements Action {
-	private Cause cause;
+public class CauseAction implements FoldableAction {
+	@Deprecated
+	// there can be multiple causes, so this is deprecated
+	private transient Cause cause;
+	
+	private List<Cause> causes = new ArrayList<Cause>();
 
 	@Exported(visibility=2)
-	public Cause getCause() {
-		return cause;
+	public List<Cause> getCauses() {
+		return causes;
 	}
-	
-	public String getShortDescription() {
-		return cause.getShortDescription();
-	}
-	
+		
 	public CauseAction(Cause c) {
-		this.cause = c;
+		this.causes.add(c);
+	}
+	
+	public CauseAction(CauseAction ca) {
+		this.causes.addAll(ca.causes);
 	}
 	
 	public String getDisplayName() {
@@ -55,4 +64,24 @@ public class CauseAction implements Action {
 	public String getUrlName() {
 		return "cause";
 	}
+
+	public void foldIntoExisting(Task t, List<Action> actions) {
+		for(Action action : actions) {
+			if(action instanceof CauseAction) {
+				this.causes.addAll(((CauseAction)action).causes);
+				return;
+			}
+		}
+		// no CauseAction found, so add a copy of this one
+		actions.add(new CauseAction(this));
+	}
+	
+	private Object readResolve() {
+		// if we are being read in from an older version
+		if(cause != null) {
+			if(causes == null) causes=new ArrayList<Cause>();
+			causes.add(cause);
+		}
+		return this;
+	} 
 }

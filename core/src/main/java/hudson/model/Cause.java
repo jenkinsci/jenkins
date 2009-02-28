@@ -23,6 +23,10 @@
  */
 package hudson.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -53,14 +57,16 @@ public abstract class Cause {
 	public static class UpstreamCause extends Cause {
 		private String upstreamProject, upstreamUrl;
 		private int upstreamBuild;
-		private Cause upstreamCause;
+		@Deprecated
+		private transient Cause upstreamCause;
+		private List<Cause> upstreamCauses = new ArrayList<Cause>();
 		
 		public UpstreamCause(AbstractBuild<?, ?> up) {
 			upstreamBuild = up.getNumber();
 			upstreamProject = up.getProject().getName();
 			upstreamUrl = up.getProject().getUrl();
 			CauseAction ca = up.getAction(CauseAction.class);
-			upstreamCause = ca == null ? null : ca.getCause();
+			upstreamCauses = ca == null ? null : ca.getCauses();
 		}
 
         public String getUpstreamProject() {
@@ -78,6 +84,15 @@ public abstract class Cause {
 		@Override
 		public String getShortDescription() {
 			return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, upstreamBuild);
+		}
+		
+		private Object readResolve() {
+			if(upstreamCause != null) {
+				if(upstreamCauses == null) upstreamCauses = new ArrayList<Cause>();
+				upstreamCauses.add(upstreamCause);
+				upstreamCause=null;
+			}
+			return this;
 		}
 	}
 

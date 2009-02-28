@@ -23,7 +23,9 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <t:summary icon="orange-square.gif">
-        <st:include page="description.jelly" it="${it.cause}" />
-    </t:summary>
+	<t:summary icon="orange-square.gif">
+		<j:forEach var="cause" items="${it.causes}">
+			<p><st:include page="description.jelly" it="${cause}"/></p>
+		</j:forEach>
+	</t:summary>
 </j:jelly>
