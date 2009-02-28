@@ -1062,13 +1062,16 @@ public class Functions {
      */
     public Tag findAncestorTag(Map attributes, String nsUri, String local) {
         Tag tag = (Tag) attributes.get("ownerTag");
-        while(tag!=null) {
+        if(tag==null)   return null;
+
+        while(true) {
             tag = TagSupport.findAncestorWithClass(tag.getParent(), StaplerDynamicTag.class);
+            if(tag==null)
+                return null;
             StaplerDynamicTag stag = (StaplerDynamicTag)tag;
             if(stag.getLocalName().equals(local) && stag.getNsUri().equals(nsUri))
                 return tag;
         }
-        return null;
     }
 
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
