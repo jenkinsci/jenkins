@@ -23,16 +23,15 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:entry title="${%Files to archive}" help="/help/tasks/artifactArchiver/includes.html">
-	  <f:textbox name="artifacts.artifacts" value="${instance.artifacts}"
-               checkUrl="'descriptorByName/ArtifactArchiver/check?value='+escape(this.value)" />
+	<f:entry title="${%Files to archive}" field="artifacts">
+	  <f:textbox />
 	</f:entry>
   <f:advanced>
-    <f:entry title="${%Excludes}" help="/help/tasks/artifactArchiver/excludes.html">
-      <f:textbox name="artifacts.excludes" value="${instance.excludes}"/>
+    <f:entry title="${%Excludes}" field="excludes">
+      <f:textbox />
     </f:entry>
-    <f:entry title="" help="/help/tasks/artifactArchiver/latestOnly.html">
-      <f:checkbox name="artifacts.latestOnly" checked="${instance.latestOnly}" />
+    <f:entry title="" field="latestOnly" >
+      <f:checkbox />
       <label class="attach-previous">${%lastBuildOnly}</label>
     </f:entry>
   </f:advanced>

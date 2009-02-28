@@ -165,14 +165,10 @@ public class ArtifactArchiver extends Recorder {
             return Messages.ArtifactArchiver_DisplayName();
         }
 
-        public String getHelpFile() {
-            return "/help/project-config/archive-artifact.html";
-        }
-
         /**
          * Performs on-the-fly validation on the file mask wildcard.
          */
-        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public void doCheckArtifacts(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             new FormFieldValidator.WorkspaceFileMask(req,rsp).process();
         }
 
