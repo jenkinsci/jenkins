@@ -25,7 +25,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   Starts a slave by launching an agent program through
   <a href="http://en.wikipedia.org/wiki/Java_Web_Start">JNLP</a>.
-  The launch in this case is initiated by the slave,
-  although it is possible to start a launch without GUI, for example
+  The launch in this case is initiated by the slave, thus slaves need not be
+  IP reachable from the master (e.g. behind the firewall.) 
+  It is still possible to start a launch without GUI, for example
   as a Windows service.
 </j:jelly>
