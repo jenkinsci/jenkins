@@ -229,4 +229,12 @@ public abstract class Plugin implements Saveable {
         return new XmlFile(Hudson.XSTREAM,
                 new File(Hudson.getInstance().getRootDir(),wrapper.getShortName()+".xml"));
     }
+
+    /**
+     * Dummy instance of {@link Plugin} to be used when a plugin didn't
+     * supply one on its own.
+     *
+     * @since 1.288
+     */
+    public static final Plugin NONE = new Plugin() {};
 }

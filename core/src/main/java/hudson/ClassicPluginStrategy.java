@@ -169,11 +169,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
 	}
 
 	public void load(PluginWrapper wrapper) throws IOException {
-        String className = wrapper.getPluginClass();
-        if(className ==null) {
-            throw new IOException("Plugin installation failed. No 'Plugin-Class' entry in the manifest of "+wrapper.getShortName());
-        }
-
 		loadPluginDependencies(wrapper.getDependencies(),
 				wrapper.getOptionalDependencies());
 
@@ -185,19 +180,25 @@ public class ClassicPluginStrategy implements PluginStrategy {
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(wrapper.classLoader);
         try {
-            try {
-                Class clazz = wrapper.classLoader.loadClass(className);
-                Object o = clazz.newInstance();
-                if(!(o instanceof Plugin)) {
-                    throw new IOException(className+" doesn't extend from hudson.Plugin");
+            String className = wrapper.getPluginClass();
+            if(className==null) {
+                // use the default dummy instance
+                wrapper.setPlugin(Plugin.NONE);
+            } else {
+                try {
+                    Class clazz = wrapper.classLoader.loadClass(className);
+                    Object o = clazz.newInstance();
+                    if(!(o instanceof Plugin)) {
+                        throw new IOException(className+" doesn't extend from hudson.Plugin");
+                    }
+                    wrapper.setPlugin((Plugin) o);
+                } catch (ClassNotFoundException e) {
+                    throw new IOException2("Unable to load " + className + " from " + wrapper.getShortName(),e);
+                } catch (IllegalAccessException e) {
+                    throw new IOException2("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
+                } catch (InstantiationException e) {
+                    throw new IOException2("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
                 }
-				wrapper.setPlugin((Plugin) o);
-            } catch (ClassNotFoundException e) {
-                throw new IOException2("Unable to load " + className + " from " + wrapper.getShortName(),e);
-            } catch (IllegalAccessException e) {
-                throw new IOException2("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
-            } catch (InstantiationException e) {
-                throw new IOException2("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
             }
 
             // initialize plugin
