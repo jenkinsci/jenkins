@@ -26,14 +26,20 @@ THE SOFTWARE.
   <st:documentation>
     &lt;input type="checkbox"> tag that takes true/false for @checked, which is more Jelly friendly.
 
-    <st:attribute name="name" use="required" />
-    <st:attribute name="checked" use="required" />
+    <st:attribute name="name" />
+    <st:attribute name="checked" />
     <st:attribute name="value" />
     <st:attribute name="id" />
     <st:attribute name="onclick" />
     <st:attribute name="class" />
+    <st:attribute name="field">
+      Used for databinding. TBD.
+    </st:attribute>
   </st:documentation>
-  <input type="checkbox" name="${attrs.name}" value="${attrs.value}"
+  <f:prepareDatabinding />
+  <input type="checkbox"
+         name="${h.defaulted(attrs.name,'_.'+attrs.field)}"
+         value="${attrs.value}"
          onclick="${attrs.onclick}" id="${attrs.id}" class="${h.ifThenElse(attrs.negative!=null,'negative',null)}"
-         checked="${h.ifThenElse(attrs.checked,'true',null)}"/>
+         checked="${h.ifThenElse(h.defaulted(attrs.checked,instance[attrs.field]),'true',null)}"/>
 </j:jelly>
