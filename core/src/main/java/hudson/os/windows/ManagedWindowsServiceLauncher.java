@@ -100,7 +100,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         try {
             PrintStream logger = listener.getLogger();
 
-            logger.println("Connecting to "+computer.getName());
+            logger.println(Messages.ManagedWindowsServiceLauncher_ConnectingTo(computer.getName()));
             JIDefaultAuthInfoImpl auth = createAuth();
             JISession session = JISession.createSession(auth);
             session.setGlobalSocketTimeout(60000);
@@ -111,30 +111,30 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 
             Win32Service slaveService = services.getService("hudsonslave");
             if(slaveService==null) {
-                logger.println("Installing the Hudson slave service");
+                logger.println(Messages.ManagedWindowsServiceLauncher_InstallingSlaveService());
                 if(!DotNet.isInstalled(2,0,computer.getName(), auth)) {
                     // abort the launch
-                    logger.println(".NET Framework 2.0 or later is required on this computer to run a Hudson slave as a Windows service");
+                    logger.println(Messages.ManagedWindowsServiceLauncher_DotNetRequired());
                     return;
                 }
     
                 remoteRoot.mkdirs();
 
                 // copy exe
-                logger.println("Copying hudson-slave.exe");
+                logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveExe());
                 copyAndClose(getClass().getResource("/windows-service/hudson.exe").openStream(),
                         new SmbFile(remoteRoot,"hudson-slave.exe").getOutputStream());
 
                 copySlaveJar(logger, remoteRoot);
 
                 // copy hudson-slave.xml
-                logger.println("Copying hudson-slave.xml");
+                logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveXml());
                 String xml = WindowsSlaveInstaller.generateSlaveXml("javaw.exe","-tcp %BASE%\\port.txt");
                 copyAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")),
                         new SmbFile(remoteRoot,"hudson-slave.xml").getOutputStream());
 
                 // install it as a service
-                logger.println("Registering the service");
+                logger.println(Messages.ManagedWindowsServiceLauncher_RegisteringService());
                 Document dom = new SAXReader().read(new StringReader(xml));
                 Win32Service svc = services.Get("Win32_Service").cast(Win32Service.class);
                 int r = svc.Create(
@@ -151,15 +151,15 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 copySlaveJar(logger, remoteRoot);                
             }
 
-            logger.println("Starting the service");
+            logger.println(Messages.ManagedWindowsServiceLauncher_StartingService());
             slaveService.start();
 
             // wait until we see the port.txt, but don't do so forever
-            logger.println("Waiting for the service to become ready");
+            logger.println(Messages.ManagedWindowsServiceLauncher_WaitingForService());
             SmbFile portFile = new SmbFile(remoteRoot, "port.txt");
             for( int i=0; !portFile.exists(); i++ ) {
                 if(i>=30) {
-                    listener.error("The service didn't respond. Perphaps it failed to launch?");
+                    listener.error(Messages.ManagedWindowsServiceLauncher_ServiceDidntRespond());
                     return;
                 }
                 Thread.sleep(1000);
@@ -167,7 +167,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             int p = readSmbFile(portFile);
 
             // connect
-            logger.println("Connecting to port "+p);
+            logger.println(Messages.ManagedWindowsServiceLauncher_ConnectingToPort(p));
             final Socket s = new Socket(computer.getName(),p);
 
             // ready
@@ -213,7 +213,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             SWbemServices services = WMI.connect(session, computer.getName());
             Win32Service slaveService = services.getService("hudsonslave");
             if(slaveService!=null) {
-                listener.getLogger().println("Stopping the service");
+                listener.getLogger().println(Messages.ManagedWindowsServiceLauncher_StoppingService());
                 slaveService.StopService();
             }
         } catch (UnknownHostException e) {
