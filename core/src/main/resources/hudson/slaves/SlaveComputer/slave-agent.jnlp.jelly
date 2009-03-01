@@ -70,18 +70,20 @@ THE SOFTWARE.
         <argument>-url</argument>
         <argument>${rootURL}</argument>
 
-        <!--
-          rootURL is based on the URL in the system config, but there has been
-          numerous reports about people moving Hudson to another place but
-          forgetting to update it. To improve the user experience in this regard,
-          let's also pass the URL that the browser sent us as well, so that the
-          JNLP Main class can try both.
+        <j:if test="${rootURL!=app.rootUrlFromRequest}">
+          <!--
+            rootURL is based on the URL in the system config, but there has been
+            numerous reports about people moving Hudson to another place but
+            forgetting to update it. To improve the user experience in this regard,
+            let's also pass the URL that the browser sent us as well, so that the
+            JNLP Main class can try both.
 
-          Note that rootURL is still necessary in various situations, such
-          as reverse HTTP proxy situation, which makes rootUrlFromRequest incorrect. 
-        -->
-        <argument>-url</argument>
-        <argument>${app.rootUrlFromRequest}</argument>
+            Note that rootURL is still necessary in various situations, such
+            as reverse HTTP proxy situation, which makes rootUrlFromRequest incorrect.
+          -->
+          <argument>-url</argument>
+          <argument>${app.rootUrlFromRequest}</argument>
+        </j:if>
       </application-desc>
     </jnlp>
   </l:isAdminOrTest>
