@@ -94,7 +94,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
         public String getDisplayName() {
-            return "Tool Locations";
+            return Messages.ToolLocationNodeProperty_DisplayName();
         }
 
         public DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> getToolDescriptors() {

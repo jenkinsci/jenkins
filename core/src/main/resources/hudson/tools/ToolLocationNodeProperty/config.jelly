@@ -1,7 +1,7 @@
 <!--
   ~ The MIT License
   ~
-  ~ Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts
+  ~ Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts, Seiji Sogabe
   ~
   ~ Permission is hereby granted, free of charge, to any person obtaining a copy
   ~ of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,10 @@
   -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:entry title="List of tool locations" help="/help/tools/tool-location-node-property.html">
+	<f:entry title="${%List of tool locations}" help="/help/tools/tool-location-node-property.html">
 		<f:repeatable var="location" name="locations" items="${instance.locations}">
 			<table width="100%">
-				<f:entry title="Name">
+				<f:entry title="${%Name}">
                   <select class="setting-input" name="locations.key">
                     <j:forEach var="toolDescriptor" items="${descriptor.toolDescriptors}">
                         <j:forEach var="toolInstallation" items="${toolDescriptor.installations}">
@@ -35,7 +35,7 @@
                     </j:forEach>
                   </select>
 				</f:entry>
-				<f:entry title="Home">
+				<f:entry title="${%Home}">
 					<input class="setting-input" name="locations.home" type="text"
 						value="${location.home}" />
 				</f:entry>

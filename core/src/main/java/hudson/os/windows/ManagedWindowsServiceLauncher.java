@@ -237,7 +237,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     @Extension
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
         public String getDisplayName() {
-            return "Let Hudson control this Windows slave as a Windows service";
+            return Messages.ManagedWindowsServiceLauncher_DisplayName();
         }
     }
 

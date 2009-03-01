@@ -23,7 +23,5 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  Starts a slave by having Hudson execute a command from the master.
-  Use this when the master is capable of remotely executing a process
-  on a slave, such as through ssh/rsh.
+  ${%blurb}
 </j:jelly>
