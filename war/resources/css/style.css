@@ -113,6 +113,18 @@ table.center-align td {
     left: -20000px;
 }
 
+#shutdown-msg {
+    font-weight: bold;
+    color: white;
+    background-color: #ef2929;
+    text-align: center;
+    margin-left: 2em;
+    margin-right: 2em;
+    margin-bottom: 0.5em;
+    padding: 0.5em;
+    -moz-border-radius: 0.5em;
+}
+
 a:link {
   text-decoration: underline;
   color: #204A87;
