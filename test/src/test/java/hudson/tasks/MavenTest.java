@@ -30,11 +30,25 @@ import hudson.model.JDK;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
+import hudson.model.AbstractProject;
+import hudson.model.Job;
+import hudson.model.AbstractBuild;
+import hudson.model.Run;
+import hudson.model.Cause;
+import hudson.model.Action;
+import hudson.model.ParametersAction;
+import hudson.model.StringParameterValue;
+import hudson.model.Cause.LegacyCodeCause;
+import hudson.model.listeners.RunListener;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.EnvironmentVariablesNodeProperty.Entry;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.remoting.AsyncFutureImpl;
 
 import java.util.Collections;
+import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -47,92 +61,90 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  * @author Kohsuke Kawaguchi
  */
 public class MavenTest extends HudsonTestCase {
-	/**
-	 * Tests the round-tripping of the configuration.
-	 */
-	public void testConfigRoundtrip() throws Exception {
-		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(); // reset
+    /**
+     * Tests the round-tripping of the configuration.
+     */
+    public void testConfigRoundtrip() throws Exception {
+        hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(); // reset
 
-		FreeStyleProject p = createFreeStyleProject();
-		p.getBuildersList().add(new Maven("a", null, "b.pom", "c=d", "-e"));
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new Maven("a", null, "b.pom", "c=d", "-e"));
 
-		WebClient webClient = new WebClient();
-		HtmlPage page = webClient.getPage(p, "configure");
+        WebClient webClient = new WebClient();
+        HtmlPage page = webClient.getPage(p, "configure");
 
-		HtmlForm form = page.getFormByName("config");
-		submit(form);
+        HtmlForm form = page.getFormByName("config");
+        submit(form);
 
-		Maven m = p.getBuildersList().get(Maven.class);
-		assertNotNull(m);
-		assertEquals("a", m.targets);
-		assertNull("found " + m.mavenName, m.mavenName);
-		assertEquals("b.pom", m.pom);
-		assertEquals("c=d", m.properties);
-		assertEquals("-e", m.jvmOptions);
-	}
+        Maven m = p.getBuildersList().get(Maven.class);
+        assertNotNull(m);
+        assertEquals("a", m.targets);
+        assertNull("found " + m.mavenName, m.mavenName);
+        assertEquals("b.pom", m.pom);
+        assertEquals("c=d", m.properties);
+        assertEquals("-e", m.jvmOptions);
+    }
 
-	public void testWithNodeProperty() throws Exception {
-		MavenInstallation maven = configureDefaultMaven();
-		String mavenHome = maven.getMavenHome();
-		String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
-		String mavenVar = mavenHome.substring(0, 3);
-		MavenInstallation varMaven = new MavenInstallation("varMaven",
-				mavenHomeVar);
-		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
+    public void testWithNodeProperty() throws Exception {
+        MavenInstallation maven = configureDefaultMaven();
+        String mavenHome = maven.getMavenHome();
+        String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
+        String mavenVar = mavenHome.substring(0, 3);
+        MavenInstallation varMaven = new MavenInstallation("varMaven",
+                mavenHomeVar);
+        hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
 
-		JDK jdk = hudson.getJDK("default");
-		String javaHome = jdk.getJavaHome();
-		String javaHomeVar = "${VAR_JAVA}" + javaHome.substring(3);
-		String javaVar = javaHome.substring(0, 3);
-		JDK varJDK = new JDK("varJDK", javaHomeVar);
-		hudson.getJDKs().add(varJDK);
-		Hudson.getInstance().getNodeProperties().replaceBy(
-				Collections.singleton(new EnvironmentVariablesNodeProperty(
-						new Entry("VAR_MAVEN", mavenVar), new Entry("VAR_JAVA",
-								javaVar))));
+        JDK jdk = hudson.getJDK("default");
+        String javaHome = jdk.getJavaHome();
+        String javaHomeVar = "${VAR_JAVA}" + javaHome.substring(3);
+        String javaVar = javaHome.substring(0, 3);
+        JDK varJDK = new JDK("varJDK", javaHomeVar);
+        hudson.getJDKs().add(varJDK);
+        Hudson.getInstance().getNodeProperties().replaceBy(
+                Collections.singleton(new EnvironmentVariablesNodeProperty(
+                        new Entry("VAR_MAVEN", mavenVar), new Entry("VAR_JAVA",
+                                javaVar))));
 
-		FreeStyleProject project = createFreeStyleProject();
-		project.getBuildersList().add(new Maven("--help", varMaven.getName()));
-		project.setJDK(varJDK);
+        FreeStyleProject project = createFreeStyleProject();
+        project.getBuildersList().add(new Maven("--help", varMaven.getName()));
+        project.setJDK(varJDK);
 
-		Build<?,?> build = project.scheduleBuild2(0).get();
-        
-		Assert.assertEquals(Result.SUCCESS, build.getResult());
+        Build<?, ?> build = project.scheduleBuild2(0).get();
 
-	}
+        Assert.assertEquals(Result.SUCCESS, build.getResult());
 
-	public void testWithParameter() throws Exception {
-		MavenInstallation maven = configureDefaultMaven();
-		String mavenHome = maven.getMavenHome();
-		String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
-		String mavenVar = mavenHome.substring(0, 3);
-		MavenInstallation varMaven = new MavenInstallation("varMaven",
-				mavenHomeVar);
-		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
+    }
 
-		JDK jdk = hudson.getJDK("default");
-		String javaHome = jdk.getJavaHome();
-		String javaHomeVar = "${VAR_JAVA}" + javaHome.substring(3);
-		String javaVar = javaHome.substring(0, 3);
-		JDK varJDK = new JDK("varJDK", javaHomeVar);
-		hudson.getJDKs().add(varJDK);
+    public void testWithParameter() throws Exception {
+        MavenInstallation maven = configureDefaultMaven();
+        String mavenHome = maven.getMavenHome();
+        String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
+        String mavenVar = mavenHome.substring(0, 3);
+        MavenInstallation varMaven = new MavenInstallation("varMaven",
+                mavenHomeVar);
+        hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
 
-		FreeStyleProject project = createFreeStyleProject();
-		project.addProperty(new ParametersDefinitionProperty(
-				new StringParameterDefinition("VAR_MAVEN", "XXX"),
-				new StringParameterDefinition("VAR_JAVA", "XXX")));
-		project.getBuildersList().add(new Maven("--help", varMaven.getName()));
-		project.setJDK(varJDK);
+        JDK jdk = hudson.getJDK("default");
+        String javaHome = jdk.getJavaHome();
+        String javaHomeVar = "${VAR_JAVA}" + javaHome.substring(3);
+        String javaVar = javaHome.substring(0, 3);
+        JDK varJDK = new JDK("varJDK", javaHomeVar);
+        hudson.getJDKs().add(varJDK);
 
-		WebClient webClient = new WebClient();
-		webClient.getPage(project, "buildWithParameters?VAR_MAVEN=" + mavenVar
-				+ "&VAR_JAVA=" + javaVar);
+        FreeStyleProject project = createFreeStyleProject();
+        project.addProperty(new ParametersDefinitionProperty(
+                new StringParameterDefinition("VAR_MAVEN", "XXX"),
+                new StringParameterDefinition("VAR_JAVA", "XXX")));
+        project.getBuildersList().add(new Maven("--help", varMaven.getName()));
+        project.setJDK(varJDK);
 
-		Thread.sleep(2000);
+        Build build = project.scheduleBuild2(0, new LegacyCodeCause(),
+                new ParametersAction(
+                        new StringParameterValue("VAR_MAVEN", mavenVar),
+                        new StringParameterValue("VAR_JAVA", javaVar))).get();
 
-		Build<?,?> build = project.getLastBuild();
+        assertBuildStatusSuccess(build);
 
-		Assert.assertEquals(Result.SUCCESS, build.getResult());
+    }
 
-	}
 }

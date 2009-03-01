@@ -91,10 +91,15 @@ public class EnvVars extends TreeMap<String,String> {
         put(key,value);
     }
 
-    public void overrideAll(Map<String,String> all) {
+    /**
+     * Overrides all values in the map. See #override
+     * @return this
+     */
+    public EnvVars overrideAll(Map<String,String> all) {
         for (Map.Entry<String, String> e : all.entrySet()) {
             override(e.getKey(),e.getValue());
         }
+        return this;
     }
 
     /**
@@ -129,9 +134,9 @@ public class EnvVars extends TreeMap<String,String> {
      * @param channel
      *      Can be null, in which case the map indicating "N/A" will be returned.
      */
-    public static Map<String,String> getRemote(VirtualChannel channel) throws IOException, InterruptedException {
+    public static EnvVars getRemote(VirtualChannel channel) throws IOException, InterruptedException {
         if(channel==null)
-            return Collections.singletonMap("N/A","N/A");
+            return new EnvVars("N/A","N/A");
         return new EnvVars(channel.call(new GetEnvVars()));
     }
 

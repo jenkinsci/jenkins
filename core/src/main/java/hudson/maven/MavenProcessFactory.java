@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.AbortException;
+import hudson.EnvVars;
 import static hudson.Util.fixNull;
 import hudson.maven.agent.Main;
 import hudson.model.BuildListener;
@@ -81,7 +82,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
      * Environment variables to be set to the maven process.
      * The same variables are exposed to the system property as well.
      */
-    private final Map<String,String> envVars;
+    private final EnvVars envVars;
 
     /**
      * Optional working directory. Because of the process reuse, we can't always guarantee
@@ -93,7 +94,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
      */
     private final FilePath workDir;
 
-    MavenProcessFactory(MavenModuleSet mms, Launcher launcher, Map<String, String> envVars, FilePath workDir) {
+    MavenProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, FilePath workDir) {
         this.mms = mms;
         this.launcher = launcher;
         this.envVars = envVars;
@@ -281,11 +282,12 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             slaveRoot = getCurrentNode().getRootPath();
 
         ArgumentListBuilder args = new ArgumentListBuilder();
-        JDK jdk = mms.getJDK();
-        if(jdk==null)
+        JDK jdk = getJava();
+        if(jdk==null) {
             args.add("java");
-        else
-            args.add(jdk.getJavaHome()+"/bin/java");
+        } else {
+            args.add(jdk.getJavaHome()+"/bin/java"); // use JDK.getExecutable() here ?
+        }
 
         if(debugPort!=0)
             args.add("-Xrunjdwp:transport=dt_socket,server=y,address="+debugPort);
@@ -320,22 +322,20 @@ final class MavenProcessFactory implements ProcessCache.Factory {
     }
 
     public String getMavenOpts() {
-        String opts = mms.getMavenOpts();
-        if (opts == null)
-            return null;
-
-        for (String key : envVars.keySet())
-            opts = opts.replace("${" + key + "}", envVars.get(key));
-        
-        return opts;
+        return envVars.expand(mms.getMavenOpts());
     }
 
     public MavenInstallation getMavenInstallation() {
-        return mms.getMaven();
+        MavenInstallation mi = mms.getMaven();
+        if (mi != null) mi = mi.forNode(getCurrentNode()).forEnvironment(envVars);
+        return mi;
+
     }
 
     public JDK getJava() {
-        return mms.getJDK();
+        JDK jdk = mms.getJDK();
+        if (jdk != null) jdk = jdk.forNode(getCurrentNode()).forEnvironment(envVars);
+        return jdk;
     }
 
     /**

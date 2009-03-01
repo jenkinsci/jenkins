@@ -470,6 +470,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return rootPOM;
     }
 
+    public void setRootPOM(String rootPOM) {
+        this.rootPOM = rootPOM;
+    }
+
     public AbstractProject<?,?> asProject() {
         return this;
     }
@@ -483,6 +487,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             return "install";
         }
         return goals;
+    }
+
+    public void setGoals(String goals) {
+        this.goals = goals;
     }
 
     private List<String> getMavenArgument(String shortForm, String longForm) {
@@ -547,6 +555,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
                 return i;
         }
         return null;
+    }
+
+    public void setMaven(String mavenName) {
+        this.mavenName = mavenName;
     }
 
     /**

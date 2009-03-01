@@ -27,6 +27,7 @@ import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.EnvVars;
 import hudson.FilePath.FileCallable;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
@@ -40,6 +41,7 @@ import hudson.model.Fingerprint;
 import hudson.model.Hudson;
 import hudson.model.ParametersAction;
 import hudson.model.Result;
+import hudson.model.Computer;
 import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -309,7 +311,8 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         protected Result doRun(final BuildListener listener) throws Exception {
             PrintStream logger = listener.getLogger();
             try {
-                parsePoms(listener, logger);
+                EnvVars envVars = EnvVars.getRemote(launcher.getChannel());
+                parsePoms(listener, logger, envVars);
 
                 if(!project.isAggregatorStyleBuild()) {
                     // start module builds
@@ -341,18 +344,20 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         for (MavenModule m : project.sortedActiveModules)
                             proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(MavenModuleSetBuild.this,slistener));
 
+                        envVars.overrideAll(getEnvVars());
+
                         // run the complete build here
 
                         // figure out the root POM location.
                         // choice of module root ('ws' in this method) is somewhat arbitrary
                         // when multiple CVS/SVN modules are checked out, so also check
                         // the path against the workspace root if that seems like what the user meant (see issue #1293)
-                        FilePath pom = project.getModuleRoot().child(project.getRootPOM());
-                        FilePath parentLoc = project.getWorkspace().child(project.getRootPOM());
+                        String rootPOM = project.getRootPOM();
+                        FilePath pom = project.getModuleRoot().child(rootPOM);
+                        FilePath parentLoc = project.getWorkspace().child(rootPOM);
                         if(!pom.exists() && parentLoc.exists())
                             pom = parentLoc;
 
-                        Map<String,String> envVars = getEnvVars();
                         ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
                             new MavenProcessFactory(project,launcher,envVars,pom.getParent()));
 
@@ -360,7 +365,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         margs.add("-B").add("-f", pom.getRemote());
                         if(project.usesPrivateRepository())
                             margs.add("-Dmaven.repo.local="+project.getWorkspace().child(".repository"));
-                        margs.addTokenized(project.getGoals());
+                        margs.addTokenized(envVars.expand(project.getGoals()));
 
                         Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
                         MavenProbeAction mpa=null;
@@ -407,13 +412,14 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             }
         }
 
-        private void parsePoms(BuildListener listener, PrintStream logger) throws IOException, InterruptedException {
+        private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars) throws IOException, InterruptedException {
             logger.println("Parsing POMs");
             MavenInstallation mvn = project.getMaven();
             if(mvn==null) {
                 logger.println("A Maven configuration needs to be associated with this project. Please reconfigure this project");
                 throw new AbortException();
             }
+            mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode());
 
             List<PomInfo> poms;
             try {

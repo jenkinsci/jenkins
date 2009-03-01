@@ -209,13 +209,11 @@ public class Maven extends Builder {
 
             ArgumentListBuilder args = new ArgumentListBuilder();
             MavenInstallation mi = getMaven();
-            if (mi != null) {
-                mi = mi.forNode(Computer.currentComputer().getNode());
-            }
             if(mi==null) {
                 String execName = proj.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
                 args.add(execName);
             } else {
+                mi = mi.forNode(Computer.currentComputer().getNode());
             	mi = mi.forEnvironment(env);
                 String exec = mi.getExecutable(launcher);
                 if(exec==null) {

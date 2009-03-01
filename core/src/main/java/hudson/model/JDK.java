@@ -27,6 +27,7 @@ import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
 import hudson.Launcher;
 import hudson.Extension;
+import hudson.EnvVars;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
@@ -42,7 +43,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class JDK extends ToolInstallation implements NodeSpecific<JDK> {
+public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, EnvironmentSpecific<JDK> {
     @Deprecated // kept for backward compatibility - use getHome() instead
     private String javaHome;
 
@@ -102,6 +103,10 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK> {
 
     public JDK forNode(Node node) {
         return new JDK(getName(),ToolLocationNodeProperty.getToolHome(node, this));
+    }
+
+    public JDK forEnvironment(EnvVars environment) {
+        return new JDK(getName(), environment.expand(getHome()));
     }
 
     /**

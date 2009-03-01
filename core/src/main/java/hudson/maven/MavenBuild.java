@@ -25,6 +25,7 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.EnvVars;
 import hudson.maven.agent.AbortException;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -454,8 +455,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             if(debug)
                 listener.getLogger().println("Reporters="+reporters);
 
-            Map<String,String> envVars = getEnvVars();
-
+            EnvVars envVars = EnvVars.getRemote(launcher.getChannel()).overrideAll(getEnvVars());
+            
             ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener,
                 new MavenProcessFactory(getParent().getParent(),launcher,envVars,null));
 

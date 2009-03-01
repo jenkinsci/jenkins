@@ -1,6 +1,8 @@
 package hudson.tasks;
 
 import hudson.EnvVars;
+import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
@@ -37,18 +39,14 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(varMaven);
 
 		// Ant with a variable in its path
-		// TODO: create HudsonTestCase.configureDefaultAnt()
-        String guessedAntHome = guessAntHome();
-        if (guessedAntHome != null) {
-            AntInstallation antInstallation = new AntInstallation("varAnt",
-                    withVariable(guessedAntHome));
-            hudson.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
-        }
+        AntInstallation ant = configureDefaultAnt();
+        AntInstallation antInstallation = new AntInstallation("varAnt",
+                withVariable(ant.getHome()));
+        hudson.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
 
-		// createSlaves
+		// create slaves
 		EnvVars additionalEnv = new EnvVars(DUMMY_LOCATION_VARNAME, "");
 		slaveEnv = createSlave(new Label("slaveEnv"), additionalEnv);
-
 		slaveRegular = createSlave(new Label("slaveRegular"));
 	}
 
@@ -172,18 +170,35 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		assertFalse(buildLogEnv.contains(DUMMY_LOCATION_VARNAME));
 	}
 
-	public static String guessAntHome() {
-		String antHome = EnvVars.masterEnvVars.get("ANT_HOME");
-		if (antHome != null)
-			return antHome;
+    public void testNativeMavenOnSlave() throws Exception {
+        MavenModuleSet project = createMavenProject();
+        project.setJDK(hudson.getJDK("varJDK"));
+        project.setScm(new ExtractResourceSCM(getClass().getResource(
+                "/simple-projects.zip")));
 
-		// will break if PATH variable is not found (e.g. case sensitivity)
-		String[] sysPath = EnvVars.masterEnvVars.get("PATH").split(
-				File.pathSeparator);
-		for (String p : sysPath)
-			if (new File(p, "ant").isFile() || new File(p, "ant.bat").isFile())
-				return new File(p).getParent();
+        project.setMaven("varMaven");
+        project.setGoals("clean${" + DUMMY_LOCATION_VARNAME + "}");
 
-		throw new RuntimeException("cannot find Apache Ant");
-	}
+        // test the regular slave - variable not expanded
+        project.setAssignedLabel(slaveRegular.getSelfLabel());
+        MavenModuleSetBuild build = project.scheduleBuild2(0).get();
+        System.out.println(build.getDisplayName() + " completed");
+
+        assertBuildStatus(Result.FAILURE, build);
+
+        String buildLogRegular = build.getLog();
+        System.out.println(buildLogRegular);
+
+        // test the slave with prepared environment
+        project.setAssignedLabel(slaveEnv.getSelfLabel());
+        build = project.scheduleBuild2(0).get();
+        System.out.println(build.getDisplayName() + " completed");
+
+        assertBuildStatusSuccess(build);
+
+        // Check variable was expanded
+        String buildLogEnv = build.getLog();
+        System.out.println(buildLogEnv);
+        assertFalse(buildLogEnv.contains(DUMMY_LOCATION_VARNAME));
+    }
 }

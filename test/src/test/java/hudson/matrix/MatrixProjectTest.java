@@ -42,7 +42,8 @@ public class MatrixProjectTest extends HudsonTestCase {
      */
     public void testBuildAxisInAnt() throws Exception {
         MatrixProject p = createMatrixProject();
-        p.getBuildersList().add(new Ant("-Dprop=${db} test",null,null,null,null));
+        Ant.AntInstallation ant = configureDefaultAnt();
+        p.getBuildersList().add(new Ant("-Dprop=${db} test",ant.getName(),null,null,null));
 
         // we need a dummy build script that echos back our property
         p.setScm(new SingleFileSCM("build.xml","<project default='test'><target name='test'><echo>assertion ${prop}=${db}</echo></target></project>"));
