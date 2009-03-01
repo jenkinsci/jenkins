@@ -76,7 +76,6 @@ final class WarExploder {
         }
 
         for( ; d!=null; d=d.getParentFile()) {
-            if(!d.getName().equals("main")) continue;
             if(new File(d,".hudson").exists())
                 break;
         }
