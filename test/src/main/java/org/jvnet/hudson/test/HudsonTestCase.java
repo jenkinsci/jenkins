@@ -51,6 +51,7 @@ import hudson.slaves.RetentionStrategy;
 import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
 import hudson.tasks.Ant;
+import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamTaskListener;
@@ -328,21 +329,27 @@ public abstract class HudsonTestCase extends TestCase {
      * Extracts Ant and configures it.
      */
     protected Ant.AntInstallation configureDefaultAnt() throws Exception {
-        FilePath ant = hudson.getRootPath().createTempFile("ant", "zip");
-        OutputStream os = ant.write();
-        try {
-            IOUtils.copy(HudsonTestCase.class.getClassLoader().getResourceAsStream("apache-ant-1.7.1-bin.zip"), os);
-        } finally {
-            os.close();
-        }
-        File antHome = createTmpDir();
-        ant.unzip(new FilePath(antHome));
-        // TODO: switch to tar that preserves file permissions more easily
-        if(!Hudson.isWindows())
-            GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.7.1/bin/ant").getPath(),0755);
+        Ant.AntInstallation antInstallation;
+        if (System.getenv("ANT_HOME") != null) {
+            antInstallation = new AntInstallation("default", System.getenv("ANT_HOME"));
+        } else {
+            LOGGER.warning("Extracting a copy of Ant bundled in the test harness. " +
+                    "To avoid a performance hit, set the environment variable ANT_HOME to point to an  Ant installation.");
+            FilePath ant = hudson.getRootPath().createTempFile("ant", "zip");
+            OutputStream os = ant.write();
+            try {
+                IOUtils.copy(HudsonTestCase.class.getClassLoader().getResourceAsStream("apache-ant-1.7.1-bin.zip"), os);
+            } finally {
+                os.close();
+            }
+            File antHome = createTmpDir();
+            ant.unzip(new FilePath(antHome));
+            // TODO: switch to tar that preserves file permissions more easily
+            if(!Hudson.isWindows())
+                GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.7.1/bin/ant").getPath(),0755);
 
-        Ant.AntInstallation antInstallation = new Ant.AntInstallation("default",
-                new File(antHome,"apache-ant-1.7.1").getAbsolutePath());
+            antInstallation = new AntInstallation("default", new File(antHome,"apache-ant-1.7.1").getAbsolutePath());
+        }
 		hudson.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
 		return antInstallation;
     }
