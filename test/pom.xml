@@ -39,7 +39,8 @@ THE SOFTWARE.
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <forkMode>never</forkMode>
+          <!-- override with -DforkMode=pertest if you have "unable to create thread problems" on Windows -->
+          <forkMode>never</forkMode> 
           <!--<forkMode>once</forkMode>--><!-- fork is necessary for redirectTestOutputToFile -->
           <!--<reportFormat>plain</reportFormat>-->
           <!--<redirectTestOutputToFile>true</redirectTestOutputToFile>-->
