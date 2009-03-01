@@ -1063,8 +1063,11 @@ public class Queue extends ResourceController implements Saveable {
 
         @Override
         public String getWhy() {
-            Label label = task.getAssignedLabel();
             Hudson hudson = Hudson.getInstance();
+            if(hudson.isQuietingDown())
+                return Messages.Queue_HudsonIsAboutToShutDown();
+
+            Label label = task.getAssignedLabel();
             if (hudson.getNodes().isEmpty())
                 label = null;    // no master/slave. pointless to talk about nodes
 

@@ -1074,6 +1074,15 @@ public class Functions {
         }
     }
 
+    /**
+     * Prepend a prefix only when there's the specified body.
+     */
+    public String prepend(String prefix, String body) {
+        if(body!=null && body.length()>0)
+            return prefix+body;
+        return body;
+    }
+
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 
     /**

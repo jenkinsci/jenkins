@@ -29,23 +29,26 @@ THE SOFTWARE.
   <!-- pending build -->
   <j:set var="queuedItems" value="${it.queuedItems}" />
   <j:if test="${!pending.isEmpty()}">
-	  <j:forEach var="item" items="${queuedItems}" indexVar="i">
-    <j:set var="id" value="${h.generateId()}"/>
-    <tr class="build-row transitive" id="${id}">
-      <td nowrap="nowrap">
-        <img width="16" height="16" src="${imagesURL}/16x16/grey.gif" alt="${%pending}" /><st:nbsp/>
-        #${it.owner.nextBuildNumber+queuedItems.size()-i-1}
-      </td>
-      <td nowrap="nowrap" tooltip="${item.task.why}">
-        <div style="float:right">
-          <j:if test="${item.hasCancelPermission()}">
-            <a href="${rootURL}/queue/item/${item.id}/cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
-          </j:if>
-        </div>
-        (${%pending})
-      </td>
-    </tr>
-	  </j:forEach>
+    <j:forEach var="item" items="${queuedItems}" indexVar="i">
+      <j:set var="id" value="${h.generateId()}"/>
+      <tr class="build-row transitive" id="${id}">
+        <td nowrap="nowrap">
+          <img width="16" height="16" src="${imagesURL}/16x16/grey.gif" alt="${%pending}"/>
+          <st:nbsp/>
+          #${it.owner.nextBuildNumber+queuedItems.size()-i-1}
+        </td>
+        <td style="white-space:normal;">
+          <div style="float:right">
+            <j:if test="${item.hasCancelPermission()}">
+              <a href="${rootURL}/queue/item/${item.id}/cancelQueue">
+                <img src="${imagesURL}/16x16/stop.gif" alt="cancel this build"/>
+              </a>
+            </j:if>
+          </div>
+          (${%pending}${h.prepend(' - ',item.why)})
+        </td>
+      </tr>
+    </j:forEach>
   </j:if>
 
   <st:include page="/hudson/widgets/HistoryWidget/entries.jelly" />
