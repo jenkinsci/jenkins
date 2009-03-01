@@ -27,6 +27,7 @@ import hudson.FileSystemProvisioner;
 import hudson.FilePath;
 import hudson.WorkspaceSnapshot;
 import hudson.FileSystemProvisionerDescriptor;
+import hudson.Extension;
 import hudson.remoting.VirtualChannel;
 import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
@@ -96,6 +97,18 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
 
     public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
         throw new UnsupportedOperationException();
+    }
+
+    @Extension
+    public static final class DescriptorImpl extends FileSystemProvisionerDescriptor {
+        public boolean discard(FilePath ws, TaskListener listener) throws IOException, InterruptedException {
+            // TODO
+            return false;
+        }
+
+        public String getDisplayName() {
+            return "ZFS";
+        }
     }
 
     private static final long serialVersionUID = 1L;

@@ -190,10 +190,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      * Default implementation that doesn't rely on any file system specific capability,
      * and thus can be used anywhere that Hudson runs.
      */
-    @Extension
     public static final class Default extends FileSystemProvisioner {
-        public Default() {}
-
         public void prepareWorkspace(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
         }
 
@@ -218,6 +215,19 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
             public void restoreTo(AbstractBuild<?,?> owner, FilePath dst, TaskListener listener) throws IOException, InterruptedException {
                 File wss = new File(owner.getRootDir(),"workspace.zip");
                 new FilePath(wss).unzip(dst);
+            }
+        }
+
+        @Extension
+        public static final class DescriptorImpl extends FileSystemProvisionerDescriptor {
+            public boolean discard(FilePath ws, TaskListener listener) throws IOException, InterruptedException {
+                // the default provisioner doens't do anything special,
+                // so allow other types to manage it
+                return false;
+            }
+
+            public String getDisplayName() {
+                return "Default";
             }
         }
     }
