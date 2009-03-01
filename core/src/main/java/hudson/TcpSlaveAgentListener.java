@@ -197,12 +197,17 @@ public final class TcpSlaveAgentListener extends Thread {
 
             out.println("Welcome");
 
-            OutputStream log = computer.openLogFile();
+            final OutputStream log = computer.openLogFile();
             new PrintWriter(log).println("JNLP agent connected from "+ this.s.getInetAddress());
 
             computer.setChannel(new BufferedInputStream(this.s.getInputStream()), new BufferedOutputStream(this.s.getOutputStream()), log,
                 new Listener() {
                     public void onClosed(Channel channel, IOException cause) {
+                        try {
+                            log.close();
+                        } catch (IOException e) {
+                            e.printStackTrace(); 
+                        }
                         if(cause!=null)
                             LOGGER.log(Level.WARNING, "Connection #"+id+" terminated",cause);
                         try {
