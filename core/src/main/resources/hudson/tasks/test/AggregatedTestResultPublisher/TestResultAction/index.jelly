@@ -57,7 +57,7 @@ THE SOFTWARE.
         <j:forEach var="i" items="${it.didntRun}">
           <tr>
             <td class="pane">
-              <a href="${rootURL}${i.url}">${i.fullDisplayName}</a>
+              <a href="${rootURL}/${i.url}">${i.fullDisplayName}</a>
               (${%hasn't run yet})
             </td>
             <td class="pane">
