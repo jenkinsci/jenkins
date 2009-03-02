@@ -27,6 +27,7 @@ import hudson.Util;
 import hudson.slaves.NodeDescriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.node_monitors.NodeMonitor;
+import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -165,7 +166,13 @@ public final class ComputerSet extends AbstractModelObject {
         final Hudson app = Hudson.getInstance();
         app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
 
-        if (checkName(req, rsp, name)) return;
+        try {
+            checkName(name);
+        } catch (ParseException e) {
+            rsp.setStatus(SC_BAD_REQUEST);
+            sendError(e,req,rsp);
+            return;
+        }
 
         if(mode!=null && mode.equals("copy")) {
             Node src = app.getNode(from);
@@ -208,14 +215,16 @@ public final class ComputerSet extends AbstractModelObject {
         try {
             final Hudson app = Hudson.getInstance();
             app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
-
-            if (checkName(req, rsp, name)) return;
+            checkName(name);
 
             Node result = NodeDescriptor.all().find(type).newInstance(req, req.getSubmittedForm());
             app.addNode(result);
 
             // take the user back to the slave list top page
             rsp.sendRedirect2(".");
+        } catch (ParseException e) {
+            rsp.setStatus(SC_BAD_REQUEST);
+            sendError(e,req,rsp);
         } catch (FormException e) {
             sendError(e,req,rsp);
         }
@@ -224,27 +233,35 @@ public final class ComputerSet extends AbstractModelObject {
     /**
      * Makes sure that the given name is good as a slave name.
      */
-    private boolean checkName(StaplerRequest req, StaplerResponse rsp, String name) throws IOException, ServletException {
-        if(name==null) {
-            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST,"Query parameter 'name' is required");
-            return true;
-        }
+    private void checkName(String name) throws ParseException {
+        if(name==null)
+            throw new ParseException("Query parameter 'name' is required",0);
+
         name = name.trim();
+        Hudson.checkGoodName(name);
 
-        try {
-            Hudson.checkGoodName(name);
-        } catch (ParseException e) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(e,req,rsp);
-            return true;
-        }
+        if(Hudson.getInstance().getNode(name)!=null)
+            throw new ParseException(Messages.ComputerSet_SlaveAlreadyExists(name),0);
 
-        if(Hudson.getInstance().getNode(name)!=null) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(Messages.ComputerSet_SlaveAlreadyExists(name),req,rsp);
-            return true;
-        }
-        return false;
+        // looks good
+    }
+
+    /**
+     * Makes sure that the given name is good as a slave name.
+     */
+    public void doCheckName(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
+        new FormFieldValidator(req,rsp,Hudson.ADMINISTER) {  // TODO: new permission?
+            protected void check() throws IOException, ServletException {
+                if(Util.fixEmpty(value)==null)
+                    ok(); // nothing is entered yet
+                else try {
+                    checkName(value);
+                    ok();
+                } catch (ParseException e) {
+                    error(e.getMessage());
+                }
+            }
+        }.process();
     }
 
     public Api getApi() {

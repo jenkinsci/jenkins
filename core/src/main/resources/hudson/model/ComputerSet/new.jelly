@@ -31,11 +31,11 @@ THE SOFTWARE.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:layout norefresh="true" permission="${app.ADMINISTER}">
-		<st:include page="sidepanel.jelly" />
-		<l:main-panel>
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
       <j:getStatic var="slaves" className="hudson.slaves.NodeDescriptor" field="ALL" />
       <n:form nameTitle="${%Node name}" copyTitle="${%Copy Existing Node}" copyNames="${it._slaveNames}"
-              descriptors="${slaves}" xmlns:n="/lib/hudson/newFromList" />
+              descriptors="${slaves}" checkUrl="computer/checkName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

@@ -30,11 +30,12 @@ THE SOFTWARE.
     @nameTitle   : title of the name text field
     @copyTitle   : title of the copy option
     @copyNames   : options of names to choose from as the copy source. null to hide "copy" option
+    @checkUrl    : form field validation url
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <s:form method="post" action="createItem">
     <s:entry title="${nameTitle}">
-      <s:textbox id="name" name="name" checkUrl="'${rootURL}/itemExistsCheck?value='+escape(this.value)"
+      <s:textbox id="name" name="name" checkUrl="'${rootURL}/${checkUrl}?value='+escape(this.value)"
                  onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
       <script>$('name').focus();</script>
     </s:entry>
