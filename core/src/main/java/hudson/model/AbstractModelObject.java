@@ -57,6 +57,17 @@ public abstract class AbstractModelObject implements SearchableModelObject {
         rsp.forward(this,"error",req);
     }
 
+    /**
+     * @param pre
+     *      If true, the message is put in a PRE tag.
+     */
+    protected final void sendError(String message, StaplerRequest req, StaplerResponse rsp, boolean pre) throws ServletException, IOException {
+        req.setAttribute("message",message);
+        if(pre)
+            req.setAttribute("pre",true);
+        rsp.forward(this,"error",req);
+    }
+
     protected final void sendError(String message) throws ServletException, IOException {
         sendError(message,Stapler.getCurrentRequest(),Stapler.getCurrentResponse());
     }

@@ -946,7 +946,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             e.printStackTrace(pw);
 
             rsp.setStatus(SC_BAD_REQUEST);
-            sendError(sw.toString(), req, rsp);
+            sendError(sw.toString(), req, rsp, true);
         }
     }
 
