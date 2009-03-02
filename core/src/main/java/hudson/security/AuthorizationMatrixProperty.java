@@ -121,22 +121,24 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		@Override
 		public JobProperty<?> newInstance(StaplerRequest req,
 				JSONObject formData) throws FormException {
-			boolean useProjectSecurity = formData.has("useProjectSecurity");
-			AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty();
-			amp.setUseProjectSecurity(useProjectSecurity);
-			for (Map.Entry<String, Object> r : (Set<Map.Entry<String, Object>>) formData
-					.getJSONObject("data").entrySet()) {
-				String sid = r.getKey();
-				if (r.getValue() instanceof JSONObject) {
-					for (Map.Entry<String, Boolean> e : (Set<Map.Entry<String, Boolean>>) ((JSONObject) r
-							.getValue()).entrySet()) {
-						if (e.getValue()) {
-							Permission p = Permission.fromId(e.getKey());
-							amp.add(p, sid);
-						}
-					}
-				}
-			}
+            AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty();
+            formData = formData.getJSONObject("useProjectSecurity");
+
+            if(!formData.isNullObject()) {
+                amp.setUseProjectSecurity(true);
+                for (Map.Entry<String, Object> r : (Set<Map.Entry<String, Object>>) formData.getJSONObject("data").entrySet()) {
+                    String sid = r.getKey();
+                    if (r.getValue() instanceof JSONObject) {
+                        for (Map.Entry<String, Boolean> e : (Set<Map.Entry<String, Boolean>>) ((JSONObject) r
+                                .getValue()).entrySet()) {
+                            if (e.getValue()) {
+                                Permission p = Permission.fromId(e.getKey());
+                                amp.add(p, sid);
+                            }
+                        }
+                    }
+                }
+            }
 			return amp;
 		}
 
