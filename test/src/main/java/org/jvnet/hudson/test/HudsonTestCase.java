@@ -31,6 +31,7 @@ import hudson.EnvVars;
 import hudson.Launcher.LocalLauncher;
 import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenEmbedder;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
@@ -73,6 +74,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Arrays;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -86,6 +88,7 @@ import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.artifact.Artifact;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.recipes.Recipe.Runner;
@@ -571,11 +574,31 @@ public abstract class HudsonTestCase extends TestCase {
         recipes.add(new Runner() {
             @Override
             public void decorateHome(HudsonTestCase testCase, File home) throws Exception {
+                // make the plugin itself available
                 Manifest m = new Manifest(hpl.openStream());
                 String shortName = m.getMainAttributes().getValue("Short-Name");
                 if(shortName==null)
                     throw new Error(hpl+" doesn't have the Short-Name attribute");
                 FileUtils.copyURLToFile(hpl,new File(home,"plugins/"+shortName+".hpl"));
+
+                // make dependency plugins available
+                // TODO: probably better to read POM, but where to read from?
+                // TODO: this doesn't handle transitive dependencies
+                String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
+                if(dependencies!=null) {
+                    MavenEmbedder embedder = new MavenEmbedder(null);
+                    embedder.setClassLoader(getClass().getClassLoader());
+                    embedder.start();
+                    for( String dep : dependencies.split(",")) {
+                        String[] tokens = dep.split(":");
+                        Artifact a = embedder.createArtifact("org.jvnet.hudson.plugins", tokens[0], tokens[1], "compile"/*doesn't matter*/, "hpi");
+                        embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
+                        File dst = new File(home, "plugins/" + tokens[0] + ".hpi");
+                        if(!dst.exists() || dst.lastModified()!=a.getFile().lastModified())
+                            FileUtils.copyFile(a.getFile(), dst);
+                    }
+                    embedder.stop();
+                }
             }
         });
     }
