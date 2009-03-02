@@ -147,6 +147,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         return core.isEmpty();
     }
 
+    public int size() {
+        return core.size();
+    }
+
     /**
      * {@link Converter} implementation for XStream.
      */

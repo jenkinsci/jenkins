@@ -120,6 +120,10 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         return get(d)!=null;
     }
 
+    public int size() {
+        return data.size();
+    }
+
     /**
      * Removes an instance by its type.
      */
