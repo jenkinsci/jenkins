@@ -89,6 +89,13 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public void onStarted(R r, TaskListener listener) {}
 
     /**
+     * Called right before a build is going to be deleted.
+     *
+     * @param r The build.
+     */
+    public void onDeleted(R r) {}
+
+    /**
      * Registers this object as an active listener so that it can start getting
      * callbacks invoked.
      *
@@ -140,6 +147,16 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
                 l.onFinalized(r);
+        }
+    }
+
+    /**
+     * Fires the {@link #onFinalized(Run)} event.
+     */
+    public static void fireDeleted(Run r) {
+        for (RunListener l : all()) {
+            if(l.targetType.isInstance(r))
+                l.onDeleted(r);
         }
     }
 

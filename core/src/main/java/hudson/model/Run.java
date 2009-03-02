@@ -798,6 +798,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *      if we fail to delete.
      */
     public synchronized void delete() throws IOException {
+        RunListener.fireDeleted(this);
+
         // if we have a symlink, delete it, too
         File link = new File(project.getBuildDir(), String.valueOf(getNumber()));
         link.delete();
