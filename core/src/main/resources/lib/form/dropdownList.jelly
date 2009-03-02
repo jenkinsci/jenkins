@@ -79,7 +79,7 @@ THE SOFTWARE.
             ${description}
         </f:description>
     </j:if>
-    <j:if test="${help!=null}">
+    <j:if test="${attrs.help!=null}">
         <f:helpArea/>
     </j:if>
 </j:jelly>
