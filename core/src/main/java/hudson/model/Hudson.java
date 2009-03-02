@@ -1915,7 +1915,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             c.kill();
             pending.add(c.disconnect());
         }
-        udpBroadcastThread.shutdown();
+        if(udpBroadcastThread!=null)
+            udpBroadcastThread.shutdown();
         ExternalJob.reloadThread.interrupt();
         Trigger.timer.cancel();
         // TODO: how to wait for the completion of the last job?
