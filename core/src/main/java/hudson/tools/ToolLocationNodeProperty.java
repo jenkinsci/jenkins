@@ -83,11 +83,16 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
      *      never null.
      */
     public static String getToolHome(Node node, ToolInstallation installation) {
+        String result = null;
         ToolLocationNodeProperty property = node.getNodeProperties().get(ToolLocationNodeProperty.class);
         if (property != null) {
-            return property.getHome(installation);
+            result = property.getHome(installation);
         }
-        return installation.getHome();
+        if (result != null) {
+            return result;
+        } else {
+            return installation.getHome();
+        }
     }
 
     @Extension

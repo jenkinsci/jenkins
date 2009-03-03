@@ -33,6 +33,8 @@ import hudson.tasks.Shell;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.EnvVars;
+import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
 
 import java.io.IOException;
 
@@ -40,6 +42,7 @@ import junit.framework.Assert;
 
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.ExtractResourceSCM;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -140,6 +143,33 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
         build = project.scheduleBuild2(0).get();
         System.out.println(build.getLog());
         assertBuildStatus(Result.SUCCESS, build);
+    }
+
+    public void testNativeMaven() throws Exception {
+        MavenInstallation maven = configureDefaultMaven();
+        String mavenPath = maven.getHome();
+        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG"));
+
+        MavenModuleSet project = createMavenProject();
+        project.setScm(new ExtractResourceSCM(getClass().getResource(
+                "/simple-projects.zip")));
+        project.setAssignedLabel(slave.getSelfLabel());
+        project.setJDK(hudson.getJDK("default"));
+
+        project.setMaven("maven");
+        project.setGoals("clean");
+
+        Run build = project.scheduleBuild2(0).get();
+        assertBuildStatus(Result.FAILURE, build);
+
+        ToolLocationNodeProperty property = new ToolLocationNodeProperty(
+                new ToolLocationNodeProperty.ToolLocation(hudson.getDescriptorByType(MavenInstallation.DescriptorImpl.class), "maven", mavenPath));
+        slave.getNodeProperties().add(property);
+
+        build = project.scheduleBuild2(0).get();
+        System.out.println(build.getLog());
+        assertBuildStatus(Result.SUCCESS, build);
+
     }
 
     // //////////////////////// setup //////////////////////////////////////////
