@@ -29,13 +29,19 @@ THE SOFTWARE.
   <l:ajax>
     <p:matrix autoRefresh="${it.isBuilding()}">
       <j:set var="b" value="${p.run}" />
-      <a href="${p.combination}/">
-        <img src="${imagesURL}/24x24/${h.ifThenElse(b!=null,b.buildStatusUrl,'grey.gif')}"
-             tooltip="${p.tooltip}" alt="${p.tooltip}"/>
-        <j:if test="${empty(o.x) and empty(o.y)}">
-          ${p.combination.toString(o.z)}
-        </j:if>
-      </a>
+      <j:choose>
+        <j:when test="${b==null}">
+          <img src="${imagesURL}/24x24/grey.gif" tooltip="${%Not run}" alt="${%Not run}"/>
+        </j:when>
+        <j:otherwise>
+          <a href="${p.combination}/">
+            <img src="${imagesURL}/24x24/${b.buildStatusUrl}" tooltip="${p.tooltip}" alt="${p.tooltip}"/>
+            <j:if test="${empty(o.x) and empty(o.y)}">
+              ${p.combination.toString(o.z)}
+            </j:if>
+          </a>
+        </j:otherwise>
+      </j:choose>
     </p:matrix>
   </l:ajax>
 </j:jelly>

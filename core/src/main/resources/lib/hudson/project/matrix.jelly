@@ -43,7 +43,7 @@ THE SOFTWARE.
   <j:set var="o" value="${it.layouter}"/>
   <div id='matrix'>
     <j:choose>
-      <!-- Optimized case when there's only dimention to the axis (or zero dimension) -->
+      <!-- Optimized case when there's only one dimension to the axis (or zero dimension) -->
       <j:when test="${empty(o.x) and empty(o.y)}">
         <h2>${%Configurations}</h2>
         <j:forEach var="p" items="${o.rows[0][0]}">
