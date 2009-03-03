@@ -31,6 +31,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
+import java.io.FileWriter;
+import java.util.Map;
 import org.dom4j.Document;
 import org.dom4j.io.DOMReader;
 import org.jvnet.hudson.test.Bug;
@@ -51,7 +53,7 @@ public class SubversionSCMTest extends HudsonTestCase {
         // create a build
         FreeStyleProject p = createFreeStyleProject();
         p.setScm(loadSvnRepo());
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        FreeStyleBuild b = p.scheduleBuild2(0, new Cause.UserCause()).get();
         System.out.println(b.getLog());
         assertBuildStatus(Result.SUCCESS,b);
 
@@ -108,7 +110,7 @@ public class SubversionSCMTest extends HudsonTestCase {
                 true, null, null
         ));
 
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        FreeStyleBuild b = p.scheduleBuild2(0, new Cause.UserCause()).get();
         System.out.println(b.getLog());
         assertBuildStatus(Result.SUCCESS,b);
         assertTrue(p.getWorkspace().child("trivial-ant/build.xml").exists());
@@ -123,7 +125,7 @@ public class SubversionSCMTest extends HudsonTestCase {
                 true, null, null
         ));
 
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        FreeStyleBuild b = p.scheduleBuild2(0, new Cause.UserCause()).get();
         System.out.println(b.getLog());
         assertBuildStatus(Result.SUCCESS,b);
         assertTrue(p.getWorkspace().child("jasf/maven.xml").exists());
@@ -141,12 +143,12 @@ public class SubversionSCMTest extends HudsonTestCase {
                 true, null, null
         ));
 
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        FreeStyleBuild b = p.scheduleBuild2(0, new Cause.UserCause()).get();
         System.out.println(b.getLog());
         assertTrue(b.getLog().contains("At revision 13000"));
         assertBuildStatus(Result.SUCCESS,b);
 
-        b = p.scheduleBuild2(0).get();
+        b = p.scheduleBuild2(0, new Cause.UserCause()).get();
         System.out.println(b.getLog());
         assertTrue(b.getLog().contains("At revision 13000"));
         assertBuildStatus(Result.SUCCESS,b);
@@ -161,7 +163,7 @@ public class SubversionSCMTest extends HudsonTestCase {
         // fetch the current workspace
         FreeStyleProject p = createFreeStyleProject();
         p.setScm(loadSvnRepo());
-        p.scheduleBuild2(0).get();
+        p.scheduleBuild2(0, new Cause.UserCause()).get();
 
         // as a baseline, this shouldn't detect any change
         TaskListener listener = createTaskListener();
@@ -173,7 +175,7 @@ public class SubversionSCMTest extends HudsonTestCase {
         assertTrue(p.pollSCMChanges(listener));
 
         // build it once again to switch
-        p.scheduleBuild2(0).get();
+        p.scheduleBuild2(0, new Cause.UserCause()).get();
 
         // then no more change should be detected
         assertFalse(p.pollSCMChanges(listener));
@@ -197,4 +199,38 @@ public class SubversionSCMTest extends HudsonTestCase {
         assertTrue(p.getWorkspace().child("jasf/maven.xml").exists());
     }
 
+    /**
+     * Test that multiple repository URLs are all polled.
+     */
+    @Bug(3168)
+    public void testPollMultipleRepositories() throws Exception {
+        // fetch the current workspaces
+        FreeStyleProject p = createFreeStyleProject();
+        String svnBase = "file://" + new CopyExisting(getClass().getResource("/svn-repo.zip")).allocate().toURI().toURL().getPath();
+        p.setScm(new SubversionSCM(
+            new String[] { svnBase + "trunk/a", svnBase + "branches" },
+            new String[] { null, null }, true, null, null));
+        AbstractBuild build = p.scheduleBuild2(0, new Cause.UserCause()).get();
+
+        // as a baseline, this shouldn't detect any change
+        TaskListener listener = createTaskListener();
+        assertFalse(p.pollSCMChanges(listener));
+
+        // Force older "current revision" for each repository, make sure both are detected
+        Map<String,Long> revInfo = SubversionSCM.parseRevisionFile(build);
+        for (String outOfDateItem : new String[] { "branches", "trunk/a" }) {
+            FileWriter out = new FileWriter(SubversionSCM.getRevisionFile(build));
+            for (Map.Entry<String,Long> entry : revInfo.entrySet()) {
+                out.write(entry.getKey());
+                out.write('/');
+                out.write(Long.toString(
+                    entry.getValue().longValue() - (entry.getKey().endsWith(outOfDateItem) ? 1 : 0)));
+                out.write('\n');
+            }
+            out.close();
+
+            // now the polling should indicate that we need a new build
+            assertTrue("change was not detected!", p.pollSCMChanges(listener));
+        }
+    }
 }

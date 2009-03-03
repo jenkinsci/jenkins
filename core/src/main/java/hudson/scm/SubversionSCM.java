@@ -281,13 +281,11 @@ public class SubversionSCM extends SCM implements Serializable {
 
 	 private Pattern[] getExcludedRegionsPatterns() {
 		 String[] excludedRegions = getExcludedRegionsNormalized();
-		 if (excludedRegions != null)
-		 {
+		 if (excludedRegions != null) {
 			 Pattern[] patterns = new Pattern[excludedRegions.length];
 
 			 int i = 0;
-			 for (String excludedRegion : excludedRegions)
-			 {
+			 for (String excludedRegion : excludedRegions) {
 				 patterns[i++] = Pattern.compile(excludedRegion);
 			 }
 
@@ -473,7 +471,7 @@ public class SubversionSCM extends SCM implements Serializable {
     }
 
 
-	/**
+    /**
      * Either run "svn co" or "svn up" equivalent.
      */
     private static class CheckOutTask implements FileCallable<List<External>> {
@@ -865,7 +863,6 @@ public class SubversionSCM extends SCM implements Serializable {
         }
 
         try {
-
             if (!repositoryLocationsExist(lastBuild, listener)) {
                 // Disable this project, see issue #763
 
@@ -904,17 +901,14 @@ public class SubversionSCM extends SCM implements Serializable {
                 if(ext.url.equals(url) && ext.isRevisionFixed())
                     continue OUTER;
 
-	        boolean changesFound = false;
-			  try {
-				  final SVNURL decodedURL = SVNURL.parseURIDecoded(url);
-				  SvnInfo remoteInfo = new SvnInfo(parseSvnInfo(decodedURL,authProvider));
-					listener.getLogger().println(Messages.SubversionSCM_pollChanges_remoteRevisionAt(url,remoteInfo.revision));
-					if(remoteInfo.revision > localInfo.getValue()) {
-						Pattern[] excludedPatterns = getExcludedRegionsPatterns();
-						if (excludedPatterns == null) {
-							changesFound = true; // change found
-						} else {
-							try {
+            try {
+                final SVNURL decodedURL = SVNURL.parseURIDecoded(url);
+                SvnInfo remoteInfo = new SvnInfo(parseSvnInfo(decodedURL,authProvider));
+                listener.getLogger().println(Messages.SubversionSCM_pollChanges_remoteRevisionAt(url,remoteInfo.revision));
+                if(remoteInfo.revision > localInfo.getValue()) {
+                    boolean changesFound = true;
+                    Pattern[] excludedPatterns = getExcludedRegionsPatterns();
+                    if (excludedPatterns != null) {
 							  SVNLogHandler handler = new SVNLogHandler(excludedPatterns);
 							  final SVNClientManager manager = createSvnClientManager(authProvider);
 							  try {
@@ -931,28 +925,22 @@ public class SubversionSCM extends SCM implements Serializable {
 							  }
 
 							  changesFound = handler.isChangesFound();
-							} catch (SVNException e) {
-								e.printStackTrace(listener.error("Failed to check repository revision for "+ url));
-								changesFound = false;
-							}
-					  }
+                    }
 
-					  if (changesFound) {
-						  listener.getLogger().println(Messages.SubversionSCM_pollChanges_changedFrom(localInfo.getValue()));
-					  }
-					}
-			  } catch (SVNException e) {
-					e.printStackTrace(listener.error("Failed to check repository revision for "+ url));
-					changesFound = false;
-			  }
-
-	        return changesFound;
+                    if (changesFound) {
+                        listener.getLogger().println(Messages.SubversionSCM_pollChanges_changedFrom(localInfo.getValue()));
+                        return true;
+                    }
+                }
+            } catch (SVNException e) {
+                e.printStackTrace(listener.error("Failed to check repository revision for "+ url));
+            }
         }
 
         return false; // no change
     }
 
-	 private final class SVNLogHandler implements ISVNLogEntryHandler {
+    private final class SVNLogHandler implements ISVNLogEntryHandler {
 		 private boolean changesFound = false;
 
 		 private Pattern[] excludedPatterns;
@@ -1001,7 +989,7 @@ public class SubversionSCM extends SCM implements Serializable {
 				 changesFound = true;
 			 }
 		 }
-	 }
+    }
 
     public ChangeLogParser createChangeLogParser() {
         return new SubversionChangeLogParser();
@@ -1584,7 +1572,7 @@ public class SubversionSCM extends SCM implements Serializable {
             }.process();
         }
 
-	     /**
+        /**
          * Validates the excludeRegions Regex
          */
         public void doExcludeRegionsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -1593,7 +1581,7 @@ public class SubversionSCM extends SCM implements Serializable {
                     String v = fixEmptyAndTrim(request.getParameter("value"));
 
                     if(v != null) {
-	                    String[] regions = v.split("\\r\\n");
+	                    String[] regions = v.split("[\\r\\n]+");
 	                    for (String region : regions) {
 		                    try {
 			                    Pattern.compile(region);
