@@ -1246,7 +1246,7 @@ public class CVSSCM extends SCM implements Serializable {
                     String v = fixEmptyAndTrim(request.getParameter("value"));
 
                     if(v != null) {
-	                    String[] regions = v.split("\\r\\n");
+	                    String[] regions = v.split("[\\r\\n]+");
 	                    for (String region : regions) {
 		                    try {
 			                    Pattern.compile(region);
