@@ -23,9 +23,18 @@
  */
 package hudson.model;
 
+import hudson.DescriptorExtensionList;
 import hudson.Util;
 import hudson.Extension;
+import hudson.views.BuildButtonColumn;
+import hudson.views.JobColumn;
+import hudson.views.LastDurationColumn;
+import hudson.views.LastFailureColumn;
+import hudson.views.LastSuccessColumn;
 import hudson.views.ListViewColumn;
+import hudson.views.StatusColumn;
+import hudson.views.WeatherColumn;
+import hudson.views.StatusColumn.DescriptorImpl;
 import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.FormFieldValidator;
@@ -55,7 +64,18 @@ public class ListView extends View {
      */
     /*package*/ final Set<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
 
-    private transient List<ListViewColumn> columns = new ArrayList<ListViewColumn>();
+    protected transient List<ListViewColumn> columns = new ArrayList<ListViewColumn>();
+
+    // First add all the known instances in the correct order:
+    private static final Descriptor [] defaultColumnDescriptors  =  {
+        StatusColumn.DESCRIPTOR,
+        WeatherColumn.DESCRIPTOR,
+        JobColumn.DESCRIPTOR,
+        LastSuccessColumn.DESCRIPTOR,
+        LastFailureColumn.DESCRIPTOR,
+        LastDurationColumn.DESCRIPTOR,
+        BuildButtonColumn.DESCRIPTOR
+    };
 
     /**
      * Include regex string.
@@ -80,10 +100,25 @@ public class ListView extends View {
         return this;
     }
 
-    private void initColumns() {
+    protected void initColumns() {
         // create all instances
         ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
-        for (Descriptor<ListViewColumn> d : ListViewColumn.all())
+        DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all = ListViewColumn.all();
+        ArrayList <Descriptor<ListViewColumn>>left = new ArrayList();
+        left.addAll(all);
+        for (Descriptor d: defaultColumnDescriptors) {
+            Descriptor<ListViewColumn> des = all.find(d.getClass().getName());
+            if (des  != null) {
+                try {
+                    r.add (des.newInstance(null, null));
+                   left.remove(des);
+                } catch (FormException e) {
+                    // so far impossible. TODO: report
+                }
+                
+            }
+        }
+        for (Descriptor<ListViewColumn> d : left)
             try {
                 r.add(d.newInstance(null,null));
             } catch (FormException e) {
@@ -103,6 +138,23 @@ public class ListView extends View {
 
     public List<ListViewColumn> getColumns() {
         return columns;
+    }
+    
+    public static List<ListViewColumn> getDefaultColumns() {
+        ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
+        DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all = ListViewColumn.all();
+        for (Descriptor d: defaultColumnDescriptors) {
+            Descriptor<ListViewColumn> des = all.find(d.getClass().getName());
+            if (des  != null) {
+                try {
+                    r.add (des.newInstance(null, null));
+                } catch (FormException e) {
+                    // so far impossible. TODO: report
+                }
+                
+            }
+        }
+        return Collections.unmodifiableList(r);
     }
 
     /**

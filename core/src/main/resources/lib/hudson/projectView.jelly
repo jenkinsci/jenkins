@@ -38,27 +38,23 @@ THE SOFTWARE.
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <t:setIconSize/>
   <div class="dashboard">
+
+    <j:if test="${columnExtensions==null}">
+        <j:invokeStatic var="defaultColumns" className="hudson.model.ListView" method="getDefaultColumns"/>
+        <j:set var="columnExtensions" value="${defaultColumns}"/>
+    </j:if>
+    
     <j:if test="${!empty(jobs)}">
       <!-- the caller can inject a tab bar here -->
       <d:invokeBody/>
       <!-- project list -->
       <table id="projectstatus" class="sortable pane bigtable"
              style="${h.ifThenElse(showViewTabs!=null,'margin-top:0px; border-top: none;',null)}">
-
         <tr style="border-top: 0px;">
-          <th tooltip="${%Status of the last build}">${h.nbspIndent(iconSize)}S</th>
-          <th tooltip="${%Weather report showing aggregated status of recent builds}">${h.nbspIndent(iconSize)}W</th>
-          <th initialSortDir="down">${%Job}</th>
           <j:forEach var="col" items="${columnExtensions}">
-            <th>${col.columnCaption}</th>
+             <st:include page="columnHeader.jelly" it="${col}" />
           </j:forEach>
-          <th>${%Last Success}</th>
-          <th>${%Last Failure}</th>
-          <th>${%Last Duration}</th>
           <th>
-            <st:nbsp/>
-          </th>
-          <th width="1">
             <st:nbsp/>
           </th>
         </tr>

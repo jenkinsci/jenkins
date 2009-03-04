@@ -1,0 +1,11 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+      <td>
+          <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
+              <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
+                  <img src="${imagesURL}/${subIconSize}/clock.gif"
+                       title="${%Schedule a build}" alt="${%Schedule a build}"
+                       border="0"/>
+              </a>
+          </j:if>
+      </td>
+</j:jelly>

@@ -1,0 +1,15 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+      <td data="${h.ifThenElse(lsBuild==null,h.ifThenElse(lfBuild==null,'0',lfBuild.duration),lsBuild.duration)}">
+          <j:choose>
+              <j:when test="${lsBuild!=null}">
+                  ${lsBuild.durationString}
+              </j:when>
+              <j:when test="${lfBuild!=null}">
+                  ${lfBuild.durationString}
+              </j:when>
+              <j:otherwise>
+                  ${%N/A}
+              </j:otherwise>
+          </j:choose>
+      </td>
+</j:jelly>

@@ -45,7 +45,9 @@ import org.kohsuke.stapler.export.Exported;
  * is called for each cell of this column. The {@link Item} object
  * is passed in the "job" variable. The view should render
  * the &lt;td> tag.
- *
+ * <p>
+ * This object may have an additional <tt>columHeader.jelly</tt>. The default ColmnHeader
+ * will render ColumnCaption.
  * <p>
  * For now, {@link ListView} doesn't allow {@link ListViewColumn}s to be configured
  * (instead it just shows all the columns available in {@link #all()}),

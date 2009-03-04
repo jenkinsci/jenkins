@@ -33,64 +33,11 @@ THE SOFTWARE.
   <j:set var="lsBuild" value="${job.lastSuccessfulBuild}"/>
   <j:set var="lfBuild" value="${job.lastFailedBuild}"/>
   <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
-      <t:ballColorTd it="${job.iconColor}" style="${indenter.getRelativeShift(job)}"/>
-      <t:buildHealth td="true" style="${indenter.getRelativeShift(job)}"
-                     link="${jobBaseUrl}${job.shortUrl}lastBuild"/>
-      <td style="${indenter.getCss(job)}">
-          <a href="${jobBaseUrl}${job.shortUrl}">
-              ${job.displayName}
-          </a>
-      </td>
       <j:forEach var="col" items="${columnExtensions}">
           <st:include page="column.jelly" it="${col}" />
       </j:forEach>
-
-      <td data="${h.ifThenElse(lsBuild==null,'-',lsBuild.timestampString2)}">
-          <j:choose>
-              <j:when test="${lsBuild!=null}">
-                  ${lsBuild.timestampString}
-                  (<a href="${jobBaseUrl}${job.shortUrl}lastSuccessfulBuild/">#${lsBuild.number}</a>)
-              </j:when>
-              <j:otherwise>
-                  ${%N/A}
-              </j:otherwise>
-          </j:choose>
-      </td>
-      <td data="${h.ifThenElse(lfBuild==null,'-',lfBuild.timestampString2)}">
-          <j:choose>
-              <j:when test="${lfBuild!=null}">
-                  ${lfBuild.timestampString}
-                  (<a href="${jobBaseUrl}${job.shortUrl}lastFailedBuild/">#${lfBuild.number}</a>)
-              </j:when>
-              <j:otherwise>
-                  ${%N/A}
-              </j:otherwise>
-          </j:choose>
-      </td>
-      <td data="${h.ifThenElse(lsBuild==null,h.ifThenElse(lfBuild==null,'0',lfBuild.duration),lsBuild.duration)}">
-          <j:choose>
-              <j:when test="${lsBuild!=null}">
-                  ${lsBuild.durationString}
-              </j:when>
-              <j:when test="${lfBuild!=null}">
-                  ${lfBuild.durationString}
-              </j:when>
-              <j:otherwise>
-                  ${%N/A}
-              </j:otherwise>
-          </j:choose>
-      </td>
       <td>
           <st:nbsp/>
-      </td>
-      <td>
-          <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
-              <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
-                  <img src="${imagesURL}/${subIconSize}/clock.gif"
-                       title="${%Schedule a build}" alt="${%Schedule a build}"
-                       border="0"/>
-              </a>
-          </j:if>
       </td>
   </tr>
 </j:jelly>

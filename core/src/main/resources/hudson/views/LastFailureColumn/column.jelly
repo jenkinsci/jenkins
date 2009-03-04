@@ -1,0 +1,13 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+    <td data="${h.ifThenElse(lfBuild==null,'-',lfBuild.timestampString2)}">
+          <j:choose>
+              <j:when test="${lfBuild!=null}">
+                  ${lfBuild.timestampString}
+                  (<a href="${jobBaseUrl}${job.shortUrl}lastFailedBuild/">#${lfBuild.number}</a>)
+              </j:when>
+              <j:otherwise>
+                  ${%N/A}
+              </j:otherwise>
+          </j:choose>
+      </td>
+  </j:jelly>
