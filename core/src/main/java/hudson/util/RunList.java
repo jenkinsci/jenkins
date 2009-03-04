@@ -90,10 +90,8 @@ public class RunList extends ArrayList<Run> {
     public RunList node(Node node) {
         for (Iterator<Run> itr = iterator(); itr.hasNext();) {
             Run r = itr.next();
-            if (r instanceof AbstractBuild) {
-            	if (((AbstractBuild)r).getBuiltOn()!=node) {
-                    itr.remove();
-            	}
+            if (!(r instanceof AbstractBuild) || ((AbstractBuild)r).getBuiltOn()!=node) {
+                itr.remove();
             }
         }
         return this;
