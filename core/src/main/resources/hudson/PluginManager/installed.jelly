@@ -51,12 +51,12 @@ THE SOFTWARE.
                          original="${h.ifThenElse(p.active,'true','false')}"/>
                 </td>
                 <td class="pane">
-                  <h4>
+                  <div>
                     <a href="${p.url}">
                       ${h.ifThenElse(p.updateInfo!=null, p.updateInfo.title, p.longName)}
                     </a>
-                  </h4>
-                  <div stlyle="padding-left: 1em">
+                  </div>
+                  <div class="excerpt">
                     <j:set var="indexPage" value="${p.indexPage.toString()}" />
                     <j:if test="${!empty(indexPage)}">
                       <j:include uri="${indexPage}" />
