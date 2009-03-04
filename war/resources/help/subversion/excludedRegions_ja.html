@@ -1,0 +1,12 @@
+<div>
+  Hudsonが変更をポーリングするように設定されている場合、ビルドを実行する必要があるかどうか判断する際に、このリストにあるファイルやフォルダを無視します。
+  <p/>リストには、正規表現を使用し、改行で区切ります。
+  <p/>
+  <pre>
+	 src/main/web/.*\.html
+	 src/main/web/.*\.jpeg
+	 src/main/web/.*\.gif
+  </pre>
+  上記は、html/jpeg/gifファイルがSCMにコミットされても、ビルドは起動しない例です。
+  <p/>正規表現の詳細については、<a href="http://www.regular-expressions.info/">こちら</a>を参照してください。
+</div>
