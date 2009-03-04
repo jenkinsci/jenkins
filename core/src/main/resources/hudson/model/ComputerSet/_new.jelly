@@ -33,7 +33,7 @@ THE SOFTWARE.
       <f:form method="post" action="doCreateItem">
         <f:entry title="${%Name}" help="/help/system-config/master-slave/name.html">
           <f:textbox name="name" value="${request.getParameter('name')}"
-                     checkUrl="'../fieldCheck?errorText='+escape('${%Name is mandatory}')+'&amp;value='+escape(this.value)"/>
+                     checkUrl="'../fieldCheck?errorText=${h.jsStringEscape(h.encode('%Name is mandatory'))}&amp;value='+escape(this.value)"/>
         </f:entry>
 
         <!-- main body of the configuration -->

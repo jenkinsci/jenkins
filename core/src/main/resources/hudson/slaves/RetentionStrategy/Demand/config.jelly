@@ -27,11 +27,11 @@ THE SOFTWARE.
     <f:entry title="${%In demand delay}" help="/help/system-config/master-slave/demand/inDemandDelay.html">
       <input class="setting-input number validated" name="retentionStrategy.inDemandDelay"
         type="text" value="${instance.inDemandDelay}"
-        checkUrl="'${rootURL}/fieldCheck?errorText='+escape('${%In demand delay is mandatory.}')+'&amp;value='+escape(this.value)"/>
+        checkUrl="'${rootURL}/fieldCheck?errorText=${h.jsStringEscape(h.encode('%In demand delay is mandatory.'))}&amp;value='+escape(this.value)"/>
     </f:entry>
     <f:entry title="${%Idle delay}" help="/help/system-config/master-slave/demand/idleDelay.html">
       <input class="setting-input number validated" name="retentionStrategy.idleDelay"
         type="text" value="${instance.idleDelay}"
-        checkUrl="'${rootURL}/fieldCheck?errorText='+escape('${%Idle delay is mandatory.}')+'&amp;value='+escape(this.value)"/>
+        checkUrl="'${rootURL}/fieldCheck?errorText=${h.jsStringEscape(h.encode('%Idle delay is mandatory.'))}&amp;value='+escape(this.value)"/>
     </f:entry>
 </j:jelly>

@@ -33,7 +33,7 @@ THE SOFTWARE.
       <f:form method="post" action="configSubmit" name="config">
         <f:entry title="${%Name}" help="/help/system-config/master-slave/name.html">
           <f:textbox name="name" value="${it.name}"
-                     checkUrl="'${rootURL}/fieldCheck?errorText='+escape('${%Name is mandatory}')+'&amp;value='+escape(this.value)"/>
+                     checkUrl="'${rootURL}/fieldCheck?errorText=${h.jsStringEscape(h.encode('%Name is mandatory'))}&amp;value='+escape(this.value)"/>
         </f:entry>
 
         <j:set var="instance" value="${it.node}" />

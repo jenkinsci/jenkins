@@ -32,7 +32,7 @@ THE SOFTWARE.
              description="The number of minutes to keep the node up for. If this is longer than the startup schedule, then the node will remain constantly on-line.">
         <input class="setting-input number validated" name="retentionStrategy.upTimeMins"
                type="text" value="${instance.upTimeMins}"
-               checkUrl="'${rootURL}/fieldCheck?errorText='+escape('${%Scheduled Uptime is mandatory.}')+'&amp;value='+escape(this.value)"/>
+               checkUrl="'${rootURL}/fieldCheck?errorText=${h.jsStringEscape(h.encode('%Scheduled Uptime is mandatory.'))}&amp;value='+escape(this.value)"/>
     </f:entry>
     <f:entry title="${%Keep on-line while jobs are running}">
     <f:checkbox name="retentionStrategy.keepUpWhenActive" checked="${h.defaultToTrue(instance.keepUpWhenActive)}"/>
