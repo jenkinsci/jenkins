@@ -414,7 +414,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
         // delete back up
         out.println("Deleting "+backup);
         if(system(new File("/"),listener,"/usr/bin/rm","-rf",backup.getAbsolutePath())!=0) {
-            out.println("Failed to delete "+home+" to "+tmpDir);
+            out.println("Failed to delete "+backup.getAbsolutePath());
             return false;
         }
 
