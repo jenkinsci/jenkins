@@ -70,7 +70,7 @@ import java.security.cert.CertificateException;
 public class Launcher {
     public static void main(String[] args) throws Exception {
         Mode m = Mode.BINARY;
-        boolean ping = false;
+        boolean ping = true;
         URL slaveJnlpURL = null;
         File tcpPortFile = null;
 
@@ -81,7 +81,7 @@ public class Launcher {
                 m = Mode.TEXT;
                 continue;
             }
-            if(arg.equals("-ping")) {
+            if(arg.equals("-ping")) { // no-op, but left for backward compatibility
                 ping = true;
                 continue;
             }
@@ -116,6 +116,18 @@ public class Launcher {
                 continue;
             }
             System.err.println("Invalid option: "+arg);
+            System.err.println(
+                    "java -jar slave.jar [options...]\n" +
+                    "  -text          : encode communication with the master with base64. Useful for\n" +
+                    "                   running slave over 8-bit unsafe protocol like telnet.\n" +
+                    "  -jnlpUrl <url> : instead of talking to the master via stdin/stdout, emulate a JNLP client\n" +
+                    "                   by making a TCP connection to the master. Connection parameters\n" +
+                    "                   are obtained by parsing the JNLP file.\n" +
+                    "  -noCertificateCheck :\n" +
+                    "                   bypass HTTPS certificate checks altogether.\n" +
+                    "  -tcp <file>    : instead of talking to the master via stdin/stdout, listens to a random\n" +
+                    "                   local port, write that port number to the given file, then wait for the\n" +
+                    "                   master to connect to that port.\n");
             System.exit(-1);
         }
 
