@@ -24,12 +24,14 @@
 
 package hudson.tasks;
 
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import hudson.tasks.LogRotatorTest.TestsFail;
+import java.io.File;
 import static hudson.tasks.LogRotatorTest.build;
 import java.io.IOException;
 import java.util.Arrays;
@@ -116,6 +118,34 @@ public class ArtifactArchiverTest extends HudsonTestCase {
         assertFalse(project.getBuildByNumber(4).getHasArtifacts());
         assertTrue(project.getBuildByNumber(5).getHasArtifacts());
         assertTrue(project.getBuildByNumber(6).getHasArtifacts());
+    }
+
+    @Bug(3227)
+    public void testEmptyDirectories() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        Publisher artifactArchiver = new ArtifactArchiver("dir/", "", false);
+        project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
+        project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath dir = build.getProject().getWorkspace().child("dir");
+                dir.child("subdir1").mkdirs();
+                FilePath subdir2 = dir.child("subdir2");
+                subdir2.mkdirs();
+                subdir2.child("file").write("content", "UTF-8");
+                return true;
+            }
+        }));
+        assertEquals(Result.SUCCESS, build(project)); // #1
+        File artifacts = project.getBuildByNumber(1).getArtifactsDir();
+        File[] kids = artifacts.listFiles();
+        assertEquals(1, kids.length);
+        assertEquals("dir", kids[0].getName());
+        kids = kids[0].listFiles();
+        assertEquals(1, kids.length);
+        assertEquals("subdir2", kids[0].getName());
+        kids = kids[0].listFiles();
+        assertEquals(1, kids.length);
+        assertEquals("file", kids[0].getName());
     }
 
     private static class CreateArtifact extends TestBuilder {
