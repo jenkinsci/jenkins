@@ -386,14 +386,15 @@ public class LDAPSecurityRealm extends SecurityRealm {
     /**
      * If the security realm is LDAP, try to pick up e-mail address from LDAP.
      */
+    @Extension
     public static final class MailAdressResolverImpl extends MailAddressResolver {
         public String findMailAddressFor(User u) {
             // LDAP not active
-            Hudson hudson = Hudson.getInstance();
-            if(!(hudson.getSecurityRealm() instanceof LDAPSecurityRealm))
+            SecurityRealm realm = Hudson.getInstance().getSecurityRealm();
+            if(!(realm instanceof LDAPSecurityRealm))
                 return null;
             try {
-                LdapUserDetails details = (LdapUserDetails) hudson.getSecurityRealm().getSecurityComponents().userDetails.loadUserByUsername(u.getId());
+                LdapUserDetails details = (LdapUserDetails)realm.getSecurityComponents().userDetails.loadUserByUsername(u.getId());
                 Attribute mail = details.getAttributes().get("mail");
                 if(mail==null)  return null;    // not found
                 return (String)mail.get();
