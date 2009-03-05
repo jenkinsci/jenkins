@@ -34,6 +34,10 @@ THE SOFTWARE.
   <artifactId>maven-agent</artifactId>
   <packaging>jar</packaging>
   <name>Hudson Maven CLI agent</name>
+  <description>
+    Code that boots up Maven2 with Hudson's remoting support in place.
+    Used for the native m2 support.
+  </description>
 
   <build>
     <plugins>

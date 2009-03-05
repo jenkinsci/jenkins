@@ -34,6 +34,10 @@ THE SOFTWARE.
   <artifactId>remoting</artifactId>
   <packaging>jar</packaging>
   <name>Hudson remoting layer</name>
+  <description>
+    Contains the bootstrap code to bridge separate JVMs into a single semi-shared space.
+    Reusable outside Hudson.
+  </description>
   
   <build>
     <plugins>

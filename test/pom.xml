@@ -33,6 +33,9 @@ THE SOFTWARE.
   <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>hudson-test-harness</artifactId>
   <name>Test harness for Hudson and plugins</name>
+  <description>
+    Unit test harness (src/main) and Unit tests for Hudson core (src/test)
+  </description>
 
   <build>
     <plugins>
