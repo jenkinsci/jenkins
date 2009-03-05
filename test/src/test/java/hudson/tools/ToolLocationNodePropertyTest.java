@@ -177,7 +177,10 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void setUp() throws Exception {
         super.setUp();
         EnvVars env = new EnvVars();
-        env.put("PATH", "empty");
+        // we don't want Maven, Ant, etc. to be discovered in the path for this test to work,
+        // but on Unix these tools rely on other basic Unix tools (like env) for its operation,
+        // so empty path breaks the test.
+        env.put("PATH", "/bin:/usr/bin");
         env.put("M2_HOME", "empty");
         slave = createSlave(new Label("slave"), env);
         project = createFreeStyleProject();
