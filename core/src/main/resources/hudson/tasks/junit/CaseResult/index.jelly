@@ -22,7 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:lo="hudson:linkout">
   <l:layout title="${it.owner} test - ${it.displayName}">
     <st:include it="${it.owner}" page="sidepanel.jelly" />
     <l:main-panel>
@@ -50,19 +51,24 @@ THE SOFTWARE.
         <div style="text-align:right;">
           ${%took(it.durationString)}
         </div>
+
+    <d:taglib uri="hudson:linkout">
+        <d:bean name="out" className="hudson.util.HyperlinkingOutTag"/>
+    </d:taglib>
+
     <h3>${%Error Message}</h3>
-      <pre><st:out value="${it.errorDetails}"/></pre>
+      <pre><lo:out value="${it.errorDetails}"/></pre>
     <h3>${%Stacktrace}</h3>
-      <pre><st:out value="${it.errorStackTrace}"/></pre>
+      <pre><lo:out value="${it.errorStackTrace}"/></pre>
 
       <j:if test="${!empty(it.parent.stdout)}">
         <h3>${%Standard Output}</h3>
-        <pre><st:out value="${it.parent.stdout}" /></pre>
+        <pre><lo:out value="${it.parent.stdout}"/></pre>
       </j:if>
 
       <j:if test="${!empty(it.parent.stderr)}">
         <h3>${%Standard Error}</h3>
-        <pre><st:out value="${it.parent.stderr}" /></pre>
+        <pre><lo:out value="${it.parent.stderr}"/></pre>
       </j:if>
     </l:main-panel>
   </l:layout>
