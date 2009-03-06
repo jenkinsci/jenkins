@@ -119,6 +119,17 @@ public class RedeployPublisher extends Recorder {
 
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        public DescriptorImpl() {
+        }
+
+        /**
+         * @deprecated as of 1.290
+         *      Use the default constructor.
+         */
+        protected DescriptorImpl(Class<? extends Publisher> clazz) {
+            super(clazz);
+        }
+
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return jobType==MavenModuleSet.class;
         }
