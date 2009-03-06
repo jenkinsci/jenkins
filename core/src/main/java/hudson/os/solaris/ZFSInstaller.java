@@ -48,7 +48,6 @@ import org.jvnet.solaris.libzfs.ACLBuilder;
 import org.jvnet.solaris.libzfs.LibZFS;
 import org.jvnet.solaris.libzfs.ZFSException;
 import org.jvnet.solaris.libzfs.ZFSFileSystem;
-import org.jvnet.solaris.libzfs.ZFSPool;
 import org.jvnet.solaris.libzfs.ErrorCode;
 import org.jvnet.solaris.mount.MountFlags;
 import org.kohsuke.stapler.StaplerRequest;
@@ -101,7 +100,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
 
         try {
             LibZFS zfs = new LibZFS();
-            List<ZFSPool> roots = zfs.roots();
+            List<ZFSFileSystem> roots = zfs.roots();
             if(roots.isEmpty())
                 return false;       // no active ZFS pool
 
@@ -111,7 +110,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                 return false;       // already on ZFS
 
             // decide what file system we'll create
-            ZFSPool pool = roots.get(0);
+            ZFSFileSystem pool = roots.get(0);
             prospectiveZfsFileSystemName = computeHudsonFileSystemName(zfs,pool);
 
             return true;
@@ -426,11 +425,11 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
         return new LocalLauncher(listener).launch(args, new String[0], System.out, new FilePath(pwd)).join();
     }
 
-    private static String computeHudsonFileSystemName(LibZFS zfs, ZFSPool pool) {
-        if(!zfs.exists(pool.getName()+"/hudson"))
-            return pool.getName()+"/hudson";
+    private static String computeHudsonFileSystemName(LibZFS zfs, ZFSFileSystem top) {
+        if(!zfs.exists(top.getName()+"/hudson"))
+            return top.getName()+"/hudson";
         for( int i=2; ; i++ ) {
-            String name = pool.getName() + "/hudson" + i;
+            String name = top.getName() + "/hudson" + i;
             if(!zfs.exists(name))
                 return name;
         }
