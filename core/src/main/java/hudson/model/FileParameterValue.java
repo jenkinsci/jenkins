@@ -67,10 +67,6 @@ public class FileParameterValue extends ParameterValue {
                 file = null;
                 return new Environment() {};
             }
-
-            public Descriptor<BuildWrapper> getDescriptor() {
-                return null;
-            }
         };
     }
 

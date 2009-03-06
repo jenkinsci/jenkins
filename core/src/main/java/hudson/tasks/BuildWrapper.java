@@ -26,6 +26,7 @@ package hudson.tasks;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
+import hudson.FileSystemProvisionerDescriptor;
 import hudson.model.AbstractBuild;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -183,6 +184,11 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
      */
     public Action getProjectAction(AbstractProject job) {
         return null;
+    }
+
+    public Descriptor<BuildWrapper> getDescriptor() {
+        return (Descriptor<BuildWrapper>) Hudson.getInstance().getDescriptor(getClass());
+
     }
 
     /**
