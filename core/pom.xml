@@ -704,7 +704,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.libzfs</groupId>
       <artifactId>libzfs</artifactId>
-      <version>0.3</version>
+      <version>0.4</version>
     </dependency>
     <dependency>
       <groupId>com.sun.solaris</groupId>
