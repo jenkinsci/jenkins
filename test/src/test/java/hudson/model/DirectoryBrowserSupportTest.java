@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.tasks.Shell;
+import hudson.tasks.BatchFile;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -38,7 +39,10 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
     public void testDoubleDots() throws Exception {
         // create a problematic file name in the workspace
         FreeStyleProject p = createFreeStyleProject();
-        p.getBuildersList().add(new Shell("touch abc..def"));
+        if(Hudson.isWindows())
+            p.getBuildersList().add(new BatchFile("echo > abc..def"));
+        else
+            p.getBuildersList().add(new Shell("touch abc..def"));
         p.scheduleBuild2(0).get();
 
         // can we see it?
