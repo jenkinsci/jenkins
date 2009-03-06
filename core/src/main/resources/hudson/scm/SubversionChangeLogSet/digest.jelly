@@ -22,12 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Displays the Subversion change log digest.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:set var="browser" value="${it.build.parent.scm.effectiveBrowser}"/>
+  <st:documentation>
+    Displays the Subversion change log digest.
+    <st:attribute name="changesBaseUrl">
+      If specified, this is prepended in links to change details.
+    </st:attribute>
+  </st:documentation>
 
+  <j:set var="browser" value="${it.build.parent.scm.effectiveBrowser}"/>
   <j:set var="rev" value="${it.revisionMap}" />
   <j:choose>
     <j:when test="${empty(rev)}">
@@ -57,7 +60,7 @@ THE SOFTWARE.
         <j:forEach var="cs" items="${it.logs}" varStatus="loop">
           <li>
             ${cs.msgAnnotated}
-            (<a href="changes#detail${loop.index}">${%detail}</a>
+            (<a href="${changesBaseUrl}changes#detail${loop.index}">${%detail}</a>
 
             <j:set var="cslink" value="${browser.getChangeSetLink(cs)}"/>
             <j:if test="${cslink!=null}">
