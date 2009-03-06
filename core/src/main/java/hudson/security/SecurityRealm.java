@@ -159,7 +159,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     /**
      * Gets the target URL of the "login" link.
      * There's no need to override this, except for {@link LegacySecurityRealm}.
-     * On legacy implementation this should point to "longinEntry", which
+     * On legacy implementation this should point to {@code loginEntry}, which
      * is protected by <tt>web.xml</tt>, so that the user can be eventually authenticated
      * by the container.
      */
