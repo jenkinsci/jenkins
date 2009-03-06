@@ -27,6 +27,8 @@ import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
 import hudson.BulkChange;
+import hudson.DescriptorExtensionList;
+import hudson.util.Iterators;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
@@ -230,7 +232,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      *      Either fully qualified class name (recommended) or the short name.
      */
     public Descriptor getDescriptorByName(String className) {
-        for( Descriptor d : Hudson.getInstance().getExtensionList(Descriptor.class) ) {
+        for( Descriptor d : Iterators.sequence(Hudson.getInstance().getExtensionList(Descriptor.class), DescriptorExtensionList.listLegacyInstances()) ) {
             String name = d.clazz.getName();
             if(name.equals(className))
                 return d;
