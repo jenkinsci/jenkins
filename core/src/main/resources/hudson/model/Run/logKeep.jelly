@@ -29,7 +29,7 @@ THE SOFTWARE.
   <j:if test="${it.parent.logRotator!=null}">
     <form method="get" action="toggleLogKeep">
       <j:if test="${it.keepLog}">
-        <f:submit value="${%Don''t keep this build forever}"  />
+        <f:submit value="${%Don't keep this build forever}"  />
       </j:if>
       <j:if test="${!it.keepLog}">
         <f:submit value="${%Keep this build forever}"  />
