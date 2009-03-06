@@ -30,8 +30,11 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.util.NullStream;
 import hudson.model.*;
 import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.IOException;
 import java.util.Map;
 import org.dom4j.Document;
 import org.dom4j.io.DOMReader;
@@ -42,11 +45,18 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.recipes.PresetData;
 import static org.jvnet.hudson.test.recipes.PresetData.DataSet.ANONYMOUS_READONLY;
+import org.tmatesoft.svn.core.SVNException;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class SubversionSCMTest extends HudsonTestCase {
+
+    private void setJavaNetCredential() throws SVNException, IOException {
+        // set the credential to access svn.dev.java.net
+        hudson.getDescriptorByType(SubversionSCM.DescriptorImpl.class).postCredential("https://svn.dev.java.net/svn/hudson/","guest","",null,new PrintWriter(new NullStream()));
+    }
+
     @PresetData(ANONYMOUS_READONLY)
     @Bug(2380)
     public void testTaggingPermission() throws Exception {
@@ -103,6 +113,7 @@ public class SubversionSCMTest extends HudsonTestCase {
 
     @Email("http://www.nabble.com/Hudson-1.266-and-1.267%3A-Subversion-authentication-broken--td21156950.html")
     public void testHttpsCheckOut() throws Exception {
+        setJavaNetCredential();
         FreeStyleProject p = createFreeStyleProject();
         p.setScm(new SubversionSCM(
                 new String[]{"https://svn.dev.java.net/svn/hudson/trunk/hudson/test-projects/trivial-ant"},
@@ -136,6 +147,7 @@ public class SubversionSCMTest extends HudsonTestCase {
      */
     @Bug(262)
     public void testRevisionedCheckout() throws Exception {
+        setJavaNetCredential();
         FreeStyleProject p = createFreeStyleProject();
         p.setScm(new SubversionSCM(
                 new String[]{"https://svn.dev.java.net/svn/hudson/trunk/hudson/test-projects/trivial-ant@13000"},

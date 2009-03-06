@@ -45,7 +45,6 @@ import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.triggers.SCMTrigger;
-import hudson.triggers.SCMTrigger.DescriptorImpl;
 import hudson.util.EditDistance;
 import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
@@ -1272,8 +1271,6 @@ public class SubversionSCM extends SCM implements Serializable {
 
         /**
          * Submits the authentication info.
-         *
-         * This code is fairly ugly because of the way SVNKit handles credentials.
          */
         // TODO: stapler should do multipart/form-data handling 
         public void doPostCredential(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -1315,93 +1312,9 @@ public class SubversionSCM extends SCM implements Serializable {
             // we'll record what credential we are trying here.
             StringWriter log = new StringWriter();
             final PrintWriter logWriter = new PrintWriter(log);
-            final boolean[] authenticationAttemped = new boolean[1];
-            final boolean[] authenticationAcknowled = new boolean[1];
 
-            SVNRepository repository = null;
             try {
-                // the way it works with SVNKit is that
-                // 1) svnkit calls AuthenticationManager asking for a credential.
-                //    this is when we can see the 'realm', which identifies the user domain.
-                // 2) DefaultSVNAuthenticationManager returns the username and password we set below
-                // 3) if the authentication is successful, svnkit calls back acknowledgeAuthentication
-                //    (so we store the password info here)
-                repository = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(url));
-                repository.setAuthenticationManager(new DefaultSVNAuthenticationManager(SVNWCUtil.getDefaultConfigurationDirectory(),true,username,password,keyFile,password) {
-                    Credential cred = null;
-
-                    @Override
-                    public SVNAuthentication getFirstAuthentication(String kind, String realm, SVNURL url) throws SVNException {
-                        authenticationAttemped[0] = true;
-                        if(kind.equals(ISVNAuthenticationManager.USERNAME))
-                            // when using svn+ssh, svnkit first asks for ISVNAuthenticationManager.SSH
-                            // authentication to connect via SSH, then calls this method one more time
-                            // to get the user name. Perhaps svn takes user name on its own, separate
-                            // from OS user name? In any case, we need to return the same user name.
-                            // I don't set the cred field here, so that the 1st credential for ssh
-                            // won't get clobbered.
-                            return new SVNUserNameAuthentication(username,false);
-                        if(kind.equals(ISVNAuthenticationManager.PASSWORD)) {
-                            logWriter.println("Passing user name "+username+" and password you entered");
-                            cred = new PasswordCredential(username,password);
-                        }
-                        if(kind.equals(ISVNAuthenticationManager.SSH)) {
-                            if(keyFile==null) {
-                                logWriter.println("Passing user name "+username+" and password you entered to SSH");
-                                cred = new PasswordCredential(username,password);
-                            } else {
-                                logWriter.println("Attempting a public key authentication with username "+username);
-                                cred = new SshPublicKeyCredential(username,password,keyFile);
-                            }
-                        }
-                        if(kind.equals(ISVNAuthenticationManager.SSL)) {
-                            logWriter.println("Attempting an SSL client certificate authentcation");
-                            cred = new SslClientCertificateCredential(keyFile,password);
-                        }
-
-                        if(cred==null) {
-                            logWriter.println("Unknown authentication method: "+kind);
-                            return null;
-                        }
-                        return cred.createSVNAuthentication(kind);
-                    }
-
-                    /**
-                     * Getting here means the authentication tried in {@link #getFirstAuthentication(String, String, SVNURL)}
-                     * didn't work.
-                     */
-                    @Override
-                    public SVNAuthentication getNextAuthentication(String kind, String realm, SVNURL url) throws SVNException {
-                        SVNErrorManager.authenticationFailed("Authentication failed for "+url, null);
-                        return null;
-                    }
-
-                    @Override
-                    public void acknowledgeAuthentication(boolean accepted, String kind, String realm, SVNErrorMessage errorMessage, SVNAuthentication authentication) throws SVNException {
-                        authenticationAcknowled[0] = true;
-                        if(accepted) {
-                            assert cred!=null;
-                            credentials.put(realm,cred);
-                            save();
-                        } else {
-                            logWriter.println("Failed to authenticate: "+errorMessage);
-                            if(errorMessage.getCause()!=null)
-                                errorMessage.getCause().printStackTrace(logWriter);
-                        }
-                        super.acknowledgeAuthentication(accepted, kind, realm, errorMessage, authentication);
-                    }
-                });
-                repository.testConnection();
-
-                if(!authenticationAttemped[0]) {
-                    logWriter.println("No authentication was attemped.");
-                    throw new SVNCancelException();
-                }
-                if(!authenticationAcknowled[0]) {
-                    logWriter.println("Authentication was not acknowledged.");
-                    throw new SVNCancelException();
-                }
-
+                postCredential(url, username, password, keyFile, logWriter);
                 rsp.sendRedirect("credentialOK");
             } catch (SVNException e) {
                 logWriter.println("FAILED: "+e.getErrorMessage());
@@ -1414,6 +1327,103 @@ public class SubversionSCM extends SCM implements Serializable {
                     keyFile.delete();
                 if(item!=null)
                     item.delete();
+            }
+        }
+
+        /**
+         * Submits the authentication info.
+         *
+         * This code is fairly ugly because of the way SVNKit handles credentials.
+         */
+        public void postCredential(String url, final String username, final String password, final File keyFile, final PrintWriter logWriter) throws SVNException, IOException {
+            SVNRepository repository = null;
+
+            try {
+                final boolean[] authenticationAttemped = new boolean[1];
+                final boolean[] authenticationAcknowled = new boolean[1];
+
+                // the way it works with SVNKit is that
+                // 1) svnkit calls AuthenticationManager asking for a credential.
+                //    this is when we can see the 'realm', which identifies the user domain.
+                // 2) DefaultSVNAuthenticationManager returns the username and password we set below
+                // 3) if the authentication is successful, svnkit calls back acknowledgeAuthentication
+                //    (so we store the password info here)
+                repository = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(url));
+                repository.setAuthenticationManager(new DefaultSVNAuthenticationManager(SVNWCUtil.getDefaultConfigurationDirectory(), true, username, password, keyFile, password) {
+                    Credential cred = null;
+
+                    @Override
+                    public SVNAuthentication getFirstAuthentication(String kind, String realm, SVNURL url) throws SVNException {
+                        authenticationAttemped[0] = true;
+                        if (kind.equals(ISVNAuthenticationManager.USERNAME))
+                            // when using svn+ssh, svnkit first asks for ISVNAuthenticationManager.SSH
+                            // authentication to connect via SSH, then calls this method one more time
+                            // to get the user name. Perhaps svn takes user name on its own, separate
+                            // from OS user name? In any case, we need to return the same user name.
+                            // I don't set the cred field here, so that the 1st credential for ssh
+                            // won't get clobbered.
+                            return new SVNUserNameAuthentication(username, false);
+                        if (kind.equals(ISVNAuthenticationManager.PASSWORD)) {
+                            logWriter.println("Passing user name " + username + " and password you entered");
+                            cred = new PasswordCredential(username, password);
+                        }
+                        if (kind.equals(ISVNAuthenticationManager.SSH)) {
+                            if (keyFile == null) {
+                                logWriter.println("Passing user name " + username + " and password you entered to SSH");
+                                cred = new PasswordCredential(username, password);
+                            } else {
+                                logWriter.println("Attempting a public key authentication with username " + username);
+                                cred = new SshPublicKeyCredential(username, password, keyFile);
+                            }
+                        }
+                        if (kind.equals(ISVNAuthenticationManager.SSL)) {
+                            logWriter.println("Attempting an SSL client certificate authentcation");
+                            cred = new SslClientCertificateCredential(keyFile, password);
+                        }
+
+                        if (cred == null) {
+                            logWriter.println("Unknown authentication method: " + kind);
+                            return null;
+                        }
+                        return cred.createSVNAuthentication(kind);
+                    }
+
+                    /**
+                     * Getting here means the authentication tried in {@link #getFirstAuthentication(String, String, SVNURL)}
+                     * didn't work.
+                     */
+                    @Override
+                    public SVNAuthentication getNextAuthentication(String kind, String realm, SVNURL url) throws SVNException {
+                        SVNErrorManager.authenticationFailed("Authentication failed for " + url, null);
+                        return null;
+                    }
+
+                    @Override
+                    public void acknowledgeAuthentication(boolean accepted, String kind, String realm, SVNErrorMessage errorMessage, SVNAuthentication authentication) throws SVNException {
+                        authenticationAcknowled[0] = true;
+                        if (accepted) {
+                            assert cred != null;
+                            credentials.put(realm, cred);
+                            save();
+                        } else {
+                            logWriter.println("Failed to authenticate: " + errorMessage);
+                            if (errorMessage.getCause() != null)
+                                errorMessage.getCause().printStackTrace(logWriter);
+                        }
+                        super.acknowledgeAuthentication(accepted, kind, realm, errorMessage, authentication);
+                    }
+                });
+                repository.testConnection();
+
+                if(!authenticationAttemped[0]) {
+                    logWriter.println("No authentication was attemped.");
+                    throw new SVNCancelException();
+                }
+                if (!authenticationAcknowled[0]) {
+                    logWriter.println("Authentication was not acknowledged.");
+                    throw new SVNCancelException();
+                }
+            } finally {
                 if (repository != null)
                     repository.closeSession();
             }
