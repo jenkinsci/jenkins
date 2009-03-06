@@ -27,8 +27,12 @@ import hudson.model.Cause;
 import hudson.model.Result;
 import hudson.tasks.Ant;
 import hudson.tasks.Maven;
+import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.Shell;
+import hudson.tasks.Fingerprinter;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.Email;
 
 import java.io.IOException;
 import java.util.List;
@@ -92,5 +96,17 @@ public class MatrixProjectTest extends HudsonTestCase {
         p.setAxes(axes);
 
         return p;
+    }
+
+    /**
+     * Fingerprinter failed to work on the matrix project.
+     */
+    @Email("http://www.nabble.com/1.286-version-and-fingerprints-option-broken-.-td22236618.html")
+    public void testFingerprinting() throws Exception {
+        MatrixProject p = createMatrixProject();
+        p.getBuildersList().add(new Shell("touch p"));
+        p.getPublishersList().add(new ArtifactArchiver("p",null,false));
+        p.getPublishersList().add(new Fingerprinter(null,true));
+        assertBuildStatusSuccess(p.scheduleBuild2(0).get());
     }
 }

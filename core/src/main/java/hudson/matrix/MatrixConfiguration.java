@@ -24,6 +24,7 @@
 package hudson.matrix;
 
 import hudson.FilePath;
+import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
@@ -222,6 +223,16 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     @Override
     public Map<Descriptor<Publisher>, Publisher> getPublishers() {
         return getParent().getPublishers();
+    }
+
+    @Override
+    public DescribableList<Builder, Descriptor<Builder>> getBuildersList() {
+        return getParent().getBuildersList();
+    }
+
+    @Override
+    public DescribableList<Publisher, Descriptor<Publisher>> getPublishersList() {
+        return getParent().getPublishersList();
     }
 
     @Override
