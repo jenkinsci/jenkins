@@ -130,6 +130,9 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     /**
      * Adds a new {@link BuildStep} to this {@link Project} and saves the configuration.
+     *
+     * @deprecated as of 1.290
+     *      Use {@code getPublishersList().add(x)}
      */
     public void addPublisher(Publisher buildStep) throws IOException {
         publishers.add(buildStep);
@@ -137,6 +140,9 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     /**
      * Removes a publisher from this project, if it's active.
+     *
+     * @deprecated as of 1.290
+     *      Use {@code getPublishersList().remove(x)}
      */
     public void removePublisher(Descriptor<Publisher> descriptor) throws IOException {
         publishers.remove(descriptor);
