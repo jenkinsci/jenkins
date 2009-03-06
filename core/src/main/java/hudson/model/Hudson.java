@@ -183,6 +183,8 @@ import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 import javax.servlet.RequestDispatcher;
 
+import groovy.lang.GroovyShell;
+
 /**
  * Root object of the system.
  *
@@ -543,6 +545,18 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         LoadStatistics.register();
         NodeProvisioner.launch();
+
+        // run the initialization script, if it exists.
+        File initScript = new File(getRootDir(),"init.groovy");
+        if(initScript.exists()) {
+            LOGGER.info("Executing "+initScript);
+            GroovyShell shell = new GroovyShell();
+            try {
+                shell.evaluate(initScript);
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
