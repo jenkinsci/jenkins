@@ -65,6 +65,15 @@ public class CauseAction implements FoldableAction {
 		return "cause";
 	}
 
+    /**
+     * @deprecated as of 1.288
+     *      but left here for backward compatibility.
+     */
+    public String getShortDescription() {
+        if(causes.isEmpty())    return "N/A";
+        return causes.get(0).getShortDescription();
+    }
+
 	public void foldIntoExisting(Task t, List<Action> actions) {
 		for(Action action : actions) {
 			if(action instanceof CauseAction) {
