@@ -28,6 +28,7 @@ import hudson.Launcher;
 import hudson.Proc;
 import hudson.AbortException;
 import hudson.EnvVars;
+import hudson.slaves.Channels;
 import static hudson.Util.fixNull;
 import hudson.maven.agent.Main;
 import hudson.model.BuildListener;
@@ -213,36 +214,8 @@ final class MavenProcessFactory implements ProcessCache.Factory {
                 throw e;
             }
 
-            return new Channel("Channel to Maven "+ Arrays.toString(cmds),
-                Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out)) {
-
-                /**
-                 * Kill the process when the channel is severed.
-                 */
-                protected synchronized void terminate(IOException e) {
-                    super.terminate(e);
-                    try {
-                        proc.kill();
-                    } catch (IOException x) {
-                        // we are already in the error recovery mode, so just record it and move on
-                        LOGGER.log(Level.INFO, "Failed to terminate the severed connection",x);
-                    } catch (InterruptedException x) {
-                        // process the interrupt later
-                        Thread.currentThread().interrupt();
-                    }
-                }
-
-                public synchronized void close() throws IOException {
-                    super.close();
-                    // wait for Maven to complete
-                    try {
-                        proc.join();
-                    } catch (InterruptedException e) {
-                        // process the interrupt later
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            };
+            return Channels.forProcess("Channel to Maven "+ Arrays.toString(cmds),
+                Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out),proc);
 
 //            return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
 //                out, workDir, envVars);
