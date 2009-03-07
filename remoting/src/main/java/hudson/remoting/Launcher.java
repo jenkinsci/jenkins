@@ -52,6 +52,7 @@ import java.net.URLConnection;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLClassLoader;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -74,6 +75,7 @@ public class Launcher {
         boolean ping = true;
         URL slaveJnlpURL = null;
         File tcpPortFile = null;
+        InetSocketAddress connectionTarget=null;
 
         for(int i=0; i<args.length; i++) {
             String arg = args[i];
@@ -114,6 +116,18 @@ public class Launcher {
                 tcpPortFile = new File(args[++i]);
                 continue;
             }
+            if(arg.equals("-connectTo")) {
+                if(i+1==args.length) {
+                    System.err.println("The -connectTo option is missing ADDRESS:PORT parameter");
+                    System.exit(1);
+                }
+                String[] tokens = args[++i].split(":");
+                if(tokens.length!=2) {
+                    System.err.println("Illegal parameter: "+args[i-1]);
+                    System.exit(1);
+                }
+                connectionTarget = new InetSocketAddress(tokens[0],Integer.valueOf(tokens[1]));
+            }
             if(arg.equals("-noCertificateCheck")) {
                 // bypass HTTPS security check by using free-for-all trust manager
                 System.out.println("Skipping HTTPS certificate checks altoghether. Note that this is not secure at all.");
@@ -139,6 +153,8 @@ public class Launcher {
                     "  -cp paths      : add the given classpath elements to the system classloader\n" +
                     "  -noCertificateCheck :\n" +
                     "                   bypass HTTPS certificate checks altogether.\n" +
+                    "  -connectTo <host>:<port> :\n" +
+                    "                   make a TCP connection to the given host and port, then start communication.\n" +
                     "  -tcp <file>    : instead of talking to the master via stdin/stdout, listens to a random\n" +
                     "                   local port, write that port number to the given file, then wait for the\n" +
                     "                   master to connect to that port.\n");
@@ -146,6 +162,10 @@ public class Launcher {
         }
 
 
+        if(connectionTarget!=null) {
+            runAsTcpClient(connectionTarget,m,ping);
+            System.exit(0);
+        } else
         if(slaveJnlpURL!=null) {
             List<String> jnlpArgs = parseJnlpArguments(slaveJnlpURL);
             hudson.remoting.jnlp.Main.main(jnlpArgs.toArray(new String[jnlpArgs.size()]));
@@ -226,8 +246,23 @@ public class Launcher {
             portFile.delete();
         }
 
+        runOnSocket(m, ping, s);
+    }
+
+    private static void runOnSocket(Mode m, boolean ping, Socket s) throws IOException, InterruptedException {
         main(new BufferedInputStream(new SocketInputStream(s)),
              new BufferedOutputStream(new SocketOutputStream(s)),m,ping);
+    }
+
+    /**
+     * Connects to the given TCP port and then start running
+     */
+    private static void runAsTcpClient(InetSocketAddress target, Mode m, boolean ping) throws IOException, InterruptedException {
+        // if no one connects for too long, assume something went wrong
+        // and avoid hanging foreever
+        Socket s = new Socket(target.getAddress(),target.getPort());
+
+        runOnSocket(m, ping, s);
     }
 
     private static void runWithStdinStdout(Mode m, boolean ping) throws IOException, InterruptedException {
