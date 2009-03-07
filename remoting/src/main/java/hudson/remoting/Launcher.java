@@ -51,6 +51,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -93,6 +94,18 @@ public class Launcher {
                 slaveJnlpURL = new URL(args[++i]);
                 continue;
             }
+            if(arg.equals("-cp") || arg.equals("-classpath")) {
+                if(i+1==args.length) {
+                    System.err.println("The -cp option is missing a path parameter");
+                    System.exit(1);
+                }
+
+                Method $addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+                $addURL.setAccessible(true);
+
+                for(String token : args[++i].split(File.pathSeparator))
+                    $addURL.invoke(ClassLoader.getSystemClassLoader(),new File(token).toURI().toURL());
+            }
             if(arg.equals("-tcp")) {
                 if(i+1==args.length) {
                     System.err.println("The -tcp option is missing a file name parameter");
@@ -123,6 +136,7 @@ public class Launcher {
                     "  -jnlpUrl <url> : instead of talking to the master via stdin/stdout, emulate a JNLP client\n" +
                     "                   by making a TCP connection to the master. Connection parameters\n" +
                     "                   are obtained by parsing the JNLP file.\n" +
+                    "  -cp paths      : add the given classpath elements to the system classloader\n" +
                     "  -noCertificateCheck :\n" +
                     "                   bypass HTTPS certificate checks altogether.\n" +
                     "  -tcp <file>    : instead of talking to the master via stdin/stdout, listens to a random\n" +
