@@ -107,6 +107,7 @@ public class Launcher {
 
                 for(String token : args[++i].split(File.pathSeparator))
                     $addURL.invoke(ClassLoader.getSystemClassLoader(),new File(token).toURI().toURL());
+                continue;
             }
             if(arg.equals("-tcp")) {
                 if(i+1==args.length) {
