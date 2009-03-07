@@ -128,6 +128,7 @@ public class Launcher {
                     System.exit(1);
                 }
                 connectionTarget = new InetSocketAddress(tokens[0],Integer.valueOf(tokens[1]));
+                continue;
             }
             if(arg.equals("-noCertificateCheck")) {
                 // bypass HTTPS security check by using free-for-all trust manager
