@@ -30,6 +30,8 @@ import hudson.WebAppMain;
 import hudson.EnvVars;
 import hudson.Launcher.LocalLauncher;
 import hudson.matrix.MatrixProject;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixRun;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenEmbedder;
 import hudson.model.Descriptor;
@@ -476,7 +478,14 @@ public abstract class HudsonTestCase extends TestCase {
             return r;
 
         // dump the build output in failure message
-        assertEquals("unexpected build status; build log was:\n------\n" + r.getLog() + "\n------\n", status,r.getResult());
+        String msg = "unexpected build status; build log was:\n------\n" + r.getLog() + "\n------\n";
+        if(r instanceof MatrixBuild) {
+            MatrixBuild mb = (MatrixBuild)r;
+            for (MatrixRun mr : mb.getRuns()) {
+                msg+="--- "+mr.getParent().getCombination()+" ---\n"+mr.getLog()+"\n------\n";
+            }
+        }
+        assertEquals(msg, status,r.getResult());
         return r;
     }
 
