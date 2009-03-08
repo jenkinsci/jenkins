@@ -61,13 +61,11 @@ public final class BuildAuthorizationToken {
         if (!Hudson.getInstance().isUseSecurity())
             return;    // everyone is authorized
 
-        if(token!=null) {
-            if(token.token != null) {
-                //check the provided token
-                String providedToken = req.getParameter("token");
-                if (providedToken != null && providedToken.equals(token.token))
-                    return;
-            }
+        if(token!=null && token.token != null) {
+            //check the provided token
+            String providedToken = req.getParameter("token");
+            if (providedToken != null && providedToken.equals(token.token))
+                return;
         }
 
         project.checkPermission(AbstractProject.BUILD);

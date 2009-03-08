@@ -886,7 +886,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     this.charset = charset.name();
                     listener = new StreamBuildListener(new PrintStream(new CloseProofOutputStream(log)),charset);
 
-                    listener.started();
+                    CauseAction causeAction = getAction(CauseAction.class);
+                    listener.started(causeAction!=null ? causeAction.getCauses() : null);
 
                     RunListener.fireStarted(this,listener);
 

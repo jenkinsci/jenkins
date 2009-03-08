@@ -36,6 +36,7 @@ import java.io.Serializable;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.List;
 
 /**
  * {@link BuildListener} that writes to an {@link OutputStream}.
@@ -65,8 +66,12 @@ public class StreamBuildListener implements BuildListener, Serializable {
                 charset==null ? new OutputStreamWriter(w) : new OutputStreamWriter(w,charset)), true);
     }
 
-    public void started() {
-        w.println("started");
+    public void started(List<Cause> causes) {
+        if (causes==null || causes.isEmpty())
+            w.println("Started");
+        else for (Cause cause : causes) {
+            w.println(cause.getShortDescription());
+        }
     }
 
     public PrintStream getLogger() {
@@ -92,7 +97,7 @@ public class StreamBuildListener implements BuildListener, Serializable {
     }
 
     public void finished(Result result) {
-        w.println("finished: "+result);
+        w.println("Finished: "+result);
     }
 
 

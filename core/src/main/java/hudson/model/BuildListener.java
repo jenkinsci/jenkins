@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import java.util.List;
+
 /**
  * Receives events that happen during a build.
  *
@@ -33,7 +35,7 @@ public interface BuildListener extends TaskListener {
     /**
      * Called when a build is started.
      */
-    void started();
+    void started(List<Cause> causes);
 
     /**
      * Called when a build is finished.
