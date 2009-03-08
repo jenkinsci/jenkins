@@ -171,13 +171,18 @@ public class MarkupText extends AbstractMarkupText {
                 } else if (ch == '$') {// replace by group
                     i++;
 
+                    ch = s.charAt(i);
                     // get the group number
-                    int groupId = s.charAt(i) - '0';
+                    int groupId = ch - '0';
+                    if (groupId < 0 || groupId > 9) {
+                    	buf.append('$').append(ch);
+                    } else {
+                    	// add the group text
+                    	String group = group(groupId);
+                    	if (group != null) 
+                    		buf.append(group);
+                    }
 
-                    // add the group text
-                    String group = group(groupId);
-                    if (group != null)
-                        buf.append(group);
                 } else {
                     // other chars
                     buf.append(ch);
