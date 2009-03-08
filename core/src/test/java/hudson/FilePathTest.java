@@ -35,6 +35,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
+import org.junit.Assert;
+
 /**
  * @author Kohsuke Kawaguchi
  */
@@ -79,7 +81,8 @@ public class FilePathTest extends TestCase {
         File tmp = File.createTempFile("testCopyTo","");
         FilePath f = new FilePath(french,tmp.getPath());
         f.copyTo(new NullStream());
-        tmp.delete();
+        Assert.assertTrue("target does not exist", tmp.exists());
+        Assert.assertTrue("could not delete target " + tmp.getPath(), tmp.delete());
     }
 
     /**
@@ -95,8 +98,8 @@ public class FilePathTest extends TestCase {
 
             f.copyTo(f2);
 
-            tmp.delete();
-            tmp2.delete();
+            Assert.assertTrue("could not delete target " + tmp.getPath(), tmp.delete());
+            Assert.assertTrue("could not delete target " + tmp2.getPath(), tmp2.delete());
         }
     }
 }
