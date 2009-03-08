@@ -1075,7 +1075,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (authToken != null && authToken.getToken() != null && req.getParameter("token") != null) {
             // Optional additional cause text when starting via token
             String causeText = req.getParameter("cause");
-            cause = new RemoteCause(req.getRemoteAddr() + (causeText!=null ? " (" + causeText + ')' : ""));
+            cause = new RemoteCause(req.getRemoteAddr(), causeText);
         } else {
             cause = new UserCause();
         }

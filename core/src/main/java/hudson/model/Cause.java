@@ -114,14 +114,20 @@ public abstract class Cause {
 
     public static class RemoteCause extends Cause {
         private String addr;
+        private String note;
 
-        public RemoteCause(String addr) {
-            this.addr = addr;
+        public RemoteCause(String host, String note) {
+            this.addr = host;
+            this.note = note;
         }
 
         @Override
         public String getShortDescription() {
-            return Messages.Cause_RemoteCause_ShortDescription(addr);
+            if(note != null) {
+                return Messages.Cause_RemoteCause_ShortDescriptionWithNote(addr, note);
+            } else {
+                return Messages.Cause_RemoteCause_ShortDescription(addr);
+            }
         }
     }
 }
