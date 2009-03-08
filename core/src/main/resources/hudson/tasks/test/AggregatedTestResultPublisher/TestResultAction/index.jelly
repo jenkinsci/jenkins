@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Michael B. Donohue
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,48 +27,67 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
     <l:main-panel>
       <h1>${it.displayName}</h1>
-      <test:bar/>
-
-
-      <h2>${%Drill Down}</h2>
-      <table class="pane sortable">
-        <tr>
-          <td class="pane-header">${%Test}</td>
-          <td class="pane-header" style="text-align:right">${%Fail}</td>
-          <td class="pane-header" style="text-align:right">${%Total}</td>
-        </tr>
-        <j:forEach var="i" items="${it.individuals}">
-          <j:set var="prev" value="${i.previousResult}" />
-          <tr>
-            <td class="pane">
-              <t:buildLink jobName="${i.owner.project.fullDisplayName}" job="${i.owner.project}"
-                           number="${i.owner.number}" href="${rootURL}/${i.owner.url}${i.urlName}/" />
-            </td>
-            <td class="pane" style="text-align:right">
-              ${i.failCount}
-              ${h.getDiffString2(' (',i.failCount-prev.failCount,')')}
-            </td>
-            <td class="pane" style="text-align:right">
-              ${i.totalCount}
-              ${h.getDiffString2(' (',i.totalCount-prev.totalCount,')')}
-            </td>
-          </tr>
-        </j:forEach>
-        <j:forEach var="i" items="${it.didntRun}">
-          <tr>
-            <td class="pane">
-              <a href="${rootURL}/${i.url}">${i.fullDisplayName}</a>
-              (${%hasn't run yet})
-            </td>
-            <td class="pane">
-              ${%N/A}
-            </td>
-            <td class="pane">
-              ${%N/A}
-            </td>
-          </tr>
-        </j:forEach>
-      </table>
+      <j:choose>
+        <j:when test="${!it.hasFingerprintAction}">
+          ${%Fingerprinting not enabled on this build. Test aggregation requires fingerprinting.}
+        </j:when>
+        <j:otherwise>
+          <test:bar/>
+          <h2>${%Drill Down}</h2>
+          <table class="pane sortable">
+            <tr>
+              <td class="pane-header">${%Test}</td>
+              <td class="pane-header" style="text-align:right">${%Fail}</td>
+              <td class="pane-header" style="text-align:right">${%Total}</td>
+            </tr>
+            <j:forEach var="i" items="${it.individuals}">
+              <j:set var="prev" value="${i.previousResult}" />
+              <tr>
+                <td class="pane">
+                  <t:buildLink jobName="${i.owner.project.fullDisplayName}" job="${i.owner.project}"
+                               number="${i.owner.number}" href="${rootURL}/${i.owner.url}${i.urlName}/" />
+                </td>
+                <td class="pane" style="text-align:right">
+                  ${i.failCount}
+                  ${h.getDiffString2(' (',i.failCount-prev.failCount,')')}
+                </td>
+                <td class="pane" style="text-align:right">
+                  ${i.totalCount}
+                  ${h.getDiffString2(' (',i.totalCount-prev.totalCount,')')}
+                </td>
+              </tr>
+            </j:forEach>
+            <j:forEach var="i" items="${it.didntRun}">
+              <tr>
+                <td class="pane">
+                  <a href="${rootURL}/${i.url}">${i.fullDisplayName}</a>
+                  (${%test result not available})
+                </td>
+                <td class="pane">
+                  ${%N/A}
+                </td>
+                <td class="pane">
+                  ${%N/A}
+                </td>
+              </tr>
+            </j:forEach>
+            <j:forEach var="i" items="${it.noFingerprints}">
+              <tr>
+                <td class="pane">
+                  <a href="${rootURL}/${i.url}">${i.fullDisplayName}</a>
+                  (${%last successful job is not fingerprinted})
+                </td>
+                <td class="pane">
+                  ${%N/A}
+                </td>
+                <td class="pane">
+                  ${%N/A}
+                </td>
+              </tr>
+            </j:forEach>
+          </table>
+        </j:otherwise>
+      </j:choose>
     </l:main-panel>
   </l:layout>
 </j:jelly>

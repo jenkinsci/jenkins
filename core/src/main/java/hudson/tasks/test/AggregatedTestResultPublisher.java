@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Michael B. Donohue
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@ import hudson.model.listeners.RunListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
+import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.util.FormFieldValidator;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.QueryParameter;
@@ -61,7 +62,7 @@ import java.util.List;
  */
 public class AggregatedTestResultPublisher extends Recorder {
     /**
-     * Jobs to aggregate. Camma separated.
+     * Jobs to aggregate. Comma separated.
      * Null if triggering downstreams.
      */
     public final String jobs;
@@ -84,7 +85,7 @@ public class AggregatedTestResultPublisher extends Recorder {
      */
     public static final class TestResultAction extends AbstractTestResultAction {
         /**
-         * Jobs to aggregate. Camma separated.
+         * Jobs to aggregate. Comma separated.
          * Never null.
          */
         private final String jobs;
@@ -105,6 +106,7 @@ public class AggregatedTestResultPublisher extends Recorder {
          * Projects that haven't run yet.
          */
         private transient List<AbstractProject> didntRun;
+        private transient List<AbstractProject> noFingerprints;
 
         public TestResultAction(String jobs, AbstractBuild<?,?> owner) {
             super(owner);
@@ -168,6 +170,14 @@ public class AggregatedTestResultPublisher extends Recorder {
             return Collections.unmodifiableList(didntRun);
         }
 
+        /** 
+         * Gets the downstream projects that have available test results, but 
+         * do not appear to have fingerprinting enabled.
+         */
+        public List<AbstractProject> getNoFingerprints() {
+            return Collections.unmodifiableList(noFingerprints);
+        }
+
         /**
          * Makes sure that the data fields are up to date.
          */
@@ -180,35 +190,45 @@ public class AggregatedTestResultPublisher extends Recorder {
             int totalCount = 0;
             List<AbstractTestResultAction> individuals = new ArrayList<AbstractTestResultAction>();
             List<AbstractProject> didntRun = new ArrayList<AbstractProject>();
-
+            List<AbstractProject> noFingerprints = new ArrayList<AbstractProject>();
             for (AbstractProject job : getJobs()) {
                 RangeSet rs = owner.getDownstreamRelationship(job);
                 if(rs.isEmpty()) {
                     // is this job expected to produce a test result?
                     Run b = job.getLastSuccessfulBuild();
-                    if(b!=null && b.getAction(AbstractTestResultAction.class)!=null)
-                        didntRun.add(job);
-                    continue;
-                }
-                for (int n : rs.listNumbersReverse()) {
-                    Run b = job.getBuildByNumber(n);
-                    if(b==null) continue;
-                    if(b.isBuilding() || b.getResult().isWorseThan(Result.UNSTABLE))
-                        continue;   // don't count them
-
-                    for( AbstractTestResultAction ta : b.getActions(AbstractTestResultAction.class)) {
-                        failCount += ta.getFailCount();
-                        totalCount += ta.getTotalCount();
-                        individuals.add(ta);
+                    if(b!=null && b.getAction(AbstractTestResultAction.class)!=null) {
+                        if(b.getAction(FingerprintAction.class)!=null) {
+                            didntRun.add(job);
+                        } else {
+                            noFingerprints.add(job);
+                        }
                     }
-                    break;
+                } else {
+                    for (int n : rs.listNumbersReverse()) {
+                        Run b = job.getBuildByNumber(n);
+                        if(b==null) continue;
+                        if(b.isBuilding() || b.getResult().isWorseThan(Result.UNSTABLE))
+                            continue;   // don't count them
+
+                        for( AbstractTestResultAction ta : b.getActions(AbstractTestResultAction.class)) {
+                            failCount += ta.getFailCount();
+                            totalCount += ta.getTotalCount();
+                            individuals.add(ta);
+                        }
+                        break;
+                    }
                 }
             }
-            
+
             this.failCount = failCount;
             this.totalCount = totalCount;
             this.individuals = individuals;
             this.didntRun = didntRun;
+            this.noFingerprints = noFingerprints;
+        }
+
+        public boolean getHasFingerprintAction() {
+            return this.owner.getAction(FingerprintAction.class)!=null;
         }
 
         @Override
