@@ -24,6 +24,7 @@
 package hudson.maven;
 
 import hudson.model.BuildListener;
+import hudson.model.Cause;
 import hudson.model.Result;
 import hudson.model.StreamBuildListener;
 
@@ -33,6 +34,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Delegating {@link BuildListener} that can have "side" {@link OutputStream}
@@ -97,8 +99,8 @@ final class SplittableBuildListener implements BuildListener, Serializable {
         this.side = os;
     }
 
-    public void started() {
-        core.started();
+    public void started(List<Cause> causes) {
+        core.started(causes);
     }
 
     public void finished(Result result) {
