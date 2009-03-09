@@ -23,7 +23,6 @@
  */
 package hudson.tasks;
 
-import hudson.Launcher;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.maven.MavenReporter;
@@ -32,7 +31,6 @@ import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Project;
-import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 
@@ -77,6 +75,8 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
     /**
      * Default implementation that does nothing.
      */
+    @Deprecated
+    @Override
     public boolean prebuild(Build build, BuildListener listener) {
         return true;
     }
@@ -84,6 +84,8 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
     /**
      * Default implementation that does nothing.
      */
+    @Deprecated
+    @Override
     public Action getProjectAction(Project project) {
         return null;
     }

@@ -44,6 +44,8 @@ import hudson.ExtensionPoint;
  * @see Recorder
  */
 public abstract class Notifier extends Publisher implements ExtensionPoint {
+    @SuppressWarnings("deprecation") // super only @Deprecated to discourage other subclasses
+    protected Notifier() {}
     public BuildStepDescriptor getDescriptor() {
         return (BuildStepDescriptor)super.getDescriptor();
     }
