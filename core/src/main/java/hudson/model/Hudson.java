@@ -301,6 +301,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             super(h);
         }
 
+        public CloudList() {// needed for XStream deserialization
+        }
+
         protected void onModified() throws IOException {
             super.onModified();
             Hudson.getInstance().trimLabels();
@@ -1807,6 +1810,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             views.clear();
             cfg.unmarshal(this);
         }
+        clouds.setOwner(this);
 
         File projectsDir = new File(root,"jobs");
         if(!projectsDir.isDirectory() && !projectsDir.mkdirs()) {

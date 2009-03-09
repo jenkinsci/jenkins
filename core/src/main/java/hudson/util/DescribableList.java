@@ -65,7 +65,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     private final CopyOnWriteList<T> data = new CopyOnWriteList<T>();
     private Saveable owner;
 
-    private DescribableList() {
+    protected DescribableList() {
     }
 
     /**
@@ -274,9 +274,19 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
 
-            DescribableList r = new DescribableList();
-            r.data.replaceBy(core);
-            return r;
+            try {
+                DescribableList r = (DescribableList)context.getRequiredType().newInstance();
+                r.data.replaceBy(core);
+                return r;
+            } catch (InstantiationException e) {
+                InstantiationError x = new InstantiationError();
+                x.initCause(e);
+                throw x;
+            } catch (IllegalAccessException e) {
+                IllegalAccessError x = new IllegalAccessError();
+                x.initCause(e);
+                throw x;
+            }
         }
     }
 }
