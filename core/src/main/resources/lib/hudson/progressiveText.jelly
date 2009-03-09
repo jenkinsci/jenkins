@@ -30,6 +30,7 @@ THE SOFTWARE.
 	<%@attribute name="href" required="true" description="URL that returns text data" %>
 	<%@attribute name="idref" required="true" description="ID of the HTML element in which the result is displayed" %>
 	<%@attribute name="spinner" required="false" description="ID of the HTML element in which the spinner is displayed" %>
+	<%@attribute name="startOffset" required="false" description="Skip this many bytes rather than showing from start of data" %>
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<!--
@@ -64,7 +65,7 @@ THE SOFTWARE.
 	      });
 	    }
 	  </j:if>
-	  $$("${idref}").fetchedBytes = 0;
+	  $$("${idref}").fetchedBytes = ${h.ifThenElse(empty(startOffset),0,startOffset)};
 	  fetchNext($$("${idref}"),"${href}");
 	</script>
 </j:jelly>

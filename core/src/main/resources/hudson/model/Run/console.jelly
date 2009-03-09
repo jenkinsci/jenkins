@@ -37,6 +37,20 @@ THE SOFTWARE.
           <img src="${imagesURL}/24x24/document.gif" alt="" />${%View as plain text}
         </a>
       </l:rightspace>
+      <j:invokeStatic var="threshold" className="java.lang.System" method="getProperty">
+        <j:arg value="hudson.consoleTailKB" />
+        <j:arg value="150" />
+      </j:invokeStatic>
+      <!-- Show at most last 150KB (can override with system property) unless consoleFull is set -->
+      <j:set var="offset" value="${h.ifThenElse(empty(consoleFull),it.logFile.length()-threshold*1024,0)}" />
+      <j:choose>
+        <j:when test="${offset > 0}">
+          ${%skipSome(offset/1024,"consoleFull")}
+        </j:when>
+        <j:otherwise>
+          <j:set var="offset" value="0" />
+        </j:otherwise>
+      </j:choose>
       <j:choose>
         <!-- Do progressive console output -->
         <j:when test="${it.isLogUpdated()}">
@@ -44,11 +58,13 @@ THE SOFTWARE.
           <div id="spinner">
             <img src="${imagesURL}/spinner.gif" alt="" /> 
           </div>
-         <t:progressiveText href="progressiveLog" idref="out" spinner="spinner" />
+         <t:progressiveText href="progressiveLog" idref="out" spinner="spinner" startOffset="${offset}" />
         </j:when>
         <!-- output is completed now. -->
         <j:otherwise>
-          <pre><st:copyStream reader="${it.getLogReader()}"/></pre>
+          <j:set var="logReader" value="${it.logReader}" />
+          <j:set var="unused" value="${logReader.skip(offset)}" />
+          <pre><st:copyStream reader="${logReader}"/></pre>
         </j:otherwise>
       </j:choose>
     </l:main-panel>
