@@ -98,6 +98,8 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      *      Newly launched node needs to have this label.
      *      Only those {@link Label}s that this instance returned true
      *      from the {@link #canProvision(Label)} method will be passed here.
+     *      This parameter is null if Hudson needs to provision a new {@link Node}
+     *      for jobs that don't have any tie to any label.
      * @param excessWorkload
      *      Number of total executors needed to meet the current demand.
      *      Always >= 1. For example, if this is 3, the implementation
