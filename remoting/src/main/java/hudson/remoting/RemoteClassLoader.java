@@ -93,8 +93,28 @@ final class RemoteClassLoader extends URLClassLoader {
             byte[] bytes = proxy.fetch(name);
             channel.classLoadingTime.addAndGet(System.nanoTime()-startTime);
             channel.classLoadingCount.incrementAndGet();
+
+            // define package
+            definePackage(name);
+
             return defineClass(name, bytes, 0, bytes.length);
         }
+    }
+
+    /**
+     * Defining a package is necessary to make {@link Class#getPackage()} work,
+     * which is often used to retrieve package-level annotations.
+     * (for example, JAXB RI and Hadoop use them.) 
+     */
+    private void definePackage(String name) {
+        int idx = name.lastIndexOf('.');
+        if (idx<0)  return; // not in a package
+        
+        String packageName = name.substring(0,idx);
+        if (getPackage(packageName) != null)    // already defined
+            return;
+
+        definePackage(packageName, null, null, null, null, null, null, null);
     }
 
     public URL findResource(String name) {
@@ -182,7 +202,7 @@ final class RemoteClassLoader extends URLClassLoader {
      *      and doesn't point to anything meaningful locally.
      * @return
      *      true if the prefetch happened. false if the jar is already prefetched.
-     * @see Channel#preloadJar(Callable, Class...)
+     * @see Channel#preloadJar(Callable, Class[]) 
      */
     /*package*/ boolean prefetch(URL jar) throws IOException {
         synchronized (prefetchedJars) {
