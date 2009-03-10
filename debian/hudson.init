@@ -2,6 +2,16 @@
 # /etc/init.d/hudson
 # debian-compatible hudson startup script.
 # Amelia A Lewis <alewis@ibco.com>
+#
+### BEGIN INIT INFO
+# Provides:          hudson
+# Required-Start:    $remote_fs $syslog $network
+# Required-Stop:     $remote_fs $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start hudson at boot time
+# Description:       Controls the hudson continuous integration engine.
+### END INIT INFO
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
