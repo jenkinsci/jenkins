@@ -126,16 +126,21 @@ public abstract class ProcessTreeKiller {
         if(!enabled)
             return DEFAULT;
 
-        if(File.pathSeparatorChar==';')
+        try {
+            if(File.pathSeparatorChar==';')
             return new Windows();
 
-        String os = Util.fixNull(System.getProperty("os.name"));
-        if(os.equals("Linux"))
+            String os = Util.fixNull(System.getProperty("os.name"));
+            if(os.equals("Linux"))
             return new Linux();
-        if(os.equals("SunOS"))
+            if(os.equals("SunOS"))
             return new Solaris();
-        if(os.equals("Mac OS X"))
-            return new Darwin();
+            if(os.equals("Mac OS X"))
+                return new Darwin();
+        } catch (LinkageError e) {
+            LOGGER.warning("Failed to load winp. Reverting to the default");
+            enabled = false;
+        }
 
         return DEFAULT;
     }
