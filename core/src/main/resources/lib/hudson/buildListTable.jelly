@@ -22,13 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Creates a table of builds.
-
-  Attribute:
-    @builds  a collection of builds to be displayed. required.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:documentation>
+    Creates a table of builds.
+    <st:attribute name="builds" use="required">
+      A collection of builds to be displayed.
+    </st:attribute>
+  </st:documentation>
+
   <t:setIconSize/>
   <table class="sortable pane bigtable" id="projectStatus">
     <tr>
