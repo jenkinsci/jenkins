@@ -89,6 +89,14 @@ public abstract class Launcher {
     }
 
     /**
+     * Gets the {@link TaskListener} that this launcher uses to
+     * report the commands that it's executing.
+     */
+    public TaskListener getListener() {
+        return listener;
+    }
+
+    /**
      * If this {@link Launcher} is encapsulating an execution on a specific {@link Computer},
      * return it.
      *
