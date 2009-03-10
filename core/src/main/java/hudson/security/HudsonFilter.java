@@ -23,8 +23,19 @@
  */
 package hudson.security;
 
-import javax.servlet.*;
+import hudson.model.Hudson;
+
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
@@ -42,7 +53,7 @@ import org.acegisecurity.userdetails.UserDetailsService;
  * @since 1.160
  */
 public class HudsonFilter implements Filter {
-    /**
+	/**
      * The SecurityRealm specific filter.
      */
     private volatile Filter filter;
@@ -88,6 +99,15 @@ public class HudsonFilter implements Filter {
         this.filterConfig = filterConfig;
         // this is how we make us available to the rest of Hudson.
         filterConfig.getServletContext().setAttribute(HudsonFilter.class.getName(),this);
+        Hudson hudson = Hudson.getInstance();
+        if (hudson != null) {
+            // looks like we are initialized after Hudson came into being. initialize it now. See #3069
+            LOGGER.fine("Security wasn't initialized; Initializing it...");
+            SecurityRealm securityRealm = hudson.getSecurityRealm();
+            reset(securityRealm);
+            LOGGER.fine("securityRealm is " + securityRealm);
+            LOGGER.fine("Security initialized");
+        }
     }
 
     /**
@@ -123,7 +143,9 @@ public class HudsonFilter implements Filter {
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        // to deal with concurrency, we need to capture the object. 
+        LOGGER.entering(HudsonFilter.class.getName(), "doFilter");
+        
+        // to deal with concurrency, we need to capture the object.
         Filter f = filter;
 
         if(f==null) {
@@ -139,4 +161,6 @@ public class HudsonFilter implements Filter {
         if(filter != null)
             filter.destroy();
     }
+
+    private static final Logger LOGGER = Logger.getLogger(HudsonFilter.class.getName());
 }

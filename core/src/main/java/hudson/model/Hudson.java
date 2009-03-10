@@ -1487,7 +1487,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         this.securityRealm = securityRealm;
         // reset the filters and proxies for the new SecurityRealm
         try {
-            HudsonFilter.get(servletContext).reset(securityRealm);
+            HudsonFilter filter = HudsonFilter.get(servletContext);
+            if (filter == null) {
+                // Fix for #3069: This filter is not necessarily initialized before the servlets.
+                // when HudsonFilter does come back, it'll initialize itself.
+                LOGGER.info("HudsonFilter has not yet been initialized: Can't perform security setup for now");
+            } else {
+                LOGGER.info("HudsonFilter has been previously initialized: Setting security up");
+                filter.reset(securityRealm);
+                LOGGER.info("Security is now fully set up");
+            }
         } catch (ServletException e) {
             // for binary compatibility, this method cannot throw a checked exception
             throw new AcegiSecurityException("Failed to configure filter",e) {};

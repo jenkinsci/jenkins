@@ -292,6 +292,8 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * @since 1.271
      */
     public Filter createFilter(FilterConfig filterConfig) {
+        LOGGER.entering(SecurityRealm.class.getName(), "createFilter");
+        
         Binding binding = new Binding();
         SecurityComponents sc = getSecurityComponents();
         binding.setVariable("securityComponents", sc);
