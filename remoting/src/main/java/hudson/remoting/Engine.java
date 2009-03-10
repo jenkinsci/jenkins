@@ -170,7 +170,7 @@ public class Engine extends Thread {
         String host = this.hudsonUrl.getHost();
 
         if(tunnel!=null) {
-            String[] tokens = tunnel.split(":");
+            String[] tokens = tunnel.split(":",3);
             if(tokens.length!=2)
                 throw new IOException("Illegal tunneling parameter: "+tunnel);
             if(tokens[0].length()>0)    host = tokens[0];
