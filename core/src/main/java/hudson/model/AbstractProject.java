@@ -509,8 +509,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
 	/**
-	 * @deprecated
-	 *    Use {@link #scheduleBuild2(int, Cause)}.  Since 1.283
+     * Schedules a build, and returns a {@link Future} object
+     * to wait for the completion of the build.
+     *
+     * <p>
+     * Production code shouldn't be using this, but for tests, this is very convenience, so this isn't marked
+     * as deprecated.
 	 */
     public Future<R> scheduleBuild2(int quietPeriod) {
     	return scheduleBuild2(quietPeriod, new LegacyCodeCause());
