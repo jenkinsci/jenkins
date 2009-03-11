@@ -39,14 +39,17 @@ import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
 import hudson.util.StreamResource;
 import hudson.util.HeadBufferingStream;
+import hudson.util.jna.GNUCLibrary;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.util.FileUtils;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.taskdefs.Untar;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
+import org.apache.tools.tar.TarInputStream;
 import org.apache.tools.zip.ZipOutputStream;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.commons.io.IOUtils;
@@ -316,6 +319,7 @@ public final class FilePath implements Serializable {
      * @param target
      *      Target directory to expand files to. All the necessary directories will be created.
      * @since 1.248
+     * @see #unzipFrom(InputStream)
      */
     public void unzip(final FilePath target) throws IOException, InterruptedException {
         target.act(new FileCallable<Void>() {
@@ -328,11 +332,32 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * When this {@link FilePath} represents a tar file, extracts that tar file.
+     *
+     * @param target
+     *      Target directory to expand files to. All the necessary directories will be created.
+     * @param compression
+     *      Compression mode of this tar file.
+     * @since 1.292
+     * @see #untarFrom(InputStream, TarCompression)
+     */
+    public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
+        target.act(new FileCallable<Void>() {
+            public Void invoke(File dir, VirtualChannel channel) throws IOException {
+                readFromTar(FilePath.this.getName(),dir,compression.extract(FilePath.this.read()));
+                return null;
+            }
+            private static final long serialVersionUID = 1L;
+        });
+    }
+
+    /**
      * Reads the given InputStream as a zip file and extracts it into this directory.
      *
      * @param _in
      *      The stream will be closed by this method after it's fully read.
      * @since 1.283
+     * @see #unzip(FilePath)
      */
     public void unzipFrom(InputStream _in) throws IOException, InterruptedException {
         final InputStream in = new RemoteInputStream(_in);
@@ -370,6 +395,62 @@ public final class FilePath implements Serializable {
             }
         } finally {
             zip.close();
+        }
+    }
+
+    /**
+     * Supported tar file compression methods.
+     */
+    public enum TarCompression {
+        NONE {
+            public InputStream extract(InputStream in) {
+                return in;
+            }
+            public OutputStream compress(OutputStream out) {
+                return out;
+            }
+        },
+        GZIP {
+            public InputStream extract(InputStream _in) throws IOException {
+                HeadBufferingStream in = new HeadBufferingStream(_in,SIDE_BUFFER_SIZE);
+                try {
+                    return new GZIPInputStream(in);
+                } catch (IOException e) {
+                    // various people reported "java.io.IOException: Not in GZIP format" here, so diagnose this problem better
+                    in.fillSide();
+                    throw new IOException2(e.getMessage()+"\nstream="+Util.toHexString(in.getSideBuffer()),e);
+                }
+            }
+            public OutputStream compress(OutputStream out) throws IOException {
+                return new GZIPOutputStream(out);
+            }
+        };
+
+        public abstract InputStream extract(InputStream in) throws IOException;
+        public abstract OutputStream compress(OutputStream in) throws IOException;
+    }
+
+    /**
+     * Reads the given InputStream as a tar file and extracts it into this directory.
+     *
+     * @param _in
+     *      The stream will be closed by this method after it's fully read.
+     * @param compression
+     *      The compression method in use.
+     * @since 1.292
+     */
+    public void untarFrom(InputStream _in, final TarCompression compression) throws IOException, InterruptedException {
+        try {
+            final InputStream in = new RemoteInputStream(_in);
+            act(new FileCallable<Void>() {
+                public Void invoke(File dir, VirtualChannel channel) throws IOException {
+                    readFromTar("input stream",dir, compression.extract(in));
+                    return null;
+                }
+                private static final long serialVersionUID = 1L;
+            });
+        } finally {
+            IOUtils.closeQuietly(_in);
         }
     }
 
@@ -959,14 +1040,14 @@ public final class FilePath implements Serializable {
             Future<Void> future = target.actAsync(new FileCallable<Void>() {
                 public Void invoke(File f, VirtualChannel channel) throws IOException {
                     try {
-                        readFromTar(remote+'/'+fileMask, f,pipe.getIn());
+                        readFromTar(remote+'/'+fileMask, f,new GZIPInputStream(pipe.getIn()));
                         return null;
                     } finally {
                         pipe.getIn().close();
                     }
                 }
             });
-            int r = writeToTar(new File(remote),fileMask,excludes,pipe);
+            int r = writeToTar(new File(remote),fileMask,excludes,new GZIPOutputStream(pipe.getOut()));
             try {
                 future.get();
             } catch (ExecutionException e) {
@@ -980,14 +1061,14 @@ public final class FilePath implements Serializable {
             Future<Integer> future = actAsync(new FileCallable<Integer>() {
                 public Integer invoke(File f, VirtualChannel channel) throws IOException {
                     try {
-                        return writeToTar(f,fileMask,excludes,pipe);
+                        return writeToTar(f,fileMask,excludes,new GZIPOutputStream(pipe.getOut()));
                     } finally {
                         pipe.getOut().close();
                     }
                 }
             });
             try {
-                readFromTar(remote+'/'+fileMask,new File(target.remote),pipe.getIn());
+                readFromTar(remote+'/'+fileMask,new File(target.remote),new GZIPInputStream(pipe.getIn()));
             } catch (IOException e) {// BuildException or IOException
                 try {
                     future.get(3,TimeUnit.SECONDS);
@@ -1014,12 +1095,12 @@ public final class FilePath implements Serializable {
      * @return
      *      number of files/directories that are written.
      */
-    private Integer writeToTar(File baseDir, String fileMask, String excludes, Pipe pipe) throws IOException {
+    private Integer writeToTar(File baseDir, String fileMask, String excludes, OutputStream out) throws IOException {
         FileSet fs = Util.createFileSet(baseDir,fileMask,excludes);
 
         byte[] buf = new byte[8192];
 
-        TarOutputStream tar = new TarOutputStream(new GZIPOutputStream(new BufferedOutputStream(pipe.getOut())));
+        TarOutputStream tar = new TarOutputStream(new BufferedOutputStream(out));
         tar.setLongFileMode(TarOutputStream.LONGFILE_GNU);
         String[] files;
         if(baseDir.exists()) {
@@ -1060,22 +1141,34 @@ public final class FilePath implements Serializable {
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
      */
-    private static void readFromTar(String name, File baseDir, InputStream _in) throws IOException {
-        Untar untar = new Untar();
-        untar.setProject(new Project());
-        HeadBufferingStream in = new HeadBufferingStream(_in,SIDE_BUFFER_SIZE);
+    private static void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+        TarInputStream t = new TarInputStream(in);
         try {
-            untar.add(new StreamResource(name,new BufferedInputStream(new GZIPInputStream(in))));
-        } catch (IOException e) {
-            // various people reported "java.io.IOException: Not in GZIP format" here, so diagnose this problem better
-            in.fillSide();
-            throw new IOException2(e.getMessage()+"\nstream="+Util.toHexString(in.getSideBuffer()),e);
-        }
-        untar.setDest(baseDir);
-        try {
-            untar.execute();
-        } catch (BuildException e) {
-            throw new IOException2("Failed to read the remote stream "+name,e);
+            TarEntry te;
+            while ((te = t.getNextEntry()) != null) {
+                File f = new File(baseDir,te.getName());
+                if(te.isDirectory()) {
+                    f.mkdirs();
+                } else {
+                    File parent = f.getParentFile();
+                    if (parent != null) parent.mkdirs();
+
+                    OutputStream fos = new FileOutputStream(f);
+                    try {
+                        IOUtils.copy(t,fos);
+                    } finally {
+                        fos.close();
+                    }
+                    f.setLastModified(te.getModTime().getTime());
+                    int mode = te.getMode()&0777;
+                    if(mode!=0 && !Hudson.isWindows()) // be defensive
+                        GNUCLibrary.LIBC.chmod(f.getPath(),mode);
+                }
+            }
+        } catch(IOException e) {
+            throw new IOException2("Failed to extract "+name,e);
+        } finally {
+            t.close();
         }
     }
 
