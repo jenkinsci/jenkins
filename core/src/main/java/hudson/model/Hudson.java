@@ -2714,7 +2714,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * If the user chose the default JDK, make sure we got 'java' in PATH.
      */
     public void doDefaultJDKCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        new FormFieldValidator(req,rsp,true) {
+        new FormFieldValidator(req,rsp,false) {
             public void check() throws IOException, ServletException {
                 String v = request.getParameter("value");
                 if(!v.equals("(Default)"))
