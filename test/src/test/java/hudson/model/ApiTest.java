@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.Page;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 
@@ -30,8 +32,52 @@ import org.jvnet.hudson.test.Bug;
  * @author Kohsuke Kawaguchi
  */
 public class ApiTest extends HudsonTestCase {
+
     @Bug(2828)
     public void testXPath() throws Exception {
         new WebClient().goTo("api/xml?xpath=/*[1]","application/xml");
     }
+
+    @Bug(3267)
+    public void testWrappedZeroItems() throws Exception {
+        Page page = new WebClient().goTo("api/xml?wrapper=root&xpath=/hudson/nonexistent", "application/xml");
+        assertEquals("<root/>", page.getWebResponse().getContentAsString());
+    }
+
+    @Bug(3267)
+    public void testWrappedOneItem() throws Exception {
+        Page page = new WebClient().goTo("api/xml?wrapper=root&xpath=/hudson/view/name", "application/xml");
+        assertEquals("<root><name>All</name></root>", page.getWebResponse().getContentAsString());
+    }
+
+    public void testWrappedMultipleItems() throws Exception {
+        createFreeStyleProject();
+        createFreeStyleProject();
+        Page page = new WebClient().goTo("api/xml?wrapper=root&xpath=/hudson/job/name", "application/xml");
+        assertEquals("<root><name>test0</name><name>test1</name></root>", page.getWebResponse().getContentAsString());
+    }
+
+    public void testUnwrappedZeroItems() throws Exception {
+        try {
+            new WebClient().goTo("api/xml?xpath=/hudson/nonexistent", "application/xml");
+        } catch (FailingHttpStatusCodeException x) {
+            assertEquals(404, x.getStatusCode());
+        }
+    }
+
+    public void testUnwrappedOneItem() throws Exception {
+        Page page = new WebClient().goTo("api/xml?xpath=/hudson/view/name", "application/xml");
+        assertEquals("<name>All</name>", page.getWebResponse().getContentAsString());
+    }
+
+    public void testUnwrappedMultipleItems() throws Exception {
+        createFreeStyleProject();
+        createFreeStyleProject();
+        try {
+            new WebClient().goTo("api/xml?xpath=/hudson/job/name", "application/xml");
+        } catch (FailingHttpStatusCodeException x) {
+            assertEquals(500, x.getStatusCode());
+        }
+    }
+
 }
