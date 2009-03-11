@@ -26,11 +26,8 @@ package hudson;
 import hudson.model.Hudson;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
+import hudson.model.listeners.ItemListener;
 import hudson.model.Descriptor.FormException;
-import hudson.scm.SCM;
-import hudson.tasks.Builder;
-import hudson.tasks.Publisher;
-import hudson.triggers.Trigger;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -107,10 +104,8 @@ public abstract class Plugin implements Saveable {
      * stage and not all the data are loaded in Hudson.
      *
      * <p>
-     * Plugins should override this method and register custom
-     * {@link Publisher}, {@link Builder}, {@link SCM}, and {@link Trigger}s to the corresponding list.
-     * See {@link ExtensionPoint} for the complete list of extension points in Hudson.
-     *
+     * If a plugin wants to run an initialization step after all plugins and extension points
+     * are registered, a good place to do that is {@link ItemListener#onLoaded()}
      *
      * @throws Exception
      *      any exception thrown by the plugin during the initialization will disable plugin.
