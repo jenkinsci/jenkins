@@ -1491,11 +1491,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if (filter == null) {
                 // Fix for #3069: This filter is not necessarily initialized before the servlets.
                 // when HudsonFilter does come back, it'll initialize itself.
-                LOGGER.info("HudsonFilter has not yet been initialized: Can't perform security setup for now");
+                LOGGER.fine("HudsonFilter has not yet been initialized: Can't perform security setup for now");
             } else {
-                LOGGER.info("HudsonFilter has been previously initialized: Setting security up");
+                LOGGER.fine("HudsonFilter has been previously initialized: Setting security up");
                 filter.reset(securityRealm);
-                LOGGER.info("Security is now fully set up");
+                LOGGER.fine("Security is now fully set up");
             }
         } catch (ServletException e) {
             // for binary compatibility, this method cannot throw a checked exception
