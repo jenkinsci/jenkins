@@ -57,7 +57,9 @@ final class ProxyInputStream extends InputStream {
         try {
             Buffer buf = new Chunk(oid, 1).call(channel);
             if(buf.len==1)
-                return buf.buf[0];
+                // byte->int expansion needs to be done carefully becaue byte in Java is signed
+                // whose idea was it to make byte signed, anyway!?
+                return ((int)buf.buf[0])&0xFF;
             else
                 return -1;
         } catch (InterruptedException e) {
