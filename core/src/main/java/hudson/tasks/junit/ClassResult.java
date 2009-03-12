@@ -78,6 +78,10 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         else            return className.substring(idx+1);
     }
 
+    public @Override String getSafeName() {
+        return uniquifyName(parent.getChildren(), safe(getName()));
+    }
+
     public CaseResult getDynamic(String name, StaplerRequest req, StaplerResponse rsp) {
         for (CaseResult c : cases) {
             if(c.getSafeName().equals(name))

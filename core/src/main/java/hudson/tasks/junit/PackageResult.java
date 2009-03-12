@@ -63,6 +63,10 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
         return packageName;
     }
 
+    public @Override String getSafeName() {
+        return uniquifyName(parent.getChildren(), safe(getName()));
+    }
+
     public AbstractBuild<?,?> getOwner() {
         return parent.getOwner();
     }

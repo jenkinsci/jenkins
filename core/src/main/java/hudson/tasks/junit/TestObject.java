@@ -30,6 +30,9 @@ import hudson.Util;
 
 import java.io.Serializable;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -68,6 +71,34 @@ public abstract class TestObject implements ModelObject, Serializable {
     public Api getApi() {
         return new Api(this);
     }
+
+    /**
+     * Gets the name of this object.
+     */
+    public /*abstract*/ String getName() {return "";}
+
+    /**
+     * Gets the version of {@link #getName()} that's URL-safe.
+     */
+    public String getSafeName() {
+        return safe(getName());
+    }
+
+    /**
+     * #2988: uniquifies a {@link #getSafeName} amongst children of the parent.
+     */
+    protected final synchronized String uniquifyName(Collection<? extends TestObject> siblings, String base) {
+        String uniquified = base;
+        int sequence = 1;
+        for (TestObject sibling : siblings) {
+            if (sibling != this && uniquified.equals(UNIQUIFIED_NAMES.get(sibling))) {
+                uniquified = base + '_' + ++sequence;
+            }
+        }
+        UNIQUIFIED_NAMES.put(this, uniquified);
+        return uniquified;
+    }
+    private static final Map<TestObject,String> UNIQUIFIED_NAMES = new WeakHashMap<TestObject,String>();
 
     /**
      * Replaces URL-unsafe characters.

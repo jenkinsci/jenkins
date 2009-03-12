@@ -31,8 +31,13 @@ THE SOFTWARE.
       <h1 class="${st.cssClass}">
         <st:out value="${st.message}" />
       </h1>
-      <p style="font-weight:bold">
-        <st:out value="${it.fullName}"/>
+      <p>
+        <span style="font-weight:bold">
+          <st:out value="${it.fullName}"/>
+        </span>
+        <j:if test="${it.className != it.parent.name}">
+          (from <st:out value="${it.parent.name}"/>)
+        </j:if>
       </p>
       <j:if test="${!it.passed}">
         <div style="text-align:right;">

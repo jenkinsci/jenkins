@@ -151,7 +151,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      * Note that this may contain any URL-unfriendly character.
      */
     @Exported(visibility=999)
-    public String getName() {
+    public @Override String getName() {
         return testName;
     }
 
@@ -166,14 +166,14 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     /**
      * Gets the version of {@link #getName()} that's URL-safe.
      */
-    public String getSafeName() {
+    public @Override String getSafeName() {
         StringBuffer buf = new StringBuffer(testName);
         for( int i=0; i<buf.length(); i++ ) {
             char ch = buf.charAt(i);
             if(!Character.isJavaIdentifierPart(ch))
                 buf.setCharAt(i,'_');
         }
-        return buf.toString();
+        return uniquifyName(classResult.getChildren(), buf.toString());
     }
 
     /**
