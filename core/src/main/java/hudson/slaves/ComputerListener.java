@@ -25,9 +25,12 @@ package hudson.slaves;
 
 import hudson.model.Computer;
 import hudson.model.Hudson;
+import hudson.model.TaskListener;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
+
+import java.io.IOException;
 
 /**
  * Receives notifications about status changes of {@link Computer}s.
@@ -38,8 +41,37 @@ import hudson.ExtensionList;
 public abstract class ComputerListener implements ExtensionPoint {
     /**
      * Called right after a {@link Computer} comes online.
+     *
+     * @deprecated as of 1.292
+     *      Use {@link #onOnline(Computer, TaskListener)}
      */
     public void onOnline(Computer c) {}
+
+    /**
+     * Called right after a {@link Computer} comes online.
+     *
+     * <p>
+     * This enables you to do some work on all the slaves
+     * as they get connected.
+     *
+     * @param listener
+     *      This is connected to the launch log of the computer.
+     *      Since this method is called synchronously from the thread
+     *      that launches a computer, if this method performs a time-consuming
+     *      operation, this listener should be notified of the progress.
+     *      This is also a good listener for reporting problems.
+     *
+     * @throws IOException
+     *      Exceptions will be recorded to the listener. Note that
+     *      throwing an exception doesn't put the computer offline.
+     * @throws InterruptedException
+     *      Exceptions will be recorded to the listener. Note that
+     *      throwing an exception doesn't put the computer offline.
+     */
+    public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+        // compatibility
+        onOnline(c);
+    }
 
     /**
      * Called right after a {@link Computer} went offline.

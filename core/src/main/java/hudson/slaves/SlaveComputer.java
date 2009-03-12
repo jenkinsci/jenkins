@@ -281,6 +281,7 @@ public class SlaveComputer extends Computer {
             channel.addListener(listener);
 
         PrintWriter log = new PrintWriter(launchLog,true);
+        TaskListener taskListener = new StreamTaskListener(log);
 
         boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
@@ -318,8 +319,8 @@ public class SlaveComputer extends Computer {
             this.channel = channel;
             defaultCharset = Charset.forName(defaultCharsetName);
         }
-        for (ComputerListener cl : Hudson.getInstance().getComputerListeners())
-            cl.onOnline(this);
+        for (ComputerListener cl : ComputerListener.all())
+            cl.onOnline(this,taskListener);
         Hudson.getInstance().getQueue().scheduleMaintenance();
     }
 
