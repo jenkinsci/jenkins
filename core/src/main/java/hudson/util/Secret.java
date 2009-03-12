@@ -59,7 +59,9 @@ public final class Secret {
     }
 
     /**
-     * Obtains the secret text.
+     * Obtains the secret in a plain text.
+     *
+     * @see #getEncryptedValue()
      */
     public String toString() {
         return value;
@@ -91,6 +93,8 @@ public final class Secret {
 
     /**
      * Encrypts {@link #value} and returns it in an encoded printable form.
+     *
+     * @see #toString() 
      */
     public String getEncryptedValue() {
         try {
