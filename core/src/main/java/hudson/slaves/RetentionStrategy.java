@@ -31,7 +31,6 @@ import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-import hudson.model.ParameterDefinition;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
