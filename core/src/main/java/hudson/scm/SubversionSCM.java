@@ -1349,6 +1349,7 @@ public class SubversionSCM extends SCM implements Serializable {
                 // 3) if the authentication is successful, svnkit calls back acknowledgeAuthentication
                 //    (so we store the password info here)
                 repository = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(url));
+                repository.setTunnelProvider(SVNWCUtil.createDefaultOptions(true));
                 repository.setAuthenticationManager(new DefaultSVNAuthenticationManager(SVNWCUtil.getDefaultConfigurationDirectory(), true, username, password, keyFile, password) {
                     Credential cred = null;
 
