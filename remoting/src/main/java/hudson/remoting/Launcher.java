@@ -105,8 +105,15 @@ public class Launcher {
                 Method $addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
                 $addURL.setAccessible(true);
 
-                for(String token : args[++i].split(File.pathSeparator))
+                String pathList = args[++i];
+                for(String token : pathList.split(File.pathSeparator))
                     $addURL.invoke(ClassLoader.getSystemClassLoader(),new File(token).toURI().toURL());
+
+                // fix up the system.class.path to pretend that those jar files
+                // are given through CLASSPATH or something.
+                // some tools like JAX-WS RI and Hadoop relies on this.
+                System.setProperty("java.class.path",System.getProperty("java.class.path")+File.pathSeparatorChar+pathList);
+
                 continue;
             }
             if(arg.equals("-tcp")) {
