@@ -144,7 +144,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         }
 
         public long check(SlaveComputer c) {
-            if (c.isOffline() && c.isLaunchSupported())
+            if (c.isOffline() && !c.isConnecting() && c.isLaunchSupported())
                 c.tryReconnect();
             return 1;
         }
