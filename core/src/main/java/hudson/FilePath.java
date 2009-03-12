@@ -444,7 +444,7 @@ public final class FilePath implements Serializable {
             final InputStream in = new RemoteInputStream(_in);
             act(new FileCallable<Void>() {
                 public Void invoke(File dir, VirtualChannel channel) throws IOException {
-                    readFromTar("input stream",dir, compression.extract(in));
+                    readFromTar("input stream",dir, compression.extract(new BufferedInputStream(in)));
                     return null;
                 }
                 private static final long serialVersionUID = 1L;
