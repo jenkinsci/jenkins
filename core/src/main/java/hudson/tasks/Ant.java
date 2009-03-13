@@ -139,13 +139,11 @@ public class Ant extends Builder {
         EnvVars env = build.getEnvironment();
         
         AntInstallation ai = getAnt();
-        if (ai != null) {
-            ai = ai.forNode(Computer.currentComputer().getNode());
-        }
         if(ai==null) {
             args.add(launcher.isUnix() ? "ant" : "ant.bat");
         } else {
-        	ai = ai.forEnvironment(env);
+            ai = ai.forNode(Computer.currentComputer().getNode());
+            ai = ai.forEnvironment(env);
             String exe = ai.getExecutable(launcher);
             if (exe==null) {
                 listener.fatalError(Messages.Ant_ExecutableNotFound(ai.getName()));
