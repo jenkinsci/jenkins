@@ -61,6 +61,7 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 
 import groovy.lang.Binding;
 
@@ -233,6 +234,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             if(u.getProperty(Details.class)!=null)
                 r.add(u);
         }
+        Collections.sort(r);
         return r;
     }
 

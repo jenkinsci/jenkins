@@ -89,7 +89,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled, Saveable {
+public class User extends AbstractModelObject implements AccessControlled, Saveable, Comparable<User> {
 
     private transient final String id;
 
@@ -108,6 +108,10 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
         this.id = id;
         this.fullName = id;   // fullName defaults to name
         load();
+    }
+
+    public int compareTo(User that) {
+        return this.id.compareTo(that.id);
     }
 
     /**
