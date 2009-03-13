@@ -150,7 +150,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
         }
 
         public String getKey() {
-            return type.getClass().getName() + "@" + name;
+            return type + "@" + name;
         }
 
     }
