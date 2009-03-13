@@ -29,7 +29,6 @@ import hudson.util.CaseInsensitiveComparator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Arrays;
@@ -92,7 +91,8 @@ public class EnvVars extends TreeMap<String,String> {
     }
 
     /**
-     * Overrides all values in the map. See #override
+     * Overrides all values in the map by the given map.
+     * See {@link #override(String, String)}.
      * @return this
      */
     public EnvVars overrideAll(Map<String,String> all) {
