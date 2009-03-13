@@ -137,12 +137,12 @@ public class EnvVars extends TreeMap<String,String> {
     public static EnvVars getRemote(VirtualChannel channel) throws IOException, InterruptedException {
         if(channel==null)
             return new EnvVars("N/A","N/A");
-        return new EnvVars(channel.call(new GetEnvVars()));
+        return channel.call(new GetEnvVars());
     }
 
-    private static final class GetEnvVars implements Callable<Map<String,String>,RuntimeException> {
-        public Map<String,String> call() {
-            return new TreeMap<String,String>(EnvVars.masterEnvVars);
+    private static final class GetEnvVars implements Callable<EnvVars,RuntimeException> {
+        public EnvVars call() {
+            return new EnvVars(EnvVars.masterEnvVars);
         }
         private static final long serialVersionUID = 1L;
     }
