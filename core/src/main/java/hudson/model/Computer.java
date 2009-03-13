@@ -528,10 +528,18 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     }
 
     /**
+     * @deprecated as of 1.292
+     *      Use {@link #getEnvironment()} instead.
+     */
+    public Map<String,String> getEnvVars() throws IOException, InterruptedException {
+        return getEnvironment();
+    }
+
+    /**
      * Gets the environment variables of the JVM on this computer.
      * If this is the master, it returns the system property of the master computer.
      */
-    public Map<String,String> getEnvVars() throws IOException, InterruptedException {
+    public EnvVars getEnvironment() throws IOException, InterruptedException {
         return EnvVars.getRemote(getChannel());
     }
 

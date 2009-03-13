@@ -455,7 +455,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             if(debug)
                 listener.getLogger().println("Reporters="+reporters);
 
-            EnvVars envVars = EnvVars.getRemote(launcher.getChannel()).overrideAll(getEnvVars());
+            EnvVars envVars = getEnvironment();
             
             ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener,
                 new MavenProcessFactory(getParent().getParent(),launcher,envVars,null));

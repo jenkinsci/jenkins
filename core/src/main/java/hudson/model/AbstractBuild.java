@@ -428,8 +428,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     @Override
-    public Map<String,String> getEnvVars() {
-        Map<String,String> env = super.getEnvVars();
+    public EnvVars getEnvironment() throws IOException, InterruptedException {
+        EnvVars env = super.getEnvironment();
         env.put("WORKSPACE", getProject().getWorkspace().getRemote());
         // servlet container may have set CLASSPATH in its launch script,
         // so don't let that inherit to the new child process.

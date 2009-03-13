@@ -136,9 +136,8 @@ public class Ant extends Builder {
         
         ArgumentListBuilder args = new ArgumentListBuilder();
 
-        Map<String,String> slaveEnv = EnvVars.getRemote(launcher.getChannel());
-        EnvVars env = new EnvVars(slaveEnv);
-        env.overrideAll(build.getEnvVars());
+        EnvVars env = EnvVars.getRemote(launcher.getChannel());
+        env.overrideAll(build.getEnvironment());
         
         AntInstallation ai = getAnt();
         if (ai != null) {

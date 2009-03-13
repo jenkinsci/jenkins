@@ -53,7 +53,6 @@ import hudson.util.XStream2;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -1230,7 +1229,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Returns the map that contains environmental variable overrides for this build.
+     * @deprecated as of 1.292
+     *      Use {@link #getEnvironment()} instead.
+     */
+    public Map<String,String> getEnvVars() {
+        try {
+            return getEnvironment();
+        } catch (IOException e) {
+            return new EnvVars();
+        } catch (InterruptedException e) {
+            return new EnvVars();
+        }
+    }
+
+    /**
+     * Returns the map that contains environmental variables to be used for launching
+     * processes for this build.
      *
      * <p>
      * {@link BuildStep}s that invoke external processes should use this.
@@ -1238,14 +1252,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * to take effect.
      *
      * <p>
-     * On Windows systems, environment variables are case-preserving but
-     * comparison/query is case insensitive (IOW, you can set 'Path' to something
-     * and you get the same value by doing '%PATH%'.)  So to implement this semantics
-     * the map returned from here is a {@link TreeMap} with a special comparator.
-     *
+     * Unlike earlier {@link #getEnvVars()}, this map contains the whole environment,
+     * not just the overrides, so one can introspect values to change its behavior.
      */
-    public Map<String,String> getEnvVars() {
-        EnvVars env = getCharacteristicEnvVars();
+    public EnvVars getEnvironment() throws IOException, InterruptedException {
+        EnvVars env = Computer.currentComputer().getEnvironment().overrideAll(getCharacteristicEnvVars());
         String rootUrl = Hudson.getInstance().getRootUrl();
         if(rootUrl!=null)
             env.put("HUDSON_URL", rootUrl);

@@ -184,9 +184,7 @@ public class Maven extends Builder {
 
         VariableResolver<String> vr = build.getBuildVariableResolver();
 
-        Map<String,String> slaveEnv = EnvVars.getRemote(launcher.getChannel());
-        EnvVars env = new EnvVars(slaveEnv);
-        env.overrideAll(build.getEnvVars());
+        EnvVars env = build.getEnvironment();
 
         String targets = Util.replaceMacro(this.targets,vr);
         targets = env.expand(targets);

@@ -25,6 +25,7 @@ package org.jvnet.hudson.test;
 
 import hudson.Launcher;
 import hudson.Extension;
+import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
@@ -42,14 +43,14 @@ import java.util.Map;
  */
 public class CaptureEnvironmentBuilder extends Builder {
 	
-    private Map<String, String> envVars;
+    private EnvVars envVars;
 
-	public Map<String, String> getEnvVars() {
+	public EnvVars getEnvVars() {
 		return envVars;
 	}
 
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-    	envVars = build.getEnvVars();
+    	envVars = build.getEnvironment();
         return true;
     }
 

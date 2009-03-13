@@ -384,6 +384,9 @@ public class Util {
         return tokenize(s," \t\n\r\f");
     }
 
+    /**
+     * Converts the map format of the environment variables to the K=V format in the array.
+     */
     public static String[] mapToEnv(Map<String,String> m) {
         String[] r = new String[m.size()];
         int idx=0;

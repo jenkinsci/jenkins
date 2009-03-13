@@ -26,6 +26,7 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -74,7 +75,7 @@ public abstract class CommandInterpreter extends Builder {
 
             int r;
             try {
-                Map<String,String> envVars = build.getEnvVars();
+                EnvVars envVars = build.getEnvironment();
                 // on Windows environment variables are converted to all upper case,
                 // but no such conversions are done on Unix, so to make this cross-platform,
                 // convert variables to all upper cases.

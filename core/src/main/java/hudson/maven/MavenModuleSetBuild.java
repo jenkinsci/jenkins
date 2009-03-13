@@ -311,7 +311,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         protected Result doRun(final BuildListener listener) throws Exception {
             PrintStream logger = listener.getLogger();
             try {
-                EnvVars envVars = EnvVars.getRemote(launcher.getChannel());
+                EnvVars envVars = getEnvironment();
                 parsePoms(listener, logger, envVars);
 
                 if(!project.isAggregatorStyleBuild()) {
@@ -343,8 +343,6 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         proxies = new HashMap<ModuleName, ProxyImpl2>();
                         for (MavenModule m : project.sortedActiveModules)
                             proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(MavenModuleSetBuild.this,slistener));
-
-                        envVars.overrideAll(getEnvVars());
 
                         // run the complete build here
 

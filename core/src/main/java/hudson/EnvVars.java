@@ -47,6 +47,16 @@ import java.util.Arrays;
  * @author Kohsuke Kawaguchi
  */
 public class EnvVars extends TreeMap<String,String> {
+    /**
+     * If this {@link EnvVars} object represents the whole environment variable set,
+     * not just a partial list used for overriding later, then we need to know
+     * the platform for which this env vars are targeted for, or else we won't konw
+     * how to merge variables properly.
+     *
+     * <p>
+     * So this property remembers that information.
+     */
+    private Platform platform;
 
     public EnvVars() {
         super(CaseInsensitiveComparator.INSTANCE);
@@ -55,6 +65,18 @@ public class EnvVars extends TreeMap<String,String> {
     public EnvVars(Map<String,String> m) {
         this();
         putAll(m);
+
+        // because of the backward compatibility, some parts of Hudson passes
+        // EnvVars as Map<String,String> so downcasting is safer.
+        if (m instanceof EnvVars) {
+            EnvVars lhs = (EnvVars) m;
+            this.platform = lhs.platform;
+        }
+    }
+
+    public EnvVars(EnvVars m) {
+        // this constructor is so that in future we can get rid of the downcasting.
+        this((Map)m);
     }
 
     public EnvVars(String... keyValuePairs) {
@@ -82,7 +104,13 @@ public class EnvVars extends TreeMap<String,String> {
             String realKey = key.substring(0,idx);
             String v = get(realKey);
             if(v==null) v=value;
-            else        v=value+File.pathSeparatorChar+v;
+            else {
+                // we might be handling environment variables for a slave that can have different path separator
+                // than the master, so the following is an attempt to get it right.
+                // it's still more error prone that I'd like.
+                char ch = platform==null ? File.pathSeparatorChar : platform.pathSeparator;
+                v=value+ch+v;
+            }
             put(realKey,v);
             return;
         }
@@ -133,6 +161,8 @@ public class EnvVars extends TreeMap<String,String> {
      *
      * @param channel
      *      Can be null, in which case the map indicating "N/A" will be returned.
+     * @return
+     *      A fresh copy that can be owned and modified by the caller.
      */
     public static EnvVars getRemote(VirtualChannel channel) throws IOException, InterruptedException {
         if(channel==null)
@@ -159,6 +189,11 @@ public class EnvVars extends TreeMap<String,String> {
      * If you access this field from slaves, then this is the environment
      * variable of the slave agent.
      */
-    public static final Map<String,String> masterEnvVars = new EnvVars(System.getenv());
+    public static final Map<String,String> masterEnvVars = initMaster();
 
+    private static EnvVars initMaster() {
+        EnvVars vars = new EnvVars(System.getenv());
+        vars.platform = Platform.current();
+        return vars;
+    }
 }

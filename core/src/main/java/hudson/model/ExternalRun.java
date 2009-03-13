@@ -61,7 +61,7 @@ public class ExternalRun extends Run<ExternalJob,ExternalRun> {
     public void run(final String[] cmd) {
         run(new Runner() {
             public Result run(BuildListener listener) throws Exception {
-                Proc proc = new Proc.LocalProc(cmd,getEnvVars(),System.in,new DualOutputStream(System.out,listener.getLogger()));
+                Proc proc = new Proc.LocalProc(cmd,getEnvironment(),System.in,new DualOutputStream(System.out,listener.getLogger()));
                 return proc.join()==0?Result.SUCCESS:Result.FAILURE;
             }
 
