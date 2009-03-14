@@ -50,7 +50,7 @@ public abstract class ACL {
     public final void checkPermission(Permission p) {
         Authentication a = Hudson.getAuthentication();
         if(!hasPermission(a,p))
-            throw new AccessDeniedException(a.toString()+" is missing "+p.name);
+            throw new AccessDeniedException2(a,p);
     }
 
     /**
