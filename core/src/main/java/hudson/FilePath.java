@@ -37,15 +37,12 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.RemoteInputStream;
 import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
-import hudson.util.StreamResource;
 import hudson.util.HeadBufferingStream;
 import hudson.util.jna.GNUCLibrary;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.util.FileUtils;
 import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.taskdefs.Untar;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
@@ -71,6 +68,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -451,6 +449,35 @@ public final class FilePath implements Serializable {
             });
         } finally {
             IOUtils.closeQuietly(_in);
+        }
+    }
+
+    /**
+     * Reads the URL on the current VM, and writes all the data to this {@link FilePath}
+     * (this is different from resolving URL remotely.)
+     *
+     * @since 1.293
+     */
+    public void copyFrom(URL url) throws IOException, InterruptedException {
+        InputStream in = url.openStream();
+        try {
+            copyFrom(in);
+        } finally {
+            in.close();
+        }
+    }
+
+    /**
+     * Replaces the content of this file by the data from the given {@link InputStream}.
+     *
+     * @since 1.293
+     */
+    public void copyFrom(InputStream in) throws IOException, InterruptedException {
+        OutputStream os = write();
+        try {
+            IOUtils.copy(in, os);
+        } finally {
+            os.close();
         }
     }
 
