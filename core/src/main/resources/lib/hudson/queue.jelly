@@ -56,7 +56,7 @@ THE SOFTWARE.
       <j:otherwise>
         <j:forEach var="item" items="${items}">
           <tr>
-            <td class="pane" width="100%" tooltip="${item.why}">
+            <td class="pane" width="100%" tooltip="${item.why}" style="white-space: normal;">
               <j:set var="stuck" value="${item.isStuck()}" />
               <a href="${rootURL}/${item.task.url}" style="${h.ifThenElse(stuck,'color:#ef2929',null)}">
                 ${item.task.fullDisplayName}
