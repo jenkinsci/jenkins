@@ -200,7 +200,7 @@ public class Launcher {
                 // check if this URL points to a .jnlp file
                 String contentType = con.getHeaderField("Content-Type");
                 if(contentType==null || !contentType.startsWith("application/x-java-jnlp-file"))
-                        throw new IOException(slaveJnlpURL+" doesn't look like a JNLP file");
+                        throw new IOException(slaveJnlpURL+" doesn't look like a JNLP file; content type was "+contentType);
 
                 // exec into the JNLP launcher, to fetch the connection parameter through JNLP.
                 DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
