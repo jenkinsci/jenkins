@@ -246,9 +246,15 @@ public final class FilePath implements Serializable {
             }
 
             private void scan(File f, ZipOutputStream zip, String path) throws IOException {
+                // Bitmask indicating directories in 'external attributes' of a ZIP archive entry.
+                final long BITMASK_IS_DIRECTORY = 1<<4;
+              
                 if (f.canRead()) {
                     if(f.isDirectory()) {
-                        zip.putNextEntry(new ZipEntry(path+f.getName()+'/'));
+                        ZipEntry dirZipEntry = new ZipEntry(path+f.getName()+'/');
+                        // Setting this bit explicitly is needed by some unzipping applications (see HUDSON-3294).
+                        dirZipEntry.setExternalAttributes(BITMASK_IS_DIRECTORY);
+                        zip.putNextEntry(dirZipEntry);
                         zip.closeEntry();
                         for( File child : f.listFiles() )
                             scan(child,zip,path+f.getName()+'/');
