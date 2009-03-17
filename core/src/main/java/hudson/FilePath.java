@@ -1225,7 +1225,7 @@ public final class FilePath implements Serializable {
      * This is useful in conjunction with {@link FormFieldValidator}.
      *
      * @return
-     *      null if no error was found.
+     *      null if no error was found. Otherwise returns a human readable error message.
      * @since 1.90
      * @see FormFieldValidator.WorkspaceFileMask
      */
