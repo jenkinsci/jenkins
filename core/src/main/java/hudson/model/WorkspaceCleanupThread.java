@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.Extension;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
@@ -41,7 +42,8 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class WorkspaceCleanupThread extends PeriodicWork {
+@Extension
+public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     private static WorkspaceCleanupThread theInstance;
 
     public WorkspaceCleanupThread() {
@@ -49,32 +51,28 @@ public class WorkspaceCleanupThread extends PeriodicWork {
         theInstance = this;
     }
 
+    public long getRecurrencePeriod() {
+        return DAY;
+    }
+
     public static void invoke() {
         theInstance.run();
     }
 
-    private StreamTaskListener listener;
+    // so that this can be easily accessed from sub-routine.
+    private TaskListener listener;
 
-    protected void execute() {
-        Hudson h = Hudson.getInstance();
+    protected void execute(TaskListener listener) throws InterruptedException, IOException {
         try {
-            // don't buffer this, so that the log shows what the worker thread is up to in real time
-            try {
-                listener = new StreamTaskListener(new File(h.getRootDir(),"workspace-cleanup.log"));
+            this.listener = listener;
 
-                for (Slave s : h.getSlaves())
-                    process(s);
+            Hudson h = Hudson.getInstance();
+            for (Slave s : h.getSlaves())
+                process(s);
 
-                process(h);
-            } catch (InterruptedException e) {
-                e.printStackTrace(listener.fatalError("aborted"));
-            } finally {
-                if(listener!=null)
-                    listener.close();
-                listener = null;
-            }
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to access log file",e);
+            process(h);
+        } finally {
+            this.listener = null;
         }
     }
 

@@ -28,7 +28,9 @@ import java.util.WeakHashMap;
 
 import hudson.model.Computer;
 import hudson.model.Hudson;
+import hudson.model.PeriodicWork;
 import hudson.triggers.SafeTimerTask;
+import hudson.Extension;
 
 /**
  * Periodically checks the slaves and try to reconnect dead slaves.
@@ -36,12 +38,17 @@ import hudson.triggers.SafeTimerTask;
  * @author Kohsuke Kawaguchi
  * @author Stephen Connolly
  */
-public class ComputerRetentionWork extends SafeTimerTask {
+@Extension
+public class ComputerRetentionWork extends PeriodicWork {
 
     /**
      * Use weak hash map to avoid leaking {@link Computer}.
      */
     private final Map<Computer, Long> nextCheck = new WeakHashMap<Computer, Long>();
+
+    public long getRecurrencePeriod() {
+        return MIN;
+    }
 
     /**
      * {@inheritDoc}

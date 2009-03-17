@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import hudson.Extension;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -39,7 +41,8 @@ import java.util.regex.Pattern;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class FingerprintCleanupThread extends PeriodicWork {
+@Extension
+public final class FingerprintCleanupThread extends AsyncPeriodicWork {
 
     private static FingerprintCleanupThread theInstance;
 
@@ -48,11 +51,15 @@ public final class FingerprintCleanupThread extends PeriodicWork {
         theInstance = this;
     }
 
+    public long getRecurrencePeriod() {
+        return DAY;
+    }
+
     public static void invoke() {
         theInstance.run();
     }
 
-    protected void execute() {
+    protected void execute(TaskListener listener) {
         int numFiles = 0;
 
         File root = new File(Hudson.getInstance().getRootDir(),"fingerprints");

@@ -24,11 +24,10 @@
 package hudson.model;
 
 import hudson.model.MultiStageTimeSeries.TimeScale;
-import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
+import hudson.Extension;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -56,7 +55,7 @@ import java.util.List;
  * <h2>Implementation Note</h2>
  * <p>
  * Instances of this class is not capable of updating the statistics itself
- * &mdash; instead, it's done by the single {@link #register()} method.
+ * &mdash; instead, it's done by the {@link LoadStatisticsUpdater} timer.
  * This is more efficient (as it allows us a single pass to update all stats),
  * but it's not clear to me if the loss of autonomy is worth it.
  *
@@ -201,46 +200,6 @@ public abstract class LoadStatistics {
     }
 
     /**
-     * Start updating the load average.
-     */
-    /*package*/ static void register() {
-        Trigger.timer.scheduleAtFixedRate(
-            new SafeTimerTask() {
-                protected void doRun() {
-                    Hudson h = Hudson.getInstance();
-                    List<Queue.BuildableItem> bis = h.getQueue().getBuildableItems();
-
-                    // update statistics on slaves
-                    for( Label l : h.getLabels() ) {
-                        l.loadStatistics.totalExecutors.update(l.getTotalExecutors());
-                        l.loadStatistics.busyExecutors .update(l.getBusyExecutors());
-
-                        int q=0;
-                        for (Queue.BuildableItem bi : bis) {
-                            if(bi.task.getAssignedLabel()==l)
-                                q++;
-                        }
-                        l.loadStatistics.queueLength.update(q);
-                    }
-
-                    // update statistics of the entire system
-                    ComputerSet cs = h.getComputer();
-                    h.overallLoad.totalExecutors.update(cs.getTotalExecutors());
-                    h.overallLoad.busyExecutors .update(cs.getBusyExecutors());
-                    int q=0;
-                    for (Queue.BuildableItem bi : bis) {
-                        if(bi.task.getAssignedLabel()==null)
-                            q++;
-                    }
-                    h.overallLoad.queueLength.update(q);
-                    h.overallLoad.totalQueueLength.update(bis.size());
-                }
-            }, CLOCK, CLOCK
-        );
-    }
-
-
-    /**
      * With 0.90 decay ratio for every 10sec, half reduction is about 1 min.
      */
     public static final float DECAY = Float.parseFloat(System.getProperty(LoadStatistics.class.getName()+".decay","0.9"));
@@ -248,4 +207,44 @@ public abstract class LoadStatistics {
      * Load statistics clock cycle in milliseconds. Specify a small value for quickly debugging this feature and node provisioning through cloud.
      */
     public static int CLOCK = Integer.getInteger(LoadStatistics.class.getName()+".clock",10*1000);
+
+    /**
+     * Periodically update the load statistics average.
+     */
+    @Extension
+    public static class LoadStatisticsUpdater extends PeriodicWork {
+        public long getRecurrencePeriod() {
+            return CLOCK;
+        }
+
+        protected void doRun() {
+            Hudson h = Hudson.getInstance();
+            List<hudson.model.Queue.BuildableItem> bis = h.getQueue().getBuildableItems();
+
+            // update statistics on slaves
+            for( Label l : h.getLabels() ) {
+                l.loadStatistics.totalExecutors.update(l.getTotalExecutors());
+                l.loadStatistics.busyExecutors .update(l.getBusyExecutors());
+
+                int q=0;
+                for (hudson.model.Queue.BuildableItem bi : bis) {
+                    if(bi.task.getAssignedLabel()==l)
+                        q++;
+                }
+                l.loadStatistics.queueLength.update(q);
+            }
+
+            // update statistics of the entire system
+            ComputerSet cs = h.getComputer();
+            h.overallLoad.totalExecutors.update(cs.getTotalExecutors());
+            h.overallLoad.busyExecutors .update(cs.getBusyExecutors());
+            int q=0;
+            for (hudson.model.Queue.BuildableItem bi : bis) {
+                if(bi.task.getAssignedLabel()==null)
+                    q++;
+            }
+            h.overallLoad.queueLength.update(q);
+            h.overallLoad.totalQueueLength.update(bis.size());
+        }
+    }
 }

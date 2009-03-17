@@ -28,10 +28,12 @@ import hudson.model.Node;
 import hudson.model.Hudson;
 import hudson.model.MultiStageTimeSeries;
 import hudson.model.Label;
+import hudson.model.PeriodicWork;
 import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
+import hudson.Extension;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
@@ -186,21 +188,31 @@ public class NodeProvisioner {
         }
     }
 
-    public static void launch() {
-        // periodically invoke NodeProvisioners
-        Trigger.timer.scheduleAtFixedRate(new SafeTimerTask() {
-                @Override
-                protected void doRun() {
-                    Hudson h = Hudson.getInstance();
-                    h.overallNodeProvisioner.update();
-                    for( Label l : h.getLabels() )
-                        l.nodeProvisioner.update();
-                }
-            },
-            // give some initial warm up time so that statically connected slaves
-            // can be brought online before we start allocating more.
-            LoadStatistics.CLOCK*10,
-            LoadStatistics.CLOCK);
+    /**
+     * Periodically invoke NodeProvisioners
+     */
+    @Extension
+    public static class NodeProvisionerInvoker extends PeriodicWork {
+        /**
+         * Give some initial warm up time so that statically connected slaves
+         * can be brought online before we start allocating more.
+         */
+        @Override
+        public long getInitialDelay() {
+            return LoadStatistics.CLOCK*10;
+        }
+
+        public long getRecurrencePeriod() {
+            return LoadStatistics.CLOCK;
+        }
+
+        @Override
+        protected void doRun() {
+            Hudson h = Hudson.getInstance();
+            h.overallNodeProvisioner.update();
+            for( Label l : h.getLabels() )
+                l.nodeProvisioner.update();
+        }
     }
 
     private static final float MARGIN = 0.1f;

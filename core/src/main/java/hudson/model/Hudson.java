@@ -546,9 +546,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         for (ItemListener l : ItemListener.all())
             l.onLoaded();
 
-        LoadStatistics.register();
-        NodeProvisioner.launch();
-
         // run the initialization script, if it exists.
         File initScript = new File(getRootDir(),"init.groovy");
         if(initScript.exists()) {

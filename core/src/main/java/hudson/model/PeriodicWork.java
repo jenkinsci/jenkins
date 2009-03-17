@@ -24,54 +24,74 @@
 package hudson.model;
 
 import hudson.triggers.SafeTimerTask;
+import hudson.triggers.Trigger;
+import hudson.ExtensionPoint;
+import hudson.Extension;
+import hudson.DescriptorExtensionList;
+import hudson.ExtensionList;
+import hudson.scm.SCMDescriptor;
+import hudson.scm.SCM;
+import hudson.util.StreamTaskListener;
+import hudson.util.NullStream;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Random;
+import java.util.Timer;
 
 /**
- * Abstract base class for a periodic work.
+ * Extension point to perform a periodic task in Hudson (through {@link Timer}.)
+ *
+ * <p>
+ * This extension point is useful if your plugin needs to perform some work in the background periodically
+ * (for example, monitoring, batch processing, garbage collection, etc.)
+ *
+ * <p>
+ * Put {@link Extension} on your class to have it picked up and registered automatically, or
+ * manually insert this to {@link Trigger#timer}.
+ *
+ * <p>
+ * This class is designed to run a short task. Implementations whose periodic work takes a long time
+ * to run should extend from {@link AsyncPeriodicWork} instead. 
  *
  * @author Kohsuke Kawaguchi
+ * @see AsyncPeriodicWork
  */
-public abstract class PeriodicWork extends SafeTimerTask {
-
-    /**
-     * Name of the work.
-     */
-    private final String name;
-    private Thread thread;
-
+public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoint {
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
-    protected PeriodicWork(String name) {
-        this.name = name;
+    /**
+     * Gets the number of milliseconds between successive executions.
+     *
+     * <p>
+     * Hudson calls this method once to set up a recurring timer, instead of
+     * calling this each time after the previous execution completed. So this class cannot be
+     * used to implement a non-regular recurring timer.
+     *
+     * <p>
+     * IOW, the method should always return the same value.
+     */
+    public abstract long getRecurrencePeriod();
+
+    /**
+     * Gets the number of milliseconds til the first execution.
+     *
+     * <p>
+     * By default it chooses the value randomly between 0 and {@link #getRecurrencePeriod()}
+     */
+    public long getInitialDelay() {
+        return new Random().nextLong()%getRecurrencePeriod();
     }
 
     /**
-     * Schedules this periodic work now in a new thread, if one isn't already running.
+     * Returns all the registered {@link PeriodicWork}s.
      */
-    public final void doRun() {
-        try {
-            if(thread!=null && thread.isAlive()) {
-                logger.log(Level.INFO, name+" thread is still running. Execution aborted.");
-                return;
-            }
-            thread = new Thread(new Runnable() {
-                public void run() {
-                    logger.log(Level.INFO, "Started "+name);
-                    long startTime = System.currentTimeMillis();
-
-                    execute();
-
-                    logger.log(Level.INFO, "Finished "+name+". "+
-                        (System.currentTimeMillis()-startTime)+" ms");
-                }
-            },name+" thread");
-            thread.start();
-        } catch (Throwable t) {
-            logger.log(Level.SEVERE, name+" thread failed with error", t);
-        }
+    public static ExtensionList<PeriodicWork> all() {
+        return Hudson.getInstance().getExtensionList(PeriodicWork.class);
     }
 
-    protected abstract void execute();
+// time constants
+    protected static final long MIN = 1000*60;
+    protected static final long HOUR =60*MIN;
+    protected static final long DAY = 24*HOUR;
 }
