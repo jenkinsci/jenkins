@@ -93,7 +93,7 @@ public class JavadocArchiver extends Recorder {
                 if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no javadoc.
                     // The build probably didn't even get to the point where it produces javadoc.
-                    listener.error(Messages.JavadocArchiver_NoMatchFound(javadoc,javadoc.validateAntFileMask("**/*"));
+                    listener.error(Messages.JavadocArchiver_NoMatchFound(javadoc,javadoc.validateAntFileMask("**/*")));
                 }
                 build.setResult(Result.FAILURE);
                 return true;
