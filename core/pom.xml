@@ -170,7 +170,7 @@ THE SOFTWARE.
           <factory>org.jvnet.hudson.tools.ExtensionPointListerFactory</factory>
           <options>
             <option>page=Extension points</option>
-	    <option>target=${project.basedir}/target/extension-points.wiki</option>
+            <option>target=${project.basedir}/target/extension-points.wiki</option>
           </options>
         </configuration>
         <dependencies>
