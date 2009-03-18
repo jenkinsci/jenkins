@@ -120,6 +120,8 @@ import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
@@ -519,6 +521,21 @@ public abstract class HudsonTestCase extends TestCase {
      */
     public HtmlPage submit(HtmlForm form) throws Exception {
         return (HtmlPage)form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+    }
+
+    /**
+     * Submits the form by clikcing the submit button of the given name.
+     *
+     * @param name
+     *      This corresponds to the @name of &lt;f:submit />
+     */
+    public HtmlPage submit(HtmlForm form, String name) throws Exception {
+        for( HtmlElement e : form.getHtmlElementsByTagName("button")) {
+            HtmlElement p = (HtmlElement)e.getParentNode().getParentNode();
+            if(p.getAttribute("name").equals(name))
+                return (HtmlPage)form.submit((HtmlButton)e);
+        }
+        throw new AssertionError("No such submit button with the name "+name);
     }
 
     /**
