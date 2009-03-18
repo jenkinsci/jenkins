@@ -27,6 +27,7 @@ import org.mozilla.javascript.debug.Debugger;
 import org.mozilla.javascript.debug.DebuggableScript;
 import org.mozilla.javascript.debug.DebugFrame;
 import org.mozilla.javascript.Context;
+import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import java.util.ArrayList;
  * allow arbitrary script evaluation in arbitrary stack frame.
  *
  * @author Kohsuke Kawaguchi
+ * @see HudsonTestCase#jsDebugger
  */
 public class JavaScriptDebugger implements Debugger {
     /**
