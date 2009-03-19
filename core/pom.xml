@@ -191,6 +191,41 @@ THE SOFTWARE.
           </dependency>
         </dependencies>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.groovy.maven</groupId>
+        <artifactId>gmaven-plugin</artifactId>
+        <executions>
+          <!-- run unit test -->
+          <execution>
+            <phase>test</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <source>src/build-script/unitTest.groovy</source>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency><!-- this needs to be visible to Ant inside GMaven, so has to be a plugin dependency -->
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant-junit</artifactId>
+            <version>1.7.0</version>
+          </dependency>
+          <dependency>
+            <groupId>net.sourceforge.cobertura</groupId>
+            <artifactId>cobertura</artifactId>
+            <version>1.9</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <!-- unit tests are run by GMaven through Ant. I'm fed up with Maven! -->
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skipTests>true</skipTests>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
