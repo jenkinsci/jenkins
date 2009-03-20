@@ -202,7 +202,7 @@ THE SOFTWARE.
               <goal>execute</goal>
             </goals>
             <configuration>
-              <source>src/build-script/unitTest.groovy</source>
+              <source>${project.basedir}/src/build-script/unitTest.groovy</source>
             </configuration>
           </execution>
         </executions>
