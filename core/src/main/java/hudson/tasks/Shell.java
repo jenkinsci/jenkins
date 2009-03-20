@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.Descriptor;
+import hudson.model.AbstractProject;
 import static hudson.model.Hudson.isWindows;
 import hudson.util.FormFieldValidator;
 import net.sf.json.JSONObject;
@@ -99,7 +100,7 @@ public class Shell extends CommandInterpreter {
     }
 
     @Extension
-    public static final class DescriptorImpl extends Descriptor<Builder> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
          * Shell executable, or null to default.
          */
@@ -107,6 +108,10 @@ public class Shell extends CommandInterpreter {
 
         public DescriptorImpl() {
             load();
+        }
+
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return true;
         }
 
         protected void convert(Map<String, Object> oldPropertyBag) {

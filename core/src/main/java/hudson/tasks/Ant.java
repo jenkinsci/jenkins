@@ -248,12 +248,16 @@ public class Ant extends Builder {
     }
 
     @Extension
-    public static class DescriptorImpl extends Descriptor<Builder> {
+    public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
         @CopyOnWrite
         private volatile AntInstallation[] installations = new AntInstallation[0];
 
         public DescriptorImpl() {
             load();
+        }
+
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return true;
         }
 
         protected DescriptorImpl(Class<? extends Ant> clazz) {

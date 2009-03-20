@@ -272,13 +272,17 @@ public class Maven extends Builder {
     public static DescriptorImpl DESCRIPTOR;
 
     @Extension
-    public static final class DescriptorImpl extends Descriptor<Builder> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         @CopyOnWrite
         private volatile MavenInstallation[] installations = new MavenInstallation[0];
 
         public DescriptorImpl() {
             DESCRIPTOR = this;
             load();
+        }
+
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return true;
         }
 
         protected void convert(Map<String, Object> oldPropertyBag) {
