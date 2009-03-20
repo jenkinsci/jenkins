@@ -48,15 +48,20 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     private transient ClassResult classResult;
 
     /**
+     * Some tools report stdout and stderr at testcase level (such as Maven surefire plugin), others do so at
+     * the suite level (such as Ant JUnit task.)
+     *
+     * If these information are reported at the test case level, these fields are set,
+     * otherwise null, in which case {@link SuiteResult#stdout}.
+     */
+    private final String stdout,stderr;
+
+    /**
      * This test has been failing since this build number (not id.)
      *
      * If {@link #isPassed() passing}, this field is left unused to 0.
      */
     private /*final*/ int failedSince;
-
-    CaseResult(SuiteResult parent, String testClassName, Element testCase) {
-        this(parent,testClassName,testCase.attributeValue("name"), getError(testCase), getErrorMessage(testCase), parseTime(testCase), isMarkedAsSkipped(testCase));
-    }
 
     private static float parseTime(Element testCase) {
         String time = testCase.attributeValue("time");
@@ -93,16 +98,18 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         errorStackTrace = getError(testCase);
         errorDetails = getErrorMessage(testCase);
         skipped = isMarkedAsSkipped(testCase);
+        stdout = testCase.elementText("system-out");
+        stderr = testCase.elementText("system-err");
     }
 
     /**
      * Used to create a fake failure, when Hudson fails to load data from XML files.
      */
     CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
-        this( parent, parent.getName(), testName, errorStackTrace, "", 0.0f, false );
+        this( parent, parent.getName(), testName, errorStackTrace, "", null, null, 0.0f, false );
     }
 
-    CaseResult(SuiteResult parent, String testClassName, String testName, String errorStackTrace, String errorDetails, float duration, boolean skipped) {
+    CaseResult(SuiteResult parent, String testClassName, String testName, String errorStackTrace, String errorDetails, String stdout, String stderr, float duration, boolean skipped) {
         this.className = testClassName;
         this.testName = testName;
         this.errorStackTrace = errorStackTrace;
@@ -110,6 +117,8 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         this.parent = parent;
         this.duration = duration;
         this.skipped = skipped;
+        this.stdout = stdout;
+        this.stderr = stderr;
     }
 
     private static String getError(Element testCase) {
@@ -224,6 +233,37 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
             return 0;
         else
             return getOwner().getNumber()-failedSince+1;
+    }
+
+    /**
+     * The stdout of this test.
+     *
+     * <p>
+     * Depending on the tool that produced the XML report, this method works somewhat inconsistently.
+     * With some tools (such as Maven surefire plugin), you get the accurate information, that is
+     * the stdout from this test case. With some other tools (such as the JUnit task in Ant), this
+     * method returns the stdout produced by the entire test suite.
+     *
+     * <p>
+     * If you need to know which is the case, compare this output from {@link SuiteResult#getStdout()}.
+     * @since 1.294
+     */
+    @Exported
+    public String getStdout() {
+        if(stdout!=null)    return stdout;
+        return getParent().getStdout();
+    }
+
+    /**
+     * The stderr of this test.
+     *
+     * @see #getStdout()
+     * @since 1.294
+     */
+    @Exported
+    public String getStderr() {
+        if(stderr!=null)    return stderr;
+        return getParent().getStderr();
     }
 
     @Override

@@ -143,7 +143,7 @@ public final class SuiteResult implements Serializable {
             // one wants to use @name from <testsuite>,
             // the other wants to use @classname from <testcase>.
 
-            addCase(new CaseResult(this,classname,e));
+            addCase(new CaseResult(this, e, classname));
         }
     }
 
@@ -163,11 +163,10 @@ public final class SuiteResult implements Serializable {
     }
 
     /**
-     * The stdout of this test. Note that due to the design of the format,
-     * stdout for the entire {@link SuiteResult} is reported,
-     * and Hudson cannot tell what portion of the output corresponds to this test.
+     * The stdout of this test.
      *
      * @since 1.281
+     * @see CaseResult#getStdout()
      */
     @Exported
     public String getStdout() {
@@ -175,11 +174,10 @@ public final class SuiteResult implements Serializable {
     }
 
     /**
-     * The stderr of this test. Note that due to the design of the format,
-     * stdout for the entire {@link SuiteResult} is reported,
-     * and Hudson cannot tell what portion of the output corresponds to this test.
-     *
+     * The stderr of this test.
+     * 
      * @since 1.281
+     * @see CaseResult#getStderr()
      */
     @Exported
     public String getStderr() {
