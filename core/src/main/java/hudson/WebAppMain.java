@@ -192,8 +192,6 @@ public final class WebAppMain implements ServletContextListener {
                             throw new Error(e);
                         }
 
-                        Trigger.init(); // start running trigger
-
                         // trigger the loading of changelogs in the background,
                         // but give the system 10 seconds so that the first page
                         // can be served quickly

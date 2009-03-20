@@ -37,9 +37,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -197,8 +197,13 @@ public class NodeProvisionerTest extends HudsonTestCase {
     private void verifySuccessfulCompletion(List<Future<FreeStyleBuild>> builds) throws Exception {
         System.out.println("Waiting for a completion");
         for (Future<FreeStyleBuild> f : builds) {
-            FreeStyleBuild b = f.get();// if it's taking too long, abort.
-            assertBuildStatus(Result.SUCCESS,b);
+            try {
+                assertBuildStatus(Result.SUCCESS, f.get(1, TimeUnit.MINUTES));
+            } catch (TimeoutException e) {
+                // time out so that the automated test won't hang forever, even when we have bugs
+                System.out.println("Build didn't complete in time");
+                throw e;
+            }
         }
     }
 }

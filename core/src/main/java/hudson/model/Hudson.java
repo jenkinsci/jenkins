@@ -557,6 +557,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 t.printStackTrace();
             }
         }
+
+        Trigger.init(); // start running trigger
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
