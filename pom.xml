@@ -49,7 +49,7 @@ THE SOFTWARE.
   </modules>
   
   <scm>
-    <connection>scm:svn:https://svn.dev.java.net/svn/hudson/trunk/hudson/main/</connection>
+    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/trunk/hudson/main/</connection>
     <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/trunk/hudson/main/</developerConnection>
     <url>https://hudson.dev.java.net/source/browse/hudson/trunk/hudson/main</url>
   </scm>
