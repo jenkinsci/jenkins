@@ -31,7 +31,6 @@ import hudson.maven.AbstractMavenProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.model.Hudson;
 import hudson.util.FormFieldValidator;
@@ -100,6 +99,9 @@ public class ArtifactArchiver extends Recorder {
 
         try {
             FilePath ws = p.getWorkspace();
+            if (ws==null) { // #3330: slave down?
+                return true;
+            }
             if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
                 if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
