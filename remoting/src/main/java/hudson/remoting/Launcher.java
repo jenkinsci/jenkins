@@ -197,14 +197,24 @@ public class Launcher {
                 URLConnection con = slaveJnlpURL.openConnection();
                 con.connect();
 
+                Document dom;
+
                 // check if this URL points to a .jnlp file
                 String contentType = con.getHeaderField("Content-Type");
-                if(contentType==null || !contentType.startsWith("application/x-java-jnlp-file"))
+                if(contentType==null || !contentType.startsWith("application/x-java-jnlp-file")) {
+                    // load DOM anyway, but if it fails to parse, that's probably because this is not an XML file to begin with.
+                    try {
+                        dom = loadDom(slaveJnlpURL, con);
+                    } catch (SAXException e) {
                         throw new IOException(slaveJnlpURL+" doesn't look like a JNLP file; content type was "+contentType);
+                    } catch (IOException e) {
+                        throw new IOException(slaveJnlpURL+" doesn't look like a JNLP file; content type was "+contentType);
+                    }
+                } else {
+                    dom = loadDom(slaveJnlpURL, con);
+                }
 
                 // exec into the JNLP launcher, to fetch the connection parameter through JNLP.
-                DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                Document dom = db.parse(con.getInputStream(),slaveJnlpURL.toExternalForm());
                 NodeList argElements = dom.getElementsByTagName("argument");
                 List<String> jnlpArgs = new ArrayList<String>();
                 for( int i=0; i<argElements.getLength(); i++ )
@@ -228,6 +238,11 @@ public class Launcher {
                 // retry
             }
         }
+    }
+
+    private static Document loadDom(URL slaveJnlpURL, URLConnection con) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        return db.parse(con.getInputStream(),slaveJnlpURL.toExternalForm());
     }
 
     /**
