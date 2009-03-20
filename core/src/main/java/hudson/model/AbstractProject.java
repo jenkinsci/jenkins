@@ -1308,19 +1308,24 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public static abstract class AbstractProjectDescriptor extends TopLevelItemDescriptor {
         /**
-         * {@link AbstractProject} subtypes can override this method to veto some {@link BuildStepDescriptor}s
+         * {@link AbstractProject} subtypes can override this method to veto some {@link Descriptor}s
          * from showing up on their configuration screen. This is often useful when you are building
-         * a workflow specific project type, where generic builders and publishers don't make sense.
+         * a workflow/company specific project type, where you want to limit the number of choices
+         * given to the users.
          *
          * <p>
-         * This method works like AND in conjunction with {@link BuildStepDescriptor#isApplicable(Class)}.
-         * Both this method and that method need to return true in order for a given {@link BuildStepDescriptor}
+         * Some {@link Descriptor}s define their own schemes for controlling applicability
+         * (such as {@link BuildStepDescriptor#isApplicable(Class)}),
+         * This method works like AND in conjunction with them;
+         * Both this method and that method need to return true in order for a given {@link Descriptor}
          * to show up for the given {@link Project}.
          *
          * <p>
          * The default implementation returns true for everything.
+         *
+         * @see BuildStepDescriptor#isApplicable(Class) 
          */
-        public boolean isApplicable(BuildStepDescriptor descriptor) {
+        public boolean isApplicable(Descriptor descriptor) {
             return true;
         }
     }
