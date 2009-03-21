@@ -53,6 +53,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLClassLoader;
 import java.net.InetSocketAddress;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -196,6 +197,13 @@ public class Launcher {
             try {
                 URLConnection con = slaveJnlpURL.openConnection();
                 con.connect();
+
+                if (con instanceof HttpURLConnection) {
+                    HttpURLConnection http = (HttpURLConnection) con;
+                    if(http.getResponseCode()>=400)
+                        // got the error code. report that (such as 401)
+                        throw new IOException("Failed to load "+slaveJnlpURL+": "+http.getResponseCode()+" "+http.getResponseMessage());
+                }
 
                 Document dom;
 
