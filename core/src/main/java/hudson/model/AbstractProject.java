@@ -1325,6 +1325,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          *
          * @see BuildStepDescriptor#isApplicable(Class) 
          */
+        @Override
         public boolean isApplicable(Descriptor descriptor) {
             return true;
         }

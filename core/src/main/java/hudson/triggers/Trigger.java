@@ -38,6 +38,8 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.PeriodicWork;
+import hudson.model.TopLevelItem;
+import hudson.model.TopLevelItemDescriptor;
 import hudson.scheduler.CronTab;
 import hudson.scheduler.CronTabList;
 import hudson.util.DoubleLaunchChecker;
@@ -270,8 +272,14 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     public static List<TriggerDescriptor> for_(Item i) {
         List<TriggerDescriptor> r = new ArrayList<TriggerDescriptor>();
         for (TriggerDescriptor t : all()) {
-            if(t.isApplicable(i))
-                r.add(t);
+            if(!t.isApplicable(i))  continue;
+
+            if (i instanceof TopLevelItem) {// ugly
+                TopLevelItemDescriptor tld = ((TopLevelItem) i).getDescriptor();
+                if(!tld.isApplicable(t))    continue;
+            }
+
+            r.add(t);
         }
         return r;
     }
