@@ -276,6 +276,8 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
             if (i instanceof TopLevelItem) {// ugly
                 TopLevelItemDescriptor tld = ((TopLevelItem) i).getDescriptor();
+                // tld shouldn't be really null in contract, but we often write test Describables that
+                // doesn't have a Descriptor.
                 if(tld!=null && !tld.isApplicable(t))    continue;
             }
 
