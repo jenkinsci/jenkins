@@ -59,6 +59,8 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.util.Area;
 import hudson.util.Iterators;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -608,6 +610,10 @@ public class Functions {
 
     public static List<Descriptor<Publisher>> getPublisherDescriptors(AbstractProject<?,?> project) {
         return BuildStepDescriptor.filter(Publisher.all(), project.getClass());
+    }
+
+    public static List<SCMDescriptor<?>> getSCMDescriptors(AbstractProject<?,?> project) {
+        return SCM._for(project);
     }
 
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {

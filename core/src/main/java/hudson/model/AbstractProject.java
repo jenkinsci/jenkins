@@ -1169,7 +1169,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         authToken = BuildAuthorizationToken.create(req);
 
-        setScm(SCMS.parseSCM(req));
+        setScm(SCMS.parseSCM(req,this));
 
         for (Trigger t : triggers)
             t.stop();

@@ -39,11 +39,15 @@ import hudson.model.TaskListener;
 import hudson.model.Node;
 import hudson.model.WorkspaceCleanupThread;
 import hudson.model.Hudson;
+import hudson.model.Descriptor;
+import hudson.model.AbstractProject.AbstractProjectDescriptor;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Captures the configuration information in it.
@@ -360,5 +364,27 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public static DescriptorExtensionList<SCM,SCMDescriptor<?>> all() {
         return Hudson.getInstance().getDescriptorList(SCM.class);
+    }
+
+    /**
+     * Returns the list of {@link SCMDescriptor}s that are applicable to the given project.
+     */
+    public static List<SCMDescriptor<?>> _for(final AbstractProject project) {
+        if(project==null)   return all();
+        
+        final Descriptor pd = Hudson.getInstance().getDescriptor((Class) project.getClass());
+        List<SCMDescriptor<?>> r = new ArrayList<SCMDescriptor<?>>();
+        for (SCMDescriptor<?> scmDescriptor : all()) {
+            if(!scmDescriptor.isApplicable(project))    continue;
+
+            if (pd instanceof AbstractProjectDescriptor) {
+                AbstractProjectDescriptor apd = (AbstractProjectDescriptor) pd;
+                if(!apd.isApplicable(scmDescriptor))    continue;
+            }
+
+            r.add(scmDescriptor);
+        }
+
+        return r;
     }
 }
