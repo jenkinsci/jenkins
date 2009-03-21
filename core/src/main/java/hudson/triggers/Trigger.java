@@ -276,7 +276,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
             if (i instanceof TopLevelItem) {// ugly
                 TopLevelItemDescriptor tld = ((TopLevelItem) i).getDescriptor();
-                if(!tld.isApplicable(t))    continue;
+                if(tld!=null && !tld.isApplicable(t))    continue;
             }
 
             r.add(t);
