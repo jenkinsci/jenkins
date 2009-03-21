@@ -49,6 +49,8 @@ import hudson.tasks.BuildTrigger;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
@@ -1324,6 +1326,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          * The default implementation returns true for everything.
          *
          * @see BuildStepDescriptor#isApplicable(Class) 
+         * @see BuildWrapperDescriptor#isApplicable(AbstractProject) 
+         * @see TriggerDescriptor#isApplicable(Item)
          */
         @Override
         public boolean isApplicable(Descriptor descriptor) {
