@@ -30,6 +30,6 @@ THE SOFTWARE.
   </f:entry>
   <f:entry help="/help/project-config/javadoc-keep-all.html">
     <f:checkbox name="keep_all" checked="${instance.keepAll}" />
-    <label class="attach-previous">${%Retain javadoc for each successful build}</label>
+    <label class="attach-previous">${%Retain Javadoc for each successful build}</label>
   </f:entry>
 </j:jelly>
