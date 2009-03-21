@@ -221,6 +221,18 @@ public class Iterators {
     }
 
     /**
+     * Returns an {@link Iterator} that only returns items of the given subtype.
+     */
+    @SuppressWarnings({"unchecked"})
+    public static <T extends U,U> Iterator<T> subType(Iterator<U> itr, final Class<T> type) {
+        return (Iterator)new FilterIterator<U>(itr) {
+            protected boolean filter(U u) {
+                return type.isInstance(u);
+            }
+        };
+    }
+
+    /**
      * Creates a read-only mutator that disallows {@link Iterator#remove()}.
      */
     public static <T> Iterator<T> readOnly(final Iterator<T> itr) {
