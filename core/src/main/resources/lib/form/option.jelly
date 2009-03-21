@@ -25,7 +25,14 @@ THE SOFTWARE.
 <!--
 	<option> tag that takes true/false for selected
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+  <st:documentation>
+    &lt;option> tag for the &lt;select> element.
+
+    <st:attribute name="selected" type="boolean">
+      If true, the option value appears as selected.
+    </st:attribute>
+  </st:documentation>
   <option value="${attrs.value}" selected="${h.ifThenElse(attrs.selected,'true',null)}">
     <d:invokeBody/>
   </option>
