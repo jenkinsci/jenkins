@@ -32,7 +32,6 @@ import hudson.Util;
 import hudson.Extension;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
-import static hudson.Util.fixEmptyAndTrim;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -51,6 +50,7 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.ForkOutputStream;
 import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
+import hudson.util.FormValidation;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.BuildException;
@@ -60,6 +60,7 @@ import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 import javax.servlet.ServletException;
@@ -1165,17 +1166,13 @@ public class CVSSCM extends SCM implements Serializable {
         /**
          * Checks the correctness of the branch name.
          */
-        public void doCheckBranch(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new FormFieldValidator(req,rsp,false) {
-                protected void check() throws IOException, ServletException {
-                    String v = fixNull(request.getParameter("value"));
+        public FormValidation doCheckBranch(@QueryParameter String value) {
+            String v = fixNull(value);
 
-                    if(v.equals("HEAD"))
-                        error(Messages.CVSSCM_HeadIsNotBranch());
-                    else
-                        ok();
-                }
-            }.process();
+            if(v.equals("HEAD"))
+                return FormValidation.error(Messages.CVSSCM_HeadIsNotBranch());
+
+            return FormValidation.ok();
         }
 
         /**
@@ -1183,82 +1180,61 @@ public class CVSSCM extends SCM implements Serializable {
          * <p>
          * Also checks if .cvspass file contains the entry for this.
          */
-        public void doCheckCvsRoot(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new FormFieldValidator(req,rsp,false) {
-                protected void check() throws IOException, ServletException {
-                    String v = fixEmpty(request.getParameter("value"));
-                    if(v==null) {
-                        error(Messages.CVSSCM_MissingCvsroot());
-                        return;
+        public FormValidation doCheckCvsRoot(@QueryParameter String value) throws IOException {
+            String v = fixEmpty(value);
+            if(v==null)
+                return FormValidation.error(Messages.CVSSCM_MissingCvsroot());
+
+            Matcher m = CVSROOT_PSERVER_PATTERN.matcher(v);
+
+            // CVSROOT format isn't really that well defined. So it's hard to check this rigorously.
+            if(v.startsWith(":pserver") || v.startsWith(":ext")) {
+                if(!m.matches())
+                    return FormValidation.error(Messages.CVSSCM_InvalidCvsroot());
+                // I can't really test if the machine name exists, either.
+                // some cvs, such as SOCKS-enabled cvs can resolve host names that Hudson might not
+                // be able to. If :ext is used, all bets are off anyway.
+            }
+
+            // check .cvspass file to see if it has entry.
+            // CVS handles authentication only if it's pserver.
+            if(v.startsWith(":pserver")) {
+                if(m.group(2)==null) {// if password is not specified in CVSROOT
+                    String cvspass = getCvspassFile();
+                    File passfile;
+                    if(cvspass.equals("")) {
+                        passfile = new File(new File(System.getProperty("user.home")),".cvspass");
+                    } else {
+                        passfile = new File(cvspass);
                     }
 
-                    Matcher m = CVSROOT_PSERVER_PATTERN.matcher(v);
-
-                    // CVSROOT format isn't really that well defined. So it's hard to check this rigorously.
-                    if(v.startsWith(":pserver") || v.startsWith(":ext")) {
-                        if(!m.matches()) {
-                            error(Messages.CVSSCM_InvalidCvsroot());
-                            return;
-                        }
-                        // I can't really test if the machine name exists, either.
-                        // some cvs, such as SOCKS-enabled cvs can resolve host names that Hudson might not
-                        // be able to. If :ext is used, all bets are off anyway.
+                    if(passfile.exists()) {
+                        // It's possible that we failed to locate the correct .cvspass file location,
+                        // so don't report an error if we couldn't locate this file.
+                        //
+                        // if this is explicitly specified, then our system config page should have
+                        // reported an error.
+                        if(!scanCvsPassFile(passfile, v))
+                            return FormValidation.error(Messages.CVSSCM_PasswordNotSet());
                     }
-
-                    // check .cvspass file to see if it has entry.
-                    // CVS handles authentication only if it's pserver.
-                    if(v.startsWith(":pserver")) {
-                        if(m.group(2)==null) {// if password is not specified in CVSROOT
-                            String cvspass = getCvspassFile();
-                            File passfile;
-                            if(cvspass.equals("")) {
-                                passfile = new File(new File(System.getProperty("user.home")),".cvspass");
-                            } else {
-                                passfile = new File(cvspass);
-                            }
-
-                            if(passfile.exists()) {
-                                // It's possible that we failed to locate the correct .cvspass file location,
-                                // so don't report an error if we couldn't locate this file.
-                                //
-                                // if this is explicitly specified, then our system config page should have
-                                // reported an error.
-                                if(!scanCvsPassFile(passfile, v)) {
-                                    error(Messages.CVSSCM_PasswordNotSet());
-                                    return;
-                                }
-                            }
-                        }
-                    }
-
-                    // all tests passed so far
-                    ok();
                 }
-            }.process();
+            }
+            return FormValidation.ok();
         }
 
-	     /**
+	    /**
          * Validates the excludeRegions Regex
          */
-        public void doExcludeRegionsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new FormFieldValidator(req,rsp,false) {
-                protected void check() throws IOException, ServletException {
-                    String v = fixEmptyAndTrim(request.getParameter("value"));
+        public FormValidation doExcludeRegionsCheck(@QueryParameter String value) {
+            String v = fixNull(value).trim();
 
-                    if(v != null) {
-	                    String[] regions = v.split("[\\r\\n]+");
-	                    for (String region : regions) {
-		                    try {
-			                    Pattern.compile(region);
-		                    }
-		                    catch (PatternSyntaxException e) {
-			                    error("Invalid regular expression. " + e.getMessage());
-		                    }
-	                    }
-                    }
-                    ok();
+            for (String region : v.split("[\\r\\n]+"))
+                try {
+                    Pattern.compile(region);
+                } catch (PatternSyntaxException e) {
+                    return FormValidation.error("Invalid regular expression. " + e.getMessage());
                 }
-            }.process();
+            return FormValidation.ok();
         }
 
         /**

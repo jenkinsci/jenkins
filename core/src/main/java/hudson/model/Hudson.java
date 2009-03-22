@@ -104,6 +104,7 @@ import hudson.util.DescribableList;
 import hudson.util.Futures;
 import hudson.util.Memoizer;
 import hudson.util.Iterators;
+import hudson.util.FormValidation;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -121,6 +122,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
@@ -2687,90 +2689,68 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Checks if the JAVA_HOME is a valid JAVA_HOME path.
      */
-    public void doJavaHomeCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public FormValidation doJavaHomeCheck(@QueryParameter File value) {
         // this can be used to check the existence of a file on the server, so needs to be protected
-        new FormFieldValidator(req,rsp,true) {
-            public void check() throws IOException, ServletException {
-                File f = getFileParameter("value");
-                if(!f.isDirectory()) {
-                    error(Messages.Hudson_NotADirectory(f));
-                    return;
-                }
+        checkPermission(ADMINISTER);
 
-                File toolsJar = new File(f,"lib/tools.jar");
-                File mac = new File(f,"lib/dt.jar");
-                if(!toolsJar.exists() && !mac.exists()) {
-                    error(Messages.Hudson_NotJDKDir(f));
-                    return;
-                }
+        if(!value.isDirectory())
+            return FormValidation.error(Messages.Hudson_NotADirectory(value));
 
-                ok();
-            }
-        }.process();
+        File toolsJar = new File(value,"lib/tools.jar");
+        File mac = new File(value,"lib/dt.jar");
+        if(!toolsJar.exists() && !mac.exists())
+            return FormValidation.error(Messages.Hudson_NotJDKDir(value));
+
+        return FormValidation.ok();
     }
 
     /**
      * If the user chose the default JDK, make sure we got 'java' in PATH.
      */
-    public void doDefaultJDKCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        new FormFieldValidator(req,rsp,false) {
-            public void check() throws IOException, ServletException {
-                String v = request.getParameter("value");
-                if(!v.equals("(Default)"))
-                    // assume the user configured named ones properly in system config ---
-                    // or else system config should have reported form field validation errors.
-                    ok();
-                else {
-                    // default JDK selected. Does such java really exist?
-                    if(JDK.isDefaultJDKValid(Hudson.this))
-                        ok();
-                    else
-                        errorWithMarkup(Messages.Hudson_NoJavaInPath(request.getContextPath()));
-                }
-            }
-        }.process();
+    public FormValidation doDefaultJDKCheck(StaplerRequest request, @QueryParameter String value) {
+        if(!value.equals("(Default)"))
+            // assume the user configured named ones properly in system config ---
+            // or else system config should have reported form field validation errors.
+            return FormValidation.ok();
+
+        // default JDK selected. Does such java really exist?
+        if(JDK.isDefaultJDKValid(Hudson.this))
+            return FormValidation.ok();
+        else
+            return FormValidation.errorWithMarkup(Messages.Hudson_NoJavaInPath(request.getContextPath()));
     }
 
     /**
      * Checks if the top-level item with the given name exists.
      */
-    public void doItemExistsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public FormValidation doItemExistsCheck(@QueryParameter String value) {
         // this method can be used to check if a file exists anywhere in the file system,
         // so it should be protected.
-        new FormFieldValidator(req,rsp,Item.CREATE) {
-            protected void check() throws IOException, ServletException {
-                String job = fixEmpty(request.getParameter("value"));
-                if(job==null) {
-                    ok(); // nothing is entered yet
-                    return;
-                }
+        checkPermission(Item.CREATE);
+        
+        String job = fixEmpty(value);
+        if(job==null)
+            return FormValidation.ok(); // nothing is entered yet
 
-                if(getItem(job)==null)
-                    ok();
-                else
-                    error(Messages.Hudson_JobAlreadyExists(job));
-            }
-        }.process();
+        if(getItem(job)==null)
+            return FormValidation.ok();
+        else
+            return FormValidation.error(Messages.Hudson_JobAlreadyExists(job));
     }
 
     /**
      * Checks if a top-level view with the given name exists.
      */
-    public void doViewExistsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        new FormFieldValidator(req,rsp,View.CREATE) {
-            protected void check() throws IOException, ServletException {
-                String view = fixEmpty(request.getParameter("value"));
-                if(view==null) {
-                    ok(); // nothing is entered yet
-                    return;
-                }
+    public FormValidation doViewExistsCheck(@QueryParameter String value) {
+        checkPermission(View.CREATE);
 
-                if(getView(view)==null)
-                    ok();
-                else
-                    error(Messages.Hudson_ViewAlreadyExists(view));
-            }
-        }.process();
+        String view = fixEmpty(value);
+        if(view==null)  return FormValidation.ok(); // nothing is entered yet
+
+        if(getView(view)==null)
+            return FormValidation.ok();
+        else
+            return FormValidation.error(Messages.Hudson_ViewAlreadyExists(view));
     }
 
 
