@@ -59,7 +59,7 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
-  <l:layout norefresh="true" xmlns:local="local">
+  <l:layout title="Build #${it.build.number}" norefresh="true" xmlns:local="local">
     <st:include it="${it.build}" page="sidepanel.jelly" />
     <l:main-panel>
       <h1>Build #${it.build.number}</h1>
@@ -102,7 +102,7 @@ THE SOFTWARE.
                   </td>
                   <td class="pane">
                     <j:set var="tag" value="${up.key.getBuildByNumber(up.value).getAction(it.getClass()).tagName}" />
-                    ${h.ifThenElse(tag==null,'Not tagged',tag)}
+                    ${tag?:'Not tagged')}
                   </td>
                 </tr>
               </j:forEach>
