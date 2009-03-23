@@ -306,6 +306,11 @@ public class Functions {
         return Items.toNameList(projects);
     }
 
+    /**
+     * @deprecated as of 1.294
+     *      JEXL now supports the real ternary operator "x?y:z", so this work around
+     *      is no longer necessary.
+     */
     public static Object ifThenElse(boolean cond, Object thenValue, Object elseValue) {
         return cond ? thenValue : elseValue;
     }
