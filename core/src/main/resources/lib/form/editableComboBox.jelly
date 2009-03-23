@@ -47,9 +47,9 @@ THE SOFTWARE.
 
   <f:prepareDatabinding/>
 
-  <input id="${attrs.id}" autocomplete="off" class="${attrs.clazz} ${h.ifThenElse(checkUrl!=null,'validated','')}"
-         name ="${h.defaulted(attrs.name,'_.'+attrs.field)}"
-         value="${h.defaulted(attrs.value,instance[attrs.field])}"
+  <input id="${attrs.id}" autocomplete="off" class="${attrs.clazz} ${checkUrl!=null ? 'validated' : '')}"
+         name ="${attrs.name ?: '_.'+attrs.field}"
+         value="${attrs.value ?: instance[attrs.field]}"
          checkUrl="${checkUrl}" />
 	<script type="text/javascript">
     createComboBox("${id}",function() {
