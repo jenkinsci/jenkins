@@ -23,29 +23,33 @@
  */
 package hudson.tasks.junit;
 
+import hudson.Extension;
+import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.Extension;
-import hudson.maven.AbstractMavenProject;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
-import hudson.model.*;
+import hudson.maven.AbstractMavenProject;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
-import hudson.tasks.Publisher;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.tasks.test.TestResultAggregator;
 import hudson.tasks.test.TestResultProjectAction;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -147,8 +151,8 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
         /**
          * Performs on-the-fly validation on the file mask wildcard.
          */
-        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new FormFieldValidator.WorkspaceFileMask(req,rsp).process();
+        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+            return FilePath.validateFileMask(project.getWorkspace(),value);
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {

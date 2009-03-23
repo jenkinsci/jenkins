@@ -30,7 +30,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.Kind;
 import hudson.Functions;
 import hudson.Extension;
 import net.sf.json.JSONObject;
@@ -240,55 +241,47 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             return true;
         }
 
-        public void doCheckName(@QueryParameter String value ) throws IOException, ServletException {
-            doCheckName(value, Hudson.getInstance(), Hudson.ADMINISTER);
+        public FormValidation doCheckName(@QueryParameter String value ) throws IOException, ServletException {
+            return doCheckName(value, Hudson.getInstance(), Hudson.ADMINISTER);
         }
 
-        void doCheckName(String value, AccessControlled subject, Permission permission) throws IOException, ServletException {
+        FormValidation doCheckName(String value, AccessControlled subject, Permission permission) throws IOException, ServletException {
+            if(!subject.hasPermission(permission))  return FormValidation.ok(); // can't check
+
             final String v = value.substring(1,value.length()-1);
-            new FormFieldValidator(subject, permission) {
-                protected void check() throws IOException, ServletException {
-                    SecurityRealm sr = Hudson.getInstance().getSecurityRealm();
-                    String ev = Functions.escape(v);
+            SecurityRealm sr = Hudson.getInstance().getSecurityRealm();
+            String ev = Functions.escape(v);
 
-                    if(v.equals("authenticated")) {
-                        // systerm reserved group
-                        respond("<span>"+ makeImg("user.gif") +ev+"</span>");
-                        return;
-                    }
+            if(v.equals("authenticated"))
+                // systerm reserved group
+                return FormValidation.respond(Kind.OK, makeImg("user.gif") +ev);
 
-                    try {
-                        sr.loadUserByUsername(v);
-                        respond("<span>"+ makeImg("person.gif") +ev+"</span>");
-                        return;
-                    } catch (UserMayOrMayNotExistException e) {
-                        // undecidable, meaning the user may exist
-                        respond("<span>"+ev+"</span>");
-                        return;
-                    } catch (UsernameNotFoundException e) {
-                        // fall through next
-                    } catch (DataAccessException e) {
-                        // fall through next
-                    }
+            try {
+                sr.loadUserByUsername(v);
+                return FormValidation.respond(Kind.OK, makeImg("person.gif")+ev);
+            } catch (UserMayOrMayNotExistException e) {
+                // undecidable, meaning the user may exist
+                return FormValidation.respond(Kind.OK, ev);
+            } catch (UsernameNotFoundException e) {
+                // fall through next
+            } catch (DataAccessException e) {
+                // fall through next
+            }
 
-                    try {
-                        sr.loadGroupByGroupname(v);
-                        respond("<span>"+ makeImg("user.gif") +ev+"</span>");
-                        return;
-                    } catch (UserMayOrMayNotExistException e) {
-                        // undecidable, meaning the group may exist
-                        respond("<span>"+ev+"</span>");
-                        return;
-                    } catch (UsernameNotFoundException e) {
-                        // fall through next
-                    } catch (DataAccessException e) {
-                        // fall through next
-                    }
+            try {
+                sr.loadGroupByGroupname(v);
+                return FormValidation.respond(Kind.OK, makeImg("user.gif") +ev);
+            } catch (UserMayOrMayNotExistException e) {
+                // undecidable, meaning the group may exist
+                return FormValidation.respond(Kind.OK, ev);
+            } catch (UsernameNotFoundException e) {
+                // fall through next
+            } catch (DataAccessException e) {
+                // fall through next
+            }
 
-                    // couldn't find it. it doesn't exit
-                    respond("<span>"+ makeImg("error.gif") +ev+"</span>");
-                }
-            }.process();
+            // couldn't find it. it doesn't exit
+            return FormValidation.respond(Kind.ERROR, makeImg("error.gif") +ev);
         }
 
         private String makeImg(String gif) {

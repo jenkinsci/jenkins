@@ -30,9 +30,11 @@ import hudson.model.Descriptor;
 import hudson.model.AbstractProject;
 import static hudson.model.Hudson.isWindows;
 import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -153,9 +155,9 @@ public class Shell extends CommandInterpreter {
         /**
          * Check the existence of sh in the given location.
          */
-        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public FormValidation doCheck(@QueryParameter String value) {
             // Executable requires admin permission
-            new FormFieldValidator.Executable(req,rsp).process();
+            return FormValidation.validateExecutable(value); 
         }
     }
 }

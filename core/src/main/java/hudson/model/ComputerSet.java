@@ -27,7 +27,7 @@ import hudson.Util;
 import hudson.slaves.NodeDescriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.node_monitors.NodeMonitor;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -35,7 +35,6 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import java.io.IOException;
 import java.text.ParseException;
@@ -249,19 +248,18 @@ public final class ComputerSet extends AbstractModelObject {
     /**
      * Makes sure that the given name is good as a slave name.
      */
-    public void doCheckName(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
-        new FormFieldValidator(req,rsp,Hudson.ADMINISTER) {  // TODO: new permission?
-            protected void check() throws IOException, ServletException {
-                if(Util.fixEmpty(value)==null)
-                    ok(); // nothing is entered yet
-                else try {
-                    checkName(value);
-                    ok();
-                } catch (ParseException e) {
-                    error(e.getMessage());
-                }
-            }
-        }.process();
+    public FormValidation doCheckName(@QueryParameter String value) throws IOException, ServletException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+
+        if(Util.fixEmpty(value)==null)
+            return FormValidation.ok();
+        
+        try {
+            checkName(value);
+            return FormValidation.ok();
+        } catch (ParseException e) {
+            return FormValidation.error(e.getMessage());
+        }
     }
 
     public Api getApi() {

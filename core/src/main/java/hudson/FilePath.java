@@ -27,6 +27,8 @@ import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
+import hudson.model.AbstractProject;
+import hudson.model.Item;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
@@ -35,10 +37,11 @@ import hudson.remoting.Pipe;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.RemoteInputStream;
-import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
 import hudson.util.HeadBufferingStream;
+import hudson.util.FormValidation;
 import hudson.util.jna.GNUCLibrary;
+import static hudson.Util.fixEmpty;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -51,6 +54,7 @@ import org.apache.tools.zip.ZipOutputStream;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.fileupload.FileItem;
+import org.kohsuke.stapler.Stapler;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -1222,12 +1226,12 @@ public final class FilePath implements Serializable {
      * against this directory, and try to point out the problem.
      *
      * <p>
-     * This is useful in conjunction with {@link FormFieldValidator}.
+     * This is useful in conjunction with {@link FormValidation}.
      *
      * @return
      *      null if no error was found. Otherwise returns a human readable error message.
      * @since 1.90
-     * @see FormFieldValidator.WorkspaceFileMask
+     * @see #validateFileMask(FilePath, String)
      */
     public String validateAntFileMask(final String fileMasks) throws IOException, InterruptedException {
         return act(new FileCallable<String>() {
@@ -1349,6 +1353,103 @@ public final class FilePath implements Serializable {
                 return Math.min(idx1,idx2);
             }
         });
+    }
+
+    /**
+     * Shortcut for {@link #validateFileMask(String)} in case the left-hand side can be null.
+     */
+    public static FormValidation validateFileMask(FilePath pathOrNull, String value) throws IOException {
+        if(pathOrNull==null) return FormValidation.ok();
+        return pathOrNull.validateFileMask(value);
+    }
+
+    /**
+     * Short for {@code validateFileMask(value,true)} 
+     */
+    public FormValidation validateFileMask(String value) throws IOException {
+        return validateFileMask(value,true);
+    }
+
+    /**
+     * Checks the GLOB-style file mask. See {@link #validateAntFileMask(String)} 
+     * @since 1.294
+     */
+    public FormValidation validateFileMask(String value, boolean errorIfNotExist) throws IOException {
+        value = fixEmpty(value);
+        if(value==null)
+            return FormValidation.ok();
+
+        try {
+            if(!exists()) // no workspace. can't check
+                return FormValidation.ok();
+
+            String msg = validateAntFileMask(value);
+            if(errorIfNotExist)     return FormValidation.error(msg);
+            else                    return FormValidation.warning(msg);
+        } catch (InterruptedException e) {
+            return FormValidation.ok();
+        }
+    }
+
+    /**
+     * Validates a relative file path from this {@link FilePath}.
+     *
+     * @param value
+     *      The relative path being validated.
+     * @param errorIfNotExist
+     *      If true, report an error if the given relative path doesn't exist. Otherwise it's a warning.
+     * @param expectingFile
+     *      If true, we expect the relative path to point to a file.
+     *      Otherwise, the relative path is expected to be pointing to a directory.
+     */
+    public FormValidation validateRelativePath(String value, boolean errorIfNotExist, boolean expectingFile) throws IOException {
+        AbstractProject subject = Stapler.getCurrentRequest().findAncestorObject(AbstractProject.class);
+        subject.checkPermission(Item.CONFIGURE);
+
+        value = fixEmpty(value);
+
+        // none entered yet, or something is seriously wrong
+        if(value==null || (AbstractProject<?,?>)subject ==null) return FormValidation.ok();
+
+        // a common mistake is to use wildcard
+        if(value.contains("*")) return FormValidation.error("Wildcard is not allowed here");
+
+        try {
+            if(!exists())    // no base directory. can't check
+                return FormValidation.ok();
+
+            FilePath path = child(value);
+            if(path.exists()) {
+                if (expectingFile) {
+                    if(!path.isDirectory())
+                        return FormValidation.ok();
+                    else
+                        return FormValidation.error(value+" is not a file");
+                } else {
+                    if(path.isDirectory())
+                        return FormValidation.ok();
+                    else
+                        return FormValidation.error(value+" is not a directory");
+                }
+            }
+
+            String msg = "No such "+(expectingFile?"file":"directory")+": " + value;
+            if(errorIfNotExist)     return FormValidation.error(msg);
+            else                    return FormValidation.warning(msg);
+        } catch (InterruptedException e) {
+            return FormValidation.ok();
+        }
+    }
+
+    /**
+     * A convenience method over {@link #validateRelativePath(String, boolean, boolean)}.
+     */
+    public FormValidation validateRelativeDirectory(String value, boolean errorIfNotExist) throws IOException {
+        return validateRelativePath(value,errorIfNotExist,false);
+    }
+
+    public FormValidation validateRelativeDirectory(String value) throws IOException {
+        return validateRelativeDirectory(value,true);
     }
 
     @Deprecated

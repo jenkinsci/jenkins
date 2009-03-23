@@ -33,7 +33,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
-import hudson.model.Descriptor;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Hudson;
 import hudson.model.Node;
@@ -44,14 +43,13 @@ import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolLocationNodeProperty;
 import hudson.util.ArgumentListBuilder;
-import hudson.util.FormFieldValidator;
 import hudson.util.VariableResolver;
+import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -299,26 +297,20 @@ public class Ant extends Builder {
         /**
          * Checks if the ANT_HOME is valid.
          */
-        public void doCheckAntHome( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        public FormValidation doCheckAntHome(@QueryParameter File value) {
             // this can be used to check the existence of a file on the server, so needs to be protected
-            new FormFieldValidator(req,rsp,true) {
-                public void check() throws IOException, ServletException {
-                    File f = getFileParameter("value");
-                    if(!f.isDirectory()) {
-                        error(Messages.Ant_NotADirectory(f));
-                        return;
-                    }
+            if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+                return FormValidation.ok();
 
-                    File antJar = new File(f,"lib/ant.jar");
-                    if(!antJar.exists()) {
-                        error(Messages.Ant_NotAntDirectory(f));
-                        return;
-                    }
+            if(!value.isDirectory())
+                return FormValidation.error(Messages.Ant_NotADirectory(value));
 
-                    ok();
-                }
-            }.process();
-        }
+            File antJar = new File(value,"lib/ant.jar");
+            if(!antJar.exists())
+                return FormValidation.error(Messages.Ant_NotAntDirectory(value));
+
+        return FormValidation.ok();
+    }
 
 		public void setInstallations(AntInstallation... antInstallations) {
 			this.installations = antInstallations;

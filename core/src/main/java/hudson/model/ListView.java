@@ -34,14 +34,14 @@ import hudson.views.LastSuccessColumn;
 import hudson.views.ListViewColumn;
 import hudson.views.StatusColumn;
 import hudson.views.WeatherColumn;
-import hudson.views.StatusColumn.DescriptorImpl;
 import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -239,21 +239,16 @@ public class ListView extends View {
         /**
          * Checks if the include regular expression is valid.
          */
-        public void doCheckIncludeRegex( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException  {
-            new FormFieldValidator(req, rsp, false) {
-                @Override
-                protected void check() throws IOException, ServletException {
-                    String v = Util.fixEmpty(request.getParameter("value"));
-                    if (v != null) {
-                        try {
-                            Pattern.compile(v);
-                        } catch (PatternSyntaxException pse) {
-                            error(pse.getMessage());
-                        }
-                    }
-                    ok();
+        public FormValidation doCheckIncludeRegex( @QueryParameter String value ) throws IOException, ServletException, InterruptedException  {
+            String v = Util.fixEmpty(value);
+            if (v != null) {
+                try {
+                    Pattern.compile(v);
+                } catch (PatternSyntaxException pse) {
+                    return FormValidation.error(pse.getMessage());
                 }
-            }.process();
+            }
+            return FormValidation.ok();
         }
     }
 }

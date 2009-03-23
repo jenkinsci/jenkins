@@ -23,18 +23,20 @@
  */
 package hudson.scm.browsers;
 
-import static hudson.Util.fixEmpty;
 import hudson.model.Descriptor;
+import hudson.model.AbstractProject;
+import hudson.model.Item;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
 import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.scm.SubversionRepositoryBrowser;
 import hudson.scm.EditType;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.URLCheck;
 import hudson.Extension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.AncestorInPath;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -105,17 +107,6 @@ public class Sventon extends SubversionRepositoryBrowser {
         return s;
     }
 
-    /**
-     * Pick up "FOOBAR" from "http://site/browse/FOOBAR/"
-     */
-    private String getProjectName() {
-        String p = url.getPath();
-        if(p.endsWith("/")) p = p.substring(0,p.length()-1);
-
-        int idx = p.lastIndexOf('/');
-        return p.substring(idx+1);
-    }
-
     @Override
     public URL getChangeSetLink(LogEntry changeSet) throws IOException {
         return new URL(url, String.format("revinfo.svn?name=%s&revision=%d",
@@ -131,29 +122,27 @@ public class Sventon extends SubversionRepositoryBrowser {
         /**
          * Performs on-the-fly validation of the URL.
          */
-        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // URLCheck requires Admin permission
-            new FormFieldValidator.URLCheck(req,rsp) {
-                protected void check() throws IOException, ServletException {
-                    String value = fixEmpty(request.getParameter("value"));
-                    if(value==null) {// nothing entered yet
-                        ok();
-                        return;
-                    }
+        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter(fixEmpty=true) final String value) throws IOException, ServletException {
+            if(!project.hasPermission(Item.CONFIGURE))  return FormValidation.ok(); // can't check
+            if(value==null) // nothing entered yet
+                return FormValidation.ok();
 
-                    if(!value.endsWith("/")) value+='/';
+            return new URLCheck() {
+                protected FormValidation check() throws IOException, ServletException {
+                    String v = value;
+                    if(!v.endsWith("/")) v+='/';
 
                     try {
-                        if(findText(open(new URL(value)),"sventon")) {
-                            ok();
+                        if(findText(open(new URL(v)),"sventon")) {
+                            return FormValidation.ok();
                         } else {
-                            error("This is a valid URL but it doesn't look like Sventon");
+                            return FormValidation.error("This is a valid URL but it doesn't look like Sventon");
                         }
                     } catch (IOException e) {
-                        handleIOException(value,e);
+                        return handleIOException(v,e);
                     }
                 }
-            }.process();
+            }.check();
         }
     }
 

@@ -40,13 +40,12 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.AncestorInPath;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -267,20 +266,17 @@ public class AggregatedTestResultPublisher extends Recorder {
             return "/help/tasks/aggregate-test/help.html";
         }
 
-        public void doCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
+        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter(fixEmpty=true) String value) {
             // Require CONFIGURE permission on this project
-            AbstractProject project = req.findAncestorObject(AbstractProject.class);
+            if(!project.hasPermission(Item.CONFIGURE))  return FormValidation.ok();
 
-            new FormFieldValidator(req,rsp,project,Item.CONFIGURE) {
-                protected void check() throws IOException, ServletException {
-                    for (String name : Util.tokenize(value, ",")) {
-                        name = name.trim();
-                        if(Hudson.getInstance().getItemByFullName(name)==null) {
-                            error(hudson.tasks.Messages.BuildTrigger_NoSuchProject(name,AbstractProject.findNearest(name).getName()));
-                        }
-                    }
-                }
-            }.process();
+            for (String name : Util.tokenize(value, ",")) {
+                name = name.trim();
+                if(Hudson.getInstance().getItemByFullName(name)==null)
+                    return FormValidation.error(hudson.tasks.Messages.BuildTrigger_NoSuchProject(name,AbstractProject.findNearest(name).getName()));
+            }
+            
+            return FormValidation.ok();
         }
 
         public AggregatedTestResultPublisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {

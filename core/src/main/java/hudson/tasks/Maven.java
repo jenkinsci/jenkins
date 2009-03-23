@@ -38,7 +38,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
-import hudson.model.Descriptor;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import hudson.model.Hudson;
@@ -49,17 +48,16 @@ import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolLocationNodeProperty;
 import hudson.util.ArgumentListBuilder;
-import hudson.util.FormFieldValidator;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import hudson.util.VariableResolver;
+import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -324,31 +322,23 @@ public class Maven extends Builder {
         /**
          * Checks if the MAVEN_HOME is valid.
          */
-        public void doCheckMavenHome( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        public FormValidation doCheckMavenHome(@QueryParameter File value) {
             // this can be used to check the existence of a file on the server, so needs to be protected
-            new FormFieldValidator(req,rsp,true) {
-                public void check() throws IOException, ServletException {
-                    File f = getFileParameter("value");
-                    if(f.getPath().equals("")) {
-                        error(Messages.Maven_MavenHomeRequired());
-                        return;
-                    }
-                    if(!f.isDirectory()) {
-                        error(Messages.Maven_NotADirectory(f));
-                        return;
-                    }
+            if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+                return FormValidation.ok();
 
-                    File maven1File = new File(f,MAVEN_1_INSTALLATION_COMMON_FILE);
-                    File maven2File = new File(f,MAVEN_2_INSTALLATION_COMMON_FILE);
+            if(value.getPath().equals(""))
+                return FormValidation.error(Messages.Maven_MavenHomeRequired());
+            if(!value.isDirectory())
+                return FormValidation.error(Messages.Maven_NotADirectory(value));
 
-                    if(!maven1File.exists() && !maven2File.exists()) {
-                        error(Messages.Maven_NotMavenDirectory(f));
-                        return;
-                    }
+            File maven1File = new File(value,MAVEN_1_INSTALLATION_COMMON_FILE);
+            File maven2File = new File(value,MAVEN_2_INSTALLATION_COMMON_FILE);
 
-                    ok();
-                }
-            }.process();
+            if(!maven1File.exists() && !maven2File.exists())
+                return FormValidation.error(Messages.Maven_NotMavenDirectory(value));
+
+            return FormValidation.ok();
         }
     }
 

@@ -43,8 +43,7 @@ import hudson.tasks.DynamicLabeler;
 import hudson.tasks.LabelFinder;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
-import hudson.util.FormFieldValidator;
-import hudson.util.FormFieldValidator.NonNegativeInteger;
+import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.IOException;
@@ -425,30 +424,22 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public static abstract class SlaveDescriptor extends NodeDescriptor {
-        public void doCheckNumExecutors() throws IOException, ServletException {
-            new NonNegativeInteger().process();
+        public FormValidation doCheckNumExecutors(@QueryParameter String value) {
+            return FormValidation.validateNonNegativeInteger(value);
         }
 
         /**
          * Performs syntactical check on the remote FS for slaves.
          */
-        public void doCheckRemoteFs(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
-            new FormFieldValidator(req,rsp,false) {
-                protected void check() throws IOException, ServletException {
-                    if(Util.fixEmptyAndTrim(value)==null) {
-                        error("Remote directory is mandatory");
-                        return;
-                    }
+        public FormValidation doCheckRemoteFs(@QueryParameter String value) throws IOException, ServletException {
+            if(Util.fixEmptyAndTrim(value)==null)
+                return FormValidation.error("Remote directory is mandatory");
 
-                    if(value.startsWith("\\\\") || value.startsWith("/net/")) {
-                        warning("Are you sure you want to use network mounted file system for FS root? " +
-                                "Note that this directory needs not be visible to the master.");
-                        return;
-                    }
+            if(value.startsWith("\\\\") || value.startsWith("/net/"))
+                return FormValidation.warning("Are you sure you want to use network mounted file system for FS root? " +
+                        "Note that this directory needs not be visible to the master.");
 
-                    ok();
-                }
-            }.process();
+            return FormValidation.ok();
         }
     }
 

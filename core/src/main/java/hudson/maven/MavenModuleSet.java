@@ -35,10 +35,11 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.*;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
-import hudson.util.FormFieldValidator;
 import hudson.util.Function1;
+import hudson.util.FormValidation;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -635,15 +636,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     /**
      * Check the location of POM.
      */
-    public void doCheckRootPOM(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        new FormFieldValidator.WorkspaceFilePath(req,rsp,true,true) {
-            protected AbstractProject<?, ?> getProject() {
-                return MavenModuleSet.this;
-            }
-            protected FilePath getBaseDirectory(AbstractProject<?,?> p) {
-                return p.getModuleRoot();
-            }
-        }.process();
+    public FormValidation doCheckRootPOM(@QueryParameter String value) throws IOException, ServletException {
+        FilePath ws = getModuleRoot();
+        if(ws==null) return FormValidation.ok();
+        return ws.validateRelativePath(value,true,true);
     }
 
     public TopLevelItemDescriptor getDescriptor() {

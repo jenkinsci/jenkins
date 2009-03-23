@@ -41,6 +41,7 @@ import hudson.model.ModelObject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.TaskThread;
+import hudson.model.Item;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
@@ -48,7 +49,6 @@ import hudson.remoting.VirtualChannel;
 import hudson.security.Permission;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ForkOutputStream;
-import hudson.util.FormFieldValidator;
 import hudson.util.IOException2;
 import hudson.util.FormValidation;
 import org.apache.commons.io.FileUtils;
@@ -61,6 +61,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 import javax.servlet.ServletException;
@@ -1110,40 +1111,37 @@ public class CVSSCM extends SCM implements Serializable {
             return x.getCvsRoot().equals(y.getCvsRoot());
         }
 
-        //
+    //
     // web methods
     //
 
-        public void doCvsPassCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public FormValidation doCvsPassCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) {
             // this method can be used to check if a file exists anywhere in the file system,
             // so it should be protected.
-            new FormFieldValidator(req,rsp,true) {
-                protected void check() throws IOException, ServletException {
-                    String v = fixEmpty(request.getParameter("value"));
-                    if(v==null) {
-                        // default.
-                        ok();
-                    } else {
-                        File cvsPassFile = new File(v);
+            if(!project.hasPermission(Item.CONFIGURE))
+                return FormValidation.ok();
 
-                        if(cvsPassFile.exists()) {
-                            if(cvsPassFile.isDirectory())
-                                error(cvsPassFile+" is a directory");
-                            else
-                                ok();
-                        } else {
-                            error("No such file exists");
-                        }
-                    }
-                }
-            }.process();
+            value = fixEmpty(value);
+            if(value==null) // not entered
+                return FormValidation.ok();
+
+            File cvsPassFile = new File(value);
+
+            if(cvsPassFile.exists()) {
+                if(cvsPassFile.isDirectory())
+                    return FormValidation.error(cvsPassFile+" is a directory");
+                else
+                    return FormValidation.ok();
+            }
+
+            return FormValidation.error("No such file exists");
         }
 
         /**
          * Checks if cvs executable exists.
          */
-        public void doCvsExeCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new FormFieldValidator.Executable(req,rsp).process();
+        public FormValidation doCvsExeCheck(@QueryParameter String value) {
+            return FormValidation.validateExecutable(value);
         }
 
         /**
@@ -1330,18 +1328,11 @@ public class CVSSCM extends SCM implements Serializable {
         /**
          * Checks if the value is a valid CVS tag name.
          */
-        public synchronized void doCheckTag(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new FormFieldValidator(req,rsp,false) {
-                protected void check() throws IOException, ServletException {
-                    String tag = fixNull(request.getParameter("value")).trim();
-                    if(tag.length()==0) {// nothing entered yet
-                        ok();
-                        return;
-                    }
-
-                    error(isInvalidTag(tag));
-                }
-            }.check();
+        public synchronized FormValidation doCheckTag(@QueryParameter String value) {
+            String tag = fixNull(value).trim();
+            if(tag.length()==0) // nothing entered yet
+                return FormValidation.ok();
+            return FormValidation.error(isInvalidTag(tag));
         }
 
         @Override

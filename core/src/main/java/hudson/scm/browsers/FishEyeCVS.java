@@ -23,8 +23,8 @@
  */
 package hudson.scm.browsers;
 
-import hudson.Util;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.scm.CVSChangeLogSet;
@@ -32,14 +32,14 @@ import hudson.scm.CVSChangeLogSet.File;
 import hudson.scm.CVSChangeLogSet.Revision;
 import hudson.scm.CVSRepositoryBrowser;
 import hudson.scm.RepositoryBrowser;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Pattern;
-import javax.servlet.ServletException;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Repository browser for CVS in a FishEye server.
@@ -84,45 +84,32 @@ public final class FishEyeCVS extends CVSRepositoryBrowser {
             return "FishEye";
         }
 
-        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // false==No permission needed for basic check
-            new FormFieldValidator(req,rsp,false) {
+        public FormValidation doCheck(@QueryParameter String value) throws IOException, ServletException {
+            value = Util.fixEmpty(value);
+            if (value == null) return FormValidation.ok();
+            if (!value.endsWith("/"))   value += '/';
+            if (!URL_PATTERN.matcher(value).matches())
+                return FormValidation.errorWithMarkup("The URL should end like <tt>.../browse/foobar/</tt>");
+
+            // Connect to URL and check content only if we have admin permission
+            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+                return FormValidation.ok();
+            
+            final String finalValue = value;
+            return new FormValidation.URLCheck() {
                 @Override
-                protected void check() throws IOException, ServletException {
-                    String value = Util.fixEmpty(request.getParameter("value"));
-                    if (value == null) {
-                        ok();
-                        return;
-                    }
-                    if (!value.endsWith("/")) {
-                        value += '/';
-                    }
-                    if (!URL_PATTERN.matcher(value).matches()) {
-                        errorWithMarkup("The URL should end like <tt>.../browse/foobar/</tt>");
-                        return;
-                    }
-                    // Connect to URL and check content only if we have admin permission
-                    if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) {
-                        final String finalValue = value;
-                        new FormFieldValidator.URLCheck(request,response) {
-                            @Override
-                            protected void check() throws IOException, ServletException {
-                                try {
-                                    if (findText(open(new URL(finalValue)), "FishEye")) {
-                                        ok();
-                                    } else {
-                                        error("This is a valid URL but it doesn't look like FishEye");
-                                    }
-                                } catch (IOException e) {
-                                    handleIOException(finalValue, e);
-                                }
-                            }
-                        }.process();
-                    } else {
-                        ok();
+                protected FormValidation check() throws IOException, ServletException {
+                    try {
+                        if (findText(open(new URL(finalValue)), "FishEye")) {
+                            return FormValidation.ok();
+                        } else {
+                            return FormValidation.error("This is a valid URL but it doesn't look like FishEye");
+                        }
+                    } catch (IOException e) {
+                        return handleIOException(finalValue, e);
                     }
                 }
-            }.process();
+            }.check();
         }
 
         private static final Pattern URL_PATTERN = Pattern.compile(".+/browse/[^/]+/");

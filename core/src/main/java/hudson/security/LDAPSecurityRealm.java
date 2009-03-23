@@ -25,39 +25,38 @@ package hudson.security;
 
 import com.sun.jndi.ldap.LdapCtxFactory;
 import groovy.lang.Binding;
-import hudson.Util;
 import hudson.Extension;
-import hudson.tasks.MailAddressResolver;
+import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.User;
-import hudson.util.FormFieldValidator;
+import hudson.tasks.MailAddressResolver;
+import hudson.util.FormValidation;
 import hudson.util.Scrambler;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.GrantedAuthorityImpl;
-import org.acegisecurity.userdetails.UserDetailsService;
+import org.acegisecurity.ldap.InitialDirContextFactory;
+import org.acegisecurity.ldap.LdapDataAccessException;
+import org.acegisecurity.ldap.LdapTemplate;
+import org.acegisecurity.ldap.LdapUserSearch;
+import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch;
+import org.acegisecurity.providers.ldap.LdapAuthoritiesPopulator;
+import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator;
 import org.acegisecurity.userdetails.UserDetails;
+import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.userdetails.ldap.LdapUserDetails;
 import org.acegisecurity.userdetails.ldap.LdapUserDetailsImpl;
-import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch;
-import org.acegisecurity.ldap.LdapUserSearch;
-import org.acegisecurity.ldap.LdapDataAccessException;
-import org.acegisecurity.ldap.InitialDirContextFactory;
-import org.acegisecurity.ldap.LdapTemplate;
-import org.acegisecurity.providers.ldap.LdapAuthoritiesPopulator;
-import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.dao.DataAccessException;
+import org.springframework.web.context.WebApplicationContext;
 
-import javax.naming.NamingException;
 import javax.naming.Context;
+import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
@@ -66,9 +65,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Set;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -431,55 +430,51 @@ public class LDAPSecurityRealm extends SecurityRealm {
             return Messages.LDAPSecurityRealm_DisplayName();
         }
 
-        public void doServerCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String server,
+        public FormValidation doServerCheck(
+                @QueryParameter final String server,
         		@QueryParameter final String managerDN,
-        		@QueryParameter final String managerPassword
-        		) throws IOException, ServletException {
-            new FormFieldValidator(req,rsp,true) {
-                protected void check() throws IOException, ServletException {
-                    try {
-                        Hashtable<String,String> props = new Hashtable<String,String>();
-                        if(managerDN!=null && managerDN.trim().length() > 0  && !"undefined".equals(managerDN)) {
-                            props.put(Context.SECURITY_PRINCIPAL,managerDN);
-                        }
-                        if(managerPassword!=null && managerPassword.trim().length() > 0 && !"undefined".equals(managerPassword)) {
-                            props.put(Context.SECURITY_CREDENTIALS,managerPassword);
-                        }
-                        DirContext ctx = LdapCtxFactory.getLdapCtxInstance(addPrefix(server)+'/', props);
-                        ctx.getAttributes("");
-                        ok();   // connected
-                    } catch (NamingException e) {
-                        // trouble-shoot
-                        Matcher m = Pattern.compile("(ldaps://)?([^:]+)(?:\\:(\\d+))?").matcher(server.trim());
-                        if(!m.matches()) {
-                            error("Syntax of server field is SERVER or SERVER:PORT or ldaps://SERVER[:PORT]");
-                            return;
-                        }
+        		@QueryParameter final String managerPassword) {
 
-                        try {
-                            InetAddress adrs = InetAddress.getByName(m.group(2));
-                            int port = m.group(1)!=null ? 636 : 389;
-                            if(m.group(3)!=null)
-                                port = Integer.parseInt(m.group(3));
-                            Socket s = new Socket(adrs,port);
-                            s.close();
-                        } catch (UnknownHostException x) {
-                            error("Unknown host: "+x.getMessage());
-                            return;
-                        } catch (IOException x) {
-                            error("Unable to connect to "+server+" : "+x.getMessage());
-                            return;
-                        }
+            if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+                return FormValidation.ok();
 
-                        // otherwise we don't know what caused it, so fall back to the general error report
-                        // getMessage() alone doesn't offer enough
-                        error("Unable to connect to "+server+": "+e);
-                    } catch (NumberFormatException x) {
-                        // The getLdapCtxInstance method throws this if it fails to parse the port number
-                        error("Invalid port number");
-                    }
+            try {
+                Hashtable<String,String> props = new Hashtable<String,String>();
+                if(managerDN!=null && managerDN.trim().length() > 0  && !"undefined".equals(managerDN)) {
+                    props.put(Context.SECURITY_PRINCIPAL,managerDN);
                 }
-            }.check();
+                if(managerPassword!=null && managerPassword.trim().length() > 0 && !"undefined".equals(managerPassword)) {
+                    props.put(Context.SECURITY_CREDENTIALS,managerPassword);
+                }
+                DirContext ctx = LdapCtxFactory.getLdapCtxInstance(addPrefix(server)+'/', props);
+                ctx.getAttributes("");
+                return FormValidation.ok();   // connected
+            } catch (NamingException e) {
+                // trouble-shoot
+                Matcher m = Pattern.compile("(ldaps://)?([^:]+)(?:\\:(\\d+))?").matcher(server.trim());
+                if(!m.matches())
+                    return FormValidation.error("Syntax of server field is SERVER or SERVER:PORT or ldaps://SERVER[:PORT]");
+
+                try {
+                    InetAddress adrs = InetAddress.getByName(m.group(2));
+                    int port = m.group(1)!=null ? 636 : 389;
+                    if(m.group(3)!=null)
+                        port = Integer.parseInt(m.group(3));
+                    Socket s = new Socket(adrs,port);
+                    s.close();
+                } catch (UnknownHostException x) {
+                    return FormValidation.error("Unknown host: "+x.getMessage());
+                } catch (IOException x) {
+                    return FormValidation.error("Unable to connect to "+server+" : "+x.getMessage());
+                }
+
+                // otherwise we don't know what caused it, so fall back to the general error report
+                // getMessage() alone doesn't offer enough
+                return FormValidation.error("Unable to connect to "+server+": "+e);
+            } catch (NumberFormatException x) {
+                // The getLdapCtxInstance method throws this if it fails to parse the port number
+                return FormValidation.error("Invalid port number");
+            }
         }
     }
 

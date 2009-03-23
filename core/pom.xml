@@ -404,7 +404,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.97</version>
+      <version>1.98</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>

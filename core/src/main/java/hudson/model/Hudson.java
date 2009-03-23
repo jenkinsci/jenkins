@@ -93,7 +93,6 @@ import hudson.util.ClockDifference;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DaemonThreadFactory;
-import hudson.util.FormFieldValidator;
 import hudson.util.HudsonIsLoading;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.RemotingDiagnostics;
@@ -2679,14 +2678,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Checks if the path is a valid path.
-     */
-    public void doCheckLocalFSRoot( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        // this can be used to check the existence of a file on the server, so needs to be protected
-        new FormFieldValidator.WorkspaceDirectory(req,rsp,true).process();
-    }
-
-    /**
      * Checks if the JAVA_HOME is a valid JAVA_HOME path.
      */
     public FormValidation doJavaHomeCheck(@QueryParameter File value) {
@@ -2730,7 +2721,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         
         String job = fixEmpty(value);
         if(job==null)
-            return FormValidation.ok(); // nothing is entered yet
+            return FormValidation.ok();
 
         if(getItem(job)==null)
             return FormValidation.ok();
@@ -2745,7 +2736,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         checkPermission(View.CREATE);
 
         String view = fixEmpty(value);
-        if(view==null)  return FormValidation.ok(); // nothing is entered yet
+        if(view==null) return FormValidation.ok();
 
         if(getView(view)==null)
             return FormValidation.ok();
@@ -2759,78 +2750,39 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * If the parameter "value" is not set then the parameter "errorText" is displayed
      * as an error text. If the parameter "errorText" is not set, then the parameter "warningText" is
      * displayed as a warning text.
-     * <p/>
+     * <p>
      * If the text is set and the parameter "type" is set, it will validate that the value is of the
      * correct type. Supported types are "number, "number-positive" and "number-negative".
-     * @param req containing the parameter value and the errorText to display if the value isnt set
-     * @param rsp used by FormFieldValidator
-     * @throws IOException thrown by FormFieldValidator.check()
-     * @throws ServletException thrown by FormFieldValidator.check()
      */
-    public void doFieldCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        new FormFieldValidator(req, rsp, false) {
+    public FormValidation doFieldCheck(@QueryParameter(fixEmpty=true) String value,
+                                       @QueryParameter(fixEmpty=true) String type,
+                                       @QueryParameter(fixEmpty=true) String errorText,
+                                       @QueryParameter(fixEmpty=true) String warningText) {
+        if (value == null) {
+            if (errorText != null)
+                return FormValidation.error(errorText);
+            if (warningText != null)
+                return FormValidation.warning(warningText);
+            return FormValidation.error("No error or warning text was set for fieldCheck().");
+        }
 
-            /**
-             * Display the error text or warning text.
-             */
-            private void fieldCheckFailed() throws IOException, ServletException {
-                String v = fixEmpty(request.getParameter("errorText"));
-                if (v != null) {
-                    error(v);
-                    return;
+        if (type != null) {
+            try {
+                if (type.equalsIgnoreCase("number")) {
+                    NumberFormat.getInstance().parse(value);
+                } else if (type.equalsIgnoreCase("number-positive")) {
+                    if (NumberFormat.getInstance().parse(value).floatValue() <= 0)
+                        return FormValidation.error(Messages.Hudson_NotAPositiveNumber());
+                } else if (type.equalsIgnoreCase("number-negative")) {
+                    if (NumberFormat.getInstance().parse(value).floatValue() >= 0)
+                        return FormValidation.error(Messages.Hudson_NotANegativeNumber());
                 }
-                v = fixEmpty(request.getParameter("warningText"));
-                if (v != null) {
-                    warning(v);
-                    return;
-                }
-                error("No error or warning text was set for fieldCheck().");
+            } catch (ParseException e) {
+                return FormValidation.error(Messages.Hudson_NotANumber());
             }
+        }
 
-            /**
-             * Checks if the value is of the correct type.
-             * @param type the type of string
-             * @param value the actual value to check
-             * @return true, if the type was valid; false otherwise
-             */
-            private boolean checkType(String type, String value) throws IOException, ServletException {
-                try {
-                    if (type.equalsIgnoreCase("number")) {
-                        NumberFormat.getInstance().parse(value);
-                    } else if (type.equalsIgnoreCase("number-positive")) {
-                        if (NumberFormat.getInstance().parse(value).floatValue() <= 0) {
-                            error(Messages.Hudson_NotAPositiveNumber());
-                            return false;
-                        }
-                    } else if (type.equalsIgnoreCase("number-negative")) {
-                        if (NumberFormat.getInstance().parse(value).floatValue() >= 0) {
-                            error(Messages.Hudson_NotANegativeNumber());
-                            return false;
-                        }
-                    }
-                } catch (ParseException e) {
-                    error(Messages.Hudson_NotANumber());
-                    return false;
-                }
-                return true;
-            }
-
-            @Override
-            protected void check() throws IOException, ServletException {
-                String value = fixEmpty(request.getParameter("value"));
-                if (value == null) {
-                    fieldCheckFailed();
-                    return;
-                }
-                String type = fixEmpty(request.getParameter("type"));
-                if (type != null) {
-                    if (!checkType(type, value)) {
-                        return;
-                    }
-                }
-                ok();
-            }
-        }.process();
+        return FormValidation.ok();
     }
 
     /**
@@ -2873,27 +2825,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Checks if container uses UTF-8 to decode URLs. See
      * http://hudson.gotdns.com/wiki/display/HUDSON/Tomcat#Tomcat-i18n
-     *
-     * @param req containing the parameter value
-     * @param rsp used by FormFieldValidator
-     * @throws IOException thrown by FormFieldValidator.check()
-     * @throws ServletException thrown by FormFieldValidator.check()
      */
-    public void doCheckURIEncoding(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        new FormFieldValidator(req, rsp, true) {
-            @Override
-            protected void check() throws IOException, ServletException {
-                request.setCharacterEncoding("UTF-8");
-                // expected is non-ASCII String
-                final String expected = "\u57f7\u4e8b";
-                final String value = fixEmpty(request.getParameter("value"));
-                if (!expected.equals(value)) {
-                    warningWithMarkup(Messages.Hudson_NotUsesUTF8ToDecodeURL());
-                    return;
-                }
-                ok();
-            }
-        }.process();
+    public FormValidation doCheckURIEncoding(StaplerRequest request, @QueryParameter String value) throws IOException {
+        request.setCharacterEncoding("UTF-8");
+        // expected is non-ASCII String
+        final String expected = "\u57f7\u4e8b";
+        value = fixEmpty(value);
+        if (!expected.equals(value))
+            return FormValidation.warningWithMarkup(Messages.Hudson_NotUsesUTF8ToDecodeURL());
+        return FormValidation.ok();
     }
 
     /**
