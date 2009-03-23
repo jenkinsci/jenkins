@@ -47,7 +47,7 @@ THE SOFTWARE.
 
   <f:prepareDatabinding/>
 
-  <input id="${attrs.id}" autocomplete="off" class="${attrs.clazz} ${checkUrl!=null ? 'validated' : '')}"
+  <input id="${attrs.id}" autocomplete="off" class="${attrs.clazz} ${checkUrl!=null ? 'validated' : ''}"
          name ="${attrs.name ?: '_.'+attrs.field}"
          value="${attrs.value ?: instance[attrs.field]}"
          checkUrl="${checkUrl}" />
