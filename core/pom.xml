@@ -404,7 +404,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.98</version>
+      <version>1.99</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
@@ -598,7 +598,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jexl</artifactId>
-      <version>1.1-hudson-20081031</version>
+      <version>1.1-hudson-20090322</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
