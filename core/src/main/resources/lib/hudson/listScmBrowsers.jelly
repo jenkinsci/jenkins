@@ -21,13 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  list browser SCMs
-
-  @name : form field name
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    List browser SCMs
+    <st:attribute name="name" use="required">
+      form field name.
+    </st:attribute>
+  </st:documentation>
   <f:dropdownList name="${name}" title="${%Repository browser}">
     <f:dropdownListBlock value="auto" title="(${%Auto})" />
     <j:set var="currentBrowser" value="${scm.browser}"/>
