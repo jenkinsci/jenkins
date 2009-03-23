@@ -869,7 +869,7 @@ public class Functions {
     /**
      * If the value exists, return that value. Otherwise return the default value.
      * <p>
-     * This method is useful for supplying a default value to a form field.
+     * Starting 1.294, JEXL supports the elvis operator "x?:y" that supercedes this.
      *
      * @since 1.150
      */

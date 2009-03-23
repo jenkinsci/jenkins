@@ -27,5 +27,5 @@ THE SOFTWARE.
 
   As of 1.91, left for backward compatibility.
 -->
-<input type="button" value="${h.defaulted(attrs.value,'%Delete')}"
+<input type="button" value="${attrs.value ?: '%Delete'}"
        class="repeatable-delete" />

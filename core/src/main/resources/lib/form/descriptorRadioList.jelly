@@ -46,7 +46,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
+  <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
   <f:section title="${attrs.title}">
     <d:invokeBody />
 	  <j:forEach var="d" items="${descriptors}" varStatus="loop">

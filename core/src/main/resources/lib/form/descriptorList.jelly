@@ -52,10 +52,10 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
+  <j:set var="targetType" value="${attrs.targetType ?: it.class}"/>
   <j:set var="instances" value="${attrs.instances ?: instance[field]}"/>
 
-  <f:section title="${attrs.title}" name="${h.defaulted(attrs.field,attrs.name)}">
+  <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}">
     <j:if test="${attrs.field!=null}">
       <tr>
         <td>

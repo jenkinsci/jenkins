@@ -54,7 +54,7 @@ THE SOFTWARE.
       which is the recommended approach.
     </st:attribute>
   </st:documentation>
-  <j:set var="value" value="${h.defaulted(attrs.value,instance[attrs.field])}" />
+  <j:set var="value" value="${attrs.value?:instance[attrs.field]}" />
   <j:choose>
     <j:when test="${h.isMultiline(value)}">
       <!-- multiline text area to begin with -->
@@ -65,7 +65,7 @@ THE SOFTWARE.
       <table border="0" style="width:100%" cellspacing="0" cellpadding="0">
         <tr>
           <td width="*">
-            <j:set var="name" value="${h.defaulted(attrs.name,'_.'+attrs.field)}" />
+            <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
             <input class="setting-input" type="text"
                    name ="${name}" value="${value}"
                    id="textarea.${name}" />

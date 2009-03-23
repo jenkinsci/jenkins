@@ -74,7 +74,7 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
-  <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
+  <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
   <div class="hetero-list-container ${attrs.hasHeader!=null?'with-drag-drop':''}">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}">
@@ -97,7 +97,7 @@ THE SOFTWARE.
     </div>
 
     <div>
-      <input type="button" value="${h.defaulted(attrs.addCaption,'Add')}" class="hetero-list-add" />
+      <input type="button" value="${attrs.addCaption?:'Add'}" class="hetero-list-add" />
     </div>
   </div>
 </j:jelly>
