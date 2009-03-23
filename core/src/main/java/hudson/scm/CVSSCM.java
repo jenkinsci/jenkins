@@ -158,7 +158,7 @@ public class CVSSCM extends SCM implements Serializable {
         this.canUseUpdate = canUseUpdate;
         this.flatten = !legacy && getAllModulesNormalized().length==1;
         this.isTag = isTag;
-	     this.excludedRegions = excludedRegions;
+	    this.excludedRegions = excludedRegions;
     }
 
     @Override
@@ -1222,7 +1222,7 @@ public class CVSSCM extends SCM implements Serializable {
 	    /**
          * Validates the excludeRegions Regex
          */
-        public FormValidation doExcludeRegionsCheck(@QueryParameter String value) {
+        public FormValidation doCheckExcludeRegions(@QueryParameter String value) {
             String v = fixNull(value).trim();
 
             for (String region : v.split("[\\r\\n]+"))
