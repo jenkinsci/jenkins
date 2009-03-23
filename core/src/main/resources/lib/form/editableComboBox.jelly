@@ -22,28 +22,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-	Attributes:
-
-	If @field is specified:
-	   in this case, name and value are inferred from field,
-	   and checkUrl is auto-generated if the check method is present.
-	Otherwise
-	   @name and @value are mandatory.
-
-	<%@attribute name="id" required="true" %>
-	<%@attribute name="clazz" required="false" %>
-	<%@attribute name="items" type="java.lang.Object" description="Optional list of possible values" %>
--->
 <!-- Tomcat doesn't like us using the attribute called 'class' -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Editable drop-down combo box.
+
+    <st:attribute name="id" use="required" />
+    <st:attribute name="clazz">
+      Additional CSS classes that the control gets.
+    </st:attribute>
+    <st:attribute name="items">
+      List of possible values. Either this or nested &lt;f:editableComboBoxValue/>s are required.
+    </st:attribute>
+    <st:attribute name="field">
+      Used for databinding.
+    </st:attribute>
+  </st:documentation>
+
 	<j:if test="${editableComboBox_source_loaded==null}">
 	  <script type="text/javascript" src="${request.contextPath}/scripts/utilities.js"/>
     <script type="text/javascript" src="${request.contextPath}/scripts/combobox.js"/>
 	  <j:set target="${requestScope}" property="editableComboBox_source_loaded" value="true" />
 	</j:if>
 
-  <j:set var="checkUrl" value="${h.getCheckUrl(attrs.checkUrl,descriptor,attrs.field)}" />
+  <f:prepareDatabinding/>
 
   <input id="${attrs.id}" autocomplete="off" class="${attrs.clazz} ${h.ifThenElse(checkUrl!=null,'validated','')}"
          name ="${h.defaulted(attrs.name,'_.'+attrs.field)}"
