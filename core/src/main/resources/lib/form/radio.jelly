@@ -28,4 +28,4 @@ THE SOFTWARE.
 	Note that safari doesn't support onchange.
 -->
 <input type="radio" name="${attrs.name}" onclick="${attrs.onclick}" id="${attrs.id}" value="${attrs.value}"
-        checked="${h.ifThenElse(attrs.checked,'true',null)}"/>
+        checked="${attrs.checked?'true':null}"/>

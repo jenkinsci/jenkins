@@ -45,15 +45,15 @@ THE SOFTWARE.
             <j:forEach var="p" items="${app.pluginManager.plugins}">
               <tr>
                 <td class="center pane">
-                  <j:set var="state" value="${h.ifThenElse(p.enabled,'true',null)}"/>
+                  <j:set var="state" value="${p.enabled?'true':null}"/>
                   <input type="checkbox" checked="${state}" onclick="flip(event)"
                          url="plugin/${p.shortName}"
-                         original="${h.ifThenElse(p.active,'true','false')}"/>
+                         original="${p.active?'true':'false'}"/>
                 </td>
                 <td class="pane">
                   <div>
                     <a href="${p.url}">
-                      ${h.ifThenElse(p.updateInfo!=null, p.updateInfo.title, p.longName)}
+                      ${p.updateInfo.title?:p.longName}
                     </a>
                   </div>
                   <div class="excerpt">

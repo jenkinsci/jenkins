@@ -58,7 +58,7 @@ THE SOFTWARE.
           <tr>
             <td class="pane" width="100%" tooltip="${item.why}" style="white-space: normal;">
               <j:set var="stuck" value="${item.isStuck()}" />
-              <a href="${rootURL}/${item.task.url}" style="${h.ifThenElse(stuck,'color:#ef2929',null)}">
+              <a href="${rootURL}/${item.task.url}" style="${stuck?'color:#ef2929':null}">
                 ${item.task.fullDisplayName}
                 <j:if test="${stuck}"> (${%appears to be stuck})</j:if>
               </a>
@@ -75,7 +75,7 @@ THE SOFTWARE.
     <!-- schedule updates only for the full page reload -->
     <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
       <script defer="defer">
-        refreshPart('buildQueue',"${h.ifThenElse(h.hasView(it,'ajaxBuildQueue'),'.',rootURL)}/ajaxBuildQueue");
+        refreshPart('buildQueue',"${h.hasView(it,'ajaxBuildQueue')?'.':rootURL}/ajaxBuildQueue");
       </script>
     </j:if>
   </l:pane>

@@ -30,7 +30,7 @@ THE SOFTWARE.
       <j:set var="descriptor" value="${scms[idx]}" />
       <j:set var="scmd" value="${descriptor}" /><!-- backward compatibility with <1.238 -->
       <f:radioBlock name="scm" value="${idx}" title="${scmd.displayName}" checked="${it.scm.descriptor==scmd}">
-        <j:set var="instance" value="${h.ifThenElse(it.scm.descriptor==descriptor, it.scm, null)}"/>
+        <j:set var="instance" value="${it.scm.descriptor==descriptor ? it.scm : null}"/>
         <j:set var="scm" value="${instance}" /><!-- backward compatibility with <1.238 -->
         <st:include from="${scmd}" page="${scmd.configPage}"/>
       </f:radioBlock>

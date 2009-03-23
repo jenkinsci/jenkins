@@ -45,7 +45,7 @@ THE SOFTWARE.
           #<!-- -->${number}
 	      </j:when>
 	      <j:otherwise>
-	        <a href="${h.ifThenElse(attrs.href!=null,href,rootURL+'/'+r.url)}">
+	        <a href="${attrs.href ?: rootURL+'/'+r.url}">
 	          <img src="${imagesURL}/16x16/${r.buildStatusUrl}"
                  alt="${r.iconColor.description}"/>${jobName_}#<!-- -->${number}</a>
 	      </j:otherwise>

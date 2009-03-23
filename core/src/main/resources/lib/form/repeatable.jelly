@@ -101,7 +101,7 @@ THE SOFTWARE.
       <j:set var="descriptor" value="${descriptor.getPropertyType(field).itemTypeDescriptor}" />
     </j:when>
     <j:otherwise>
-      <j:set var="name" value="${h.ifThenElse(attrs.name!=null,attrs.name,attrs.var)}"/>
+      <j:set var="name" value="${attrs.name?:attrs.var}"/>
     </j:otherwise>
   </j:choose>
 

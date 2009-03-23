@@ -48,7 +48,7 @@ THE SOFTWARE.
     </f:entry>
     <f:entry title="${%Hudson URL}"
              help="/help/tasks/mailer/url.html">
-      <f:textbox field="url" value="${h.ifThenElse(descriptor.url!=null,descriptor.url,h.inferHudsonURL(request))}" />
+      <f:textbox field="url" value="${descriptor.url ?: h.inferHudsonURL(request)}" />
     </f:entry>
     <f:advanced>
       <f:optionalBlock name="mailer.useSMTPAuth" title="${%Use SMTP Authentication}" checked="${descriptor.smtpAuthUserName!=null}"

@@ -32,7 +32,7 @@ THE SOFTWARE.
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set var="lsBuild" value="${job.lastSuccessfulBuild}"/>
   <j:set var="lfBuild" value="${job.lastFailedBuild}"/>
-  <tr class="${h.ifThenElse(job.disabled,'disabledJob',null)}">
+  <tr class="${job.disabled?'disabledJob':null}">
       <j:forEach var="col" items="${columnExtensions}">
           <st:include page="column.jelly" it="${col}" />
       </j:forEach>

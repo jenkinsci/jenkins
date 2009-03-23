@@ -53,7 +53,7 @@ THE SOFTWARE.
       <f:radioBlock name="${varName}" help="${d.helpFile}" value="${loop.index}"
         title="${d.displayName}" checked="${instance.descriptor==d}">
         <j:set var="descriptor" value="${d}" />
-	      <j:set var="instance" value="${h.ifThenElse(instance.descriptor==d,instance,null)}" />
+	      <j:set var="instance" value="${instance.descriptor==d?instance:null}" />
 	      <st:include from="${d}" page="${d.configPage}" optional="true" />
 	    </f:radioBlock>
 	  </j:forEach>

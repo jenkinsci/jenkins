@@ -32,7 +32,7 @@ THE SOFTWARE.
       <f:entry title="${%Max # of concurrent polling}"
                help="/help/triggers/SCMTrigger/concurrency.html">
         <input class="setting-input" name="poll_scm_threads"
-          type="text" value="${h.ifThenElse(descriptor.pollingThreadCount==0,'',descriptor.pollingThreadCount)}"/>
+          type="text" value="${descriptor.pollingThreadCount==0 ? '' : descriptor.pollingThreadCount}"/>
       </f:entry>
     </f:section>
   </j:if>

@@ -53,7 +53,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
-  <j:set var="instances" value="${h.ifThenElse(attrs.instances!=null,attrs.instances,instance[field])}"/>
+  <j:set var="instances" value="${attrs.instances ?: instance[field]}"/>
 
   <f:section title="${attrs.title}" name="${h.defaulted(attrs.field,attrs.name)}">
     <j:if test="${attrs.field!=null}">

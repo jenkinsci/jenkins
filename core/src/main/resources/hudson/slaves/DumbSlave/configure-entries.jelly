@@ -54,7 +54,7 @@ THE SOFTWARE.
                            title="${d.displayName}">
         <j:set var="descriptor" value="${d}"/>
         <j:set var="instance"
-               value="${h.ifThenElse(it.launcher.descriptor==d,it.launcher,null)}"/>
+               value="${it.launcher.descriptor==d ? it.launcher : null}"/>
         <tr><td>
           <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
         </td></tr>
@@ -74,7 +74,7 @@ THE SOFTWARE.
                                title="${d.displayName}">
             <j:set var="descriptor" value="${d}"/>
             <j:set var="instance"
-                   value="${h.ifThenElse(it.retentionStrategy.descriptor==d,it.retentionStrategy,null)}"/>
+                   value="${it.retentionStrategy.descriptor==d ? it.retentionStrategy : null}"/>
             <tr><td>
               <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
             </td></tr>

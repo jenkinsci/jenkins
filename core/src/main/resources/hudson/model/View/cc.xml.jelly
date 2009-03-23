@@ -35,7 +35,7 @@ THE SOFTWARE.
       <j:set var="lb" value="${p.lastCompletedBuild}"/>
       <j:if test="${lb!=null}">
         <Project  name="${p.displayName}"
-                  activity="${h.ifThenElse(p.isBuilding(),'Building','Sleeping')}"
+                  activity="${p.isBuilding() ? 'Building' : 'Sleeping'}"
                   lastBuildStatus="${h.toCCStatus(p)}"
                   lastBuildLabel="${lb.number}"
                   lastBuildTime="${lb.timestampString2}"

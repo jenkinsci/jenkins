@@ -49,7 +49,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
-  <input class="setting-input ${h.ifThenElse(attrs.checkUrl!=null,'validated','')}"
+  <input class="setting-input ${attrs.checkUrl!=null?'validated':''}"
          name ="${h.defaulted(attrs.name,'_.'+attrs.field)}"
          value="${h.defaulted(attrs.value,instance[attrs.field])}"
          id="${attrs.id}"

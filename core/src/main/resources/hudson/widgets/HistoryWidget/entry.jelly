@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:set var="link" value="${it.baseUrl}/${build.number}/" />
-  <tr class="build-row ${h.ifThenElse(build.building,'transitive',null)}">
+  <tr class="build-row ${build.building ? 'transitive' : null}">
     <td nowrap="nowrap">
       <img width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description}" tooltip="${build.iconColor.description}" /><st:nbsp/>
       #${build.number}
@@ -53,7 +53,7 @@ THE SOFTWARE.
           <t:buildProgressBar build="${build}"/>
         </td><td style="padding:0">
           <!-- Check ABORT permission for Project, Admin permission otherwise -->
-          <j:if test="${h.ifThenElse(empty(it.owner.ABORT),h.hasPermission(app.ADMINISTER),it.owner.hasPermission(it.owner.ABORT))}">
+          <j:if test="${empty(it.owner.ABORT) ? h.hasPermission(app.ADMINISTER) : it.owner.hasPermission(it.owner.ABORT)}">
             <a href="${link}stop"><img src="${imagesURL}/16x16/stop.gif" alt="[cancel]"/></a>
           </j:if>
         </td></tr>
@@ -61,7 +61,7 @@ THE SOFTWARE.
     </td></tr>
   </j:if>
   <j:if test="${!empty build.description}">
-    <tr class="${h.ifThenElse(build.building,'transitive',null)}">
+    <tr class="${build.building ? 'transitive' : null}">
       <td></td>
       <td style="padding:0;white-space:normal">
         ${build.truncatedDescription}

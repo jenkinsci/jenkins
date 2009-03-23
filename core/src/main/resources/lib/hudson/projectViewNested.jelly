@@ -38,7 +38,7 @@ THE SOFTWARE.
             <!-- if nested view supports ajaxRows -->
             <a href="#">
               <img src="${imagesURL}/tree/plus.png" state="plus" width="14" height="14" alt="" class="fold-control treeview-fold-control"
-                   url="${rootURL}/${v.url}/ajaxRows?depth=${h.ifThenElse(depth!=null,depth+1,1)}"/>
+                   url="${rootURL}/${v.url}/ajaxRows?depth=${depth!=null?depth+1:1}"/>
               <st:adjunct includes="lib.hudson.projectViewNested" />
             </a>
           </j:otherwise>

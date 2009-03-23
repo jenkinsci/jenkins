@@ -25,7 +25,7 @@ THE SOFTWARE.
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 	<st:header name="X-Hudson" value="${servletContext.getAttribute('version')}" />
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
-	<l:layout title="${h.ifThenElse(it.class.name=='hudson.model.AllView','%Dashboard',it.viewName)}">
+	<l:layout title="${it.class.name=='hudson.model.AllView' ? '%Dashboard' : it.viewName}">
     <st:include page="sidepanel.jelly" />
 		<l:main-panel>
 		  <div id="view-message">

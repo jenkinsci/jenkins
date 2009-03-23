@@ -39,7 +39,7 @@ THE SOFTWARE.
     </div>
 
     <l:hasPermission permission="${permission}">
-      <div align="right"><a href="editDescription" onclick="${h.ifThenElse(h.isAutoRefresh(request), null, 'return replaceDescription();')}">
+      <div align="right"><a href="editDescription" onclick="${h.isAutoRefresh(request) ? null : 'return replaceDescription();'}">
         <img src="${imagesURL}/16x16/notepad.gif" alt="" />
         <j:choose>
           <j:when test="${empty(it.description)}">

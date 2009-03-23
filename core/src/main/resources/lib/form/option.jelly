@@ -33,7 +33,7 @@ THE SOFTWARE.
       If true, the option value appears as selected.
     </st:attribute>
   </st:documentation>
-  <option value="${attrs.value}" selected="${h.ifThenElse(attrs.selected,'true',null)}">
+  <option value="${attrs.value}" selected="${attrs.selected?'true':null}">
     <d:invokeBody/>
   </option>
 </j:jelly>

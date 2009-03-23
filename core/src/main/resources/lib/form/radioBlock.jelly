@@ -52,7 +52,7 @@ THE SOFTWARE.
 	<tr id="rb_s${rb_id}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
 	  <td colspan="3">
 	    <input type="radio" name="${name}" value="${value}"
-             id="Rb${rb_id}" checked="${h.ifThenElse(checked,'true',null)}" />
+             id="Rb${rb_id}" checked="${checked?'true':null}" />
       <st:nbsp/>
       <label for="Rb${rb_id}">${title}</label>
     </td>

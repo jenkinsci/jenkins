@@ -75,7 +75,7 @@ THE SOFTWARE.
   </d:taglib>
 
   <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
-  <div class="hetero-list-container ${h.ifThenElse(attrs.hasHeader!=null,'with-drag-drop','')}">
+  <div class="hetero-list-container ${attrs.hasHeader!=null?'with-drag-drop':''}">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
