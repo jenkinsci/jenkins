@@ -105,7 +105,7 @@ import com.thoughtworks.xstream.XStream;
  */
 @ExportedBean
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
-        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot {
+        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner {
 
     protected transient final JobT project;
 
@@ -550,6 +550,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public String getId() {
         return ID_FORMATTER.get().format(new Date(timestamp));
+    }
+
+    public Descriptor getDescriptorByName(String className) {
+        return Hudson.getInstance().getDescriptorByName(className);
     }
 
     /**

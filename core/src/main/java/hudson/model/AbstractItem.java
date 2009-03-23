@@ -55,7 +55,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
-public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled {
+public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner {
     /**
      * Project name.
      */
@@ -221,25 +221,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return Items.getConfigFile(this);
     }
 
-    /**
-     * Exposes {@link Descriptor} by its name to URL.
-     *
-     * This allows descriptor to perform a job-specific check easily. 
-     *
-     * @since 1.270.
-     *
-     * @param className
-     *      Either fully qualified class name (recommended) or the short name.
-     */
     public Descriptor getDescriptorByName(String className) {
-        for( Descriptor d : Iterators.sequence(Hudson.getInstance().getExtensionList(Descriptor.class), DescriptorExtensionList.listLegacyInstances()) ) {
-            String name = d.clazz.getName();
-            if(name.equals(className))
-                return d;
-            if(name.substring(name.lastIndexOf('.')+1).equals(className))
-                return d;
-        }
-        return null;
+        return Hudson.getInstance().getDescriptorByName(className);
     }
 
     /**

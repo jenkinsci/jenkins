@@ -192,7 +192,7 @@ import groovy.lang.GroovyShell;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public final class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled {
+public final class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
     private transient final Queue queue;
 
     /**
@@ -707,13 +707,27 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * After doing all the {@code getXXX(shortClassName)} methods, I finally realized that
      * this just doesn't scale.
+     *
+     * @param className
+     *      Either fully qualified class name (recommended) or the short name.
      */
-    public Descriptor getDescriptor(String fullyQualifiedClassName) {
+    public Descriptor getDescriptor(String className) {
         // legacy descriptors that are reigstered manually doesn't show up in getExtensionList, so check them explicitly.
-        for( Descriptor d : Iterators.sequence(getExtensionList(Descriptor.class),DescriptorExtensionList.listLegacyInstances()) )
-            if(d.clazz.getName().equals(fullyQualifiedClassName))
+        for( Descriptor d : Iterators.sequence(getExtensionList(Descriptor.class),DescriptorExtensionList.listLegacyInstances()) ) {
+            String name = d.clazz.getName();
+            if(name.equals(className))
                 return d;
+            if(name.substring(name.lastIndexOf('.')+1).equals(className))
+                return d;
+        }
         return null;
+    }
+
+    /**
+     * Alias for {@link #getDescriptor(String)}.
+     */
+    public Descriptor getDescriptorByName(String className) {
+        return getDescriptor(className);
     }
 
     /**
