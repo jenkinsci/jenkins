@@ -122,7 +122,7 @@ public class Sventon extends SubversionRepositoryBrowser {
         /**
          * Performs on-the-fly validation of the URL.
          */
-        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter(fixEmpty=true) final String value) throws IOException, ServletException {
+        public FormValidation doCheckUrl(@AncestorInPath AbstractProject project, @QueryParameter(fixEmpty=true) final String value) throws IOException, ServletException {
             if(!project.hasPermission(Item.CONFIGURE))  return FormValidation.ok(); // can't check
             if(value==null) // nothing entered yet
                 return FormValidation.ok();
