@@ -26,6 +26,7 @@ package hudson.tasks.test;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
+import static hudson.Util.fixNull;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -266,11 +267,11 @@ public class AggregatedTestResultPublisher extends Recorder {
             return "/help/tasks/aggregate-test/help.html";
         }
 
-        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter(fixEmpty=true) String value) {
+        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) {
             // Require CONFIGURE permission on this project
             if(!project.hasPermission(Item.CONFIGURE))  return FormValidation.ok();
 
-            for (String name : Util.tokenize(value, ",")) {
+            for (String name : Util.tokenize(fixNull(value), ",")) {
                 name = name.trim();
                 if(Hudson.getInstance().getItemByFullName(name)==null)
                     return FormValidation.error(hudson.tasks.Messages.BuildTrigger_NoSuchProject(name,AbstractProject.findNearest(name).getName()));
