@@ -36,7 +36,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
-import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -1097,7 +1096,7 @@ public class CVSSCM extends SCM implements Serializable {
             return noCompression;
         }
 
-        public boolean configure( StaplerRequest req ) {
+        public boolean configure( StaplerRequest req, JSONObject o ) {
             cvsPassFile = fixEmpty(req.getParameter("cvs_cvspass").trim());
             cvsExe = fixEmpty(req.getParameter("cvs_exe").trim());
             noCompression = req.getParameter("cvs_noCompression")!=null;
@@ -1386,7 +1385,7 @@ public class CVSSCM extends SCM implements Serializable {
                     }
 
                     upName = upName.substring(9);   // trim off 'upstream.'
-                    Job p = Hudson.getInstance().getItemByFullName(upName,Job.class);
+                    AbstractProject p = Hudson.getInstance().getItemByFullName(upName,AbstractProject.class);
                     if(p==null) {
                         sendError(Messages.CVSSCM_NoSuchJobExists(upName),req,rsp);
                         return;
