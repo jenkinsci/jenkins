@@ -281,6 +281,10 @@ public class CVSSCM extends SCM implements Serializable {
         return flatten;
     }
 
+    public boolean isLegacy() {
+        return !flatten;
+    }
+
     public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException, InterruptedException {
         String why = isUpdatable(dir);
         if(why!=null) {
