@@ -31,6 +31,7 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.model.Hudson;
 import hudson.model.Run;
 import hudson.Extension;
+import hudson.util.FormValidation;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,8 +46,8 @@ import net.sf.json.JSONObject;
 
 import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.AncestorInPath;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -161,8 +162,8 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
             return p!=Item.CREATE;
         }
 
-        public void doCheckName(StaplerRequest req, StaplerResponse res, @QueryParameter String value) throws IOException, ServletException {
-            GlobalMatrixAuthorizationStrategy.DESCRIPTOR.doCheckName(value, req.findAncestorObject(AbstractProject.class), AbstractProject.CONFIGURE);
+        public FormValidation doCheckName(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException, ServletException {
+            return GlobalMatrixAuthorizationStrategy.DESCRIPTOR.doCheckName(value, project, AbstractProject.CONFIGURE);
         }
     }
 
