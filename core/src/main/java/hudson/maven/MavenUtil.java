@@ -49,7 +49,7 @@ import java.util.Properties;
 public class MavenUtil {
     /**
      * @deprecated
-     *      Use {@link MavenInstallation#createEmbedder(BuildListener, String)}
+     *      Use {@link MavenInstallation#createEmbedder(BuildListener, String, Properties)} 
      *      or other overloaded versions that infers maven home.
      */
     public static MavenEmbedder createEmbedder(TaskListener listener, String profiles) throws MavenEmbedderException, IOException {
