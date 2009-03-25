@@ -128,6 +128,8 @@ final class ProxyInputStream extends InputStream {
             buf.read(in);
             return buf;
         }
+
+        private static final long serialVersionUID = 1L;
     }
 
     /**
