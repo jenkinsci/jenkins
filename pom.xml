@@ -139,6 +139,25 @@ THE SOFTWARE.
         </configuration>
       </plugin>
 
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <!-- There is a bug in JDK 1.5's compiler therefore need to compile with 1.6 -->
+                <requireJavaVersion>
+                  <version>[1.6.0,]</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!--<plugin>
         <groupId>org.jvnet.fix1600</groupId>
         <artifactId>fix1600</artifactId>
