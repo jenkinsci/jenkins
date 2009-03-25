@@ -2765,6 +2765,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             return FormValidation.error(Messages.Hudson_ViewAlreadyExists(view));
     }
 
+    /**
+     * @deprecated as of 1.294
+     *      Define your own check method, instead of relying on this generic one.
+     */
+    public void doFieldCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doFieldCheck(
+                fixEmpty(req.getParameter("value")),
+                fixEmpty(req.getParameter("type")),
+                fixEmpty(req.getParameter("errorText")),
+                fixEmpty(req.getParameter("warningText"))).generateResponse(req,rsp,this);
+    }
 
     /**
      * Checks if the value for a field is set; if not an error or warning text is displayed.
