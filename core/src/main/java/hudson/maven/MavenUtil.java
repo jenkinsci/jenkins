@@ -30,6 +30,7 @@ import hudson.model.AbstractProject;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
 import org.apache.maven.embedder.MavenEmbedderException;
+import org.apache.maven.embedder.MavenEmbedderLogger;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 
@@ -90,7 +91,9 @@ public class MavenUtil {
 
         ClassLoader cl = MavenUtil.class.getClassLoader();
         maven.setClassLoader(new MaskingClassLoader(cl));
-        maven.setLogger( new EmbedderLoggerImpl(listener) );
+        EmbedderLoggerImpl logger = new EmbedderLoggerImpl(listener);
+        if(debugMavenEmbedder)  logger.setThreshold(MavenEmbedderLogger.LEVEL_DEBUG);
+        maven.setLogger(logger);
 
         // make sure ~/.m2 exists to avoid http://www.nabble.com/BUG-Report-tf3401736.html
         File m2Home = new File(MavenEmbedder.userHome, ".m2");
@@ -196,4 +199,9 @@ public class MavenUtil {
             };
         }
     }
+
+    /**
+     * If set to true, maximize the logging level of Maven embedder.
+     */
+    public static boolean debugMavenEmbedder = false;
 }
