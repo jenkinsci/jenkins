@@ -1854,11 +1854,18 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             for (final File subdir : subdirs) {
                 loaders.add(threadPoolForLoad.submit(new Callable<TopLevelItem>() {
                     public TopLevelItem call() throws Exception {
-                        long start = System.currentTimeMillis();
-                        TopLevelItem item = (TopLevelItem) Items.load(Hudson.this, subdir);
-                        if(LOG_STARTUP_PERFORMANCE)
-                            LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms by "+Thread.currentThread().getName());
-                        return item;
+                        Thread t = Thread.currentThread();
+                        String name = t.getName();
+                        t.setName("Loading "+subdir);
+                        try {
+                            long start = System.currentTimeMillis();
+                            TopLevelItem item = (TopLevelItem) Items.load(Hudson.this, subdir);
+                            if(LOG_STARTUP_PERFORMANCE)
+                                LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms by "+name);
+                            return item;
+                        } finally {
+                            t.setName(name);
+                        }
                     }
                 }));
             }
