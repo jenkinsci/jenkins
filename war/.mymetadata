@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="hudson-war"
+  id="myeclipse.1230978959828"
+  context-root="/hudson-war"
+  j2ee-spec="1.3"
+  archive="hudson-war.war">
+  <attributes>
+    <attribute name="webrootdir" value="src/main/webapp" />
+  </attributes>
+</project-module>
+
