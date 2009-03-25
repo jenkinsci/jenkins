@@ -72,6 +72,6 @@ public class Cobertura {
 
     def makeBuildFailIfTestFail() {
         if(ant.project.getProperty("failed")!=null)
-            fail("Some unit tests failed");
+            throw new Exception("Some unit tests failed");
     }
 }
