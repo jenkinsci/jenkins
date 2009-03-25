@@ -647,6 +647,7 @@ public class UpdateCenter extends AbstractModelObject {
      */
     public abstract class UpdateCenterJob implements Runnable {
         public void schedule() {
+            LOGGER.fine("Scheduling "+this+" to installerService");
             jobs.add(this);
             installerService.submit(this);
         }
@@ -659,6 +660,7 @@ public class UpdateCenter extends AbstractModelObject {
         private final Vector<String> statuses= new Vector<String>();
 
         public void run() {
+            LOGGER.fine("Doing a connectivity check");
             try {
                 String connectionCheckUrl = config.getConnectionCheckUrl();
                 
@@ -858,6 +860,11 @@ public class UpdateCenter extends AbstractModelObject {
 
         protected void onSuccess() {
             pm.pluginUploaded = true;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString()+"[plugin="+plugin.title+"]";
         }
     }
 
