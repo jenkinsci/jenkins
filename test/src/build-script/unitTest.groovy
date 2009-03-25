@@ -9,7 +9,8 @@ FileUtils.copyFile(maven.resolveArtifact("${project.groupId}:hudson-core:${proje
 
 cob = new Cobertura(project,maven,ant,ser);
 
-cob.instrument(["remoting","hudson-core"].collect{ m -> maven.resolveArtifact("${project.groupId}:${m}:${project.version}") })
+// instrumenting remote.jar causes all native m2 job to fail, because forked Maven doesn't have cobertura runtime
+cob.instrument(["hudson-core"].collect{ m -> maven.resolveArtifact("${project.groupId}:${m}:${project.version}") })
 cob.runTests()
 cob.report()
 cob.makeBuildFailIfTestFail();
