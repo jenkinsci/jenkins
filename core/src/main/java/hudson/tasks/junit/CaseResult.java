@@ -80,7 +80,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         return 0.0f;
     }
 
-    CaseResult(SuiteResult parent, Element testCase, String testCaseName) {
+    CaseResult(SuiteResult parent, Element testCase, String testClassName) {
         // schema for JUnit report XML format is not available in Ant,
         // so I don't know for sure what means what.
         // reports in http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
@@ -91,12 +91,12 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         //    // Maven seems to skip classname, and that shows up in testSuite/@name
         //    cn = parent.getName();
 
-        String cn = parent.getName();
-        className = safe(cn);
-        testName = safe(testCaseName);
-        duration = parseTime(testCase);
+        className = testClassName;
+        testName = testCase.attributeValue("name");
         errorStackTrace = getError(testCase);
         errorDetails = getErrorMessage(testCase);
+        this.parent = parent;
+        duration = parseTime(testCase);
         skipped = isMarkedAsSkipped(testCase);
         stdout = testCase.elementText("system-out");
         stderr = testCase.elementText("system-err");
