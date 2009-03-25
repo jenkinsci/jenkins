@@ -129,11 +129,4 @@ THE SOFTWARE.
       <version>2.4</version>
     </dependency>
   </dependencies>
-
-  <repositories>
-    <repository>
-      <id>selenium</id>
-      <url>http://archiva.openqa.org/repository/releases/</url>
-    </repository>
-  </repositories>
 </project>
