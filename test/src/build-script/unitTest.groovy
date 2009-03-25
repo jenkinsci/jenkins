@@ -12,5 +12,5 @@ cob = new Cobertura(project,maven,ant,ser);
 // instrumenting remote.jar causes all native m2 job to fail, because forked Maven doesn't have cobertura runtime
 cob.instrument(["hudson-core"].collect{ m -> maven.resolveArtifact("${project.groupId}:${m}:${project.version}") })
 cob.runTests()
-cob.report()
+cob.report(["../core/src/main/java"])
 cob.makeBuildFailIfTestFail();

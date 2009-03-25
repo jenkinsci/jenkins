@@ -7,5 +7,5 @@ cob = new Cobertura(project,maven,ant,ser);
 
 cob.instrument([])
 cob.runTests()
-cob.report()
+cob.report([])
 cob.makeBuildFailIfTestFail();

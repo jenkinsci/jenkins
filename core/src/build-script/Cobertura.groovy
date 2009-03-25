@@ -65,9 +65,11 @@ public class Cobertura {
         project.getTestClasspathElements().each { ant.pathelement(path: it) } // the rest of the dependencies
     }
 
-    def report() {
+    def report(dirs) {
         maven.attachArtifact(ser,"ser","cobertura")
-        ant."cobertura-report"(format:"html",datafile:ser,destdir:dir("target/cobertura-reports"),srcdir:"src/main/java")
+        ant."cobertura-report"(format:"html",datafile:ser,destdir:dir("target/cobertura-reports"),srcdir:"src/main/java") {
+            dirs.each{ fileset(dir:it) }
+        }
     }
 
     def makeBuildFailIfTestFail() {
