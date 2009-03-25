@@ -53,9 +53,31 @@ THE SOFTWARE.
     <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/trunk/hudson/main/</developerConnection>
     <url>https://hudson.dev.java.net/source/browse/hudson/trunk/hudson/main</url>
   </scm>
-  
+
   <build>
     <defaultGoal>install</defaultGoal>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.kohsuke.gmaven</groupId>
+          <artifactId>gmaven-plugin</artifactId>
+          <version>1.0-rc-5-patch-2</version>
+          <dependencies>
+            <dependency><!-- this needs to be visible to Ant inside GMaven, so has to be a plugin dependency -->
+              <groupId>org.apache.ant</groupId>
+              <artifactId>ant-junit</artifactId>
+              <version>1.7.0</version>
+            </dependency>
+            <dependency>
+              <groupId>net.sourceforge.cobertura</groupId>
+              <artifactId>cobertura</artifactId>
+              <version>1.9</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    
     <plugins>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>

@@ -129,4 +129,44 @@ THE SOFTWARE.
       <version>2.4</version>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <!--
+        Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire.
+      -->
+      <id>cobertura</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.kohsuke.gmaven</groupId>
+            <artifactId>gmaven-plugin</artifactId>
+            <executions>
+              <!-- run unit test -->
+              <execution>
+                <phase>test</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <scriptpath>
+                    <!-- load helpers from core -->
+                    <element>${project.basedir}/../core/src/build-script</element>
+                  </scriptpath>
+                  <source>${project.basedir}/src/build-script/unitTest.groovy</source>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <!-- unit tests are run by GMaven through Ant. -->
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skipTests>true</skipTests>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
