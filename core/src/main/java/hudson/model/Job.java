@@ -155,7 +155,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 throw new IOException2(f + " doesn't contain a number", e);
             }
         } else {
-            // this must be the old Hudson. create this file now.
+            // From the old Hudson, or doCreateItem. Create this file now.
             saveNextBuildNumber();
             save(); // and delete it from the config.xml
         }
@@ -191,6 +191,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     protected void saveNextBuildNumber() throws IOException {
+        if (nextBuildNumber == 0) { // #3361
+            nextBuildNumber = 1;
+        }
         getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
     }
 
