@@ -56,7 +56,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.11</version>
+        <version>1.12</version>
         <extensions>true</extensions>
         <dependencies>
           <dependency>
@@ -387,7 +387,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.99</version>
+      <version>1.100</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
