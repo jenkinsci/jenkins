@@ -414,7 +414,8 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             logger.println("Parsing POMs");
             MavenInstallation mvn = project.getMaven();
             if(mvn==null) {
-                logger.println("A Maven configuration needs to be associated with this project. Please reconfigure this project");
+                logger.println("A Maven installation needs to be available for this project to be built.");
+                logger.println("Either your server has no Maven installations defined, or the requested Maven version does not exist.");
                 throw new AbortException();
             }
             mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode());
