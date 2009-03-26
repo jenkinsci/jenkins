@@ -67,8 +67,10 @@ public class Cobertura {
 
     def report(dirs) {
         maven.attachArtifact(ser,"ser","cobertura")
-        ant."cobertura-report"(format:"html",datafile:ser,destdir:dir("target/cobertura-reports"),srcdir:"src/main/java") {
-            dirs.each{ fileset(dir:it) }
+        ["html","xml"].each { format ->
+            ant."cobertura-report"(format:format,datafile:ser,destdir:dir("target/cobertura-reports"),srcdir:"src/main/java") {
+                dirs.each{ fileset(dir:it) }
+            }
         }
     }
 
