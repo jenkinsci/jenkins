@@ -43,7 +43,7 @@ THE SOFTWARE.
       <j:if test="${it.configurable}">
         <j:if test="${!it.disabled}">
           <l:task icon="images/24x24/clock.gif" href="${url}/build?delay=0sec" title="${%Build Now}"
-                  onclick="${h.ifThenElse(it.parameterized,null,'return build(this)')}" permission="${it.BUILD}" />
+                  onclick="${it.parameterized?null:'return build(this)'}" permission="${it.BUILD}" />
           <script>
             function build(a) {
               new Ajax.Request(a.href,{method:"post"});

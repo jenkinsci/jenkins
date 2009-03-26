@@ -93,7 +93,6 @@ import hudson.util.ClockDifference;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DaemonThreadFactory;
-import hudson.util.FormFieldValidator;
 import hudson.util.HudsonIsLoading;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.RemotingDiagnostics;
@@ -104,6 +103,7 @@ import hudson.util.DescribableList;
 import hudson.util.Futures;
 import hudson.util.Memoizer;
 import hudson.util.Iterators;
+import hudson.util.FormValidation;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -121,6 +121,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
@@ -191,7 +192,7 @@ import groovy.lang.GroovyShell;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public final class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled {
+public final class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
     private transient final Queue queue;
 
     /**
@@ -706,13 +707,27 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * After doing all the {@code getXXX(shortClassName)} methods, I finally realized that
      * this just doesn't scale.
+     *
+     * @param className
+     *      Either fully qualified class name (recommended) or the short name.
      */
-    public Descriptor getDescriptor(String fullyQualifiedClassName) {
+    public Descriptor getDescriptor(String className) {
         // legacy descriptors that are reigstered manually doesn't show up in getExtensionList, so check them explicitly.
-        for( Descriptor d : Iterators.sequence(getExtensionList(Descriptor.class),DescriptorExtensionList.listLegacyInstances()) )
-            if(d.clazz.getName().equals(fullyQualifiedClassName))
+        for( Descriptor d : Iterators.sequence(getExtensionList(Descriptor.class),DescriptorExtensionList.listLegacyInstances()) ) {
+            String name = d.clazz.getName();
+            if(name.equals(className))
                 return d;
+            if(name.substring(name.lastIndexOf('.')+1).equals(className))
+                return d;
+        }
         return null;
+    }
+
+    /**
+     * Alias for {@link #getDescriptor(String)}.
+     */
+    public Descriptor getDescriptorByName(String className) {
+        return getDescriptor(className);
     }
 
     /**
@@ -1839,11 +1854,18 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             for (final File subdir : subdirs) {
                 loaders.add(threadPoolForLoad.submit(new Callable<TopLevelItem>() {
                     public TopLevelItem call() throws Exception {
-                        long start = System.currentTimeMillis();
-                        TopLevelItem item = (TopLevelItem) Items.load(Hudson.this, subdir);
-                        if(LOG_STARTUP_PERFORMANCE)
-                            LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms by "+Thread.currentThread().getName());
-                        return item;
+                        Thread t = Thread.currentThread();
+                        String name = t.getName();
+                        t.setName("Loading "+subdir);
+                        try {
+                            long start = System.currentTimeMillis();
+                            TopLevelItem item = (TopLevelItem) Items.load(Hudson.this, subdir);
+                            if(LOG_STARTUP_PERFORMANCE)
+                                LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms by "+name);
+                            return item;
+                        } finally {
+                            t.setName(name);
+                        }
                     }
                 }));
             }
@@ -2677,180 +2699,122 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Checks if the path is a valid path.
-     */
-    public void doCheckLocalFSRoot( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        // this can be used to check the existence of a file on the server, so needs to be protected
-        new FormFieldValidator.WorkspaceDirectory(req,rsp,true).process();
-    }
-
-    /**
      * Checks if the JAVA_HOME is a valid JAVA_HOME path.
      */
-    public void doJavaHomeCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public FormValidation doJavaHomeCheck(@QueryParameter File value) {
         // this can be used to check the existence of a file on the server, so needs to be protected
-        new FormFieldValidator(req,rsp,true) {
-            public void check() throws IOException, ServletException {
-                File f = getFileParameter("value");
-                if(!f.isDirectory()) {
-                    error(Messages.Hudson_NotADirectory(f));
-                    return;
-                }
+        checkPermission(ADMINISTER);
 
-                File toolsJar = new File(f,"lib/tools.jar");
-                File mac = new File(f,"lib/dt.jar");
-                if(!toolsJar.exists() && !mac.exists()) {
-                    error(Messages.Hudson_NotJDKDir(f));
-                    return;
-                }
+        if(!value.isDirectory())
+            return FormValidation.error(Messages.Hudson_NotADirectory(value));
 
-                ok();
-            }
-        }.process();
+        File toolsJar = new File(value,"lib/tools.jar");
+        File mac = new File(value,"lib/dt.jar");
+        if(!toolsJar.exists() && !mac.exists())
+            return FormValidation.error(Messages.Hudson_NotJDKDir(value));
+
+        return FormValidation.ok();
     }
 
     /**
      * If the user chose the default JDK, make sure we got 'java' in PATH.
      */
-    public void doDefaultJDKCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        new FormFieldValidator(req,rsp,false) {
-            public void check() throws IOException, ServletException {
-                String v = request.getParameter("value");
-                if(!v.equals("(Default)"))
-                    // assume the user configured named ones properly in system config ---
-                    // or else system config should have reported form field validation errors.
-                    ok();
-                else {
-                    // default JDK selected. Does such java really exist?
-                    if(JDK.isDefaultJDKValid(Hudson.this))
-                        ok();
-                    else
-                        errorWithMarkup(Messages.Hudson_NoJavaInPath(request.getContextPath()));
-                }
-            }
-        }.process();
+    public FormValidation doDefaultJDKCheck(StaplerRequest request, @QueryParameter String value) {
+        if(!value.equals("(Default)"))
+            // assume the user configured named ones properly in system config ---
+            // or else system config should have reported form field validation errors.
+            return FormValidation.ok();
+
+        // default JDK selected. Does such java really exist?
+        if(JDK.isDefaultJDKValid(Hudson.this))
+            return FormValidation.ok();
+        else
+            return FormValidation.errorWithMarkup(Messages.Hudson_NoJavaInPath(request.getContextPath()));
     }
 
     /**
      * Checks if the top-level item with the given name exists.
      */
-    public void doItemExistsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public FormValidation doItemExistsCheck(@QueryParameter String value) {
         // this method can be used to check if a file exists anywhere in the file system,
         // so it should be protected.
-        new FormFieldValidator(req,rsp,Item.CREATE) {
-            protected void check() throws IOException, ServletException {
-                String job = fixEmpty(request.getParameter("value"));
-                if(job==null) {
-                    ok(); // nothing is entered yet
-                    return;
-                }
+        checkPermission(Item.CREATE);
+        
+        String job = fixEmpty(value);
+        if(job==null)
+            return FormValidation.ok();
 
-                if(getItem(job)==null)
-                    ok();
-                else
-                    error(Messages.Hudson_JobAlreadyExists(job));
-            }
-        }.process();
+        if(getItem(job)==null)
+            return FormValidation.ok();
+        else
+            return FormValidation.error(Messages.Hudson_JobAlreadyExists(job));
     }
 
     /**
      * Checks if a top-level view with the given name exists.
      */
-    public void doViewExistsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        new FormFieldValidator(req,rsp,View.CREATE) {
-            protected void check() throws IOException, ServletException {
-                String view = fixEmpty(request.getParameter("value"));
-                if(view==null) {
-                    ok(); // nothing is entered yet
-                    return;
-                }
+    public FormValidation doViewExistsCheck(@QueryParameter String value) {
+        checkPermission(View.CREATE);
 
-                if(getView(view)==null)
-                    ok();
-                else
-                    error(Messages.Hudson_ViewAlreadyExists(view));
-            }
-        }.process();
+        String view = fixEmpty(value);
+        if(view==null) return FormValidation.ok();
+
+        if(getView(view)==null)
+            return FormValidation.ok();
+        else
+            return FormValidation.error(Messages.Hudson_ViewAlreadyExists(view));
     }
 
+    /**
+     * @deprecated as of 1.294
+     *      Define your own check method, instead of relying on this generic one.
+     */
+    public void doFieldCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doFieldCheck(
+                fixEmpty(req.getParameter("value")),
+                fixEmpty(req.getParameter("type")),
+                fixEmpty(req.getParameter("errorText")),
+                fixEmpty(req.getParameter("warningText"))).generateResponse(req,rsp,this);
+    }
 
     /**
      * Checks if the value for a field is set; if not an error or warning text is displayed.
      * If the parameter "value" is not set then the parameter "errorText" is displayed
      * as an error text. If the parameter "errorText" is not set, then the parameter "warningText" is
      * displayed as a warning text.
-     * <p/>
+     * <p>
      * If the text is set and the parameter "type" is set, it will validate that the value is of the
      * correct type. Supported types are "number, "number-positive" and "number-negative".
-     * @param req containing the parameter value and the errorText to display if the value isnt set
-     * @param rsp used by FormFieldValidator
-     * @throws IOException thrown by FormFieldValidator.check()
-     * @throws ServletException thrown by FormFieldValidator.check()
      */
-    public void doFieldCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        new FormFieldValidator(req, rsp, false) {
+    public FormValidation doFieldCheck(@QueryParameter(fixEmpty=true) String value,
+                                       @QueryParameter(fixEmpty=true) String type,
+                                       @QueryParameter(fixEmpty=true) String errorText,
+                                       @QueryParameter(fixEmpty=true) String warningText) {
+        if (value == null) {
+            if (errorText != null)
+                return FormValidation.error(errorText);
+            if (warningText != null)
+                return FormValidation.warning(warningText);
+            return FormValidation.error("No error or warning text was set for fieldCheck().");
+        }
 
-            /**
-             * Display the error text or warning text.
-             */
-            private void fieldCheckFailed() throws IOException, ServletException {
-                String v = fixEmpty(request.getParameter("errorText"));
-                if (v != null) {
-                    error(v);
-                    return;
+        if (type != null) {
+            try {
+                if (type.equalsIgnoreCase("number")) {
+                    NumberFormat.getInstance().parse(value);
+                } else if (type.equalsIgnoreCase("number-positive")) {
+                    if (NumberFormat.getInstance().parse(value).floatValue() <= 0)
+                        return FormValidation.error(Messages.Hudson_NotAPositiveNumber());
+                } else if (type.equalsIgnoreCase("number-negative")) {
+                    if (NumberFormat.getInstance().parse(value).floatValue() >= 0)
+                        return FormValidation.error(Messages.Hudson_NotANegativeNumber());
                 }
-                v = fixEmpty(request.getParameter("warningText"));
-                if (v != null) {
-                    warning(v);
-                    return;
-                }
-                error("No error or warning text was set for fieldCheck().");
+            } catch (ParseException e) {
+                return FormValidation.error(Messages.Hudson_NotANumber());
             }
+        }
 
-            /**
-             * Checks if the value is of the correct type.
-             * @param type the type of string
-             * @param value the actual value to check
-             * @return true, if the type was valid; false otherwise
-             */
-            private boolean checkType(String type, String value) throws IOException, ServletException {
-                try {
-                    if (type.equalsIgnoreCase("number")) {
-                        NumberFormat.getInstance().parse(value);
-                    } else if (type.equalsIgnoreCase("number-positive")) {
-                        if (NumberFormat.getInstance().parse(value).floatValue() <= 0) {
-                            error(Messages.Hudson_NotAPositiveNumber());
-                            return false;
-                        }
-                    } else if (type.equalsIgnoreCase("number-negative")) {
-                        if (NumberFormat.getInstance().parse(value).floatValue() >= 0) {
-                            error(Messages.Hudson_NotANegativeNumber());
-                            return false;
-                        }
-                    }
-                } catch (ParseException e) {
-                    error(Messages.Hudson_NotANumber());
-                    return false;
-                }
-                return true;
-            }
-
-            @Override
-            protected void check() throws IOException, ServletException {
-                String value = fixEmpty(request.getParameter("value"));
-                if (value == null) {
-                    fieldCheckFailed();
-                    return;
-                }
-                String type = fixEmpty(request.getParameter("type"));
-                if (type != null) {
-                    if (!checkType(type, value)) {
-                        return;
-                    }
-                }
-                ok();
-            }
-        }.process();
+        return FormValidation.ok();
     }
 
     /**
@@ -2893,27 +2857,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Checks if container uses UTF-8 to decode URLs. See
      * http://hudson.gotdns.com/wiki/display/HUDSON/Tomcat#Tomcat-i18n
-     *
-     * @param req containing the parameter value
-     * @param rsp used by FormFieldValidator
-     * @throws IOException thrown by FormFieldValidator.check()
-     * @throws ServletException thrown by FormFieldValidator.check()
      */
-    public void doCheckURIEncoding(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        new FormFieldValidator(req, rsp, true) {
-            @Override
-            protected void check() throws IOException, ServletException {
-                request.setCharacterEncoding("UTF-8");
-                // expected is non-ASCII String
-                final String expected = "\u57f7\u4e8b";
-                final String value = fixEmpty(request.getParameter("value"));
-                if (!expected.equals(value)) {
-                    warningWithMarkup(Messages.Hudson_NotUsesUTF8ToDecodeURL());
-                    return;
-                }
-                ok();
-            }
-        }.process();
+    public FormValidation doCheckURIEncoding(StaplerRequest request, @QueryParameter String value) throws IOException {
+        request.setCharacterEncoding("UTF-8");
+        // expected is non-ASCII String
+        final String expected = "\u57f7\u4e8b";
+        value = fixEmpty(value);
+        if (!expected.equals(value))
+            return FormValidation.warningWithMarkup(Messages.Hudson_NotUsesUTF8ToDecodeURL());
+        return FormValidation.ok();
     }
 
     /**

@@ -59,6 +59,8 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.util.Area;
 import hudson.util.Iterators;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -304,6 +306,11 @@ public class Functions {
         return Items.toNameList(projects);
     }
 
+    /**
+     * @deprecated as of 1.294
+     *      JEXL now supports the real ternary operator "x?y:z", so this work around
+     *      is no longer necessary.
+     */
     public static Object ifThenElse(boolean cond, Object thenValue, Object elseValue) {
         return cond ? thenValue : elseValue;
     }
@@ -610,6 +617,10 @@ public class Functions {
         return BuildStepDescriptor.filter(Publisher.all(), project.getClass());
     }
 
+    public static List<SCMDescriptor<?>> getSCMDescriptors(AbstractProject<?,?> project) {
+        return SCM._for(project);
+    }
+
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
         return Hudson.getInstance().getDescriptorList(ComputerLauncher.class);
     }
@@ -858,7 +869,7 @@ public class Functions {
     /**
      * If the value exists, return that value. Otherwise return the default value.
      * <p>
-     * This method is useful for supplying a default value to a form field.
+     * Starting 1.294, JEXL supports the elvis operator "x?:y" that supercedes this.
      *
      * @since 1.150
      */

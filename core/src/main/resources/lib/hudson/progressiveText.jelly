@@ -65,7 +65,7 @@ THE SOFTWARE.
 	      });
 	    }
 	  </j:if>
-	  $$("${idref}").fetchedBytes = ${h.ifThenElse(empty(startOffset),0,startOffset)};
+	  $$("${idref}").fetchedBytes = ${empty(startOffset)?0:startOffset};
 	  fetchNext($$("${idref}"),"${href}");
 	</script>
 </j:jelly>

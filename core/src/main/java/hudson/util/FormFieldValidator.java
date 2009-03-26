@@ -27,6 +27,7 @@ import static hudson.Util.fixEmpty;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.tasks.JavadocArchiver;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -56,6 +57,8 @@ import org.kohsuke.stapler.Stapler;
  * the validation. See hudson-behavior.js 'validated' CSS class and 'checkUrl' attribute.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated as of 1.294
+ *      Use {@link FormValidation} as a return value in your check method.
  */
 public abstract class FormFieldValidator {
     public static final Permission CHECK = Hudson.ADMINISTER;
@@ -230,7 +233,10 @@ public abstract class FormFieldValidator {
     }
 
     /**
-     * Convenient base class for checking the validity of URLs 
+     * Convenient base class for checking the validity of URLs
+     *
+     * @deprecated as of 1.294
+     *      Use {@link FormValidation.URLCheck}
      */
     public static abstract class URLCheck extends FormFieldValidator {
 
@@ -339,6 +345,7 @@ public abstract class FormFieldValidator {
      * Checks the file mask (specified in the 'value' query parameter) against
      * the current workspace.
      * @since 1.90.
+     * @deprecated as of 1.294. Use {@link FilePath#validateFileMask(String, boolean)} 
      */
     public static class WorkspaceFileMask extends FormFieldValidator {
         private final boolean errorIfNotExist;
@@ -389,7 +396,9 @@ public abstract class FormFieldValidator {
     /**
      * Checks a valid directory name (specified in the 'value' query parameter) against
      * the current workspace.
-     * @since 1.116.
+     * @since 1.116
+     * @deprecated as of 1.294. Use {@link FilePath#validateRelativeDirectory(String, boolean)}
+     *      (see {@link JavadocArchiver.DescriptorImpl#doCheck(AbstractProject, String)}
      */
     public static class WorkspaceDirectory extends WorkspaceFilePath {
         public WorkspaceDirectory(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist) {
@@ -405,6 +414,7 @@ public abstract class FormFieldValidator {
      * Checks a valid file name or directory (specified in the 'value' query parameter) against
      * the current workspace.
      * @since 1.160
+     * @deprecated as of 1.294. Use {@link FilePath#validateRelativePath(String, boolean, boolean)}
      */
     public static class WorkspaceFilePath extends FormFieldValidator {
         private final boolean errorIfNotExist;
@@ -487,6 +497,7 @@ public abstract class FormFieldValidator {
      * needed.
      *
      * @since 1.124
+     * @deprecated as of 1.294. Use {@link FormValidation#validateExecutable(String)}
      */
     public static class Executable extends FormFieldValidator {
 
@@ -615,6 +626,8 @@ public abstract class FormFieldValidator {
      * Verifies that the 'value' parameter is an integer >= 0.
      *
      * @since 1.282
+     * @deprecated as of 1.294
+     *      Use {@link FormValidation#validateNonNegativeInteger(String)}
      */
     public static class NonNegativeInteger extends FormFieldValidator {
         public NonNegativeInteger() {

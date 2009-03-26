@@ -29,6 +29,10 @@ THE SOFTWARE.
     <st:attribute name="name" />
     <st:attribute name="checked" />
     <st:attribute name="value" />
+    <st:attribute name="default">
+      The default value of the check box, in case both @checked and @instance are null.
+      If this attribute is unspecified or null, it defaults to unchecked, otherwise checked.
+    </st:attribute>
     <st:attribute name="id" />
     <st:attribute name="onclick" />
     <st:attribute name="class" />
@@ -38,8 +42,8 @@ THE SOFTWARE.
   </st:documentation>
   <f:prepareDatabinding />
   <input type="checkbox"
-         name="${h.defaulted(attrs.name,'_.'+attrs.field)}"
+         name="${attrs.name?:'_.'+attrs.field}"
          value="${attrs.value}"
-         onclick="${attrs.onclick}" id="${attrs.id}" class="${h.ifThenElse(attrs.negative!=null,'negative',null)}"
-         checked="${h.ifThenElse(h.defaulted(attrs.checked,instance[attrs.field]),'true',null)}"/>
+         onclick="${attrs.onclick}" id="${attrs.id}" class="${attrs.negative!=null ? 'negative' : null}"
+         checked="${(attrs.checked ?: instance[attrs.field] ?: attrs.default) ? 'true' : null}"/>
 </j:jelly>

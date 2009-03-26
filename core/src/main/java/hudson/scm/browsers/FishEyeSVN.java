@@ -23,19 +23,18 @@
  */
 package hudson.scm.browsers;
 
-import static hudson.Util.fixEmpty;
+import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.scm.EditType;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
 import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.scm.SubversionRepositoryBrowser;
-import hudson.scm.EditType;
-import hudson.util.FormFieldValidator;
-import hudson.Extension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.URLCheck;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -131,45 +130,33 @@ public class FishEyeSVN extends SubversionRepositoryBrowser {
         /**
          * Performs on-the-fly validation of the URL.
          */
-        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // false==No permission needed for basic check
-            new FormFieldValidator(req,rsp,false) {
+        public FormValidation doCheck(@QueryParameter(fixEmpty=true) String value) throws IOException, ServletException {
+            if(value==null) // nothing entered yet
+                return FormValidation.ok();
+
+            if(!value.endsWith("/")) value+='/';
+            if(!URL_PATTERN.matcher(value).matches())
+                return FormValidation.errorWithMarkup("The URL should end like <tt>.../browse/foobar/</tt>");
+
+            // Connect to URL and check content only if we have admin permission
+            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+                return FormValidation.ok();
+
+            final String finalValue = value;
+            return new URLCheck() {
                 @Override
-                protected void check() throws IOException, ServletException {
-                    String value = fixEmpty(request.getParameter("value"));
-                    if(value==null) {// nothing entered yet
-                        ok();
-                        return;
-                    }
-
-                    if(!value.endsWith("/")) value+='/';
-                    if(!URL_PATTERN.matcher(value).matches()) {
-                        errorWithMarkup("The URL should end like <tt>.../browse/foobar/</tt>");
-                        return;
-                    }
-
-                    // Connect to URL and check content only if we have admin permission
-                    if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) {
-                        final String finalValue = value;
-                        new FormFieldValidator.URLCheck(request,response) {
-                            @Override
-                            protected void check() throws IOException, ServletException {
-                                try {
-                                    if(findText(open(new URL(finalValue)),"FishEye")) {
-                                        ok();
-                                    } else {
-                                        error("This is a valid URL but it doesn't look like FishEye");
-                                    }
-                                } catch (IOException e) {
-                                    handleIOException(finalValue,e);
-                                }
-                            }
-                        }.process();
-                    } else {
-                        ok();
+                protected FormValidation check() throws IOException, ServletException {
+                    try {
+                        if(findText(open(new URL(finalValue)),"FishEye")) {
+                            return FormValidation.ok();
+                        } else {
+                            return FormValidation.error("This is a valid URL but it doesn't look like FishEye");
+                        }
+                    } catch (IOException e) {
+                        return handleIOException(finalValue,e);
                     }
                 }
-            }.process();
+            }.check();
         }
 
         private static final Pattern URL_PATTERN = Pattern.compile(".+/browse/[^/]+/");

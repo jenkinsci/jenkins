@@ -58,8 +58,8 @@ THE SOFTWARE.
                    checked="${it.slaveAgentPort &gt; 0}" onclick="$('sat.port').disabled=false"/>
           <label for="sat.fixed">${%Fixed}</label> :
           <input type="text" class="number" name="slaveAgentPort" id="sat.port"
-             value="${h.ifThenElse(it.slaveAgentPort &gt; 0, it.slaveAgentPort, null)}"
-             disabled="${h.ifThenElse(it.slaveAgentPort &gt; 0, null, 'true')}"/>
+             value   ="${it.slaveAgentPort gt 0 ? it.slaveAgentPort : null}"
+             disabled="${it.slaveAgentPort gt 0 ? null : 'true'}"/>
 
           <st:nbsp />
 

@@ -26,6 +26,7 @@ package hudson.tasks;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Describable;
+import hudson.model.AbstractProject.AbstractProjectDescriptor;
 
 /**
  * {@link Descriptor} for {@link BuildWrapper}.
@@ -53,6 +54,7 @@ public abstract class BuildWrapperDescriptor extends Descriptor<BuildWrapper> {
      *
      * @return
      *      true to allow user to configure this post-promotion task for the given project.
+     * @see AbstractProjectDescriptor#isApplicable(Descriptor) 
      */
     public abstract boolean isApplicable(AbstractProject<?,?> item);
 }

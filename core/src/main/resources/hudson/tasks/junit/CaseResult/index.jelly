@@ -66,14 +66,14 @@ THE SOFTWARE.
     <h3>${%Stacktrace}</h3>
       <pre><lo:out value="${it.errorStackTrace}"/></pre>
 
-      <j:if test="${!empty(it.parent.stdout)}">
+      <j:if test="${!empty(it.stdout)}">
         <h3>${%Standard Output}</h3>
-        <pre><lo:out value="${it.parent.stdout}"/></pre>
+        <pre><lo:out value="${it.stdout}"/></pre>
       </j:if>
 
-      <j:if test="${!empty(it.parent.stderr)}">
+      <j:if test="${!empty(it.stderr)}">
         <h3>${%Standard Error}</h3>
-        <pre><lo:out value="${it.parent.stderr}"/></pre>
+        <pre><lo:out value="${it.stderr}"/></pre>
       </j:if>
     </l:main-panel>
   </l:layout>

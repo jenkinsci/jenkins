@@ -21,23 +21,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  list browser SCMs
-
-  @name : form field name
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    List browser SCMs
+    <st:attribute name="name" use="required">
+      form field name.
+    </st:attribute>
+  </st:documentation>
   <f:dropdownList name="${name}" title="${%Repository browser}">
     <f:dropdownListBlock value="auto" title="(${%Auto})" />
     <j:set var="currentBrowser" value="${scm.browser}"/>
-    <j:forEach var="d" items="${scmd.browserDescriptors}" varStatus="loop">
-      <f:dropdownListBlock value="${loop.index}" title="${d.displayName}" selected="${currentBrowser.descriptor==d}">
-        <j:set var="browser" value="${h.ifThenElse(currentBrowser.descriptor==d, currentBrowser, null)}"/>
+    <j:forEach var="descriptor" items="${scmd.browserDescriptors}" varStatus="loop">
+      <f:dropdownListBlock value="${loop.index}" title="${d.displayName}" selected="${currentBrowser.descriptor==descriptor}">
+        <j:set var="browser" value="${currentBrowser.descriptor==descriptor ? currentBrowser : null}"/><!-- for compatibility -->
+        <j:set var="instance" value="${browser}" />
         <tr><td>
-          <input type="hidden" name="stapler-class" value="${d.clazz.name}" /> 
+          <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />
         </td></tr>
-        <st:include from="${d}" page="${d.configPage}"/>
+        <st:include from="${descriptor}" page="${descriptor.configPage}"/>
       </f:dropdownListBlock>
     </j:forEach>
   </f:dropdownList>

@@ -28,22 +28,18 @@ import hudson.Util;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.remoting.Channel;
-import hudson.util.FormFieldValidator;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
 import hudson.util.StreamTaskListener;
+import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletException;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * {@link ComputerLauncher} through a remote login mechanism like ssh/rsh.
@@ -155,15 +151,11 @@ public class CommandLauncher extends ComputerLauncher {
             return Messages.CommandLauncher_displayName();
         }
 
-        public void doCheckCommand(StaplerRequest req, StaplerResponse rsp, @QueryParameter final String value) throws IOException, ServletException {
-            new FormFieldValidator(req,rsp,false) {
-                protected void check() throws IOException, ServletException {
-                    if(Util.fixEmptyAndTrim(value)==null)
-                        error("Command is empty");
-                    else
-                        ok();
-                }
-            }.process();
+        public FormValidation doCheckCommand(@QueryParameter String value) {
+            if(Util.fixEmptyAndTrim(value)==null)
+                return FormValidation.error("Command is empty");
+            else
+                return FormValidation.ok();
         }
     }
 }

@@ -40,16 +40,16 @@ THE SOFTWARE.
     <f:entry title="CVS_RSH" help="/help/_cvs/cvs-rsh.html">
       <f:textbox field="cvsRsh" />
     </f:entry>
-    <f:entry title="${%Legacy mode}" help="/help/_cvs/legacy.html">
-      <f:checkbox name="cvs.legacy" checked="${scm!=null and !scm.flatten}"/>
+    <f:entry title="${%Legacy mode}" field="legacy" help="/help/_cvs/legacy.html">
+      <f:checkbox />
       ${%legacyModeDescription}
     </f:entry>
-    <f:entry title="${%Use update}" help="/help/_cvs/update.html">
-      <f:checkbox name="cvs.canUseUpdate" checked="${h.defaultToTrue(scm.canUseUpdate)}"/>
+    <f:entry title="${%Use update}" field="canUseUpdate" help="/help/_cvs/update.html">
+      <f:checkbox default="true" />
     </f:entry>
     <t:listScmBrowsers name="cvs.browser" />
-    <f:entry title="${%Excluded Regions}" help="/help/_cvs/excludedRegions.html">
-	   <f:textarea name="cvs.excludedRegions" value="${scm.excludedRegions}" checkUrl="'${rootURL}/scm/CVSSCM/excludeRegionsCheck?value='+escape(this.value)"/>
+    <f:entry title="${%Excluded Regions}" help="/help/_cvs/excludedRegions.html" field="excludedRegions">
+	   <f:textarea />
 	 </f:entry>
   </f:advanced>
 </j:jelly>

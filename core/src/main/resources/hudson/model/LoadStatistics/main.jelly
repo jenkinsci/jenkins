@@ -28,7 +28,7 @@ THE SOFTWARE.
     <img src="${imagesURL}/48x48/monitor.gif" alt=""/>
     ${%title(it.displayName)}
   </h1>
-  <j:set var="type" value="${h.defaulted(request.getParameter('type'),'min')}" />
+  <j:set var="type" value="${request.getParameter('type') ?: 'min'}" />
   <div>
     ${%Timespan}:
     <j:choose>
@@ -58,7 +58,7 @@ THE SOFTWARE.
       </j:otherwise>
     </j:choose>
   </div>  
-  <img src="${h.defaulted(prefix,'loadStatistics')}/graph?type=${type}&amp;width=500&amp;height=300" />
+  <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" />
   <div style="margin-top: 2em;">
     ${%blurb}
   </div>

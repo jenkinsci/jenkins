@@ -25,12 +25,12 @@ THE SOFTWARE.
 <!-- SCM config pane -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:section title="${%Source Code Management}">
-    <j:getStatic var="scms" className="hudson.scm.SCMS" field="SCMS" />
+    <j:set var="scms" value="${h.getSCMDescriptors(it)}" />
     <j:forEach var="idx" begin="0" end="${size(scms)-1}">
       <j:set var="descriptor" value="${scms[idx]}" />
       <j:set var="scmd" value="${descriptor}" /><!-- backward compatibility with <1.238 -->
       <f:radioBlock name="scm" value="${idx}" title="${scmd.displayName}" checked="${it.scm.descriptor==scmd}">
-        <j:set var="instance" value="${h.ifThenElse(it.scm.descriptor==descriptor, it.scm, null)}"/>
+        <j:set var="instance" value="${it.scm.descriptor==descriptor ? it.scm : null}"/>
         <j:set var="scm" value="${instance}" /><!-- backward compatibility with <1.238 -->
         <st:include from="${scmd}" page="${scmd.configPage}"/>
       </f:radioBlock>

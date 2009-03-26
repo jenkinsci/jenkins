@@ -51,11 +51,11 @@ THE SOFTWARE.
 
   <f:prepareDatabinding />
   <textarea id="${attrs.id}" style="${attrs.style}"
-            name ="${h.defaulted(attrs.name,'_.'+attrs.field)}"
-            class="setting-input ${h.ifThenElse(checkUrl!=null,'validated','')}"
+            name ="${attrs.name ?: '_.'+attrs.field}"
+            class="setting-input ${checkUrl!=null?'validated':''}"
             checkUrl="${checkUrl}"
             rows="${h.determineRows(attrs.value)}">
-    <st:out value="${h.defaulted(attrs.value,instance[attrs.field])}" />
+    <st:out value="${attrs.value ?: instance[attrs.field]}" />
   </textarea>
   <!-- resize handle -->
   <div class="textarea-handle"/>

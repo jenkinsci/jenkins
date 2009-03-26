@@ -31,13 +31,15 @@ import hudson.maven.AbstractMavenProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.model.Hudson;
 import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -100,6 +102,9 @@ public class ArtifactArchiver extends Recorder {
 
         try {
             FilePath ws = p.getWorkspace();
+            if (ws==null) { // #3330: slave down?
+                return true;
+            }
             if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
                 if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
@@ -168,8 +173,8 @@ public class ArtifactArchiver extends Recorder {
         /**
          * Performs on-the-fly validation on the file mask wildcard.
          */
-        public void doCheckArtifacts(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new FormFieldValidator.WorkspaceFileMask(req,rsp).process();
+        public FormValidation doCheckArtifacts(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+            return FilePath.validateFileMask(project.getWorkspace(),value);
         }
 
         public ArtifactArchiver newInstance(StaplerRequest req, JSONObject formData) throws FormException {

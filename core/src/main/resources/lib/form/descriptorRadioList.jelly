@@ -46,14 +46,14 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <j:set var="targetType" value="${h.defaulted(attrs.targetType,it.class)}"/>
+  <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
   <f:section title="${attrs.title}">
     <d:invokeBody />
 	  <j:forEach var="d" items="${descriptors}" varStatus="loop">
       <f:radioBlock name="${varName}" help="${d.helpFile}" value="${loop.index}"
         title="${d.displayName}" checked="${instance.descriptor==d}">
         <j:set var="descriptor" value="${d}" />
-	      <j:set var="instance" value="${h.ifThenElse(instance.descriptor==d,instance,null)}" />
+	      <j:set var="instance" value="${instance.descriptor==d?instance:null}" />
 	      <st:include from="${d}" page="${d.configPage}" optional="true" />
 	    </f:radioBlock>
 	  </j:forEach>

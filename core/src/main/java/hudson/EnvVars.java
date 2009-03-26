@@ -194,6 +194,11 @@ public class EnvVars extends TreeMap<String,String> {
     private static EnvVars initMaster() {
         EnvVars vars = new EnvVars(System.getenv());
         vars.platform = Platform.current();
+        if(Functions.isUnitTest)
+            // if unit test is launched with maven debug switch,
+            // we need to prevent forked Maven processes from seeing it, or else
+            // they'll hang
+            vars.remove("MAVEN_OPTS");
         return vars;
     }
 }

@@ -23,27 +23,23 @@
  */
 package hudson.slaves;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import antlr.ANTLRException;
+import hudson.Extension;
+import static hudson.Util.fixNull;
+import hudson.model.Computer;
+import hudson.model.Descriptor;
+import hudson.scheduler.CronTabList;
+import hudson.util.FormValidation;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+
+import java.io.InvalidObjectException;
+import java.io.ObjectStreamException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.concurrent.ExecutionException;
-import java.io.IOException;
-import java.io.ObjectStreamException;
-import java.io.InvalidObjectException;
-
-import javax.servlet.ServletException;
-
-import hudson.model.Descriptor;
-import hudson.model.Computer;
-import hudson.scheduler.CronTabList;
-import hudson.util.FormFieldValidator;
-import static hudson.Util.fixNull;
-import hudson.Extension;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import antlr.ANTLRException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link RetentionStrategy} that controls the slave based on a schedule. 
@@ -162,11 +158,11 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
 
     @Override
     public boolean isManualLaunchAllowed(final SlaveComputer c) {
-        return isOnlineScheduled(c);
+        return isOnlineScheduled();
     }
 
     public synchronized long check(final SlaveComputer c) {
-        boolean shouldBeOnline = isOnlineScheduled(c);
+        boolean shouldBeOnline = isOnlineScheduled();
         LOGGER.log(Level.FINE, "Checking computer {0} against schedule. online = {1}, shouldBeOnline = {2}",
                 new Object[]{c.getName(), c.isOnline(), shouldBeOnline});
         if (shouldBeOnline && c.isOffline()) {
@@ -218,7 +214,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return 1;
     }
 
-    private boolean isOnlineScheduled(SlaveComputer c) {
+    private boolean isOnlineScheduled() {
         updateStartStopWindow();
         long now = System.currentTimeMillis();
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
@@ -243,23 +239,15 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         /**
          * Performs syntax check.
          */
-        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // false==No permission needed for this syntax check
-            new FormFieldValidator(req, rsp, false) {
-                @Override
-                protected void check() throws IOException, ServletException {
-                    try {
-                        String msg = CronTabList.create(fixNull(request.getParameter("value"))).checkSanity();
-                        if (msg != null) {
-                            warning(msg);
-                        } else {
-                            ok();
-                        }
-                    } catch (ANTLRException e) {
-                        error(e.getMessage());
-                    }
-                }
-            }.process();
+        public FormValidation doCheck(@QueryParameter String value) {
+            try {
+                String msg = CronTabList.create(fixNull(value)).checkSanity();
+                if (msg != null)
+                    return FormValidation.warning(msg);
+                return FormValidation.ok();
+            } catch (ANTLRException e) {
+                return FormValidation.error(e.getMessage());
+            }
         }
     }
 }

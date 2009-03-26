@@ -29,11 +29,13 @@ import hudson.Util;
 import hudson.Extension;
 import hudson.maven.AbstractMavenProject;
 import hudson.model.*;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.AncestorInPath;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -112,7 +114,7 @@ public class JavadocArchiver extends Recorder {
         return true;
     }
 
-    public Action getProjectAction(Project project) {
+    public Action getProjectAction(AbstractProject project) {
         return new JavadocAction(project);
     }
 
@@ -201,9 +203,8 @@ public class JavadocArchiver extends Recorder {
         /**
          * Performs on-the-fly validation on the file mask wildcard.
          */
-        public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // WorkspaceDirectory requires CONFIGURE permission on this project
-            new FormFieldValidator.WorkspaceDirectory(req,rsp).process();
+        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException, ServletException {
+            return project.getWorkspace().validateRelativeDirectory(value);
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {

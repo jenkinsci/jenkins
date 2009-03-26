@@ -32,7 +32,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.MetaClassLoader;
+import org.kohsuke.stapler.Ancestor;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
@@ -255,7 +255,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if(method==NONE)
             return null;
 
-        return singleQuote(Stapler.getCurrentRequest().getContextPath()+"/descriptor/"+clazz.getName()+"/check"+capitalizedFieldName+"?value=")+"+encode(this.value)";
+        StaplerRequest req = Stapler.getCurrentRequest();
+        Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
+        // a is always non-null because we already have Hudson as the sentinel
+        return singleQuote(a.getUrl()+"/descriptorByName/"+clazz.getName()+"/check"+capitalizedFieldName+"?value=")+"+encode(this.value)";
     }
 
     /**

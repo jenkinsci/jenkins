@@ -25,6 +25,7 @@ package hudson.scm;
 
 import hudson.model.Descriptor;
 import hudson.model.Describable;
+import hudson.model.AbstractProject;
 
 import java.util.List;
 import java.util.Collections;
@@ -81,6 +82,19 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      */
     public boolean isBrowserReusable(T x, T y) {
         return false;
+    }
+
+    /**
+     * Allows {@link SCMDescriptor}s to choose which projects it wants to be configurable against.
+     *
+     * <p>
+     * When this method returns false, this {@link SCM} will not appear in the configuration screen
+     * for the given project. The default method always return true.
+     *
+     * @since 1.294
+     */
+    public boolean isApplicable(AbstractProject project) {
+        return true;
     }
 
     /**

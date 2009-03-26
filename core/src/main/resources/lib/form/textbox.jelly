@@ -49,9 +49,9 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
-  <input class="setting-input ${h.ifThenElse(attrs.checkUrl!=null,'validated','')}"
-         name ="${h.defaulted(attrs.name,'_.'+attrs.field)}"
-         value="${h.defaulted(attrs.value,instance[attrs.field])}"
+  <input class="setting-input ${attrs.checkUrl!=null?'validated':''}"
+         name ="${attrs.name ?: '_.'+attrs.field}"
+         value="${attrs.value ?: instance[attrs.field]}"
          id="${attrs.id}"
          type="text"
          checkUrl="${attrs.checkUrl}" checkMethod="${attrs.checkMethod}"

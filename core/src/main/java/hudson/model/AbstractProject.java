@@ -48,6 +48,9 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
@@ -1166,7 +1169,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         authToken = BuildAuthorizationToken.create(req);
 
-        setScm(SCMS.parseSCM(req));
+        setScm(SCMS.parseSCM(req,this));
 
         for (Trigger t : triggers)
             t.stop();
@@ -1298,6 +1301,38 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
             },
             req, rsp );
+    }
+
+    /**
+     * {@link AbstractProject} subtypes should implement this base class as a descriptor.
+     *
+     * @since 1.294
+     */
+    public static abstract class AbstractProjectDescriptor extends TopLevelItemDescriptor {
+        /**
+         * {@link AbstractProject} subtypes can override this method to veto some {@link Descriptor}s
+         * from showing up on their configuration screen. This is often useful when you are building
+         * a workflow/company specific project type, where you want to limit the number of choices
+         * given to the users.
+         *
+         * <p>
+         * Some {@link Descriptor}s define their own schemes for controlling applicability
+         * (such as {@link BuildStepDescriptor#isApplicable(Class)}),
+         * This method works like AND in conjunction with them;
+         * Both this method and that method need to return true in order for a given {@link Descriptor}
+         * to show up for the given {@link Project}.
+         *
+         * <p>
+         * The default implementation returns true for everything.
+         *
+         * @see BuildStepDescriptor#isApplicable(Class) 
+         * @see BuildWrapperDescriptor#isApplicable(AbstractProject) 
+         * @see TriggerDescriptor#isApplicable(Item)
+         */
+        @Override
+        public boolean isApplicable(Descriptor descriptor) {
+            return true;
+        }
     }
 
     /**

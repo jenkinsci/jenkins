@@ -26,6 +26,8 @@ package hudson.tasks;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.AbstractProject;
+import hudson.model.Hudson;
+import hudson.model.AbstractProject.AbstractProjectDescriptor;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -59,6 +61,7 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
      *
      * @return
      *      true to allow user to configure this post-promotion task for the given project.
+     * @see AbstractProjectDescriptor#isApplicable(Descriptor) 
      */
     public abstract boolean isApplicable(Class<? extends AbstractProject> jobType);
 
@@ -68,12 +71,18 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
      */
     public static <T extends BuildStep&Describable<T>>
     List<Descriptor<T>> filter(List<Descriptor<T>> base, Class<? extends AbstractProject> type) {
+        // descriptor of the project
+        Descriptor pd = Hudson.getInstance().getDescriptor((Class) type);
+
         List<Descriptor<T>> r = new ArrayList<Descriptor<T>>(base.size());
         for (Descriptor<T> d : base) {
+            if (pd instanceof AbstractProjectDescriptor && !((AbstractProjectDescriptor)pd).isApplicable(d))
+                continue;
+
             if (d instanceof BuildStepDescriptor) {
                 BuildStepDescriptor<T> bd = (BuildStepDescriptor<T>) d;
-                if(bd.isApplicable(type))
-                    r.add(bd);
+                if(!bd.isApplicable(type))  continue;
+                r.add(bd);
             } else {
                 // old plugins built before 1.150 may not implement BuildStepDescriptor
                 r.add(d);

@@ -45,12 +45,12 @@ THE SOFTWARE.
       <tr>
         <td>
           <a href="${attrs.href}">
-            <img src="${h.ifThenElse(icon.startsWith('/'), rootURL+icon, imagesURL+'/48x48/'+icon)}"
+            <img src="${icon.startsWith('/') ? rootURL+icon : imagesURL+'/48x48/'+icon}"
                  alt="" width="48" height="48" style="margin-right:1em" />
           </a>
         </td>
         <td style="vertical-align:middle">
-          <a href="${h.ifThenElse(attrs.iconOnly==null,attrs.href,null)}">
+          <a href="${attrs.iconOnly==null ? attrs.href : null}">
             <d:invokeBody />
           </a>
         </td>

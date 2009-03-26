@@ -42,7 +42,7 @@ THE SOFTWARE.
         <j:arg value="150" />
       </j:invokeStatic>
       <!-- Show at most last 150KB (can override with system property) unless consoleFull is set -->
-      <j:set var="offset" value="${h.ifThenElse(empty(consoleFull),it.logFile.length()-threshold*1024,0)}" />
+      <j:set var="offset" value="${empty(consoleFull) ? it.logFile.length()-threshold*1024 : 0}" />
       <j:choose>
         <j:when test="${offset > 0}">
           ${%skipSome(offset/1024,"consoleFull")}

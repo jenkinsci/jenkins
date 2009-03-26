@@ -50,7 +50,7 @@ THE SOFTWARE.
               ${report.result.totalCount}
             </td>
             <td class="pane" style="text-align:right;">
-              <!-- This is not a breathtaking construct, but h.ifThenElse didn't work for some reason -->
+              <!-- if only we have if..then..else in Jelly -->
               <j:if test="${report.result.failCount!=0}">
                 <a href="#${report.child.project.name}">${report.result.failCount}</a>
               </j:if>

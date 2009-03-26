@@ -30,19 +30,22 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.scm.browsers.Sventon;
+import hudson.scm.SubversionSCM.ModuleLocation;
 import hudson.util.NullStream;
 import hudson.model.*;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.util.Map;
+import java.net.URL;
+
 import org.dom4j.Document;
 import org.dom4j.io.DOMReader;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.recipes.PresetData;
 import static org.jvnet.hudson.test.recipes.PresetData.DataSet.ANONYMOUS_READONLY;
 import org.tmatesoft.svn.core.SVNException;
@@ -244,5 +247,32 @@ public class SubversionSCMTest extends HudsonTestCase {
             // now the polling should indicate that we need a new build
             assertTrue("change was not detected!", p.pollSCMChanges(listener));
         }
+    }
+
+    public void testConfigRoundtrip() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+
+        SubversionSCM scm = new SubversionSCM(new String[]{"a","b"},new String[]{"c","d"},true,new Sventon(new URL("http://www.sun.com/"),"test"),"exclude");
+        p.setScm(scm);
+        submit(new WebClient().getPage(p,"configure").getFormByName("config"));
+        verify(scm,(SubversionSCM)p.getScm());
+
+        scm = new SubversionSCM(new String[]{"a"},new String[]{"c"},false,null,"");
+        p.setScm(scm);
+        submit(new WebClient().getPage(p,"configure").getFormByName("config"));
+        verify(scm,(SubversionSCM)p.getScm());
+    }
+
+    private void verify(SubversionSCM lhs, SubversionSCM rhs) {
+        ModuleLocation[] ll = lhs.getLocations();
+        ModuleLocation[] rl = rhs.getLocations();
+        assertEquals(ll.length, rl.length);
+        for(int i=0; i<ll.length; i++) {
+            assertEquals(ll[i].local, rl[i].local);
+            assertEquals(ll[i].remote, rl[i].remote);
+        }
+
+        assertEquals(lhs.isUseUpdate(), rhs.isUseUpdate());
+        assertEquals(lhs.getExcludedRegions(), rhs.getExcludedRegions());
     }
 }

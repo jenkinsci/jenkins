@@ -37,7 +37,7 @@ THE SOFTWARE.
       <j:if test="${!c.acceptingTasks}"> (${%suspended})</j:if>
     </d:tag>
   </d:taglib>
-  <j:set var="computers" value="${h.ifThenElse(attrs.computers!=null, attrs.computers, app.computers)}" />
+  <j:set var="computers" value="${attrs.computers?:app.computers}" />
 	<l:pane title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>" width="3" id="executors">
 	  <j:forEach var="c" items="${computers}" varStatus="cloop">
 	    <j:choose>
@@ -111,7 +111,7 @@ THE SOFTWARE.
     <!-- schedule updates only for the full page reload -->
     <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
       <script defer="defer">
-        refreshPart('executors',"${h.ifThenElse(h.hasView(it,'ajaxExecutors'),'.',rootURL)}/ajaxExecutors");
+        refreshPart('executors',"${h.hasView(it,'ajaxExecutors')?'.':rootURL}/ajaxExecutors");
       </script>
     </j:if>
 	</l:pane>

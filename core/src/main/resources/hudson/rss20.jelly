@@ -39,7 +39,7 @@ THE SOFTWARE.
           <link>${rootURL}${h.encode(adapter.getEntryUrl(e))}</link>
           <guid isPermaLink="false">${adapter.getEntryID(e)}</guid>
           <pubDate>${h.rfc822Date(adapter.getEntryTimestamp(e))}</pubDate>
-          <author>${adapter.getEntryAuthor(e)}</author>
+          <author><st:out value="${adapter.getEntryAuthor(e)}"/></author>
           <j:set var="desc" value="${adapter.getEntryDescription(e)}"/>
           <j:if test="${desc!=null}">
             <description>${h.xmlEscape(desc)}</description>

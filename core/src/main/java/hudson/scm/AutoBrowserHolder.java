@@ -66,9 +66,9 @@ final class AutoBrowserHolder {
     private RepositoryBrowser infer() {
         for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) ) {
             SCM scm = p.getScm();
-            if (scm.getClass()==owner.getClass()) {
-                if(scm.getBrowser()!=null && ((SCMDescriptor)scm.getDescriptor()).isBrowserReusable(scm,owner))
-                    return scm.getBrowser();
+            if (scm!=null && scm.getClass()==owner.getClass() && scm.getBrowser()!=null &&
+                    ((SCMDescriptor)scm.getDescriptor()).isBrowserReusable(scm,owner)) {
+                return scm.getBrowser();
             }
         }
         return null;

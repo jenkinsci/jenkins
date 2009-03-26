@@ -25,6 +25,7 @@ package hudson.tasks;
 
 import hudson.Launcher;
 import hudson.Extension;
+import hudson.Util;
 import hudson.security.AccessControlled;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
@@ -42,11 +43,12 @@ import hudson.model.Project;
 import hudson.model.Result;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.listeners.ItemListener;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -266,30 +268,21 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
         /**
          * Form validation method.
          */
-        public void doCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        public FormValidation doCheck(@AncestorInPath AccessControlled subject, @QueryParameter String value ) {
             // Require CONFIGURE permission on this project
-            AccessControlled anc = req.findAncestorObject(AccessControlled.class);
-            new FormFieldValidator(req,rsp,anc,Item.CONFIGURE) {
-                protected void check() throws IOException, ServletException {
-                    String list = request.getParameter("value");
+            if(!subject.hasPermission(Item.CONFIGURE))      return FormValidation.ok();
 
-                    StringTokenizer tokens = new StringTokenizer(list,",");
-                    while(tokens.hasMoreTokens()) {
-                        String projectName = tokens.nextToken().trim();
-                        Item item = Hudson.getInstance().getItemByFullName(projectName,Item.class);
-                        if(item==null) {
-                            error(Messages.BuildTrigger_NoSuchProject(projectName,AbstractProject.findNearest(projectName).getName()));
-                            return;
-                        }
-                        if(!(item instanceof AbstractProject)) {
-                            error(Messages.BuildTrigger_NotBuildable(projectName));
-                            return;
-                        }
-                    }
+            StringTokenizer tokens = new StringTokenizer(Util.fixNull(value),",");
+            while(tokens.hasMoreTokens()) {
+                String projectName = tokens.nextToken().trim();
+                Item item = Hudson.getInstance().getItemByFullName(projectName,Item.class);
+                if(item==null)
+                    return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName,AbstractProject.findNearest(projectName).getName()));
+                if(!(item instanceof AbstractProject))
+                    return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
+            }
 
-                    ok();
-                }
-            }.process();
+            return FormValidation.ok();
         }
 
         @Extension

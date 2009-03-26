@@ -41,24 +41,6 @@ THE SOFTWARE.
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <!-- There is a bug in JDK 1.5's compiler therefore need to compile with 1.6 -->
-                <requireJavaVersion>
-                  <version>[1.6.0,]</version>
-                </requireJavaVersion>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.jvnet.hudson.tools</groupId>
         <artifactId>maven-encoding-plugin</artifactId>
         <version>1.1</version>
@@ -74,7 +56,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.11</version>
+        <version>1.12</version>
         <extensions>true</extensions>
         <dependencies>
           <dependency>
@@ -170,7 +152,7 @@ THE SOFTWARE.
           <factory>org.jvnet.hudson.tools.ExtensionPointListerFactory</factory>
           <options>
             <option>page=Extension points</option>
-	    <option>target=${project.basedir}/target/extension-points.wiki</option>
+            <option>target=${project.basedir}/target/extension-points.wiki</option>
           </options>
         </configuration>
         <dependencies>
@@ -265,15 +247,51 @@ THE SOFTWARE.
       </reporting>
     </profile>
     <profile>
+      <!--
+        Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire.
+      -->
+      <id>cobertura</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.kohsuke.gmaven</groupId>
+            <artifactId>gmaven-plugin</artifactId>
+            <executions>
+              <!-- run unit test -->
+              <execution>
+                <phase>test</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <scriptpath>
+                    <element>${project.basedir}/src/build-script</element>
+                  </scriptpath>
+                  <source>${project.basedir}/src/build-script/unitTest.groovy</source>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <!-- unit tests are run by GMaven through Ant. -->
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skipTests>true</skipTests>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
       <id>sorcerer</id>
       <reporting>
         <plugins>
           <plugin>
             <groupId>org.jvnet.sorcerer</groupId>
-	    <artifactId>maven-sorcerer-plugin</artifactId>
+            <artifactId>maven-sorcerer-plugin</artifactId>
             <version>0.7-SNAPSHOT</version>
-	  </plugin>
-	</plugins>
+          </plugin>
+        </plugins>
       </reporting>
     </profile>
   </profiles>
@@ -368,8 +386,22 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler</artifactId>
-      <version>1.96</version>
+      <artifactId>stapler-jelly</artifactId>
+      <version>1.100</version>
+      <exclusions>
+        <exclusion>
+          <groupId>dom4j</groupId>
+          <artifactId>dom4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-jelly</groupId>
+          <artifactId>commons-jelly</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-jexl</groupId>
+          <artifactId>commons-jexl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
@@ -549,7 +581,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jexl</artifactId>
-      <version>1.1-hudson-20081031</version>
+      <version>1.1-hudson-20090322</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
