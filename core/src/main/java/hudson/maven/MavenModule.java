@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -282,6 +283,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return moduleName.toFileSystemName()+'/';
     }
 
+    @Exported(visibility=2)
     @Override
     public String getDisplayName() {
         return displayName;

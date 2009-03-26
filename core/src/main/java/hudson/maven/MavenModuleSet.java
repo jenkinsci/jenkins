@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.*;
 
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Group of {@link MavenModule}s.
@@ -161,6 +162,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return modules.values();
     }
 
+    @Exported
     public Collection<MavenModule> getModules() {
         return getItems();
     }
