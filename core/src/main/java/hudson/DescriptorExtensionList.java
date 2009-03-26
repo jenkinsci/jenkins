@@ -164,5 +164,12 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
         };
     }
 
+    /**
+     * Exposed just for the test harness. Clear legacy instances.
+     */
+    public static void clearLegacyInstances() {
+        legacyDescriptors.clear();
+    }
+
     private static final Logger LOGGER = Logger.getLogger(DescriptorExtensionList.class.getName());
 }

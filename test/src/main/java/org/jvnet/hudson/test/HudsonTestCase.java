@@ -28,6 +28,8 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.WebAppMain;
 import hudson.EnvVars;
+import hudson.ExtensionList;
+import hudson.DescriptorExtensionList;
 import hudson.Launcher.LocalLauncher;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixBuild;
@@ -214,23 +216,8 @@ public abstract class HudsonTestCase extends TestCase {
 
         hudson.cleanUp();
         env.dispose();
-    }
-
-    private void cleanUpDescriptors(Iterable<? extends Descriptor> cont) {
-        ClassLoader base = getClass().getClassLoader();
-        for (Iterator<? extends Descriptor> itr = cont.iterator(); itr.hasNext();) {
-            Descriptor d =  itr.next();
-            ClassLoader cl = d.getClass().getClassLoader();
-            if(cl==base)    continue;
-
-            while(cl!=null) {
-                cl = cl.getParent();
-                if(cl==base) {
-                    itr.remove();
-                    break;
-                }
-            }
-        }
+        ExtensionList.clearLegacyInstances();
+        DescriptorExtensionList.clearLegacyInstances();
     }
 
     protected void runTest() throws Throwable {
@@ -443,6 +430,15 @@ public abstract class HudsonTestCase extends TestCase {
     		hudson.addNode(slave);
     		return slave;
     	}
+    }
+
+    /**
+     * Blocks until the ENTER key is hit.
+     * This is useful during debugging a test so that one can inspect the state of Hudson through the web browser.
+     */
+    public void interactiveBreak() throws Exception {
+        System.out.println("Hudson is running at localhost:"+localPort);
+        new BufferedReader(new InputStreamReader(System.in)).readLine();
     }
 
     /**

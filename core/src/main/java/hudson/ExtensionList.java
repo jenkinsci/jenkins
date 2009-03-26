@@ -229,4 +229,11 @@ public class ExtensionList<T> extends AbstractList<T> {
             return new CopyOnWriteArrayList();
         }
     };
+
+    /**
+     * Exposed for the test harness to clear all legacy extension instances.
+     */
+    public static void clearLegacyInstances() {
+        staticLegacyInstances.clear();
+    }
 }
