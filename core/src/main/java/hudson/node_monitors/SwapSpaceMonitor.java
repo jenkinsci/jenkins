@@ -84,7 +84,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
         }
 
         public String getDisplayName() {
-            return Messages.SwapSpaceMonitor_displayName();
+            return Messages.SwapSpaceMonitor_DisplayName();
         }
 
         @Override

@@ -55,7 +55,7 @@ public class ClockMonitor extends NodeMonitor {
         }
 
         public String getDisplayName() {
-            return Messages.ClockMonitor_displayName();
+            return Messages.ClockMonitor_DisplayName();
         }
 
         @Override
