@@ -42,6 +42,8 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Resource;
 import hudson.model.Saveable;
+import hudson.model.ItemDescriptor;
+import hudson.model.Describable;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 import hudson.tasks.Maven.MavenInstallation;
@@ -66,7 +68,7 @@ import org.kohsuke.stapler.export.Exported;
  * 
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> implements Saveable {
+public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> implements Saveable, Describable<MavenModule> {
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
         new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
 
@@ -446,5 +448,23 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         }
 
         return reporters;
+    }
+
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl)Hudson.getInstance().getDescriptor(getClass());
+    }
+
+    public static class DescriptorImpl extends ItemDescriptor<MavenModule> {
+        public String getDisplayName() {
+            return null; // never used
+        }
+
+        /**
+         * Do the same exclusion as {@link MavenModuleSet} does.
+         */
+        @Override
+        public boolean isApplicable(Descriptor descriptor) {
+            return Hudson.getInstance().getDescriptorByType(MavenModuleSet.DescriptorImpl.class).isApplicable(descriptor);
+        }
     }
 }
