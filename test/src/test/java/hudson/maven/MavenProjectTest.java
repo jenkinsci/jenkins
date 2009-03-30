@@ -1,16 +1,11 @@
 package hudson.maven;
 
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.ExtractResourceSCM;
-import hudson.tasks.Maven.MavenInstallation;
-import hudson.tasks.ArtifactArchiver;
-import hudson.model.Slave;
-import hudson.model.Descriptor;
-
-import java.net.URLClassLoader;
-import java.util.Arrays;
-
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.Descriptor;
+import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.Maven.MavenInstallation;
+import org.jvnet.hudson.test.ExtractResourceSCM;
+import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
  * @author huybrechts
