@@ -1214,11 +1214,18 @@ public final class FilePath implements Serializable {
      * that has this file.
      * @since 1.89
      */
-    public Launcher createLauncher(TaskListener listener) {
+    public Launcher createLauncher(TaskListener listener) throws IOException, InterruptedException {
         if(channel==null)
             return new LocalLauncher(listener);
         else
-            return new RemoteLauncher(listener,channel,isUnix());
+            return new RemoteLauncher(listener,channel,channel.call(new IsUnix()));
+    }
+
+    private static final class IsUnix implements Callable<Boolean,IOException> {
+        public Boolean call() throws IOException {
+            return File.pathSeparatorChar==':';
+        }
+        private static final long serialVersionUID = 1L;
     }
 
     /**
