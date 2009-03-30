@@ -35,7 +35,7 @@ import hudson.tasks.BuildStepDescriptor;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
+public abstract class TopLevelItemDescriptor extends ItemDescriptor<TopLevelItem> {
     protected TopLevelItemDescriptor(Class<? extends TopLevelItem> clazz) {
         super(clazz);
     }
@@ -48,20 +48,6 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * @since 1.278
      */
     protected TopLevelItemDescriptor() {
-    }
-
-    /**
-     * {@link TopLevelItemDescriptor}s often uses other descriptors to decorate itself.
-     * This method allows the subtype of {@link TopLevelItemDescriptor}s to filter them out.
-     *
-     * <p>
-     * This is useful for a workflow/company specific job type that wants to eliminate
-     * options that the user would see.
-     *
-     * @since 1.294
-     */
-    public boolean isApplicable(Descriptor descriptor) {
-        return true;
     }
 
     /**

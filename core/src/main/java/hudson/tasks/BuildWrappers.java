@@ -26,6 +26,7 @@ package hudson.tasks;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.ItemDescriptor;
 import hudson.model.AbstractProject.AbstractProjectDescriptor;
 import hudson.Extension;
 import hudson.util.DescriptorList;
@@ -58,7 +59,7 @@ public class BuildWrappers {
         Descriptor pd = Hudson.getInstance().getDescriptor((Class)project.getClass());
 
         for (Descriptor<BuildWrapper> w : BuildWrapper.all()) {
-            if (pd instanceof AbstractProjectDescriptor && !((AbstractProjectDescriptor)pd).isApplicable(w))
+            if (pd instanceof ItemDescriptor && !((ItemDescriptor)pd).isApplicable(w))
                 continue;
             if (w instanceof BuildWrapperDescriptor) {
                 BuildWrapperDescriptor bwd = (BuildWrapperDescriptor) w;
