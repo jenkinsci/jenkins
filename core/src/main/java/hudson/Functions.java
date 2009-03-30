@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import hudson.maven.ExecutedMojo;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Descriptor;
@@ -663,10 +662,6 @@ public class Functions {
     public static int size2(Object o) throws Exception {
         if(o==null) return 0;
         return ASTSizeFunction.sizeOf(o,Introspector.getUberspect());
-    }
-
-    public static ExecutedMojo.Cache createExecutedMojoCache() {
-        return new ExecutedMojo.Cache();
     }
 
     /**

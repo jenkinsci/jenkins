@@ -42,6 +42,7 @@ THE SOFTWARE.
   <modules>
     <module>remoting</module>
     <module>core</module>
+    <module>maven-plugin</module>
     <module>maven-agent</module>
     <module>maven-interceptor</module>
     <module>war</module>

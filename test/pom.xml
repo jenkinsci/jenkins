@@ -43,7 +43,7 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <!-- override with -DforkMode=pertest if you have "unable to create thread problems" on Windows -->
-          <forkMode>never</forkMode> 
+          <forkMode>once</forkMode>
           <!--<forkMode>once</forkMode>--><!-- fork is necessary for redirectTestOutputToFile -->
           <!--<reportFormat>plain</reportFormat>-->
           <!--<redirectTestOutputToFile>true</redirectTestOutputToFile>-->
@@ -84,6 +84,16 @@ THE SOFTWARE.
       <artifactId>hudson-war</artifactId>
       <version>${project.version}</version>
       <classifier>war-for-test</classifier>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>maven-plugin</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>maven-plugin</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>

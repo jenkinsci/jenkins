@@ -40,7 +40,7 @@ THE SOFTWARE.
           </div>
         </j:when>
         <j:otherwise>
-          <j:set var="cache" value="${h.createExecutedMojoCache()}"/>
+          <j:set var="cache" value="${it.createExecutedMojoCache()}"/>
           
           <table class="middle-align">
             <tr>

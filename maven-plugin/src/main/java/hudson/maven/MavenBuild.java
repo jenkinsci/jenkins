@@ -203,6 +203,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         return super.getWhyKeepLog();
     }
 
+
+    // used by executedMojos.jelly
+    public static ExecutedMojo.Cache createExecutedMojoCache() {
+        return new ExecutedMojo.Cache();
+    }
+
     /**
      * Runs Maven and builds the project.
      */

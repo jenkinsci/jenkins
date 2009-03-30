@@ -28,7 +28,6 @@ import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.matrix.MatrixConfiguration;
-import hudson.maven.MavenBuild;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.listeners.SCMListener;

@@ -26,9 +26,12 @@ package hudson.slaves;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
+import hudson.model.Node;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.FilePath;
+import hudson.remoting.Channel;
 
 import java.io.IOException;
 
@@ -39,6 +42,43 @@ import java.io.IOException;
  * @since 1.246
  */
 public abstract class ComputerListener implements ExtensionPoint {
+    /**
+     * Called before a {@link Computer} is marked online.
+     *
+     * <p>
+     * This enables you to do some work on all the slaves
+     * as they get connected. Unlike {@link #onOnline(Computer, TaskListener)},
+     * a failure to carry out this function normally will prevent
+     * a computer from marked as online.
+     *
+     * @param channel
+     *      This is the channel object to talk to the slave.
+     *      (This is the same object returned by {@link Computer#getChannel()} once
+     *      it's connected.
+     * @param root
+     *      The directory where this slave stores files.
+     *      The same as {@link Node#getRootPath()}, except that method returns
+     *      null until the slave is connected. So this parameter is passed explicitly instead.
+     * @param listener
+     *      This is connected to the launch log of the computer.
+     *      Since this method is called synchronously from the thread
+     *      that launches a computer, if this method performs a time-consuming
+     *      operation, this listener should be notified of the progress.
+     *      This is also a good listener for reporting problems.
+     *
+     * @throws IOException
+     *      Exceptions will be recorded to the listener, and
+     *      the computer will not become online.
+     * @throws InterruptedException
+     *      Exceptions will be recorded to the listener, and
+     *      the computer will not become online.
+     *
+     * @since 1.295
+     * @see #onOnline(Computer, TaskListener)
+     */
+    public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
+    }
+
     /**
      * Called right after a {@link Computer} comes online.
      *
@@ -67,6 +107,8 @@ public abstract class ComputerListener implements ExtensionPoint {
      * @throws InterruptedException
      *      Exceptions will be recorded to the listener. Note that
      *      throwing an exception doesn't put the computer offline.
+     *
+     * @see #preOnline(Computer, TaskListener)
      */
     public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
         // compatibility

@@ -31,9 +31,6 @@ import hudson.Util;
 import hudson.CopyOnWrite;
 import hudson.Launcher.LocalLauncher;
 import hudson.FilePath.FileCallable;
-import hudson.maven.MavenEmbedder;
-import hudson.maven.MavenUtil;
-import hudson.maven.RedeployPublisher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -53,7 +50,6 @@ import hudson.util.StreamTaskListener;
 import hudson.util.VariableResolver;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
-import org.apache.maven.embedder.MavenEmbedderException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
@@ -407,11 +403,6 @@ public class Maven extends Builder {
             }
         }
 
-        public MavenEmbedder createEmbedder(BuildListener listener, String profiles, Properties systemProperties)
-                throws MavenEmbedderException, IOException {
-            return MavenUtil.createEmbedder(listener,getHomeDir(),profiles,systemProperties);
-        }
-
         private static final long serialVersionUID = 1L;
 
 		public MavenInstallation forEnvironment(EnvVars environment) {
@@ -447,7 +438,7 @@ public class Maven extends Builder {
      * that has "contextual" {@link MavenInstallation} associated with it.
      *
      * <p>
-     * Code like {@link RedeployPublisher} uses this interface in an attempt
+     * Code like RedeployPublisher uses this interface in an attempt
      * to use the consistent Maven installation attached to the project.
      *
      * @since 1.235

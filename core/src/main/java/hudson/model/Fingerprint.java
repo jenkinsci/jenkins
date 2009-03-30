@@ -33,8 +33,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.BulkChange;
-import hudson.maven.MavenModule;
-import hudson.maven.MavenModuleSet;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
 import hudson.util.XStream2;
@@ -145,8 +143,8 @@ public class Fingerprint implements ModelObject, Saveable {
          * or one of its subordinates.
          *
          * <p>
-         * This is useful to check if an artifact in {@link MavenModule}
-         * belongs to {@link MavenModuleSet}. 
+         * This is useful to check if an artifact in MavenModule
+         * belongs to MavenModuleSet. 
          */
         public boolean belongsTo(Job job) {
             Item p = Hudson.getInstance().getItemByFullName(name);

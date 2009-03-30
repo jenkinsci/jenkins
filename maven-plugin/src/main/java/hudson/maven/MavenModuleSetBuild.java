@@ -726,7 +726,8 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 logger.println("Parsing "+pom);
 
             try {
-                MavenEmbedder embedder = mavenHome.createEmbedder(listener,profiles,properties);
+                MavenEmbedder embedder = MavenUtil.
+                        createEmbedder(listener,mavenHome.getHomeDir(),profiles,properties);
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
                 MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener);

@@ -107,6 +107,11 @@ THE SOFTWARE.
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
                 <resolveArtifact artifactId="winstone" tofile="${basedir}/target/generated-resources/winstone.jar" />
+
+                <!-- maven plugin is bundled -->
+                <resolveArtifact artifactId="maven-plugin"
+                                 tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
+
               </tasks>
             </configuration>
           </execution>
@@ -153,6 +158,11 @@ THE SOFTWARE.
               <name>stapler.resourcePath</name>
               <value>../core/src/main/resources</value>
             </systemProperty>
+            <systemProperty>
+              <!-- enable the maven plugin by default -->
+              <name>hudson.bundled.plugins</name>
+              <value>../maven-plugin/target/test-classes/the.hpl</value>
+            </systemProperty>
           </systemProperties>
         </configuration>
       </plugin>
@@ -198,6 +208,17 @@ THE SOFTWARE.
       <version>0.9.10-hudson-9</version>
       <scope>provided</scope>
     </dependency>
+      <dependency>
+        <!--
+          this dependency is just so that we can put maven-pluginhpi in the war.
+          marking it provided so that this won't show up in WEB-INF/lib
+        -->
+        <groupId>org.jvnet.hudson.main</groupId>
+        <artifactId>maven-plugin</artifactId>
+        <version>${project.version}</version>
+        <type>hpi</type>
+        <scope>provided</scope>
+      </dependency>
     <!-- offline profiler API when we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>

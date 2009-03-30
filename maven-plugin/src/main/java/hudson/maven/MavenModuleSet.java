@@ -33,6 +33,7 @@ import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.*;
+import hudson.tasks.junit.JUnitResultArchiver;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.Function1;
@@ -663,5 +664,18 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         public Maven.DescriptorImpl getMavenDescriptor() {
             return Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class);
         }
+
+        @Override
+        public boolean isApplicable(Descriptor descriptor) {
+            return !NOT_APPLICABLE_TYPES.contains(descriptor.clazz);
+        }
+
+        private static final Set<Class> NOT_APPLICABLE_TYPES = new HashSet<Class>(Arrays.asList(
+            ArtifactArchiver.class, // this happens automatically
+            Fingerprinter.class,    // this kicks in automatically
+            JavadocArchiver.class,  // this kicks in automatically
+            Mailer.class,           // for historical reasons, Maven uses MavenMailer
+            JUnitResultArchiver.class // done by SurefireArchiver
+        ));
     }
 }

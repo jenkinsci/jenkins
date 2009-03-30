@@ -30,6 +30,7 @@ import hudson.WebAppMain;
 import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.DescriptorExtensionList;
+import hudson.remoting.Which;
 import hudson.Launcher.LocalLauncher;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixBuild;
@@ -93,6 +94,9 @@ import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.recipes.Recipe.Runner;
@@ -113,6 +117,7 @@ import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 
 import com.gargoylesoftware.htmlunit.AjaxController;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
@@ -184,6 +189,7 @@ public abstract class HudsonTestCase extends TestCase {
         env.pin();
         recipe();
         AbstractProject.WORKSPACE.toString();
+
         hudson = newHudson();
         hudson.setNoUsageStatistics(true); // collecting usage stats from tests are pointless.
         hudson.servletContext.setAttribute("app",hudson);
@@ -606,6 +612,11 @@ public abstract class HudsonTestCase extends TestCase {
                 // make dependency plugins available
                 // TODO: probably better to read POM, but where to read from?
                 // TODO: this doesn't handle transitive dependencies
+
+                // Tom: plugins are now searched on the classpath first. They should be available on
+                // the compile or test classpath. As a backup, we do a best-effort lookup in the Maven repository
+                // For transitive dependencies, we could evaluate Plugin-Dependencies transitively. 
+
                 String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
                 if(dependencies!=null) {
                     MavenEmbedder embedder = new MavenEmbedder(null);
@@ -613,11 +624,40 @@ public abstract class HudsonTestCase extends TestCase {
                     embedder.start();
                     for( String dep : dependencies.split(",")) {
                         String[] tokens = dep.split(":");
-                        Artifact a = embedder.createArtifact("org.jvnet.hudson.plugins", tokens[0], tokens[1], "compile"/*doesn't matter*/, "hpi");
-                        embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
-                        File dst = new File(home, "plugins/" + tokens[0] + ".hpi");
-                        if(!dst.exists() || dst.lastModified()!=a.getFile().lastModified())
-                            FileUtils.copyFile(a.getFile(), dst);
+                        String artifactId = tokens[0];
+                        String version = tokens[1];
+                        File dependencyJar=null;
+                        // need to search multiple group IDs
+                        // TODO: extend manifest to include groupID:artifactID:version
+                        Exception resolutionError=null;
+                        for (String groupId : new String[]{"org.jvnet.hudson.plugins","org.jvnet.hudson.main"}) {
+
+                            // first try to find it on the classpath.
+                            // this takes advantage of Maven POM located in POM
+                            URL dependencyPomResource = getClass().getResource("/META-INF/maven/"+groupId+"/"+artifactId+"/pom.xml");
+                            if (dependencyPomResource != null) {
+                                // found it
+                                dependencyJar = Which.jarFile(dependencyPomResource);
+                                break;
+                            } else {
+                                Artifact a;
+                                a = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, "hpi");
+                                try {
+                                    embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
+                                    dependencyJar = a.getFile();
+                                } catch (AbstractArtifactResolutionException x) {
+                                    // could be a wrong groupId
+                                    resolutionError = x;
+                                }
+                            }
+                        }
+                        if(dependencyJar==null)
+                            throw new Exception("Failed to resolve plugin: "+dep,resolutionError);
+
+                        File dst = new File(home, "plugins/" + artifactId + ".hpi");
+                        if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
+                            FileUtils.copyFile(dependencyJar, dst);
+                        }
                     }
                     embedder.stop();
                 }

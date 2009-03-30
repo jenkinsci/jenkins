@@ -132,6 +132,10 @@ public class Which {
         throw new IllegalArgumentException(originalURL + " - " + resURL);
     }
 
+    public static File jarFile(URL resource) throws IOException {
+        return fromJarUrlToFile(resource.toExternalForm());
+    }
+
     private static File fromJarUrlToFile(String resURL) throws MalformedURLException {
         resURL = resURL.substring(resURL.indexOf(':')+1, resURL.lastIndexOf('!')); // cut off "scheme:" and the file name portion
         return new File(decode(new URL(resURL).getPath()));

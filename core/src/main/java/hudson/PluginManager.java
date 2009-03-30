@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,7 +51,6 @@ import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.WebApp;
 
 /**
@@ -123,8 +123,21 @@ public final class PluginManager extends AbstractModelObject {
         }
         
         strategy = createPluginStrategy();
-        
-        for( File arc : archives ) {
+
+        // load plugins from a system property, for use in the "mvn hudson-dev:run"
+        List<File> archivesList = new ArrayList<File>(Arrays.asList(archives));
+        String hplProperty = System.getProperty("hudson.bundled.plugins");
+        if (hplProperty != null) {
+            for (String hplLocation: hplProperty.split(",")) {
+                File hpl = new File(hplLocation.trim());
+                if (hpl.exists())
+                    archivesList.add(hpl);
+                else
+                    LOGGER.warning("bundled plugin " + hplLocation + " does not exist");
+            }
+        }
+
+        for( File arc : archivesList ) {
             try {
                 PluginWrapper p = strategy.createPluginWrapper(arc);
                 plugins.add(p);
@@ -155,12 +168,26 @@ public final class PluginManager extends AbstractModelObject {
      * If the war file has any "/WEB-INF/plugins/*.hpi", extract them into the plugin directory.
      */
     private void loadBundledPlugins() {
+        // this is used in tests, when we want to override the default bundled plugins with .hpl versions
+        if (System.getProperty("hudson.bundled.plugins") != null) {
+            return;
+        }
         Set paths = context.getResourcePaths("/WEB-INF/plugins");
         if(paths==null) return; // crap
         for( String path : (Set<String>) paths) {
             String fileName = path.substring(path.lastIndexOf('/')+1);
             try {
-                FileUtils.copyURLToFile(context.getResource(path),new File(rootDir,fileName));
+                URL url = context.getResource(path);
+                long lastModified = url.openConnection().getLastModified();
+                File file = new File(rootDir, fileName);
+                if (file.exists() && file.lastModified() != lastModified) {
+                    FileUtils.copyURLToFile(url, file);
+                    file.setLastModified(url.openConnection().getLastModified());
+                    // lastModified is set for two reasons:
+                    // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
+                    // - to make sure the value is not changed after each restart, so we can avoid
+                    // unpacking the plugin itself in ClassicPluginStrategy.explode
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+fileName,e);
             }
