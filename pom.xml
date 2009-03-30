@@ -184,7 +184,8 @@ THE SOFTWARE.
   </dependencies>
 
   <properties>
-    <maven.version>2.0.4</maven.version>
+    <maven.version>2.0.9</maven.version>
+    <maven.embedder.version>2.0.4</maven.embedder.version>
   </properties>
 
   <profiles>

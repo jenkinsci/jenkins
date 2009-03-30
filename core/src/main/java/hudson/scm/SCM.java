@@ -40,7 +40,6 @@ import hudson.model.Node;
 import hudson.model.WorkspaceCleanupThread;
 import hudson.model.Hudson;
 import hudson.model.Descriptor;
-import hudson.model.ItemDescriptor;
 import hudson.model.AbstractProject.AbstractProjectDescriptor;
 
 import java.io.File;
@@ -378,9 +377,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         for (SCMDescriptor<?> scmDescriptor : all()) {
             if(!scmDescriptor.isApplicable(project))    continue;
 
-            if (pd instanceof ItemDescriptor) {
-                ItemDescriptor id = (ItemDescriptor) pd;
-                if(!id.isApplicable(scmDescriptor))    continue;
+            if (pd instanceof AbstractProjectDescriptor) {
+                AbstractProjectDescriptor apd = (AbstractProjectDescriptor) pd;
+                if(!apd.isApplicable(scmDescriptor))    continue;
             }
 
             r.add(scmDescriptor);

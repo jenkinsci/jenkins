@@ -63,7 +63,7 @@ public class MavenProjectTest extends HudsonTestCase {
      * This is to make sure that the exclusion in {@link MavenModuleSet.DescriptorImpl#isApplicable(Descriptor)}
      * is working. 
      */
-    public void testConfig() throws Exception {
+    public void testExclusion() throws Exception {
         MavenModuleSet p = createMavenProject();
         HtmlPage page = new WebClient().getPage(p, "configure");
         assertFalse(page.getWebResponse().getContentAsString().contains(hudson.getDescriptorByType(ArtifactArchiver.DescriptorImpl.class).getDisplayName()));

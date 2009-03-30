@@ -40,8 +40,6 @@ import hudson.model.Project;
 import hudson.model.PeriodicWork;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.model.Descriptor;
-import hudson.model.ItemDescriptor;
 import hudson.scheduler.CronTab;
 import hudson.scheduler.CronTabList;
 import hudson.util.DoubleLaunchChecker;
@@ -272,15 +270,15 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * Returns a subset of {@link TriggerDescriptor}s that applys to the given item.
      */
     public static List<TriggerDescriptor> for_(Item i) {
-        Descriptor pd = Hudson.getInstance().getDescriptor((Class)i.getClass());
-
         List<TriggerDescriptor> r = new ArrayList<TriggerDescriptor>();
         for (TriggerDescriptor t : all()) {
             if(!t.isApplicable(i))  continue;
 
-            if (pd instanceof ItemDescriptor) {// ugly
-                ItemDescriptor tld = (ItemDescriptor) pd;
-                if(!tld.isApplicable(t))    continue;
+            if (i instanceof TopLevelItem) {// ugly
+                TopLevelItemDescriptor tld = ((TopLevelItem) i).getDescriptor();
+                // tld shouldn't be really null in contract, but we often write test Describables that
+                // doesn't have a Descriptor.
+                if(tld!=null && !tld.isApplicable(t))    continue;
             }
 
             r.add(t);
