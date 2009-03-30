@@ -44,7 +44,12 @@ var FormChecker = {
     // pending requests
     queue : [],
 
-    inProgress : false,
+    // conceptually boolean, but doing so create concurrency problem.
+    // that is, during unit tests, the AJAX.send works synchronously, so
+    // the onComplete happens before the send method returns. On a real environment,
+    // more likely it's the other way around. So setting a boolean flag to true or false
+    // won't work.
+    inProgress : 0,
 
     /**
      * Schedules a form field check. Executions are serialized to reduce the bandwidth impact.
@@ -73,7 +78,7 @@ var FormChecker = {
     },
 
     schedule : function() {
-        if (this.inProgress)  return;
+        if (this.inProgress>0)  return;
         if (this.queue.length == 0) return;
 
         var next = this.queue.shift();
@@ -81,11 +86,11 @@ var FormChecker = {
             method : next.method,
             onComplete : function(x) {
                 next.target.innerHTML = x.responseText;
-                FormChecker.inProgress = false;
+                FormChecker.inProgress--;
                 FormChecker.schedule();
             }
         });
-        this.inProgress = true;
+        this.inProgress++;
     }
 }
 

@@ -1118,10 +1118,10 @@ public class CVSSCM extends SCM implements Serializable {
     // web methods
     //
 
-        public FormValidation doCvsPassCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) {
+        public FormValidation doCvsPassCheck(@QueryParameter String value) {
             // this method can be used to check if a file exists anywhere in the file system,
             // so it should be protected.
-            if(!project.hasPermission(Item.CONFIGURE))
+            if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
                 return FormValidation.ok();
 
             value = fixEmpty(value);
