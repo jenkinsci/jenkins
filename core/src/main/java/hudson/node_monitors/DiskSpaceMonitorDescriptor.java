@@ -32,6 +32,7 @@ import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.logging.Logger;
 import java.math.BigDecimal;
 
@@ -44,7 +45,7 @@ import java.math.BigDecimal;
     /**
      * Value object that represents the disk space.
       */
-    public static final class DiskSpace {
+    public static final class DiskSpace implements Serializable {
         public final long size;
 
         public DiskSpace(long size) {
@@ -74,6 +75,8 @@ import java.math.BigDecimal;
         public boolean moreThanGB() {
             return size>1024L*1024*1024;
         }
+
+        private static final long serialVersionUID = 1L;
     }
 
     protected DiskSpace monitor(Computer c) throws IOException, InterruptedException {
