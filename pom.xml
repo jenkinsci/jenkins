@@ -74,6 +74,12 @@ THE SOFTWARE.
               <artifactId>cobertura</artifactId>
               <version>1.9</version>
             </dependency>
+            <dependency>
+              <!-- this provided scope dependency doesn't get added to GMaven unless explicitly added here -->
+              <groupId>javax.servlet</groupId>
+              <artifactId>servlet-api</artifactId>
+              <version>2.4</version>
+            </dependency>
           </dependencies>
         </plugin>
       </plugins>
