@@ -28,7 +28,6 @@ import hudson.FilePath;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.model.Computer;
-import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
@@ -37,6 +36,9 @@ import hudson.slaves.ComputerListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+
+import org.apache.tools.ant.taskdefs.Zip;
+import org.apache.tools.ant.Project;
 
 /**
  * When a slave is connected, copy <tt>maven-agent.jar</tt> and <tt>maven-intercepter.jar</tt>
@@ -61,11 +63,15 @@ public class MavenComputerListener extends ComputerListener {
         File jar = Which.jarFile(representative);
 
         if(jar.isDirectory()) {
-            // but during the development and unit test environment, we may be picking the class up from the classes dir,
-            // in which case we need to find this in a tricker way.
-            String dir = Hudson.getInstance().servletContext.getRealPath("/WEB-INF/lib");
-            FilePath[] paths = new FilePath(new File(dir)).list(seedName + "-*.jar");
-            jar = new File(paths[0].getRemote());
+            // but during the development and unit test environment, we may be picking the class up from the classes dir
+            Zip zip = new Zip();
+            zip.setBasedir(jar);
+            File t = File.createTempFile(seedName, "jar");
+            t.delete();
+            zip.setDestFile(t);
+            zip.setProject(new Project());
+            zip.execute();
+            jar = t;
         }
 
         new FilePath(jar).copyTo(dst.child(seedName +".jar"));
