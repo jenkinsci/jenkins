@@ -70,7 +70,7 @@ import java.util.Set;
 /**
  * Base implementation of {@link Run}s that build software.
  *
- * For now this is primarily the common part of {@link Build} and {@link MavenBuild}.
+ * For now this is primarily the common part of {@link Build} and MavenBuild.
  *
  * @author Kohsuke Kawaguchi
  * @see AbstractProject
@@ -146,7 +146,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         if(builtOn==null || builtOn.equals(""))
             return Hudson.getInstance();
         else
-            return Hudson.getInstance().getSlave(builtOn);
+            return Hudson.getInstance().getNode(builtOn);
     }
 
     /**
@@ -257,7 +257,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             hudsonVersion = Hudson.VERSION;
 
             launcher = createLauncher(listener);
-            if(node instanceof Slave)
+            if(!Hudson.getInstance().getNodes().isEmpty())
                 listener.getLogger().println(Messages.AbstractBuild_BuildingRemotely(node.getNodeName()));
 
             node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,project.getWorkspace(),listener);
