@@ -41,6 +41,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.awt.*;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -50,10 +51,13 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Starts a JNLP slave agent and makes sure it successfully connects to Hudson. 
      */
     public void testLaunch() throws Exception {
-        if(Boolean.getBoolean("java.awt.headless")) {
+        try {
+            GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        } catch (HeadlessException e) {
             System.err.println("Skipping JNLPLauncherTest.testLaunch because we are running headless");
             return;
         }
+
         System.err.println("Not in headless mode, continuing with JNLPLauncherTest.testLaunch...");
         Computer c = addTestSlave();
         launchJnlpAndVerify(c, buildJnlpArgs(c));
