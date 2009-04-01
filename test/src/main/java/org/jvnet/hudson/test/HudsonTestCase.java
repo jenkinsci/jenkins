@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,7 @@ import hudson.model.TaskListener;
 import hudson.model.UpdateCenter;
 import hudson.model.AbstractProject;
 import hudson.model.Node.Mode;
+import hudson.scm.SubversionSCM;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
@@ -59,6 +60,7 @@ import hudson.tasks.Maven;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.util.NullStream;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.GNUCLibrary;
@@ -68,6 +70,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
@@ -113,6 +116,7 @@ import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
+import org.tmatesoft.svn.core.SVNException;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
@@ -288,6 +292,14 @@ public abstract class HudsonTestCase extends TestCase {
         realm.addUserToRole("charlie","male");
 
         return realm;
+    }
+
+    /**
+     * Sets guest credentials to access java.net Subversion repo.
+     */
+    protected void setJavaNetCredential() throws SVNException, IOException {
+        // set the credential to access svn.dev.java.net
+        hudson.getDescriptorByType(SubversionSCM.DescriptorImpl.class).postCredential("https://svn.dev.java.net/svn/hudson/","guest","",null,new PrintWriter(new NullStream()));
     }
 
     /**
