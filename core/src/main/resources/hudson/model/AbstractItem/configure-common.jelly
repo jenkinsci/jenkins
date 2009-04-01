@@ -49,8 +49,10 @@ THE SOFTWARE.
       <f:entry title="${%Node}">
         <select class="setting-input" name="slave">
           <j:forEach var="s" items="${app.labels}">
-            <f:option selected="${s==it.assignedLabel}" value="${s.name}"
-              >${s.name} <j:if test="${!empty(s.description)}">(${s.description})</j:if></f:option>
+            <j:if test="${s.totalConfiguredExecutors &gt; 0}">
+              <f:option selected="${s==it.assignedLabel}" value="${s.name}"
+                >${s.name} <j:if test="${!empty(s.description)}">(${s.description})</j:if></f:option>
+            </j:if>
           </j:forEach>
         </select>
       </f:entry>

@@ -132,6 +132,21 @@ public class Label implements Comparable<Label>, ModelObject {
         }
         return clouds;
     }
+    
+    /**
+     * Number of total {@link Executor}s that belong to this label.
+     * <p>
+     * This includes executors that belong to offline nodes.
+     */
+    public int getTotalConfiguredExecutors() {
+        int r=0;
+        for (Node n : getNodes()) {
+            Computer c = n.toComputer();
+            if(c!=null)
+                r += c.countExecutors();
+        }
+        return r;
+    }
 
     /**
      * Number of total {@link Executor}s that belong to this label that are functioning.
