@@ -27,7 +27,6 @@ import hudson.EnvVars;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import hudson.model.Hudson;
-import hudson.scm.CVSSCM;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -357,7 +356,7 @@ public abstract class FormValidation implements HttpResponse {
      * Sends out an arbitrary HTML fragment as the output.
      */
     protected void respond(StaplerResponse rsp, String html) throws IOException, ServletException {
-        rsp.setContentType("text/html");
+        rsp.setContentType("text/html;charset=UTF-8");
         rsp.getWriter().print(html);
     }
 }
