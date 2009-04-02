@@ -992,6 +992,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Returns the read-only view of all the {@link TopLevelItem}s keyed by their names.
+     * <p>
+     * This method is efficient, as it doesn't involve any copying.
+     * 
+     * @since 1.296
+     */
+    public Map<String,TopLevelItem> getItemMap() {
+        return Collections.unmodifiableMap(items);
+    }
+
+    /**
      * Gets just the immediate children of {@link Hudson} but of the given type.
      */
     public <T> List<T> getItems(Class<T> type) {
@@ -1072,6 +1083,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         List<View> copy = new ArrayList<View>(views);
         Collections.sort(copy, View.SORTER);
         return copy;
+    }
+
+    public void addView(View v) throws IOException {
+        views.add(v);
+        save();
     }
 
     public synchronized void deleteView(View view) throws IOException {
@@ -2348,8 +2364,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         try {
             checkPermission(View.CREATE);
-            views.add(View.create(req,rsp, this));
-            save();
+            addView(View.create(req,rsp, this));
         } catch (ParseException e) {
             sendError(e,req,rsp);
         } catch (FormException e) {
