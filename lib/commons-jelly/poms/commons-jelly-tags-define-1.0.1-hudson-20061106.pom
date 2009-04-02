@@ -1,6 +1,0 @@
-<project>
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>commons-jelly</groupId>
-  <artifactId>commons-jelly-tags-define</artifactId>
-  <version>1.0.1-hudson-20061106</version>
-</project>
