@@ -1,4 +1,4 @@
-#!/bin/ruby
+#!/usr/bin/ruby
 # The MIT License
 # 
 # Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
@@ -22,41 +22,33 @@
 # THE SOFTWARE.
 
 
-# Updates changelog.html
-#   Usage: update.changelog.rb <nextVer> < changelog.html > output.html
+# Moves the changelog from the trunk section to the release section
+#   Usage: rc.changelog.rb < changelog.html > output.html
 
-# version number manipulation class
-class VersionNumber
-  def initialize(str)
-    @tokens = str.split(/\./)
-  end
-  def inc
-    @tokens[-1] = (@tokens[-1].to_i()+1).to_s()
-  end
-  def dec
-    @tokens[-1] = (@tokens[-1].to_i()-1).to_s()
-  end
-  def to_s
-    @tokens.join(".")
-  end
-end
-
-id=VersionNumber.new(ARGV.shift)
-id.inc()
-
+changelog = []
+inside = false;
 
 ARGF.each do |line|
-  if /=BEGIN=/ =~ line
+  if /=TRUNK-BEGIN=/ =~ line
+    inside = true;
     puts line
-    puts "<a name=v#{id}><h3>What's new in #{id}</h3></a>"
+    # new template
     puts "<ul class=image>"
     puts "  <li class=>"
     puts "</ul>"
-    puts "</div><!--=END=-->"
-
     next
   end
-  if /=END=/ =~ line
+  if /=TRUNK-END=/ =~ line
+    inside = false;
+    puts line
+    next
+  end
+  if inside
+    changelog << line
+    next
+  end
+  if /=RC-CHANGES=/ =~ line
+    changelog.each { |line| puts line }
     next
   end
   puts line

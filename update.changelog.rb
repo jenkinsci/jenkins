@@ -49,9 +49,7 @@ ARGF.each do |line|
   if /=BEGIN=/ =~ line
     puts line
     puts "<a name=v#{id}><h3>What's new in #{id}</h3></a>"
-    puts "<ul class=image>"
-    puts "  <li class=>"
-    puts "</ul>"
+    puts "<!--=RC-CHANGES=-->"
     puts "</div><!--=END=-->"
 
     next
