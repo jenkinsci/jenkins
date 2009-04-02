@@ -202,6 +202,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         throw new IOException(className+" doesn't extend from hudson.Plugin");
                     }
                     wrapper.setPlugin((Plugin) o);
+                } catch (LinkageError e) {
+                    throw new IOException2("Unable to load " + className + " from " + wrapper.getShortName(),e);
                 } catch (ClassNotFoundException e) {
                     throw new IOException2("Unable to load " + className + " from " + wrapper.getShortName(),e);
                 } catch (IllegalAccessException e) {
