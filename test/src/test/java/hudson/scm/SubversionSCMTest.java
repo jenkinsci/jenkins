@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Bruce Chapman
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Bruce Chapman, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,12 +54,6 @@ import org.tmatesoft.svn.core.SVNException;
  * @author Kohsuke Kawaguchi
  */
 public class SubversionSCMTest extends HudsonTestCase {
-
-    private void setJavaNetCredential() throws SVNException, IOException {
-        // set the credential to access svn.dev.java.net
-        hudson.getDescriptorByType(SubversionSCM.DescriptorImpl.class).postCredential("https://svn.dev.java.net/svn/hudson/","guest","",null,new PrintWriter(new NullStream()));
-    }
-
     @PresetData(ANONYMOUS_READONLY)
     @Bug(2380)
     public void testTaggingPermission() throws Exception {

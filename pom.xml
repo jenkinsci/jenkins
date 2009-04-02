@@ -33,7 +33,7 @@ THE SOFTWARE.
   
   <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.295-SNAPSHOT</version>
+  <version>1.296-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Hudson main module</name>
@@ -42,6 +42,7 @@ THE SOFTWARE.
   <modules>
     <module>remoting</module>
     <module>core</module>
+    <module>maven-plugin</module>
     <module>maven-agent</module>
     <module>maven-interceptor</module>
     <module>war</module>
@@ -72,6 +73,12 @@ THE SOFTWARE.
               <groupId>net.sourceforge.cobertura</groupId>
               <artifactId>cobertura</artifactId>
               <version>1.9</version>
+            </dependency>
+            <dependency>
+              <!-- this provided scope dependency doesn't get added to GMaven unless explicitly added here -->
+              <groupId>javax.servlet</groupId>
+              <artifactId>servlet-api</artifactId>
+              <version>2.4</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -183,7 +190,8 @@ THE SOFTWARE.
   </dependencies>
 
   <properties>
-    <maven.version>2.0.4</maven.version>
+    <maven.version>2.0.9</maven.version>
+    <maven.embedder.version>2.0.4</maven.embedder.version>
   </properties>
 
   <profiles>

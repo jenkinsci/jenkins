@@ -32,7 +32,7 @@ THE SOFTWARE.
     <f:dropdownListBlock value="auto" title="(${%Auto})" />
     <j:set var="currentBrowser" value="${scm.browser}"/>
     <j:forEach var="descriptor" items="${scmd.browserDescriptors}" varStatus="loop">
-      <f:dropdownListBlock value="${loop.index}" title="${d.displayName}" selected="${currentBrowser.descriptor==descriptor}">
+      <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}" selected="${currentBrowser.descriptor==descriptor}">
         <j:set var="browser" value="${currentBrowser.descriptor==descriptor ? currentBrowser : null}"/><!-- for compatibility -->
         <j:set var="instance" value="${browser}" />
         <tr><td>

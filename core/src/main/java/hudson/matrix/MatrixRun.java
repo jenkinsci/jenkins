@@ -24,7 +24,6 @@
 package hudson.matrix;
 
 import hudson.model.Build;
-import hudson.maven.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -111,7 +110,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
     public String getWhyKeepLog() {
         MatrixBuild pb = getParentBuild();
         if(pb!=null && pb.getWhyKeepLog()!=null)
-            return hudson.maven.Messages.MavenBuild_KeptBecauseOfParent(pb);
+            return Messages.MatrixRun_KeptBecauseOfParent(pb);
         return super.getWhyKeepLog();
     }
 

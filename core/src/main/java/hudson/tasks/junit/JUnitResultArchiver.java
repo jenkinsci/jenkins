@@ -31,7 +31,6 @@ import hudson.Util;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
-import hudson.maven.AbstractMavenProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -127,7 +126,8 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
         return testResults;
     }
 
-    public Action getProjectAction(hudson.model.Project project) {
+    @Override
+    public Action getProjectAction(AbstractProject<?, ?> project) {
         return new TestResultProjectAction(project);
     }
 
@@ -156,8 +156,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            // for Maven we have SurefireArchiver that automatically kicks in.
-            return !AbstractMavenProject.class.isAssignableFrom(jobType);
+            return true;
         }
     }
 }

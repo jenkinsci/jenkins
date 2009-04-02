@@ -45,7 +45,7 @@ public class ArchitectureMonitor extends NodeMonitor {
         }
 
         public String getDisplayName() {
-            return Messages.ArchitectureMonitor_displayName();
+            return Messages.ArchitectureMonitor_DisplayName();
         }
 
         public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Dean Yu, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Stephen Connolly, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import hudson.maven.ExecutedMojo;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Descriptor;
@@ -663,10 +662,6 @@ public class Functions {
     public static int size2(Object o) throws Exception {
         if(o==null) return 0;
         return ASTSizeFunction.sizeOf(o,Introspector.getUberspect());
-    }
-
-    public static ExecutedMojo.Cache createExecutedMojoCache() {
-        return new ExecutedMojo.Cache();
     }
 
     /**

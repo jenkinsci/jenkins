@@ -29,7 +29,6 @@ import hudson.model.Hudson;
 import hudson.model.AbstractProject.AbstractProjectDescriptor;
 import hudson.Extension;
 import hudson.util.DescriptorList;
-import hudson.maven.MavenReporter;
 
 import java.util.ArrayList;
 import java.util.List;

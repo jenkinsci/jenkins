@@ -23,7 +23,6 @@
  */
 package hudson.tasks.test;
 
-import hudson.maven.MavenBuild;
 import hudson.model.AbstractBuild;
 import hudson.tasks.junit.CaseResult;
 import hudson.tasks.junit.TestResult;
@@ -64,7 +63,7 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
     }
 
     /**
-     * {@link MavenBuild}s whose test results are used for aggregation.
+     * child builds whose test results are used for aggregation.
      */
     public final List<Child> children = new ArrayList<Child>();
 

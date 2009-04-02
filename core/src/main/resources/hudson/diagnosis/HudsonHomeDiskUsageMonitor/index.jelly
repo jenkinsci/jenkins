@@ -23,28 +23,25 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<l:layout title="HUDSON_HOME is almost full">
+	<l:layout title="${%HUDSON_HOME is almost full}">
 		<l:main-panel>
       <h1>
         <img src="${imagesURL}/48x48/warning.gif" />
-        <tt> HUDSON_HOME</tt> is almost full
+        ${%blurb}
       </h1>
 
       <p>
-        Your <tt>HUDSON_HOME</tt> (${app.rootDir}) is almost full.
-        When this directory completely fills up, it'll wrec havoc
-        because Hudson can't store any more data.
+        ${%description.1(app.rootDir)}
       </p><p>
-        To prevent that problem, you should act now.
+        ${%description.2}
       </p>
 
       <ol>
         <li>
-          Clean up some files from this partition to make more room.
+          ${%solution.1}
         </li>
         <li>
-          Move <tt>HUDSON_HOME</tt> to a bigger partition.
-          See <a href="http://wiki.hudson-ci.org/display/HUDSON/Administering+Hudson">our Wiki</a> for how to do this.
+          ${%solution.2}
         </li>
         <j:forEach var="s" items="${it.solutions}">
           <li>

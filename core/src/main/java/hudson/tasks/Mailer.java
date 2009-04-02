@@ -26,7 +26,6 @@ package hudson.tasks;
 import hudson.Launcher;
 import hudson.Functions;
 import hudson.Extension;
-import hudson.maven.AbstractMavenProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -403,8 +402,7 @@ public class Mailer extends Notifier {
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            // for historical reasons, Maven uses MavenMailer
-            return !AbstractMavenProject.class.isAssignableFrom(jobType);
+            return true;
         }
     }
 

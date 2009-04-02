@@ -56,7 +56,7 @@ public class TemporarySpaceMonitor extends NodeMonitor {
 
     public static final DiskSpaceMonitorDescriptor DESCRIPTOR = new DiskSpaceMonitorDescriptor() {
         public String getDisplayName() {
-            return "Free Temp Space";
+            return Messages.TemporarySpaceMonitor_DisplayName();
         }
 
         @Override

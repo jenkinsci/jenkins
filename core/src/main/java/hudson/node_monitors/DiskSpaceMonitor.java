@@ -54,7 +54,7 @@ public class DiskSpaceMonitor extends NodeMonitor {
 
     public static final DiskSpaceMonitorDescriptor DESCRIPTOR = new DiskSpaceMonitorDescriptor() {
         public String getDisplayName() {
-            return Messages.DiskSpaceMonitor_displayName();
+            return Messages.DiskSpaceMonitor_DisplayName();
         }
 
         @Override

@@ -28,7 +28,6 @@ import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.maven.MavenModule;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.UserCause;
 import hudson.model.Cause.RemoteCause;
@@ -87,7 +86,7 @@ import java.util.logging.Logger;
 /**
  * Base implementation of {@link Job}s that build software.
  *
- * For now this is primarily the common part of {@link Project} and {@link MavenModule}.
+ * For now this is primarily the common part of {@link Project} and MavenModule.
  *
  * @author Kohsuke Kawaguchi
  * @see AbstractBuild
