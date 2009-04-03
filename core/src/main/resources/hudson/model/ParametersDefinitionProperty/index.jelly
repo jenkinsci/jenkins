@@ -38,7 +38,7 @@ THE SOFTWARE.
 		<l:main-panel>
 			<h1>${it.owner.pronoun} ${it.owner.displayName}</h1>
       <p>${%description}</p>
-      <f:form method="post" action="build">
+      <f:form method="post" action="build" name="parameters">
 				<j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
 					<st:include it="${parameterDefinition}"
 						page="${parameterDefinition.descriptor.valuePage}" />

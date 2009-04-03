@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,13 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-	<f:entry title="${it.name}" description="${it.description}">
-		<f:textbox name="value" value="${it.value}" readonly="true" />
+    <f:entry title="${%Name}" help="/help/parameter/name.html">
+		<f:textbox name="parameter.name" value="${instance.name}" />
 	</f:entry>
+	<f:entry title="Choices" help="/help/parameter/choice-choices.html">
+		<f:textarea name="parameter.choices" value="${instance.choicesText}" />
+	</f:entry>
+    <f:entry title="${%Description}" help="/help/parameter/description.html">
+        <f:textarea name="parameter.description" value="${instance.description}" />
+    </f:entry>
 </j:jelly>

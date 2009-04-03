@@ -49,7 +49,10 @@ public class FileParameterValue extends ParameterValue {
 
     @DataBoundConstructor
     public FileParameterValue(String name, FileItem file) {
-        super(name);
+        this(name, file, null);
+    }
+    public FileParameterValue(String name, FileItem file, String description) {
+        super(name, description);
         assert file!=null;
         this.file = file;
     }

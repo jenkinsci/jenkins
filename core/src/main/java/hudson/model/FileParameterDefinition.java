@@ -38,13 +38,14 @@ import hudson.Extension;
  */
 public class FileParameterDefinition extends ParameterDefinition {
     @DataBoundConstructor
-    public FileParameterDefinition(String name) {
-        super(name);
+    public FileParameterDefinition(String name, String description) {
+        super(name, description);
     }
 
     public FileParameterValue createValue(StaplerRequest req, JSONObject jo) {
         FileParameterValue p = req.bindJSON(FileParameterValue.class, jo);
         p.setLocation(getName());
+        p.setDescription(getDescription());
         return p;
     }
 

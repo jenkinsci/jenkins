@@ -31,18 +31,18 @@ import java.util.Map;
 import hudson.util.VariableResolver;
 
 /**
- * {@link ParameterValue} created from {@link StringParameterDefinition}.
+ * {@link hudson.model.ParameterValue} created from {@link hudson.model.StringParameterDefinition}.
  */
-public class StringParameterValue extends ParameterValue {
+public class BooleanParameterValue extends ParameterValue {
     @Exported(visibility=3)
-    public final String value;
+    public final boolean value;
 
     @DataBoundConstructor
-    public StringParameterValue(String name, String value) {
+    public BooleanParameterValue(String name, boolean value) {
         this(name, value, null);
     }
 
-    public StringParameterValue(String name, String value, String description) {
+    public BooleanParameterValue(String name, boolean value, String description) {
         super(name, description);
         this.value = value;
     }
@@ -52,46 +52,40 @@ public class StringParameterValue extends ParameterValue {
      */
     @Override
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
-        env.put(name.toUpperCase(),value);
+        env.put(name.toUpperCase(),Boolean.toString(value));
     }
 
     @Override
     public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
         return new VariableResolver<String>() {
             public String resolve(String name) {
-                return StringParameterValue.this.name.equals(name) ? value : null;
+                return BooleanParameterValue.this.name.equals(name) ? Boolean.toString(value) : null;
             }
         };
     }
-    
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		StringParameterValue other = (StringParameterValue) obj;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
-		return true;
-	}
+        BooleanParameterValue that = (BooleanParameterValue) o;
 
-	@Override
+        if (value != that.value) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (value ? 1 : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
-    	return "(StringParameterValue) " + getName() + "='" + value + "'";
+    	return "(BooleanParameterValue) " + getName() + "='" + value + "'";
     }
 }

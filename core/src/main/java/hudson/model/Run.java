@@ -1286,6 +1286,23 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return env;
     }
 
+    public String getExternalizableId() {
+        return project.getName() + "#" + getNumber();
+    }
+
+    public static Run<?,?> fromExternalizableId(String id) {
+        int hash = id.lastIndexOf('#');
+        if (hash <= 0) {
+            throw new IllegalArgumentException("Invalid id");
+        }
+        String jobName = id.substring(0, hash);
+        int number = Integer.parseInt(id.substring(hash + 1));
+
+        Job<?,?> job = (Job<?,?>) Hudson.getInstance().getItem(jobName);
+        return job.getBuildByNumber(number);
+    }
+
+
     public static final XStream XSTREAM = new XStream2();
     static {
         XSTREAM.alias("build",FreeStyleBuild.class);
