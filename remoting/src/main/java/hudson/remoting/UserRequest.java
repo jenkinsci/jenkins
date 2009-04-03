@@ -81,7 +81,12 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
             RSP r = null;
             Channel oldc = Channel.setCurrent(channel);
             try {
-                Object o = new ObjectInputStreamEx(new ByteArrayInputStream(request), cl).readObject();
+                Object o;
+                try {
+                    o = new ObjectInputStreamEx(new ByteArrayInputStream(request), cl).readObject();
+                } catch (ClassNotFoundException e) {
+                    throw new ClassNotFoundException("Failed to deserialize the Callable object. Perhaps you needed to implement DelegatingCallable?",e);
+                }
 
                 Callable<RSP,EXC> callable = (Callable<RSP,EXC>)o;
 
