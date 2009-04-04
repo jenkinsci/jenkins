@@ -477,10 +477,7 @@ public abstract class HudsonTestCase extends TestCase {
      * Performs a search from the search box.
      */
     protected Page search(String q) throws Exception {
-        HtmlPage top = new WebClient().goTo("");
-        HtmlForm search = top.getFormByName("search");
-        search.getInputByName("q").setValueAttribute(q);
-        return search.submit(null);
+        return new WebClient().search(q);
     }
 
     /**
@@ -786,6 +783,13 @@ public abstract class HudsonTestCase extends TestCase {
         public WebClient login(String username) throws Exception {
             login(username,username);
             return this;
+        }
+
+        public HtmlPage search(String q) throws IOException, SAXException {
+            HtmlPage top = goTo("");
+            HtmlForm search = top.getFormByName("search");
+            search.getInputByName("q").setValueAttribute(q);
+            return (HtmlPage)search.submit(null);
         }
 
         /**
