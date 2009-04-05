@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONObject;
 import hudson.Extension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 
@@ -24,6 +25,14 @@ public class ChoiceParameterDefinition extends ParameterDefinition {
         }
     }
 
+    public ChoiceParameterDefinition(String name, String[] choices, String description) {
+        super(name, description);
+        this.choices = new ArrayList<String>(Arrays.asList(choices));
+        if (this.choices.isEmpty()) {
+            throw new IllegalArgumentException("No choices found");
+        }
+    }
+    
     public List<String> getChoices() {
         return choices;
     }
