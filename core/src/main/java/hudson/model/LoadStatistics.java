@@ -23,11 +23,11 @@
  */
 package hudson.model;
 
+import hudson.Extension;
 import hudson.model.MultiStageTimeSeries.TimeScale;
-import hudson.util.ChartUtil;
+import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
-import hudson.Extension;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -36,17 +36,12 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 import java.awt.*;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -80,9 +75,12 @@ public abstract class LoadStatistics {
     public final MultiStageTimeSeries queueLength;
 
     protected LoadStatistics(int initialTotalExecutors, int initialBusyExecutors) {
-        this.totalExecutors = new MultiStageTimeSeries(initialTotalExecutors,DECAY);
-        this.busyExecutors = new MultiStageTimeSeries(initialBusyExecutors,DECAY);
-        this.queueLength = new MultiStageTimeSeries(0,DECAY);
+        this.totalExecutors = new MultiStageTimeSeries(
+                Messages._LoadStatistics_Legends_TotalExecutors(), ColorPalette.BLUE, initialTotalExecutors,DECAY);
+        this.busyExecutors = new MultiStageTimeSeries(
+                Messages._LoadStatistics_Legends_BusyExecutors(), ColorPalette.RED, initialBusyExecutors,DECAY);
+        this.queueLength = new MultiStageTimeSeries(
+                Messages._LoadStatistics_Legends_QueueLength(),ColorPalette.GREY, 0, DECAY);
     }
 
     public float getLatestIdleExecutors(TimeScale timeScale) {
@@ -156,47 +154,15 @@ public abstract class LoadStatistics {
      * Creates {@link CategoryDataset} which then becomes the basis
      * of the load statistics graph.
      */
-    public CategoryDataset createDataset(TimeScale timeScale) {
-        return createDataset(timeScale,
-                new float[][]{
-                    totalExecutors.pick(timeScale).getHistory(),
-                    busyExecutors.pick(timeScale).getHistory(),
-                    queueLength.pick(timeScale).getHistory()
-                },
-                new String[]{
-                    Messages.LoadStatistics_Legends_TotalExecutors(),
-                    Messages.LoadStatistics_Legends_BusyExecutors(),
-                    Messages.LoadStatistics_Legends_QueueLength()
-                });
-    }
-
-    protected final DefaultCategoryDataset createDataset(TimeScale timeScale, float[][] dataPoints, String[] legends) {
-        assert dataPoints.length==legends.length;
-        int dataLength = dataPoints[0].length;
-        for (float[] dataPoint : dataPoints)
-            assert dataLength ==dataPoint.length;
-
-        DefaultCategoryDataset ds = new DefaultCategoryDataset();
-
-        DateFormat format = timeScale.createDateFormat();
-
-        Date dt = new Date(System.currentTimeMillis()-timeScale.tick*dataLength);
-        for (int i = dataLength-1; i>=0; i--) {
-            dt = new Date(dt.getTime()+timeScale.tick);
-            String l = format.format(dt);
-            for(int j=0; j<dataPoints.length; j++)
-                ds.addValue(dataPoints[j][i],legends[j],l);
-        }
-        return ds;
+    public TrendChart createTrendChart(TimeScale timeScale) {
+        return MultiStageTimeSeries.createTrendChart(timeScale,totalExecutors,busyExecutors,queueLength);
     }
 
     /**
      * Generates the load statistics graph.
      */
-    public void doGraph(StaplerRequest req, StaplerResponse rsp, @QueryParameter String type) throws IOException {
-        if(type==null)   type=TimeScale.MIN.name();
-        TimeScale scale = Enum.valueOf(TimeScale.class, type.toUpperCase());
-        ChartUtil.generateGraph(req, rsp, createChart(createDataset(scale)), 500, 400);
+    public TrendChart doGraph(@QueryParameter String type) throws IOException {
+        return createTrendChart(TimeScale.parse(type));
     }
 
     /**

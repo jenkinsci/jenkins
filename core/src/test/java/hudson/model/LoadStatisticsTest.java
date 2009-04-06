@@ -63,7 +63,7 @@ public class LoadStatisticsTest extends TestCase {
             ls.queueLength.update(1);
         }
 
-        JFreeChart chart = ls.createChart(ls.createDataset(TimeScale.SEC10));
+        JFreeChart chart = ls.createTrendChart(TimeScale.SEC10).createChart();
         BufferedImage image = chart.createBufferedImage(400,200);
         ImageIO.write(image, "PNG", new FileOutputStream("chart.png"));
     }
