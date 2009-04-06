@@ -21,10 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package hudson.diagnosis;
 
 import hudson.util.TimeUnit2;
 import hudson.Extension;
+import hudson.model.PeriodicWork;
+import hudson.model.MultiStageTimeSeries;
 
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
@@ -66,22 +68,22 @@ public final class MemoryUsageMonitor extends PeriodicWork {
         private void update() {
             long used = 0;
             long max = 0;
-            long cur = 0;
+//            long cur = 0;
             for (MemoryPoolMXBean pool : pools) {
                 MemoryUsage usage = pool.getCollectionUsage();
                 if(usage==null) continue;   // not available
                 used += usage.getUsed();
                 max  += usage.getMax();
 
-                usage = pool.getUsage();
-                if(usage==null) continue;   // not available
-                cur += usage.getUsed();
+//                usage = pool.getUsage();
+//                if(usage==null) continue;   // not available
+//                cur += usage.getUsed();
             }
 
             // B -> KB
             used /= 1024;
             max /= 1024;
-            cur /= 1024;
+//            cur /= 1024;
 
             this.used.update(used);
             this.max.update(max);
