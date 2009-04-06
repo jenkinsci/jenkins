@@ -74,6 +74,7 @@ import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -579,9 +580,22 @@ public abstract class HudsonTestCase extends TestCase {
     public void assertEqualBeans(Object lhs, Object rhs, String properties) throws Exception {
         for (String p : properties.split(",")) {
             PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(lhs, p);
-            assertNotNull("No such property "+p+" on "+lhs.getClass(),pd);
-            Object lp = PropertyUtils.getProperty(lhs, p);
-            Object rp = PropertyUtils.getProperty(rhs, p);
+            Object lp,rp;
+            if(pd==null) {
+                // field?
+                try {
+                    Field f1 = lhs.getClass().getField(p);
+                    Field f2 = rhs.getClass().getField(p);
+                    lp = f1.get(lhs);
+                    rp = f2.get(rhs);
+                } catch (NoSuchFieldException e) {
+                    assertNotNull("No such property "+p+" on "+lhs.getClass(),pd);
+                    return;
+                }
+            } else {
+                lp = PropertyUtils.getProperty(lhs, p);
+                rp = PropertyUtils.getProperty(rhs, p);
+            }
             assertEquals("Property "+p+" is different",lp,rp);
         }
     }
