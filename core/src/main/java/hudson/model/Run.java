@@ -1143,9 +1143,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Serves the artifacts.
      */
-    public void doArtifact( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
-        new DirectoryBrowserSupport(this,project.getDisplayName()+' '+getDisplayName())
-            .serveFile(req, rsp, new FilePath(getArtifactsDir()), "package.gif", true);
+    public DirectoryBrowserSupport doArtifact() {
+        return new DirectoryBrowserSupport(this,new FilePath(getArtifactsDir()), project.getDisplayName()+' '+getDisplayName(), "package.gif", true);
     }
 
     /**

@@ -1,5 +1,6 @@
 target
+.hudson
 .svn
+pom.iml
 pom.ipr
-pom.iml 
 pom.iws

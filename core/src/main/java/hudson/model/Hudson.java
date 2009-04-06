@@ -114,6 +114,8 @@ import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.JellyException;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
@@ -557,6 +559,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             } catch (Throwable t) {
                 t.printStackTrace();
             }
+        }
+
+        File userContentDir = new File(getRootDir(), "userContent");
+        if(!userContentDir.exists()) {
+            userContentDir.mkdirs();
+            FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"),Messages.Hudson_USER_CONTENT_README());
         }
 
         Trigger.init(); // start running trigger
@@ -2574,6 +2582,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         rsp.getWriter().println("GCed");
+    }
+
+    /**
+     * Binds /userContent/... to $HUDSON_HOME/userContent.
+     */
+    public DirectoryBrowserSupport doUserContent() {
+        return new DirectoryBrowserSupport(this,getRootPath().child("userContent"),"User content","folder.gif",true);
     }
 
     /**

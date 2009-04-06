@@ -25,10 +25,12 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.util.IOException2;
 import hudson.FilePath.FileCallable;
 import hudson.remoting.VirtualChannel;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.HttpResponse;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.DirectoryScanner;
 
@@ -46,7 +48,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -59,11 +60,15 @@ import java.util.logging.Level;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class DirectoryBrowserSupport {
+public final class DirectoryBrowserSupport implements HttpResponse {
 
     public final ModelObject owner;
     
     public final String title;
+
+    private final FilePath base;
+    private final String icon;
+    private final boolean serveDirIndex;
 
     /**
      * @deprecated
@@ -74,14 +79,40 @@ public final class DirectoryBrowserSupport {
     }
 
     /**
-     * @param owner
-     *      The parent model object under which the directory browsing is added.
-     * @param title
-     *      Used in the HTML caption. 
+     * @deprecated as of 1.297
+     *      Use {@link #DirectoryBrowserSupport(ModelObject, FilePath, String, String, boolean)}
      */
     public DirectoryBrowserSupport(ModelObject owner, String title) {
+        this(owner,null,title,null,false);
+    }
+
+    /**
+     * @param owner
+     *      The parent model object under which the directory browsing is added.
+     * @param base
+     *      The root of the directory that's bound to URL.
+     * @param title
+     *      Used in the HTML caption. 
+     * @param icon
+     *      The icon file name, like "folder.gif"
+     * @param serveDirIndex
+     *      True to generate the directory index.
+     *      False to serve "index.html"
+     */
+    public DirectoryBrowserSupport(ModelObject owner, FilePath base, String title, String icon, boolean serveDirIndex) {
         this.owner = owner;
+        this.base = base;
         this.title = title;
+        this.icon = icon;
+        this.serveDirIndex = serveDirIndex;
+    }
+
+    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        try {
+            serveFile(req,rsp,base,icon,serveDirIndex);
+        } catch (InterruptedException e) {
+            throw new IOException2("interrupted",e);
+        }
     }
 
     /**
@@ -92,6 +123,9 @@ public final class DirectoryBrowserSupport {
      * @param serveDirIndex
      *      True to generate the directory index.
      *      False to serve "index.html"
+     * @deprecated as of 1.297
+     *      Instead of calling this method explicitly, just return the {@link DirectoryBrowserSupport} object
+     *      from the {@code doXYZ} method and let Stapler generate a response for you.
      */
     public final void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
         // handle form submission

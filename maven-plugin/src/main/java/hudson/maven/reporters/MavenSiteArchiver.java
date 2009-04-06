@@ -40,10 +40,7 @@ import hudson.model.ProminentProjectAction;
 import hudson.model.Result;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 
@@ -122,9 +119,11 @@ public class MavenSiteArchiver extends MavenReporter {
                 return null;
         }
 
-        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-            new DirectoryBrowserSupport(this,project.getDisplayName()+" site")
-                .serveFile(req, rsp, new FilePath(getSiteDir(project)), "help.gif", false);
+        /**
+         * Serves the site.
+         */
+        public DirectoryBrowserSupport doDynamic() {
+            return new DirectoryBrowserSupport(this,new FilePath(getSiteDir(project)), project.getDisplayName()+" site", "help.gif", false);
         }
     }
 
