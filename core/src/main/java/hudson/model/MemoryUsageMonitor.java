@@ -23,7 +23,8 @@
  */
 package hudson.model;
 
-import hudson.triggers.SafeTimerTask;
+import hudson.util.TimeUnit2;
+import hudson.Extension;
 
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
@@ -37,18 +38,32 @@ import java.util.ArrayList;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MemoryUsageMonitor extends SafeTimerTask {
-    class MemoryGroup {
+@Extension
+public final class MemoryUsageMonitor extends PeriodicWork {
+    /**
+     * A memory group is conceptually a set of memory pools. 
+     */
+    public final class MemoryGroup {
         private final List<MemoryPoolMXBean> pools = new ArrayList<MemoryPoolMXBean>();
 
-        MemoryGroup(List<MemoryPoolMXBean> pools, MemoryType type) {
+        /**
+         * Trend of the memory usage, after GCs.
+         * So this shows the accurate snapshot of the footprint of live objects.
+         */
+        public final MultiStageTimeSeries used = new MultiStageTimeSeries(0,0);
+        /**
+         * Trend of the maximum memory size, after GCs.
+         */
+        public final MultiStageTimeSeries max = new MultiStageTimeSeries(0,0);
+
+        private MemoryGroup(List<MemoryPoolMXBean> pools, MemoryType type) {
             for (MemoryPoolMXBean pool : pools) {
                 if (pool.getType() == type)
                     this.pools.add(pool);
             }
         }
 
-        public String metrics() {
+        private void update() {
             long used = 0;
             long max = 0;
             long cur = 0;
@@ -68,12 +83,15 @@ public class MemoryUsageMonitor extends SafeTimerTask {
             max /= 1024;
             cur /= 1024;
 
-            return String.format("%d/%d/%d (%d%%)",used,cur,max,used*100/max);
+            this.used.update(used);
+            this.max.update(max);
+//
+//            return String.format("%d/%d/%d (%d%%)",used,cur,max,used*100/max);
         }
     }
 
-    private final MemoryGroup heap;
-    private final MemoryGroup nonHeap;
+    public final MemoryGroup heap;
+    public final MemoryGroup nonHeap;
 
     public MemoryUsageMonitor() {
         List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
@@ -81,7 +99,12 @@ public class MemoryUsageMonitor extends SafeTimerTask {
         nonHeap = new MemoryGroup(pools, MemoryType.NON_HEAP);
     }
 
+    public long getRecurrencePeriod() {
+        return TimeUnit2.SECONDS.toMillis(10);
+    }
+
     protected void doRun() {
-        System.out.printf("%s\t%s\n", heap.metrics(), nonHeap.metrics());
+        heap.update();
+        nonHeap.update();
     }
 }
