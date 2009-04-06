@@ -162,7 +162,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
         String hudsonVersion = manifest.getMainAttributes().getValue("Hudson-Version");
         String shortName = manifest.getMainAttributes().getValue("Short-Name");
         if (!"maven-plugin".equals(shortName) &&
-                (hudsonVersion == null || hudsonVersion.compareTo("1.296") <= 0)) {
+                // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal here. Watch out for those.
+                (hudsonVersion == null || hudsonVersion.equals("null") || hudsonVersion.compareTo("1.296") <= 0)) {
             optionalDependencies.add(new PluginWrapper.Dependency("maven-plugin:" + Hudson.VERSION));
         }
 
