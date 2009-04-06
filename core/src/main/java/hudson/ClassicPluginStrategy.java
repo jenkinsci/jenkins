@@ -167,7 +167,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
 
 		ClassLoader dependencyLoader = new DependencyClassLoader(getClass()
-				.getClassLoader(), dependencies);
+				.getClassLoader(), Util.join(dependencies,optionalDependencies));
 		ClassLoader classLoader = new URLClassLoader(paths.toArray(new URL[paths.size()]),
 				dependencyLoader);
 

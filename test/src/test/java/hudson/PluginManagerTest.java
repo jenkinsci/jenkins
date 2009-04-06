@@ -57,4 +57,25 @@ public class PluginManagerTest extends HudsonTestCase {
     public void testWithRecipe() throws Exception {
         assertNotNull(hudson.getPlugin("tasks"));
     }
+
+    /**
+     * Makes sure that plugins can see Maven2 plugin that's refactored out in 1.296.
+     */
+    @WithPlugin("tasks.hpi")
+    public void testOptionalMavenDependency() throws Exception {
+        PluginWrapper.Dependency m2=null;
+        PluginWrapper tasks = hudson.getPluginManager().getPlugin("tasks");
+        for( PluginWrapper.Dependency d : tasks.getOptionalDependencies() ) {
+            if(d.shortName.equals("maven-plugin")) {
+                assertNull(m2);
+                m2 = d;
+            }
+        }
+        assertNotNull(m2);
+
+        // this actually doesn't really test what we need, though, because
+        // I thought test harness is loading the maven classes by itself.
+        // TODO: write a separate test that tests the optional dependency loading
+        tasks.classLoader.loadClass(hudson.maven.agent.AbortException.class.getName());
+    }
 }
