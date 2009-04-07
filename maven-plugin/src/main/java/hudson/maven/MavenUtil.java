@@ -98,11 +98,9 @@ public class MavenUtil {
         // make sure ~/.m2 exists to avoid http://www.nabble.com/BUG-Report-tf3401736.html
         File m2Home = new File(MavenEmbedder.userHome, ".m2");
         m2Home.mkdirs();
-        if(!m2Home.exists()) {
-            listener.getLogger().println("Failed to create "+m2Home+
+        if(!m2Home.exists())
+            throw new AbortException("Failed to create "+m2Home+
                 "\nSee https://hudson.dev.java.net/cannot-create-.m2.html");
-            throw new AbortException();
-        }
 
         maven.setProfiles(profiles);
         maven.setSystemProperties(systemProperties);
@@ -136,10 +134,8 @@ public class MavenUtil {
 
         for (String modulePath : (List<String>) project.getModules()) {
             File moduleFile = new File(new File(basedir, modulePath),"pom.xml");
-            if(!moduleFile.exists()) {
-                listener.getLogger().println(moduleFile+" is referenced from "+project.getFile()+" but it doesn't exist");
-                throw new AbortException();
-            }
+            if(!moduleFile.exists())
+                throw new AbortException(moduleFile+" is referenced from "+project.getFile()+" but it doesn't exist");
 
             String relativePath = rel;
             if(relativePath.length()>0) relativePath+='/';

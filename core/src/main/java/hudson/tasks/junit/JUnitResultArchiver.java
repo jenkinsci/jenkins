@@ -28,6 +28,7 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.AbortException;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
@@ -98,10 +99,6 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
             action = new TestResultAction(build, result, listener);
             if(result.getPassCount()==0 && result.getFailCount()==0)
                 throw new AbortException(Messages.JUnitResultArchiver_ResultIsEmpty());
-        } catch (IOException e) {
-            e.printStackTrace(listener.error("Failed to archive JUnit reports"));
-            build.setResult(Result.FAILURE);
-            return true;
         } catch (AbortException e) {
             if(build.getResult()==Result.FAILURE)
                 // most likely a build failed before it gets to the test phase.
@@ -109,6 +106,10 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
                 return true;
 
             listener.getLogger().println(e.getMessage());
+            build.setResult(Result.FAILURE);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace(listener.error("Failed to archive JUnit reports"));
             build.setResult(Result.FAILURE);
             return true;
         }
