@@ -24,7 +24,8 @@
 package hudson.model;
 
 import hudson.model.MultiStageTimeSeries.TimeScale;
-import org.jfree.data.category.DefaultCategoryDataset;
+import hudson.model.MultiStageTimeSeries.TrendChart;
+import hudson.util.ColorPalette;
 
 /**
  * {@link LoadStatistics} for the entire system (the master and all the slaves combined.)
@@ -41,7 +42,8 @@ public class OverallLoadStatistics extends LoadStatistics {
     /**
      * Number of total {@link Queue.BuildableItem}s that represents blocked builds.
      */
-    public final MultiStageTimeSeries totalQueueLength = new MultiStageTimeSeries(0,DECAY);
+    public final MultiStageTimeSeries totalQueueLength = new MultiStageTimeSeries(
+            Messages._LoadStatistics_Legends_QueueLength(), ColorPalette.GREY, 0,DECAY);
 
     /*package*/ OverallLoadStatistics() {
         super(0,0);
@@ -66,17 +68,7 @@ public class OverallLoadStatistics extends LoadStatistics {
      * When drawing the overall load statistics, use the total queue length,
      * not {@link #queueLength}, which just shows jobs that are to be run on the master. 
      */
-    protected DefaultCategoryDataset createOverallDataset(TimeScale timeScale) {
-        return createDataset(timeScale,
-                new float[][]{
-                    busyExecutors.pick(timeScale).getHistory(),
-                    totalExecutors.pick(timeScale).getHistory(),
-                    totalQueueLength.pick(timeScale).getHistory()
-                },
-                new String[]{
-                    Messages.LoadStatistics_Legends_TotalExecutors(),
-                    Messages.LoadStatistics_Legends_BusyExecutors(),
-                    Messages.LoadStatistics_Legends_QueueLength()
-                });
+    protected TrendChart createOverallTrendChart(TimeScale timeScale) {
+        return MultiStageTimeSeries.createTrendChart(timeScale,busyExecutors,totalExecutors,totalQueueLength);
     }
 }

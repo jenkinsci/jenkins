@@ -47,10 +47,10 @@ THE SOFTWARE.
 
   <f:prepareDatabinding/>
 
-  <input id="${attrs.id}" autocomplete="off" class="${attrs.clazz} ${checkUrl!=null ? 'validated' : ''}"
+  <input id="${attrs.id}" autocomplete="off" class="${attrs.clazz} ${attrs.checkUrl!=null ? 'validated' : ''}"
          name ="${attrs.name ?: '_.'+attrs.field}"
          value="${attrs.value ?: instance[attrs.field]}"
-         checkUrl="${checkUrl}" />
+         checkUrl="${attrs.checkUrl}" />
 	<script type="text/javascript">
     createComboBox("${id}",function() {
         var values = [];

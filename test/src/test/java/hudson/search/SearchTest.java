@@ -24,7 +24,10 @@
 package hudson.search;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.AlertHandler;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Bug;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -36,6 +39,25 @@ public class SearchTest extends HudsonTestCase {
     public void testFailure() throws Exception {
         try {
             search("no-such-thing");
+            fail("404 expected");
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(404,e.getResponse().getStatusCode());
+        }
+    }
+
+    /**
+     * Makes sure the script doesn't execute.
+     */
+    @Bug(3415)
+    public void testXSS() throws Exception {
+        try {
+            WebClient wc = new WebClient();
+            wc.setAlertHandler(new AlertHandler() {
+                public void handleAlert(Page page, String message) {
+                    throw new AssertionError();
+                }
+            });
+            wc.search("<script>alert('script');</script>");
             fail("404 expected");
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(404,e.getResponse().getStatusCode());

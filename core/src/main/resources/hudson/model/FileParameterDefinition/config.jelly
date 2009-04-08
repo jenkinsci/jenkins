@@ -31,4 +31,7 @@ THE SOFTWARE.
 	<!--f:entry title="Optional">
 		<f:checkbox name="parameter.optional" value="${instance.optional}" />
 	</f:entry-->
+    <f:entry title="${%Description}" help="/help/parameter/TODO.html">
+        <f:textarea name="parameter.description" value="${instance.description}" />
+    </f:entry>
 </j:jelly>

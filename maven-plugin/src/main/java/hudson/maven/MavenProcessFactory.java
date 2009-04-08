@@ -207,10 +207,8 @@ final class MavenProcessFactory implements ProcessCache.Factory {
                 // failed to connect. Is the process dead?
                 // if so, the error should have been provided by the launcher already.
                 // so abort gracefully without a stack trace.
-                if(!proc.isAlive()) {
-                    listener.getLogger().println("Failed to launch Maven. Exit code = "+proc.join());
-                    throw new AbortException();
-                }
+                if(!proc.isAlive())
+                    throw new AbortException("Failed to launch Maven. Exit code = "+proc.join());
                 throw e;
             }
 

@@ -91,14 +91,23 @@ public abstract class ParameterDefinition implements
         Describable<ParameterDefinition>, ExtensionPoint {
 
     private final String name;
+    private final String description;
+
+    public ParameterDefinition(String name) {
+        this(name, null);
+    }
+
+    public ParameterDefinition(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 
     public String getName() {
         return name;
     }
 
-    public ParameterDefinition(String name) {
-        super();
-        this.name = name;
+    public String getDescription() {
+        return description;
     }
 
     /**

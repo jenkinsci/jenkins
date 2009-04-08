@@ -49,13 +49,20 @@ public class JNLPLauncher extends ComputerLauncher {
      */
     public final String tunnel;
 
+    /**
+     * Additional JVM arguments. Can be null.
+     * @since 1.297
+     */
+    public final String vmargs;
+
     @DataBoundConstructor
-    public JNLPLauncher(String tunnel) {
+    public JNLPLauncher(String tunnel, String vmargs) {
         this.tunnel = Util.fixEmptyAndTrim(tunnel);
+        this.vmargs = Util.fixEmptyAndTrim(vmargs);
     }
 
     public JNLPLauncher() {
-        this(null);
+        this(null,null);
     }
 
     @Override

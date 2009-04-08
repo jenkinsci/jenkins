@@ -140,7 +140,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * Returns a {@link Slave} on which this build was done.
      *
      * @return
-     *      null, for example if the slave that this build run no logner exists.
+     *      null, for example if the slave that this build run no longer exists.
      */
     public Node getBuiltOn() {
         if(builtOn==null || builtOn.equals(""))
@@ -150,7 +150,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * Returns the name of the slave it was built on, or null if it was the master.
+     * Returns the name of the slave it was built on; null or "" if built by the master.
+     * (null happens when we read old record that didn't have this information.)
      */
     @Exported(name="builtOn")
     public String getBuiltOnStr() {

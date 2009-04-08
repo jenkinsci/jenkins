@@ -389,6 +389,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return description;
     }
 
+
     /**
      * Returns the length-limited description.
      * @return The length-limited description.
@@ -401,17 +402,40 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         final String ending = "...";
 
-        // limit the description
-        String truncDescr = description.substring(
-                0, maxDescrLength - ending.length());
+        int sz = description.length();
 
-        // truncate the description on the space
-        int lastSpace = truncDescr.lastIndexOf(" ");
-        if (lastSpace != -1) {
-            truncDescr = truncDescr.substring(0, lastSpace);
+        boolean inTag = false;
+        int displayChars = 0;
+        int lastTruncatablePoint = -1;
+
+        for (int i=0; i<sz; i++) {
+            char ch = description.charAt(i);
+            if(ch == '<') {
+                inTag = true;
+            } else if (ch == '>') {
+                inTag = false;
+                if (displayChars <= (maxDescrLength - ending.length())) {
+                    lastTruncatablePoint = i + 1;
+                }
+            }
+            if (!inTag) {
+                displayChars++;
+                if (displayChars <= (maxDescrLength - ending.length())) {
+                    if (ch == ' ') {
+                        lastTruncatablePoint = i;
+                    }
+                }
+            }
         }
 
-        return truncDescr + ending;
+        String truncDesc = description;
+        
+        if (lastTruncatablePoint != -1) {
+            truncDesc = truncDesc.substring(0, lastTruncatablePoint);
+        }
+        
+        return truncDesc + ending;
+        
     }
 
     /**
@@ -1143,9 +1167,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Serves the artifacts.
      */
-    public void doArtifact( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
-        new DirectoryBrowserSupport(this,project.getDisplayName()+' '+getDisplayName())
-            .serveFile(req, rsp, new FilePath(getArtifactsDir()), "package.gif", true);
+    public DirectoryBrowserSupport doArtifact() {
+        return new DirectoryBrowserSupport(this,new FilePath(getArtifactsDir()), project.getDisplayName()+' '+getDisplayName(), "package.gif", true);
     }
 
     /**
@@ -1285,6 +1308,23 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         env.put("JOB_NAME",getParent().getFullName());
         return env;
     }
+
+    public String getExternalizableId() {
+        return project.getName() + "#" + getNumber();
+    }
+
+    public static Run<?,?> fromExternalizableId(String id) {
+        int hash = id.lastIndexOf('#');
+        if (hash <= 0) {
+            throw new IllegalArgumentException("Invalid id");
+        }
+        String jobName = id.substring(0, hash);
+        int number = Integer.parseInt(id.substring(hash + 1));
+
+        Job<?,?> job = (Job<?,?>) Hudson.getInstance().getItem(jobName);
+        return job.getBuildByNumber(number);
+    }
+
 
     public static final XStream XSTREAM = new XStream2();
     static {

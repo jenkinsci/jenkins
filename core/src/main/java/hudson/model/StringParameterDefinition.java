@@ -37,9 +37,13 @@ public class StringParameterDefinition extends ParameterDefinition {
     private String defaultValue;
 
     @DataBoundConstructor
-    public StringParameterDefinition(String name, String defaultValue) {
-        super(name);
+    public StringParameterDefinition(String name, String defaultValue, String description) {
+        super(name, description);
         this.defaultValue = defaultValue;
+    }
+
+    public StringParameterDefinition(String name, String defaultValue) {
+        this(name, defaultValue, null);
     }
 
     public String getDefaultValue() {
@@ -51,7 +55,8 @@ public class StringParameterDefinition extends ParameterDefinition {
     }
     
     public StringParameterValue getDefaultParameterValue() {
-        return new StringParameterValue(getName(), defaultValue);
+        StringParameterValue v = new StringParameterValue(getName(), defaultValue, getDescription());
+        return v;
     }
 
     @Extension
@@ -69,7 +74,9 @@ public class StringParameterDefinition extends ParameterDefinition {
 
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
-        return req.bindJSON(StringParameterValue.class, jo);
+        StringParameterValue value = req.bindJSON(StringParameterValue.class, jo);
+        value.setDescription(getDescription());
+        return value;
     }
 
 	@Override
@@ -80,7 +87,7 @@ public class StringParameterDefinition extends ParameterDefinition {
         } else if (value.length != 1) {
         	throw new IllegalArgumentException("Illegal number of parameter values for " + getName() + ": " + value.length);
         } else 
-        	return new StringParameterValue(getName(), value[0]);
+        	return new StringParameterValue(getName(), value[0], getDescription());
 	}
 
 }

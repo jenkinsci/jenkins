@@ -39,7 +39,11 @@ public class StringParameterValue extends ParameterValue {
 
     @DataBoundConstructor
     public StringParameterValue(String name, String value) {
-        super(name);
+        this(name, value, null);
+    }
+
+    public StringParameterValue(String name, String value, String description) {
+        super(name, description);
         this.value = value;
     }
 

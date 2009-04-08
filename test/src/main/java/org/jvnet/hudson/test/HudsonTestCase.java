@@ -74,12 +74,12 @@ import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Arrays;
@@ -88,6 +88,7 @@ import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.beans.PropertyDescriptor;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -96,9 +97,8 @@ import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
@@ -121,7 +121,6 @@ import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
 import org.xml.sax.SAXException;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 
 import com.gargoylesoftware.htmlunit.AjaxController;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
@@ -132,7 +131,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
@@ -480,10 +478,7 @@ public abstract class HudsonTestCase extends TestCase {
      * Performs a search from the search box.
      */
     protected Page search(String q) throws Exception {
-        HtmlPage top = new WebClient().goTo("");
-        HtmlForm search = top.getFormByName("search");
-        search.getInputByName("q").setValueAttribute(q);
-        return search.submit(null);
+        return new WebClient().search(q);
     }
 
     /**
@@ -557,6 +552,52 @@ public abstract class HudsonTestCase extends TestCase {
      */
     public TaskListener createTaskListener() {
         return new StreamTaskListener(new CloseProofOutputStream(System.out));
+    }
+
+    /**
+     * Asserts that two JavaBeans are equal as far as the given list of properties are concerned.
+     *
+     * <p>
+     * This method takes two objects that have properties (getXyz, isXyz, or just the public xyz field),
+     * and makes sure that the property values for each given property are equals (by using {@link #assertEquals(Object, Object)})
+     *
+     * <p>
+     * Property values can be null on both objects, and that is OK, but passing in a property that doesn't
+     * exist will fail an assertion.
+     *
+     * <p>
+     * This method is very convenient for comparing a large number of properties on two objects,
+     * for example to verify that the configuration is identical after a config screen roundtrip.
+     *
+     * @param lhs
+     *      One of the two objects to be compared.
+     * @param rhs
+     *      The other object to be compared
+     * @param properties
+     *      ','-separated list of property names that are compared.
+     * @since 1.297
+     */
+    public void assertEqualBeans(Object lhs, Object rhs, String properties) throws Exception {
+        for (String p : properties.split(",")) {
+            PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(lhs, p);
+            Object lp,rp;
+            if(pd==null) {
+                // field?
+                try {
+                    Field f1 = lhs.getClass().getField(p);
+                    Field f2 = rhs.getClass().getField(p);
+                    lp = f1.get(lhs);
+                    rp = f2.get(rhs);
+                } catch (NoSuchFieldException e) {
+                    assertNotNull("No such property "+p+" on "+lhs.getClass(),pd);
+                    return;
+                }
+            } else {
+                lp = PropertyUtils.getProperty(lhs, p);
+                rp = PropertyUtils.getProperty(rhs, p);
+            }
+            assertEquals("Property "+p+" is different",lp,rp);
+        }
     }
 
 
@@ -756,6 +797,13 @@ public abstract class HudsonTestCase extends TestCase {
         public WebClient login(String username) throws Exception {
             login(username,username);
             return this;
+        }
+
+        public HtmlPage search(String q) throws IOException, SAXException {
+            HtmlPage top = goTo("");
+            HtmlForm search = top.getFormByName("search");
+            search.getInputByName("q").setValueAttribute(q);
+            return (HtmlPage)search.submit(null);
         }
 
         /**

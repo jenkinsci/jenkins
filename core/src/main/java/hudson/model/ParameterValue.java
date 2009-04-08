@@ -64,8 +64,23 @@ import net.sf.json.JSONObject;
 public abstract class ParameterValue {
 	protected final String name;
 
-    protected ParameterValue(String name) {
+    private String description;
+
+    protected ParameterValue(String name, String description) {
         this.name = name;
+        this.description = description;
+    }
+
+    protected ParameterValue(String name) {
+        this(name, null);
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**

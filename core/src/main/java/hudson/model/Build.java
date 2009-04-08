@@ -154,7 +154,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 // tear down in reverse order
                 boolean failed=false;
                 for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
-                    if (!buildEnvironments.get(i).tearDown((AbstractBuild)Build.this,listener)) {
+                    if (!buildEnvironments.get(i).tearDown(Build.this,listener)) {
                         failed=true;
                     }                    
                 }

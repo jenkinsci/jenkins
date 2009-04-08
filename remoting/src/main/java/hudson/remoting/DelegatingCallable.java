@@ -27,11 +27,17 @@ package hudson.remoting;
  * {@link Callable} that nominates another claassloader for serialization.
  *
  * <p>
- * For various reasons, one {@link Callable} object is serialized by one classloader.
- * Normally the classloader that loaded {@link Callable} implementation will be used,
- * but when {@link Callable} further delegates to another classloader, that might
- * not be suitable. Implementing this interface allows {@link Callable} to
- * use designate classloader.
+ * For various reasons, one {@link Callable} object (and all the objects reachable from it) is
+ * serialized by one classloader.
+ * By default, the classloader that loaded {@link Callable} object itself is used,
+ * but when {@link Callable} object refers to other objects that are loaded by other classloaders,
+ * this will fail to deserialize on the remote end.
+ *
+ * <p>
+ * In such a case, implement this interface, instead of plain {@link Callable} and
+ * return a classloader that can see all the classes.
+ *
+ * In case of Hudson, {@code PluginManager.uberClassLoader} is a good candidate.  
  *
  * @author Kohsuke Kawaguchi
  */

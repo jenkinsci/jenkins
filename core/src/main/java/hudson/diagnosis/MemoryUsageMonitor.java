@@ -21,9 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package hudson.diagnosis;
 
-import hudson.triggers.SafeTimerTask;
+import hudson.util.TimeUnit2;
+import hudson.util.ColorPalette;
+import hudson.Extension;
+import hudson.model.PeriodicWork;
+import hudson.model.MultiStageTimeSeries;
+import hudson.model.MultiStageTimeSeries.TrendChart;
+import hudson.model.MultiStageTimeSeries.TimeScale;
 
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
@@ -31,49 +37,76 @@ import java.lang.management.MemoryUsage;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.IOException;
+
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Monitors the memory usage of the system in OS specific way.
  *
  * @author Kohsuke Kawaguchi
  */
-public class MemoryUsageMonitor extends SafeTimerTask {
-    class MemoryGroup {
+@Extension
+public final class MemoryUsageMonitor extends PeriodicWork {
+    /**
+     * A memory group is conceptually a set of memory pools. 
+     */
+    public final class MemoryGroup {
         private final List<MemoryPoolMXBean> pools = new ArrayList<MemoryPoolMXBean>();
 
-        MemoryGroup(List<MemoryPoolMXBean> pools, MemoryType type) {
+        /**
+         * Trend of the memory usage, after GCs.
+         * So this shows the accurate snapshot of the footprint of live objects.
+         */
+        public final MultiStageTimeSeries used = new MultiStageTimeSeries(Messages._MemoryUsageMonitor_USED(), ColorPalette.RED, 0,0);
+        /**
+         * Trend of the maximum memory size, after GCs.
+         */
+        public final MultiStageTimeSeries max = new MultiStageTimeSeries(Messages._MemoryUsageMonitor_TOTAL(), ColorPalette.BLUE, 0,0);
+
+        private MemoryGroup(List<MemoryPoolMXBean> pools, MemoryType type) {
             for (MemoryPoolMXBean pool : pools) {
                 if (pool.getType() == type)
                     this.pools.add(pool);
             }
         }
 
-        public String metrics() {
+        private void update() {
             long used = 0;
             long max = 0;
-            long cur = 0;
+//            long cur = 0;
             for (MemoryPoolMXBean pool : pools) {
                 MemoryUsage usage = pool.getCollectionUsage();
                 if(usage==null) continue;   // not available
                 used += usage.getUsed();
                 max  += usage.getMax();
 
-                usage = pool.getUsage();
-                if(usage==null) continue;   // not available
-                cur += usage.getUsed();
+//                usage = pool.getUsage();
+//                if(usage==null) continue;   // not available
+//                cur += usage.getUsed();
             }
 
             // B -> KB
             used /= 1024;
             max /= 1024;
-            cur /= 1024;
+//            cur /= 1024;
 
-            return String.format("%d/%d/%d (%d%%)",used,cur,max,used*100/max);
+            this.used.update(used);
+            this.max.update(max);
+//
+//            return String.format("%d/%d/%d (%d%%)",used,cur,max,used*100/max);
+        }
+
+        /**
+         * Generates the memory usage statistics graph.
+         */
+        public TrendChart doGraph(@QueryParameter String type) throws IOException {
+            return MultiStageTimeSeries.createTrendChart(TimeScale.parse(type),used,max);
         }
     }
 
-    private final MemoryGroup heap;
-    private final MemoryGroup nonHeap;
+    public final MemoryGroup heap;
+    public final MemoryGroup nonHeap;
 
     public MemoryUsageMonitor() {
         List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
@@ -81,7 +114,12 @@ public class MemoryUsageMonitor extends SafeTimerTask {
         nonHeap = new MemoryGroup(pools, MemoryType.NON_HEAP);
     }
 
+    public long getRecurrencePeriod() {
+        return TimeUnit2.SECONDS.toMillis(10);
+    }
+
     protected void doRun() {
-        System.out.printf("%s\t%s\n", heap.metrics(), nonHeap.metrics());
+        heap.update();
+        nonHeap.update();
     }
 }

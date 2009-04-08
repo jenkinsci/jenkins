@@ -27,19 +27,36 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+import hudson.Extension;
 
 public class RunParameterDefinition extends ParameterDefinition {
 
+    private final String projectName;
+
     @DataBoundConstructor
-    public RunParameterDefinition(String name) {
-        super(name);
+    public RunParameterDefinition(String name, String projectName, String description) {
+        super(name, description);
+        this.projectName = projectName;
     }
 
-    // @Extension --- not live yet
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public Job getProject() {
+        return (Job) Hudson.getInstance().getItem(projectName);
+    }
+
+    @Extension
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
             return "Run Parameter";
+        }
+
+        @Override
+        public String getHelpFile() {
+            return "/help/parameter/run.html";
         }
 
         @Override
@@ -49,13 +66,28 @@ public class RunParameterDefinition extends ParameterDefinition {
     }
 
     @Override
+    public ParameterValue getDefaultParameterValue() {
+        return new RunParameterValue(getName(), getProject().getLastBuild().getExternalizableId(), getDescription());
+    }
+
+    @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
-        return req.bindJSON(RunParameterValue.class, jo);
+        RunParameterValue value = req.bindJSON(RunParameterValue.class, jo);
+        value.setDescription(getDescription());
+        return value;
     }
 
 	@Override
 	public ParameterValue createValue(StaplerRequest req) {
-		throw new UnsupportedOperationException();
+        String[] value = req.getParameterValues(getName());
+        if (value == null) {
+        	return getDefaultParameterValue();
+        } else if (value.length != 1) {
+        	throw new IllegalArgumentException("Illegal number of parameter values for " + getName() + ": " + value.length);
+        } else {
+            return new RunParameterValue(getName(), value[0], getDescription());
+        }
+
 	}
 
 }

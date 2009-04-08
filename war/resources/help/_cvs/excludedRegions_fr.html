@@ -1,0 +1,12 @@
+<div>
+  Si cette option est cochée et que Hudson est configuré pour scruter les changements, Hudson ignorera tout fichier ou répertoire de cette liste au moment où il cherchera à déterminer si un build doit être lancé.
+  <p/>Chaque clause d'exclusion utilise les expressions régulières et doit être séparée des autres par une nouvelle ligne.
+  <p/>
+  <pre>
+	 src/main/web/.*\.html
+	 src/main/web/.*\.jpeg
+	 src/main/web/.*\.gif
+  </pre>
+  Dans l'exemple ci-dessus, si seuls des fichiers html/jpeg/gif ont été versionnées dans l'outil de gestion de version, un build n'aura pas lieu.
+  <p/>Plus d'information sur les expressions régulières peuvent être trouvés <a href="http://www.regular-expressions.info/">ici</a>.
+</div>

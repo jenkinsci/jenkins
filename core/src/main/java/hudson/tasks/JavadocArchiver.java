@@ -31,8 +31,6 @@ import hudson.model.*;
 import hudson.util.FormValidation;
 
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.AncestorInPath;
 
@@ -137,9 +135,11 @@ public class JavadocArchiver extends Recorder {
                 return null;
         }
 
-        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-            new DirectoryBrowserSupport(this, getTitle())
-                .serveFile(req, rsp, new FilePath(dir()), "help.gif", false);
+        /**
+         * Serves javadoc.
+         */
+        public DirectoryBrowserSupport doDynamic() {
+            return new DirectoryBrowserSupport(this, new FilePath(dir()), getTitle(), "help.gif", false);
         }
 
         protected abstract String getTitle();

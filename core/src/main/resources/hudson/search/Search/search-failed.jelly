@@ -27,9 +27,9 @@ THE SOFTWARE.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:set var="q" value="${request.getParameter('q')}"/>
-  <l:layout title="Search for '${q}'">
+  <l:layout title="Search for '${h.escape(q)}'">
     <l:main-panel>
-      <h1>Search for '${q}'</h1>
+      <h1>Search for '${h.escape(q)}'</h1>
       <j:set var="items" value="${it.getSuggestions(request,q)}"/>
       <j:choose>
         <j:when test="${items.size()==0}">

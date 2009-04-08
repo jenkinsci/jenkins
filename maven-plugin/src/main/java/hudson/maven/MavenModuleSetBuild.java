@@ -387,7 +387,8 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 
                 return null;
             } catch (AbortException e) {
-                // error should have been already reported.
+                if(e.getMessage()!=null)
+                    listener.error(e.getMessage());
                 return Result.FAILURE;
             } catch (InterruptedIOException e) {
                 listener.error("Aborted");
@@ -413,11 +414,10 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars) throws IOException, InterruptedException {
             logger.println("Parsing POMs");
             MavenInstallation mvn = project.getMaven();
-            if(mvn==null) {
-                logger.println("A Maven installation needs to be available for this project to be built.");
-                logger.println("Either your server has no Maven installations defined, or the requested Maven version does not exist.");
-                throw new AbortException();
-            }
+            if(mvn==null)
+                throw new AbortException("A Maven installation needs to be available for this project to be built.\n"+
+                "Either your server has no Maven installations defined, or the requested Maven version does not exist.");
+
             mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode());
 
             List<PomInfo> poms;
@@ -717,10 +717,8 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
             if(!pom.exists() && parentLoc.exists())
                 pom = parentLoc;
 
-            if(!pom.exists()) {
-                logger.println(Messages.MavenModuleSetBuild_NoSuchFile(pom));
-                throw new AbortException();
-            }
+            if(!pom.exists())
+                throw new AbortException(Messages.MavenModuleSetBuild_NoSuchFile(pom));
 
             if(versbose)
                 logger.println("Parsing "+pom);

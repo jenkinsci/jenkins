@@ -141,4 +141,13 @@ public class JNLPLauncherTest extends HudsonTestCase {
 
         private static final long serialVersionUID = 1L;
     }
+
+    public void testConfigRoundtrip() throws Exception {
+        DumbSlave s = createSlave();
+        JNLPLauncher original = new JNLPLauncher("a", "b");
+        s.setLauncher(original);
+        HtmlPage p = new WebClient().getPage(s, "configure");
+        submit(p.getFormByName("config"));
+        assertEqualBeans(original,s.getLauncher(),"tunnel,vmargs");
+    }
 }
