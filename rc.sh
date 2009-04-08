@@ -41,7 +41,7 @@ svn rm -m "deleting the old RC branch" $RC
 svn cp -m "creating a new RC branch" $repo/trunk/hudson/main $RC
 
 # update changelog.html
-WWW=../www
+WWW=../../www
 svn up $WWW/changelog.html
 ruby rc.changelog.rb < $WWW/changelog.html > $WWW/changelog.new
 mv $WWW/changelog.new $WWW/changelog.html
