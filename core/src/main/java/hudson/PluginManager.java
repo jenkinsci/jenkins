@@ -180,7 +180,7 @@ public final class PluginManager extends AbstractModelObject {
                 URL url = context.getResource(path);
                 long lastModified = url.openConnection().getLastModified();
                 File file = new File(rootDir, fileName);
-                if (file.exists() && file.lastModified() != lastModified) {
+                if (!file.exists() || file.lastModified() != lastModified) {
                     FileUtils.copyURLToFile(url, file);
                     file.setLastModified(url.openConnection().getLastModified());
                     // lastModified is set for two reasons:

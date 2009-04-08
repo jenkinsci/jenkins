@@ -74,6 +74,19 @@ public class MavenProjectTest extends HudsonTestCase {
     }
 
     /**
+     * Makes sure that {@link ArtifactArchiver} doesn't show up in the m2 job type config screen.
+     * This is to make sure that the exclusion in {@link MavenModuleSet.DescriptorImpl#isApplicable(Descriptor)}
+     * is working. 
+     */
+    public void testExclusion() throws Exception {
+        MavenModuleSet p = createMavenProject();
+        HtmlPage page = new WebClient().getPage(p, "configure");
+        assertFalse(page.getWebResponse().getContentAsString().contains(hudson.getDescriptorByType(ArtifactArchiver.DescriptorImpl.class).getDisplayName()));
+        // but this should exist. This verifies that the approach of the test is sane (and for example, to make sure getContentAsString()!="")
+        assertTrue(page.getWebResponse().getContentAsString().contains(hudson.getDescriptorByType(RedeployPublisher.DescriptorImpl.class).getDisplayName()));
+    }
+
+    /**
      * Attempt to reproduce #2154, but this appears to work.
      */
     @Bug(2154)

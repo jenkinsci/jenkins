@@ -780,6 +780,19 @@ public class Util {
     }
 
     /**
+     * Combines all the given collections into a single list.
+     */
+    public static <T> List<T> join(Collection<? extends T>... items) {
+        int size = 0;
+        for (Collection<? extends T> item : items)
+            size += item.size();
+        List<T> r = new ArrayList<T>(size);
+        for (Collection<? extends T> item : items)
+            r.addAll(item);
+        return r;
+    }
+
+    /**
      * Creates Ant {@link FileSet} with the base dir and include pattern.
      *
      * <p>

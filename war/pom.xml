@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.296-SNAPSHOT</version>
+    <version>1.298-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -109,8 +109,7 @@ THE SOFTWARE.
                 <resolveArtifact artifactId="winstone" tofile="${basedir}/target/generated-resources/winstone.jar" />
 
                 <!-- maven plugin is bundled -->
-                <resolveArtifact artifactId="maven-plugin"
-                                 tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
+                <resolveArtifact artifactId="maven-plugin" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
 
               </tasks>
             </configuration>

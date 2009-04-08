@@ -26,7 +26,7 @@ THE SOFTWARE.
   <div class="warning">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <div style="float:right">
-        <f:submit name="yes" value="${%Create a view now}"/>
+        <f:submit name="yes" value="$(%Create a view now}"/>
         <f:submit name="no" value="${%Dismiss}"/>
       </div>
       ${%blurb}
