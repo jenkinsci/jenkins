@@ -25,19 +25,15 @@ package hudson.os.solaris;
 
 import com.sun.akuma.Daemon;
 import com.sun.akuma.JavaVMArguments;
-import com.sun.solaris.EmbeddedSu;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.Extension;
+import hudson.os.SU;
 import hudson.model.AdministrativeMonitor;
-import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
-import hudson.remoting.Channel;
-import hudson.remoting.Launcher;
-import hudson.remoting.Which;
 import hudson.util.ForkOutputStream;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.StreamTaskListener;
@@ -59,7 +55,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -166,7 +161,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
 
         // this is the actual creation of the file system.
         // return true indicating a success
-        Callable<String,IOException> task = new Callable<String,IOException>() {
+        return SU.execute(listener, rootUsername, rootPassword, new Callable<String,IOException>() {
             public String call() throws IOException {
                 PrintStream out = listener.getLogger();
 
@@ -207,42 +202,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                 }
                 return hudson.getName();
             }
-        };
-
-
-        // if we are the root user already, we can just do it here.
-        // if that fails, no amount of pfexec and embedded_sudo would do.
-        if(uid==0)
-            return task.call();
-
-        String javaExe = System.getProperty("java.home") + "/bin/java";
-        String slaveJar = Which.jarFile(Launcher.class).getAbsolutePath();
-
-        // otherwise first attempt pfexec, as that doesn't require password
-        Channel channel;
-        Process proc=null;
-
-        if(rootPassword==null) {
-            // try pfexec, in the hope that the user has the permission
-            channel = new LocalLauncher(listener).launchChannel(
-                    new String[]{"/usr/bin/pfexec", javaExe, "-jar", slaveJar},
-                    listener.getLogger(), null, Collections.<String, String>emptyMap());
-        } else {
-            // try sudo with the given password. Also run in pfexec so that we can elevate the privileges
-            listener.getLogger().println("Running with embedded_su");
-            ProcessBuilder pb = new ProcessBuilder("/usr/bin/pfexec",javaExe,"-jar",slaveJar);
-            proc = EmbeddedSu.startWithSu(rootUsername, rootPassword, pb);
-            channel = new Channel("zfs migration thread", Computer.threadPoolForRemoting,
-                    proc.getInputStream(), proc.getOutputStream(), listener.getLogger());
-        }
-
-        try {
-            return channel.call(task);
-        } finally {
-            channel.close();
-            if(proc!=null)
-                proc.destroy();
-        }
+        });
     }
 
     /**
