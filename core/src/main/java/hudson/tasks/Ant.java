@@ -394,7 +394,7 @@ public class Ant extends Builder {
 		}
 
         public AntInstallation forNode(Node node) {
-            return new AntInstallation(getName(),ToolLocationNodeProperty.getToolHome(node, this));
+            return new AntInstallation(getName(),translateFor(node));
         }
 
         @Extension

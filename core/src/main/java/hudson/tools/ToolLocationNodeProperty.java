@@ -81,18 +81,25 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
      *
      * @return
      *      never null.
+     * @deprecated
+     *      Use {@link ToolInstallation#translateFor(Node)} 
      */
     public static String getToolHome(Node node, ToolInstallation installation) {
         String result = null;
+
+        // node-specific configuration takes precedence
         ToolLocationNodeProperty property = node.getNodeProperties().get(ToolLocationNodeProperty.class);
-        if (property != null) {
-            result = property.getHome(installation);
+        if (property != null)   result = property.getHome(installation);
+        if (result != null)     return result;
+
+        // consult translators
+        for( ToolLocationTranslator t : ToolLocationTranslator.all() ) {
+            result = t.getToolHome(node,installation);
+            if(result!=null)    return result;
         }
-        if (result != null) {
-            return result;
-        } else {
-            return installation.getHome();
-        }
+
+        // fall back is no-op
+        return installation.getHome();
     }
 
     @Extension

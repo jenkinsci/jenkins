@@ -102,7 +102,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     }
 
     public JDK forNode(Node node) {
-        return new JDK(getName(),ToolLocationNodeProperty.getToolHome(node, this));
+        return new JDK(getName(),translateFor(node));
     }
 
     public JDK forEnvironment(EnvVars environment) {
