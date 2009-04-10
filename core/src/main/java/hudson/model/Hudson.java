@@ -44,6 +44,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionListView;
+import hudson.LauncherDecorator;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -891,7 +892,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public Launcher createLauncher(TaskListener listener) {
-        return new LocalLauncher(listener);
+        return new LocalLauncher(listener).decorateFor(this);
     }
 
     private final transient Object updateComputerLock = new Object();

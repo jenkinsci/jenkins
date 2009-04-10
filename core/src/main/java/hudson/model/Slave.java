@@ -377,7 +377,7 @@ public abstract class Slave extends Node implements Serializable {
 
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
-        return new RemoteLauncher(listener, c.getChannel(), c.isUnix());
+        return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
     }
 
     /**

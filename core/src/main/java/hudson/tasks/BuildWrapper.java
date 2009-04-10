@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
 import hudson.FileSystemProvisionerDescriptor;
+import hudson.LauncherDecorator;
 import hudson.model.AbstractBuild;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -168,6 +169,7 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
      *      If a fatal error is detected but the implementation handled it gracefully, throw this exception
      *      to suppress stack trace.
      * @since 1.280
+     * @see LauncherDecorator
      */
     public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, RunnerAbortedException {
         return launcher;

@@ -28,6 +28,7 @@ import hudson.Proc.RemoteProc;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
+import hudson.model.Node;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Pipe;
@@ -323,6 +324,60 @@ public abstract class Launcher {
             }
         }
         printCommandLine(masked, workDir);
+    }
+
+    /**
+     * Returns a decorated {@link Launcher} for the given node.
+     */
+    public final Launcher decorateFor(Node node) {
+        Launcher l = this;
+        for (LauncherDecorator d : LauncherDecorator.all())
+            l = d.decorate(l,node);
+        return l;
+    }
+
+    /**
+     * Returns a decorated {@link Launcher} that puts the given set of arguments as a prefix to any commands
+     * that it invokes.
+     *
+     * @since 1.299
+     */
+    public final Launcher decorateByPrefix(final String... prefix) {
+        final Launcher outer = this;
+        return new Launcher(listener,channel) {
+            @Override
+            public Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
+                return outer.launch(prefix(cmd),env,in,out,workDir);
+            }
+
+            @Override
+            public Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
+                return outer.launch(prefix(cmd),prefix(mask),env,in,out,workDir);
+            }
+
+            @Override
+            public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException, InterruptedException {
+                return outer.launchChannel(prefix(cmd),out,workDir,envVars);
+            }
+
+            @Override
+            public void kill(Map<String, String> modelEnvVars) throws IOException, InterruptedException {
+                outer.kill(modelEnvVars);
+            }
+
+            private String[] prefix(String[] args) {
+                String[] newArgs = new String[args.length+prefix.length];
+                System.arraycopy(prefix,0,newArgs,0,prefix.length);
+                System.arraycopy(args,0,newArgs,prefix.length,args.length);
+                return newArgs;
+            }
+
+            private boolean[] prefix(boolean[] args) {
+                boolean[] newArgs = new boolean[args.length+prefix.length];
+                System.arraycopy(args,0,newArgs,prefix.length,args.length);
+                return newArgs;
+            }
+        };
     }
 
     /**
