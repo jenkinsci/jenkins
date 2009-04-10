@@ -2025,7 +2025,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         for (Action a : getActions())
-            if(a.getUrlName().equals(token))
+            if(a.getUrlName().equals(token) || a.getUrlName().equals('/'+token))
                 return a;
         for (Action a : getManagementLinks())
             if(a.getUrlName().equals(token))

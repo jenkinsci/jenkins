@@ -962,6 +962,8 @@ public class Functions {
 
         if(SCHEME.matcher(urlName).matches())
             return urlName; // absolute URL
+        if(urlName.startsWith("/"))
+            return Stapler.getCurrentRequest().getContextPath()+urlName+'/';
         else
             // relative URL name
             return Stapler.getCurrentRequest().getContextPath()+'/'+itUrl+urlName+'/';
