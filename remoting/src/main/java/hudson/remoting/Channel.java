@@ -569,6 +569,19 @@ public class Channel implements VirtualChannel {
     }
 
     /**
+     * Waits for this {@link Channel} to be closed down, but only up the given milliseconds.
+     *
+     * @throws InterruptedException
+     *      If the current thread is interrupted while waiting for the completion.
+     * @since 1.299
+     */
+    public synchronized void join(long timeout) throws InterruptedException {
+        long start = System.currentTimeMillis();
+        while(System.currentTimeMillis()-start<timeout && (!inClosed || !outClosed))
+            wait(timeout+start-System.currentTimeMillis());
+    }
+
+    /**
      * Notifies the remote peer that we are closing down.
      *
      * Execution of this command also triggers the {@link ReaderThread} to shut down
