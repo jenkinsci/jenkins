@@ -111,13 +111,17 @@ public abstract class SU {
                 return task.call();
 
             String javaExe = System.getProperty("java.home") + "/bin/java";
-            String slaveJar = Which.jarFile(Launcher.class).getAbsolutePath();
+            File slaveJar = Which.jarFile(Launcher.class);
 
             // otherwise first attempt pfexec, as that doesn't require password
             Channel channel;
             Process proc=null;
 
-            ArgumentListBuilder args = new ArgumentListBuilder().add(javaExe, "-jar", slaveJar);
+            ArgumentListBuilder args = new ArgumentListBuilder().add(javaExe);
+            if(slaveJar.isFile())
+                args.add("-jar").add(slaveJar);
+            else // in production code this never happens, but during debugging this is convenient
+                args.add("-cp").add(slaveJar).add(hudson.remoting.Launcher.class.getName());
 
             if(rootPassword==null) {
                 // try sudo, in the hope that the user has the permission to do so without password
