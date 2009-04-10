@@ -95,10 +95,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     public void buildEnvVars(Map<String,String> env) {
         // see EnvVars javadoc for why this adss PATH.
         env.put("PATH+JDK",getBinDir().getPath());
-
         env.put("JAVA_HOME",getJavaHome());
-        if(!env.containsKey("HUDSON_HOME"))
-            env.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath() );
     }
 
     public JDK forNode(Node node) {
