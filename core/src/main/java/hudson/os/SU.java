@@ -76,7 +76,10 @@ public abstract class SU {
                     Process p = pb.start();
                     // TODO: use -p to detect prompt
                     // TODO: detect if the password didn't work
-                    new PrintStream(p.getOutputStream()).println(rootPassword);
+                    PrintStream ps = new PrintStream(p.getOutputStream());
+                    ps.println(rootPassword);
+                    ps.println(rootPassword);
+                    ps.println(rootPassword);
                     return p;
                 }
             }.execute(closure,listener, rootPassword);
