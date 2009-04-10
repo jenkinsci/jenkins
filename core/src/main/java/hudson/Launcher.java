@@ -78,6 +78,13 @@ public abstract class Launcher {
     }
 
     /**
+     * Constructor for a decorator.
+     */
+    protected Launcher(Launcher launcher) {
+        this(launcher.listener, launcher.channel);
+    }
+
+    /**
      * Gets the channel that can be used to run a program remotely.
      *
      * @return
@@ -344,7 +351,7 @@ public abstract class Launcher {
      */
     public final Launcher decorateByPrefix(final String... prefix) {
         final Launcher outer = this;
-        return new Launcher(listener,channel) {
+        return new Launcher(outer) {
             @Override
             public Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
                 return outer.launch(prefix(cmd),env,in,out,workDir);
