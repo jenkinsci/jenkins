@@ -126,6 +126,7 @@ public abstract class SU {
             else // in production code this never happens, but during debugging this is convenientud    
                 args.add("-cp").add(slaveJar).add(hudson.remoting.Launcher.class.getName());
 
+            StreamCopyThread thread=null;
             if(rootPassword==null) {
                 // try sudo, in the hope that the user has the permission to do so without password
                 channel = new LocalLauncher(listener).launchChannel(
@@ -136,7 +137,8 @@ public abstract class SU {
                 proc = sudoWithPass(args);
                 channel = new Channel(args.toStringWithQuote(), Computer.threadPoolForRemoting,
                         proc.getInputStream(), proc.getOutputStream(), listener.getLogger());
-                new StreamCopyThread(args.toStringWithQuote()+" stderr",proc.getErrorStream(),listener.getLogger()).start();
+                thread = new StreamCopyThread(args.toStringWithQuote() + " stderr", proc.getErrorStream(), listener.getLogger());
+                thread.start();
             }
 
             try {
@@ -146,6 +148,8 @@ public abstract class SU {
                 channel.join(3000); // give some time for orderly shutdown, but don't block forever.
                 if(proc!=null)
                     proc.destroy();
+                if(thread!=null)
+                    thread.join();
             }
         }
     }
