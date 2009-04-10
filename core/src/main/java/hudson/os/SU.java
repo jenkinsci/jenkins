@@ -33,6 +33,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
 import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.StreamCopyThread;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 
 import java.io.File;
@@ -69,7 +70,9 @@ public abstract class SU {
                 }
 
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
-                    ProcessBuilder pb = new ProcessBuilder(args.prepend(sudoExe(),"-S").toCommandArray());
+                    args.prepend(sudoExe(),"-S");
+                    listener.getLogger().println("$ "+Util.join(args.toList()," "));
+                    ProcessBuilder pb = new ProcessBuilder(args.toCommandArray());
                     Process p = pb.start();
                     // TODO: use -p to detect prompt
                     // TODO: detect if the password didn't work
@@ -120,7 +123,7 @@ public abstract class SU {
             ArgumentListBuilder args = new ArgumentListBuilder().add(javaExe);
             if(slaveJar.isFile())
                 args.add("-jar").add(slaveJar);
-            else // in production code this never happens, but during debugging this is convenient
+            else // in production code this never happens, but during debugging this is convenientud    
                 args.add("-cp").add(slaveJar).add(hudson.remoting.Launcher.class.getName());
 
             if(rootPassword==null) {
@@ -131,14 +134,16 @@ public abstract class SU {
             } else {
                 // try sudo with the given password. Also run in pfexec so that we can elevate the privileges
                 proc = sudoWithPass(args);
-                channel = new Channel(args.toString(), Computer.threadPoolForRemoting,
+                channel = new Channel(args.toStringWithQuote(), Computer.threadPoolForRemoting,
                         proc.getInputStream(), proc.getOutputStream(), listener.getLogger());
+                new StreamCopyThread(args.toStringWithQuote()+" stderr",proc.getErrorStream(),listener.getLogger()).start();
             }
 
             try {
                 return channel.call(task);
             } finally {
                 channel.close();
+                channel.join(3000); // give some time for orderly shutdown, but don't block forever.
                 if(proc!=null)
                     proc.destroy();
             }
