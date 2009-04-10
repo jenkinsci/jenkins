@@ -58,19 +58,21 @@ public abstract class SU {
     }
 
     public static <V,T extends Throwable> V execute(final TaskListener listener, final String rootUsername, final String rootPassword, Callable<V, T> closure) throws T, IOException, InterruptedException {
-        if(File.pathSeparatorChar==';')
+        if(File.pathSeparatorChar==';') // on Windows
             return closure.call();  // TODO: perhaps use RunAs to run as an Administrator?
         
         String os = Util.fixNull(System.getProperty("os.name"));
         if(os.equals("Linux"))
             return new UnixSu() {
                 protected String sudoExe() {
-                    return "/usr/bin/sudo";
+                    return "sudo";
                 }
 
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     ProcessBuilder pb = new ProcessBuilder(args.prepend(sudoExe(),"-S").toCommandArray());
                     Process p = pb.start();
+                    // TODO: use -p to detect prompt
+                    // TODO: detect if the password didn't work
                     new PrintStream(p.getOutputStream()).println(rootPassword);
                     return p;
                 }
