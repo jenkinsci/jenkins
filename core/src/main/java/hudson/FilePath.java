@@ -465,7 +465,7 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Given a tgz file, extracts it to the given target directory, if necessary.
+     * Given a tgz/zip file, extracts it to the given target directory, if necessary.
      *
      * <p>
      * This method is a convenience method designed for installing a binary package to a location
@@ -474,12 +474,12 @@ public final class FilePath implements Serializable {
      * <ul>
      * <li>If the target directory doesn't exit {@linkplain #mkdirs() it'll be created}.
      * <li>The timestamp of the .tgz file is left in the installation directory upon extraction.
-     * <li>If the timestamp left in the directory doesn't match with the timestamp of the current .tgz file,
-     *     the directory contents will be discarded and the tgz file will be re-extracted.
+     * <li>If the timestamp left in the directory doesn't match with the timestamp of the current archive file,
+     *     the directory contents will be discarded and the archive file will be re-extracted.
      * </ul>
      *
-     * @param tgz
-     *      The resource that represents the tgz file. This URL must support the "Last-Modified" header.
+     * @param archive
+     *      The resource that represents the tgz/zip file. This URL must support the "Last-Modified" header.
      *      (Most common usage is to get this from {@link ClassLoader#getResource(String)})
      * @param listener
      *      If non-null, a message will be printed to this listener once this method decides to
@@ -489,8 +489,8 @@ public final class FilePath implements Serializable {
      *      was considered up to date.
      * @since 1.299
      */
-    public boolean installIfNecessaryFrom(URL tgz, TaskListener listener, String message) throws IOException, InterruptedException {
-        URLConnection con = tgz.openConnection();
+    public boolean installIfNecessaryFrom(URL archive, TaskListener listener, String message) throws IOException, InterruptedException {
+        URLConnection con = archive.openConnection();
         long sourceTimestamp = con.getLastModified();
         FilePath timestamp = this.child(".timestamp");
 
@@ -502,7 +502,10 @@ public final class FilePath implements Serializable {
 
         if(listener!=null)
             listener.getLogger().println(message);
-        untarFrom(con.getInputStream(),GZIP);
+        if(archive.toExternalForm().endsWith(".zip"))
+            unzipFrom(con.getInputStream());
+        else
+            untarFrom(con.getInputStream(),GZIP);
         timestamp.touch(sourceTimestamp);
         return true;
     }
