@@ -57,12 +57,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Enumeration;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.LogRecord;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.nio.charset.Charset;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 
 /**
  * Represents the running state of a remote computer that holds {@link Executor}s.
@@ -552,6 +557,55 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
         return RemotingDiagnostics.getThreadDump(getChannel());
     }
 
+    /**
+     * This method tries to compute the name of the host that's reachable by all the other nodes.
+     *
+     * <p>
+     * Since it's possible that the slave is not reachable from the master (it may be behind a firewall,
+     * connecting to master via JNLP), in which case this method returns null.
+     *
+     * It's surprisingly tricky for a machine to know a name that other systems can get to,
+     * especially between things like DNS search suffix, the hosts file, and YP.
+     *
+     * <p>
+     * So the technique here is to compute possible interfaces and names on the slave,
+     * then try to ping them from the master, and pick the one that worked.
+     *
+     * @since 1.300
+     */
+    public String getHostName() throws IOException, InterruptedException {
+        for( String address : getChannel().call(new ListPossibleNames())) {
+            try {
+                InetAddress ia = InetAddress.getByName(address);
+                if(ia.isReachable(500))
+                    return ia.getCanonicalHostName();
+            } catch (IOException e) {
+                // if a given name fails to parse on this host, we get this error
+                LOGGER.log(Level.FINE, "Failed to parse "+address,e);
+            }
+        }
+        return null;
+    }
+
+    private static class ListPossibleNames implements Callable<List<String>,IOException> {
+        public List<String> call() throws IOException {
+            List<String> names = new ArrayList<String>();
+
+            Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
+            while (nis.hasMoreElements()) {
+                NetworkInterface ni =  nis.nextElement();
+                Enumeration<InetAddress> e = ni.getInetAddresses();
+                while (e.hasMoreElements()) {
+                    InetAddress ia =  e.nextElement();
+                    if(ia.isLoopbackAddress())  continue;
+                    names.add(ia.getHostAddress());
+                }
+            }
+            return names;
+        }
+        private static final long serialVersionUID = 1L;
+    }
+
     public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new DaemonThreadFactory()));
 
 //
@@ -718,5 +772,5 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
     public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._Computer_ConfigurePermission_Description(), Permission.CONFIGURE);
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._Computer_DeletePermission_Description(), Permission.DELETE);
 
-
+    private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
 }
