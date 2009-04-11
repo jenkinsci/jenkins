@@ -42,6 +42,7 @@ import hudson.util.HeadBufferingStream;
 import hudson.util.FormValidation;
 import hudson.util.jna.GNUCLibrary;
 import static hudson.Util.fixEmpty;
+import static hudson.FilePath.TarCompression.GZIP;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -73,6 +74,7 @@ import java.io.Writer;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -463,6 +465,49 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Given a tgz file, extracts it to the given target directory, if necessary.
+     *
+     * <p>
+     * This method is a convenience method designed for installing a binary package to a location
+     * that supports upgrade and downgrade. Specifically,
+     *
+     * <ul>
+     * <li>If the target directory doesn't exit {@linkplain #mkdirs() it'll be created}.
+     * <li>The timestamp of the .tgz file is left in the installation directory upon extraction.
+     * <li>If the timestamp left in the directory doesn't match with the timestamp of the current .tgz file,
+     *     the directory contents will be discarded and the tgz file will be re-extracted.
+     * </ul>
+     *
+     * @param tgz
+     *      The resource that represents the tgz file. This URL must support the "Last-Modified" header.
+     *      (Most common usage is to get this from {@link ClassLoader#getResource(String)})
+     * @param listener
+     *      If non-null, a message will be printed to this listener once this method decides to
+     *      extract an archive.
+     * @return
+     *      true if the archive was extracted. false if the extraction was skipped because the target directory
+     *      was considered up to date.
+     * @since 1.299
+     */
+    public boolean installIfNecessaryFrom(URL tgz, TaskListener listener, String message) throws IOException, InterruptedException {
+        URLConnection con = tgz.openConnection();
+        long sourceTimestamp = con.getLastModified();
+        FilePath timestamp = this.child(".timestamp");
+
+        if(this.exists()) {
+            if(timestamp.exists() && sourceTimestamp ==timestamp.lastModified())
+                return false;   // already up to date
+            this.deleteContents();
+        }
+
+        if(listener!=null)
+            listener.getLogger().println(message);
+        untarFrom(con.getInputStream(),GZIP);
+        timestamp.touch(sourceTimestamp);
+        return true;
+    }
+
+    /**
      * Reads the URL on the current VM, and writes all the data to this {@link FilePath}
      * (this is different from resolving URL remotely.)
      *
@@ -765,11 +810,29 @@ public final class FilePath implements Serializable {
      * of the machine where this file actually resides.
      *
      * @see File#lastModified()
+     * @see #touch(long)
      */
     public long lastModified() throws IOException, InterruptedException {
         return act(new FileCallable<Long>() {
             public Long invoke(File f, VirtualChannel channel) throws IOException {
                 return f.lastModified();
+            }
+        });
+    }
+
+    /**
+     * Creates a file (if not already exist) and sets the timestamp.
+     *
+     * @since 1.299
+     */
+    public void touch(final long timestamp) throws IOException, InterruptedException {
+        act(new FileCallable<Void>() {
+            public Void invoke(File f, VirtualChannel channel) throws IOException {
+                if(!f.exists())
+                    new FileOutputStream(f).close();
+                if(!f.setLastModified(timestamp))
+                    throw new IOException("Failed to set the timestamp of "+f+" to "+timestamp);
+                return null;
             }
         });
     }
