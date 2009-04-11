@@ -899,7 +899,7 @@ public final class FilePath implements Serializable {
      * List up files in this directory that matches the given Ant-style filter.
      *
      * @param includes
-     *      See {@link FileSet} for the syntax. String like "foo/*.zip".
+     *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @return
      *      can be empty but always non-null.
      */
