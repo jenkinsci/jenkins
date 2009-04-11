@@ -20,7 +20,7 @@ public class ChoiceParameterDefinition extends ParameterDefinition {
     public ChoiceParameterDefinition(String name, String choices, String description) {
         super(name, description);
         this.choices = Arrays.asList(choices.split("\\r?\\n"));
-        if (choices.isEmpty()) {
+        if (choices.length()==0) {
             throw new IllegalArgumentException("No choices found");
         }
     }
