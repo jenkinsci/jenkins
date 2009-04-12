@@ -119,9 +119,9 @@ public class Channels {
 
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add(new File(System.getProperty("java.home"),"bin/java"));
-        args.add("-jar").add(Which.jarFile(Channel.class));
         if(systemProperties!=null)
             args.addKeyValuePairs("-D",systemProperties);
+        args.add("-jar").add(Which.jarFile(Channel.class));
 
         // build up a classpath
         if(classpath!=null)
