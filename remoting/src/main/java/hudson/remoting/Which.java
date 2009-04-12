@@ -34,6 +34,9 @@ import java.net.URLConnection;
 import java.net.JarURLConnection;
 import java.lang.reflect.Field;
 import java.util.zip.ZipFile;
+import java.util.jar.JarFile;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Locates where a given class is loaded from.
@@ -71,9 +74,7 @@ public class Which {
         URL res = jarURL(clazz);
         String resURL = res.toExternalForm();
         String originalURL = resURL;
-        if(resURL.startsWith("jar:"))
-            return fromJarUrlToFile(resURL);
-        if(resURL.startsWith("wsjar:"))
+        if(resURL.startsWith("jar:file:") || resURL.startsWith("wsjar:file:"))
             return fromJarUrlToFile(resURL);
 
         if(resURL.startsWith("code-source:/")) {
@@ -123,9 +124,22 @@ public class Which {
         URLConnection con = res.openConnection();
         if (con instanceof JarURLConnection) {
             JarURLConnection jcon = (JarURLConnection) con;
-            String n = jcon.getJarFile().getName();
+            JarFile jarFile = jcon.getJarFile();
+            String n = jarFile.getName();
             if(n.length()>0) {// JDK6u10 needs this
                 return new File(n);
+            } else {
+                // JDK6u10 apparently starts hiding the real jar file name,
+                // so this just keeps getting tricker and trickier...
+                try {
+                    Field f = ZipFile.class.getDeclaredField("name");
+                    f.setAccessible(true);
+                    return new File((String) f.get(jarFile));
+                } catch (NoSuchFieldException e) {
+                    LOGGER.log(Level.INFO, "Failed to obtain the local cache file name of "+clazz, e);
+                } catch (IllegalAccessException e) {
+                    LOGGER.log(Level.INFO, "Failed to obtain the local cache file name of "+clazz, e);
+                }
             }
         }
 
@@ -165,4 +179,6 @@ public class Which {
     private static int hexToInt(int ch) {
         return Character.getNumericValue(ch);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(Which.class.getName());
 }
