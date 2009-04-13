@@ -514,6 +514,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         // load plugins.
         pluginManager = new PluginManager(context);
+        pluginManager.initialize();
 
         // if we are loading old data that doesn't have this field
         if(slaves==null)    slaves = new NodeList();

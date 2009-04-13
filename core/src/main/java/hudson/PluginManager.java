@@ -158,18 +158,25 @@ public final class PluginManager extends AbstractModelObject {
                 activePlugins.remove(p);
                 plugins.remove(p);
             }
+    }
 
-		for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
-			strategy.initializeComponents(p);
+    /**
+     * Called immediately after the construction.
+     * This is a separate method so that code executed from here will see a valid value in
+     * {@link Hudson#pluginManager}. 
+     */
+    public void initialize() {
+        for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
+            strategy.initializeComponents(p);
             try {
                 p.getPlugin().postInitialize();
             } catch (Exception e) {
-                failedPlugins.add(new FailedPlugin(p.getShortName(),e));
+                failedPlugins.add(new FailedPlugin(p.getShortName(), e));
                 LOGGER.log(Level.SEVERE, "Failed to post-initialize a plug-in " + p.getShortName(), e);
                 activePlugins.remove(p);
                 plugins.remove(p);
             }
-		}
+        }
     }
 
     /**
