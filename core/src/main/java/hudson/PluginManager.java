@@ -161,6 +161,14 @@ public final class PluginManager extends AbstractModelObject {
 
 		for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
 			strategy.initializeComponents(p);
+            try {
+                p.getPlugin().postInitialize();
+            } catch (Exception e) {
+                failedPlugins.add(new FailedPlugin(p.getShortName(),e));
+                LOGGER.log(Level.SEVERE, "Failed to post-initialize a plug-in " + p.getShortName(), e);
+                activePlugins.remove(p);
+                plugins.remove(p);
+            }
 		}
     }
 
@@ -440,9 +448,9 @@ public final class PluginManager extends AbstractModelObject {
      */
     public static final class FailedPlugin {
         public final String name;
-        public final IOException cause;
+        public final Exception cause;
 
-        public FailedPlugin(String name, IOException cause) {
+        public FailedPlugin(String name, Exception cause) {
             this.name = name;
             this.cause = cause;
         }

@@ -105,16 +105,27 @@ public abstract class Plugin implements Saveable {
      *
      * <p>
      * If a plugin wants to run an initialization step after all plugins and extension points
-     * are registered, a good place to do that is {@link ItemListener#onLoaded()}
+     * are registered, a good place to do that is {@link #postInitialize()}.
+     * If a plugin wants to run an initialization step after all the jobs are loaded,
+     * {@link ItemListener#onLoaded()} is a good place.
      *
      * @throws Exception
      *      any exception thrown by the plugin during the initialization will disable plugin.
      *
      * @since 1.42
      * @see ExtensionPoint
+     * @see #postInitialize()
      */
     public void start() throws Exception {
     }
+
+    /**
+     * Called after {@link #start()} is called for all the plugins.
+     *
+     * @throws Exception
+     *      any exception thrown by the plugin during the initialization will disable plugin.
+     */
+    public void postInitialize() throws Exception {}
 
     /**
      * Called to orderly shut down Hudson.
