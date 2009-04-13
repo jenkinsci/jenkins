@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
+import java.util.concurrent.Future;
 
 /**
  * Executes {@link Callable} as the super user, by forking a new process and executing the closure in there
@@ -58,9 +59,50 @@ public abstract class SU {
     private SU() { // not meant to be instantiated
     }
 
-    public static <V,T extends Throwable> V execute(final TaskListener listener, final String rootUsername, final String rootPassword, Callable<V, T> closure) throws T, IOException, InterruptedException {
+    private interface Actor<V,T extends Throwable> {
+        V actHere() throws T;
+        V actThere(Channel ch) throws T, IOException, InterruptedException;
+    }
+
+    public static <V,T extends Throwable> V execute(TaskListener listener, String rootUsername, String rootPassword, final Callable<V, T> closure) throws T, IOException, InterruptedException {
+        return _execute(listener,rootUsername,rootPassword,new Actor<V,T>() {
+            public V actHere() throws T {
+                return closure.call();
+            }
+
+            public V actThere(Channel ch) throws T, IOException, InterruptedException {
+                return ch.call(closure);
+            }
+        });
+    }
+
+    public static <V,T extends Throwable> Future<V> executeAsync(TaskListener listener, String rootUsername, String rootPassword, final Callable<V, T> closure) throws T, IOException, InterruptedException {
+        return _execute(listener,rootUsername,rootPassword,new Actor<Future<V>,T>() {
+            public Future<V> actHere() throws T {
+                return Computer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<V>() {
+                    public V call() throws Exception {
+                        try {
+                            return closure.call();
+                        } catch (Exception e) {
+                            throw e;
+                        } catch (Error e) {
+                            throw e;
+                        } catch (Throwable t) {
+                            throw new Error(t);
+                        }
+                    }
+                });
+            }
+
+            public Future<V> actThere(Channel ch) throws T, IOException, InterruptedException {
+                return ch.callAsync(closure);
+            }
+        });
+    }
+
+    private static <V,T extends Throwable> V _execute(final TaskListener listener, final String rootUsername, final String rootPassword, Actor<V,T> closure) throws T, IOException, InterruptedException {
         if(File.pathSeparatorChar==';') // on Windows
-            return closure.call();  // TODO: perhaps use RunAs to run as an Administrator?
+            return closure.actHere();  // TODO: perhaps use RunAs to run as an Administrator?
         
         String os = Util.fixNull(System.getProperty("os.name"));
         if(os.equals("Linux"))
@@ -100,7 +142,7 @@ public abstract class SU {
         // TODO: Mac?
         
         // unsupported platform, take a chance
-        return closure.call();
+        return closure.actHere();
     }
 
     private static abstract class UnixSu {
@@ -110,11 +152,11 @@ public abstract class SU {
         protected abstract Process sudoWithPass(ArgumentListBuilder args) throws IOException;
 
         <V,T extends Throwable>
-        V execute(Callable<V, T> task, TaskListener listener, String rootPassword) throws T, IOException, InterruptedException {
+        V execute(Actor<V, T> task, TaskListener listener, String rootPassword) throws T, IOException, InterruptedException {
             final int uid = LIBC.geteuid();
 
             if(uid==0)  // already running as root
-                return task.call();
+                return task.actHere();
 
             String javaExe = System.getProperty("java.home") + "/bin/java";
             File slaveJar = Which.jarFile(Launcher.class);
@@ -145,7 +187,7 @@ public abstract class SU {
             }
 
             try {
-                return channel.call(task);
+                return task.actThere(channel);
             } finally {
                 channel.close();
                 channel.join(3000); // give some time for orderly shutdown, but don't block forever.
