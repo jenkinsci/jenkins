@@ -87,6 +87,14 @@ public class LocalChannel implements VirtualChannel {
         // noop
     }
 
+    public void join() throws InterruptedException {
+        // noop
+    }
+
+    public void join(long timeout) throws InterruptedException {
+        // noop
+    }
+
     public <T> T export(Class<T> intf, T instance) {
         return instance;
     }

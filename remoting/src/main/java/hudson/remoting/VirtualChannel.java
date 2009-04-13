@@ -69,6 +69,26 @@ public interface VirtualChannel {
     void close() throws IOException;
 
     /**
+     * Waits for this {@link Channel} to be closed down.
+     *
+     * The close-down of a {@link Channel} might be initiated locally or remotely.
+     *
+     * @throws InterruptedException
+     *      If the current thread is interrupted while waiting for the completion.
+     * @since 1.300
+     */
+    public void join() throws InterruptedException;
+
+    /**
+     * Waits for this {@link Channel} to be closed down, but only up the given milliseconds.
+     *
+     * @throws InterruptedException
+     *      If the current thread is interrupted while waiting for the completion.
+     * @since 1.300
+     */
+    public void join(long timeout) throws InterruptedException;
+
+    /**
      * Exports an object for remoting to the other {@link Channel}
      * by creating a remotable proxy.
      *

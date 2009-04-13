@@ -32,6 +32,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ClasspathBuilder;
+import hudson.util.StreamCopyThread;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -54,11 +55,19 @@ import java.util.logging.Logger;
  */
 public class Channels {
     /**
+     * @deprecated
+     *      Use {@link #forProcess(String, ExecutorService, InputStream, OutputStream, OutputStream, Proc)}
+     */
+    public static Channel forProcess(String name, ExecutorService execService, InputStream in, OutputStream out, Proc proc) throws IOException {
+        return forProcess(name,execService,in,out,null,proc);
+    }
+
+    /**
      * Creates a channel that wraps a remote process, so that when we shut down the connection
      * we kill the process.
      */
-    public static Channel forProcess(String name, ExecutorService execService, InputStream in, OutputStream out, final Proc proc) throws IOException {
-        return new Channel(name, execService, in, out) {
+    public static Channel forProcess(String name, ExecutorService execService, InputStream in, OutputStream out, OutputStream header, final Proc proc) throws IOException {
+        return new Channel(name, execService, in, out, header) {
             /**
              * Kill the process when the channel is severed.
              */
@@ -80,6 +89,34 @@ public class Channels {
                 // wait for Maven to complete
                 try {
                     proc.join();
+                } catch (InterruptedException e) {
+                    // process the interrupt later
+                    Thread.currentThread().interrupt();
+                }
+            }
+        };
+    }
+
+    public static Channel forProcess(String name, ExecutorService execService, final Process proc, OutputStream header) throws IOException {
+        final Thread thread = new StreamCopyThread(name + " stderr", proc.getErrorStream(), header);
+        thread.start();
+
+        return new Channel(name, execService, proc.getInputStream(), proc.getOutputStream(), header) {
+            /**
+             * Kill the process when the channel is severed.
+             */
+            protected synchronized void terminate(IOException e) {
+                super.terminate(e);
+                proc.destroy();
+                // the stderr copier should exit by itself
+            }
+
+            public synchronized void close() throws IOException {
+                super.close();
+                // wait for Maven to complete
+                try {
+                    proc.waitFor();
+                    thread.join();
                 } catch (InterruptedException e) {
                     // process the interrupt later
                     Thread.currentThread().interrupt();

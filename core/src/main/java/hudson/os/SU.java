@@ -29,18 +29,18 @@ import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
-import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
+import hudson.remoting.LocalChannel;
+import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
+import hudson.slaves.Channels;
 import hudson.util.ArgumentListBuilder;
-import hudson.util.StreamCopyThread;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
-import java.util.concurrent.Future;
 
 /**
  * Executes {@link Callable} as the super user, by forking a new process and executing the closure in there
@@ -51,7 +51,7 @@ import java.util.concurrent.Future;
  * in the non-root privilege, so the closure should expect that and handle it gracefully.
  *
  * <p>
- * Still very much experimental. Subject to change.
+ * Still very much experimental. Subject to change. <b>Don't use it.</b>
  *
  * @author Kohsuke Kawaguchi
  */
@@ -59,54 +59,17 @@ public abstract class SU {
     private SU() { // not meant to be instantiated
     }
 
-    private interface Actor<V,T extends Throwable> {
-        V actHere() throws T;
-        V actThere(Channel ch) throws T, IOException, InterruptedException;
-    }
-
-    public static <V,T extends Throwable> V execute(TaskListener listener, String rootUsername, String rootPassword, final Callable<V, T> closure) throws T, IOException, InterruptedException {
-        return _execute(listener,rootUsername,rootPassword,new Actor<V,T>() {
-            public V actHere() throws T {
-                return closure.call();
-            }
-
-            public V actThere(Channel ch) throws T, IOException, InterruptedException {
-                return ch.call(closure);
-            }
-        });
-    }
-
     /**
-     * Executes the closure asynchronously.
+     * Returns a {@link VirtualChannel} that's connected to the priviledge-escalated environment.
+     *
+     * @return
+     *      Never null. This may represent a channel to a separate JVM, or just {@link LocalChannel}.
+     *      Close this channel and the SU environment will be shut down.
      */
-    public static <V,T extends Throwable> Future<V> executeAsync(TaskListener listener, String rootUsername, String rootPassword, final Callable<V, T> closure) throws IOException, InterruptedException {
-        return _execute(listener,rootUsername,rootPassword,new Actor<Future<V>,IOException>() {
-            public Future<V> actHere() {
-                return Computer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<V>() {
-                    public V call() throws Exception {
-                        try {
-                            return closure.call();
-                        } catch (Exception e) {
-                            throw e;
-                        } catch (Error e) {
-                            throw e;
-                        } catch (Throwable t) {
-                            throw new Error(t);
-                        }
-                    }
-                });
-            }
-
-            public Future<V> actThere(Channel ch) throws IOException, InterruptedException {
-                return ch.callAsync(closure);
-            }
-        });
-    }
-
-    private static <V,T extends Throwable> V _execute(final TaskListener listener, final String rootUsername, final String rootPassword, Actor<V,T> closure) throws T, IOException, InterruptedException {
+    public static VirtualChannel start(final TaskListener listener, final String rootUsername, final String rootPassword) throws IOException, InterruptedException {
         if(File.pathSeparatorChar==';') // on Windows
-            return closure.actHere();  // TODO: perhaps use RunAs to run as an Administrator?
-        
+            return newLocalChannel();  // TODO: perhaps use RunAs to run as an Administrator?
+
         String os = Util.fixNull(System.getProperty("os.name"));
         if(os.equals("Linux"))
             return new UnixSu() {
@@ -127,7 +90,7 @@ public abstract class SU {
                     ps.println(rootPassword);
                     return p;
                 }
-            }.execute(closure,listener, rootPassword);
+            }.start(listener,rootPassword);
 
         if(os.equals("SunOS"))
             return new UnixSu() {
@@ -140,12 +103,29 @@ public abstract class SU {
                     ProcessBuilder pb = new ProcessBuilder(args.prepend(sudoExe()).toCommandArray());
                     return EmbeddedSu.startWithSu(rootUsername, rootPassword, pb);
                 }
-            }.execute(closure,listener, rootPassword);
+            }.start(listener,rootPassword);
 
         // TODO: Mac?
-        
+
         // unsupported platform, take a chance
-        return closure.actHere();
+        return newLocalChannel();
+    }
+
+    private static LocalChannel newLocalChannel() {
+        return new LocalChannel(Computer.threadPoolForRemoting);
+    }
+
+    /**
+     * Starts a new priviledge-escalated environment, execute a closure, and shut it down.
+     */
+    public static <V,T extends Throwable> V execute(TaskListener listener, String rootUsername, String rootPassword, final Callable<V, T> closure) throws T, IOException, InterruptedException {
+        VirtualChannel ch = start(listener, rootUsername, rootPassword);
+        try {
+            return ch.call(closure);
+        } finally {
+            ch.close();
+            ch.join(3000); // give some time for orderly shutdown, but don't block forever.
+        }
     }
 
     private static abstract class UnixSu {
@@ -154,19 +134,14 @@ public abstract class SU {
 
         protected abstract Process sudoWithPass(ArgumentListBuilder args) throws IOException;
 
-        <V,T extends Throwable>
-        V execute(Actor<V, T> task, TaskListener listener, String rootPassword) throws T, IOException, InterruptedException {
+        VirtualChannel start(TaskListener listener, String rootPassword) throws IOException, InterruptedException {
             final int uid = LIBC.geteuid();
 
             if(uid==0)  // already running as root
-                return task.actHere();
+                return newLocalChannel();
 
             String javaExe = System.getProperty("java.home") + "/bin/java";
             File slaveJar = Which.jarFile(Launcher.class);
-
-            // otherwise first attempt pfexec, as that doesn't require password
-            Channel channel;
-            Process proc=null;
 
             ArgumentListBuilder args = new ArgumentListBuilder().add(javaExe);
             if(slaveJar.isFile())
@@ -174,30 +149,16 @@ public abstract class SU {
             else // in production code this never happens, but during debugging this is convenientud    
                 args.add("-cp").add(slaveJar).add(hudson.remoting.Launcher.class.getName());
 
-            StreamCopyThread thread=null;
             if(rootPassword==null) {
                 // try sudo, in the hope that the user has the permission to do so without password
-                channel = new LocalLauncher(listener).launchChannel(
+                return new LocalLauncher(listener).launchChannel(
                         args.prepend(sudoExe()).toCommandArray(),
                         listener.getLogger(), null, Collections.<String, String>emptyMap());
             } else {
                 // try sudo with the given password. Also run in pfexec so that we can elevate the privileges
-                proc = sudoWithPass(args);
-                channel = new Channel(args.toStringWithQuote(), Computer.threadPoolForRemoting,
-                        proc.getInputStream(), proc.getOutputStream(), listener.getLogger());
-                thread = new StreamCopyThread(args.toStringWithQuote() + " stderr", proc.getErrorStream(), listener.getLogger());
-                thread.start();
-            }
-
-            try {
-                return task.actThere(channel);
-            } finally {
-                channel.close();
-                channel.join(3000); // give some time for orderly shutdown, but don't block forever.
-                if(proc!=null)
-                    proc.destroy();
-                if(thread!=null)
-                    thread.join();
+                Process proc = sudoWithPass(args);
+                return Channels.forProcess(args.toStringWithQuote(), Computer.threadPoolForRemoting, proc,
+                        listener.getLogger() );
             }
         }
     }
