@@ -76,9 +76,12 @@ public abstract class SU {
         });
     }
 
-    public static <V,T extends Throwable> Future<V> executeAsync(TaskListener listener, String rootUsername, String rootPassword, final Callable<V, T> closure) throws T, IOException, InterruptedException {
-        return _execute(listener,rootUsername,rootPassword,new Actor<Future<V>,T>() {
-            public Future<V> actHere() throws T {
+    /**
+     * Executes the closure asynchronously.
+     */
+    public static <V,T extends Throwable> Future<V> executeAsync(TaskListener listener, String rootUsername, String rootPassword, final Callable<V, T> closure) throws IOException, InterruptedException {
+        return _execute(listener,rootUsername,rootPassword,new Actor<Future<V>,IOException>() {
+            public Future<V> actHere() {
                 return Computer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<V>() {
                     public V call() throws Exception {
                         try {
@@ -94,7 +97,7 @@ public abstract class SU {
                 });
             }
 
-            public Future<V> actThere(Channel ch) throws T, IOException, InterruptedException {
+            public Future<V> actThere(Channel ch) throws IOException, InterruptedException {
                 return ch.callAsync(closure);
             }
         });
