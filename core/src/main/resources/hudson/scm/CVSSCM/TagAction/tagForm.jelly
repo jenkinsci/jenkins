@@ -102,7 +102,7 @@ THE SOFTWARE.
                   </td>
                   <td class="pane">
                     <j:set var="tag" value="${up.key.getBuildByNumber(up.value).getAction(it.getClass()).tagName}" />
-                    ${tag?:'Not tagged')}
+                    ${tag?:'Not tagged'}
                   </td>
                 </tr>
               </j:forEach>
