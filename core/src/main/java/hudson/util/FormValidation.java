@@ -26,9 +26,13 @@ package hudson.util;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.FilePath;
+import hudson.Launcher;
+import hudson.tasks.Builder;
 import hudson.scm.CVSSCM;
 import static hudson.Util.fixEmpty;
 import hudson.model.Hudson;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -58,10 +62,40 @@ import java.net.URLConnection;
  * <p>
  * Also see {@link CVSSCM.DescriptorImpl#doCheckCvsRoot(String)} as an example.
  *
+ * <p>
+ * This class extends {@link IOException} so that it can be thrown from a method. This allows one to reuse
+ * the checking logic as a part of the real computation, such as:
+ *
+ * <pre>
+ * String getAntVersion(File antHome) throws FormValidation {
+ *    if(!antHome.isDirectory())
+ *        throw FormValidation.error(antHome+" doesn't look like a home directory");
+ *    ...
+ *    return IOUtils.toString(new File(antHome,"version"));
+ * }
+ *
+ * ...
+ *
+ * public FormValidation doCheckAntVersion(@QueryParameter String f) {
+ *     try {
+ *         return ok(getAntVersion(new File(f)));
+ *     } catch (FormValidation f) {
+ *         return f;
+ *     }
+ * }
+ *
+ * ...
+ *
+ * public void {@linkplain Builder#perform(AbstractBuild, Launcher, BuildListener) perform}(...) {
+ *     String version = getAntVersin(antHome);
+ *     ...
+ * }
+ * </pre>
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.294
  */
-public abstract class FormValidation implements HttpResponse {
+public abstract class FormValidation extends IOException implements HttpResponse {
     /**
      * Indicates the kind of result.
      */
