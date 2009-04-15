@@ -113,7 +113,8 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
             LOGGER.log(Level.WARNING, "Failed to detect whether Hudson is on ZFS",e);
             return false;
         } catch (LinkageError e) {
-            LOGGER.log(Level.INFO, "No ZFS available",e);
+            LOGGER.info("No ZFS available. If you believe this is an error, increase the logging level to get the stack trace");
+            LOGGER.log(Level.FINE,"Stack trace of failed ZFS load",e);
             return false;
         }
     }
