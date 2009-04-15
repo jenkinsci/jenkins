@@ -32,6 +32,8 @@ import hudson.util.FormValidation;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.AncestorInPath;
 
 import javax.servlet.ServletException;
@@ -138,8 +140,8 @@ public class JavadocArchiver extends Recorder {
         /**
          * Serves javadoc.
          */
-        public DirectoryBrowserSupport doDynamic() {
-            return new DirectoryBrowserSupport(this, new FilePath(dir()), getTitle(), "help.gif", false);
+        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            new DirectoryBrowserSupport(this, new FilePath(dir()), getTitle(), "help.gif", false).generateResponse(req,rsp,this);
         }
 
         protected abstract String getTitle();

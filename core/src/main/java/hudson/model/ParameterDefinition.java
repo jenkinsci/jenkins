@@ -23,15 +23,16 @@
  */
 package hudson.model;
 
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.ExtensionPoint;
+import hudson.util.DescriptorList;
+
+import java.io.Serializable;
+
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
-
-import hudson.util.DescriptorList;
-import hudson.ExtensionPoint;
-import hudson.DescriptorExtensionList;
-import hudson.Extension;
-import hudson.views.ListViewColumn;
 
 /**
  * Defines a parameter for a build.
@@ -88,7 +89,7 @@ import hudson.views.ListViewColumn;
  * @see StringParameterDefinition
  */
 public abstract class ParameterDefinition implements
-        Describable<ParameterDefinition>, ExtensionPoint {
+        Describable<ParameterDefinition>, ExtensionPoint, Serializable {
 
     private final String name;
     private final String description;

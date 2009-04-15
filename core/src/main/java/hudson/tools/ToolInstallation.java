@@ -55,7 +55,7 @@ import java.io.Serializable;
  *
  * <p>
  * Implementations of this class are strongly encouraged to also implement {@link NodeSpecific}
- * (by using {@link ToolLocationNodeProperty#getToolHome(Node, ToolInstallation)}) and
+ * (by using {@link #translateFor(Node)}) and
  * {@link EnvironmentSpecific} (by using {@link EnvVars#expand(String)}.)
  *
  * <p>
@@ -93,6 +93,21 @@ public abstract class ToolInstallation implements Serializable, Describable<Tool
 
     public ToolDescriptor<?> getDescriptor() {
         return (ToolDescriptor) Hudson.getInstance().getDescriptor(getClass());
+    }
+
+    /**
+     * Checks if the location of the tool is overridden for the given node, and if so,
+     * return the node-specific home directory. Otherwise return {@code installation.getHome()}
+     *
+     * <p>
+     * This is the core logic behind {@link NodeSpecific#forNode(Node)} for {@link ToolInstallation},
+     * and meant to be used by the {@code forNode} implementations.
+     *
+     * @return
+     *      never null.
+     */
+    protected String translateFor(Node node) {
+        return ToolLocationNodeProperty.getToolHome(node,this);
     }
 
     /**

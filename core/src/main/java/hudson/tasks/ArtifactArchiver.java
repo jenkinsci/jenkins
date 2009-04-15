@@ -96,6 +96,7 @@ public class ArtifactArchiver extends Recorder {
         File dir = build.getArtifactsDir();
         dir.mkdirs();
 
+        listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
         try {
             FilePath ws = p.getWorkspace();
             if (ws==null) { // #3330: slave down?

@@ -31,7 +31,7 @@ import hudson.ExtensionPoint;
  *
  * <p>
  * {@link Recorder} is a kind of {@link Publisher} that collects statistics from the build,
- * and can mark builds as untable/failure. This marking ensures that builds are marked accordingly
+ * and can mark builds as unstable/failure. This marking ensures that builds are marked accordingly
  * before notifications are sent via {@link Notifier}s. Otherwise, if the build is marked failed
  * after some notifications are sent, inconsistency ensues.
  *

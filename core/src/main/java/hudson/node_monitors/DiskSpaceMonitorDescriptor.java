@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import java.math.BigDecimal;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * {@link AbstractNodeMonitorDescriptor} for {@link NodeMonitor} that checks a free disk space of some directory.
@@ -44,7 +45,8 @@ import java.math.BigDecimal;
 /*package*/ abstract class DiskSpaceMonitorDescriptor extends AbstractNodeMonitorDescriptor<DiskSpace> {
     /**
      * Value object that represents the disk space.
-      */
+     */
+    @ExportedBean
     public static final class DiskSpace implements Serializable {
         public final long size;
 

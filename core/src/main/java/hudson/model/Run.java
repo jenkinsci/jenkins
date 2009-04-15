@@ -1286,6 +1286,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         String rootUrl = Hudson.getInstance().getRootUrl();
         if(rootUrl!=null)
             env.put("HUDSON_URL", rootUrl);
+        if(!env.containsKey("HUDSON_HOME"))
+            env.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath() );
 
         Thread t = Thread.currentThread();
         if (t instanceof Executor) {

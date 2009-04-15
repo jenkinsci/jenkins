@@ -443,7 +443,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 return '/'+name;
             clazz = clazz.getSuperclass();
         }
-        return "none";
+        // We didn't find the configuration page.
+        // Either this is non-fatal, in which case it doesn't matter what string we return so long as
+        // it doesn't exist.
+        // Or this error is fatal, in which case we want the developer to see what page he's missing.
+        // so we put the page name.
+        return pageName;
     }
 
 

@@ -46,6 +46,9 @@ import java.util.Formatter;
  * shall be written to a {@link TaskListener} so that the user can diagnose
  * what's going wrong.
  *
+ * <p>
+ * {@link StreamTaskListener} is the most typical implementation of this interface.
+ *
  * @author Kohsuke Kawaguchi
  */
 public interface TaskListener {

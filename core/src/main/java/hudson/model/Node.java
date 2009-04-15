@@ -93,6 +93,9 @@ public abstract class Node extends AbstractModelObject implements Describable<No
 
     /**
      * Returns a {@link Launcher} for executing programs on this node.
+     *
+     * <p>
+     * The callee must call {@link Launcher#decorateFor(Node)} before returning to complete the decoration. 
      */
     public abstract Launcher createLauncher(TaskListener listener);
 

@@ -347,7 +347,7 @@ public class Launcher {
         Channel channel = new Channel("channel", executor, mode, is, os);
         System.err.println("channel started");
         if(performPing) {
-            System.err.println("Starting periodic ping thread");
+//            System.err.println("Starting periodic ping thread");
             new PingThread(channel) {
                 @Override
                 protected void onDead() {

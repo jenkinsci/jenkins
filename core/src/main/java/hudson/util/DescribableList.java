@@ -225,7 +225,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * is allowed to create multiple instances of the same descriptor. Order is also
      * significant.
      */
-    public void rebuildHetero(StaplerRequest req, JSONObject formData, Collection<Descriptor<T>> descriptors, String key) throws FormException {
+    public void rebuildHetero(StaplerRequest req, JSONObject formData, Collection<? extends Descriptor<T>> descriptors, String key) throws FormException {
         data.replaceBy(Descriptor.newInstancesFromHeteroList(req,formData,key,descriptors));
     }
 

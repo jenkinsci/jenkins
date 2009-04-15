@@ -44,6 +44,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionListView;
+import hudson.LauncherDecorator;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -513,6 +514,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         // load plugins.
         pluginManager = new PluginManager(context);
+        pluginManager.initialize();
 
         // if we are loading old data that doesn't have this field
         if(slaves==null)    slaves = new NodeList();
@@ -891,7 +893,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public Launcher createLauncher(TaskListener listener) {
-        return new LocalLauncher(listener);
+        return new LocalLauncher(listener).decorateFor(this);
     }
 
     private final transient Object updateComputerLock = new Object();
@@ -2024,7 +2026,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         for (Action a : getActions())
-            if(a.getUrlName().equals(token))
+            if(a.getUrlName().equals(token) || a.getUrlName().equals('/'+token))
                 return a;
         for (Action a : getManagementLinks())
             if(a.getUrlName().equals(token))

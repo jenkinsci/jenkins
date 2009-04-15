@@ -91,6 +91,10 @@ public interface Action extends ModelObject {
      * The returned string can be an absolute URL, like "http://www.sun.com/",
      * which is useful for directly connecting to external systems.
      *
+     * <p>
+     * If the returned string starts with '/', like '/foo', then it's assumed to be
+     * relative to the context path of the Hudson webapp. 
+     *
      * @return
      *      null if this action object doesn't need to be bound to web
      *      (when you do that, be sure to also return null from {@link #getIconFileName()}.

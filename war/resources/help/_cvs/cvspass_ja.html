@@ -1,0 +1,26 @@
+<!-- TODO: The Jelly tags do not work in this context and are left here
+     just for reference, until a solution is found -->
+
+<j:jelly xmlns:j="jelly:core">
+  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+  <div>
+    CVSはユーザー名とパスワードを".cvspass"というファイルに保存します。
+    通常、CVSはホームディレクトリにあるファイルを読み込みますが、違う場所から読み込むようにしたいのであれば、絶対パスでファイルを指定してください。
+    ホームディレクトリから読み込むのであれば空欄のままにしてください。
+    <br/>
+    <j:if test="${h.isWindows()}">
+      CVSNTをしようしているなら<a href="scm/CVSSCM/version">(確認)</a>、この設定はたぶん無効です。
+      理由を知りたければ<a href="http://www.jajakarta.org/ant/ant-1.6.1/docs/ja/manual/CoreTasks/cvspass.html">この記述</a>を確認してください。
+      この場合、手動で"cvs login"コマンドを起動してパスワードを入力する必要があります。
+      コマンドを実行したユーザーでHudsonが起動しているなら問題はありません。
+      しかし、Hudsonがサービスとして動作しているなら、まず最初にSYSTEMユーザーとして<tt>CMD.exe</tt>を起動します。
+      そして、CVSコマンドをそこで起動します。
+      やり方については、 <a href="http://blogs.msdn.com/adioltean/articles/271063.aspx">このドキュメント</a>を参照してください。
+      <br/>
+    </j:if>
+    <!-- TODO: this doesn't work
+    You can also <a href="scm/CVSSCM/enterPassword">interactively enter password into the cvs password list</a>.
+    <j:if test="${h.isWindows()}">This works even with CVSNT.</j:if>
+    -->
+  </div>
+</j:jelly>
