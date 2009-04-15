@@ -242,7 +242,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public static FormValidation validateExecutable(String exe, FileValidator exeValidator) {
         // insufficient permission to perform validation?
-        if(Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return ok();
+        if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return ok();
 
         exe = fixEmpty(exe);
         if(exe==null)
