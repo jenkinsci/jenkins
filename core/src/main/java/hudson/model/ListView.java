@@ -46,10 +46,10 @@ import org.kohsuke.stapler.QueryParameter;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.SortedSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -62,7 +62,7 @@ public class ListView extends View {
     /**
      * List of job names. This is what gets serialized.
      */
-    /*package*/ final Set<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+    /*package*/ final SortedSet<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
 
     protected transient List<ListViewColumn> columns = new ArrayList<ListViewColumn>();
 
@@ -104,7 +104,7 @@ public class ListView extends View {
         // create all instances
         ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
         DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all = ListViewColumn.all();
-        ArrayList <Descriptor<ListViewColumn>>left = new ArrayList();
+        ArrayList<Descriptor<ListViewColumn>> left = new ArrayList<Descriptor<ListViewColumn>>();
         left.addAll(all);
         for (Descriptor d: defaultColumnDescriptors) {
             Descriptor<ListViewColumn> des = all.find(d.getClass().getName());
@@ -132,6 +132,7 @@ public class ListView extends View {
      *
      * @see Hudson#getActions()
      */
+    @Override
     public List<Action> getActions() {
         return Hudson.getInstance().getActions();
     }
@@ -165,7 +166,7 @@ public class ListView extends View {
      * concurrent modification issue.
      */
     public synchronized List<TopLevelItem> getItems() {
-        Set<String> names = (Set<String>) ((TreeSet<String>) jobNames).clone();
+        SortedSet<String> names = new TreeSet<String>(jobNames);
 
         if (includePattern != null) {
             for (TopLevelItem item : Hudson.getInstance().getItems()) {
@@ -177,8 +178,8 @@ public class ListView extends View {
         }
 
         List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
-        for (String name : names) {
-            TopLevelItem item = Hudson.getInstance().getItem(name);
+        for (String n : names) {
+            TopLevelItem item = Hudson.getInstance().getItem(n);
             if(item!=null)
                 items.add(item);
         }
