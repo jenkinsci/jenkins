@@ -317,7 +317,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson.svnkit</groupId>
       <artifactId>svnkit</artifactId>
-      <version>1.2.2-hudson-3</version>
+      <version>1.2.2-hudson-4</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
