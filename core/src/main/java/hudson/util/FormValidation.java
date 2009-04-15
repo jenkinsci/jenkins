@@ -25,6 +25,8 @@ package hudson.util;
 
 import hudson.EnvVars;
 import hudson.Util;
+import hudson.FilePath;
+import hudson.scm.CVSSCM;
 import static hudson.Util.fixEmpty;
 import hudson.model.Hudson;
 import org.kohsuke.stapler.HttpResponse;
@@ -49,7 +51,12 @@ import java.net.URLConnection;
  * programmatically as well (by using {@link #kind}.
  *
  * <p>
- * See {@link CVSSCM.DescriptorImpl#doCheckCvsRoot(String)} as an example.
+ * For typical validation needs, this class offers a number of {@code validateXXX(...)} methods, such as
+ * {@link #validateExecutable(String)}. {@link FilePath} also has a number of {@code validateXXX(...)} methods
+ * that you may be able to reuse.
+ *
+ * <p>
+ * Also see {@link CVSSCM.DescriptorImpl#doCheckCvsRoot(String)} as an example.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.294
