@@ -36,6 +36,7 @@ import hudson.model.BuildListener;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -186,11 +187,11 @@ public abstract class FormValidation extends IOException implements HttpResponse
         if(message==null)
             return ok();
         return new FormValidation(kind) {
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            public String renderHtml() {
                 // 1x16 spacer needed for IE since it doesn't support min-height
-                respond(rsp,"<div class="+ kind.name().toLowerCase() +"><img src='"+
-                        req.getContextPath()+ Hudson.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
-                        message+"</div>");
+                return "<div class="+ kind.name().toLowerCase() +"><img src='"+
+                        Stapler.getCurrentRequest().getContextPath()+ Hudson.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
+                        message+"</div>";
             }
         };
     }
@@ -200,8 +201,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public static FormValidation respond(Kind kind, final String html) {
         return new FormValidation(kind) {
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
-                respond(rsp,html);
+            public String renderHtml() {
+                return html;
             }
         };
     }
@@ -392,6 +393,12 @@ public abstract class FormValidation extends IOException implements HttpResponse
     private FormValidation(Kind kind) {
         this.kind = kind;
     }
+
+    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        respond(rsp, renderHtml());
+    }
+
+    public abstract String renderHtml();
 
     /**
      * Sends out an arbitrary HTML fragment as the output.
