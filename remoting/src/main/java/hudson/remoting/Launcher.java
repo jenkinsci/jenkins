@@ -27,6 +27,9 @@ import hudson.remoting.Channel.Mode;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.CmdLineException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -60,6 +63,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
+import java.security.NoSuchAlgorithmException;
+import java.security.KeyManagementException;
 
 /**
  * Entry point for running a {@link Channel}. This is the main method of the slave JVM.
@@ -71,120 +76,104 @@ import java.security.cert.CertificateException;
  * @author Kohsuke Kawaguchi
  */
 public class Launcher {
-    public static void main(String[] args) throws Exception {
-        Mode m = Mode.BINARY;
-        boolean ping = true;
-        URL slaveJnlpURL = null;
-        File tcpPortFile = null;
-        InetSocketAddress connectionTarget=null;
+    public Mode mode = Mode.BINARY;
 
-        for(int i=0; i<args.length; i++) {
-            String arg = args[i];
-            if(arg.equals("-text")) {
-                System.out.println("Running in text mode");
-                m = Mode.TEXT;
-                continue;
-            }
-            if(arg.equals("-ping")) { // no-op, but left for backward compatibility
-                ping = true;
-                continue;
-            }
-            if(arg.equals("-jnlpUrl")) {
-                if(i+1==args.length) {
-                    System.err.println("The -jnlpUrl option is missing a URL parameter");
-                    System.exit(1);
-                }
-                slaveJnlpURL = new URL(args[++i]);
-                continue;
-            }
-            if(arg.equals("-cp") || arg.equals("-classpath")) {
-                if(i+1==args.length) {
-                    System.err.println("The -cp option is missing a path parameter");
-                    System.exit(1);
-                }
+    // no-op, but left for backward compatibility
+    @Option(name="-ping")
+    public boolean ping = true;
 
-                Method $addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-                $addURL.setAccessible(true);
+    @Option(name="-text",usage="encode communication with the master with base64. " +
+            "Useful for running slave over 8-bit unsafe protocol like telnet")
+    public void setTextMode(boolean b) {
+        mode = b?Mode.TEXT:Mode.BINARY;
+        System.out.println("Running in "+mode.name().toLowerCase()+" mode");
+    }
 
-                String pathList = args[++i];
-                for(String token : pathList.split(File.pathSeparator))
-                    $addURL.invoke(ClassLoader.getSystemClassLoader(),new File(token).toURI().toURL());
+    @Option(name="-jnlpUrl",usage="instead of talking to the master via stdin/stdout, " +
+            "emulate a JNLP client by making a TCP connection to the master. " +
+            "Connection parameters are obtained by parsing the JNLP file.")
+    public URL slaveJnlpURL = null;
 
-                // fix up the system.class.path to pretend that those jar files
-                // are given through CLASSPATH or something.
-                // some tools like JAX-WS RI and Hadoop relies on this.
-                System.setProperty("java.class.path",System.getProperty("java.class.path")+File.pathSeparatorChar+pathList);
+    @Option(name="-cp",aliases="-classpath",metaVar="PATH",
+            usage="add the given classpath elements to the system classloader.")
+    public void addClasspath(String pathList) throws Exception {
+        Method $addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+        $addURL.setAccessible(true);
 
-                continue;
-            }
-            if(arg.equals("-tcp")) {
-                if(i+1==args.length) {
-                    System.err.println("The -tcp option is missing a file name parameter");
-                    System.exit(1);
-                }
-                tcpPortFile = new File(args[++i]);
-                continue;
-            }
-            if(arg.equals("-connectTo")) {
-                if(i+1==args.length) {
-                    System.err.println("The -connectTo option is missing ADDRESS:PORT parameter");
-                    System.exit(1);
-                }
-                String[] tokens = args[++i].split(":");
-                if(tokens.length!=2) {
-                    System.err.println("Illegal parameter: "+args[i-1]);
-                    System.exit(1);
-                }
-                connectionTarget = new InetSocketAddress(tokens[0],Integer.valueOf(tokens[1]));
-                continue;
-            }
-            if(arg.equals("-noCertificateCheck")) {
-                // bypass HTTPS security check by using free-for-all trust manager
-                System.out.println("Skipping HTTPS certificate checks altoghether. Note that this is not secure at all.");
-                SSLContext context = SSLContext.getInstance("TLS");
-                context.init(null, new TrustManager[]{new NoCheckTrustManager()}, new java.security.SecureRandom());
-                HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
-                // bypass host name check, too.
-                HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-                    public boolean verify(String s, SSLSession sslSession) {
-                        return true;
-                    }
-                });
-                continue;
-            }
-            System.err.println("Invalid option: "+arg);
-            System.err.println(
-                    "java -jar slave.jar [options...]\n" +
-                    "  -text          : encode communication with the master with base64. Useful for\n" +
-                    "                   running slave over 8-bit unsafe protocol like telnet.\n" +
-                    "  -jnlpUrl <url> : instead of talking to the master via stdin/stdout, emulate a JNLP client\n" +
-                    "                   by making a TCP connection to the master. Connection parameters\n" +
-                    "                   are obtained by parsing the JNLP file.\n" +
-                    "  -cp paths      : add the given classpath elements to the system classloader\n" +
-                    "  -noCertificateCheck :\n" +
-                    "                   bypass HTTPS certificate checks altogether.\n" +
-                    "  -connectTo <host>:<port> :\n" +
-                    "                   make a TCP connection to the given host and port, then start communication.\n" +
-                    "  -tcp <file>    : instead of talking to the master via stdin/stdout, listens to a random\n" +
-                    "                   local port, write that port number to the given file, then wait for the\n" +
-                    "                   master to connect to that port.\n");
-            System.exit(-1);
+        for(String token : pathList.split(File.pathSeparator))
+            $addURL.invoke(ClassLoader.getSystemClassLoader(),new File(token).toURI().toURL());
+
+        // fix up the system.class.path to pretend that those jar files
+        // are given through CLASSPATH or something.
+        // some tools like JAX-WS RI and Hadoop relies on this.
+        System.setProperty("java.class.path",System.getProperty("java.class.path")+File.pathSeparatorChar+pathList);
+    }
+
+    @Option(name="-tcp",usage="instead of talking to the master via stdin/stdout, " +
+            "listens to a random local port, write that port number to the given file, " +
+            "then wait for the master to connect to that port.")
+    public File tcpPortFile=null;
+
+    public InetSocketAddress connectionTarget = null;
+
+    @Option(name="-connectTo",usage="make a TCP connection to the given host and port, then start communication.",metaVar="HOST:PORT")
+    public void setConnectTo(String target) {
+        String[] tokens = target.split(":");
+        if(tokens.length!=2) {
+            System.err.println("Illegal parameter: "+target);
+            System.exit(1);
         }
+        connectionTarget = new InetSocketAddress(tokens[0],Integer.valueOf(tokens[1]));
+    }
 
+    /**
+     * Bypass HTTPS security check by using free-for-all trust manager.
+     *
+     * @param _
+     *      This is ignored.
+     */
+    @Option(name="-noCertificateCheck")
+    public void setNoCertificateCheck(boolean _) throws NoSuchAlgorithmException, KeyManagementException {
+        System.out.println("Skipping HTTPS certificate checks altoghether. Note that this is not secure at all.");
+        SSLContext context = SSLContext.getInstance("TLS");
+        context.init(null, new TrustManager[]{new NoCheckTrustManager()}, new java.security.SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+        // bypass host name check, too.
+        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+            public boolean verify(String s, SSLSession sslSession) {
+                return true;
+            }
+        });
+    }
 
+    public static void main(String[] args) throws Exception {
+        Launcher launcher = new Launcher();
+        CmdLineParser parser = new CmdLineParser(launcher);
+        try {
+            parser.parseArgument(args);
+            launcher.run();
+        } catch (CmdLineException e) {
+            System.err.println(e.getMessage());
+            System.err.println("java -jar slave.jar [options...]");
+            parser.printUsage(System.err);
+            System.err.println();
+        }
+    }
+
+    public void run() throws Exception {
         if(connectionTarget!=null) {
-            runAsTcpClient(connectionTarget,m,ping);
+            runAsTcpClient();
             System.exit(0);
         } else
         if(slaveJnlpURL!=null) {
-            List<String> jnlpArgs = parseJnlpArguments(slaveJnlpURL);
+            List<String> jnlpArgs = parseJnlpArguments();
             hudson.remoting.jnlp.Main.main(jnlpArgs.toArray(new String[jnlpArgs.size()]));
         } else
         if(tcpPortFile!=null) {
-            runAsTcpServer(tcpPortFile,m,ping);
+            runAsTcpServer();
             System.exit(0);
         } else {
-            runWithStdinStdout(m, ping);
+            runWithStdinStdout();
             System.exit(0);
         }
     }
@@ -192,7 +181,7 @@ public class Launcher {
     /**
      * Parses the connection arguments from JNLP file given in the URL.
      */
-    private static List<String> parseJnlpArguments(URL slaveJnlpURL) throws ParserConfigurationException, SAXException, IOException, InterruptedException {
+    private List<String> parseJnlpArguments() throws ParserConfigurationException, SAXException, IOException, InterruptedException {
         while (true) {
             try {
                 URLConnection con = slaveJnlpURL.openConnection();
@@ -257,14 +246,14 @@ public class Launcher {
      * Listens on an ephemeral port, record that port number in a port file,
      * then accepts one TCP connection.
      */
-    private static void runAsTcpServer(File portFile, Mode m, boolean ping) throws IOException, InterruptedException {
+    private void runAsTcpServer() throws IOException, InterruptedException {
         // if no one connects for too long, assume something went wrong
         // and avoid hanging foreever
         ServerSocket ss = new ServerSocket(0,1);
         ss.setSoTimeout(30*1000);
 
         // write a port file to report the port number
-        FileWriter w = new FileWriter(portFile);
+        FileWriter w = new FileWriter(tcpPortFile);
         w.write(String.valueOf(ss.getLocalPort()));
         w.close();
 
@@ -275,29 +264,29 @@ public class Launcher {
             s = ss.accept();
             ss.close();
         } finally {
-            portFile.delete();
+            tcpPortFile.delete();
         }
 
-        runOnSocket(m, ping, s);
+        runOnSocket(s);
     }
 
-    private static void runOnSocket(Mode m, boolean ping, Socket s) throws IOException, InterruptedException {
+    private void runOnSocket(Socket s) throws IOException, InterruptedException {
         main(new BufferedInputStream(new SocketInputStream(s)),
-             new BufferedOutputStream(new SocketOutputStream(s)),m,ping);
+             new BufferedOutputStream(new SocketOutputStream(s)), mode,ping);
     }
 
     /**
      * Connects to the given TCP port and then start running
      */
-    private static void runAsTcpClient(InetSocketAddress target, Mode m, boolean ping) throws IOException, InterruptedException {
+    private void runAsTcpClient() throws IOException, InterruptedException {
         // if no one connects for too long, assume something went wrong
         // and avoid hanging foreever
-        Socket s = new Socket(target.getAddress(),target.getPort());
+        Socket s = new Socket(connectionTarget.getAddress(),connectionTarget.getPort());
 
-        runOnSocket(m, ping, s);
+        runOnSocket(s);
     }
 
-    private static void runWithStdinStdout(Mode m, boolean ping) throws IOException, InterruptedException {
+    private void runWithStdinStdout() throws IOException, InterruptedException {
         // use stdin/stdout for channel communication
         ttyCheck();
 
@@ -305,7 +294,7 @@ public class Launcher {
         // and messing up the stream.
         OutputStream os = System.out;
         System.setOut(System.err);
-        main(System.in,os,m,ping);
+        main(System.in,os, mode,ping);
     }
 
     private static void ttyCheck() {
