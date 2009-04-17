@@ -1,0 +1,35 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jvnet.hudson.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>1.299</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>ssh-slaves</artifactId>
+    <packaging>hpi</packaging>
+    <version>0.5-SNAPSHOT</version>
+    <name>Hudson SSH Slaves plugin</name>
+    <url>http://hudson.gotdns.com/wiki/display/HUDSON/SSH+Slaves+plugin</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.kohsuke</groupId>
+            <artifactId>trilead-putty-extension</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.hudson</groupId>
+            <artifactId>trilead-ssh2</artifactId>
+            <version>build212-hudson-1</version>
+        </dependency>
+    </dependencies>
+
+    <scm>
+        <connection>scm:svn:https://svn.dev.java.net/svn/hudson/trunk/hudson/hudson/plugins/ssh-slaves</connection>
+        <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/trunk/hudson/hudson/plugins/ssh-slaves</developerConnection>
+        <url>http://fisheye4.atlassian.com/browse/hudson/trunk/hudson/hudson/hudson/plugins/ssh-slaves</url>
+    </scm>
+</project>
