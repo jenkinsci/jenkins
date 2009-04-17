@@ -345,6 +345,9 @@ public abstract class Slave extends Node implements Serializable {
 
         public void doIndex( StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             URLConnection con = connect();
+            // since we end up redirecting users to jnlpJars/foo.jar/, set the content disposition
+            // so that browsers can download them in the right file name.
+            rsp.setHeader("Content-Disposition", "inline; filename=" + fileName);
             InputStream in = con.getInputStream();
             rsp.serveFile(req, in, con.getLastModified(), con.getContentLength(), "*.jar" );
             in.close();
