@@ -315,6 +315,7 @@ public class SubversionSCM extends SCM implements Serializable {
             // to change this later (to something more sensible, such as
             // choosing the "root module" or whatever), so let's not set
             // anything for now.
+            // besides, one can always use 'svnversion' to obtain the revision more explicitly.
         } catch (IOException e) {
             // ignore this error
         }
