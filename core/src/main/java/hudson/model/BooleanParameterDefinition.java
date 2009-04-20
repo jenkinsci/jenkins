@@ -45,7 +45,7 @@ public class BooleanParameterDefinition extends ParameterDefinition {
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
-            return "Boolean Value";
+            return Messages.BooleanParameterDefinition_DisplayName();
         }
 
         @Override

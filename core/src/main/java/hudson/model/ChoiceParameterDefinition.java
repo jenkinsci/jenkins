@@ -83,7 +83,7 @@ public class ChoiceParameterDefinition extends ParameterDefinition {
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
-            return "Choice";
+            return Messages.ChoiceParameterDefinition_DisplayName();
         }
 
         @Override

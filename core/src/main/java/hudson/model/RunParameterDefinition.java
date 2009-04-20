@@ -51,7 +51,7 @@ public class RunParameterDefinition extends ParameterDefinition {
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
-            return "Run Parameter";
+            return Messages.RunParameterDefinition_DisplayName();
         }
 
         @Override
