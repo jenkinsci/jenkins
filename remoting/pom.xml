@@ -84,7 +84,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
         <artifactId>maven-antrun-extended-plugin</artifactId>
-        <version>1.36</version>
         <executions>
           <execution>
             <!-- rejar args4j contents -->

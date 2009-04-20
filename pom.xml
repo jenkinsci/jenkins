@@ -82,6 +82,11 @@ THE SOFTWARE.
             </dependency>
           </dependencies>
         </plugin>
+        <plugin>
+          <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+          <artifactId>maven-antrun-extended-plugin</artifactId>
+          <version>1.39</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     
