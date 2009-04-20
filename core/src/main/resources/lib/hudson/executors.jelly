@@ -95,9 +95,18 @@ THE SOFTWARE.
 	          </j:when>
 	          <j:otherwise>
 	            <td class="pane">
-	              <div nowrap="true">${%Building} <a href="${rootURL}/${e.currentExecutable.url}">${e.currentExecutable}</a></div>
-                <t:buildProgressBar build="${e.currentExecutable}"/>
-	            </td>
+                <div nowrap="true">${%Building}
+                  <j:choose>
+                    <j:when test="${h.hasPermission(e.currentExecutable.parent,e.currentExecutable.parent.READ)}">
+                      <a href="${rootURL}/${e.currentExecutable.url}">${e.currentExecutable}</a>
+                      <t:buildProgressBar build="${e.currentExecutable}"/>
+                    </j:when>
+                    <j:otherwise>
+                      <span>${%Unknown Task}</span>
+                    </j:otherwise>
+                  </j:choose>
+                </div>
+              </td>
 	            <td class="pane" align="center" valign="middle">
                 <j:if test="${e.hasStopPermission()}">
                   <a href="${rootURL}/computers/${cloop.index}/executors/${eloop.index}/stop"><img src="${imagesURL}/16x16/stop.gif" alt="${%terminate this build}" /></a>

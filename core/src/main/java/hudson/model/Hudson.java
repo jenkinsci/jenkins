@@ -470,6 +470,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient final LogRecorderManager log = new LogRecorderManager();
 
     public Hudson(File root, ServletContext context) throws IOException {
+    	//as hudson is starting, grant this process full controll
+    	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+    	
         this.root = root;
         this.servletContext = context;
         computeVersion(context);
@@ -998,7 +1001,18 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     @Exported(name="jobs")
     public List<TopLevelItem> getItems() {
-        return new ArrayList<TopLevelItem>(items.values());
+        List<TopLevelItem> viewableItems = new ArrayList<TopLevelItem>();
+        for (TopLevelItem item : items.values()) {
+            if (item instanceof AccessControlled) {
+            	if (((AccessControlled)item).hasPermission(Item.READ))
+            		viewableItems.add(item);
+            }
+            else {
+            	viewableItems.add(item);
+            }
+        }
+        
+        return viewableItems;
     }
 
     /**
@@ -1017,7 +1031,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public <T> List<T> getItems(Class<T> type) {
         List<T> r = new ArrayList<T>();
-        for (TopLevelItem i : items.values())
+        for (TopLevelItem i : getItems())
             if (type.isInstance(i))
                  r.add(type.cast(i));
         return r;
@@ -1036,8 +1050,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         while(!q.isEmpty()) {
             ItemGroup<?> parent = q.pop();
             for (Item i : parent.getItems()) {
-                if(type.isInstance(i))
-                    r.add(type.cast(i));
+                if(type.isInstance(i)) {
+                    if (i instanceof AccessControlled) {
+                    	if (((AccessControlled)i).hasPermission(Item.READ))
+                    		r.add(type.cast(i));
+                    }
+                    else {
+                    	r.add(type.cast(i));
+                    }
+                }
                 if(i instanceof ItemGroup)
                     q.push((ItemGroup)i);
             }
@@ -1646,7 +1667,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Note that the look up is case-insensitive.
      */
     public TopLevelItem getItem(String name) {
-        return items.get(name);
+    	TopLevelItem item = items.get(name);
+        if (item instanceof AccessControlled) {
+        	if (!((AccessControlled) item).hasPermission(Item.READ)) {
+        		return null;
+        	}
+        }
+        return item;
     }
 
     public File getRootDirFor(TopLevelItem child) {

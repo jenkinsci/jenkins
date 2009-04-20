@@ -35,30 +35,25 @@ THE SOFTWARE.
         </a>
       </j:if>
     </d:tag>
+
+    <d:tag name="list"> <!-- @title and @items -->
+      <j:if test="${!empty(items)}">
+        <h2>${title}</h2>
+        <ul style="list-style-type: none;">
+          <j:forEach var="item" items="${items}">
+          <j:if test="${h.hasPermission(item,item.READ)}">
+            <li>
+              <t:jobLink job="${item}"/>
+              <local:relationship lhs="${item}" rhs="${it}"/>
+            </li>
+            </j:if>
+          </j:forEach>
+        </ul>
+      </j:if>
+    </d:tag>
   </d:taglib>
 
   <j:set var="upstream" value="${it.upstreamProjects}" />
-  <j:if test="${!empty(upstream)}">
-    <h2>${%Upstream Projects}</h2>
-    <ul style="list-style-type: none;">
-      <j:forEach var="item" items="${upstream}">
-        <li>
-          <t:jobLink job="${item}"/>
-          <local:relationship lhs="${item}" rhs="${it}"/>
-        </li>
-      </j:forEach>
-    </ul>
-  </j:if>
-  <j:set var="downstream" value="${it.downstreamProjects}" />
-  <j:if test="${!empty(downstream)}">
-    <h2>${%Downstream Projects}</h2>
-    <ul style="list-style-type: none;">
-      <j:forEach var="item" items="${downstream}">
-        <li>
-          <t:jobLink job="${item}"/>
-          <local:relationship lhs="${it}" rhs="${item}"/>
-        </li>
-      </j:forEach>
-    </ul>
-  </j:if>
+  <local:list title="${%Upstream Projects}" items="${it.upstreamProjects}" />
+  <local:list title="${%Downstream Projects}" items="${it.downstreamProjects}" />
 </j:jelly>
