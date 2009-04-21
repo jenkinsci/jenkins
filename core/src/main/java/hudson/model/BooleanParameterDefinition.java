@@ -41,6 +41,11 @@ public class BooleanParameterDefinition extends ParameterDefinition {
         }
     }
 
+    @Override
+    public BooleanParameterValue getDefaultParameterValue() {
+        return new BooleanParameterValue(getName(), defaultValue, getDescription());
+    }
+
     @Extension
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
