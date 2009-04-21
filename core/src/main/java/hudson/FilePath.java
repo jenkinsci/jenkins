@@ -1143,7 +1143,7 @@ public final class FilePath implements Serializable {
             Future<Void> future = target.actAsync(new FileCallable<Void>() {
                 public Void invoke(File f, VirtualChannel channel) throws IOException {
                     try {
-                        readFromTar(remote+'/'+fileMask, f,new GZIPInputStream(pipe.getIn()));
+                        readFromTar(remote+'/'+fileMask, f,TarCompression.GZIP.extract(pipe.getIn()));
                         return null;
                     } finally {
                         pipe.getIn().close();
@@ -1171,7 +1171,7 @@ public final class FilePath implements Serializable {
                 }
             });
             try {
-                readFromTar(remote+'/'+fileMask,new File(target.remote),new GZIPInputStream(pipe.getIn()));
+                readFromTar(remote+'/'+fileMask,new File(target.remote),TarCompression.GZIP.extract(pipe.getIn()));
             } catch (IOException e) {// BuildException or IOException
                 try {
                     future.get(3,TimeUnit.SECONDS);
