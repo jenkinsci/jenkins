@@ -470,109 +470,112 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient final LogRecorderManager log = new LogRecorderManager();
 
     public Hudson(File root, ServletContext context) throws IOException {
-    	//as hudson is starting, grant this process full controll
+    	// As hudson is starting, grant this process full controll
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
-    	
-        this.root = root;
-        this.servletContext = context;
-        computeVersion(context);
-        if(theInstance!=null)
-            throw new IllegalStateException("second instance");
-        theInstance = this;
-
-        log.load();
-
-        Trigger.timer = new Timer("Hudson cron thread");
-        queue = new Queue();
-
         try {
-            dependencyGraph = DependencyGraph.EMPTY;
-        } catch (InternalError e) {
-            if(e.getMessage().contains("window server")) {
-                throw new Error("Looks like the server runs without X. Please specify -Djava.awt.headless=true as JVM option",e);
-            }
-            throw e;
-        }
+            this.root = root;
+            this.servletContext = context;
+            computeVersion(context);
+            if(theInstance!=null)
+                throw new IllegalStateException("second instance");
+            theInstance = this;
 
-        // get or create the secret
-        TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key"));
-        if(secretFile.exists()) {
-            secretKey = secretFile.readTrim();
-        } else {
-            SecureRandom sr = new SecureRandom();
-            byte[] random = new byte[32];
-            sr.nextBytes(random);
-            secretKey = Util.toHexString(random);
-            secretFile.write(secretKey);
-        }
+            log.load();
 
-        try {
-            proxy = ProxyConfiguration.load();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to load proxy configuration", e);
-        }
+            Trigger.timer = new Timer("Hudson cron thread");
+            queue = new Queue();
 
-        // run the init code of SubversionSCM before we load plugins so that plugins can change SubversionWorkspaceSelector.
-        SubversionSCM.init();
-
-        // load plugins.
-        pluginManager = new PluginManager(context);
-        pluginManager.initialize();
-
-        // if we are loading old data that doesn't have this field
-        if(slaves==null)    slaves = new NodeList();
-
-        adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
-
-        load();
-
-//        try {
-//            // fill up the cache
-//            load();
-//
-//            Controller c = new Controller();
-//            c.startCPUProfiling(ProfilingModes.CPU_TRACING,""); // "java.*");
-//            load();
-//            c.stopCPUProfiling();
-//            c.captureSnapshot(ProfilingModes.SNAPSHOT_WITHOUT_HEAP);
-//        } catch (Exception e) {
-//            throw new Error(e);
-//        }
-
-        if(slaveAgentPort!=-1)
-            tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-        else
-            tcpSlaveAgentListener = null;
-
-        udpBroadcastThread = new UDPBroadcastThread(this);
-        udpBroadcastThread.start();
-
-        updateComputerList();
-
-        getQueue().load();
-
-        for (ItemListener l : ItemListener.all())
-            l.onLoaded();
-
-        // run the initialization script, if it exists.
-        File initScript = new File(getRootDir(),"init.groovy");
-        if(initScript.exists()) {
-            LOGGER.info("Executing "+initScript);
-            GroovyShell shell = new GroovyShell();
             try {
-                shell.evaluate(initScript);
-            } catch (Throwable t) {
-                t.printStackTrace();
+                dependencyGraph = DependencyGraph.EMPTY;
+            } catch (InternalError e) {
+                if(e.getMessage().contains("window server")) {
+                    throw new Error("Looks like the server runs without X. Please specify -Djava.awt.headless=true as JVM option",e);
+                }
+                throw e;
             }
-        }
 
-        File userContentDir = new File(getRootDir(), "userContent");
-        if(!userContentDir.exists()) {
-            userContentDir.mkdirs();
-            FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"),Messages.Hudson_USER_CONTENT_README());
-        }
+            // get or create the secret
+            TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key"));
+            if(secretFile.exists()) {
+                secretKey = secretFile.readTrim();
+            } else {
+                SecureRandom sr = new SecureRandom();
+                byte[] random = new byte[32];
+                sr.nextBytes(random);
+                secretKey = Util.toHexString(random);
+                secretFile.write(secretKey);
+            }
 
-        Trigger.init(); // start running trigger
+            try {
+                proxy = ProxyConfiguration.load();
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to load proxy configuration", e);
+            }
+
+            // run the init code of SubversionSCM before we load plugins so that plugins can change SubversionWorkspaceSelector.
+            SubversionSCM.init();
+
+            // load plugins.
+            pluginManager = new PluginManager(context);
+            pluginManager.initialize();
+
+            // if we are loading old data that doesn't have this field
+            if(slaves==null)    slaves = new NodeList();
+
+            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
+
+            load();
+
+    //        try {
+    //            // fill up the cache
+    //            load();
+    //
+    //            Controller c = new Controller();
+    //            c.startCPUProfiling(ProfilingModes.CPU_TRACING,""); // "java.*");
+    //            load();
+    //            c.stopCPUProfiling();
+    //            c.captureSnapshot(ProfilingModes.SNAPSHOT_WITHOUT_HEAP);
+    //        } catch (Exception e) {
+    //            throw new Error(e);
+    //        }
+
+            if(slaveAgentPort!=-1)
+                tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+            else
+                tcpSlaveAgentListener = null;
+
+            udpBroadcastThread = new UDPBroadcastThread(this);
+            udpBroadcastThread.start();
+
+            updateComputerList();
+
+            getQueue().load();
+
+            for (ItemListener l : ItemListener.all())
+                l.onLoaded();
+
+            // run the initialization script, if it exists.
+            File initScript = new File(getRootDir(),"init.groovy");
+            if(initScript.exists()) {
+                LOGGER.info("Executing "+initScript);
+                GroovyShell shell = new GroovyShell();
+                try {
+                    shell.evaluate(initScript);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+            }
+
+            File userContentDir = new File(getRootDir(), "userContent");
+            if(!userContentDir.exists()) {
+                userContentDir.mkdirs();
+                FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"),Messages.Hudson_USER_CONTENT_README());
+            }
+
+            Trigger.init(); // start running trigger
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
