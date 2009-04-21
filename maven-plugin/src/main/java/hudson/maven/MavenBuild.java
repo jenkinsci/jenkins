@@ -35,9 +35,11 @@ import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
+import hudson.model.Environment;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.tasks.BuildWrapper;
 import hudson.util.ArgumentListBuilder;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.execution.MavenSession;
@@ -458,17 +460,26 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         protected Result doRun(BuildListener listener) throws Exception {
             // pick up a list of reporters to run
             reporters = getProject().createReporters();
+            MavenModuleSet mms = getProject().getParent();
             if(debug)
                 listener.getLogger().println("Reporters="+reporters);
 
-            EnvVars envVars = getEnvironment();
+            buildEnvironments = new ArrayList<Environment>();
+            for (BuildWrapper w : mms.getBuildWrappers()) {
+                BuildWrapper.Environment e = w.setUp(MavenBuild.this, launcher, listener);
+                if (e == null) {
+                    return Result.FAILURE;
+                }
+                buildEnvironments.add(e);
+            }
+
+            EnvVars envVars = getEnvironment(); // buildEnvironments should be set up first
             
             ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener,
                 new MavenProcessFactory(getParent().getParent(),launcher,envVars,null));
 
             ArgumentListBuilder margs = new ArgumentListBuilder();
             margs.add("-N").add("-B");
-            MavenModuleSet mms = project.getParent();
             if(mms.usesPrivateRepository())
                 // use the per-project repository. should it be per-module? But that would cost too much in terms of disk
                 // the workspace must be on this node, so getRemote() is safe.
@@ -490,6 +501,10 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             } finally {
                 if(normalExit)  process.recycle();
                 else            process.discard();
+                for (int i = buildEnvironments.size() - 1; i >= 0; i--) {
+                    buildEnvironments.get(i).tearDown(MavenBuild.this, listener);
+                    buildEnvironments = null;
+                }
             }
         }
 
