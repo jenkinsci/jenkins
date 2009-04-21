@@ -41,6 +41,7 @@ THE SOFTWARE.
     <permission>hudson.model.View.Delete:authenticated</permission>
     <permission>hudson.scm.SCM.Tag:authenticated</permission>
     <permission>hudson.model.Hudson.Read:anonymous</permission>
+    <permission>hudson.model.Item.Read:anonymous</permission>
   </authorizationStrategy>
   <securityRealm class="hudson.security.LegacySecurityRealm"/>
   <jdks/>
