@@ -1038,7 +1038,7 @@ public class SubversionSCM extends SCM implements Serializable {
          * and it's capable of creating {@link SVNAuthentication} object,
          * to be passed to SVNKit.
          */
-        private static abstract class Credential implements Serializable {
+        public static abstract class Credential implements Serializable {
             /**
              * @param kind
              *      One of the constants defined in {@link ISVNAuthenticationManager},
@@ -1170,7 +1170,7 @@ public class SubversionSCM extends SCM implements Serializable {
          * to read from local {@link DescriptorImpl#credentials}.
          */
         private interface RemotableSVNAuthenticationProvider {
-            Credential getCredential(String realm);
+            Credential getCredential(SVNURL url, String realm);
         }
 
         /**
@@ -1180,7 +1180,14 @@ public class SubversionSCM extends SCM implements Serializable {
         private transient final RemotableSVNAuthenticationProviderImpl remotableProvider = new RemotableSVNAuthenticationProviderImpl();
 
         private final class RemotableSVNAuthenticationProviderImpl implements RemotableSVNAuthenticationProvider, Serializable {
-            public Credential getCredential(String realm) {
+            public Credential getCredential(SVNURL url, String realm) {
+                for (SubversionCredentialProvider p : SubversionCredentialProvider.all()) {
+                    Credential c = p.getCredential(url,realm);
+                    if(c!=null) {
+                        LOGGER.fine(String.format("getCredential(%s)=>%s by %s",realm,c,p));
+                        return c;
+                    }
+                }
                 LOGGER.fine(String.format("getCredential(%s)=>%s",realm,credentials.get(realm)));
                 return credentials.get(realm);
             }
@@ -1204,7 +1211,7 @@ public class SubversionSCM extends SCM implements Serializable {
             }
 
             public SVNAuthentication requestClientAuthentication(String kind, SVNURL url, String realm, SVNErrorMessage errorMessage, SVNAuthentication previousAuth, boolean authMayBeStored) {
-                Credential cred = source.getCredential(realm);
+                Credential cred = source.getCredential(url,realm);
                 LOGGER.fine(String.format("requestClientAuthentication(%s,%s,%s)=>%s",kind,url,realm,cred));
 
                 try {
