@@ -36,4 +36,4 @@ HUDSON_LOG=/var/log/hudson/$NAME.log
 # --argumentsRealm.passwd.$ADMIN_USER=[password]
 # --argumentsRealm.$ADMIN_USER=admin
 # --webroot=~/.hudson/war
-HUDSON_ARGS=--webroot=/var/run/hudson/war
+HUDSON_ARGS="--webroot=/var/run/hudson/war"
