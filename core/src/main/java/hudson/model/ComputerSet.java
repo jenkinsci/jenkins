@@ -23,10 +23,14 @@
  */
 package hudson.model;
 
+import hudson.BulkChange;
+import hudson.DescriptorExtensionList;
 import hudson.Util;
-import hudson.slaves.NodeDescriptor;
+import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.node_monitors.NodeMonitor;
+import hudson.slaves.NodeDescriptor;
+import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -36,11 +40,17 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.Comparator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Serves as the top of {@link Computer}s in the URL hierarchy.
@@ -51,20 +61,57 @@ import java.util.List;
  */
 @ExportedBean
 public final class ComputerSet extends AbstractModelObject {
-    private static final List<NodeMonitor> monitors;
+    /**
+     * This is the owner that persists {@link #monitors}.
+     */
+    private static final Saveable MONITORS_OWNER = new Saveable() {
+        public void save() throws IOException {
+            getConfigFile().write(monitors);
+        }
+    };
+
+    private static final DescribableList<NodeMonitor,Descriptor<NodeMonitor>> monitors
+            = new DescribableList<NodeMonitor, Descriptor<NodeMonitor>>(MONITORS_OWNER);
 
     @Exported
     public String getDisplayName() {
         return "nodes";
     }
 
+    /**
+     * @deprecated as of 1.301
+     *      Use {@link #getMonitors()}.
+     */
     public static List<NodeMonitor> get_monitors() {
-        return monitors;
+        return monitors.toList();
     }
 
     @Exported(name="computer",inline=true)
     public Computer[] get_all() {
         return Hudson.getInstance().getComputers();
+    }
+
+    /**
+     * Exposing {@link NodeMonitor#all()} for Jelly binding.
+     */
+    public DescriptorExtensionList<NodeMonitor,Descriptor<NodeMonitor>> getNodeMonitorDescriptors() {
+        return NodeMonitor.all();
+    }
+
+    public static DescribableList<NodeMonitor,Descriptor<NodeMonitor>> getMonitors() {
+        return monitors;
+    }
+
+    /**
+     * Returns a subset pf {@link #getMonitors()} that are {@linkplain NodeMonitor#isIgnored() not ignored}.
+     */
+    public static Map<Descriptor<NodeMonitor>,NodeMonitor> getNonIgnoredMonitors() {
+        Map<Descriptor<NodeMonitor>,NodeMonitor> r = new HashMap<Descriptor<NodeMonitor>, NodeMonitor>();
+        for (NodeMonitor m : monitors) {
+            if(!m.isIgnored())
+                r.put(m.getDescriptor(),m);
+        }
+        return r;
     }
 
     /**
@@ -262,6 +309,37 @@ public final class ComputerSet extends AbstractModelObject {
         }
     }
 
+    /**
+     * Accepts submission from the configuration page.
+     */
+    public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        BulkChange bc = new BulkChange(MONITORS_OWNER);
+        try {
+            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+            monitors.rebuild(req,req.getSubmittedForm(),getNodeMonitorDescriptors());
+
+            // add in the rest of instances are ignored instances
+            for (Descriptor<NodeMonitor> d : NodeMonitor.all())
+                if(monitors.get(d)==null) {
+                    NodeMonitor i = createDefaultInstance(d, true);
+                    if(i!=null)
+                        monitors.add(i);
+                }
+            rsp.sendRedirect2(".");
+        } catch (FormException e) {
+            sendError(e,req,rsp);
+        } finally {
+            bc.commit();
+        }
+    }
+
+    /**
+     * {@link NodeMonitor}s are persisted in this file.
+     */
+    private static XmlFile getConfigFile() {
+        return new XmlFile(new File(Hudson.getInstance().getRootDir(),"nodeMonitors.xml"));
+    }
+
     public Api getApi() {
         return new Api(this);
     }
@@ -271,15 +349,44 @@ public final class ComputerSet extends AbstractModelObject {
      */
     public static void initialize() {}
 
+    private static final Logger LOGGER = Logger.getLogger(ComputerSet.class.getName());
+
     static {
-        // create all instances
-        ArrayList<NodeMonitor> r = new ArrayList<NodeMonitor>();
-        for (Descriptor<NodeMonitor> d : NodeMonitor.all())
-            try {
-                r.add(d.newInstance(null,null));
-            } catch (FormException e) {
-                // so far impossible. TODO: report
+        try {
+            DescribableList<NodeMonitor,Descriptor<NodeMonitor>> r
+                    = new DescribableList<NodeMonitor, Descriptor<NodeMonitor>>(Saveable.NOOP);
+
+            // load persisted monitors
+            XmlFile xf = getConfigFile();
+            if(xf.exists()) {
+                DescribableList<NodeMonitor,Descriptor<NodeMonitor>> persisted =
+                        (DescribableList<NodeMonitor,Descriptor<NodeMonitor>>) xf.read();
+                r.replaceBy(persisted.toList());
             }
-        monitors = r;
+
+            // if we have any new monitors, let's add them
+            for (Descriptor<NodeMonitor> d : NodeMonitor.all())
+                if(r.get(d)==null) {
+                    NodeMonitor i = createDefaultInstance(d,false);
+                    if(i!=null)
+                        r.add(i);
+                }
+            monitors.replaceBy(r.toList());
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to instanciate NodeMonitors",e);
+        }
+    }
+
+    private static NodeMonitor createDefaultInstance(Descriptor<NodeMonitor> d, boolean ignored) {
+        try {
+            NodeMonitor nm = d.clazz.newInstance();
+            nm.setIgnored(ignored);
+            return nm;
+        } catch (InstantiationException e) {
+            LOGGER.log(Level.SEVERE, "Failed to instanciate "+d.clazz,e);
+        } catch (IllegalAccessException e) {
+            LOGGER.log(Level.SEVERE, "Failed to instanciate "+d.clazz,e);
+        }
+        return null;
     }
 }

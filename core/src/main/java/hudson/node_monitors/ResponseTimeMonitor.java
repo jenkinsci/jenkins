@@ -66,14 +66,8 @@ public class ResponseTimeMonitor extends NodeMonitor {
                 d = new Data(old,-1L);
             }
 
-            if(d.hasTooManyTimeouts()) {
-                // TODO: this scheme should be generalized, so that Hudson can remember why it's marking the node
-                // as offline, as well as allowing the user to force Hudson to use it.
-                if(!c.isTemporarilyOffline()) {
-                    LOGGER.warning(Messages.ResponseTimeMonitor_MarkedOffline(c.getName()));
-                    c.setTemporarilyOffline(true);
-                }
-            }
+            if(d.hasTooManyTimeouts() && markOffline(c))
+                LOGGER.warning(Messages.ResponseTimeMonitor_MarkedOffline(c.getName()));
             return d;
         }
 

@@ -26,6 +26,8 @@ package hudson.node_monitors;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.ComputerSet;
+import hudson.model.AdministrativeMonitor;
 import hudson.triggers.Trigger;
 import hudson.triggers.SafeTimerTask;
 
@@ -116,6 +118,34 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
             return null;
         }
         return record.data.get(c);
+    }
+
+    /**
+     * Is this monitor currently ignored?
+     */
+    public boolean isIgnored() {
+        NodeMonitor m = ComputerSet.getMonitors().get(this);
+        return m==null || m.isIgnored();
+    }
+
+    /**
+     * Utility method to mark the computer offline for derived classes.
+     *
+     * @return true
+     *      if the node was actually taken offline by this act (as opposed to us deciding not to do it,
+     *      or the computer already marked offline.)
+     */
+    protected boolean markOffline(Computer c) {
+        if(isIgnored() || c.isTemporarilyOffline()) return false; // noop
+
+        // TODO: define a mechanism to leave a note on this computer so that people know why we took it offline
+        c.setTemporarilyOffline(true);
+
+        // notify the admin
+        MonitorMarkedNodeOffline no = AdministrativeMonitor.all().get(MonitorMarkedNodeOffline.class);
+        if(no!=null)
+            no.active = true;
+        return true;
     }
 
     /**

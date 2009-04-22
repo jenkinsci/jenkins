@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,25 @@ THE SOFTWARE.
 -->
 
 <!--
-  Side panel
+  Manage monitoring
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:header />
-  <l:side-panel>
-    <l:tasks>
-      <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
-      <l:task icon="images/24x24/new-computer.gif" href="new" title="${%New Node}" permission="${app.ADMINISTER}" />
-      <l:task icon="images/24x24/setting.gif" href="configure" title="${%Configure}" permission="${app.ADMINISTER}" />
-    </l:tasks>
-    <t:queue items="${app.queue.items}" />
-    <t:executors />
-  </l:side-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${%Node Monitoring Configuration}" norefresh="true">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <!-- to make the form field binding work -->
+      <j:set var="instance" value="${it}" />
+      <j:set var="descriptor" value="${it.descriptor}" />
+
+      <f:form method="post" action="configSubmit" name="config">
+        <f:descriptorList title="${%Preventive Node Monitoring}"
+                          descriptors="${it.nodeMonitorDescriptors}"
+                          instances="${it.nonIgnoredMonitors}" />
+
+        <f:block>
+          <f:submit value="OK" />
+        </f:block>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>
