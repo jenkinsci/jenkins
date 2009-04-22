@@ -115,7 +115,11 @@ public class Engine extends Thread {
 
                     // find out the TCP port
                     HttpURLConnection con = (HttpURLConnection)salURL.openConnection();
-                    con.connect();
+                    try {
+                        con.connect();
+                    } catch (IOException x) {
+                        throw new IOException("Failed to connect to " + salURL + ": " + x.getMessage()).initCause(x);
+                    }
                     port = con.getHeaderField("X-Hudson-JNLP-Port");
                     if(con.getResponseCode()!=200) {
                         if(firstError==null)
