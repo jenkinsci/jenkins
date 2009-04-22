@@ -578,6 +578,8 @@ public abstract class HudsonTestCase extends TestCase {
      * @since 1.297
      */
     public void assertEqualBeans(Object lhs, Object rhs, String properties) throws Exception {
+        assertNotNull("lhs is null",lhs);
+        assertNotNull("rhs is null",rhs);
         for (String p : properties.split(",")) {
             PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(lhs, p);
             Object lp,rp;

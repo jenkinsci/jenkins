@@ -31,6 +31,7 @@ THE SOFTWARE.
     <l:tasks>
       <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
       <l:task icon="images/24x24/new-computer.gif" href="new" title="${%New Node}" permission="${app.ADMINISTER}" />
+      <l:task icon="images/24x24/setting.gif" href="configure" title="${%Configure}" permission="${app.ADMINISTER}" />
     </l:tasks>
     <t:queue items="${app.queue.items}" />
     <t:executors />

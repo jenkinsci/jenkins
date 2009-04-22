@@ -1,0 +1,53 @@
+<div>
+  Comando para ser usado para lan�ar o program agente na m�quina slave, o qual controla o
+  computador slave e se comunica com o master.
+
+  <h3>Agentes slave JNLP</h3>
+  <p>
+  Deixe este campo vazio se voc� quiser lan�ar os agentes slave via JNLP.
+  Com esta configura��o, a p�gina de informa��es do slave (hudson/computer/***/) 
+  ter� um �cone de lan�amento JNLP, e voc� poder� clicar no link da m�quina slave
+  correta para lan�ar o agente slave via JNLP.
+  <p>
+  Este modo � conveniente para slaves Windows que frequentemente n�o tem um mecanismo
+  de execu��o remota.
+
+  <h3>Agentes slave ssh/rsh</h3>
+  <p>
+  Quando um comando real � especificado neste campo,
+  este comando � executado na m�quina
+  master, e o Hudson assume que o programa executado lan�a o programa <tt>slave.jar</tt>
+  na m�quina slave correta.
+
+
+  <p>
+  Uma c�pia de <tt>slave.jar</tt> pode ser encontrada em <a href="${rootURL}/jnlpJars/slave.jar"><tt>WEB-INF/slave.jar</tt></a> dentro de
+  <tt>hudson.war</tt>.
+
+  <p>
+  Em um simples caso, isto poderia ser
+  algo como "ssh <i>hostname</i> java -jar ~/bin/slave.jar".
+
+  Entretanto, � uma boa id�ia escrever um pequeno shell script, como o seguinte, em um slave
+  tal que voc� possa controlar a localiza��o do Java e/ou slave.jar, bem como configurar
+  qualquer vari�vel de ambiente espec�fica para este n� slave, tal como PATH.
+  
+<pre>
+#!/bin/sh
+exec java -jar ~/bin/slave.jar
+</pre>
+
+  <p>
+  Voc� pode usar qualquer comando para executar um processo na m�quina slave, tal como RSH,
+  desde que as entrada/sa�da padr�o (stdin/stdout) deste processo estejam eventualmente
+  conectadas a "java -jar ~/bin/slave.jar".
+
+  <p>
+  Em uma grande implanta��o, tamb�m � valioso considerar carregar <tt>slave.jar</tt> de
+  uma localiza��o comum montada via NFS, assim voc� n�o tem que atualizar este arquivo toda vez
+  que voc� atualizar o Hudson.
+
+  <p>
+  Definir isto como "ssh -v <i>hostname</i>" pode ser �til para depurar quest�es de
+  conectividade.
+</div>

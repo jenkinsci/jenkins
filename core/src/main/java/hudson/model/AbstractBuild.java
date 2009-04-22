@@ -400,7 +400,15 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             scm = new CVSChangeLogParser();
 
         if(changeSet==null) // cached value
-            changeSet = calcChangeSet();
+            try {
+                changeSet = calcChangeSet();
+            } finally {
+                // defensive check. if the calculation fails (such as through an exception),
+                // set a dummy value so that it'll work the next time. the exception will
+                // be still reported, giving the plugin developer an opportunity to fix it.
+                if(changeSet==null)
+                    changeSet=ChangeLogSet.createEmpty(this);
+            }
         return changeSet;
     }
 

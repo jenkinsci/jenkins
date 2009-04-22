@@ -23,10 +23,14 @@
  */
 package hudson.triggers;
 
+import org.acegisecurity.context.SecurityContextHolder;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import hudson.security.ACL;
 
 /**
  * {@link Timer} wrapper so that a fatal error in {@link TimerTask}
@@ -42,10 +46,16 @@ import java.util.logging.Level;
  */
 public abstract class SafeTimerTask extends TimerTask {
     public final void run() {
+        // background activity gets system credential,
+        // just like executors get it.
+        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+
         try {
             doRun();
         } catch(Throwable t) {
             LOGGER.log(Level.SEVERE, "Timer task "+this+" failed",t);
+        } finally {
+            SecurityContextHolder.clearContext();
         }
     }
 

@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.tasks.Publisher;
 import hudson.scm.RepositoryBrowser;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
@@ -39,6 +40,8 @@ import hudson.util.DescriptorList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
+import java.io.Serializable;
+
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -52,13 +55,24 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Invoked from {@link ComputerSet} <tt>index.jelly</tt> to render a column.
  * The {@link NodeMonitor} instance is accessible through the "from" variable.
  * Also see {@link #getColumnCaption()}.
+ *
+ * <dt>config.jelly (optional)</dt>
+ * <dd>
+ * Configuration fragment to be displayed in {@code http://server/hudson/computer/configure}.
+ * Used for configuring the threshold for taking nodes offline. 
  * </dl>
+ *
+ * <h2>Persistence</h2>
+ * <p>
+ * {@link NodeMonitor}s are persisted via XStream.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.123
  */
 @ExportedBean
 public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMonitor> {
+    private volatile boolean ignored;
+
     /**
      * Returns the name of the column to be added to {@link ComputerSet} index.jelly.
      *
@@ -98,6 +112,27 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      */
     public static List<NodeMonitor> getAll() {
         return ComputerSet.get_monitors();
+    }
+
+    /**
+     * True if this monitoring shouldn't mark the slaves offline.
+     *
+     * <p>
+     * Many {@link NodeMonitor}s implement a logic that if the value goes above/below
+     * a threshold, the slave will be marked offline as a preventive measure.
+     * This flag controls that.
+     *
+     * <p>
+     * Unlike {@link Publisher}, where the absence of an instance indicates that it's disengaged,
+     * in {@link NodeMonitor} this boolean flag is used to indicate the disengagement, so that
+     * monitors work in opt-out basis.
+     */
+    public boolean isIgnored() {
+        return ignored;
+    }
+
+    public void setIgnored(boolean ignored) {
+        this.ignored = ignored;
     }
 
     /**

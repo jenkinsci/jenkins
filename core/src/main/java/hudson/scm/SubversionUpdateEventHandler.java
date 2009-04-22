@@ -25,6 +25,9 @@ package hudson.scm;
 
 import hudson.remoting.Which;
 import org.tmatesoft.svn.core.SVNCancelException;
+import org.tmatesoft.svn.core.SVNErrorCode;
+import org.tmatesoft.svn.core.SVNErrorMessage;
+import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.internal.wc.SVNExternal;
 import org.tmatesoft.svn.core.wc.SVNEvent;
 import org.tmatesoft.svn.core.wc.SVNEventAction;
@@ -59,11 +62,15 @@ final class SubversionUpdateEventHandler extends SubversionEventHandlerImpl {
         this.modulePath = modulePath;
     }
 
-    public void handleEvent(SVNEvent event, double progress) {
+    public void handleEvent(SVNEvent event, double progress) throws SVNException {
         File file = event.getFile();
         String path = null;
         if (file != null) {
-            path = getRelativePath(file);
+            try {
+                path = getRelativePath(file);
+            } catch (IOException e) {
+                throw new SVNException(SVNErrorMessage.create(SVNErrorCode.FS_GENERAL), e);
+            }
             path = getLocalPath(path);
         }
 

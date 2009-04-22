@@ -176,6 +176,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 	}
 
 	private Object readResolve() {
+        GlobalMatrixAuthorizationStrategy.migrateHudson2324(grantedPermissions);
 		acl = new AclImpl();
 		return this;
 	}
@@ -260,6 +261,8 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				as.add(id);
 				reader.moveUp();
 			}
+
+            GlobalMatrixAuthorizationStrategy.migrateHudson2324(as.grantedPermissions);
 
 			return as;
 		}

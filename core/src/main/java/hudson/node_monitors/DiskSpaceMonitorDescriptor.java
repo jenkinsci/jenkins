@@ -83,14 +83,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 
     protected DiskSpace monitor(Computer c) throws IOException, InterruptedException {
         DiskSpace size = getFreeSpace(c);
-        if(size!=null && !size.moreThanGB()) {
-            // TODO: this scheme should be generalized, so that Hudson can remember why it's marking the node
-            // as offline, as well as allowing the user to force Hudson to use it.
-            if(!c.isTemporarilyOffline()) {
-                LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getName()));
-                c.setTemporarilyOffline(true);
-            }
-        }
+        if(size!=null && !size.moreThanGB() && markOffline(c))
+            LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getName()));
         return size;
     }
 

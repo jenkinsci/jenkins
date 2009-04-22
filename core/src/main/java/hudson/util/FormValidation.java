@@ -25,11 +25,18 @@ package hudson.util;
 
 import hudson.EnvVars;
 import hudson.Util;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.tasks.Builder;
+import hudson.scm.CVSSCM;
 import static hudson.Util.fixEmpty;
 import hudson.model.Hudson;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -49,12 +56,47 @@ import java.net.URLConnection;
  * programmatically as well (by using {@link #kind}.
  *
  * <p>
- * See {@link CVSSCM.DescriptorImpl#doCheckCvsRoot(String)} as an example.
+ * For typical validation needs, this class offers a number of {@code validateXXX(...)} methods, such as
+ * {@link #validateExecutable(String)}. {@link FilePath} also has a number of {@code validateXXX(...)} methods
+ * that you may be able to reuse.
+ *
+ * <p>
+ * Also see {@link CVSSCM.DescriptorImpl#doCheckCvsRoot(String)} as an example.
+ *
+ * <p>
+ * This class extends {@link IOException} so that it can be thrown from a method. This allows one to reuse
+ * the checking logic as a part of the real computation, such as:
+ *
+ * <pre>
+ * String getAntVersion(File antHome) throws FormValidation {
+ *    if(!antHome.isDirectory())
+ *        throw FormValidation.error(antHome+" doesn't look like a home directory");
+ *    ...
+ *    return IOUtils.toString(new File(antHome,"version"));
+ * }
+ *
+ * ...
+ *
+ * public FormValidation doCheckAntVersion(@QueryParameter String f) {
+ *     try {
+ *         return ok(getAntVersion(new File(f)));
+ *     } catch (FormValidation f) {
+ *         return f;
+ *     }
+ * }
+ *
+ * ...
+ *
+ * public void {@linkplain Builder#perform(AbstractBuild, Launcher, BuildListener) perform}(...) {
+ *     String version = getAntVersin(antHome);
+ *     ...
+ * }
+ * </pre>
  *
  * @author Kohsuke Kawaguchi
  * @since 1.294
  */
-public abstract class FormValidation implements HttpResponse {
+public abstract class FormValidation extends IOException implements HttpResponse {
     /**
      * Indicates the kind of result.
      */
@@ -145,11 +187,11 @@ public abstract class FormValidation implements HttpResponse {
         if(message==null)
             return ok();
         return new FormValidation(kind) {
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            public String renderHtml() {
                 // 1x16 spacer needed for IE since it doesn't support min-height
-                respond(rsp,"<div class="+ kind.name().toLowerCase() +"><img src='"+
-                        req.getContextPath()+ Hudson.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
-                        message+"</div>");
+                return "<div class="+ kind.name().toLowerCase() +"><img src='"+
+                        Stapler.getCurrentRequest().getContextPath()+ Hudson.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
+                        message+"</div>";
             }
         };
     }
@@ -159,8 +201,8 @@ public abstract class FormValidation implements HttpResponse {
      */
     public static FormValidation respond(Kind kind, final String html) {
         return new FormValidation(kind) {
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
-                respond(rsp,html);
+            public String renderHtml() {
+                return html;
             }
         };
     }
@@ -201,7 +243,7 @@ public abstract class FormValidation implements HttpResponse {
      */
     public static FormValidation validateExecutable(String exe, FileValidator exeValidator) {
         // insufficient permission to perform validation?
-        if(Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return ok();
+        if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return ok();
 
         exe = fixEmpty(exe);
         if(exe==null)
@@ -351,6 +393,12 @@ public abstract class FormValidation implements HttpResponse {
     private FormValidation(Kind kind) {
         this.kind = kind;
     }
+
+    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        respond(rsp, renderHtml());
+    }
+
+    public abstract String renderHtml();
 
     /**
      * Sends out an arbitrary HTML fragment as the output.

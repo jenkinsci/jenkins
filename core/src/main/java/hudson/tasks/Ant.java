@@ -41,7 +41,6 @@ import hudson.remoting.Callable;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
-import hudson.tools.ToolLocationNodeProperty;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.VariableResolver;
 import hudson.util.FormValidation;
@@ -357,10 +356,9 @@ public class Ant extends Builder {
          * Gets the executable path of this Ant on the given target system.
          */
         public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
-            final boolean isUnix = launcher.isUnix();
             return launcher.getChannel().call(new Callable<String,IOException>() {
                 public String call() throws IOException {
-                    File exe = getExeFile(isUnix);
+                    File exe = getExeFile();
                     if(exe.exists())
                         return exe.getPath();
                     return null;
@@ -368,12 +366,12 @@ public class Ant extends Builder {
             });
         }
 
-        private File getExeFile(boolean isUnix) {
+        private File getExeFile() {
             String execName;
-            if(isUnix)
-                execName = "ant";
-            else
+            if(Hudson.isWindows())
                 execName = "ant.bat";
+            else
+                execName = "ant";
 
             String antHome = Util.replaceMacro(getAntHome(),EnvVars.masterEnvVars);
 

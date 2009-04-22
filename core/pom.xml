@@ -99,7 +99,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
         <artifactId>maven-antrun-extended-plugin</artifactId>
-        <version>1.36</version>
         <executions>
           <execution>
             <phase>generate-resources</phase>
@@ -327,7 +326,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.102</version>
+      <version>1.103</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
@@ -686,7 +685,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.2</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>

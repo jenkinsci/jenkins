@@ -33,18 +33,37 @@ THE SOFTWARE.
     <j:when test="${it.offline and !it.temporarilyOffline}">
       <l:isAdmin><!-- TODO: we need a permission to launch a slave -->
         <p>
-          <a href="slave-agent.jnlp" id="jnlp-link">
-            <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
-            ${%Launch slave agent}
-          </a>
-
-          <!--a href="custom-jnlp" style="margin-left:3em">
-            (tweak launch parameters)
-          </a-->
+          ${%Connect slave to Hudson one of these ways:}
         </p>
+        <ol>
+          <li>
+            <p>
+              <a href="slave-agent.jnlp" id="jnlp-link">
+                <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
+              </a>
+              ${%Launch agent from browser on slave}
+            </p>
+          </li>
+          <li>
+            <p>
+              ${%Run from slave command line:}
+            </p>
+            <pre>javaws ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
+          </li>
+          <li>
+            <p>
+              ${%Or if the slave is headless:}
+            </p>
+            <pre>java -jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
+          </li>
+        </ol>
+        <!--
         <p>
-          ${%click.above_link(h.inferHudsonURL(request), it.url)}
+          <a href="custom-jnlp" style="margin-left:3em">
+            (tweak launch parameters)
+          </a>
         </p>
+        -->
       </l:isAdmin>
     </j:when>
     <j:otherwise>

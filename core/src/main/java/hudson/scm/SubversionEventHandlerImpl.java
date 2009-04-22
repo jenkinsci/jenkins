@@ -11,6 +11,9 @@
  */
 package hudson.scm;
 
+import org.tmatesoft.svn.core.SVNErrorCode;
+import org.tmatesoft.svn.core.SVNErrorMessage;
+import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
 import org.tmatesoft.svn.core.internal.wc.SVNFileUtil;
 import org.tmatesoft.svn.core.wc.SVNEvent;
@@ -20,6 +23,7 @@ import org.tmatesoft.svn.core.wc.SVNStatusType;
 import org.tmatesoft.svn.core.wc.ISVNEventHandler;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 
 /**
@@ -37,11 +41,15 @@ public class SubversionEventHandlerImpl extends SVNEventAdapter {
         this.baseDir = baseDir;
     }
 
-    public void handleEvent(SVNEvent event, double progress) {
+    public void handleEvent(SVNEvent event, double progress) throws SVNException {
         File file = event.getFile();
         String path = null;
         if (file != null) {
-            path = getRelativePath(file);
+            try {
+                path = getRelativePath(file);
+            } catch (IOException e) {
+                throw new SVNException(SVNErrorMessage.create(SVNErrorCode.FS_GENERAL), e);
+            }
             path = getLocalPath(path);
         }
 
@@ -157,9 +165,9 @@ public class SubversionEventHandlerImpl extends SVNEventAdapter {
                 + path);
     }
 
-    public String getRelativePath(File file) {
-        String inPath = file.getAbsolutePath().replace(File.separatorChar, '/');
-        String basePath = baseDir.getAbsolutePath().replace(File.separatorChar, '/');
+    public String getRelativePath(File file) throws IOException {
+        String inPath = file.getCanonicalPath().replace(File.separatorChar, '/');
+        String basePath = baseDir.getCanonicalPath().replace(File.separatorChar, '/');
         String commonRoot = getCommonAncestor(inPath, basePath);
         if (commonRoot != null) {
             if (equals(inPath , commonRoot)) {

@@ -330,10 +330,11 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
                         buildEnvironments = new ArrayList<Environment>();
                         for( BuildWrapper w : wrappers) {
-                            BuildWrapper.Environment e = w.setUp((AbstractBuild)MavenModuleSetBuild.this, launcher, listener);
+                            BuildWrapper.Environment e = w.setUp(MavenModuleSetBuild.this, launcher, listener);
                             if(e==null)
                                 return Result.FAILURE;
                             buildEnvironments.add(e);
+                            e.buildEnvVars(envVars); // #3502: too late for getEnvironment to do this
                         }
 
                         if(!preBuild(listener, project.getPublishers()))
@@ -380,7 +381,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         // tear down in reverse order
                         for( int i=buildEnvironments.size()-1; i>=0; i-- )
                             buildEnvironments.get(i)
-                                    .tearDown((AbstractBuild)MavenModuleSetBuild.this, listener);
+                                    .tearDown(MavenModuleSetBuild.this, listener);
                             buildEnvironments = null;
                     }
                 }

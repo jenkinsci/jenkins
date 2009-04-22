@@ -28,7 +28,7 @@ THE SOFTWARE.
     <f:entry title="${%Name}" help="/help/parameter/name.html">
 		<f:textbox name="parameter.name" value="${instance.name}" />
 	</f:entry>
-	<f:entry title="Choices" help="/help/parameter/choice-choices.html">
+	<f:entry title="${%Choices}" help="/help/parameter/choice-choices.html">
 		<f:textarea name="parameter.choices" value="${instance.choicesText}" />
 	</f:entry>
     <f:entry title="${%Description}" help="/help/parameter/description.html">

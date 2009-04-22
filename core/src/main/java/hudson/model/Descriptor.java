@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.XmlFile;
 import hudson.BulkChange;
+import hudson.Util;
 import static hudson.Util.singleQuote;
 import hudson.scm.CVSSCM;
 import net.sf.json.JSONArray;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -524,8 +526,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             return;
         }
 
+        // TODO: generalize macro expansion and perhaps even support JEXL
         rsp.setContentType("text/html;charset=UTF-8");
-        IOUtils.copy(in,rsp.getOutputStream());
+        String literal = IOUtils.toString(in,"UTF-8");
+        rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
         in.close();
     }
 

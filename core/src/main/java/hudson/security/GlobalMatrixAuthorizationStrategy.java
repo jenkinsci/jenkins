@@ -30,7 +30,9 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.Item;
 import hudson.util.FormValidation;
+import hudson.util.VersionNumber;
 import hudson.util.FormValidation.Kind;
 import hudson.Functions;
 import hudson.Extension;
@@ -52,6 +54,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * Role-based authorization via a matrix.
@@ -103,9 +106,31 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         return sids;
     }
 
+    /**
+     * In earlier version of Hudson we used to use reflection converter, which calls this method.
+     * This is now unmarshaller via {@link ConverterImpl}
+     */
     private Object readResolve() {
+        migrateHudson2324(grantedPermissions);
         acl = new AclImpl();
         return this;
+    }
+
+    /**
+     * Due to HUDSON-2324, we want to inject Item.READ permission to everyone who has Hudson.READ,
+     * to remain backward compatible
+     * @param grantedPermissions
+     */
+    /*package*/ static void migrateHudson2324(Map<Permission,Set<String>> grantedPermissions) {
+        if(Hudson.getInstance().isUpgradedFromBefore(new VersionNumber("1.301"))) {
+            Set<String> f = grantedPermissions.get(Hudson.READ);
+            if(f!=null) {
+                Set<String> t = grantedPermissions.get(Item.READ);
+                if(t!=null) t.addAll(f);
+                else        t=new HashSet<String>(f);
+                grantedPermissions.put(Item.READ,t);
+            }
+        }
     }
 
     /**
@@ -188,6 +213,8 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 as.add(id);
                 reader.moveUp();
             }
+
+            migrateHudson2324(as.grantedPermissions);
 
             return as;
         }

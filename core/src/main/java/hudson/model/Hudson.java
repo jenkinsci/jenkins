@@ -44,7 +44,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionListView;
-import hudson.LauncherDecorator;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -105,6 +104,7 @@ import hudson.util.Futures;
 import hudson.util.Memoizer;
 import hudson.util.Iterators;
 import hudson.util.FormValidation;
+import hudson.util.VersionNumber;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -115,7 +115,6 @@ import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.JellyException;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.Stapler;
@@ -254,6 +253,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Message displayed in the top page.
      */
     private String systemMessage;
+
+    /**
+     * We update this field to the current version of Hudson whenever we save {@code config.xml}.
+     * This can be used to detect when an upgrade happens from one version to next.
+     *
+     * <p>
+     * Since this field is introduced starting 1.301, "1.0" is used to represent every version
+     * up to 1.300. This value may also include non-standard versions like "1.301-SNAPSHOT" or
+     * "?", etc., so parsing needs to be done with a care.
+     *
+     * @since 1.301
+     */
+    private String version = "1.0";
 
     /**
      * Root directory of the system.
@@ -470,106 +482,112 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient final LogRecorderManager log = new LogRecorderManager();
 
     public Hudson(File root, ServletContext context) throws IOException {
-        this.root = root;
-        this.servletContext = context;
-        computeVersion(context);
-        if(theInstance!=null)
-            throw new IllegalStateException("second instance");
-        theInstance = this;
-
-        log.load();
-
-        Trigger.timer = new Timer("Hudson cron thread");
-        queue = new Queue();
-
+    	// As hudson is starting, grant this process full controll
+    	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
-            dependencyGraph = DependencyGraph.EMPTY;
-        } catch (InternalError e) {
-            if(e.getMessage().contains("window server")) {
-                throw new Error("Looks like the server runs without X. Please specify -Djava.awt.headless=true as JVM option",e);
-            }
-            throw e;
-        }
+            this.root = root;
+            this.servletContext = context;
+            computeVersion(context);
+            if(theInstance!=null)
+                throw new IllegalStateException("second instance");
+            theInstance = this;
 
-        // get or create the secret
-        TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key"));
-        if(secretFile.exists()) {
-            secretKey = secretFile.readTrim();
-        } else {
-            SecureRandom sr = new SecureRandom();
-            byte[] random = new byte[32];
-            sr.nextBytes(random);
-            secretKey = Util.toHexString(random);
-            secretFile.write(secretKey);
-        }
+            log.load();
 
-        try {
-            proxy = ProxyConfiguration.load();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to load proxy configuration", e);
-        }
+            Trigger.timer = new Timer("Hudson cron thread");
+            queue = new Queue();
 
-        // run the init code of SubversionSCM before we load plugins so that plugins can change SubversionWorkspaceSelector.
-        SubversionSCM.init();
-
-        // load plugins.
-        pluginManager = new PluginManager(context);
-        pluginManager.initialize();
-
-        // if we are loading old data that doesn't have this field
-        if(slaves==null)    slaves = new NodeList();
-
-        adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
-
-        load();
-
-//        try {
-//            // fill up the cache
-//            load();
-//
-//            Controller c = new Controller();
-//            c.startCPUProfiling(ProfilingModes.CPU_TRACING,""); // "java.*");
-//            load();
-//            c.stopCPUProfiling();
-//            c.captureSnapshot(ProfilingModes.SNAPSHOT_WITHOUT_HEAP);
-//        } catch (Exception e) {
-//            throw new Error(e);
-//        }
-
-        if(slaveAgentPort!=-1)
-            tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-        else
-            tcpSlaveAgentListener = null;
-
-        udpBroadcastThread = new UDPBroadcastThread(this);
-        udpBroadcastThread.start();
-
-        updateComputerList();
-
-        getQueue().load();
-
-        for (ItemListener l : ItemListener.all())
-            l.onLoaded();
-
-        // run the initialization script, if it exists.
-        File initScript = new File(getRootDir(),"init.groovy");
-        if(initScript.exists()) {
-            LOGGER.info("Executing "+initScript);
-            GroovyShell shell = new GroovyShell();
             try {
-                shell.evaluate(initScript);
-            } catch (Throwable t) {
-                t.printStackTrace();
+                dependencyGraph = DependencyGraph.EMPTY;
+            } catch (InternalError e) {
+                if(e.getMessage().contains("window server")) {
+                    throw new Error("Looks like the server runs without X. Please specify -Djava.awt.headless=true as JVM option",e);
+                }
+                throw e;
             }
-        }
 
-        File userContentDir = new File(getRootDir(), "userContent");
-        if(!userContentDir.exists()) {
-            userContentDir.mkdirs();
-            FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"),Messages.Hudson_USER_CONTENT_README());
-        }
+            // get or create the secret
+            TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key"));
+            if(secretFile.exists()) {
+                secretKey = secretFile.readTrim();
+            } else {
+                SecureRandom sr = new SecureRandom();
+                byte[] random = new byte[32];
+                sr.nextBytes(random);
+                secretKey = Util.toHexString(random);
+                secretFile.write(secretKey);
+            }
 
-        Trigger.init(); // start running trigger
+            try {
+                proxy = ProxyConfiguration.load();
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to load proxy configuration", e);
+            }
+
+            // run the init code of SubversionSCM before we load plugins so that plugins can change SubversionWorkspaceSelector.
+            SubversionSCM.init();
+
+            // load plugins.
+            pluginManager = new PluginManager(context);
+            pluginManager.initialize();
+
+            // if we are loading old data that doesn't have this field
+            if(slaves==null)    slaves = new NodeList();
+
+            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
+
+            load();
+
+    //        try {
+    //            // fill up the cache
+    //            load();
+    //
+    //            Controller c = new Controller();
+    //            c.startCPUProfiling(ProfilingModes.CPU_TRACING,""); // "java.*");
+    //            load();
+    //            c.stopCPUProfiling();
+    //            c.captureSnapshot(ProfilingModes.SNAPSHOT_WITHOUT_HEAP);
+    //        } catch (Exception e) {
+    //            throw new Error(e);
+    //        }
+
+            if(slaveAgentPort!=-1)
+                tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+            else
+                tcpSlaveAgentListener = null;
+
+            udpBroadcastThread = new UDPBroadcastThread(this);
+            udpBroadcastThread.start();
+
+            updateComputerList();
+
+            getQueue().load();
+
+            for (ItemListener l : ItemListener.all())
+                l.onLoaded();
+
+            // run the initialization script, if it exists.
+            File initScript = new File(getRootDir(),"init.groovy");
+            if(initScript.exists()) {
+                LOGGER.info("Executing "+initScript);
+                GroovyShell shell = new GroovyShell();
+                try {
+                    shell.evaluate(initScript);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+            }
+
+            File userContentDir = new File(getRootDir(), "userContent");
+            if(!userContentDir.exists()) {
+                userContentDir.mkdirs();
+                FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"),Messages.Hudson_USER_CONTENT_README());
+            }
+
+            Trigger.init(); // start running trigger
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
@@ -998,7 +1016,18 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     @Exported(name="jobs")
     public List<TopLevelItem> getItems() {
-        return new ArrayList<TopLevelItem>(items.values());
+        List<TopLevelItem> viewableItems = new ArrayList<TopLevelItem>();
+        for (TopLevelItem item : items.values()) {
+            if (item instanceof AccessControlled) {
+            	if (((AccessControlled)item).hasPermission(Item.READ))
+            		viewableItems.add(item);
+            }
+            else {
+            	viewableItems.add(item);
+            }
+        }
+        
+        return viewableItems;
     }
 
     /**
@@ -1017,7 +1046,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public <T> List<T> getItems(Class<T> type) {
         List<T> r = new ArrayList<T>();
-        for (TopLevelItem i : items.values())
+        for (TopLevelItem i : getItems())
             if (type.isInstance(i))
                  r.add(type.cast(i));
         return r;
@@ -1036,8 +1065,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         while(!q.isEmpty()) {
             ItemGroup<?> parent = q.pop();
             for (Item i : parent.getItems()) {
-                if(type.isInstance(i))
-                    r.add(type.cast(i));
+                if(type.isInstance(i)) {
+                    if (i instanceof AccessControlled) {
+                    	if (((AccessControlled)i).hasPermission(Item.READ))
+                    		r.add(type.cast(i));
+                    }
+                    else {
+                    	r.add(type.cast(i));
+                    }
+                }
                 if(i instanceof ItemGroup)
                     q.push((ItemGroup)i);
             }
@@ -1105,6 +1141,22 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             throw new IllegalStateException();
         views.remove(view);
         save();
+    }
+
+    /**
+     * Returns true if the current running Hudson is upgraded from a version earlier than the specified version.
+     *
+     * <p>
+     * This method continues to return true until the system configuration is saved, at which point
+     * {@link #version} will be overwritten and Hudson forgets the upgrade history.
+     */
+    public boolean isUpgradedFromBefore(VersionNumber v) {
+        try {
+            return new VersionNumber(version).isOlderThan(v);
+        } catch (IllegalArgumentException e) {
+            // fail to parse this version number
+            return false;
+        }
     }
 
     /**
@@ -1646,7 +1698,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Note that the look up is case-insensitive.
      */
     public TopLevelItem getItem(String name) {
-        return items.get(name);
+    	TopLevelItem item = items.get(name);
+        if (item instanceof AccessControlled) {
+        	if (!((AccessControlled) item).hasPermission(Item.READ)) {
+        		return null;
+        	}
+        }
+        return item;
     }
 
     public File getRootDirFor(TopLevelItem child) {
@@ -2154,6 +2212,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if (np != null) {
                 globalNodeProperties.rebuild(req, np, NodeProperty.for_(this));
             }
+
+            version = VERSION;
 
             save();
             if(result)

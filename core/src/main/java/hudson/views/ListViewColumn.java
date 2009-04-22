@@ -48,11 +48,6 @@ import org.kohsuke.stapler.export.Exported;
  * <p>
  * This object may have an additional <tt>columHeader.jelly</tt>. The default ColmnHeader
  * will render ColumnCaption.
- * <p>
- * For now, {@link ListView} doesn't allow {@link ListViewColumn}s to be configured
- * (instead it just shows all the columns available in {@link #all()}),
- * but the intention is eventually make each {@link ListViewColumn} fully configurable
- * like {@link Publisher}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.279
@@ -82,5 +77,14 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
      *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
     public static final DescriptorList<ListViewColumn> LIST = new DescriptorList<ListViewColumn>(ListViewColumn.class);
+
+    /**
+     * Whether this column will be shown by default.
+     * The default implementation is true.
+     * @since 1.301
+     */
+    public boolean shownByDefault() {
+        return true;
+    }
 
 }

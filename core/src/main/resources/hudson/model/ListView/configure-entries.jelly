@@ -40,4 +40,15 @@ THE SOFTWARE.
       <f:textbox name="includeRegex" field="includeRegex" />
     </f:entry>
   </f:optionalBlock>
+
+  <f:section title="${%Columns}">
+    <j:invokeStatic var="allColumns" className="hudson.views.ListViewColumn" method="all"/>
+    <f:block>
+      <f:hetero-list name="columns" hasHeader="true"
+                     descriptors="${allColumns}"
+                     items="${it.columns}"
+                     addCaption="${%Add column}"/>
+    </f:block>
+  </f:section>
+
 </j:jelly>

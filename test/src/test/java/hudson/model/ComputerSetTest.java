@@ -25,6 +25,7 @@ package hudson.model;
 
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -35,5 +36,14 @@ public class ComputerSetTest extends HudsonTestCase {
         HudsonTestCase.WebClient client = new WebClient();
         createSlave();
         client.goTo("computer");
+    }
+
+    /**
+     * Tests the basic UI behavior of the node monitoring
+     */
+    public void testConfiguration() throws Exception {
+        HudsonTestCase.WebClient client = new WebClient();
+        HtmlForm form = client.goTo("computer/configure").getFormByName("config");
+        submit(form);
     }
 }
