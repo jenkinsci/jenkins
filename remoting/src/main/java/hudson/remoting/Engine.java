@@ -101,11 +101,12 @@ public class Engine extends Thread {
         this.tunnel = tunnel;
     }
 
+    @Override
     public void run() {
         try {
             while(true) {
-                listener.status("Locating Server");
-                Exception firstError=null;
+                listener.status("Locating server among " + candidateUrls);
+                Throwable firstError=null;
                 String port=null;
 
                 for (URL url : candidateUrls) {
@@ -118,7 +119,10 @@ public class Engine extends Thread {
                     try {
                         con.connect();
                     } catch (IOException x) {
-                        throw new IOException("Failed to connect to " + salURL + ": " + x.getMessage()).initCause(x);
+                        if (firstError == null) {
+                            firstError = new IOException("Failed to connect to " + salURL + ": " + x.getMessage()).initCause(x);
+                        }
+                        continue;
                     }
                     port = con.getHeaderField("X-Hudson-JNLP-Port");
                     if(con.getResponseCode()!=200) {
@@ -134,6 +138,7 @@ public class Engine extends Thread {
 
                     // this URL works. From now on, only try this URL
                     hudsonUrl = url;
+                    firstError = null;
                     candidateUrls = Collections.singletonList(hudsonUrl);
                     break;
                 }
