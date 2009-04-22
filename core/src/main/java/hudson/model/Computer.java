@@ -669,17 +669,17 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
      * Run arbitrary Groovy script.
      */
     public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doScript(req, rsp, "_script.jelly");
+        _doScript(req, rsp, "_script.jelly");
     }
 
     /**
      * Run arbitrary Groovy script and return result as plain text.
      */
     public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doScript(req, rsp, "_scriptText.jelly");
+        _doScript(req, rsp, "_scriptText.jelly");
     }
 
-    public void doScript( StaplerRequest req, StaplerResponse rsp, String view) throws IOException, ServletException {
+    protected void _doScript( StaplerRequest req, StaplerResponse rsp, String view) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous,
         // so tie it to the admin access
         checkPermission(Hudson.ADMINISTER);
