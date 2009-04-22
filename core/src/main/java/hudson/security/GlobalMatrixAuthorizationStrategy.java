@@ -120,10 +120,10 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         if(Hudson.getInstance().isUpgradedFromBefore(new VersionNumber("1.301"))) {
             Set<String> f = grantedPermissions.get(Hudson.READ);
             if(f!=null) {
-                Set<String> t = this.grantedPermissions.get(Item.READ);
+                Set<String> t = grantedPermissions.get(Item.READ);
                 if(t!=null) t.addAll(f);
                 else        t=new HashSet<String>(f);
-                this.grantedPermissions.put(Item.READ,t);
+                grantedPermissions.put(Item.READ,t);
             }
         }
     }
