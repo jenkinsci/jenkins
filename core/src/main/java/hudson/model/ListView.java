@@ -64,10 +64,6 @@ import java.util.regex.PatternSyntaxException;
  */
 public class ListView extends View {
 
-    private static final Saveable NO_SAVABLE = new Saveable() {
-        public void save() throws IOException {}
-    };
-
     /**
      * List of job names. This is what gets serialized.
      */
@@ -144,7 +140,7 @@ public class ListView extends View {
                 filter.remove();
             }
         }
-        columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(NO_SAVABLE);
+        columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(Saveable.NOOP);
         try {
             columns.replaceBy(r);
         } catch (IOException ex) {
@@ -256,7 +252,7 @@ public class ListView extends View {
         }
 
         if (columns == null) {
-            columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(NO_SAVABLE);
+            columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(Saveable.NOOP);
         }
         columns.rebuildHetero(req, req.getSubmittedForm(), Hudson.getInstance().getDescriptorList(ListViewColumn.class), "columns");
     }
