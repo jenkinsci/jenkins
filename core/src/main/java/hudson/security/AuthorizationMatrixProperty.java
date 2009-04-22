@@ -262,6 +262,8 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				reader.moveUp();
 			}
 
+            GlobalMatrixAuthorizationStrategy.migrateHudson2324(as.grantedPermissions);
+
 			return as;
 		}
 	}

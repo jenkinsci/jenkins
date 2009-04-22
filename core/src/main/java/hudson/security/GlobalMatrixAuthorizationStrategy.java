@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * Role-based authorization via a matrix.
@@ -105,6 +106,10 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         return sids;
     }
 
+    /**
+     * In earlier version of Hudson we used to use reflection converter, which calls this method.
+     * This is now unmarshaller via {@link ConverterImpl}
+     */
     private Object readResolve() {
         migrateHudson2324(grantedPermissions);
         acl = new AclImpl();
@@ -208,6 +213,8 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 as.add(id);
                 reader.moveUp();
             }
+
+            migrateHudson2324(as.grantedPermissions);
 
             return as;
         }
