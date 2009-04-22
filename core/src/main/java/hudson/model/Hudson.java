@@ -44,7 +44,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionListView;
-import hudson.LauncherDecorator;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -105,6 +104,7 @@ import hudson.util.Futures;
 import hudson.util.Memoizer;
 import hudson.util.Iterators;
 import hudson.util.FormValidation;
+import hudson.util.VersionNumber;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -115,7 +115,6 @@ import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.JellyException;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.Stapler;
@@ -254,6 +253,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Message displayed in the top page.
      */
     private String systemMessage;
+
+    /**
+     * We update this field to the current version of Hudson whenever we save {@code config.xml}.
+     * This can be used to detect when an upgrade happens from one version to next.
+     *
+     * <p>
+     * Since this field is introduced starting 1.301, "1.0" is used to represent every version
+     * up to 1.300. This value may also include non-standard versions like "1.301-SNAPSHOT" or
+     * "?", etc., so parsing needs to be done with a care.
+     *
+     * @since 1.301
+     */
+    private String version = "1.0";
 
     /**
      * Root directory of the system.
@@ -1129,6 +1141,22 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             throw new IllegalStateException();
         views.remove(view);
         save();
+    }
+
+    /**
+     * Returns true if the current running Hudson is upgraded from a version earlier than the specified version.
+     *
+     * <p>
+     * This method continues to return true until the system configuration is saved, at which point
+     * {@link #version} will be overwritten and Hudson forgets the upgrade history.
+     */
+    public boolean isUpgradedFromBefore(VersionNumber v) {
+        try {
+            return new VersionNumber(version).isOlderThan(v);
+        } catch (IllegalArgumentException e) {
+            // fail to parse this version number
+            return false;
+        }
     }
 
     /**
@@ -2184,6 +2212,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if (np != null) {
                 globalNodeProperties.rebuild(req, np, NodeProperty.for_(this));
             }
+
+            version = VERSION;
 
             save();
             if(result)

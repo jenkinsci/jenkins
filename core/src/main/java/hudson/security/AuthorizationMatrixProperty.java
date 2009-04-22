@@ -176,6 +176,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 	}
 
 	private Object readResolve() {
+        GlobalMatrixAuthorizationStrategy.migrateHudson2324(grantedPermissions);
 		acl = new AclImpl();
 		return this;
 	}

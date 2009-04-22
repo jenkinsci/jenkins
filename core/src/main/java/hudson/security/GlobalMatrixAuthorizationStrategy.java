@@ -30,7 +30,9 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.Item;
 import hudson.util.FormValidation;
+import hudson.util.VersionNumber;
 import hudson.util.FormValidation.Kind;
 import hudson.Functions;
 import hudson.Extension;
@@ -104,8 +106,26 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     private Object readResolve() {
+        migrateHudson2324(grantedPermissions);
         acl = new AclImpl();
         return this;
+    }
+
+    /**
+     * Due to HUDSON-2324, we want to inject Item.READ permission to everyone who has Hudson.READ,
+     * to remain backward compatible
+     * @param grantedPermissions
+     */
+    /*package*/ static void migrateHudson2324(Map<Permission,Set<String>> grantedPermissions) {
+        if(Hudson.getInstance().isUpgradedFromBefore(new VersionNumber("1.301"))) {
+            Set<String> f = grantedPermissions.get(Hudson.READ);
+            if(f!=null) {
+                Set<String> t = this.grantedPermissions.get(Item.READ);
+                if(t!=null) t.addAll(f);
+                else        t=new HashSet<String>(f);
+                this.grantedPermissions.put(Item.READ,t);
+            }
+        }
     }
 
     /**
