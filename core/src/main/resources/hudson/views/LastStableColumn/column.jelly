@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2009, Sun Microsystems, Inc., Jesse Glick
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,33 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Edit View Page
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <f:entry title="${%Jobs}">
-    <j:forEach var="job" items="${app.items}">
-      <f:checkbox name="${job.name}" checked="${it.contains(job)}" />
-      ${job.name}
-      <br/>
-    </j:forEach>
-  </f:entry>
-
-  <f:optionalBlock name="useincluderegex" title="${%Use a regular expression to include jobs into the view}"
-                   checked="${it.includeRegex != null}" help="/help/view-config/includeregex.html">
-    <f:entry title="${%Regular expression}">
-      <f:textbox name="includeRegex" field="includeRegex" />
-    </f:entry>
-  </f:optionalBlock>
-
-  <f:section title="${%Columns}">
-    <j:invokeStatic var="allColumns" className="hudson.views.ListViewColumn" method="all"/>
-    <f:block>
-      <f:hetero-list name="columns" hasHeader="true"
-                     descriptors="${allColumns}"
-                     items="${it.columns}"
-                     addCaption="${%Add column}"/>
-    </f:block>
-  </f:section>
-
+    <j:set var="lstBuild" value="${job.lastStableBuild}"/>
+    <td data="${lstBuild.timestampString2 ?: '-'}">
+          <j:choose>
+              <j:when test="${lstBuild!=null}">
+                  ${lstBuild.timestampString}
+                  (<a href="${jobBaseUrl}${job.shortUrl}lastStableBuild/">#${lstBuild.number}</a>)
+              </j:when>
+              <j:otherwise>
+                  ${%N/A}
+              </j:otherwise>
+          </j:choose>
+      </td>
 </j:jelly>

@@ -43,7 +43,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
   <d:taglib uri="local">
     <d:tag name="body">
-      <table>
+      <table style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
         <j:if test="${hasHeader}">
           <tr>
