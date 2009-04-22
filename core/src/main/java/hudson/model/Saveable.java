@@ -50,7 +50,7 @@ public interface Saveable {
      * {@link Saveable} that doesn't save anything.
      * @since 1.301.
      */
-    public static final Saveable NOOP = new Saveable() {
+    Saveable NOOP = new Saveable() {
         public void save() throws IOException {
         }
     };
