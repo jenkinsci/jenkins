@@ -495,7 +495,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             log.load();
 
             Trigger.timer = new Timer("Hudson cron thread");
-            queue = new Queue();
+            queue = new Queue(LoadBalancer.DEFAULT); // TODO: make this somehow pluggable
 
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
