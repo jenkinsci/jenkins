@@ -121,23 +121,26 @@ public class Queue extends ResourceController implements Saveable {
      * This is an offer from the queue to an executor.
      *
      * <p>
-     * It eventually receives a {@link #item} to build.
+     * An idle executor (that calls {@link Queue#pop()} creates
+     * a new {@link JobOffer} and gets itself {@linkplain Queue#parked parked},
+     * and we'll eventually hand out an {@link #item} to build.
      */
-    private static class JobOffer {
-        final Executor executor;
+    public static class JobOffer {
+        public final Executor executor;
 
         /**
          * Used to wake up an executor, when it has an offered
          * {@link Project} to build.
          */
-        final OneShotEvent event = new OneShotEvent();
+        private final OneShotEvent event = new OneShotEvent();
+
         /**
          * The project that this {@link Executor} is going to build.
          * (Or null, in which case event is used to trigger a queue maintenance.)
          */
-        BuildableItem item;
+        private BuildableItem item;
 
-        public JobOffer(Executor executor) {
+        private JobOffer(Executor executor) {
             this.executor = executor;
         }
 
@@ -161,9 +164,9 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * The executors that are currently parked while waiting for a job to run.
+     * The executors that are currently waiting for a job to run.
      */
-    private final Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
+    private final Map<Executor,JobOffer> parked = new HashMap<Executor,JobOffer>();
 
     public Queue() {
         // if all the executors are busy doing something, then the queue won't be maintained in
@@ -641,8 +644,8 @@ public class Queue extends ResourceController implements Saveable {
      */
     private JobOffer choose(Task p) {
         if (Hudson.getInstance().isQuietingDown()) {
-            // if we are quieting down, don't run anything so that
-            // all executors will be free.
+            // if we are quieting down, don't start anything new so that
+            // all executors will be eventually free.
             return null;
         }
 
