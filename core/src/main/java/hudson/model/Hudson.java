@@ -203,6 +203,20 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient final Map<Node,Computer> computers = new CopyOnWriteMap.Hash<Node,Computer>();
 
     /**
+     * We update this field to the current version of Hudson whenever we save {@code config.xml}.
+     * This can be used to detect when an upgrade happens from one version to next.
+     *
+     * <p>
+     * Since this field is introduced starting 1.301, "1.0" is used to represent every version
+     * up to 1.300. This value may also include non-standard versions like "1.301-SNAPSHOT" or
+     * "?", etc., so parsing needs to be done with a care.
+     *
+     * @since 1.301
+     */
+    // this field needs to be at the very top so that other components can look at this value even during unmarshalling
+    private String version = "1.0";
+    
+    /**
      * Number of executors of the master node.
      */
     private int numExecutors = 2;
@@ -253,19 +267,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Message displayed in the top page.
      */
     private String systemMessage;
-
-    /**
-     * We update this field to the current version of Hudson whenever we save {@code config.xml}.
-     * This can be used to detect when an upgrade happens from one version to next.
-     *
-     * <p>
-     * Since this field is introduced starting 1.301, "1.0" is used to represent every version
-     * up to 1.300. This value may also include non-standard versions like "1.301-SNAPSHOT" or
-     * "?", etc., so parsing needs to be done with a care.
-     *
-     * @since 1.301
-     */
-    private String version = "1.0";
 
     /**
      * Root directory of the system.
@@ -1149,6 +1150,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * <p>
      * This method continues to return true until the system configuration is saved, at which point
      * {@link #version} will be overwritten and Hudson forgets the upgrade history.
+     *
+     * <p>
+     * To handle SNAPSHOTS correctly, pass in "1.N.*" to test if it's upgrading from the version
+     * equal or younger than N. So say if you implement a feature in 1.301 and you want to check
+     * if the installation upgraded from pre-1.301, pass in "1.300.*"
+     *
+     * @since 1.301
      */
     public boolean isUpgradedFromBefore(VersionNumber v) {
         try {
