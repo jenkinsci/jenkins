@@ -29,6 +29,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import hudson.util.Iterators.DuplicateFilterIterator;
 
 /**
  * Consistent hash.
@@ -65,7 +69,7 @@ public class ConsistentHash<T> {
     private final Hash<T> hash;
 
     /**
-     * Used for memoizing MD5 hashes.
+     * Used for remembering the computed MD5 hash, since it's bit expensive to do it all over again.
      */
     private static final class Point implements Comparable<Point> {
         final int hash;
@@ -88,6 +92,9 @@ public class ConsistentHash<T> {
      */
     private volatile Table table;
 
+    /**
+     * Immutable consistent hash table.
+     */
     private final class Table {
         private final int[] hash;
         private final Object[] owner; // really T[]
@@ -113,12 +120,42 @@ public class ConsistentHash<T> {
         }
 
         T lookup(int queryPoint) {
+            return (T)owner[index(queryPoint)];
+        }
+
+        /**
+         * Returns a consistent stream of nodes starting the given query point.
+         *
+         * <p>
+         * This is a permutation of all the nodes, where nodes with more replicas
+         * are more likely to show up early on. 
+         */
+        Iterator<T> list(int queryPoint) {
+            final int start = index(queryPoint);
+            return new DuplicateFilterIterator<T>(new Iterator<T>() {
+                int pos=0;
+                public boolean hasNext() {
+                    return pos<owner.length;
+                }
+
+                public T next() {
+                    if(!hasNext())  throw new NoSuchElementException();
+                    return (T)owner[(start+(pos++))%owner.length];
+                }
+
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            });
+        }
+
+        private int index(int queryPoint) {
             int idx = Arrays.binarySearch(hash, queryPoint);
             if(idx<0) {
                 idx = -idx-1; // idx is now 'insertion point'
                 idx %= hash.length; // make it a circle
             }
-            return (T)owner[idx];
+            return idx;
         }
     }
 
@@ -254,12 +291,44 @@ public class ConsistentHash<T> {
      * The whole point of this class is that if the same query point is given,
      * it's likely to return the same result even when other nodes are added/removed,
      * or the # of replicas for the given node is changed.
+     *
+     * @return
+     *      never null.
      */
     public T lookup(int queryPoint) {
         return table.lookup(queryPoint);
     }
 
+    /**
+     * Takes a string, hash it with MD5, then calls {@link #lookup(int)}. 
+     */
     public T lookup(String queryPoint) {
         return lookup(md5(queryPoint));
+    }
+
+    /**
+     * Creates a permutation of all the nodes for the given data point.
+     *
+     * <p>
+     * The returned pemutation is consistent, in the sense that small change
+     * to the consitent hash (like addition/removal/change of replicas) only
+     * creates a small change in the permutation.
+     *
+     * <p>
+     * Nodes with more replicas are more likely to show up early in the list
+     */
+    public Iterable<T> list(final int queryPoint) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return table.list(queryPoint);
+            }
+        };
+    }
+
+    /**
+     * Takes a string, hash it with MD5, then calls {@link #list(int)}.
+     */
+    public Iterable<T> list(String queryPoint) {
+        return list(md5(queryPoint));
     }
 }

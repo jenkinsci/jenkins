@@ -28,6 +28,9 @@ import junit.framework.TestCase;
 import java.util.Random;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Map.Entry;
 
 /**
@@ -50,6 +53,17 @@ public class ConsistentHashTest extends TestCase {
         String x = hash.lookup(Integer.MIN_VALUE);
         String y = hash.lookup(Integer.MAX_VALUE);
         assertEquals(x,y);
+
+        // list them up
+        Iterator<String> itr = hash.list(Integer.MIN_VALUE).iterator();
+        Set<String> all = new HashSet<String>();
+        String z = itr.next();
+        all.add(z);
+        assertEquals(z,x);
+        all.add(itr.next());
+        all.add(itr.next());
+        assertTrue(!itr.hasNext());
+        assertEquals(3,all.size());
     }
 
     /**
