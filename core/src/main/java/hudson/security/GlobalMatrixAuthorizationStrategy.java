@@ -122,7 +122,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      * @param grantedPermissions
      */
     /*package*/ static void migrateHudson2324(Map<Permission,Set<String>> grantedPermissions) {
-        if(Hudson.getInstance().isUpgradedFromBefore(new VersionNumber("1.301"))) {
+        if(Hudson.getInstance().isUpgradedFromBefore(new VersionNumber("1.300.*"))) {
             Set<String> f = grantedPermissions.get(Hudson.READ);
             if(f!=null) {
                 Set<String> t = grantedPermissions.get(Item.READ);

@@ -48,5 +48,6 @@ public class VersionNumberTest extends TestCase {
     public void testSnapshots() {
         assertTrue(new VersionNumber("1.12").isNewerThan(new VersionNumber("1.12-SNAPSHOT (private-08/24/2008 12:13-hudson)")));
         assertTrue(new VersionNumber("1.12-SNAPSHOT (private-08/24/2008 12:13-hudson)").isNewerThan(new VersionNumber("1.11")));
+        assertTrue(new VersionNumber("1.12-SNAPSHOT").isNewerThan(new VersionNumber("1.11.*")));
     }
 }
