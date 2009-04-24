@@ -598,13 +598,15 @@ public class Queue extends ResourceController implements Saveable {
                             continue;
                         }
 
-                        JobOffer runner = loadBalancer.choose(p.task, new AvailableJobOfferList());
+                        JobOffer runner = loadBalancer.choose(p.task, new ApplicableJobOfferList(p.task));
                         if (runner == null)
                             // if we couldn't find the executor that fits,
                             // just leave it in the buildables list and
                             // check if we can execute other projects
                             continue;
 
+                        assert runner.canTake(p.task);
+                        
                         // found a matching executor. use it.
                         runner.set(p);
                         itr.remove();
@@ -667,18 +669,18 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Represents a list of {@linkplain JobOffer#isAvailable() available} {@link JobOffer}s
+     * Represents a list of {@linkplain JobOffer#canTake(Task) applicable} {@link JobOffer}s
      * and provides various typical 
      */
-    public final class AvailableJobOfferList implements Iterable<JobOffer> {
+    public final class ApplicableJobOfferList implements Iterable<JobOffer> {
         private final List<JobOffer> list;
         // laziy filled
         private Map<Node,List<JobOffer>> nodes;
 
-        private AvailableJobOfferList() {
+        private ApplicableJobOfferList(Task task) {
             list = new ArrayList<JobOffer>(parked.size());
             for (JobOffer j : parked.values())
-                if(j.isAvailable())
+                if(j.canTake(task))
                     list.add(j);
         }
 

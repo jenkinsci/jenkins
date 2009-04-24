@@ -1,7 +1,7 @@
 package hudson.model;
 
 import hudson.model.Node.Mode;
-import hudson.model.Queue.AvailableJobOfferList;
+import hudson.model.Queue.ApplicableJobOfferList;
 import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
 import hudson.util.ConsistentHash;
@@ -25,7 +25,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
      * can be safely introspected from this method, if that information is necessary to make
      * decisions.
      * 
-     * @param available
+     * @param applicable
      *      The list of {@link JobOffer}s that represent {@linkplain JobOffer#isAvailable() available} {@link Executor}s, from which
      *      the callee can choose. Never null.
      * @param  task
@@ -37,17 +37,17 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
      *      the task to be executed right now, in which case this method will be called
      *      some time later with the same task.
      */
-    protected abstract JobOffer choose(Task task, AvailableJobOfferList available);
+    protected abstract JobOffer choose(Task task, ApplicableJobOfferList applicable);
 
     /**
      * Traditional implementation of this.
      */
     public static final LoadBalancer DEFAULT = new LoadBalancer() {
-        protected JobOffer choose(Task task, AvailableJobOfferList available) {
+        protected JobOffer choose(Task task, ApplicableJobOfferList applicable) {
             Label l = task.getAssignedLabel();
             if (l != null) {
                 // if a project has assigned label, it can be only built on it
-                for (JobOffer offer : available) {
+                for (JobOffer offer : applicable) {
                     if (l.contains(offer.getNode()))
                         return offer;
                 }
@@ -62,7 +62,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
             // (but we can't use an exclusive node)
             Node n = task.getLastBuiltOn();
             if (n != null && n.getMode() == Mode.NORMAL) {
-                for (JobOffer offer : available) {
+                for (JobOffer offer : applicable) {
                     if (offer.getNode() == n) {
                         if (isLargeHudson && offer.getNode() instanceof Slave)
                             // but if we are a large Hudson, then we really do want to keep the master free from builds
@@ -79,14 +79,14 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
             // for HTTP requests and coordination as much as possible
             if (isLargeHudson || task.getEstimatedDuration() > 15 * 60 * 1000) {
                 // consider a long job to be > 15 mins
-                for (JobOffer offer : available) {
+                for (JobOffer offer : applicable) {
                     if (offer.getNode() instanceof Slave && offer.isNotExclusive())
                         return offer;
                 }
             }
 
             // lastly, just look for any idle executor
-            for (JobOffer offer : available) {
+            for (JobOffer offer : applicable) {
                 if (offer.isNotExclusive())
                     return offer;
             }
@@ -100,21 +100,21 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
      * Work in progress implementation that uses a consistent hash for scheduling.
      */
     public static final LoadBalancer CONSISTENT_HASH = new LoadBalancer() {
-        protected JobOffer choose(Task task, AvailableJobOfferList available) {
+        protected JobOffer choose(Task task, ApplicableJobOfferList applicable) {
             // populate a consistent hash linear to the # of executors
             // TODO: there's a lot of room for innovations here
-            // TODO: do this upfront and reuse
+            // TODO: do this upfront and reuse the consistent hash
             ConsistentHash<Node> hash = new ConsistentHash<Node>(new Hash<Node>() {
                 public String hash(Node node) {
                     return node.getNodeName();
                 }
             });
-            for (Node n : Hudson.getInstance().getNodes())
+            for (Node n : applicable.nodes())
                 hash.add(n,n.getNumExecutors()*100);
 
             // TODO: add some salt as a query point so that the user can tell Hudson to hop the project to a new node
             for(Node n : hash.list(task.getFullDisplayName())) {
-                JobOffer o = available._for(n);
+                JobOffer o = applicable._for(n);
                 if(o!=null)
                     return o;
             }
@@ -132,24 +132,14 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
         final LoadBalancer base = this;
         return new LoadBalancer() {
             @Override
-            protected JobOffer choose(Task task, AvailableJobOfferList available) {
+            protected JobOffer choose(Task task, ApplicableJobOfferList applicable) {
                 if (Hudson.getInstance().isQuietingDown()) {
                     // if we are quieting down, don't start anything new so that
                     // all executors will be eventually free.
                     return null;
                 }
 
-                JobOffer target = base.choose(task, available);
-                if(target!=null) {
-                    if(!target.canTake(task)) {
-                        LOGGER.severe(target.getNode().getDisplayName()+" cannot take "+task.getFullDisplayName());
-                        return null;
-                    }
-                    // Queue should guarantee that, but just in case.
-                    assert target.isAvailable();
-                }
-
-                return target;
+                return base.choose(task, applicable);
             }
 
             /**
