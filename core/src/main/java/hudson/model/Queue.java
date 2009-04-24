@@ -150,6 +150,23 @@ public class Queue extends ResourceController implements Saveable {
             event.signal();
         }
 
+        /**
+         * Verifies that the {@link Executor} represented by this object is capable of executing the given task.
+         */
+        public boolean canTake(Task task) {
+            Label l = task.getAssignedLabel();
+            if(l!=null && !l.contains(getNode()))
+                return false;   // the task needs to be executed on label that this node doesn't have.
+
+            if(l==null && getNode().getMode()== Mode.EXCLUSIVE)
+                return false;   // this node is reserved for tasks that are tied to it
+
+            return isAvailable();
+        }
+
+        /**
+         * Is this executor ready to accept some tasks?
+         */
         public boolean isAvailable() {
             return item == null && !executor.getOwner().isOffline() && executor.getOwner().isAcceptingTasks();
         }
@@ -168,13 +185,22 @@ public class Queue extends ResourceController implements Saveable {
      */
     private final Map<Executor,JobOffer> parked = new HashMap<Executor,JobOffer>();
 
-    private final LoadBalancer loadBalancer;
+    private volatile transient LoadBalancer loadBalancer;
 
     public Queue(LoadBalancer loadBalancer) {
         this.loadBalancer =  loadBalancer.sanitize();
         // if all the executors are busy doing something, then the queue won't be maintained in
         // timely fashion, so use another thread to make sure it happens.
         new MaintainTask(this);
+    }
+
+    public LoadBalancer getLoadBalancer() {
+        return loadBalancer;
+    }
+
+    public void setLoadBalancer(LoadBalancer loadBalancer) {
+        if(loadBalancer==null)  throw new IllegalArgumentException();
+        this.loadBalancer = loadBalancer;
     }
 
     /**
@@ -572,7 +598,7 @@ public class Queue extends ResourceController implements Saveable {
                             continue;
                         }
 
-                        JobOffer runner = loadBalancer.choose(p.task, getAvailableJobOffers());
+                        JobOffer runner = loadBalancer.choose(p.task, new AvailableJobOfferList());
                         if (runner == null)
                             // if we couldn't find the executor that fits,
                             // just leave it in the buildables list and
@@ -641,14 +667,60 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Creates a sublist of {@link #parked} that only consists of available offers.
+     * Represents a list of {@linkplain JobOffer#isAvailable() available} {@link JobOffer}s
+     * and provides various typical 
      */
-    private List<JobOffer> getAvailableJobOffers() {
-        List<JobOffer> availables = new ArrayList<JobOffer>(parked.size());
-        for (JobOffer j : parked.values())
-            if(j.isAvailable())
-                availables.add(j);
-        return availables;
+    public final class AvailableJobOfferList implements Iterable<JobOffer> {
+        private final List<JobOffer> list;
+        // laziy filled
+        private Map<Node,List<JobOffer>> nodes;
+
+        private AvailableJobOfferList() {
+            list = new ArrayList<JobOffer>(parked.size());
+            for (JobOffer j : parked.values())
+                if(j.isAvailable())
+                    list.add(j);
+        }
+
+        /**
+         * Returns all the {@linkplain JobOffer#isAvailable() available} {@link JobOffer}s.
+         */
+        public List<JobOffer> all() {
+            return list;
+        }
+
+        public Iterator<JobOffer> iterator() {
+            return list.iterator();
+        }
+
+        /**
+         * List up all the {@link Node}s that have some available offers.
+         */
+        public Set<Node> nodes() {
+            return byNodes().keySet();
+        }
+
+        /**
+         * Gets a {@link JobOffer} for an executor of the given node, if any.
+         * Otherwise null. 
+         */
+        public JobOffer _for(Node n) {
+            List<JobOffer> r = byNodes().get(n);
+            if(r==null) return null;
+            return r.get(0);
+        }
+
+        public Map<Node,List<JobOffer>> byNodes() {
+            if(nodes==null) {
+                nodes = new HashMap<Node,List<JobOffer>>();
+                for (JobOffer o : list) {
+                    List<JobOffer> l = nodes.get(o.getNode());
+                    if(l==null) nodes.put(o.getNode(),l=new ArrayList<JobOffer>());
+                    l.add(o);
+                }
+            }
+            return nodes;
+        }
     }
 
     /**

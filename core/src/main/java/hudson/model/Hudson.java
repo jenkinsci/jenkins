@@ -495,7 +495,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             log.load();
 
             Trigger.timer = new Timer("Hudson cron thread");
-            queue = new Queue(LoadBalancer.DEFAULT); // TODO: make this somehow pluggable
+            queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
 
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
@@ -3265,6 +3265,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static boolean PARALLEL_LOAD = !"false".equals(System.getProperty(Hudson.class.getName()+".parallelLoad"));
     public static boolean KILL_AFTER_LOAD = Boolean.getBoolean(Hudson.class.getName()+".killAfterLoad");
     public static boolean LOG_STARTUP_PERFORMANCE = Boolean.getBoolean(Hudson.class.getName()+".logStartupPerformance");
+    private static final boolean CONSISTENT_HASH = Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 

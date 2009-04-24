@@ -1,17 +1,19 @@
 package hudson.model;
 
-import hudson.model.Queue.Task;
-import hudson.model.Queue.JobOffer;
 import hudson.model.Node.Mode;
+import hudson.model.Queue.AvailableJobOfferList;
+import hudson.model.Queue.JobOffer;
+import hudson.model.Queue.Task;
+import hudson.util.ConsistentHash;
+import hudson.util.ConsistentHash.Hash;
 
-import java.util.Collection;
 import java.util.logging.Logger;
 
 /**
  * Strategy that decides which {@link Task} gets run on which {@link Executor}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.301 (but this is not yet open for plugins to change)
+ * @since 1.301
  */
 public abstract class LoadBalancer /*implements ExtensionPoint*/ {
     /**
@@ -35,13 +37,13 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
      *      the task to be executed right now, in which case this method will be called
      *      some time later with the same task.
      */
-    protected abstract JobOffer choose(Task task, Collection<JobOffer> available);
+    protected abstract JobOffer choose(Task task, AvailableJobOfferList available);
 
     /**
      * Traditional implementation of this.
      */
     public static final LoadBalancer DEFAULT = new LoadBalancer() {
-        protected JobOffer choose(Task task, Collection<JobOffer> available) {
+        protected JobOffer choose(Task task, AvailableJobOfferList available) {
             Label l = task.getAssignedLabel();
             if (l != null) {
                 // if a project has assigned label, it can be only built on it
@@ -95,6 +97,34 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
     };
 
     /**
+     * Work in progress implementation that uses a consistent hash for scheduling.
+     */
+    public static final LoadBalancer CONSISTENT_HASH = new LoadBalancer() {
+        protected JobOffer choose(Task task, AvailableJobOfferList available) {
+            // populate a consistent hash linear to the # of executors
+            // TODO: there's a lot of room for innovations here
+            // TODO: do this upfront and reuse
+            ConsistentHash<Node> hash = new ConsistentHash<Node>(new Hash<Node>() {
+                public String hash(Node node) {
+                    return node.getNodeName();
+                }
+            });
+            for (Node n : Hudson.getInstance().getNodes())
+                hash.add(n,n.getNumExecutors()*100);
+
+            // TODO: add some salt as a query point so that the user can tell Hudson to hop the project to a new node
+            for(Node n : hash.list(task.getFullDisplayName())) {
+                JobOffer o = available._for(n);
+                if(o!=null)
+                    return o;
+            }
+
+            // nothing available
+            return null;
+        }
+    };
+
+    /**
      * Wraps this {@link LoadBalancer} into a decorator that tests the basic sanity of the implementation.
      * Only override this if you find some of the checks excessive, but beware that it's like driving without a seat belt.
      */
@@ -102,7 +132,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
         final LoadBalancer base = this;
         return new LoadBalancer() {
             @Override
-            protected JobOffer choose(Task task, Collection<JobOffer> available) {
+            protected JobOffer choose(Task task, AvailableJobOfferList available) {
                 if (Hudson.getInstance().isQuietingDown()) {
                     // if we are quieting down, don't start anything new so that
                     // all executors will be eventually free.
@@ -111,9 +141,8 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
 
                 JobOffer target = base.choose(task, available);
                 if(target!=null) {
-                    Label l = task.getAssignedLabel();
-                    if(l!=null && !l.contains(target.getNode())) {
-                        LOGGER.severe(task.getFullDisplayName()+" needs to be assigned to a node that has a label "+l);
+                    if(!target.canTake(task)) {
+                        LOGGER.severe(target.getNode().getDisplayName()+" cannot take "+task.getFullDisplayName());
                         return null;
                     }
                     // Queue should guarantee that, but just in case.
