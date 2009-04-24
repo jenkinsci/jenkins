@@ -120,7 +120,9 @@ public class ConsistentHash<T> {
         }
 
         T lookup(int queryPoint) {
-            return (T)owner[index(queryPoint)];
+            int i = index(queryPoint);
+            if(i<0) return null;
+            return (T)owner[i];
         }
 
         /**
@@ -153,6 +155,7 @@ public class ConsistentHash<T> {
             int idx = Arrays.binarySearch(hash, queryPoint);
             if(idx<0) {
                 idx = -idx-1; // idx is now 'insertion point'
+                if(hash.length==0)  return -1;
                 idx %= hash.length; // make it a circle
             }
             return idx;
@@ -204,6 +207,7 @@ public class ConsistentHash<T> {
     public ConsistentHash(Hash<T> hash, int defaultReplication) {
         this.hash = hash;
         this.defaultReplication = defaultReplication;
+        this.table = new Table(); // initial empty table
     }
 
     public int countAllPoints() {
@@ -293,7 +297,7 @@ public class ConsistentHash<T> {
      * or the # of replicas for the given node is changed.
      *
      * @return
-     *      never null.
+     *      null if the consistent hash is empty. Otherwise always non-null.
      */
     public T lookup(int queryPoint) {
         return table.lookup(queryPoint);

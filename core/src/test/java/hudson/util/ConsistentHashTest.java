@@ -112,4 +112,11 @@ public class ConsistentHashTest extends TestCase {
             assertTrue(e.getValue()==0 || e.getValue()==m);
         }
     }
+
+    public void testEmptyBehavior() {
+        ConsistentHash<String> hash = new ConsistentHash<String>();
+        assertFalse(hash.list(0).iterator().hasNext());
+        assertNull(hash.lookup(0));
+        assertNull(hash.lookup(999));
+    }
 }
