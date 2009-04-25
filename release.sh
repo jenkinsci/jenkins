@@ -34,11 +34,17 @@ rm hudson.war || true
 tag=hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")
 export MAVEN_OPTS="-Xmx512m -XX:MaxPermSize=256m"
 mvn -B -Dtag=$tag release:prepare || mvn -B -Dtag=$tag install release:prepare || true
-svn up -r head
-mvn -B -Dtag=$tag -Dresume release:prepare
+#svn up -r head
+#mvn -B -Dtag=$tag -Dresume release:prepare
 mvn release:perform
 
 id=$(show-pom-version target/checkout/pom.xml)
+case $id in
+*-SNAPSHOT)
+	echo Trying to release a SNAPSHOT
+	exit 1
+	;;
+esac
 #./publish-javadoc.sh
 javanettasks uploadFile hudson /releases/$id                "`date +"%Y/%m/%d"` release" Stable target/checkout/war/target/hudson.war | tee target/war-upload.log
 warUrl=$(cat target/war-upload.log | grep "^Posted" | sed -e "s/Posted //g")
