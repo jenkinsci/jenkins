@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.301-SNAPSHOT</version>
+    <version>1.301</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -106,14 +106,11 @@ THE SOFTWARE.
                 <!-- dependencies that goes to unusual locations -->
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
-                <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-9" type="jar"
-                                 tofile="${basedir}/target/generated-resources/winstone.jar" />
+                <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-9" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
 
                 <!-- bundled plugins -->
-                <resolveArtifact groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" type="hpi"
-                                 tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
-                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.4" type="hpi"
-                                 tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
+                <resolveArtifact groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
+                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.4" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
               </tasks>
             </configuration>
           </execution>
