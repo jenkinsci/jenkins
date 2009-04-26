@@ -95,7 +95,7 @@ import java.net.Inet4Address;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class Computer extends AbstractModelObject implements AccessControlled, ExecutorListener {
+public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
 
