@@ -68,6 +68,7 @@ import java.util.logging.Logger;
 import java.nio.charset.Charset;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.Inet4Address;
 
 /**
  * Represents the running state of a remote computer that holds {@link Executor}s.
@@ -598,6 +599,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
                 while (e.hasMoreElements()) {
                     InetAddress ia =  e.nextElement();
                     if(ia.isLoopbackAddress())  continue;
+                    if(!(ia instanceof Inet4Address))   continue;
                     names.add(ia.getHostAddress());
                 }
             }
