@@ -530,8 +530,6 @@ public class SubversionSCM extends SCM implements Serializable {
                         }
                     }
                 } else {
-                    Util.deleteContentsRecursive(ws);
-
                     // buffer the output by a separate thread so that the update operation
                     // won't be blocked by the remoting of the data
                     PipedOutputStream pos = new PipedOutputStream();
@@ -543,6 +541,7 @@ public class SubversionSCM extends SCM implements Serializable {
                             listener.getLogger().println("Checking out "+l.remote);
 
                             File local = new File(ws, l.local);
+                            Util.deleteContentsRecursive(local);
                             svnuc.setEventHandler(new SubversionUpdateEventHandler(new PrintStream(pos), externals, local, l.local));
                             svnuc.doCheckout(l.getSVNURL(), local.getCanonicalFile(), SVNRevision.HEAD, l.getRevision(revision), true);
                         } catch (SVNException e) {
@@ -828,7 +827,7 @@ public class SubversionSCM extends SCM implements Serializable {
                 File module = new File(ws,moduleName).getCanonicalFile(); // canonicalize to remove ".." and ".". See #474
 
                 if(!module.exists()) {
-                    listener.getLogger().println("Checking out a fresh workspace because "+module+" doesn't exist");
+                    listener.getLogger().println("Doing a fresh checkout because "+module+" doesn't exist");
                     return false;
                 }
 
@@ -838,11 +837,11 @@ public class SubversionSCM extends SCM implements Serializable {
 
                     String url = l.getURL();
                     if(!svnInfo.url.equals(url)) {
-                        listener.getLogger().println("Checking out a fresh workspace because the workspace is not "+url);
+                        listener.getLogger().println("Doing a fresh checkout because the checkout location is not "+url);
                         return false;
                     }
                 } catch (SVNException e) {
-                    listener.getLogger().println("Checking out a fresh workspace because Hudson failed to detect the current workspace "+module);
+                    listener.getLogger().println("Doing a fresh checkout because Hudson failed to detect the current checkout location "+module);
                     e.printStackTrace(listener.error(e.getMessage()));
                     return false;
                 }
