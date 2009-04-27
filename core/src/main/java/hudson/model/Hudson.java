@@ -53,6 +53,7 @@ import hudson.model.listeners.JobListener.JobListenerAdapter;
 import hudson.model.listeners.SCMListener;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.Channel;
 import hudson.scm.CVSSCM;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
@@ -168,6 +169,7 @@ import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TreeSet;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -2652,6 +2654,37 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         rsp.getWriter().println("GCed");
+    }
+
+    private transient final Map<UUID,FullDuplexHttpChannel> duplexChannels = new HashMap<UUID, FullDuplexHttpChannel>();
+
+    /**
+     * Handles HTTP requests for duplex channels.
+     */
+    public void doDuplexChannel(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+        requirePOST();
+
+        UUID uuid = UUID.fromString(req.getHeader("Session"));
+
+        FullDuplexHttpChannel server;
+        if(req.getHeader("Side").equals("download")) {
+            duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid));
+            try {
+                server.download(req,rsp);
+            } finally {
+                duplexChannels.remove(uuid);
+            }
+        } else {
+            duplexChannels.get(uuid).upload(req,rsp);
+        }
+    }
+
+    /**
+     * Called by the CLI over a {@link Channel} to execute an CLI command.
+     */
+    public static int cli(String... args) {
+        System.out.println(Arrays.asList(args));
+        return 0;
     }
 
     /**
