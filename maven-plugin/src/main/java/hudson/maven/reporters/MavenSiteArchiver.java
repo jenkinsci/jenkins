@@ -73,7 +73,7 @@ public class MavenSiteArchiver extends MavenReporter {
                 new FilePath(destDir).copyRecursiveTo("**/*",target);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
-                e.printStackTrace(listener.fatalError("Unable to copy site from {0} to {1}",destDir,target));
+                e.printStackTrace(listener.fatalError("Unable to copy site from %s to %s",destDir,target));
                 build.setResult(Result.FAILURE);
             }
 
