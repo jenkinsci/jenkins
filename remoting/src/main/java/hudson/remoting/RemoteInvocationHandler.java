@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -203,7 +202,7 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
      * this can be used to send a method call to user-level objects, and
      * classes for the parameters and the return value are sent remotely if needed.
      */
-    private static final class RPCRequest extends Request<Serializable,Throwable> implements DelegatingCallable<Serializable,Throwable> {
+    static final class RPCRequest extends Request<Serializable,Throwable> implements DelegatingCallable<Serializable,Throwable> {
         /**
          * Target object id to invoke.
          */
