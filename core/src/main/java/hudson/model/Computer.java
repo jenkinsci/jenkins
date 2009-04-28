@@ -578,7 +578,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         for( String address : getChannel().call(new ListPossibleNames())) {
             try {
                 InetAddress ia = InetAddress.getByName(address);
-                if(ia.isReachable(500))
+                if(ia.isReachable(500) && ia instanceof Inet4Address)
                     return ia.getCanonicalHostName();
             } catch (IOException e) {
                 // if a given name fails to parse on this host, we get this error
