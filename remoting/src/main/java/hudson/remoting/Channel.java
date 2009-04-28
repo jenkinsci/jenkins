@@ -101,6 +101,7 @@ public class Channel implements VirtualChannel {
     private final ObjectInputStream ois;
     private final ObjectOutputStream oos;
     private final String name;
+    /*package*/ final boolean isRestricted;
     /*package*/ final ExecutorService executor;
 
     /**
@@ -236,6 +237,10 @@ public class Channel implements VirtualChannel {
         this(name,exec,Mode.BINARY,is,os,header);
     }
 
+    public Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header) throws IOException {
+        this(name,exec,mode,is,os,header,false);
+    }
+
     /**
      * Creates a new channel.
      * 
@@ -256,10 +261,19 @@ public class Channel implements VirtualChannel {
      *      the data goes into the "binary mode". This is useful
      *      when the established communication channel might include some data that might
      *      be useful for debugging/trouble-shooting.
+     * @param restricted
+     *      If true, this channel won't accept {@link Command}s that allow the remote end to execute arbitrary closures
+     *      --- instead they can only call methods on objects that are exported by this channel.
+     *      This also prevents the remote end from loading classes into JVM.
+     *
+     *      Note that it still allows the remote end to deserialize arbitrary object graph
+     *      (provided that all the classes are already available in this JVM), so exactly how
+     *      safe the resulting behavior is is up to discussion.
      */
-    public Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header) throws IOException {
+    public Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header, boolean restricted) throws IOException {
         this.name = name;
         this.executor = exec;
+        this.isRestricted = restricted;
         ObjectOutputStream oos = null;
 
         // write the magic preamble.
