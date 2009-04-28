@@ -14,7 +14,7 @@ import java.lang.reflect.Method;
 public class CLI {
     public static void main(final String[] args) throws Exception {
         URL target = new URL("http://localhost:8080/duplexChannel");
-        ChunkedHttpStreamPair con = new ChunkedHttpStreamPair(target);
+        FullDuplexHttpStream con = new FullDuplexHttpStream(target);
         ExecutorService pool = Executors.newCachedThreadPool();
         Channel channel = new Channel("Chunked connection to "+target,
                 pool,con.getInputStream(),con.getOutputStream());
