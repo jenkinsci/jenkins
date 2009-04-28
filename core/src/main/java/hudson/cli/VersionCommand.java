@@ -23,41 +23,18 @@
  */
 package hudson.cli;
 
-import hudson.remoting.Channel;
-import hudson.remoting.RemoteOutputStream;
-
-import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
+import hudson.Extension;
+import hudson.model.Hudson;
 
 /**
- * CLI entry point to Hudson.
- * 
+ * Shows the version.
+ *
  * @author Kohsuke Kawaguchi
  */
-public class CLI {
-    public static void main(final String[] _args) throws Exception {
-        List<String> args = Arrays.asList(_args);
-
-        URL target = new URL("http://localhost:8080/cli");
-        FullDuplexHttpStream con = new FullDuplexHttpStream(target);
-        ExecutorService pool = Executors.newCachedThreadPool();
-        Channel channel = new Channel("Chunked connection to "+target,
-                pool,con.getInputStream(),con.getOutputStream());
-
-        // execute the command
-        int r=-1;
-        try {
-            CliEntryPoint cli = (CliEntryPoint)channel.getRemoteProperty(CliEntryPoint.class.getName());
-            r = cli.main(args, new RemoteOutputStream(System.out), new RemoteOutputStream(System.err));
-        } finally {
-            channel.close();
-            pool.shutdown();
-        }
-
-        System.exit(r);
+@Extension
+public class VersionCommand extends CLICommand {
+    protected int run() {
+        stdout.println(Hudson.VERSION);
+        return 0;
     }
 }

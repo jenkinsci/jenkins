@@ -21,19 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
-
-import java.io.OutputStream;
-import java.util.List;
 
 /**
- * Remotable interface for CLI entry point on the server side.
- *
- * @author Kohsuke Kawaguchi
+ * Server-side CLI commands for Hudson.
  */
-public interface CliEntryPoint {
-    /**
-     * Just like the static main method.
-     */
-    int main(List<String> args, OutputStream stdout, OutputStream stderr);
-}
+package hudson.cli;

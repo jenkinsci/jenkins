@@ -45,6 +45,7 @@ import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionListView;
 import hudson.cli.CliEntryPoint;
+import hudson.cli.CLICommand;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -149,6 +150,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.io.PrintStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.text.NumberFormat;
@@ -2657,9 +2660,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * {@link CliEntryPoint} implementation exposed to the remote CLI.
      */
     private final class CliManager implements CliEntryPoint, Serializable {
-        public int main(String[] args) {
-            System.out.println(Arrays.asList(args));
-            return 0;
+        public int main(List<String> args, OutputStream stdout, OutputStream stderr) {
+            PrintStream err = new PrintStream(stderr);
+
+            String subCmd = args.get(0);
+            CLICommand cmd = CLICommand.clone(subCmd);
+            if(cmd!=null)
+                return cmd.main(args.subList(1,args.size()),
+                        new PrintStream(stdout), err);
+
+            err.println("No such command: "+subCmd);
+            for (CLICommand c : CLICommand.all())
+                err.println("  "+c.getName());
+            return -1;
         }
         private Object writeReplace() {
             return Channel.current().export(CliEntryPoint.class,this);

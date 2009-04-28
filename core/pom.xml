@@ -348,6 +348,11 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>args4j</groupId>
+      <artifactId>args4j</artifactId>
+      <version>2.0.13</version>
+    </dependency>
+    <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
       <version>1.9</version>
