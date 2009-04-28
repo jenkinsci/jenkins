@@ -246,7 +246,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * Never null.
      */
-    private volatile AuthorizationStrategy authorizationStrategy;
+    private volatile AuthorizationStrategy authorizationStrategy = AuthorizationStrategy.UNSECURED;
 
     /**
      * Controls a part of the
@@ -263,7 +263,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @see #getSecurity()
      * @see #setSecurityRealm(SecurityRealm)
      */
-    private volatile SecurityRealm securityRealm;
+    private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
 
     /**
      * Message displayed in the top page.
@@ -1021,13 +1021,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public List<TopLevelItem> getItems() {
         List<TopLevelItem> viewableItems = new ArrayList<TopLevelItem>();
         for (TopLevelItem item : items.values()) {
-            if (item instanceof AccessControlled) {
-            	if (((AccessControlled)item).hasPermission(Item.READ))
-            		viewableItems.add(item);
-            }
-            else {
-            	viewableItems.add(item);
-            }
+            if (item.hasPermission(Item.READ))
+                viewableItems.add(item);
         }
         
         return viewableItems;
@@ -3307,7 +3302,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static boolean PARALLEL_LOAD = !"false".equals(System.getProperty(Hudson.class.getName()+".parallelLoad"));
     public static boolean KILL_AFTER_LOAD = Boolean.getBoolean(Hudson.class.getName()+".killAfterLoad");
     public static boolean LOG_STARTUP_PERFORMANCE = Boolean.getBoolean(Hudson.class.getName()+".logStartupPerformance");
-    private static final boolean CONSISTENT_HASH = Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
+    private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 
