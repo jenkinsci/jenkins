@@ -44,6 +44,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionListView;
+import hudson.cli.CliEntryPoint;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -147,6 +148,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.text.NumberFormat;
@@ -2651,12 +2653,25 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         rsp.getWriter().println("GCed");
     }
 
+    /**
+     * {@link CliEntryPoint} implementation exposed to the remote CLI.
+     */
+    private final class CliManager implements CliEntryPoint, Serializable {
+        public int main(String[] args) {
+            System.out.println(Arrays.asList(args));
+            return 0;
+        }
+        private Object writeReplace() {
+            return Channel.current().export(CliEntryPoint.class,this);
+        }
+    }
+
     private transient final Map<UUID,FullDuplexHttpChannel> duplexChannels = new HashMap<UUID, FullDuplexHttpChannel>();
 
     /**
-     * Handles HTTP requests for duplex channels.
+     * Handles HTTP requests for duplex channels for CLI.
      */
-    public void doDuplexChannel(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+    public void doCli(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         checkPermission(READ);
         requirePOST();
 
@@ -2664,7 +2679,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         FullDuplexHttpChannel server;
         if(req.getHeader("Side").equals("download")) {
-            duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !hasPermission(ADMINISTER)));
+            duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !hasPermission(ADMINISTER)) {
+                protected void main(Channel channel) throws IOException, InterruptedException {
+                    channel.setProperty(CliEntryPoint.class.getName(),new CliManager());
+                }
+            });
             try {
                 server.download(req,rsp);
             } finally {
@@ -2673,14 +2692,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         } else {
             duplexChannels.get(uuid).upload(req,rsp);
         }
-    }
-
-    /**
-     * Called by the CLI over a {@link Channel} to execute an CLI command.
-     */
-    public static int cli(String... args) {
-        System.out.println(Arrays.asList(args));
-        return 0;
     }
 
     /**

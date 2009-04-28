@@ -21,37 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
-
-import hudson.remoting.Channel;
-
-import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+package hudson.remoting;
 
 /**
- * CLI entry point to Hudson.
- * 
+ * Internally used to mark methods on {@link Channel} that are exported to remote.
+ *
  * @author Kohsuke Kawaguchi
  */
-public class CLI {
-    public static void main(final String[] args) throws Exception {
-        URL target = new URL("http://localhost:8080/cli");
-        FullDuplexHttpStream con = new FullDuplexHttpStream(target);
-        ExecutorService pool = Executors.newCachedThreadPool();
-        Channel channel = new Channel("Chunked connection to "+target,
-                pool,con.getInputStream(),con.getOutputStream());
-
-        // execute the command
-        int r=-1;
-        try {
-            CliEntryPoint cli = (CliEntryPoint)channel.getRemoteProperty(CliEntryPoint.class.getName());
-            r = cli.main(args);
-        } finally {
-            channel.close();
-            pool.shutdown();
-        }
-
-        System.exit(r);
-    }
+interface IChannel {
+    Object getProperty(Object key);
 }

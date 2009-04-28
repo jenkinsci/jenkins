@@ -297,8 +297,13 @@ THE SOFTWARE.
 
   <dependencies>
     <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>cli</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

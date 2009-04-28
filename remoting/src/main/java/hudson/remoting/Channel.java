@@ -97,7 +97,7 @@ import java.net.URL;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Channel implements VirtualChannel {
+public class Channel implements VirtualChannel, IChannel {
     private final ObjectInputStream ois;
     private final ObjectOutputStream oos;
     private final String name;
@@ -172,6 +172,16 @@ public class Channel implements VirtualChannel {
      * @see #classLoadingCount
      */
     public final AtomicInteger resourceLoadingCount = new AtomicInteger();
+
+    /**
+     * Property bag that contains application-specific stuff.
+     */
+    private final Hashtable<Object,Object> properties = new Hashtable<Object,Object>();
+
+    /**
+     * Proxy to the remote {@link Channel} object.
+     */
+    private IChannel remoteChannel;
 
     /**
      * Communication mode.
@@ -275,6 +285,10 @@ public class Channel implements VirtualChannel {
         this.executor = exec;
         this.isRestricted = restricted;
         ObjectOutputStream oos = null;
+
+        if(export(this,false)!=1)
+            throw new AssertionError(); // export number 1 is reserved for the channel itself
+        remoteChannel = RemoteInvocationHandler.wrap(this,1,IChannel.class,false);
 
         // write the magic preamble.
         // certain communication channel, such as forking JVM via ssh,
@@ -660,6 +674,27 @@ public class Channel implements VirtualChannel {
         }
 
         // termination is done by CloseCommand when we received it.
+    }
+
+    /**
+     * Gets the application specific property set by {@link #setProperty(Object, Object)}.
+     * These properties are also accessible from the remote channel via {@link #getRemoteProperty(Object)}.
+     *
+     * <p>
+     * This mechanism can be used for one side to discover contextual objects created by the other JVM
+     * (as opposed to executing {@link Callable}, which cannot have any reference to the context
+     * of the remote {@link Channel}.
+     */
+    public Object getProperty(Object key) {
+        return properties.get(key);
+    }
+
+    public Object setProperty(Object key, Object value) {
+        return properties.put(key,value);
+    }
+
+    public Object getRemoteProperty(Object key) {
+        return remoteChannel.getProperty(key);
     }
 
     public String toString() {
