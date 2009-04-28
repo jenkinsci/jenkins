@@ -2657,14 +2657,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Handles HTTP requests for duplex channels.
      */
     public void doDuplexChannel(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-        checkPermission(ADMINISTER);
+        checkPermission(READ);
         requirePOST();
 
         UUID uuid = UUID.fromString(req.getHeader("Session"));
 
         FullDuplexHttpChannel server;
         if(req.getHeader("Side").equals("download")) {
-            duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid));
+            duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !hasPermission(ADMINISTER)));
             try {
                 server.download(req,rsp);
             } finally {

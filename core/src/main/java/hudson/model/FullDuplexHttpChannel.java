@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
+import hudson.remoting.Channel.Mode;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -24,9 +25,11 @@ final class FullDuplexHttpChannel {
     private final PipedOutputStream pipe = new PipedOutputStream();
 
     private final UUID uuid;
+    private final boolean restricted;
 
-    public FullDuplexHttpChannel(UUID uuid) throws IOException {
+    public FullDuplexHttpChannel(UUID uuid, boolean restricted) throws IOException {
         this.uuid = uuid;
+        this.restricted = restricted;
     }
 
     /**
@@ -42,7 +45,7 @@ final class FullDuplexHttpChannel {
         // this is created first, and this controls the lifespan of the channel
         rsp.addHeader("Transfer-Encoding", "chunked");
         channel = new Channel("HTTP full-duplex channel " + uuid,
-                Computer.threadPoolForRemoting, new PipedInputStream(pipe), rsp.getOutputStream());
+                Computer.threadPoolForRemoting, Mode.BINARY, new PipedInputStream(pipe), rsp.getOutputStream(), null, restricted);
 
         // so that we can detect dead clients, periodically send something
         PingThread ping = new PingThread(channel) {
