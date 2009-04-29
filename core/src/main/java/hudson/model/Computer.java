@@ -68,6 +68,7 @@ import java.util.logging.Logger;
 import java.nio.charset.Charset;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.Inet4Address;
 
 /**
  * Represents the running state of a remote computer that holds {@link Executor}s.
@@ -94,7 +95,7 @@ import java.net.NetworkInterface;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class Computer extends AbstractModelObject implements AccessControlled, ExecutorListener {
+public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
 
@@ -577,7 +578,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
         for( String address : getChannel().call(new ListPossibleNames())) {
             try {
                 InetAddress ia = InetAddress.getByName(address);
-                if(ia.isReachable(500))
+                if(ia.isReachable(500) && ia instanceof Inet4Address)
                     return ia.getCanonicalHostName();
             } catch (IOException e) {
                 // if a given name fails to parse on this host, we get this error
@@ -598,6 +599,7 @@ public abstract class Computer extends AbstractModelObject implements AccessCont
                 while (e.hasMoreElements()) {
                     InetAddress ia =  e.nextElement();
                     if(ia.isLoopbackAddress())  continue;
+                    if(!(ia instanceof Inet4Address))   continue;
                     names.add(ia.getHostAddress());
                 }
             }

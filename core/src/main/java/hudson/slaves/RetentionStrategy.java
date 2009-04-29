@@ -205,7 +205,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
                     if (c.isLaunchSupported())
-                        c.connect(true);
+                        c.connect(false);
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();

@@ -169,14 +169,19 @@ public class SubversionEventHandlerImpl extends SVNEventAdapter {
         String inPath = file.getCanonicalPath().replace(File.separatorChar, '/');
         String basePath = baseDir.getCanonicalPath().replace(File.separatorChar, '/');
         String commonRoot = getCommonAncestor(inPath, basePath);
+        
+        String relativePath = inPath;
         if (commonRoot != null) {
             if (equals(inPath , commonRoot)) {
                 return "";
             } else if (startsWith(inPath, commonRoot + "/")) {
-                return inPath.substring(commonRoot.length() + 1);
+                relativePath = inPath.substring(commonRoot.length() + 1);
             }
         }
-        return inPath;
+        if (relativePath.endsWith("/")) {
+            relativePath = relativePath.substring(0, relativePath.length() - 1);
+        }
+        return relativePath;
     }
 
     private static String getCommonAncestor(String p1, String p2) {

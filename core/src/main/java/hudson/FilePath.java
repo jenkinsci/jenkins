@@ -424,7 +424,7 @@ public final class FilePath implements Serializable {
             public InputStream extract(InputStream _in) throws IOException {
                 HeadBufferingStream in = new HeadBufferingStream(_in,SIDE_BUFFER_SIZE);
                 try {
-                    return new GZIPInputStream(in);
+                    return new GZIPInputStream(in,8192);
                 } catch (IOException e) {
                     // various people reported "java.io.IOException: Not in GZIP format" here, so diagnose this problem better
                     in.fillSide();
@@ -432,7 +432,7 @@ public final class FilePath implements Serializable {
                 }
             }
             public OutputStream compress(OutputStream out) throws IOException {
-                return new GZIPOutputStream(out);
+                return new GZIPOutputStream(new BufferedOutputStream(out));
             }
         };
 
@@ -454,7 +454,7 @@ public final class FilePath implements Serializable {
             final InputStream in = new RemoteInputStream(_in);
             act(new FileCallable<Void>() {
                 public Void invoke(File dir, VirtualChannel channel) throws IOException {
-                    readFromTar("input stream",dir, compression.extract(new BufferedInputStream(in)));
+                    readFromTar("input stream",dir, compression.extract(in));
                     return null;
                 }
                 private static final long serialVersionUID = 1L;
@@ -1150,7 +1150,7 @@ public final class FilePath implements Serializable {
                     }
                 }
             });
-            int r = writeToTar(new File(remote),fileMask,excludes,new GZIPOutputStream(pipe.getOut()));
+            int r = writeToTar(new File(remote),fileMask,excludes,TarCompression.GZIP.compress(pipe.getOut()));
             try {
                 future.get();
             } catch (ExecutionException e) {
@@ -1164,7 +1164,7 @@ public final class FilePath implements Serializable {
             Future<Integer> future = actAsync(new FileCallable<Integer>() {
                 public Integer invoke(File f, VirtualChannel channel) throws IOException {
                     try {
-                        return writeToTar(f,fileMask,excludes,new GZIPOutputStream(pipe.getOut()));
+                        return writeToTar(f,fileMask,excludes,TarCompression.GZIP.compress(pipe.getOut()));
                     } finally {
                         pipe.getOut().close();
                     }

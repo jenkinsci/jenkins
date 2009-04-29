@@ -297,8 +297,13 @@ THE SOFTWARE.
 
   <dependencies>
     <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>cli</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -341,6 +346,11 @@ THE SOFTWARE.
           <artifactId>commons-jexl</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>args4j</groupId>
+      <artifactId>args4j</artifactId>
+      <version>2.0.13</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>

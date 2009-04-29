@@ -268,14 +268,19 @@ public class Util {
      */
     //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
     public static boolean isSymlink(File file) throws IOException {
-        File parent = file.getParentFile();
-        File canonicalFile = file.getCanonicalFile();
+        String name = file.getName();
+        if (name.equals(".") || name.equals(".."))
+            return false;
 
-        return parent != null
-            && (!canonicalFile.getName().equals(file.getName()) || !canonicalFile.getPath().startsWith(
-            parent.getCanonicalPath()));
-    }
-
+        File fileInCanonicalParent = null;
+        File parentDir = file.getParentFile();
+        if ( parentDir == null ) {
+            fileInCanonicalParent = file;
+        } else {
+            fileInCanonicalParent = new File( parentDir.getCanonicalPath(), name );
+        }
+        return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
+    }    
 
     /**
      * Creates a new temporary directory.

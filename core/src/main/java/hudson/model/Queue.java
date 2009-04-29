@@ -118,26 +118,29 @@ public class Queue extends ResourceController implements Saveable {
 
     /**
      * Data structure created for each idle {@link Executor}.
-     * This is an offer from the queue to an executor.
+     * This is a job offer from the queue to an executor.
      *
      * <p>
-     * It eventually receives a {@link #item} to build.
+     * An idle executor (that calls {@link Queue#pop()} creates
+     * a new {@link JobOffer} and gets itself {@linkplain Queue#parked parked},
+     * and we'll eventually hand out an {@link #item} to build.
      */
-    private static class JobOffer {
-        final Executor executor;
+    public static class JobOffer {
+        public final Executor executor;
 
         /**
          * Used to wake up an executor, when it has an offered
          * {@link Project} to build.
          */
-        final OneShotEvent event = new OneShotEvent();
+        private final OneShotEvent event = new OneShotEvent();
+
         /**
          * The project that this {@link Executor} is going to build.
          * (Or null, in which case event is used to trigger a queue maintenance.)
          */
-        BuildableItem item;
+        private BuildableItem item;
 
-        public JobOffer(Executor executor) {
+        private JobOffer(Executor executor) {
             this.executor = executor;
         }
 
@@ -147,6 +150,23 @@ public class Queue extends ResourceController implements Saveable {
             event.signal();
         }
 
+        /**
+         * Verifies that the {@link Executor} represented by this object is capable of executing the given task.
+         */
+        public boolean canTake(Task task) {
+            Label l = task.getAssignedLabel();
+            if(l!=null && !l.contains(getNode()))
+                return false;   // the task needs to be executed on label that this node doesn't have.
+
+            if(l==null && getNode().getMode()== Mode.EXCLUSIVE)
+                return false;   // this node is reserved for tasks that are tied to it
+
+            return isAvailable();
+        }
+
+        /**
+         * Is this executor ready to accept some tasks?
+         */
         public boolean isAvailable() {
             return item == null && !executor.getOwner().isOffline() && executor.getOwner().isAcceptingTasks();
         }
@@ -161,14 +181,26 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * The executors that are currently parked while waiting for a job to run.
+     * The executors that are currently waiting for a job to run.
      */
-    private final Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
+    private final Map<Executor,JobOffer> parked = new HashMap<Executor,JobOffer>();
 
-    public Queue() {
+    private volatile transient LoadBalancer loadBalancer;
+
+    public Queue(LoadBalancer loadBalancer) {
+        this.loadBalancer =  loadBalancer.sanitize();
         // if all the executors are busy doing something, then the queue won't be maintained in
         // timely fashion, so use another thread to make sure it happens.
         new MaintainTask(this);
+    }
+
+    public LoadBalancer getLoadBalancer() {
+        return loadBalancer;
+    }
+
+    public void setLoadBalancer(LoadBalancer loadBalancer) {
+        if(loadBalancer==null)  throw new IllegalArgumentException();
+        this.loadBalancer = loadBalancer;
     }
 
     /**
@@ -566,13 +598,15 @@ public class Queue extends ResourceController implements Saveable {
                             continue;
                         }
 
-                        JobOffer runner = choose(p.task);
+                        JobOffer runner = loadBalancer.choose(p.task, new ApplicableJobOfferList(p.task));
                         if (runner == null)
                             // if we couldn't find the executor that fits,
                             // just leave it in the buildables list and
                             // check if we can execute other projects
                             continue;
 
+                        assert runner.canTake(p.task);
+                        
                         // found a matching executor. use it.
                         runner.set(p);
                         itr.remove();
@@ -635,66 +669,60 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Chooses the executor to carry out the build for the given project.
-     *
-     * @return null if no {@link Executor} can run it.
+     * Represents a list of {@linkplain JobOffer#canTake(Task) applicable} {@link JobOffer}s
+     * and provides various typical 
      */
-    private JobOffer choose(Task p) {
-        if (Hudson.getInstance().isQuietingDown()) {
-            // if we are quieting down, don't run anything so that
-            // all executors will be free.
-            return null;
+    public final class ApplicableJobOfferList implements Iterable<JobOffer> {
+        private final List<JobOffer> list;
+        // laziy filled
+        private Map<Node,List<JobOffer>> nodes;
+
+        private ApplicableJobOfferList(Task task) {
+            list = new ArrayList<JobOffer>(parked.size());
+            for (JobOffer j : parked.values())
+                if(j.canTake(task))
+                    list.add(j);
         }
 
-        Label l = p.getAssignedLabel();
-        if (l != null) {
-            // if a project has assigned label, it can be only built on it
-            for (JobOffer offer : parked.values()) {
-                if (offer.isAvailable() && l.contains(offer.getNode()))
-                    return offer;
-            }
-            return null;
+        /**
+         * Returns all the {@linkplain JobOffer#isAvailable() available} {@link JobOffer}s.
+         */
+        public List<JobOffer> all() {
+            return list;
         }
 
-        // if we are a large deployment, then we will favor slaves
-        boolean isLargeHudson = Hudson.getInstance().getNodes().size() > 10;
+        public Iterator<JobOffer> iterator() {
+            return list.iterator();
+        }
 
-        // otherwise let's see if the last node where this project was built is available
-        // it has up-to-date workspace, so that's usually preferable.
-        // (but we can't use an exclusive node)
-        Node n = p.getLastBuiltOn();
-        if (n != null && n.getMode() == Mode.NORMAL) {
-            for (JobOffer offer : parked.values()) {
-                if (offer.isAvailable() && offer.getNode() == n) {
-                    if (isLargeHudson && offer.getNode() instanceof Slave)
-                        // but if we are a large Hudson, then we really do want to keep the master free from builds
-                        continue;
-                    return offer;
+        /**
+         * List up all the {@link Node}s that have some available offers.
+         */
+        public Set<Node> nodes() {
+            return byNodes().keySet();
+        }
+
+        /**
+         * Gets a {@link JobOffer} for an executor of the given node, if any.
+         * Otherwise null. 
+         */
+        public JobOffer _for(Node n) {
+            List<JobOffer> r = byNodes().get(n);
+            if(r==null) return null;
+            return r.get(0);
+        }
+
+        public Map<Node,List<JobOffer>> byNodes() {
+            if(nodes==null) {
+                nodes = new HashMap<Node,List<JobOffer>>();
+                for (JobOffer o : list) {
+                    List<JobOffer> l = nodes.get(o.getNode());
+                    if(l==null) nodes.put(o.getNode(),l=new ArrayList<JobOffer>());
+                    l.add(o);
                 }
             }
+            return nodes;
         }
-
-        // duration of a build on a slave tends not to have an impact on
-        // the master/slave communication, so that means we should favor
-        // running long jobs on slaves.
-        // Similarly if we have many slaves, master should be made available
-        // for HTTP requests and coordination as much as possible
-        if (isLargeHudson || p.getEstimatedDuration() > 15 * 60 * 1000) {
-            // consider a long job to be > 15 mins
-            for (JobOffer offer : parked.values()) {
-                if (offer.isAvailable() && offer.getNode() instanceof Slave && offer.isNotExclusive())
-                    return offer;
-            }
-        }
-
-        // lastly, just look for any idle executor
-        for (JobOffer offer : parked.values()) {
-            if (offer.isAvailable() && offer.isNotExclusive())
-                return offer;
-        }
-
-        // nothing available
-        return null;
     }
 
     /**
