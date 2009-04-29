@@ -83,7 +83,7 @@ public class CLI {
             if(cli.protocolVersion()!=CliEntryPoint.VERSION) {
                 System.err.println(Messages.CLI_VersionMismatch());
             } else {
-                // Arrays.asList is not serializable --- presumably a bug in JRE.
+                // Arrays.asList is not serializable --- see 6835580
                 args = new ArrayList<String>(args);
                 r = cli.main(args, Locale.getDefault(), new RemoteInputStream(System.in),
                         new RemoteOutputStream(System.out), new RemoteOutputStream(System.err));
