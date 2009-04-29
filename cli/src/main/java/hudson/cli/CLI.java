@@ -43,10 +43,27 @@ public class CLI {
     public static void main(final String[] _args) throws Exception {
         List<String> args = Arrays.asList(_args);
 
-        URL target = new URL("http://localhost:8080/cli");
-        FullDuplexHttpStream con = new FullDuplexHttpStream(target);
+        String url = System.getenv("HUDSON_URL");
+
+        while(!args.isEmpty()) {
+            String head = args.get(0);
+            if(head.equals("-s") && args.size()>2) {
+                url = args.get(1);
+                args = args.subList(2,args.size());
+                continue;
+            }
+            break;
+        }
+        
+        if(url==null)
+            printUsageAndExit(Messages.CLI_NoURL());
+
+        if(args.isEmpty())
+            args = Arrays.asList("help"); // default to help
+
+        FullDuplexHttpStream con = new FullDuplexHttpStream(new URL(url));
         ExecutorService pool = Executors.newCachedThreadPool();
-        Channel channel = new Channel("Chunked connection to "+target,
+        Channel channel = new Channel("Chunked connection to "+url,
                 pool,con.getInputStream(),con.getOutputStream());
 
         // execute the command
@@ -54,7 +71,7 @@ public class CLI {
         try {
             CliEntryPoint cli = (CliEntryPoint)channel.getRemoteProperty(CliEntryPoint.class.getName());
             if(cli.protocolVersion()!=CliEntryPoint.VERSION) {
-                System.err.println("Version mismatch. This CLI cannot work with this Hudson server");
+                System.err.println(Messages.CLI_VersionMismatch());
             } else {
                 r = cli.main(args, Locale.getDefault(), new RemoteInputStream(System.in),
                         new RemoteOutputStream(System.out), new RemoteOutputStream(System.err));
@@ -65,5 +82,11 @@ public class CLI {
         }
 
         System.exit(r);
+    }
+
+    private static void printUsageAndExit(String msg) {
+        if(msg!=null)   System.out.println(msg);
+        System.err.println(Messages.CLI_Usage());
+        System.exit(-1);
     }
 }
