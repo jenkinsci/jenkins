@@ -2714,7 +2714,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public void doCli(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         checkPermission(READ);
-        requirePOST();
+        if(!"POST".equals(Stapler.getCurrentRequest().getMethod())) {
+            // for GET request, serve _cli.jelly, assuming this is a browser
+            req.getView(this,"_cli.jelly").forward(req,rsp);
+            return;
+        }
 
         UUID uuid = UUID.fromString(req.getHeader("Session"));
         rsp.setHeader("Hudson-Duplex",""); // set the header so that the client would know

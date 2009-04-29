@@ -86,6 +86,9 @@ THE SOFTWARE.
       <local:feature icon="monitor.gif"    href="load-statistics"         title="${%Load Statistics}">
         ${%LoadStatisticsText}
       </local:feature>
+      <local:feature icon="terminal.gif"    href="cli"         title="${%Hudson CLI}">
+        ${%HudsonCliText}
+      </local:feature>
       <local:feature icon="notepad.gif"      href="script"      title="${%Script Console}">
         ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}
       </local:feature>
