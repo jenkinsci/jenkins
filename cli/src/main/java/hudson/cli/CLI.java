@@ -24,15 +24,15 @@
 package hudson.cli;
 
 import hudson.remoting.Channel;
-import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.RemoteInputStream;
+import hudson.remoting.RemoteOutputStream;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * CLI entry point to Hudson.
@@ -53,8 +53,12 @@ public class CLI {
         int r=-1;
         try {
             CliEntryPoint cli = (CliEntryPoint)channel.getRemoteProperty(CliEntryPoint.class.getName());
-            r = cli.main(args, new RemoteInputStream(System.in),
-                    new RemoteOutputStream(System.out), new RemoteOutputStream(System.err));
+            if(cli.protocolVersion()!=CliEntryPoint.VERSION) {
+                System.err.println("Version mismatch. This CLI cannot work with this Hudson server");
+            } else {
+                r = cli.main(args, Locale.getDefault(), new RemoteInputStream(System.in),
+                        new RemoteOutputStream(System.out), new RemoteOutputStream(System.err));
+            }
         } finally {
             channel.close();
             pool.shutdown();

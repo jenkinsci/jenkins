@@ -26,6 +26,7 @@ package hudson.cli;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Remotable interface for CLI entry point on the server side.
@@ -35,6 +36,17 @@ import java.util.List;
 public interface CliEntryPoint {
     /**
      * Just like the static main method.
+     *
+     * @param locale
+     *      Locale of this client.
      */
-    int main(List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr);
+    int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr);
+
+    /**
+     * Returns {@link #VERSION}, so that the client and the server can detect version incompatibility
+     * gracefully.
+     */
+    int protocolVersion();
+
+    int VERSION = 1;
 }

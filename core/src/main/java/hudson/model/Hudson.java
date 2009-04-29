@@ -175,6 +175,7 @@ import java.util.Timer;
 import java.util.TreeSet;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -2660,20 +2661,42 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * {@link CliEntryPoint} implementation exposed to the remote CLI.
      */
     private final class CliManager implements CliEntryPoint, Serializable {
-        public int main(List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
+        /**
+         * CLI should be executed under this credential.
+         */
+        private final Authentication auth;
+
+        private CliManager(Authentication auth) {
+            this.auth = auth;
+        }
+
+        public int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr) {
             PrintStream err = new PrintStream(stderr);
 
             String subCmd = args.get(0);
             CLICommand cmd = CLICommand.clone(subCmd);
-            if(cmd!=null)
-                return cmd.main(args.subList(1,args.size()),
-                        stdin, new PrintStream(stdout), err);
+            if(cmd!=null) {
+                Authentication old = SecurityContextHolder.getContext().getAuthentication();
+                SecurityContextHolder.getContext().setAuthentication(auth);
+                try {
+                    // execute the command, do so with the originator of the request as the principal
+                    return cmd.main(args.subList(1,args.size()),
+                            stdin, new PrintStream(stdout), err);
+                } finally {
+                    SecurityContextHolder.getContext().setAuthentication(old);
+                }
+            }
 
             err.println("No such command: "+subCmd);
             for (CLICommand c : CLICommand.all())
                 err.println("  "+c.getName());
             return -1;
         }
+
+        public int protocolVersion() {
+            return VERSION;
+        }
+
         private Object writeReplace() {
             return Channel.current().export(CliEntryPoint.class,this);
         }
@@ -2689,12 +2712,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         requirePOST();
 
         UUID uuid = UUID.fromString(req.getHeader("Session"));
+        final Authentication auth = getAuthentication();
 
         FullDuplexHttpChannel server;
         if(req.getHeader("Side").equals("download")) {
             duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !hasPermission(ADMINISTER)) {
                 protected void main(Channel channel) throws IOException, InterruptedException {
-                    channel.setProperty(CliEntryPoint.class.getName(),new CliManager());
+                    channel.setProperty(CliEntryPoint.class.getName(),new CliManager(auth));
                 }
             });
             try {

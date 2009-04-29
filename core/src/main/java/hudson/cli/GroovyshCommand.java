@@ -1,6 +1,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.model.Hudson;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 
@@ -21,6 +22,9 @@ import jline.Terminal;
 public class GroovyshCommand extends CLICommand {
     @Override
     public int main(List<String> args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+        // this allows the caller to manipulate the JVM state, so require the admin privilege.
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+
         // this being remote means no jline capability is available
         System.setProperty("jline.terminal", UnsupportedTerminal.class.getName());
         Terminal.resetTerminal();
