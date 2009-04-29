@@ -57,6 +57,8 @@ public class CLI {
         
         if(url==null)
             printUsageAndExit(Messages.CLI_NoURL());
+        if(!url.endsWith("/"))  url+='/';
+        url+="cli";
 
         if(args.isEmpty())
             args = Arrays.asList("help"); // default to help
