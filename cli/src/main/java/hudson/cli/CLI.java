@@ -47,7 +47,7 @@ public class CLI {
 
         while(!args.isEmpty()) {
             String head = args.get(0);
-            if(head.equals("-s") && args.size()>2) {
+            if(head.equals("-s") && args.size()>=2) {
                 url = args.get(1);
                 args = args.subList(2,args.size());
                 continue;
