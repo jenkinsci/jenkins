@@ -1,8 +1,5 @@
 package hudson.cli;
 
-import hudson.cli.SequenceOutputStream.Block;
-
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,6 +42,9 @@ public class FullDuplexHttpStream {
         con.addRequestProperty("Side","download");
         con.getOutputStream().close();
         input = con.getInputStream();
+        // make sure we hit the right URL
+        if(con.getHeaderField("Hudson-Duplex")==null)
+            throw new IOException(target+" doesn't look like Hudson");
 
         // client->server uses chunked encoded POST for unlimited capacity. 
         con = (HttpURLConnection) target.openConnection();

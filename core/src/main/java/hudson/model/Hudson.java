@@ -2712,6 +2712,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         requirePOST();
 
         UUID uuid = UUID.fromString(req.getHeader("Session"));
+        rsp.setHeader("Hudson-Duplex",""); // set the header so that the client would know
         final Authentication auth = getAuthentication();
 
         FullDuplexHttpChannel server;
