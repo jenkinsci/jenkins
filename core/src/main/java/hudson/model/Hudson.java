@@ -2672,6 +2672,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         public int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr) {
+            // remoting sets the context classloader to the RemoteClassLoader,
+            // which slows down the classloading. we don't load anything from CLI,
+            // so couner that effect.
+            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+
             PrintStream out = new PrintStream(stdout);
             PrintStream err = new PrintStream(stderr);
 
