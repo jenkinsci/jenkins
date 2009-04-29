@@ -31,6 +31,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -75,6 +76,8 @@ public class CLI {
             if(cli.protocolVersion()!=CliEntryPoint.VERSION) {
                 System.err.println(Messages.CLI_VersionMismatch());
             } else {
+                // Arrays.asList is not serializable --- presumably a bug in JRE.
+                args = new ArrayList<String>(args);
                 r = cli.main(args, Locale.getDefault(), new RemoteInputStream(System.in),
                         new RemoteOutputStream(System.out), new RemoteOutputStream(System.err));
             }
