@@ -33,22 +33,42 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.CmdLineException;
 
 import java.io.PrintStream;
+import java.io.InputStream;
+import java.io.BufferedInputStream;
 import java.util.List;
 
 /**
  * Base class for Hudson CLI.
  *
- * <h2>How to implement a CLI command</h2>
+ * <h2>How does a CLI command work</h2>
  * <p>
- * CLI commands are defined on the server.
+ * The users starts {@linkplain CLI the "CLI agent"} on a remote system, by specifying arguments, like
+ * <tt>"java -jar hudson-cli.jar command arg1 arg2 arg3"</tt>. The CLI agent creates
+ * a remoting channel with the server, and it sends the entire arguments to the server, along with
+ * the remoted stdin/out/err.
  *
  * <p>
+ * The Hudson master then picks the right {@link CLICommand} to execute, clone it, and
+ * calls {@link #main(List, InputStream, PrintStream, PrintStream)} method.
+ *
+ * <h2>Note for CLI command implementor</h2>
+ * <ul>
+ * <li>
+ * Put {@link Extension} on your implementation to have it discovered by Hudson.
+ *
+ * <li>
  * Use <a href="http://args4j.dev.java.net/">args4j</a> annotation on your implementation to define
- * options and arguments (however, if you don't like that, you could override the {@link #main(List, PrintStream, PrintStream)} method
- * directly.
+ * options and arguments (however, if you don't like that, you could override
+ * the {@link #main(List, InputStream, PrintStream, PrintStream)} method directly.
  *
- * <p>
- * Put {@link Extension} on your implementation to have it auto-registered.
+ * <li>
+ * stdin, stdout, stderr are remoted, so proper buffering is necessary for good user experience.
+ *
+ * <li>
+ * Send {@link Callable} to a CLI agent by using {@link #channel} to get local interaction,
+ * such as uploading a file, asking for a password, etc.
+ *
+ * </ul>
  *
  * @author Kohsuke Kawaguchi
  * @since 1.302
@@ -59,10 +79,19 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * IOW, if you write to these streams, the person who launched the CLI command
      * will see the messages in his terminal.
      *
+     * <p>
      * (In contrast, calling {@code System.out.println(...)} would print out
      * the message to the server log file, which is probably not what you want.
      */
     protected PrintStream stdout,stderr;
+
+    /**
+     * Connected to stdin of the CLI agent.
+     *
+     * <p>
+     * This input stream is buffered to hide the latency in the remoting.
+     */
+    protected InputStream stdin;
 
     /**
      * {@link Channel} that represents the CLI JVM. You can use this to
@@ -92,7 +121,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         return name.replaceAll("([a-z0-9])([A-Z])","$1-$2").toLowerCase();
     }
 
-    public int main(List<String> args, PrintStream stdout, PrintStream stderr) {
+    public int main(List<String> args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+        this.stdin = new BufferedInputStream(stdin);
         this.stdout = stdout;
         this.stderr = stderr;
         this.channel = Channel.current();

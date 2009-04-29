@@ -2660,14 +2660,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * {@link CliEntryPoint} implementation exposed to the remote CLI.
      */
     private final class CliManager implements CliEntryPoint, Serializable {
-        public int main(List<String> args, OutputStream stdout, OutputStream stderr) {
+        public int main(List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
             PrintStream err = new PrintStream(stderr);
 
             String subCmd = args.get(0);
             CLICommand cmd = CLICommand.clone(subCmd);
             if(cmd!=null)
                 return cmd.main(args.subList(1,args.size()),
-                        new PrintStream(stdout), err);
+                        stdin, new PrintStream(stdout), err);
 
             err.println("No such command: "+subCmd);
             for (CLICommand c : CLICommand.all())

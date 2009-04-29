@@ -24,6 +24,7 @@
 package hudson.cli;
 
 import java.io.OutputStream;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -35,5 +36,5 @@ public interface CliEntryPoint {
     /**
      * Just like the static main method.
      */
-    int main(List<String> args, OutputStream stdout, OutputStream stderr);
+    int main(List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr);
 }

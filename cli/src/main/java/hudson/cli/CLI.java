@@ -25,6 +25,7 @@ package hudson.cli;
 
 import hudson.remoting.Channel;
 import hudson.remoting.RemoteOutputStream;
+import hudson.remoting.RemoteInputStream;
 
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
@@ -52,7 +53,8 @@ public class CLI {
         int r=-1;
         try {
             CliEntryPoint cli = (CliEntryPoint)channel.getRemoteProperty(CliEntryPoint.class.getName());
-            r = cli.main(args, new RemoteOutputStream(System.out), new RemoteOutputStream(System.err));
+            r = cli.main(args, new RemoteInputStream(System.in),
+                    new RemoteOutputStream(System.out), new RemoteOutputStream(System.err));
         } finally {
             channel.close();
             pool.shutdown();
