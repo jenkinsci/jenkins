@@ -26,6 +26,7 @@ package hudson.cli;
 import hudson.remoting.Channel;
 import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
+import hudson.remoting.PingThread;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -68,6 +69,12 @@ public class CLI {
         ExecutorService pool = Executors.newCachedThreadPool();
         Channel channel = new Channel("Chunked connection to "+url,
                 pool,con.getInputStream(),con.getOutputStream());
+        new PingThread(channel,30*1000) {
+            protected void onDead() {
+                // noop. the point of ping is to keep the connection alive
+                // as most HTTP servers have a rather short read time out
+            }
+        }.start();
 
         // execute the command
         int r=-1;
