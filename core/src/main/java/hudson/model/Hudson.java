@@ -46,6 +46,7 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionListView;
 import hudson.cli.CliEntryPoint;
 import hudson.cli.CLICommand;
+import hudson.cli.HelpCommand;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -2671,6 +2672,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         public int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr) {
+            PrintStream out = new PrintStream(stdout);
             PrintStream err = new PrintStream(stderr);
 
             String subCmd = args.get(0);
@@ -2680,16 +2682,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 try {
                     // execute the command, do so with the originator of the request as the principal
-                    return cmd.main(args.subList(1,args.size()),
-                            stdin, new PrintStream(stdout), err);
+                    return cmd.main(args.subList(1,args.size()),stdin, out, err);
                 } finally {
                     SecurityContextHolder.getContext().setAuthentication(old);
                 }
             }
 
             err.println("No such command: "+subCmd);
-            for (CLICommand c : CLICommand.all())
-                err.println("  "+c.getName());
+            new HelpCommand().main(Collections.<String>emptyList(), stdin, out, err);
             return -1;
         }
 

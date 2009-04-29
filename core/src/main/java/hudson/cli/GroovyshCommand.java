@@ -21,6 +21,11 @@ import jline.Terminal;
 @Extension
 public class GroovyshCommand extends CLICommand {
     @Override
+    public String getShortDescription() {
+        return "Runs an interactive groovy shell";
+    }
+
+    @Override
     public int main(List<String> args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         // this allows the caller to manipulate the JVM state, so require the admin privilege.
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);

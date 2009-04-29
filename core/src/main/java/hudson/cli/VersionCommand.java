@@ -33,6 +33,11 @@ import hudson.model.Hudson;
  */
 @Extension
 public class VersionCommand extends CLICommand {
+    @Override
+    public String getShortDescription() {
+        return "Shows the Hudson version";
+    }
+
     protected int run() {
         stdout.println(Hudson.VERSION);
         return 0;

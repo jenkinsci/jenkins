@@ -123,6 +123,12 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         return name.replaceAll("([a-z0-9])([A-Z])","$1-$2").toLowerCase(Locale.ENGLISH);
     }
 
+    /**
+     * Gets the quick summary of what this command does.
+     * Used by the help command to generate the list of commands.
+     */
+    public abstract String getShortDescription();
+
     public int main(List<String> args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         this.stdin = new BufferedInputStream(stdin);
         this.stdout = stdout;
