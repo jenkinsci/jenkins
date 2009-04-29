@@ -46,9 +46,19 @@ import java.util.logging.Logger;
 public abstract class PingThread extends Thread {
     private final Channel channel;
 
-    public PingThread(Channel channel) {
+    /**
+     * Performs a check every this milliseconds.
+     */
+    private final long interval;
+
+    public PingThread(Channel channel, long interval) {
         super("Ping thread for channel "+channel);
         this.channel = channel;
+        this.interval = interval;
+    }
+
+    public PingThread(Channel channel) {
+        this(channel,5*60*1000/*5 mins*/);
     }
 
     public void run() {
@@ -94,11 +104,6 @@ public abstract class PingThread extends Thread {
             return null;
         }
     }
-
-    /**
-     * Performs a check every this milliseconds.
-     */
-    private static final long interval = 5*60*1000; // 5 mins
 
     /**
      * Time out in milliseconds.
