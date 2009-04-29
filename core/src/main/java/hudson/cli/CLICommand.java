@@ -36,6 +36,7 @@ import java.io.PrintStream;
 import java.io.InputStream;
 import java.io.BufferedInputStream;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Base class for Hudson CLI.
@@ -118,7 +119,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             name = name.substring(0,name.length()-7); // trim off the command
 
         // convert "FooBarZot" into "foo-bar-zot"
-        return name.replaceAll("([a-z0-9])([A-Z])","$1-$2").toLowerCase();
+        // Locale is fixed so that "CreateInstance" always become "create-instance" no matter where this is run.
+        return name.replaceAll("([a-z0-9])([A-Z])","$1-$2").toLowerCase(Locale.ENGLISH);
     }
 
     public int main(List<String> args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
