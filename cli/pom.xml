@@ -6,7 +6,6 @@
     <groupId>org.jvnet.hudson.main</groupId>
     <version>1.302-SNAPSHOT</version>
   </parent>
-  <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>cli</artifactId>
   <name>Hudson CLI</name>
 
