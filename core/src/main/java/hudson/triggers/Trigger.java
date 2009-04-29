@@ -225,7 +225,13 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
                     if (t.tabs.check(cal)) {
                         LOGGER.config("cron triggered "+p.getName());
-                        t.run();
+                        try {
+                            t.run();
+                        } catch (Throwable e) {
+                            // t.run() is a plugin, and some of them throw RuntimeException and other things.
+                            // don't let that cancel the polling activity. report and move on.
+                            LOGGER.log(Level.WARNING, t.getClass().getName()+".run() failed for "+p.getName(),e);
+                        }
                     }
                 }
             }
