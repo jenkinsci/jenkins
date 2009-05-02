@@ -51,9 +51,10 @@ THE SOFTWARE.
   </modules>
   
   <scm>
-    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/trunk/hudson/main/</connection>
-    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/trunk/hudson/main/</developerConnection>
-    <url>https://hudson.dev.java.net/source/browse/hudson/trunk/hudson/main</url>
+    <!-- release comes from the RC branch now -->
+    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/branches/rc/</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/branches/rc/</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/branches/rc/</url>
   </scm>
 
   <build>
@@ -102,7 +103,7 @@ THE SOFTWARE.
             also run assembly during the release.
             http://www.nabble.com/Release-Plugin%3A-Include-assemblies-for-deploying-tf2642295s177.html#a7377938
            -->
-          <goals>install javadoc:javadoc animal-sniffer:check assembly:attached deploy</goals>
+          <goals>-DskipTests install javadoc:javadoc animal-sniffer:check assembly:attached deploy</goals>
           <remoteTagging>true</remoteTagging><!-- work around http://jira.codehaus.org/browse/SCM-406 -->
         </configuration>
       </plugin>
