@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jvnet.hudson.main</groupId>
-    <version>1.302-SNAPSHOT</version>
+    <version>1.304-SNAPSHOT</version>
   </parent>
   <artifactId>cli</artifactId>
   <name>Hudson CLI</name>

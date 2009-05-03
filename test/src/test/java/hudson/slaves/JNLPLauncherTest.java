@@ -51,9 +51,7 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Starts a JNLP slave agent and makes sure it successfully connects to Hudson. 
      */
     public void testLaunch() throws Exception {
-        try {
-            GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        } catch (HeadlessException e) {
+        if(GraphicsEnvironment.isHeadless()) {
             System.err.println("Skipping JNLPLauncherTest.testLaunch because we are running headless");
             return;
         }

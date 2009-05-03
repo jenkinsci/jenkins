@@ -153,13 +153,14 @@ public final class Pipe implements Serializable {
 
             // we want 'oidRos' to send data to this PipedOutputStream
             PipedOutputStream pos = new PipedOutputStream();
+            PipedInputStream pis = new PipedInputStream(pos);
             final int oidPos = channel.export(pos);
 
             // tell 'ros' to connect to our 'pos'.
             channel.send(new ConnectCommand(oidRos, oidPos));
 
             out = null;
-            in = new PipedInputStream(pos);
+            in = pis;
         }
     }
 
