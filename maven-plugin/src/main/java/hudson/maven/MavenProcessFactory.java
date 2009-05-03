@@ -58,16 +58,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.net.JarURLConnection;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.jar.JarFile;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -340,22 +334,6 @@ final class MavenProcessFactory implements ProcessCache.Factory {
 
     private static final class GetRemotingJar implements Callable<String,IOException> {
         public String call() throws IOException {
-            URL classFile = Main.class.getClassLoader().getResource(hudson.remoting.Launcher.class.getName().replace('.','/')+".class");
-
-            // JNLP returns the URL where the jar was originally placed (like http://hudson.dev.java.net/...)
-            // not the local cached file. So we need a rather round about approach to get to
-            // the local file name.
-            URLConnection con = classFile.openConnection();
-            if (con instanceof JarURLConnection) {
-                JarURLConnection connection = (JarURLConnection) con;
-                JarFile jarFile = connection.getJarFile();
-                if(jarFile==null)
-                    throw new IOException("Failing to detect jar file from "+classFile+" JarURLConnection="+connection);
-                if(jarFile.getName()==null)
-                    throw new IOException("jarFile.getName()==null for "+classFile+" JarURLConnection="+connection);
-                return jarFile.getName();
-            }
-
             return Which.jarFile(hudson.remoting.Launcher.class).getPath();
         }
     }
