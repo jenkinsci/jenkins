@@ -9,6 +9,7 @@ import java.util.List;
 import java.io.PrintStream;
 import java.io.InputStream;
 import java.io.BufferedInputStream;
+import java.io.PrintWriter;
 
 import jline.UnsupportedTerminal;
 import jline.Terminal;
@@ -35,6 +36,8 @@ public class GroovyshCommand extends CLICommand {
         Terminal.resetTerminal();
 
         Groovysh shell = new Groovysh(new IO(new BufferedInputStream(stdin),stdout,stderr));
+        // redirect "println" to the CLI
+        shell.getInterp().getContext().setProperty("out",new PrintWriter(stdout,true));
         return shell.run(args.toArray(new String[args.size()]));
     }
 
