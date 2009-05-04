@@ -28,8 +28,9 @@ import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -72,9 +73,19 @@ public abstract class Lifecycle implements ExtensionPoint {
                     throw x;
                 }
             } else {
-                // no lifecycle given. use the default one
-                INSTANCE = new Lifecycle() {
-                };
+                // if run on embedded container, attempt to use UnixEmbeddedContainerLifecycle 
+                if(System.getProperty("executable-war")!=null && !Hudson.isWindows()) {
+                    try {
+                        INSTANCE = new UnixEmbeddedContainerLifecycle();
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation",e);
+                    }
+                }
+
+                // use the default one. final fallback.
+                if(INSTANCE==null)
+                    INSTANCE = new Lifecycle() {
+                    };
             }
         }
 
@@ -154,4 +165,6 @@ public abstract class Lifecycle implements ExtensionPoint {
     public boolean canRestart() {
         return isOverridden("restart");
     }
+
+    private static final Logger LOGGER = Logger.getLogger(Lifecycle.class.getName());
 }
