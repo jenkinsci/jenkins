@@ -31,7 +31,7 @@ THE SOFTWARE.
         ${%Hudson CLI}
       </h1>
       <p>
-        ${%blurb('jnlpJars/hudson-cli.jar')}
+        ${%blurb('${rootURL}/jnlpJars/hudson-cli.jar')}
       </p>
       <pre style="color: white; background-color:black; padding:1em; font-weight: bold">java -jar <a
               style="color: white"
