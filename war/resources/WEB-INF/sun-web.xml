@@ -34,4 +34,5 @@ THE SOFTWARE.
 <sun-web-app>
   <!-- without this, we end up loading Ant from Glassfish -->
   <class-loader delegate="false"/>
+  <parameter-encoding default-charset="UTF-8" />
 </sun-web-app>
